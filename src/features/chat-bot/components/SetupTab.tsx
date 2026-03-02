@@ -10,6 +10,8 @@ import {
   Check,
   Loader2,
   Calendar,
+  AlertTriangle,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -56,8 +58,13 @@ export function SetupTab() {
     useChatBotCloseStatus();
   const { data: calendlyStatus, isLoading: calendlyLoading } =
     useChatBotCalendlyStatus();
-  const { data: eventTypes, isLoading: eventTypesLoading } =
-    useChatBotCalendlyEventTypes(calendlyStatus?.connected || false);
+  const {
+    data: eventTypes,
+    isLoading: eventTypesLoading,
+    isError: eventTypesError,
+    error: eventTypesErrorObj,
+    refetch: refetchEventTypes,
+  } = useChatBotCalendlyEventTypes(calendlyStatus?.connected || false);
 
   const connectClose = useConnectClose();
   const disconnectClose = useDisconnectClose();
@@ -300,6 +307,26 @@ export function SetupTab() {
 
           {eventTypesLoading ? (
             <div className="h-7 rounded bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+          ) : eventTypesError ? (
+            <div className="flex items-center gap-2 p-2 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+              <span className="text-[10px] text-amber-700 dark:text-amber-400">
+                {eventTypesErrorObj &&
+                "isServiceError" in eventTypesErrorObj &&
+                eventTypesErrorObj.isServiceError
+                  ? "Bot service temporarily unavailable."
+                  : "Failed to load event types."}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-5 px-1.5 text-[9px] text-amber-600 hover:text-amber-800 ml-auto"
+                onClick={() => refetchEventTypes()}
+              >
+                <RefreshCw className="h-3 w-3 mr-0.5" />
+                Retry
+              </Button>
+            </div>
           ) : eventTypes && eventTypes.length > 0 ? (
             <div className="space-y-2">
               {displayedEventTypeMappings.map((mapping, index) => (

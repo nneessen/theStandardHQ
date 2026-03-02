@@ -60,6 +60,7 @@ export interface CalendlyEventType {
   slug: string;
   duration: number;
   active: boolean;
+  locations?: { kind: string; location?: string }[];
 }
 
 export interface ChatBotConversation {
@@ -321,12 +322,12 @@ export function useChatBotCalendlyStatus() {
 }
 
 export function useChatBotCalendlyEventTypes(enabled = true) {
-  return useQuery<CalendlyEventType[], Error>({
+  return useQuery<CalendlyEventType[], ChatBotApiError>({
     queryKey: chatBotKeys.calendlyEventTypes(),
     queryFn: () => chatBotApi<CalendlyEventType[]>("get_calendly_event_types"),
     enabled,
     staleTime: 60_000,
-    retry: false,
+    retry: 1,
   });
 }
 

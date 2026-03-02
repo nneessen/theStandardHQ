@@ -518,6 +518,12 @@ serve(async (req) => {
         if (errorMessage) {
           return jsonResponse({ error: errorMessage }, status);
         }
+        if (!Array.isArray(payload)) {
+          console.warn(
+            `[get_calendly_event_types] Unexpected payload shape (type=${typeof payload}):`,
+            JSON.stringify(payload).slice(0, 200),
+          );
+        }
         return jsonResponse(Array.isArray(payload) ? payload : []);
       }
 
