@@ -17,6 +17,7 @@ import {
   TrendingUp,
   BarChart3,
   HeartPulse,
+  BookOpen,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -40,9 +41,11 @@ import { UsageTab } from "./components/UsageTab";
 import { AllBotsTab } from "./components/AllBotsTab";
 import { AnalyticsTab } from "./components/AnalyticsTab";
 import { MonitoringTab } from "./components/MonitoringTab";
+import { SetupGuideTab } from "./components/SetupGuideTab";
 
 type TabId =
   | "overview"
+  | "guide"
   | "all-bots"
   | "setup"
   | "conversations"
@@ -59,6 +62,7 @@ function getInitialTab(): TabId {
   const tab = params.get("tab");
   if (
     tab === "setup" ||
+    tab === "guide" ||
     tab === "all-bots" ||
     tab === "conversations" ||
     tab === "appointments" ||
@@ -183,6 +187,7 @@ export function ChatBotPage() {
     locked?: boolean;
   }[] = [
     { id: "overview", label: "Subscription", icon: CreditCard },
+    { id: "guide", label: "Setup Guide", icon: BookOpen },
     { id: "all-bots", label: "All Bots", icon: TrendingUp },
     {
       id: "setup",
@@ -372,6 +377,9 @@ export function ChatBotPage() {
             /* Full config dashboard */
             <SetupTab />
           ))}
+
+        {/* Setup Guide — always visible, fully static */}
+        {activeTab === "guide" && <SetupGuideTab />}
 
         {/* All Bots — always visible to all users */}
         {activeTab === "all-bots" && (
