@@ -7,30 +7,10 @@ export type Json =
   | Json[];
 
 export type Database = {
-  graphql_public: {
-    Tables: {
-      [_ in never]: never;
-    };
-    Views: {
-      [_ in never]: never;
-    };
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json;
-          operationName?: string;
-          query?: string;
-          variables?: Json;
-        };
-        Returns: Json;
-      };
-    };
-    Enums: {
-      [_ in never]: never;
-    };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.5";
   };
   public: {
     Tables: {
@@ -947,7 +927,10 @@ export type Database = {
       };
       bulk_email_campaigns: {
         Row: {
+          audience_id: string | null;
           bounced_count: number;
+          brand_settings: Json | null;
+          campaign_type: string;
           clicked_count: number;
           completed_at: string | null;
           created_at: string | null;
@@ -962,6 +945,7 @@ export type Database = {
           scheduled_for: string | null;
           send_rate: number | null;
           sent_count: number;
+          sms_content: string | null;
           started_at: string | null;
           status: string;
           subject_override: string | null;
@@ -971,7 +955,10 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          audience_id?: string | null;
           bounced_count?: number;
+          brand_settings?: Json | null;
+          campaign_type?: string;
           clicked_count?: number;
           completed_at?: string | null;
           created_at?: string | null;
@@ -986,6 +973,7 @@ export type Database = {
           scheduled_for?: string | null;
           send_rate?: number | null;
           sent_count?: number;
+          sms_content?: string | null;
           started_at?: string | null;
           status?: string;
           subject_override?: string | null;
@@ -995,7 +983,10 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          audience_id?: string | null;
           bounced_count?: number;
+          brand_settings?: Json | null;
+          campaign_type?: string;
           clicked_count?: number;
           completed_at?: string | null;
           created_at?: string | null;
@@ -1010,6 +1001,7 @@ export type Database = {
           scheduled_for?: string | null;
           send_rate?: number | null;
           sent_count?: number;
+          sms_content?: string | null;
           started_at?: string | null;
           status?: string;
           subject_override?: string | null;
@@ -1019,6 +1011,13 @@ export type Database = {
           user_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "bulk_email_campaigns_audience_id_fkey";
+            columns: ["audience_id"];
+            isOneToOne: false;
+            referencedRelation: "marketing_audiences";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "bulk_email_campaigns_template_id_fkey";
             columns: ["template_id"];
@@ -4618,6 +4617,179 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      marketing_audience_members: {
+        Row: {
+          audience_id: string;
+          contact_id: string | null;
+          contact_type: string;
+          created_at: string | null;
+          email: string;
+          first_name: string | null;
+          id: string;
+          last_name: string | null;
+          metadata: Json | null;
+          phone: string | null;
+        };
+        Insert: {
+          audience_id: string;
+          contact_id?: string | null;
+          contact_type: string;
+          created_at?: string | null;
+          email: string;
+          first_name?: string | null;
+          id?: string;
+          last_name?: string | null;
+          metadata?: Json | null;
+          phone?: string | null;
+        };
+        Update: {
+          audience_id?: string;
+          contact_id?: string | null;
+          contact_type?: string;
+          created_at?: string | null;
+          email?: string;
+          first_name?: string | null;
+          id?: string;
+          last_name?: string | null;
+          metadata?: Json | null;
+          phone?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "marketing_audience_members_audience_id_fkey";
+            columns: ["audience_id"];
+            isOneToOne: false;
+            referencedRelation: "marketing_audiences";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      marketing_audiences: {
+        Row: {
+          audience_type: string;
+          contact_count: number | null;
+          created_at: string | null;
+          created_by: string | null;
+          description: string | null;
+          filters: Json | null;
+          id: string;
+          name: string;
+          source_pool: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          audience_type?: string;
+          contact_count?: number | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          filters?: Json | null;
+          id?: string;
+          name: string;
+          source_pool: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          audience_type?: string;
+          contact_count?: number | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          filters?: Json | null;
+          id?: string;
+          name?: string;
+          source_pool?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      marketing_brand_settings: {
+        Row: {
+          accent_color: string | null;
+          company_name: string | null;
+          created_by: string | null;
+          font_family: string | null;
+          footer_text: string | null;
+          id: string;
+          logo_url: string | null;
+          primary_color: string | null;
+          secondary_color: string | null;
+          social_links: Json | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          accent_color?: string | null;
+          company_name?: string | null;
+          created_by?: string | null;
+          font_family?: string | null;
+          footer_text?: string | null;
+          id?: string;
+          logo_url?: string | null;
+          primary_color?: string | null;
+          secondary_color?: string | null;
+          social_links?: Json | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          accent_color?: string | null;
+          company_name?: string | null;
+          created_by?: string | null;
+          font_family?: string | null;
+          footer_text?: string | null;
+          id?: string;
+          logo_url?: string | null;
+          primary_color?: string | null;
+          secondary_color?: string | null;
+          social_links?: Json | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      marketing_external_contacts: {
+        Row: {
+          company: string | null;
+          created_at: string | null;
+          created_by: string | null;
+          email: string;
+          first_name: string | null;
+          id: string;
+          last_name: string | null;
+          metadata: Json | null;
+          phone: string | null;
+          source: string | null;
+          tags: string[] | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          company?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          email: string;
+          first_name?: string | null;
+          id?: string;
+          last_name?: string | null;
+          metadata?: Json | null;
+          phone?: string | null;
+          source?: string | null;
+          tags?: string[] | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          company?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          email?: string;
+          first_name?: string | null;
+          id?: string;
+          last_name?: string | null;
+          metadata?: Json | null;
+          phone?: string | null;
+          source?: string | null;
+          tags?: string[] | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
       };
       message_threads: {
         Row: {
@@ -13939,7 +14111,7 @@ export type Database = {
       cleanup_expired_evaluation_logs: { Args: never; Returns: number };
       cleanup_expired_invitations: { Args: never; Returns: number };
       cleanup_instagram_jobs: {
-        Args: { p_older_than?: string };
+        Args: { p_older_than?: unknown };
         Returns: number;
       };
       cleanup_old_audit_logs: {
@@ -17199,9 +17371,6 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       agent_status: ["unlicensed", "licensed", "not_applicable"],

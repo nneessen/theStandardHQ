@@ -29,6 +29,7 @@ import {
   Wallet,
   Store,
   LifeBuoy,
+  Megaphone,
 } from "lucide-react";
 import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
 import { SupportDialog } from "./SupportDialog";
@@ -299,6 +300,13 @@ export default function Sidebar({
           icon: Store,
           label: "Lead Vendors",
           href: "/lead-vendors",
+          public: true,
+          superAdminOnly: true,
+        },
+        {
+          icon: Megaphone,
+          label: "Marketing",
+          href: "/marketing",
           public: true,
           superAdminOnly: true,
         },

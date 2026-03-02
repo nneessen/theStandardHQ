@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import {
   Popover,
@@ -33,6 +32,7 @@ import {
   Globe,
   Loader2,
   Check,
+  LayoutTemplate,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -46,8 +46,29 @@ import {
   formatFileSize,
   type TrainingDocument,
 } from "@/features/training-hub";
-import { getAllUsersContacts, type Contact } from "../../services/contactService";
+import {
+  getAllUsersContacts,
+  type Contact,
+} from "../../services/contactService";
+import {
+  TemplatePicker,
+  TipTapEditor,
+  blocksToHtml,
+  convertHtmlToText,
+} from "@/features/email";
+import { replaceTemplateVariables } from "@/lib/templateVariables";
+import type { EmailTemplate } from "@/types/email.types";
 
+// Extract body innerHTML from a full HTML document so TipTap receives a fragment
+function extractBodyContent(html: string): string {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    return doc.body?.innerHTML?.trim() || html;
+  } catch {
+    return html;
+  }
+}
 
 interface ComposeDialogProps {
   open: boolean;
@@ -89,11 +110,15 @@ export function ComposeDialog({
         ? `Fwd: ${forward.subject}`
         : "",
   );
-  const [body, setBody] = useState(forward?.body || "");
+  const [bodyHtml, setBodyHtml] = useState(forward?.body || "");
   const [showCcBcc, setShowCcBcc] = useState(false);
   const [scheduledDate, setScheduledDate] = useState<Date | undefined>();
   const [showSchedule, setShowSchedule] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Template state
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<EmailTemplate | null>(null);
 
   // UI state - Sheet starts closed
   const [showContactBrowser, setShowContactBrowser] = useState(false);
@@ -127,6 +152,37 @@ export function ComposeDialog({
     }
   };
 
+  // Template selection handler
+  const handleTemplateSelect = (template: EmailTemplate) => {
+    setSelectedTemplate(template);
+
+    // Populate subject from template
+    if (template.subject) {
+      setSubject(replaceTemplateVariables(template.subject, {}));
+    }
+
+    // Populate body from template
+    let html = "";
+    if (
+      template.blocks &&
+      Array.isArray(template.blocks) &&
+      template.blocks.length > 0
+    ) {
+      html = extractBodyContent(blocksToHtml(template.blocks, {}));
+    } else if (template.body_html) {
+      html = extractBodyContent(
+        replaceTemplateVariables(template.body_html, {}),
+      );
+    }
+    setBodyHtml(html);
+  };
+
+  const clearTemplate = () => {
+    setSelectedTemplate(null);
+    setBodyHtml("");
+    setSubject("");
+  };
+
   // Attachment state
   const [attachments, setAttachments] = useState<TrainingDocument[]>([]);
 
@@ -149,13 +205,16 @@ export function ComposeDialog({
     setError(null);
 
     try {
+      // Wrap TipTap content in a div — the user's edits in bodyHtml are always the source of truth
+      const finalHtml = `<div>${bodyHtml}</div>`;
+
       const result = await send({
         to,
         cc: cc.length > 0 ? cc : undefined,
         bcc: bcc.length > 0 ? bcc : undefined,
         subject,
-        bodyHtml: `<div>${body.replace(/\n/g, "<br/>")}</div>`,
-        bodyText: body,
+        bodyHtml: finalHtml,
+        bodyText: convertHtmlToText(bodyHtml),
         threadId: replyTo?.threadId,
         replyToMessageId: replyTo?.messageId,
         scheduledFor: scheduledDate,
@@ -189,7 +248,7 @@ export function ComposeDialog({
         cc: cc.length > 0 ? cc : undefined,
         bcc: bcc.length > 0 ? bcc : undefined,
         subject,
-        bodyHtml: `<div>${body.replace(/\n/g, "<br/>")}</div>`,
+        bodyHtml: `<div>${bodyHtml}</div>`,
       });
       toast.success("Draft saved");
       onOpenChange(false);
@@ -204,7 +263,8 @@ export function ComposeDialog({
     setCc([]);
     setBcc([]);
     setSubject("");
-    setBody("");
+    setBodyHtml("");
+    setSelectedTemplate(null);
     setScheduledDate(undefined);
     setShowSchedule(false);
     setError(null);
@@ -265,10 +325,17 @@ export function ComposeDialog({
           {/* Compose Form */}
           <div className="flex-1 flex flex-col overflow-hidden">
             <div className="flex-1 overflow-y-auto p-3 space-y-2.5 bg-white dark:bg-zinc-900">
-              {/* Contacts Buttons */}
+              {/* Contacts & Template Buttons */}
               <div className="flex justify-end gap-2">
                 {isSuperAdmin && (
-                  addAllPending ? (
+                  <TemplatePicker
+                    onSelect={handleTemplateSelect}
+                    selectedTemplateId={selectedTemplate?.id}
+                    className="inline-flex"
+                  />
+                )}
+                {isSuperAdmin &&
+                  (addAllPending ? (
                     // Step 2 — inline confirm, no nested modal
                     <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-md px-2 py-1">
                       <span className="text-[11px] text-amber-700 dark:text-amber-300 font-medium">
@@ -306,8 +373,7 @@ export function ComposeDialog({
                       )}
                       <span>{isAddingAll ? "Adding..." : "Add All Users"}</span>
                     </button>
-                  )
-                )}
+                  ))}
                 <button
                   onClick={() => setShowContactBrowser(true)}
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 transition-colors"
@@ -316,6 +382,28 @@ export function ComposeDialog({
                   <span>Browse Contacts</span>
                 </button>
               </div>
+
+              {/* Template Active Indicator */}
+              {selectedTemplate && (
+                <div className="flex items-center gap-1.5">
+                  <Badge
+                    variant="secondary"
+                    className="h-5 text-[10px] gap-1 pr-1 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800"
+                  >
+                    <LayoutTemplate className="h-3 w-3" />
+                    <span className="max-w-[200px] truncate">
+                      {selectedTemplate.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={clearTemplate}
+                      className="hover:bg-violet-200 dark:hover:bg-violet-800 rounded-full p-0.5"
+                    >
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  </Badge>
+                </div>
+              )}
 
               {/* To Field */}
               <RecipientField
@@ -382,13 +470,15 @@ export function ComposeDialog({
                 />
               </div>
 
-              {/* Body */}
-              <Textarea
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
+              {/* Body - TipTapEditor for rich text */}
+              <TipTapEditor
+                content={bodyHtml}
+                onChange={setBodyHtml}
                 placeholder="Write your message..."
-                className="min-h-[180px] text-[11px] resize-none bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
-                disabled={isSending}
+                showMenuBar={isSuperAdmin}
+                minHeight="180px"
+                editable={!isSending}
+                className="bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-sm"
               />
 
               {/* Schedule */}
@@ -492,7 +582,6 @@ export function ComposeDialog({
                   {scheduledDate ? "Schedule" : "Send"}
                 </Button>
 
-
                 <Button
                   size="sm"
                   className="h-6 px-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 border-0 shadow-none"
@@ -566,7 +655,6 @@ export function ComposeDialog({
         selectedDocuments={attachments}
         maxAttachments={10}
       />
-
     </>
   );
 }

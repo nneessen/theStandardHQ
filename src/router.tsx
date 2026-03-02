@@ -61,6 +61,7 @@ import { TheStandardTeamRoutePage } from "./features/the-standard-team";
 import { BillingPage } from "./features/billing/BillingPage";
 import { LeadIntelligenceDashboard } from "./features/admin/components/lead-vendors";
 import { ChatBotPage } from "./features/chat-bot";
+import { MarketingHubPage } from "./features/marketing";
 
 // Lazy-loaded underwriting pages
 const UnderwritingWizardPage = lazy(
@@ -783,6 +784,17 @@ function TheStandardTeamRouteComponent() {
   );
 }
 
+// Marketing Hub - super admin only
+const marketingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "marketing",
+  component: () => (
+    <RouteGuard noRecruits noStaffRoles>
+      <MarketingHubPage />
+    </RouteGuard>
+  ),
+});
+
 // Create the route tree - all routes are already linked via getParentRoute
 // Note: publicJoinAltRoute is at the end as a catch-all for /join-* URLs
 const routeTree = rootRoute.addChildren([
@@ -835,6 +847,7 @@ const routeTree = rootRoute.addChildren([
   billingRoute,
   theStandardTeamRoute,
   leadVendorsRoute,
+  marketingRoute,
   underwritingWizardRoute,
   quickQuoteRoute,
   chatBotRoute,
