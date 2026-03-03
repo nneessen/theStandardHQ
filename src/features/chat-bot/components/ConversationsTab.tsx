@@ -56,6 +56,14 @@ export function ConversationsTab() {
     status === "all" ? undefined : status,
   );
 
+  // Lightweight query to get open conversation count (only when viewing "all")
+  const { data: openCountData } = useChatBotConversations(
+    1,
+    1,
+    "open",
+    status === "all",
+  );
+
   // Auto-refresh every 10 seconds
   useEffect(() => {
     const interval = setInterval(() => {
@@ -66,6 +74,8 @@ export function ConversationsTab() {
 
   const conversations = data?.data || [];
   const total = data?.total || 0;
+  const openCount = status === "all" ? (openCountData?.total ?? 0) : 0;
+  const engagedTotal = Math.max(0, total - openCount);
   const totalPages = Math.ceil(total / limit);
 
   const formatTime = (dateStr: string | null | undefined) => {
@@ -165,7 +175,7 @@ export function ConversationsTab() {
             </SelectContent>
           </Select>
           <span className="text-[10px] text-zinc-400">
-            {total} conversation{total !== 1 ? "s" : ""}
+            {engagedTotal} conversation{engagedTotal !== 1 ? "s" : ""}
           </span>
         </div>
         <Button

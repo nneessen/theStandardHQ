@@ -9,7 +9,8 @@ export function ConversationMetrics({
 }: {
   data: ChatBotAnalytics["conversations"];
 }) {
-  const total = data.total ?? 0;
+  const openCount = data.byStatus?.open ?? 0;
+  const total = Math.max(0, (data.total ?? 0) - openCount);
   const avgMsgs = data.avgMessagesPerConvo ?? 0;
   const suppression = data.suppressionRate ?? 0;
   const stale = data.staleRate ?? 0;

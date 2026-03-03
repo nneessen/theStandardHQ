@@ -247,6 +247,7 @@ export function useChatBotConversations(
   page: number,
   limit: number,
   status?: string,
+  enabled = true,
 ) {
   return useQuery<PaginatedResponse<ChatBotConversation>, Error>({
     queryKey: chatBotKeys.conversations({ page, limit, status }),
@@ -257,6 +258,7 @@ export function useChatBotConversations(
         status,
       }),
     staleTime: 10_000,
+    enabled,
   });
 }
 

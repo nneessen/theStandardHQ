@@ -102,9 +102,19 @@ serve(async (req) => {
       if (typeof premium === "number") totalPremium += premium;
     }
 
+    // Subtract "open" conversations (bot hasn't engaged yet) from totals
+    const openConversations =
+      externalMetrics?.byStatus?.open ??
+      externalMetrics?.openConversations ??
+      0;
+    const engagedConversations = Math.max(
+      0,
+      (externalMetrics?.totalConversations ?? 0) - openConversations,
+    );
+
     return jsonResponse({
       activeBots: activeBots ?? 0,
-      totalConversations: externalMetrics?.totalConversations ?? 0,
+      totalConversations: engagedConversations,
       totalAppointments: externalMetrics?.totalAppointments ?? 0,
       totalAttributions,
       botConverted,
@@ -112,10 +122,8 @@ serve(async (req) => {
       totalPremium: Math.round(totalPremium * 100) / 100,
       bookingRate: externalMetrics?.bookingRate ?? 0,
       conversionRate:
-        externalMetrics?.totalConversations > 0
-          ? Math.round(
-              (totalAttributions / externalMetrics.totalConversations) * 10000,
-            ) / 100
+        engagedConversations > 0
+          ? Math.round((totalAttributions / engagedConversations) * 10000) / 100
           : 0,
       timeline: externalMetrics?.timeline ?? [],
     });
