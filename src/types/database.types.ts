@@ -3329,6 +3329,63 @@ export type Database = {
           },
         ];
       };
+      feature_spotlights: {
+        Row: {
+          accent_color: string;
+          created_at: string;
+          created_by: string | null;
+          cta_link: string;
+          cta_text: string;
+          description: string | null;
+          hero_icon: string;
+          highlights: Json;
+          id: string;
+          is_active: boolean;
+          logos: Json;
+          priority: number;
+          subtitle: string | null;
+          target_audience: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          accent_color?: string;
+          created_at?: string;
+          created_by?: string | null;
+          cta_link?: string;
+          cta_text?: string;
+          description?: string | null;
+          hero_icon?: string;
+          highlights?: Json;
+          id?: string;
+          is_active?: boolean;
+          logos?: Json;
+          priority?: number;
+          subtitle?: string | null;
+          target_audience?: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          accent_color?: string;
+          created_at?: string;
+          created_by?: string | null;
+          cta_link?: string;
+          cta_text?: string;
+          description?: string | null;
+          hero_icon?: string;
+          highlights?: Json;
+          id?: string;
+          is_active?: boolean;
+          logos?: Json;
+          priority?: number;
+          subtitle?: string | null;
+          target_audience?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       global_expense_categories: {
         Row: {
           category_type: string;
@@ -11920,6 +11977,35 @@ export type Database = {
           },
         ];
       };
+      user_spotlight_views: {
+        Row: {
+          id: string;
+          spotlight_id: string;
+          user_id: string;
+          viewed_at: string;
+        };
+        Insert: {
+          id?: string;
+          spotlight_id: string;
+          user_id: string;
+          viewed_at?: string;
+        };
+        Update: {
+          id?: string;
+          spotlight_id?: string;
+          user_id?: string;
+          viewed_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_spotlight_views_spotlight_id_fkey";
+            columns: ["spotlight_id"];
+            isOneToOne: false;
+            referencedRelation: "feature_spotlights";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       user_subscription_addons: {
         Row: {
           addon_id: string;
@@ -14111,7 +14197,7 @@ export type Database = {
       cleanup_expired_evaluation_logs: { Args: never; Returns: number };
       cleanup_expired_invitations: { Args: never; Returns: number };
       cleanup_instagram_jobs: {
-        Args: { p_older_than?: unknown };
+        Args: { p_older_than?: string };
         Returns: number;
       };
       cleanup_old_audit_logs: {
@@ -17075,6 +17161,7 @@ export type Database = {
       chargeback_status: "pending" | "resolved" | "disputed";
       commission_status:
         | "pending"
+        | "unpaid"
         | "paid"
         | "reversed"
         | "disputed"
@@ -17405,6 +17492,7 @@ export const Constants = {
       chargeback_status: ["pending", "resolved", "disputed"],
       commission_status: [
         "pending",
+        "unpaid",
         "paid",
         "reversed",
         "disputed",

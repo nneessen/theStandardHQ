@@ -17,13 +17,13 @@ import { PlansOverview } from "./PlansOverview";
 import { FeatureAssignmentMatrix } from "./FeatureAssignmentMatrix";
 import { AddonsManagementPanel } from "./AddonsManagementPanel";
 import { TemporaryAccessSettings } from "./TemporaryAccessSettings";
-import { AnnouncementFeaturesEditor } from "./AnnouncementFeaturesEditor";
+import { SpotlightManager } from "./SpotlightManager";
 import {
   useAdminSubscriptionPlans,
   useAdminSubscriptionAddons,
 } from "@/hooks/admin";
 
-type AdminTab = "plans" | "features" | "addons" | "access" | "announcement";
+type AdminTab = "plans" | "features" | "addons" | "access" | "spotlights";
 
 export function AdminBillingPanel() {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,7 +39,7 @@ export function AdminBillingPanel() {
     { id: "features", label: "Features", icon: Check },
     { id: "addons", label: "Add-ons", icon: Package },
     { id: "access", label: "Temp Access", icon: Clock },
-    { id: "announcement", label: "Announcement", icon: Sparkles },
+    { id: "spotlights", label: "Spotlights", icon: Sparkles },
   ];
 
   return (
@@ -102,9 +102,7 @@ export function AdminBillingPanel() {
 
               {activeTab === "access" && <TemporaryAccessSettings />}
 
-              {activeTab === "announcement" && activePlans.length > 0 && (
-                <AnnouncementFeaturesEditor plans={activePlans} />
-              )}
+              {activeTab === "spotlights" && <SpotlightManager />}
             </div>
           </div>
         </Collapsible.Content>

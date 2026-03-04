@@ -43,3 +43,13 @@ export {
   type TemporaryAccessConfig,
   type SubscriptionSettings,
 } from "./subscriptionSettingsService";
+
+// Spotlight service exports
+export {
+  spotlightService,
+  type FeatureSpotlight,
+  type SpotlightHighlight,
+  type CreateSpotlightParams,
+  type UpdateSpotlightParams,
+  type UserSpotlightView,
+} from "./spotlightService";

@@ -4,3 +4,4 @@ export * from "./useUsersView";
 export * from "./useMigration";
 export * from "./useToggleUserUWAccess";
 export * from "./useAdminSubscription";
+export * from "./useAdminSpotlights";

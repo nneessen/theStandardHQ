@@ -9,7 +9,12 @@ import { logger } from "./services/base/logger";
 import { ApprovalGuard } from "./components/auth/ApprovalGuard";
 import { CookieConsentBanner } from "./features/legal";
 import { getDisplayName } from "./types/user.types";
-import { useSubscription, useTemporaryAccessCheck } from "./hooks/subscription";
+import {
+  useSubscription,
+  useTemporaryAccessCheck,
+  useFeatureSpotlight,
+} from "./hooks/subscription";
+import { FeatureSpotlightDialog } from "./components/subscription/FeatureSpotlightDialog";
 import { PublicJoinPage } from "./features/recruiting/pages/PublicJoinPage";
 import { PublicLandingPage } from "./features/landing";
 import { RecruitHeader } from "./components/layout/RecruitHeader";
@@ -117,6 +122,7 @@ function AuthenticatedApp() {
     user?.email,
   );
   const shouldHideSidebar = false; // Always show sidebar
+  const { spotlight, dismiss: dismissSpotlight } = useFeatureSpotlight();
 
   const handleLogout = async () => {
     if (window.confirm("Are you sure you want to logout?")) {
@@ -182,6 +188,13 @@ function AuthenticatedApp() {
       <>
         <Toaster />
         <CookieConsentBanner />
+        {spotlight && (
+          <FeatureSpotlightDialog
+            spotlight={spotlight}
+            open={!!spotlight}
+            onDismiss={dismissSpotlight}
+          />
+        )}
         <ImoProvider>
           <div className="min-h-screen bg-[#0a0a0a]">
             <RecruitHeader
@@ -209,6 +222,13 @@ function AuthenticatedApp() {
     <>
       <Toaster />
       <CookieConsentBanner />
+      {spotlight && (
+        <FeatureSpotlightDialog
+          spotlight={spotlight}
+          open={!!spotlight}
+          onDismiss={dismissSpotlight}
+        />
+      )}
       <ImoProvider>
         <div className="flex min-h-screen flex-col">
           {shouldHideSidebar ? (

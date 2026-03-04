@@ -2,7 +2,11 @@
 
 export { useSubscription, subscriptionKeys } from "./useSubscription";
 export { useSubscriptionPlans } from "./useSubscriptionPlans";
-export { useSubscriptionAnnouncement } from "./useSubscriptionAnnouncement";
+export { useFeatureSpotlight, spotlightKeys } from "./useFeatureSpotlight";
+export type {
+  FeatureSpotlight,
+  SpotlightHighlight,
+} from "@/services/subscription";
 export { useUsageTracking } from "./useUsageTracking";
 export {
   useFeatureAccess,
