@@ -11,8 +11,12 @@ import type { AgentMonitoringResponse } from "@/types/chat-bot-monitoring";
 export const chatBotKeys = {
   all: ["chat-bot"] as const,
   agent: () => [...chatBotKeys.all, "agent"] as const,
-  conversations: (params: { page: number; limit: number; status?: string }) =>
-    [...chatBotKeys.all, "conversations", params] as const,
+  conversations: (params: {
+    page: number;
+    limit: number;
+    status?: string;
+    search?: string;
+  }) => [...chatBotKeys.all, "conversations", params] as const,
   messages: (conversationId: string, params: { page: number; limit: number }) =>
     [...chatBotKeys.all, "messages", conversationId, params] as const,
   appointments: (params: { page: number; limit: number }) =>
@@ -248,14 +252,16 @@ export function useChatBotConversations(
   limit: number,
   status?: string,
   enabled = true,
+  search?: string,
 ) {
   return useQuery<PaginatedResponse<ChatBotConversation>, Error>({
-    queryKey: chatBotKeys.conversations({ page, limit, status }),
+    queryKey: chatBotKeys.conversations({ page, limit, status, search }),
     queryFn: () =>
       chatBotApi<PaginatedResponse<ChatBotConversation>>("get_conversations", {
         page,
         limit,
         status,
+        search,
       }),
     staleTime: 10_000,
     enabled,

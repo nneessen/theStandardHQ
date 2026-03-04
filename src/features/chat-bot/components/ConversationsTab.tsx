@@ -1,15 +1,18 @@
 // src/features/chat-bot/components/ConversationsTab.tsx
-// Conversation list with message thread viewer
+// Conversation list with search, filters, pagination, and message thread viewer
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   MessageSquare,
   ChevronLeft,
   ChevronRight,
   Loader2,
   RefreshCw,
+  Search,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -45,23 +48,36 @@ const STATUS_OPTIONS = [
 export function ConversationsTab() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("all");
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedConv, setSelectedConv] = useState<ChatBotConversation | null>(
     null,
   );
   const limit = 20;
 
+  // Debounce search input (400ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchInput.trim());
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchInput]);
+
   const { data, isLoading, refetch } = useChatBotConversations(
     page,
     limit,
     status === "all" ? undefined : status,
+    true,
+    debouncedSearch || undefined,
   );
 
-  // Lightweight query to get open conversation count (only when viewing "all")
+  // Lightweight query to get open conversation count (only when viewing "all" with no search)
   const { data: openCountData } = useChatBotConversations(
     1,
     1,
     "open",
-    status === "all",
+    status === "all" && !debouncedSearch,
   );
 
   // Auto-refresh every 10 seconds
@@ -74,14 +90,21 @@ export function ConversationsTab() {
 
   const conversations = data?.data || [];
   const total = data?.total || 0;
-  const openCount = status === "all" ? (openCountData?.total ?? 0) : 0;
+  const openCount =
+    status === "all" && !debouncedSearch ? (openCountData?.total ?? 0) : 0;
   const engagedTotal = Math.max(0, total - openCount);
   const totalPages = Math.ceil(total / limit);
 
+  const clearSearch = useCallback(() => {
+    setSearchInput("");
+    setDebouncedSearch("");
+    setPage(1);
+  }, []);
+
   const formatTime = (dateStr: string | null | undefined) => {
-    if (!dateStr) return "—";
+    if (!dateStr) return "\u2014";
     const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return "—";
+    if (isNaN(d.getTime())) return "\u2014";
     return d.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -93,8 +116,8 @@ export function ConversationsTab() {
 
   const leadLabel = (conv: ChatBotConversation) => {
     if (conv.leadName) return conv.leadName;
-    const id = conv.closeLeadId || "";
-    return id.replace(/^lead_/, "").slice(0, 12) + "…";
+    if (conv.leadPhone) return conv.leadPhone;
+    return "Unknown Lead";
   };
 
   const statusBadge = (s: string) => {
@@ -149,39 +172,56 @@ export function ConversationsTab() {
 
   return (
     <div className="space-y-2">
-      {/* Filters */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Select
-            value={status}
-            onValueChange={(v) => {
-              setStatus(v);
-              setPage(1);
-            }}
-          >
-            <SelectTrigger className="h-7 text-[11px] w-28">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_OPTIONS.map((opt) => (
-                <SelectItem
-                  key={opt.value}
-                  value={opt.value}
-                  className="text-[11px]"
-                >
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <span className="text-[10px] text-zinc-400">
-            {engagedTotal} conversation{engagedTotal !== 1 ? "s" : ""}
-          </span>
+      {/* Search + Filters */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400" />
+          <Input
+            placeholder="Search name or phone..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            className="h-7 text-[11px] pl-7 pr-7"
+          />
+          {searchInput && (
+            <button
+              onClick={clearSearch}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          )}
         </div>
+        <Select
+          value={status}
+          onValueChange={(v) => {
+            setStatus(v);
+            setPage(1);
+          }}
+        >
+          <SelectTrigger className="h-7 text-[11px] w-28">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {STATUS_OPTIONS.map((opt) => (
+              <SelectItem
+                key={opt.value}
+                value={opt.value}
+                className="text-[11px]"
+              >
+                {opt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <span className="text-[10px] text-zinc-400 whitespace-nowrap">
+          {debouncedSearch
+            ? `${total} result${total !== 1 ? "s" : ""}`
+            : `${engagedTotal} conversation${engagedTotal !== 1 ? "s" : ""}`}
+        </span>
         <Button
           variant="ghost"
           size="sm"
-          className="h-6 px-2 text-[10px]"
+          className="h-6 px-2 text-[10px] ml-auto"
           onClick={() => refetch()}
         >
           <RefreshCw className="h-2.5 w-2.5 mr-1" />
@@ -218,11 +258,15 @@ export function ConversationsTab() {
                   <TableCell colSpan={3} className="py-8 text-center">
                     <MessageSquare className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
                     <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
-                      No conversations yet
+                      {debouncedSearch
+                        ? "No conversations match your search"
+                        : "No conversations yet"}
                     </p>
-                    <p className="text-[10px] text-zinc-500 dark:text-zinc-500">
-                      Conversations will appear when leads text in
-                    </p>
+                    {!debouncedSearch && (
+                      <p className="text-[10px] text-zinc-500 dark:text-zinc-500">
+                        Conversations will appear when leads text in
+                      </p>
+                    )}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -237,9 +281,9 @@ export function ConversationsTab() {
                         <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
                           {leadLabel(conv)}
                         </span>
-                        {(conv.leadPhone || conv.localPhone) && (
+                        {conv.leadName && conv.leadPhone && (
                           <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                            {conv.leadPhone || conv.localPhone}
+                            {conv.leadPhone}
                           </p>
                         )}
                       </div>

@@ -350,6 +350,7 @@ serve(async (req) => {
         if (params.page) qs.set("page", String(params.page));
         if (params.limit) qs.set("limit", String(params.limit));
         if (params.status) qs.set("status", String(params.status));
+        if (params.search) qs.set("search", String(params.search));
         const queryString = qs.toString() ? `?${qs.toString()}` : "";
         const res = await callChatBotApi(
           "GET",
@@ -362,7 +363,7 @@ serve(async (req) => {
         const pagination = meta?.pagination || {};
         return jsonResponse({
           data: Array.isArray(payload) ? payload : [],
-          total: pagination.total ?? 0,
+          total: pagination.totalItems ?? pagination.total ?? 0,
           page: pagination.page ?? 1,
           limit: pagination.limit ?? 20,
         });
@@ -388,7 +389,7 @@ serve(async (req) => {
         const pagination = meta?.pagination || {};
         return jsonResponse({
           data: Array.isArray(payload) ? payload : [],
-          total: pagination.total ?? 0,
+          total: pagination.totalItems ?? pagination.total ?? 0,
           page: pagination.page ?? 1,
           limit: pagination.limit ?? 50,
         });
@@ -461,6 +462,8 @@ serve(async (req) => {
             scheduledAt:
               item.scheduledAt ||
               item.scheduled_at ||
+              item.startAt ||
+              item.start_at ||
               item.start_time ||
               item.startTime ||
               item.event_start ||
@@ -482,7 +485,11 @@ serve(async (req) => {
           };
         });
         const pagination = meta?.pagination || {};
-        const total = pagination.total ?? meta?.total ?? normalizedItems.length;
+        const total =
+          pagination.totalItems ??
+          pagination.total ??
+          meta?.total ??
+          normalizedItems.length;
         return jsonResponse({
           data: normalizedItems,
           total,
