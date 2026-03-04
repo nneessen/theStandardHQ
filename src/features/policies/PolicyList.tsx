@@ -295,7 +295,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
     updateCommissionStatus(
       {
         commissionId: commission.id,
-        status: newStatus as "pending" | "paid" | "charged_back",
+        status: newStatus as "pending" | "unpaid" | "paid" | "charged_back",
         policyId: policy.id,
       },
       {
@@ -1087,6 +1087,9 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                               policyCommission.status === "pending" &&
                                 "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800",
                               (policyCommission.status as string) ===
+                                "unpaid" &&
+                                "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800",
+                              (policyCommission.status as string) ===
                                 "earned" &&
                                 "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800",
                               policyCommission.status === "charged_back" &&
@@ -1097,6 +1100,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="unpaid">Unpaid</SelectItem>
                             {/* Display-only state used by some existing workflows (e.g. reinstatement) */}
                             <SelectItem value="earned" disabled>
                               Earned

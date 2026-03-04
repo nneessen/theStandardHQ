@@ -7,7 +7,7 @@ import { supabase } from "../../services/base/supabase";
 
 interface UpdateCommissionStatusParams {
   commissionId: string;
-  status: "pending" | "paid" | "charged_back";
+  status: "pending" | "unpaid" | "paid" | "charged_back";
   policyId?: string;
 }
 
@@ -70,8 +70,9 @@ export const useUpdateCommissionStatus = () => {
         updateData.chargeback_reason = null;
         // Explicitly set payment_date
         updateData.payment_date = new Date().toISOString();
-      } else if (status === "pending") {
+      } else if (status === "pending" || status === "unpaid") {
         // Not yet earned - reset months_paid to 0
+        // "pending" = policy under review, "unpaid" = policy approved but carrier hasn't paid
         updateData.months_paid = 0;
         // Clear chargeback fields (in case transitioning from cancelled)
         updateData.chargeback_amount = 0;

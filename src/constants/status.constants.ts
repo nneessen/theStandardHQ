@@ -7,6 +7,7 @@
 
 export const COMMISSION_STATUS = {
   PENDING: "pending",
+  UNPAID: "unpaid",
   PAID: "paid",
   REVERSED: "reversed",
   DISPUTED: "disputed",
@@ -22,6 +23,7 @@ export const COMMISSION_STATUS_CONFIG: Record<
   { label: string; color: string }
 > = {
   pending: { label: "Pending", color: "amber" },
+  unpaid: { label: "Unpaid", color: "orange" },
   paid: { label: "Paid", color: "emerald" },
   reversed: { label: "Reversed", color: "orange" },
   disputed: { label: "Disputed", color: "yellow" },

@@ -111,6 +111,7 @@ export type CommissionType =
  */
 export type CommissionStatus =
   | "pending"
+  | "unpaid"
   | "paid"
   | "reversed"
   | "disputed"

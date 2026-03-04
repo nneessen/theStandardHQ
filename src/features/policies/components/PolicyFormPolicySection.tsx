@@ -26,6 +26,7 @@ interface PolicyFormPolicySectionProps {
   policyId?: string;
   annualPremium: number;
   expectedCommission: number;
+  productCommissionRates: Record<string, number>;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectChange: (name: string, value: string) => void;
 }
@@ -38,6 +39,7 @@ export const PolicyFormPolicySection: React.FC<
   policyId,
   annualPremium,
   expectedCommission,
+  productCommissionRates,
   onInputChange,
   onSelectChange,
 }) => {
@@ -303,12 +305,50 @@ export const PolicyFormPolicySection: React.FC<
                   ${annualPremium.toFixed(2)}
                 </strong>
               </div>
-              <div className="flex justify-between items-center text-[11px]">
-                <span className="text-muted-foreground">Commission Rate</span>
-                <strong className="text-foreground font-semibold">
-                  {formData.commissionPercentage.toFixed(2)}%
-                </strong>
-              </div>
+              {(() => {
+                const baseRate =
+                  formData.productId &&
+                  productCommissionRates[formData.productId]
+                    ? productCommissionRates[formData.productId] * 100
+                    : formData.commissionPercentage;
+                const effectiveRate = formData.commissionPercentage;
+                const hasTermAdjustment =
+                  Math.abs(baseRate - effectiveRate) > 0.001;
+
+                if (hasTermAdjustment) {
+                  return (
+                    <>
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-muted-foreground">
+                          Product Comp
+                        </span>
+                        <strong className="text-foreground font-semibold">
+                          {baseRate.toFixed(2)}%
+                        </strong>
+                      </div>
+                      <div className="flex justify-between items-center text-[11px]">
+                        <span className="text-muted-foreground text-[10px]">
+                          Effective Rate (term-adjusted)
+                        </span>
+                        <strong className="text-amber-600 dark:text-amber-400 font-semibold">
+                          {effectiveRate.toFixed(2)}%
+                        </strong>
+                      </div>
+                    </>
+                  );
+                }
+
+                return (
+                  <div className="flex justify-between items-center text-[11px]">
+                    <span className="text-muted-foreground">
+                      Commission Rate
+                    </span>
+                    <strong className="text-foreground font-semibold">
+                      {baseRate.toFixed(2)}%
+                    </strong>
+                  </div>
+                );
+              })()}
               <div className="flex justify-between items-center text-[11px] pt-1.5 border-t border-zinc-100 dark:border-zinc-700/40">
                 <span className="text-muted-foreground">
                   Expected Advance (9 mo)

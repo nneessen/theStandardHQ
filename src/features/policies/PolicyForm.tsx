@@ -14,7 +14,11 @@ import {
   calculateExpectedCommission,
 } from "../../utils/policyCalculations";
 
-import { usePolicyForm, createInitialFormData, isToday } from "./hooks/usePolicyForm";
+import {
+  usePolicyForm,
+  createInitialFormData,
+  isToday,
+} from "./hooks/usePolicyForm";
 import {
   usePolicyCommission,
   useUserContractLevel,
@@ -54,7 +58,8 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
 
   // Submit date confirmation dialog state
   const [showDateConfirm, setShowDateConfirm] = useState(false);
-  const [pendingSubmission, setPendingSubmission] = useState<NewPolicyForm | null>(null);
+  const [pendingSubmission, setPendingSubmission] =
+    useState<NewPolicyForm | null>(null);
 
   // Combined loading state - true if either local or parent says we're loading
   const isLoading = isSubmitting || isPending;
@@ -305,6 +310,7 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
           policyId={policyId}
           annualPremium={annualPremium}
           expectedCommission={expectedCommission}
+          productCommissionRates={productCommissionRates}
           onInputChange={handleInputChange}
           onSelectChange={handleSelectChange}
         />
