@@ -8,15 +8,24 @@ echo "============================================"
 echo "  App Validation"
 echo "============================================"
 
+# 0. Edge function import pin check
+echo ""
+echo "[0/4] Checking edge function imports are pinned..."
+if ./scripts/check-pinned-imports.sh; then
+  echo "  ✅ All esm.sh imports pinned"
+else
+  echo "  ❌ UNPINNED IMPORTS FOUND — fix before deploying!"
+fi
+
 # 1. Build check
 echo ""
-echo "[1/3] Running production build..."
+echo "[1/4] Running production build..."
 npm run build 2>&1 | tail -5
 echo "  ✅ Build passed"
 
 # 2. Mock import check
 echo ""
-echo "[2/3] Checking for mock imports in production code..."
+echo "[2/4] Checking for mock imports in production code..."
 MOCK_HITS=$(grep -r "mock\|Mock\|MOCK" src/ --include="*.ts" --include="*.tsx" \
   -l 2>/dev/null | grep -v "__test__\|__mock__\|.test.\|.spec.\|test-utils\|DEV_FEATURE_MODE" || true)
 if [ -n "$MOCK_HITS" ]; then
@@ -28,7 +37,7 @@ fi
 
 # 3. Dev server smoke test
 echo ""
-echo "[3/3] Dev server smoke test..."
+echo "[3/4] Dev server smoke test..."
 npm run dev -- --port 4199 &
 DEV_PID=$!
 sleep 5
