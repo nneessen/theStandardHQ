@@ -189,7 +189,7 @@ export interface HierarchyStats {
   total_override_income_ytd: number;
 
   // Team performance metrics (for selected period)
-  team_ap_total: number; // Sum of ALL submissions (any status) with effective_date in period
+  team_ap_total: number; // Sum of ALL submissions (any status) with submit_date in period
   team_ip_total: number; // Sum of active/issued policies with effective_date in period
   team_policies_count: number; // Count of all policies in period
   avg_premium_per_agent: number; // team_ap_total / active_agents
@@ -206,13 +206,13 @@ export interface HierarchyStats {
   pending_invitations: number; // Count from invitations table
 
   // Pending AP Submission (policies not yet active)
-  team_pending_ap_total: number; // Sum of AP for status='pending' with effective_date in period
+  team_pending_ap_total: number; // Sum of AP for status='pending' with submit_date in period
   team_pending_policies_count: number; // Count of pending policies in period
 
   // Team Pace Metrics (AP-based)
   // Monthly Pace
   team_monthly_ap_target: number; // Sum of all team members' monthly AP targets
-  team_fixed_monthly_ap: number; // Sum of all submissions with effective_date in current month up to today
+  team_fixed_monthly_ap: number; // Sum of all submissions with submit_date in current month up to today
   team_monthly_pace_percentage: number; // (actual AP MTD / expected AP at this point in month) * 100
   team_monthly_pace_status: "ahead" | "on_pace" | "behind";
   team_monthly_projected: number; // Projected month-end AP at current pace

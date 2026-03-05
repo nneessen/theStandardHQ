@@ -538,35 +538,37 @@ class HierarchyService {
         // O(1) lookup from pre-grouped Map
         const policies = policiesByUserId.get(userId) || [];
 
-        // All policies with effective_date in range (any status = Total AP)
-        const periodPolicies = policies.filter((p) => {
-          if (!p.effective_date) return false;
-          return (
-            p.effective_date >= rangeStartStr && p.effective_date <= rangeEndStr
-          );
+        // AP is submission-based: all policies with submit_date in selected range (any status)
+        const submittedPolicies = policies.filter((p) => {
+          if (!p.submit_date) return false;
+          return p.submit_date >= rangeStartStr && p.submit_date <= rangeEndStr;
         });
 
         // Total AP: sum of ALL submissions in period
-        const agentAP = periodPolicies.reduce((sum, p) => {
+        const agentAP = submittedPolicies.reduce((sum, p) => {
           const val = parseFloat(String(p.annual_premium ?? 0));
           return sum + (isNaN(val) ? 0 : val);
         }, 0);
 
         teamAPTotal += agentAP;
-        teamPoliciesCount += periodPolicies.length;
+        teamPoliciesCount += submittedPolicies.length;
 
         // IP: lifecycle_status = 'active' + effective_date in range
-        const activePolicies = periodPolicies.filter(
-          (p) => p.lifecycle_status === "active",
-        );
+        const activePolicies = policies.filter((p) => {
+          if (p.lifecycle_status !== "active") return false;
+          if (!p.effective_date) return false;
+          return (
+            p.effective_date >= rangeStartStr && p.effective_date <= rangeEndStr
+          );
+        });
         const agentIP = activePolicies.reduce((sum, p) => {
           const val = parseFloat(String(p.annual_premium ?? 0));
           return sum + (isNaN(val) ? 0 : val);
         }, 0);
         teamIPTotal += agentIP;
 
-        // Pending AP: status = 'pending' + effective_date in range
-        const pendingPolicies = periodPolicies.filter(
+        // Pending AP: status = 'pending' + submit_date in range
+        const pendingPolicies = submittedPolicies.filter(
           (p) => p.status === "pending",
         );
         const pendingAP = pendingPolicies.reduce((sum, p) => {
@@ -701,12 +703,10 @@ class HierarchyService {
       for (const userId of allTeamUserIds) {
         const policies = policiesByUserId.get(userId) || [];
 
-        // YTD: ALL policies with effective_date in year range (any status)
+        // YTD: ALL policies with submit_date in year range (any status)
         const ytdPolicies = policies.filter((p) => {
-          if (!p.effective_date) return false;
-          return (
-            p.effective_date >= ytdStartStr && p.effective_date <= todayStr
-          );
+          if (!p.submit_date) return false;
+          return p.submit_date >= ytdStartStr && p.submit_date <= todayStr;
         });
 
         const ytdAP = ytdPolicies.reduce((sum, p) => {
@@ -719,7 +719,7 @@ class HierarchyService {
 
       // ==========================================
       // Calculate FIXED MTD AP for monthly pace (not affected by selected time period)
-      // All submissions for current month (any status)
+      // All submissions for current month by submit_date (any status)
       // ==========================================
       let fixedMonthlyAPTotal = 0;
       const pad = (n: number) => String(n).padStart(2, "0");
@@ -728,12 +728,10 @@ class HierarchyService {
       for (const userId of allTeamUserIds) {
         const policies = policiesByUserId.get(userId) || [];
 
-        // MTD: ALL policies with effective_date in current month (any status)
+        // MTD: ALL policies with submit_date in current month (any status)
         const mtdPolicies = policies.filter((p) => {
-          if (!p.effective_date) return false;
-          return (
-            p.effective_date >= fixedMtdStartStr && p.effective_date <= todayStr
-          );
+          if (!p.submit_date) return false;
+          return p.submit_date >= fixedMtdStartStr && p.submit_date <= todayStr;
         });
 
         fixedMonthlyAPTotal += mtdPolicies.reduce((sum, p) => {

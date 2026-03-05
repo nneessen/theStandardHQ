@@ -410,7 +410,7 @@ export function TeamMetricsCard({
                         {formatCurrency(teamMonthlyAPTarget)}
                       </span>
                     </div>
-                    <div title="All submissions this month with effective date up to today (any status)">
+                    <div title="All submissions this month with submit date up to today (any status)">
                       <span className="text-zinc-500 dark:text-zinc-400">
                         MTD:{" "}
                       </span>
