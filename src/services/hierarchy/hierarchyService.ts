@@ -26,6 +26,7 @@ import type {
 } from "../../types/hierarchy.types";
 import { NotFoundError, ValidationError } from "../../errors/ServiceErrors";
 import { userTargetsRepository } from "../targets/UserTargetsRepository";
+import { parseLocalDate } from "../../lib/date";
 
 /**
  * Service layer for hierarchy operations
@@ -1039,47 +1040,84 @@ class HierarchyService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase response type
   async getAgentCommissions(agentId: string): Promise<any> {
     try {
-      const commissions =
-        await this.commissionRepo.findWithPolicyByUserId(agentId);
-
-      const metrics = commissions.reduce(
-        (acc, comm) => {
-          const amount = parseFloat(String(comm.amount) || "0");
-          const earned = parseFloat(String(comm.earned_amount) || "0");
-          const chargeback = parseFloat(String(comm.chargeback_amount) || "0");
-          const advanceMonths = comm.advance_months || 0;
-          // Calculate advance amount: if advance_months > 0, the full amount was advanced
-          const advance = advanceMonths > 0 ? amount : 0;
-
-          acc.totalEarned += earned;
-          if (comm.status === "pending") acc.pending += amount;
-          if (comm.status === "paid") acc.paid += amount;
-          acc.advances += advance;
-          acc.chargebacks += chargeback;
-
-          return acc;
-        },
-        { totalEarned: 0, pending: 0, paid: 0, advances: 0, chargebacks: 0 },
+      const commissions = await this.commissionRepo.findWithPolicyByUserId(
+        agentId,
       );
 
-      // Calculate unearned = advances - totalEarned
-      const unearned = Math.max(0, metrics.advances - metrics.totalEarned);
+      const enrichedCommissions = commissions.map((commission) => {
+        const amount = parseFloat(String(commission.amount) || "0");
+        const storedEarned = parseFloat(
+          String(commission.earned_amount) || "0",
+        );
+        const chargebackAmount = parseFloat(
+          String(commission.chargeback_amount) || "0",
+        );
+        const advanceMonths = commission.advance_months || 9;
+
+        const earnedBreakdown = this.calculateEarnedBreakdown({
+          amount,
+          advanceMonths,
+          storedMonthsPaid: commission.months_paid || 0,
+          effectiveDate: commission.policy?.effective_date || null,
+          lifecycleStatus: commission.policy?.lifecycle_status || null,
+          cancellationDate: commission.policy?.cancellation_date || null,
+        });
+
+        const earnedAmount =
+          earnedBreakdown.monthsPaid > 0
+            ? earnedBreakdown.earnedAmount
+            : storedEarned;
+
+        const unearnedAmount = Math.max(0, amount - earnedAmount);
+
+        return {
+          id: commission.id,
+          date: commission.created_at || new Date().toISOString(),
+          policyNumber: commission.policy?.policy_number || "N/A",
+          type: commission.type,
+          amount,
+          earnedAmount,
+          unearnedAmount,
+          monthsPaid: earnedBreakdown.monthsPaid,
+          advanceMonths,
+          chargebackAmount,
+          status: commission.status || "pending",
+        };
+      });
+
+      const metrics = enrichedCommissions.reduce(
+        (acc, commission) => {
+          acc.totalEarned += commission.earnedAmount;
+          acc.totalUnearned += commission.unearnedAmount;
+          if (commission.status === "pending") acc.pending += commission.amount;
+          if (commission.status === "paid") acc.paid += commission.amount;
+          if ((commission.advanceMonths || 0) > 0) {
+            acc.advances += commission.amount;
+          }
+          acc.chargebacks += commission.chargebackAmount;
+          return acc;
+        },
+        {
+          totalEarned: 0,
+          pending: 0,
+          paid: 0,
+          advances: 0,
+          chargebacks: 0,
+          totalUnearned: 0,
+        },
+      );
 
       return {
-        ...metrics,
-        unearned,
-        recent: commissions.slice(0, 10).map((c) => ({
-          id: c.id,
-          date: c.created_at || new Date().toISOString(),
-          policyNumber: c.policy?.policy_number || "N/A",
-          type: c.type,
-          amount: parseFloat(String(c.amount) || "0"),
-          earnedAmount: parseFloat(String(c.earned_amount) || "0"),
-          unearnedAmount: parseFloat(String(c.unearned_amount) || "0"),
-          monthsPaid: c.months_paid || 0,
-          advanceMonths: c.advance_months || 9,
-          status: c.status,
-        })),
+        totalEarned: metrics.totalEarned,
+        pending: metrics.pending,
+        paid: metrics.paid,
+        advances: metrics.advances,
+        chargebacks: metrics.chargebacks,
+        unearned: Math.max(
+          0,
+          Math.max(metrics.totalUnearned, metrics.advances - metrics.totalEarned),
+        ),
+        recent: enrichedCommissions,
       };
     } catch (error) {
       logger.error(
@@ -1345,6 +1383,66 @@ class HierarchyService {
       },
       {} as Record<string, number>,
     );
+  }
+
+  /**
+   * Calculate dynamic earned/unearned values based on policy life.
+   * Falls back to stored values when policy effective date is unavailable.
+   */
+  private calculateEarnedBreakdown(params: {
+    amount: number;
+    advanceMonths: number;
+    storedMonthsPaid: number;
+    effectiveDate: string | null;
+    lifecycleStatus: string | null;
+    cancellationDate: string | null;
+  }): { monthsPaid: number; earnedAmount: number; unearnedAmount: number } {
+    const normalizedAdvanceMonths = params.advanceMonths > 0 ? params.advanceMonths : 9;
+    let monthsPaid = Math.max(0, params.storedMonthsPaid || 0);
+
+    if (params.effectiveDate) {
+      const effectiveDate = parseLocalDate(params.effectiveDate);
+      const isClosedPolicy =
+        params.lifecycleStatus === "cancelled" ||
+        params.lifecycleStatus === "lapsed";
+
+      if (!isClosedPolicy || params.cancellationDate) {
+        const endDate =
+          isClosedPolicy && params.cancellationDate
+            ? parseLocalDate(params.cancellationDate)
+            : new Date();
+        const elapsedMonths = this.calculateElapsedMonths(effectiveDate, endDate);
+        monthsPaid = Math.max(monthsPaid, elapsedMonths);
+      }
+    }
+
+    const cappedMonthsPaid = Math.min(monthsPaid, normalizedAdvanceMonths);
+    const monthlyEarnRate = params.amount / normalizedAdvanceMonths;
+    const earnedAmount = monthlyEarnRate * cappedMonthsPaid;
+    const unearnedAmount = Math.max(0, params.amount - earnedAmount);
+
+    return {
+      monthsPaid: cappedMonthsPaid,
+      earnedAmount,
+      unearnedAmount,
+    };
+  }
+
+  /**
+   * Calculate completed months elapsed between dates.
+   */
+  private calculateElapsedMonths(startDate: Date, endDate: Date): number {
+    if (endDate < startDate) return 0;
+
+    let months =
+      (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+      (endDate.getMonth() - startDate.getMonth());
+
+    if (endDate.getDate() < startDate.getDate()) {
+      months -= 1;
+    }
+
+    return Math.max(0, months);
   }
 
   /**

@@ -36,7 +36,12 @@ export interface CommissionWithPolicy {
   status: string | null;
   type: string | null;
   created_at: string | null;
-  policy: { policy_number: string } | null;
+  policy: {
+    policy_number: string;
+    effective_date: string | null;
+    lifecycle_status: string | null;
+    cancellation_date: string | null;
+  } | null;
 }
 
 export class CommissionRepository extends BaseRepository<
@@ -194,7 +199,7 @@ export class CommissionRepository extends BaseRepository<
         .select(
           `
           *,
-          policy:policies(policy_number)
+          policy:policies(policy_number,effective_date,lifecycle_status,cancellation_date)
         `,
         )
         .eq("user_id", userId)

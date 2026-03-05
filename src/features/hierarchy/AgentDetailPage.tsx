@@ -1,6 +1,6 @@
 // src/features/hierarchy/AgentDetailPage.tsx
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useParams, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -18,6 +18,7 @@ import {
   MoreHorizontal,
   ChevronLeft,
   ChevronRight,
+  Trash2,
 } from "lucide-react";
 import {
   useAgentCommissions,
@@ -25,6 +26,7 @@ import {
   useAgentOverrides,
   useAgentPolicies,
   useTeamComparison,
+  invalidateHierarchyForNode,
 } from "@/hooks/hierarchy";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -53,8 +55,12 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-// eslint-disable-next-line no-restricted-imports
-import { hierarchyKeys } from "@/hooks/hierarchy/hierarchyKeys";
+import {
+  TimePeriodSwitcher,
+  PeriodNavigator,
+  DateRangeDisplay,
+} from "@/features/dashboard";
+import { getDateRange, isInDateRange, type TimePeriod } from "@/utils/dateRange";
 
 /** Type for policy objects returned from hierarchyService.getAgentPolicies */
 interface AgentPolicy {
@@ -83,10 +89,21 @@ interface AgentCommission {
   unearnedAmount?: number;
   monthsPaid?: number;
   advanceMonths?: number;
+  chargebackAmount?: number;
   status: string;
 }
 
+interface CommissionMetricsSummary {
+  advances: number;
+  earned: number;
+  unearned: number;
+  pending: number;
+  paid: number;
+  chargebacks: number;
+}
+
 const POLICIES_PER_PAGE = 15;
+const COMMISSIONS_PER_PAGE = 15;
 
 export function AgentDetailPage() {
   const { agentId } = useParams({ from: "/hierarchy/agent/$agentId" });
@@ -97,6 +114,9 @@ export function AgentDetailPage() {
     "policies" | "commissions" | "overrides" | "team"
   >("policies");
   const [policyPage, setPolicyPage] = useState(0);
+  const [commissionPage, setCommissionPage] = useState(0);
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>("MTD");
+  const [periodOffset, setPeriodOffset] = useState(0);
 
   // Fetch comprehensive agent data
   const { data: agentData, isLoading: loadingAgent } = useAgentDetails(
@@ -152,6 +172,23 @@ export function AgentDetailPage() {
     enabled: !!agentId,
   });
 
+  const dateRange = useMemo(
+    () => getDateRange(timePeriod, periodOffset),
+    [timePeriod, periodOffset],
+  );
+
+  const invalidateAgentHierarchyQueries = useCallback(() => {
+    if (!agentId) return;
+    invalidateHierarchyForNode(queryClient, agentId);
+    queryClient.invalidateQueries({ queryKey: ["policies"] });
+    queryClient.invalidateQueries({ queryKey: ["commissions"] });
+  }, [agentId, queryClient]);
+
+  const handleTimePeriodChange = useCallback((newPeriod: TimePeriod) => {
+    setTimePeriod(newPeriod);
+    setPeriodOffset(0);
+  }, []);
+
   // Policy status update mutation for upline editing
   const updatePolicyStatus = useMutation({
     mutationFn: async ({
@@ -164,13 +201,24 @@ export function AgentDetailPage() {
       return policyService.update(policyId, updates);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: hierarchyKeys.rollup(agentId, undefined, "agent-policies"),
-      });
+      invalidateAgentHierarchyQueries();
       toast.success("Policy updated");
     },
     onError: (error: Error) => {
       toast.error(`Failed to update policy: ${error.message}`);
+    },
+  });
+
+  const deletePolicyMutation = useMutation({
+    mutationFn: async (policyId: string) => {
+      await policyService.delete(policyId);
+    },
+    onSuccess: () => {
+      invalidateAgentHierarchyQueries();
+      toast.success("Policy deleted");
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to delete policy: ${error.message}`);
     },
   });
 
@@ -190,6 +238,163 @@ export function AgentDetailPage() {
     },
     [updatePolicyStatus],
   );
+
+  const handleDeletePolicy = useCallback(
+    (policyId: string, policyNumber: string) => {
+      if (
+        window.confirm(
+          `Delete policy ${policyNumber || "record"}? This action cannot be undone.`,
+        )
+      ) {
+        deletePolicyMutation.mutate(policyId);
+      }
+    },
+    [deletePolicyMutation],
+  );
+
+  // Calculate additional metrics
+  const policyList = useMemo<AgentPolicy[]>(
+    () => policies?.policies ?? [],
+    [policies?.policies],
+  );
+  const commissionList = useMemo<AgentCommission[]>(
+    () => commissions?.recent ?? [],
+    [commissions?.recent],
+  );
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const mtdPolicies = policyList.filter((p: AgentPolicy) => {
+    const pDate = new Date(p.submitDate || p.createdAt);
+    return (
+      pDate.getMonth() === currentMonth && pDate.getFullYear() === currentYear
+    );
+  });
+
+  const ytdPolicies = policyList.filter((p: AgentPolicy) => {
+    const pDate = new Date(p.submitDate || p.createdAt);
+    return pDate.getFullYear() === currentYear;
+  });
+
+  const mtdMetrics = {
+    policies: mtdPolicies.length,
+    premium: mtdPolicies.reduce(
+      (sum: number, p: AgentPolicy) => sum + (p.annualPremium || 0),
+      0,
+    ),
+  };
+
+  const ytdMetrics = {
+    policies: ytdPolicies.length,
+    premium: ytdPolicies.reduce(
+      (sum: number, p: AgentPolicy) => sum + (p.annualPremium || 0),
+      0,
+    ),
+  };
+
+  const filteredPolicies = useMemo(
+    () =>
+      policyList.filter((policy: AgentPolicy) =>
+        isInDateRange(policy.submitDate || policy.createdAt, dateRange),
+      ),
+    [policyList, dateRange],
+  );
+
+  const filteredCommissions = useMemo(
+    () =>
+      commissionList.filter((commission: AgentCommission) =>
+        isInDateRange(commission.date, dateRange),
+      ),
+    [commissionList, dateRange],
+  );
+
+  const totalPolicyPages = Math.max(
+    1,
+    Math.ceil(filteredPolicies.length / POLICIES_PER_PAGE),
+  );
+  const totalCommissionPages = Math.max(
+    1,
+    Math.ceil(filteredCommissions.length / COMMISSIONS_PER_PAGE),
+  );
+
+  useEffect(() => {
+    setPolicyPage((current) => Math.min(current, totalPolicyPages - 1));
+  }, [totalPolicyPages]);
+
+  useEffect(() => {
+    setCommissionPage((current) => Math.min(current, totalCommissionPages - 1));
+  }, [totalCommissionPages]);
+
+  useEffect(() => {
+    setPolicyPage(0);
+    setCommissionPage(0);
+  }, [timePeriod, periodOffset]);
+
+  useEffect(() => {
+    if (activeTab === "policies") {
+      setPolicyPage(0);
+    }
+    if (activeTab === "commissions") {
+      setCommissionPage(0);
+    }
+  }, [activeTab]);
+
+  const paginatedPolicies = filteredPolicies.slice(
+    policyPage * POLICIES_PER_PAGE,
+    (policyPage + 1) * POLICIES_PER_PAGE,
+  );
+
+  const paginatedCommissions = filteredCommissions.slice(
+    commissionPage * COMMISSIONS_PER_PAGE,
+    (commissionPage + 1) * COMMISSIONS_PER_PAGE,
+  );
+
+  const commissionMetrics = useMemo(
+    () =>
+      filteredCommissions.reduce(
+        (acc: CommissionMetricsSummary, commission: AgentCommission) => {
+          const amount = commission.amount || 0;
+          const earnedAmount = commission.earnedAmount || 0;
+          const unearnedAmount = commission.unearnedAmount || 0;
+          const chargebackAmount = commission.chargebackAmount || 0;
+          const advanceMonths = commission.advanceMonths || 0;
+
+          if (advanceMonths > 0) {
+            acc.advances += amount;
+          }
+          if (commission.status === "pending") {
+            acc.pending += amount;
+          }
+          if (commission.status === "paid") {
+            acc.paid += amount;
+          }
+          acc.earned += earnedAmount;
+          acc.unearned += unearnedAmount;
+          acc.chargebacks += chargebackAmount;
+          return acc;
+        },
+        {
+          advances: 0,
+          earned: 0,
+          unearned: 0,
+          pending: 0,
+          paid: 0,
+          chargebacks: 0,
+        },
+      ),
+    [filteredCommissions],
+  );
+
+  const agentOverrideEarnings = {
+    mtd: overrides?.agentEarnings?.mtd || overrides?.mtd || 0,
+    ytd: overrides?.agentEarnings?.ytd || overrides?.ytd || 0,
+  };
+
+  const viewerEarningsFromAgent = {
+    mtd: overrides?.viewerEarningsFromAgent?.mtd || 0,
+    ytd: overrides?.viewerEarningsFromAgent?.ytd || 0,
+  };
 
   if (loadingAgent) {
     return (
@@ -219,57 +424,6 @@ export function AgentDetailPage() {
       </div>
     );
   }
-
-  // Calculate additional metrics
-  const policyList = policies?.policies || [];
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
-  const mtdPolicies = policyList.filter((p: AgentPolicy) => {
-    const pDate = new Date(p.createdAt);
-    return (
-      pDate.getMonth() === currentMonth && pDate.getFullYear() === currentYear
-    );
-  });
-
-  const ytdPolicies = policyList.filter((p: AgentPolicy) => {
-    const pDate = new Date(p.createdAt);
-    return pDate.getFullYear() === currentYear;
-  });
-
-  const mtdMetrics = {
-    policies: mtdPolicies.length,
-    premium: mtdPolicies.reduce(
-      (sum: number, p: AgentPolicy) => sum + (p.annualPremium || 0),
-      0,
-    ),
-  };
-
-  const ytdMetrics = {
-    policies: ytdPolicies.length,
-    premium: ytdPolicies.reduce(
-      (sum: number, p: AgentPolicy) => sum + (p.annualPremium || 0),
-      0,
-    ),
-  };
-
-  const commissionMetrics = {
-    advances: commissions?.advances || 0,
-    earned: commissions?.totalEarned || 0,
-    unearned: commissions?.unearned || 0,
-    chargebacks: commissions?.chargebacks || 0,
-  };
-
-  const agentOverrideEarnings = {
-    mtd: overrides?.agentEarnings?.mtd || overrides?.mtd || 0,
-    ytd: overrides?.agentEarnings?.ytd || overrides?.ytd || 0,
-  };
-
-  const viewerEarningsFromAgent = {
-    mtd: overrides?.viewerEarningsFromAgent?.mtd || 0,
-    ytd: overrides?.viewerEarningsFromAgent?.ytd || 0,
-  };
 
   const agentName =
     agentData.first_name && agentData.last_name
@@ -453,16 +607,30 @@ export function AgentDetailPage() {
 
       {/* Content area */}
       <div className="flex-1 overflow-auto">
+        {(activeTab === "policies" || activeTab === "commissions") && (
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800 mb-2">
+            <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide shrink-0">
+              Date Filter
+            </div>
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap min-w-0">
+              <TimePeriodSwitcher
+                timePeriod={timePeriod}
+                onTimePeriodChange={handleTimePeriodChange}
+              />
+              <PeriodNavigator
+                timePeriod={timePeriod}
+                periodOffset={periodOffset}
+                onOffsetChange={setPeriodOffset}
+                dateRange={dateRange}
+              />
+              <DateRangeDisplay timePeriod={timePeriod} dateRange={dateRange} />
+            </div>
+          </div>
+        )}
+
         {/* Policies Tab */}
         {activeTab === "policies" &&
           (() => {
-            const totalPolicyPages = Math.ceil(
-              policyList.length / POLICIES_PER_PAGE,
-            );
-            const paginatedPolicies = policyList.slice(
-              policyPage * POLICIES_PER_PAGE,
-              (policyPage + 1) * POLICIES_PER_PAGE,
-            );
             return (
               <div className="space-y-2">
                 <div className="rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
@@ -506,13 +674,15 @@ export function AgentDetailPage() {
                             Loading policies...
                           </TableCell>
                         </TableRow>
-                      ) : policyList.length === 0 ? (
+                      ) : filteredPolicies.length === 0 ? (
                         <TableRow>
                           <TableCell
                             colSpan={9}
                             className="text-center text-[11px] text-zinc-500 dark:text-zinc-400 py-8"
                           >
-                            No policies found
+                            {policyList.length === 0
+                              ? "No policies found"
+                              : "No policies in selected date range"}
                           </TableCell>
                         </TableRow>
                       ) : (
@@ -653,6 +823,19 @@ export function AgentDetailPage() {
                                       )}
                                     </DropdownMenuSubContent>
                                   </DropdownMenuSub>
+                                  <DropdownMenuItem
+                                    className="text-[11px] text-red-600"
+                                    disabled={deletePolicyMutation.isPending}
+                                    onClick={() =>
+                                      handleDeletePolicy(
+                                        policy.id,
+                                        policy.policyNumber,
+                                      )
+                                    }
+                                  >
+                                    <Trash2 className="h-3 w-3 mr-1.5" />
+                                    Delete Policy
+                                  </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </TableCell>
@@ -666,7 +849,7 @@ export function AgentDetailPage() {
                 {totalPolicyPages > 1 && (
                   <div className="flex items-center justify-between px-1">
                     <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                      {policyList.length} policies
+                      {filteredPolicies.length} policies
                     </span>
                     <div className="flex items-center gap-1">
                       <Button
@@ -782,18 +965,19 @@ export function AgentDetailPage() {
                         Loading commissions...
                       </TableCell>
                     </TableRow>
-                  ) : !commissions?.recent ||
-                    commissions.recent.length === 0 ? (
+                  ) : filteredCommissions.length === 0 ? (
                     <TableRow>
                       <TableCell
                         colSpan={8}
                         className="text-center text-[11px] text-zinc-500 dark:text-zinc-400 py-8"
                       >
-                        No commissions found
+                        {commissionList.length === 0
+                          ? "No commissions found"
+                          : "No commissions in selected date range"}
                       </TableCell>
                     </TableRow>
                   ) : (
-                    commissions.recent.map((commission: AgentCommission) => (
+                    paginatedCommissions.map((commission: AgentCommission) => (
                       <TableRow
                         key={commission.id}
                         className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/50"
@@ -840,6 +1024,36 @@ export function AgentDetailPage() {
                 </TableBody>
               </Table>
             </div>
+            {totalCommissionPages > 1 && (
+              <div className="flex items-center justify-between px-1">
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  {filteredCommissions.length} commissions
+                </span>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    disabled={commissionPage === 0}
+                    onClick={() => setCommissionPage((p) => p - 1)}
+                  >
+                    <ChevronLeft className="h-3 w-3" />
+                  </Button>
+                  <span className="text-[10px] text-zinc-600 dark:text-zinc-400 min-w-[4rem] text-center">
+                    {commissionPage + 1} / {totalCommissionPages}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0"
+                    disabled={commissionPage >= totalCommissionPages - 1}
+                    onClick={() => setCommissionPage((p) => p + 1)}
+                  >
+                    <ChevronRight className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
