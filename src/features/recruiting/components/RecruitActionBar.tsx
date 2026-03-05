@@ -34,10 +34,12 @@ import {
   Trash2,
   Undo2,
   Hash,
+  GraduationCap,
 } from "lucide-react";
 import { INVITATION_STATUS_LABELS } from "@/types/recruiting.types";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { GraduateToAgentDialog } from "@/features/admin";
 import type {
   RecruitEntity,
   RecruitPermissions,
@@ -399,6 +401,7 @@ export function RecruitActionBar({
   const [unblockDialogOpen, setUnblockDialogOpen] = useState(false);
   const [revertDialogOpen, setRevertDialogOpen] = useState(false);
   const [cancelInviteDialogOpen, setCancelInviteDialogOpen] = useState(false);
+  const [graduateDialogOpen, setGraduateDialogOpen] = useState(false);
 
   if (!permissions.canManage) return null;
 
@@ -496,9 +499,27 @@ export function RecruitActionBar({
                 }
               }}
             />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setGraduateDialogOpen(true)}
+              className="h-6 text-[10px] px-2 text-emerald-600 hover:text-emerald-700 border-emerald-200 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:text-emerald-300 dark:border-emerald-800 dark:hover:bg-emerald-900/20 flex-shrink-0"
+            >
+              <GraduationCap className="h-3 w-3 mr-0.5" />
+              Graduate
+            </Button>
           </div>
         )}
       </div>
+
+      {/* Graduate to Agent Dialog */}
+      {graduateDialogOpen && (
+        <GraduateToAgentDialog
+          recruit={recruit}
+          open={graduateDialogOpen}
+          onOpenChange={setGraduateDialogOpen}
+        />
+      )}
 
       {/* Advance Phase Confirmation */}
       <AlertDialog open={advanceDialogOpen} onOpenChange={setAdvanceDialogOpen}>
