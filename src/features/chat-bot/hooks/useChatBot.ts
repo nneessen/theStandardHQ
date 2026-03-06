@@ -475,6 +475,7 @@ export function useUpdateBotConfig() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (config: {
+      name?: string;
       botEnabled?: boolean;
       timezone?: string;
       autoOutreachLeadSources?: string[];

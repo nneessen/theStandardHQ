@@ -22,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { ConnectionCard } from "./ConnectionCard";
@@ -245,6 +244,77 @@ export function SetupTab() {
 
   return (
     <div className="space-y-3">
+      {/* ═══════════ BOT POWER — full-width enable/disable card ═══════════ */}
+      {agent && !agent.botEnabled ? (
+        <button
+          type="button"
+          disabled={updateConfig.isPending}
+          onClick={handleToggleBot}
+          className="group w-full relative overflow-hidden rounded-xl border-2 border-amber-400 dark:border-amber-500 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 dark:from-amber-950/50 dark:via-yellow-950/40 dark:to-orange-950/40 p-5 text-left transition-all hover:border-amber-500 hover:shadow-lg hover:shadow-amber-200/40 dark:hover:shadow-amber-900/30 disabled:opacity-70"
+        >
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.15),transparent_60%)]" />
+          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-amber-200/30 to-transparent dark:from-amber-700/20 rounded-bl-full" />
+          <div className="relative flex items-center gap-5">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 dark:from-amber-500 dark:to-orange-600 flex items-center justify-center flex-shrink-0 shadow-xl shadow-amber-400/30 dark:shadow-amber-600/30 group-hover:scale-105 transition-transform">
+              {updateConfig.isPending ? (
+                <Loader2 className="h-7 w-7 text-white animate-spin" />
+              ) : (
+                <Power className="h-7 w-7 text-white" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-base font-bold text-amber-900 dark:text-amber-100">
+                Your bot is ready — turn it on!
+              </p>
+              <p className="text-[12px] text-amber-700 dark:text-amber-300 mt-1 leading-relaxed">
+                Everything is configured. Click here to enable the bot and start
+                responding to leads, handling objections, and booking
+                appointments automatically.
+              </p>
+            </div>
+            <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
+              <div className="w-16 h-16 rounded-2xl bg-emerald-500 group-hover:bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:shadow-emerald-500/50 transition-all group-hover:scale-110">
+                <Power className="h-8 w-8 text-white" />
+              </div>
+              <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+                Enable
+              </span>
+            </div>
+          </div>
+        </button>
+      ) : agent?.botEnabled ? (
+        <div className="rounded-xl border-2 border-emerald-400 dark:border-emerald-600 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/40 dark:to-green-950/30 p-4">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center flex-shrink-0 shadow-md shadow-emerald-400/30">
+              <Power className="h-5 w-5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-bold text-emerald-900 dark:text-emerald-100">
+                Bot is active and responding to leads
+              </p>
+              <p className="text-[11px] text-emerald-700 dark:text-emerald-300 mt-0.5">
+                Your bot is live — it will respond to inbound messages and reach
+                out to new leads during business hours.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 px-3 text-[11px] border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex-shrink-0"
+              disabled={updateConfig.isPending}
+              onClick={handleToggleBot}
+            >
+              {updateConfig.isPending ? (
+                <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
+              ) : (
+                <Power className="h-3 w-3 mr-1.5" />
+              )}
+              Disable Bot
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       {/* Bot Config Section */}
       <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
         <h2 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">
@@ -252,41 +322,6 @@ export function SetupTab() {
         </h2>
 
         <div className="space-y-2.5">
-          {/* Bot enabled toggle */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <Power className="h-3 w-3 text-zinc-400" />
-              <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
-                Bot Enabled
-              </span>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className={cn(
-                "h-6 px-2 text-[10px]",
-                agent?.botEnabled
-                  ? "border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-400"
-                  : "border-zinc-300 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400",
-              )}
-              disabled={updateConfig.isPending}
-              onClick={handleToggleBot}
-            >
-              {agent?.botEnabled ? (
-                <Badge className="text-[9px] h-3.5 px-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
-                  ON
-                </Badge>
-              ) : (
-                <Badge
-                  variant="secondary"
-                  className="text-[9px] h-3.5 px-1 bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
-                >
-                  OFF
-                </Badge>
-              )}
-            </Button>
-          </div>
-
           {/* Timezone selector */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">

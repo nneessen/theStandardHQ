@@ -12,11 +12,11 @@ import {
   Zap,
   Check,
   Loader2,
-  Users,
   AlertTriangle,
   KeyRound,
   ListChecks,
   Tag,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -265,8 +265,8 @@ export function ChatBotLanding({
                 </h1>
                 <p className="text-[11px] text-zinc-400 mt-1 leading-relaxed max-w-lg">
                   Responds to inbound leads instantly, has real conversations,
-                  and books appointments on your calendar. Works 24/7 so you
-                  never miss a lead.
+                  and books appointments on your calendar. Runs within compliant
+                  hours so you never miss a lead.
                 </p>
               </div>
             </div>
@@ -424,13 +424,31 @@ export function ChatBotLanding({
                           <div className="flex items-start gap-1.5">
                             <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
                             <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
-                              24/7 AI responses
+                              AI responses (compliant hours)
                             </span>
                           </div>
                           <div className="flex items-start gap-1.5">
                             <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
                             <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
                               Auto appointment booking
+                            </span>
+                          </div>
+                          <div className="flex items-start gap-1.5">
+                            <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                              Proactive new-lead outreach
+                            </span>
+                          </div>
+                          <div className="flex items-start gap-1.5">
+                            <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                              Objection handling &amp; rebuttals
+                            </span>
+                          </div>
+                          <div className="flex items-start gap-1.5">
+                            <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                            <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                              Scheduled follow-ups
                             </span>
                           </div>
                         </div>
@@ -557,6 +575,36 @@ export function ChatBotLanding({
                             ~{parseInt(tier.leads) * 8} SMS/month
                           </span>
                         </div>
+                        <div className="flex items-start gap-1.5">
+                          <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                            AI responses (compliant hours)
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-1.5">
+                          <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                            Auto appointment booking
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-1.5">
+                          <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                            Proactive new-lead outreach
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-1.5">
+                          <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                            Objection handling &amp; rebuttals
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-1.5">
+                          <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                            Scheduled follow-ups
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -664,12 +712,12 @@ export function ChatBotLanding({
           <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             {
               icon: Clock,
-              title: "Instant 24/7 Response",
-              desc: "Leads get a reply in seconds, day or night — no more missed opportunities while you sleep",
+              title: "Instant Response",
+              desc: "Leads get a reply within seconds during business hours. Off-hours messages queue for the next compliant window — no lead falls through the cracks",
             },
             {
               icon: Calendar,
@@ -687,12 +735,22 @@ export function ChatBotLanding({
               desc: "Never quotes prices or policy details over text — redirects all financial questions to the appointment",
             },
             {
-              icon: Users,
-              title: "Lead Source Aware",
-              desc: "Customizes messaging based on mortgage protection, veteran, or other lead sources",
+              icon: Zap,
+              title: "Proactive Outreach",
+              desc: "Automatically contacts new leads the moment they hit your CRM — no waiting for them to text first",
             },
             {
               icon: MessageSquare,
+              title: "Objection Handling",
+              desc: "Handles pricing questions, hesitation, and common pushback with natural rebuttals that steer toward booking",
+            },
+            {
+              icon: RefreshCw,
+              title: "Follow-Up Re-engagement",
+              desc: "Re-engages cold leads with personalized follow-ups. Adapts messaging for mortgage protection, veteran, and other lead types",
+            },
+            {
+              icon: Bot,
               title: "Natural Conversations",
               desc: "Not a basic auto-responder — carries on real multi-message conversations that feel human",
             },

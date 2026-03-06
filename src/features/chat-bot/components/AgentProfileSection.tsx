@@ -29,6 +29,7 @@ export function AgentProfileSection() {
   const updateConfig = useUpdateBotConfig();
 
   // Local state for all profile fields
+  const [agentName, setAgentName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [bio, setBio] = useState("");
@@ -45,6 +46,7 @@ export function AgentProfileSection() {
   // Initialize local state from agent data
   useEffect(() => {
     if (!agent) return;
+    setAgentName(agent.name ?? "");
     setCompanyName(agent.companyName ?? "");
     setJobTitle(agent.jobTitle ?? "");
     setBio(agent.bio ?? "");
@@ -62,6 +64,7 @@ export function AgentProfileSection() {
   const getChangedFields = useCallback((): BotConfigPayload => {
     if (!agent) return {};
     const changes: BotConfigPayload = {};
+    if (agentName !== (agent.name ?? "")) changes.name = agentName || undefined;
     if (companyName !== (agent.companyName ?? ""))
       changes.companyName = companyName || null;
     if (jobTitle !== (agent.jobTitle ?? ""))
@@ -91,6 +94,7 @@ export function AgentProfileSection() {
     return changes;
   }, [
     agent,
+    agentName,
     companyName,
     jobTitle,
     bio,
@@ -158,6 +162,23 @@ export function AgentProfileSection() {
       </p>
 
       <div className="space-y-2.5">
+        {/* Agent Name (full-width) */}
+        <div>
+          <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-0.5 block">
+            Agent Name
+          </label>
+          <Input
+            value={agentName}
+            onChange={(e) => setAgentName(e.target.value.slice(0, 255))}
+            placeholder="e.g. John Smith"
+            className="h-7 text-[11px]"
+            disabled={updateConfig.isPending}
+          />
+          <p className="text-[9px] text-zinc-400 mt-0.5">
+            The name the bot introduces itself as when texting leads.
+          </p>
+        </div>
+
         {/* Row 1: Company Name + Job Title */}
         <div className="grid grid-cols-2 gap-2">
           <div>

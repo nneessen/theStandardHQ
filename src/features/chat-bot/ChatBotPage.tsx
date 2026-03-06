@@ -18,12 +18,15 @@ import {
   BarChart3,
   HeartPulse,
   BookOpen,
+  Power,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   useChatBotAgent,
+  useUpdateBotConfig,
   ChatBotApiError,
   type ChatBotAgent,
 } from "./hooks/useChatBot";
@@ -112,6 +115,7 @@ export function ChatBotPage() {
     agentError instanceof ChatBotApiError && agentError.isServiceError;
 
   const isLoading = addonsLoading || (hasAddon && agentLoading);
+  const updateConfig = useUpdateBotConfig();
   const queryClient = useQueryClient();
   const [retrying, setRetrying] = useState(false);
 
@@ -256,6 +260,24 @@ export function ChatBotPage() {
             AI Chat Bot
           </h1>
           {statusBadge}
+          {hasAddon &&
+            agent &&
+            (setupComplete || wizardDone) &&
+            !agent.botEnabled && (
+              <Button
+                size="sm"
+                className="h-7 px-4 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all animate-pulse"
+                disabled={updateConfig.isPending}
+                onClick={() => updateConfig.mutate({ botEnabled: true })}
+              >
+                {updateConfig.isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                ) : (
+                  <Power className="h-3.5 w-3.5 mr-1.5" />
+                )}
+                Enable Bot
+              </Button>
+            )}
         </div>
       </div>
 
