@@ -1,7 +1,7 @@
 // Domain Card
 // Displays a single custom domain with status and actions
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   CheckCircle2,
   AlertCircle,
@@ -11,6 +11,7 @@ import {
   ExternalLink,
   Copy,
   Check,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -91,11 +92,11 @@ export function DomainCard({ domain }: DomainCardProps) {
   };
 
   const handleDelete = () => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete ${domain.hostname}? This cannot be undone.`,
-      )
-    ) {
+    const message =
+      domain.status === "provisioning"
+        ? `Cancel provisioning and delete ${domain.hostname}? You can re-add it later.`
+        : `Are you sure you want to delete ${domain.hostname}? This cannot be undone.`;
+    if (window.confirm(message)) {
       deleteDomain.mutate(domain.id);
     }
   };
@@ -109,6 +110,12 @@ export function DomainCard({ domain }: DomainCardProps) {
     setPollCount(0);
     checkStatus.mutate(domain.id);
   };
+
+  const provisioningTimedOut = useMemo(() => {
+    if (domain.status !== "provisioning") return false;
+    const age = Date.now() - new Date(domain.updated_at).getTime();
+    return age > 30 * 60 * 1000;
+  }, [domain.status, domain.updated_at]);
 
   const isLoading =
     verifyDomain.isPending ||
@@ -159,7 +166,7 @@ export function DomainCard({ domain }: DomainCardProps) {
         </div>
 
         {/* Delete button (visible for deletable statuses) */}
-        {["draft", "pending_dns", "verified", "error"].includes(
+        {["draft", "pending_dns", "verified", "provisioning", "error"].includes(
           domain.status,
         ) && (
           <button
@@ -217,25 +224,51 @@ export function DomainCard({ domain }: DomainCardProps) {
       {/* Enhanced Provisioning Progress */}
       {domain.status === "provisioning" && (
         <div className="mt-3 space-y-2">
-          <div className="rounded-md border border-purple-200 bg-purple-50 p-2">
-            <div className="flex items-start gap-2">
-              <Loader2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 animate-spin text-purple-600" />
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium text-purple-800">
-                  Provisioning SSL Certificate
-                </p>
-                <p className="mt-1 text-[10px] text-purple-700">
-                  Vercel is generating your SSL certificate. This typically
-                  takes <span className="font-medium">1-15 minutes</span> but
-                  can occasionally take up to 30 minutes for new domains.
-                </p>
-                <p className="mt-1.5 text-[10px] text-purple-600">
-                  You can leave this page — the process continues in the
-                  background.
-                </p>
+          {provisioningTimedOut ? (
+            <div className="rounded-md border border-amber-300 bg-amber-50 p-2">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-600" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-amber-800">
+                    Provisioning is taking longer than expected
+                  </p>
+                  <p className="mt-1 text-[10px] text-amber-700">
+                    SSL provisioning has exceeded 30 minutes. This usually
+                    indicates a DNS configuration issue. Delete this domain and
+                    try again.
+                  </p>
+                  <button
+                    onClick={handleDelete}
+                    disabled={isLoading}
+                    className="mt-2 flex items-center gap-1 rounded bg-amber-600 px-2.5 py-1 text-[10px] font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                    Cancel & Delete
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="rounded-md border border-purple-200 bg-purple-50 p-2">
+              <div className="flex items-start gap-2">
+                <Loader2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 animate-spin text-purple-600" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-medium text-purple-800">
+                    Provisioning SSL Certificate
+                  </p>
+                  <p className="mt-1 text-[10px] text-purple-700">
+                    Vercel is generating your SSL certificate. This typically
+                    takes <span className="font-medium">1-15 minutes</span> but
+                    can occasionally take up to 30 minutes for new domains.
+                  </p>
+                  <p className="mt-1.5 text-[10px] text-purple-600">
+                    You can leave this page — the process continues in the
+                    background.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="flex items-center justify-between">
             {isPolling ? (
               <span className="flex items-center gap-1.5 text-[10px] text-zinc-500">
@@ -247,16 +280,27 @@ export function DomainCard({ domain }: DomainCardProps) {
                 Auto-check paused
               </span>
             )}
-            <button
-              onClick={handleCheckStatus}
-              disabled={isLoading}
-              className="flex items-center gap-1 rounded px-2 py-1 text-[10px] font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-50"
-            >
-              <RefreshCw
-                className={`h-3 w-3 ${checkStatus.isPending ? "animate-spin" : ""}`}
-              />
-              Check Status
-            </button>
+            <div className="flex items-center gap-2">
+              {!provisioningTimedOut && (
+                <button
+                  onClick={handleDelete}
+                  disabled={isLoading}
+                  className="text-[10px] text-zinc-400 hover:text-zinc-600"
+                >
+                  Cancel provisioning
+                </button>
+              )}
+              <button
+                onClick={handleCheckStatus}
+                disabled={isLoading}
+                className="flex items-center gap-1 rounded px-2 py-1 text-[10px] font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-50"
+              >
+                <RefreshCw
+                  className={`h-3 w-3 ${checkStatus.isPending ? "animate-spin" : ""}`}
+                />
+                Check Status
+              </button>
+            </div>
           </div>
         </div>
       )}

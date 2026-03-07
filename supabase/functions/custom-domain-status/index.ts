@@ -97,6 +97,11 @@ serve(async (req) => {
 
     // If domain is in provisioning status, check Vercel for updates
     if (domain.status === "provisioning" && domain.provider_domain_id) {
+      // Timeout detection first — use the DB timestamp (before any updates)
+      const provisioningAge =
+        Date.now() - new Date(domain.updated_at).getTime();
+      const THIRTY_MINUTES = 30 * 60 * 1000;
+
       console.log(
         "[custom-domain-status] Checking Vercel status:",
         domain.hostname,
@@ -106,15 +111,6 @@ serve(async (req) => {
 
       if (vercelResult.success && vercelResult.data) {
         const vercelData = vercelResult.data;
-
-        // Update provider_metadata with latest Vercel state
-        await supabaseAdmin
-          .from("custom_domains")
-          .update({
-            provider_metadata: vercelData,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", domain.id);
 
         // Check if now configured (SSL ready)
         if (vercelData.configured) {
@@ -152,6 +148,49 @@ serve(async (req) => {
           }
         }
 
+        // Not configured yet — check if we've exceeded the timeout
+        if (provisioningAge > THIRTY_MINUTES) {
+          console.log(
+            "[custom-domain-status] Provisioning timeout:",
+            domain.hostname,
+            `(${Math.round(provisioningAge / 60000)}m)`,
+          );
+
+          const { data: errorDomain, error: errorTransition } =
+            await supabaseAdmin.rpc("admin_update_domain_status", {
+              p_domain_id: domain.id,
+              p_user_id: user.id,
+              p_new_status: "error",
+              p_provider_metadata: JSON.stringify(vercelData),
+              p_last_error:
+                "SSL provisioning timed out after 30 minutes. Delete this domain and try again.",
+            });
+
+          if (!errorTransition) {
+            return new Response(
+              JSON.stringify({
+                status: "error",
+                domain: errorDomain,
+                message:
+                  "SSL provisioning timed out. Delete this domain and try again.",
+              }),
+              {
+                status: 200,
+                headers: {
+                  ...corsHeaders,
+                  "Content-Type": "application/json",
+                },
+              },
+            );
+          }
+        }
+
+        // Update provider_metadata (but don't reset updated_at — preserve timeout tracking)
+        await supabaseAdmin
+          .from("custom_domains")
+          .update({ provider_metadata: vercelData })
+          .eq("id", domain.id);
+
         // Still provisioning - return updated data
         return new Response(
           JSON.stringify({
@@ -171,6 +210,42 @@ serve(async (req) => {
           "[custom-domain-status] Vercel check failed:",
           vercelResult.error,
         );
+
+        // Still check timeout even when Vercel API fails
+        if (provisioningAge > THIRTY_MINUTES) {
+          console.log(
+            "[custom-domain-status] Provisioning timeout (Vercel unreachable):",
+            domain.hostname,
+          );
+
+          const { data: errorDomain, error: errorTransition } =
+            await supabaseAdmin.rpc("admin_update_domain_status", {
+              p_domain_id: domain.id,
+              p_user_id: user.id,
+              p_new_status: "error",
+              p_provider_metadata: JSON.stringify(domain.provider_metadata),
+              p_last_error:
+                "SSL provisioning timed out after 30 minutes. Delete this domain and try again.",
+            });
+
+          if (!errorTransition) {
+            return new Response(
+              JSON.stringify({
+                status: "error",
+                domain: errorDomain,
+                message:
+                  "SSL provisioning timed out. Delete this domain and try again.",
+              }),
+              {
+                status: 200,
+                headers: {
+                  ...corsHeaders,
+                  "Content-Type": "application/json",
+                },
+              },
+            );
+          }
+        }
       }
     }
 
