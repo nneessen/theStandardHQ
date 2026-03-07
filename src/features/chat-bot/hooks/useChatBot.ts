@@ -31,7 +31,8 @@ export const chatBotKeys = {
   calendarHealth: () => [...chatBotKeys.all, "calendar-health"] as const,
   googleStatus: () => [...chatBotKeys.all, "google-status"] as const,
   monitoring: () => [...chatBotKeys.all, "monitoring"] as const,
-  teamAccess: () => [...chatBotKeys.all, "team-access"] as const,
+  teamAccess: (userId?: string) =>
+    [...chatBotKeys.all, "team-access", userId ?? "anonymous"] as const,
 };
 
 // ─── Types ──────────────────────────────────────────────────────
@@ -137,6 +138,10 @@ export interface CalendarHealthResponse {
     schedulingUrl: string;
   } | null;
   issues: CalendarHealthIssue[];
+}
+
+interface TeamAccessResponse {
+  hasTeamAccess: boolean;
 }
 
 // ─── API Helper ─────────────────────────────────────────────────
@@ -264,35 +269,11 @@ export function useChatBotAgent(enabled = true) {
 export function useIsOnExemptTeam() {
   const { user } = useAuth();
   return useQuery<boolean>({
-    queryKey: chatBotKeys.teamAccess(),
-    queryFn: async () => {
-      if (!user?.id) return false;
-
-      // 1. Get this user's hierarchy_path
-      const { data: profile } = await supabase
-        .from("user_profiles")
-        .select("hierarchy_path")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      if (!profile?.hierarchy_path) return false;
-
-      // 2. Parse upline IDs from hierarchy_path (all segments except the last = self)
-      const segments = profile.hierarchy_path.split(".");
-      const uplineIds = segments.slice(0, -1);
-      if (uplineIds.length === 0) return false;
-
-      // 3. Check if any upline has an active billing-exempt bot
-      const { data: exemptUplines } = await supabase
-        .from("chat_bot_agents")
-        .select("user_id")
-        .in("user_id", uplineIds)
-        .eq("billing_exempt", true)
-        .eq("provisioning_status", "active")
-        .limit(1);
-
-      return (exemptUplines?.length ?? 0) > 0;
-    },
+    queryKey: chatBotKeys.teamAccess(user?.id),
+    queryFn: async () =>
+      (
+        await chatBotApi<TeamAccessResponse>("get_team_access")
+      ).hasTeamAccess,
     enabled: !!user?.id,
     staleTime: 300_000, // 5 min — team structure rarely changes
   });

@@ -100,6 +100,48 @@ function sendResult(res: { ok: boolean; status: number; data: any }): Response {
   return jsonResponse(payload, status);
 }
 
+async function getTeamAccessStatus(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+): Promise<{
+  profile: {
+    first_name: string | null;
+    last_name: string | null;
+    hierarchy_path: string | null;
+  } | null;
+  isOnExemptTeam: boolean;
+}> {
+  const { data: profile } = await supabase
+    .from("user_profiles")
+    .select("first_name, last_name, hierarchy_path")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (!profile) {
+    return { profile: null, isOnExemptTeam: false };
+  }
+
+  const hierarchyPath = profile.hierarchy_path || userId;
+  const uplineIds = hierarchyPath.split(".").slice(0, -1);
+
+  if (uplineIds.length === 0) {
+    return { profile, isOnExemptTeam: false };
+  }
+
+  const { data: exemptUplines } = await supabase
+    .from("chat_bot_agents")
+    .select("user_id")
+    .in("user_id", uplineIds)
+    .eq("billing_exempt", true)
+    .eq("provisioning_status", "active")
+    .limit(1);
+
+  return {
+    profile,
+    isOnExemptTeam: (exemptUplines?.length ?? 0) > 0,
+  };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -136,39 +178,21 @@ serve(async (req) => {
       return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
+    if (action === "get_team_access") {
+      const { isOnExemptTeam } = await getTeamAccessStatus(supabase, user.id);
+      return jsonResponse({ hasTeamAccess: isOnExemptTeam });
+    }
+
     // ──────────────────────────────────────────────
     // TEAM PROVISION — must run BEFORE agent lookup (no agent row exists yet)
     // ──────────────────────────────────────────────
     if (action === "team_provision") {
-      // 1. Get this user's profile + hierarchy_path
-      const { data: profile } = await supabase
-        .from("user_profiles")
-        .select("first_name, last_name, hierarchy_path")
-        .eq("id", user.id)
-        .maybeSingle();
-
+      const { profile, isOnExemptTeam } = await getTeamAccessStatus(
+        supabase,
+        user.id,
+      );
       if (!profile) {
         return jsonResponse({ error: "User profile not found" }, 404);
-      }
-
-      // 2. Check if any upline in the hierarchy has a billing-exempt bot.
-      //    hierarchy_path is dot-separated: "root.manager.agent"
-      //    Parse out all ancestor IDs (excluding self).
-      const hierarchyPath = profile.hierarchy_path || user.id;
-      const segments = hierarchyPath.split(".");
-      // All IDs except the last one (self) are uplines
-      const uplineIds = segments.slice(0, -1);
-
-      let isOnExemptTeam = false;
-      if (uplineIds.length > 0) {
-        const { data: exemptUplines } = await supabase
-          .from("chat_bot_agents")
-          .select("user_id")
-          .in("user_id", uplineIds)
-          .eq("billing_exempt", true)
-          .eq("provisioning_status", "active")
-          .limit(1);
-        isOnExemptTeam = (exemptUplines?.length ?? 0) > 0;
       }
 
       if (!isOnExemptTeam) {
@@ -184,11 +208,47 @@ serve(async (req) => {
       // 2. Idempotency check
       const { data: existing } = await supabase
         .from("chat_bot_agents")
-        .select("id, external_agent_id, provisioning_status")
+        .select("id, external_agent_id, provisioning_status, billing_exempt")
         .eq("user_id", user.id)
         .maybeSingle();
 
       if (existing?.provisioning_status === "active") {
+        if (!existing.billing_exempt) {
+          const upgradeRes = await callChatBotApi(
+            "PATCH",
+            `/api/external/agents/${existing.external_agent_id}`,
+            { billingExempt: true },
+          );
+
+          if (!upgradeRes.ok) {
+            console.error(
+              `[chat-bot-api] Failed to upgrade agent ${existing.external_agent_id} to billing-exempt for user ${user.id}:`,
+              upgradeRes.data,
+            );
+            return jsonResponse(
+              {
+                error: "Failed to enable team access for existing bot",
+                details: upgradeRes.data,
+              },
+              safeStatus(upgradeRes.status),
+            );
+          }
+
+          await supabase
+            .from("chat_bot_agents")
+            .update({
+              billing_exempt: true,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", existing.id);
+
+          return jsonResponse({
+            success: true,
+            agentId: existing.external_agent_id,
+            upgradedToTeamAccess: true,
+          });
+        }
+
         return jsonResponse({
           success: true,
           agentId: existing.external_agent_id,
