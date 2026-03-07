@@ -17,6 +17,7 @@ import {
   ListChecks,
   Tag,
   RefreshCw,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ import {
 } from "@/hooks/subscription";
 // eslint-disable-next-line no-restricted-imports
 import { subscriptionService } from "@/services/subscription";
+import { useProvisionTeamBot } from "../hooks/useChatBot";
 import { ConversationDemo } from "./ConversationDemo";
 
 // ─── Close CRM Logo ──────────────────────────────────────────────
@@ -164,14 +166,21 @@ interface ChatBotLandingProps {
   currentTierId?: string | null;
   /** Called after a plan is successfully activated — used to switch to configuration tab */
   onPlanActivated?: () => void;
+  /** Whether the current user is a team member (IMO owner/admin, super admin) */
+  isTeamMember?: boolean;
+  /** Whether the user's agent already has billing exemption */
+  isBillingExempt?: boolean;
 }
 
 export function ChatBotLanding({
   currentTierId,
   onPlanActivated,
+  isTeamMember,
+  isBillingExempt,
 }: ChatBotLandingProps = {}) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const provisionTeamBot = useProvisionTeamBot();
   const [selectedTierId, setSelectedTierId] = useState<string>(
     currentTierId || "free",
   );
@@ -304,61 +313,302 @@ export function ChatBotLanding({
         </div>
       </div>
 
-      {/* ═══════════ CHOOSE YOUR PLAN ═══════════ */}
-      <section>
-        <div className="flex items-center gap-2 mb-3">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            Choose Your Plan
-          </h2>
-          <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
-        </div>
-
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-white dark:bg-zinc-900">
-          <div className="p-4">
-            {addonsLoading ? (
-              <div className="flex items-center justify-center py-6">
-                <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+      {/* ═══════════ TEAM ACCESS (team members only) ═══════════ */}
+      {isTeamMember && (
+        <section>
+          <div className="flex items-center gap-2 mb-3">
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Team Access
+            </h2>
+            <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
+          </div>
+          <div className="rounded-lg border border-indigo-200 dark:border-indigo-800 overflow-hidden bg-white dark:bg-zinc-900">
+            <div className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+                    <Shield className="h-5 w-5 text-indigo-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                      Team Access — Free
+                    </h3>
+                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                      Unlimited leads, no billing — included with your team
+                      membership.
+                    </p>
+                  </div>
+                </div>
+                {isBillingExempt ? (
+                  <Badge className="text-[9px] h-6 px-3 bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+                    <Check className="h-2.5 w-2.5 mr-1" />
+                    Active
+                  </Badge>
+                ) : (
+                  <Button
+                    size="sm"
+                    className="h-7 text-[10px] px-4 bg-indigo-600 hover:bg-indigo-700 text-white"
+                    disabled={provisionTeamBot.isPending}
+                    onClick={() =>
+                      provisionTeamBot.mutate(undefined, {
+                        onSuccess: () => onPlanActivated?.(),
+                      })
+                    }
+                  >
+                    {provisionTeamBot.isPending ? (
+                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                    ) : null}
+                    Activate Bot
+                  </Button>
+                )}
               </div>
-            ) : tiers.length > 0 ? (
-              <>
-                <div
-                  className={cn(
-                    "grid gap-3",
-                    tiers.length > 3
-                      ? "grid-cols-2 sm:grid-cols-4"
-                      : "grid-cols-1 sm:grid-cols-3",
-                  )}
-                >
-                  {tiers.map((tier) => {
-                    const isSelected = selectedTierId === tier.id;
-                    const isFree = tier.price_monthly === 0;
-                    const isPopular = tier.id === "growth";
-                    const isCurrent = currentTierId === tier.id;
-                    return (
-                      <button
-                        key={tier.id}
-                        onClick={() => setSelectedTierId(tier.id)}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════ CHOOSE YOUR PLAN (non-team members) ═══════════ */}
+      {!isTeamMember && (
+        <section>
+          <div className="flex items-center gap-2 mb-3">
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              Choose Your Plan
+            </h2>
+            <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
+          </div>
+
+          <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-white dark:bg-zinc-900">
+            <div className="p-4">
+              {addonsLoading ? (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+                </div>
+              ) : tiers.length > 0 ? (
+                <>
+                  <div
+                    className={cn(
+                      "grid gap-3",
+                      tiers.length > 3
+                        ? "grid-cols-2 sm:grid-cols-4"
+                        : "grid-cols-1 sm:grid-cols-3",
+                    )}
+                  >
+                    {tiers.map((tier) => {
+                      const isSelected = selectedTierId === tier.id;
+                      const isFree = tier.price_monthly === 0;
+                      const isPopular = tier.id === "growth";
+                      const isCurrent = currentTierId === tier.id;
+                      return (
+                        <button
+                          key={tier.id}
+                          onClick={() => setSelectedTierId(tier.id)}
+                          className={cn(
+                            "relative flex flex-col rounded-lg border p-3 text-left transition-all",
+                            isSelected
+                              ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 ring-1 ring-emerald-500/30"
+                              : isPopular
+                                ? "border-zinc-900 dark:border-zinc-100"
+                                : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600",
+                          )}
+                        >
+                          {/* Current plan badge — takes priority */}
+                          {isCurrent && (
+                            <div className="absolute -top-2 left-1/2 -translate-x-1/2">
+                              <span className="inline-flex items-center gap-0.5 bg-blue-600 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                                <Check className="h-2.5 w-2.5" />
+                                Current
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Popular badge */}
+                          {isPopular && !isSelected && !isCurrent && (
+                            <div className="absolute -top-2 left-1/2 -translate-x-1/2">
+                              <span className="inline-flex items-center gap-0.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                                <Zap className="h-2.5 w-2.5" />
+                                Popular
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Selected badge */}
+                          {isSelected && !isCurrent && (
+                            <div className="absolute -top-2 left-1/2 -translate-x-1/2">
+                              <span className="inline-flex items-center gap-0.5 bg-emerald-500 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                                <Check className="h-2.5 w-2.5" />
+                                Selected
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Free test badge */}
+                          {isFree && !isSelected && !isCurrent && (
+                            <div className="absolute -top-2 left-1/2 -translate-x-1/2">
+                              <span className="inline-flex items-center gap-0.5 bg-amber-500 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                                Test
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Plan header */}
+                          <div className="mt-1 mb-3">
+                            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                              {tier.name}
+                            </h3>
+                            <div className="flex items-baseline gap-1 mt-1">
+                              <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                                {isFree
+                                  ? "$0"
+                                  : formatPrice(tier.price_monthly)}
+                              </span>
+                              <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                                /mo
+                              </span>
+                            </div>
+                            {isFree && (
+                              <p className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                                Free forever
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Features */}
+                          <div className="flex-1 space-y-1.5 mb-3">
+                            <div className="flex items-start gap-1.5">
+                              <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                                {tier.runs_per_month.toLocaleString()}{" "}
+                                leads/month
+                              </span>
+                            </div>
+                            <div className="flex items-start gap-1.5">
+                              <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                                ~{(tier.runs_per_month * 8).toLocaleString()}{" "}
+                                SMS/month
+                              </span>
+                            </div>
+                            <div className="flex items-start gap-1.5">
+                              <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                                AI responses (compliant hours)
+                              </span>
+                            </div>
+                            <div className="flex items-start gap-1.5">
+                              <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                                Auto appointment booking
+                              </span>
+                            </div>
+                            <div className="flex items-start gap-1.5">
+                              <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                                Proactive new-lead outreach
+                              </span>
+                            </div>
+                            <div className="flex items-start gap-1.5">
+                              <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                                Objection handling &amp; rebuttals
+                              </span>
+                            </div>
+                            <div className="flex items-start gap-1.5">
+                              <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                                Scheduled follow-ups
+                              </span>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Subscribe button — below cards */}
+                  <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] text-zinc-400">
+                          {isFreeSelected
+                            ? "Free — no credit card required"
+                            : "Billed monthly with your subscription"}
+                        </p>
+                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                          Each plan is a monthly lead limit — unique new leads
+                          the bot will engage with.
+                        </p>
+                      </div>
+                      {isCurrentTier ? (
+                        <Badge className="text-[9px] h-7 px-4 flex-shrink-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                          <Check className="h-3 w-3 mr-1" />
+                          Current Plan
+                        </Badge>
+                      ) : hasPriceConfigured ? (
+                        <Button
+                          size="sm"
+                          className={cn(
+                            "h-7 text-[10px] px-4 flex-shrink-0",
+                            "bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 text-white",
+                          )}
+                          disabled={purchaseLoading || !canPurchase}
+                          onClick={handlePurchase}
+                        >
+                          {purchaseLoading ? (
+                            <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                          ) : null}
+                          {currentTierId
+                            ? isFreeSelected
+                              ? "Downgrade to Free"
+                              : `Upgrade to ${selectedTier?.name || ""}`
+                            : isFreeSelected
+                              ? "Start Free"
+                              : `Activate ${selectedTier?.name || ""} Plan`}
+                        </Button>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="text-[9px] flex-shrink-0"
+                        >
+                          Coming Soon
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                /* Fallback static tiers if addon not configured in DB yet */
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                    {[
+                      {
+                        name: "Starter",
+                        price: "$49",
+                        leads: "50",
+                        popular: false,
+                      },
+                      {
+                        name: "Growth",
+                        price: "$99",
+                        leads: "150",
+                        popular: true,
+                      },
+                      {
+                        name: "Scale",
+                        price: "$199",
+                        leads: "500",
+                        popular: false,
+                      },
+                    ].map((tier) => (
+                      <div
+                        key={tier.name}
                         className={cn(
-                          "relative flex flex-col rounded-lg border p-3 text-left transition-all",
-                          isSelected
-                            ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 ring-1 ring-emerald-500/30"
-                            : isPopular
-                              ? "border-zinc-900 dark:border-zinc-100"
-                              : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600",
+                          "relative flex flex-col rounded-lg border p-3",
+                          tier.popular
+                            ? "border-zinc-900 dark:border-zinc-100"
+                            : "border-zinc-200 dark:border-zinc-700",
                         )}
                       >
-                        {/* Current plan badge — takes priority */}
-                        {isCurrent && (
-                          <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                            <span className="inline-flex items-center gap-0.5 bg-blue-600 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
-                              <Check className="h-2.5 w-2.5" />
-                              Current
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Popular badge */}
-                        {isPopular && !isSelected && !isCurrent && (
+                        {tier.popular && (
                           <div className="absolute -top-2 left-1/2 -translate-x-1/2">
                             <span className="inline-flex items-center gap-0.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[9px] font-semibold px-2 py-0.5 rounded-full">
                               <Zap className="h-2.5 w-2.5" />
@@ -366,59 +616,30 @@ export function ChatBotLanding({
                             </span>
                           </div>
                         )}
-
-                        {/* Selected badge */}
-                        {isSelected && !isCurrent && (
-                          <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                            <span className="inline-flex items-center gap-0.5 bg-emerald-500 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
-                              <Check className="h-2.5 w-2.5" />
-                              Selected
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Free test badge */}
-                        {isFree && !isSelected && !isCurrent && (
-                          <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                            <span className="inline-flex items-center gap-0.5 bg-amber-500 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
-                              Test
-                            </span>
-                          </div>
-                        )}
-
-                        {/* Plan header */}
                         <div className="mt-1 mb-3">
                           <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
                             {tier.name}
                           </h3>
                           <div className="flex items-baseline gap-1 mt-1">
                             <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                              {isFree ? "$0" : formatPrice(tier.price_monthly)}
+                              {tier.price}
                             </span>
                             <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
                               /mo
                             </span>
                           </div>
-                          {isFree && (
-                            <p className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-0.5">
-                              Free forever
-                            </p>
-                          )}
                         </div>
-
-                        {/* Features */}
-                        <div className="flex-1 space-y-1.5 mb-3">
+                        <div className="flex-1 space-y-1.5">
                           <div className="flex items-start gap-1.5">
                             <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
                             <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
-                              {tier.runs_per_month.toLocaleString()} leads/month
+                              {tier.leads} leads/month
                             </span>
                           </div>
                           <div className="flex items-start gap-1.5">
                             <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
                             <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
-                              ~{(tier.runs_per_month * 8).toLocaleString()}{" "}
-                              SMS/month
+                              ~{parseInt(tier.leads) * 8} SMS/month
                             </span>
                           </div>
                           <div className="flex items-start gap-1.5">
@@ -452,173 +673,20 @@ export function ChatBotLanding({
                             </span>
                           </div>
                         </div>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Subscribe button — below cards */}
-                <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-[10px] text-zinc-400">
-                        {isFreeSelected
-                          ? "Free — no credit card required"
-                          : "Billed monthly with your subscription"}
-                      </p>
-                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                        Each plan is a monthly lead limit — unique new leads the
-                        bot will engage with.
-                      </p>
-                    </div>
-                    {isCurrentTier ? (
-                      <Badge className="text-[9px] h-7 px-4 flex-shrink-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
-                        <Check className="h-3 w-3 mr-1" />
-                        Current Plan
-                      </Badge>
-                    ) : hasPriceConfigured ? (
-                      <Button
-                        size="sm"
-                        className={cn(
-                          "h-7 text-[10px] px-4 flex-shrink-0",
-                          "bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 text-white",
-                        )}
-                        disabled={purchaseLoading || !canPurchase}
-                        onClick={handlePurchase}
-                      >
-                        {purchaseLoading ? (
-                          <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                        ) : null}
-                        {currentTierId
-                          ? isFreeSelected
-                            ? "Downgrade to Free"
-                            : `Upgrade to ${selectedTier?.name || ""}`
-                          : isFreeSelected
-                            ? "Start Free"
-                            : `Activate ${selectedTier?.name || ""} Plan`}
-                      </Button>
-                    ) : (
-                      <Badge
-                        variant="outline"
-                        className="text-[9px] flex-shrink-0"
-                      >
-                        Coming Soon
-                      </Badge>
-                    )}
+                      </div>
+                    ))}
                   </div>
-                </div>
-              </>
-            ) : (
-              /* Fallback static tiers if addon not configured in DB yet */
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-                  {[
-                    {
-                      name: "Starter",
-                      price: "$49",
-                      leads: "50",
-                      popular: false,
-                    },
-                    {
-                      name: "Growth",
-                      price: "$99",
-                      leads: "150",
-                      popular: true,
-                    },
-                    {
-                      name: "Scale",
-                      price: "$199",
-                      leads: "500",
-                      popular: false,
-                    },
-                  ].map((tier) => (
-                    <div
-                      key={tier.name}
-                      className={cn(
-                        "relative flex flex-col rounded-lg border p-3",
-                        tier.popular
-                          ? "border-zinc-900 dark:border-zinc-100"
-                          : "border-zinc-200 dark:border-zinc-700",
-                      )}
-                    >
-                      {tier.popular && (
-                        <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                          <span className="inline-flex items-center gap-0.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[9px] font-semibold px-2 py-0.5 rounded-full">
-                            <Zap className="h-2.5 w-2.5" />
-                            Popular
-                          </span>
-                        </div>
-                      )}
-                      <div className="mt-1 mb-3">
-                        <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                          {tier.name}
-                        </h3>
-                        <div className="flex items-baseline gap-1 mt-1">
-                          <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                            {tier.price}
-                          </span>
-                          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                            /mo
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex-1 space-y-1.5">
-                        <div className="flex items-start gap-1.5">
-                          <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
-                            {tier.leads} leads/month
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-1.5">
-                          <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
-                            ~{parseInt(tier.leads) * 8} SMS/month
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-1.5">
-                          <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
-                            AI responses (compliant hours)
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-1.5">
-                          <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
-                            Auto appointment booking
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-1.5">
-                          <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
-                            Proactive new-lead outreach
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-1.5">
-                          <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
-                            Objection handling &amp; rebuttals
-                          </span>
-                        </div>
-                        <div className="flex items-start gap-1.5">
-                          <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                          <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
-                            Scheduled follow-ups
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="text-center">
-                  <Badge variant="outline" className="text-[9px]">
-                    Coming Soon
-                  </Badge>
-                </div>
-              </>
-            )}
+                  <div className="text-center">
+                    <Badge variant="outline" className="text-[9px]">
+                      Coming Soon
+                    </Badge>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ═══════════ SEE IT IN ACTION ═══════════ */}
       <section>

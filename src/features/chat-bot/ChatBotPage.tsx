@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import {
   useChatBotAgent,
   useUpdateBotConfig,
+  useProvisionTeamBot,
   ChatBotApiError,
   type ChatBotAgent,
 } from "./hooks/useChatBot";
@@ -98,23 +99,26 @@ function getWizardDoneKey(agentId: string): string {
 
 export function ChatBotPage() {
   const [activeTab, setActiveTab] = useState<TabId>(getInitialTab);
-  const { isSuperAdmin } = useImo();
+  const { isImoOwner, isImoAdmin, isSuperAdmin } = useImo();
+  const isTeamMember = isImoOwner || isImoAdmin || isSuperAdmin;
   const { activeAddons, isLoading: addonsLoading } = useUserActiveAddons();
   const chatBotAddon = activeAddons.find(
     (a) => a.addon?.name === "ai_chat_bot",
   );
   const hasAddon = !!chatBotAddon;
+  const hasAccess = hasAddon || isTeamMember;
   const currentTierId = chatBotAddon?.tier_id || null;
   const {
     data: agent,
     isLoading: agentLoading,
     error: agentError,
     refetch: refetchAgent,
-  } = useChatBotAgent(hasAddon);
+  } = useChatBotAgent(hasAccess);
   const isServiceError =
     agentError instanceof ChatBotApiError && agentError.isServiceError;
 
-  const isLoading = addonsLoading || (hasAddon && agentLoading);
+  const isLoading = addonsLoading || (hasAccess && agentLoading);
+  const provisionTeamBot = useProvisionTeamBot();
   const updateConfig = useUpdateBotConfig();
   const queryClient = useQueryClient();
   const [retrying, setRetrying] = useState(false);
@@ -201,12 +205,12 @@ export function ChatBotPage() {
       id: "setup",
       label: "Bot Configuration",
       icon: Settings,
-      locked: !hasAddon,
+      locked: !hasAccess,
     },
   ];
 
   // Only show dashboard tabs when setup is complete
-  if (hasAddon && agent && (setupComplete || wizardDone)) {
+  if (hasAccess && agent && (setupComplete || wizardDone)) {
     tabs.push(
       { id: "conversations", label: "Conversations", icon: MessageSquare },
       { id: "appointments", label: "Appointments", icon: Calendar },
@@ -219,7 +223,7 @@ export function ChatBotPage() {
   }
 
   // Status badge
-  const statusBadge = !hasAddon ? null : !agent ? null : setupComplete ||
+  const statusBadge = !hasAccess ? null : !agent ? null : setupComplete ||
     wizardDone ? (
     agent.botEnabled ? (
       <Badge className="text-[9px] h-4 px-1.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
@@ -260,7 +264,7 @@ export function ChatBotPage() {
             AI Chat Bot
           </h1>
           {statusBadge}
-          {hasAddon &&
+          {hasAccess &&
             agent &&
             (setupComplete || wizardDone) &&
             !agent.botEnabled && (
@@ -316,13 +320,15 @@ export function ChatBotPage() {
           <ChatBotLanding
             currentTierId={currentTierId}
             onPlanActivated={handlePlanActivated}
+            isTeamMember={isTeamMember}
+            isBillingExempt={agent?.billingExempt}
           />
         )}
 
         {/* Setup tab — locked, wizard, or full config */}
         {activeTab === "setup" &&
-          (!hasAddon ? (
-            /* No addon — prompt to choose a plan */
+          (!hasAccess ? (
+            /* No addon and not a team member — prompt to choose a plan */
             <div className="flex flex-col items-center justify-center py-16 px-4">
               <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3">
                 <Lock className="h-5 w-5 text-zinc-400" />
@@ -343,7 +349,44 @@ export function ChatBotPage() {
               </button>
             </div>
           ) : !agent ? (
-            isServiceError ? (
+            isTeamMember && !hasAddon ? (
+              /* Team member who hasn't provisioned yet */
+              <div className="flex flex-col items-center justify-center py-16 px-4">
+                <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center mb-3">
+                  <Bot className="h-5 w-5 text-indigo-500" />
+                </div>
+                <h3 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+                  Activate Your Team Bot
+                </h3>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 text-center max-w-xs mb-4">
+                  As a team member, you get free access to the AI Chat Bot with
+                  no lead limits. Click below to get started.
+                </p>
+                <Button
+                  size="sm"
+                  className="h-8 px-4 text-[11px] font-semibold bg-indigo-600 hover:bg-indigo-700 text-white"
+                  disabled={provisionTeamBot.isPending}
+                  onClick={() =>
+                    provisionTeamBot.mutate(undefined, {
+                      onSuccess: () => {
+                        queryClient.invalidateQueries({
+                          queryKey: ["chat-bot"],
+                        });
+                      },
+                    })
+                  }
+                >
+                  {provisionTeamBot.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                  ) : (
+                    <Bot className="h-3.5 w-3.5 mr-1.5" />
+                  )}
+                  {provisionTeamBot.isPending
+                    ? "Activating..."
+                    : "Activate Free Team Bot"}
+                </Button>
+              </div>
+            ) : isServiceError ? (
               /* External bot service is down — show service unavailable */
               <div className="flex flex-col items-center justify-center py-16 px-4">
                 <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center mb-3">
@@ -411,7 +454,7 @@ export function ChatBotPage() {
         {activeTab === "all-bots" && (
           <AllBotsTab
             onNavigateToSubscription={
-              !hasAddon ? () => setActiveTab("overview") : undefined
+              !hasAccess ? () => setActiveTab("overview") : undefined
             }
           />
         )}

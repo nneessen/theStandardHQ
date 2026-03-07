@@ -1,13 +1,15 @@
 // src/features/chat-bot/components/UsageTab.tsx
 // Usage stats: lead count vs limit, period, tier badge
 
-import { Activity, AlertTriangle, Loader2 } from "lucide-react";
+import { Activity, AlertTriangle, Loader2, Shield } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { useChatBotUsage } from "../hooks/useChatBot";
+import { useChatBotUsage, useChatBotAgent } from "../hooks/useChatBot";
 
 export function UsageTab() {
   const { data: usage, isLoading } = useChatBotUsage();
+  const { data: agent } = useChatBotAgent();
+  const isBillingExempt = agent?.billingExempt === true;
 
   if (isLoading) {
     return (
@@ -27,6 +29,42 @@ export function UsageTab() {
           <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
             Usage data unavailable
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Billing-exempt team members: simplified usage view
+  if (isBillingExempt) {
+    return (
+      <div className="space-y-3">
+        <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-1.5">
+              <Activity className="h-3.5 w-3.5 text-zinc-400" />
+              <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+                Lead Usage
+              </span>
+            </div>
+            <Badge className="text-[9px] h-4 px-1.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+              <Shield className="h-2.5 w-2.5 mr-0.5" />
+              Team
+            </Badge>
+          </div>
+
+          <div className="flex items-baseline gap-1 mb-3">
+            <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+              {usage.leadsUsed.toLocaleString()}
+            </span>
+            <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              leads engaged
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 p-2 bg-indigo-50 dark:bg-indigo-950/20 rounded text-[10px] text-indigo-700 dark:text-indigo-300">
+            <Shield className="h-3 w-3 flex-shrink-0" />
+            <span>Team Account — No Lead Limits</span>
+          </div>
         </div>
       </div>
     );

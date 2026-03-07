@@ -1756,6 +1756,7 @@ export type Database = {
       };
       chat_bot_agents: {
         Row: {
+          billing_exempt: boolean;
           created_at: string | null;
           error_message: string | null;
           external_agent_id: string;
@@ -1766,6 +1767,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          billing_exempt?: boolean;
           created_at?: string | null;
           error_message?: string | null;
           external_agent_id: string;
@@ -1776,6 +1778,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          billing_exempt?: boolean;
           created_at?: string | null;
           error_message?: string | null;
           external_agent_id?: string;

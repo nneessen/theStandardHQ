@@ -136,6 +136,112 @@ serve(async (req) => {
       return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
+    // ──────────────────────────────────────────────
+    // TEAM PROVISION — must run BEFORE agent lookup (no agent row exists yet)
+    // ──────────────────────────────────────────────
+    if (action === "team_provision") {
+      // 1. Verify team membership: super admin, IMO owner, or IMO admin
+      const { data: profile } = await supabase
+        .from("user_profiles")
+        .select("first_name, last_name, roles, is_super_admin")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (!profile) {
+        return jsonResponse({ error: "User profile not found" }, 404);
+      }
+
+      const roles: string[] = Array.isArray(profile.roles) ? profile.roles : [];
+      const isTeamMember =
+        profile.is_super_admin === true ||
+        roles.includes("imo_owner") ||
+        roles.includes("imo_admin");
+
+      if (!isTeamMember) {
+        return jsonResponse(
+          {
+            error:
+              "Only team members (IMO owners, admins, super admins) can activate a free team bot",
+          },
+          403,
+        );
+      }
+
+      // 2. Idempotency check
+      const { data: existing } = await supabase
+        .from("chat_bot_agents")
+        .select("id, external_agent_id, provisioning_status")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existing?.provisioning_status === "active") {
+        return jsonResponse({
+          success: true,
+          agentId: existing.external_agent_id,
+          alreadyProvisioned: true,
+        });
+      }
+
+      // 3. Build agent name
+      const agentName = profile
+        ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() ||
+          "Chat Bot Agent"
+        : "Chat Bot Agent";
+
+      // 4. Provision on external API with billing exemption
+      const provisionRes = await callChatBotApi(
+        "POST",
+        "/api/external/agents",
+        { externalRef: user.id, name: agentName, billingExempt: true },
+      );
+
+      if (!provisionRes.ok) {
+        console.error(
+          `[chat-bot-api] team_provision failed for user ${user.id}:`,
+          provisionRes.data,
+        );
+        await supabase.from("chat_bot_agents").upsert(
+          {
+            user_id: user.id,
+            external_agent_id: "",
+            provisioning_status: "failed",
+            billing_exempt: true,
+            tier_id: null,
+            error_message: JSON.stringify(provisionRes.data),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id" },
+        );
+        return jsonResponse(
+          { error: "Failed to provision team bot", details: provisionRes.data },
+          safeStatus(provisionRes.status),
+        );
+      }
+
+      const newAgentId =
+        (provisionRes.data.data as Record<string, unknown>)?.agentId ||
+        provisionRes.data.agentId;
+
+      // 5. Upsert local record
+      await supabase.from("chat_bot_agents").upsert(
+        {
+          user_id: user.id,
+          external_agent_id: String(newAgentId),
+          provisioning_status: "active",
+          billing_exempt: true,
+          tier_id: null,
+          error_message: null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" },
+      );
+
+      console.log(
+        `[chat-bot-api] Team-provisioned agent ${newAgentId} for user ${user.id}`,
+      );
+      return jsonResponse({ success: true, agentId: newAgentId });
+    }
+
     // Look up active chat bot agent for this user
     const { data: agent } = await supabase
       .from("chat_bot_agents")
@@ -210,6 +316,10 @@ serve(async (req) => {
           website: agentData.website || null,
           location: agentData.location || null,
           businessHours: agentData.businessHours || null,
+          billingExempt: agentData.billingExempt ?? false,
+          dailyMessageLimit: agentData.dailyMessageLimit ?? null,
+          maxMessagesPerConversation:
+            agentData.maxMessagesPerConversation ?? null,
           connections: {
             close: closeConn
               ? { connected: true, orgName: closeConn.orgId || undefined }

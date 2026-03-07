@@ -54,6 +54,9 @@ export interface ChatBotAgent {
   website?: string | null;
   location?: string | null;
   businessHours?: { days: number[]; startTime: string; endTime: string } | null;
+  billingExempt?: boolean;
+  dailyMessageLimit?: number | null;
+  maxMessagesPerConversation?: number | null;
   connections?: {
     close?: { connected: boolean; orgName?: string };
     calendly?: { connected: boolean; eventType?: string };
@@ -494,6 +497,8 @@ export function useUpdateBotConfig() {
       specialties?: string[] | null;
       website?: string | null;
       location?: string | null;
+      dailyMessageLimit?: number | null;
+      maxMessagesPerConversation?: number | null;
     }) => chatBotApi<{ success: boolean }>("update_config", config),
     onSuccess: () => {
       toast.success("Bot configuration updated.");
@@ -501,6 +506,21 @@ export function useUpdateBotConfig() {
     },
     onError: (error: Error) => {
       toast.error(error.message || "Failed to update bot configuration.");
+    },
+  });
+}
+
+export function useProvisionTeamBot() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      chatBotApi<{ success: boolean; agentId: string }>("team_provision"),
+    onSuccess: () => {
+      toast.success("Team bot activated! Let's configure your bot.");
+      queryClient.invalidateQueries({ queryKey: chatBotKeys.all });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to activate team bot.");
     },
   });
 }

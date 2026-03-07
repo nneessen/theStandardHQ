@@ -74,7 +74,7 @@ serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    const { action, userId, tierId } = await req.json();
+    const { action, userId, tierId, billingExempt } = await req.json();
 
     if (!userId) {
       return jsonResponse({ error: "userId is required" }, 400);
@@ -114,6 +114,60 @@ serve(async (req) => {
           ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() ||
             "Chat Bot Agent"
           : "Chat Bot Agent";
+
+        // Billing-exempt agents (team members) skip tier/lead-limit logic
+        if (billingExempt === true) {
+          const result = await callChatBotApi("POST", "/api/external/agents", {
+            externalRef: userId,
+            name: agentName,
+            billingExempt: true,
+          });
+
+          if (!result.ok) {
+            console.error(
+              `[chat-bot-provision] Failed to provision billing-exempt agent for user ${userId}:`,
+              result.data,
+            );
+            await supabase.from("chat_bot_agents").upsert(
+              {
+                user_id: userId,
+                external_agent_id: "",
+                provisioning_status: "failed",
+                billing_exempt: true,
+                tier_id: null,
+                error_message: JSON.stringify(result.data),
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: "user_id" },
+            );
+            return jsonResponse(
+              { error: "Failed to provision agent", details: result.data },
+              500,
+            );
+          }
+
+          const externalAgentId =
+            (result.data.data as Record<string, unknown>)?.agentId ||
+            result.data.agentId;
+
+          await supabase.from("chat_bot_agents").upsert(
+            {
+              user_id: userId,
+              external_agent_id: String(externalAgentId),
+              provisioning_status: "active",
+              billing_exempt: true,
+              tier_id: null,
+              error_message: null,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "user_id" },
+          );
+
+          console.log(
+            `[chat-bot-provision] Provisioned billing-exempt agent ${externalAgentId} for user ${userId}`,
+          );
+          return jsonResponse({ success: true, agentId: externalAgentId });
+        }
 
         // Get tier config to determine lead limit
         let leadLimit = 50; // default Starter
@@ -341,6 +395,65 @@ serve(async (req) => {
         );
 
         return jsonResponse({ success: true, leadLimit });
+      }
+
+      // ──────────────────────────────────────────────
+      // SET BILLING EXEMPT — toggle billing exemption on existing agent
+      // ──────────────────────────────────────────────
+      case "set_billing_exempt": {
+        if (typeof billingExempt !== "boolean") {
+          return jsonResponse(
+            {
+              error:
+                "billingExempt (boolean) is required for set_billing_exempt",
+            },
+            400,
+          );
+        }
+
+        const { data: agent } = await supabase
+          .from("chat_bot_agents")
+          .select("id, external_agent_id, provisioning_status")
+          .eq("user_id", userId)
+          .eq("provisioning_status", "active")
+          .maybeSingle();
+
+        if (!agent) {
+          return jsonResponse(
+            { error: "No active agent found for this user" },
+            404,
+          );
+        }
+
+        const result = await callChatBotApi(
+          "PATCH",
+          `/api/external/agents/${agent.external_agent_id}`,
+          { billingExempt },
+        );
+
+        if (!result.ok) {
+          console.error(
+            `[chat-bot-provision] Failed to set billing_exempt for user ${userId}:`,
+            result.data,
+          );
+          return jsonResponse(
+            { error: "Failed to update billing exempt", details: result.data },
+            500,
+          );
+        }
+
+        await supabase
+          .from("chat_bot_agents")
+          .update({
+            billing_exempt: billingExempt,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", agent.id);
+
+        console.log(
+          `[chat-bot-provision] Set billing_exempt=${billingExempt} for user ${userId}`,
+        );
+        return jsonResponse({ success: true });
       }
 
       default:
