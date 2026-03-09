@@ -10,9 +10,9 @@ import type {
   CoverageRequest,
   EligibilityResult,
   ExtractedCriteria,
-} from "./decision-engine.types";
-import type { MissingFieldInfo } from "@/features/underwriting";
-import { calculateDataCompleteness } from "./conditionMatcher";
+} from "./decision-engine.types.ts";
+import type { MissingFieldInfo } from "@/features/underwriting/types/underwriting.types.ts";
+import { calculateDataCompleteness } from "./conditionMatcher.ts";
 
 // =============================================================================
 // Face Amount Calculation

@@ -9,9 +9,9 @@ import type {
   BuildTableType,
   WeightRange,
   BmiRange,
-} from "../types/build-table.types";
-import { BUILD_RATING_CLASS_ORDER } from "../types/build-table.types";
-import { feetAndInchesToInches, calculateBMI } from "./bmiCalculator";
+} from "../types/build-table.types.ts";
+import { BUILD_RATING_CLASS_ORDER } from "../types/build-table.types.ts";
+import { feetAndInchesToInches, calculateBMI } from "./bmiCalculator.ts";
 
 /**
  * Finds the build table row for a given height.

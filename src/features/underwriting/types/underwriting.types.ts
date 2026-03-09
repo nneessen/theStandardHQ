@@ -1,6 +1,6 @@
 // src/features/underwriting/types/underwriting.types.ts
 
-import type { Database } from "@/types/database.types";
+import type { Database } from "@/types/database.types.ts";
 
 // ============================================================================
 // Database Row Types
@@ -639,6 +639,8 @@ export interface SessionSaveInput {
   decisionTreeId?: string;
   sessionDurationSeconds?: number;
   notes?: string;
+  selectedTermYears?: number | null;
+  runKey?: string | null;
 }
 
 // ============================================================================

@@ -51,7 +51,7 @@ export {
 
 export {
   useDecisionEngineRecommendations,
-  transformWizardToDecisionEngineInput,
+  buildAuthoritativeUnderwritingRunInput,
 } from "./useDecisionEngineRecommendations";
 
 export {

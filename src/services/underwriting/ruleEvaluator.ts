@@ -5,7 +5,7 @@
  * unknown propagation and aggregation.
  */
 
-import type { MedicationInfo } from "@/features/underwriting";
+import type { MedicationInfo } from "@/features/underwriting/types/underwriting.types.ts";
 import {
   type FieldCondition,
   type PredicateGroup,
@@ -28,7 +28,7 @@ import {
   getTableRatingFromUnits,
   getWorseEligibility,
   DEFAULT_SAFE_OUTCOME,
-} from "./ruleEngineDSL";
+} from "./ruleEngineDSL.ts";
 
 // =============================================================================
 // TYPES

@@ -7,7 +7,7 @@
 // =============================================================================
 
 import { z } from "zod";
-import type { Database } from "@/types/database.types";
+import type { Database } from "@/types/database.types.ts";
 
 // =============================================================================
 // DSL Schema Definitions (Versioned)

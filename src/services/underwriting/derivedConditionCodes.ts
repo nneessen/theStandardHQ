@@ -1,4 +1,4 @@
-import type { ClientProfile } from "./decision-engine.types";
+import type { ClientProfile } from "./decision-engine.types.ts";
 
 export interface DerivedConditionCodesResult {
   allConditionCodes: string[];

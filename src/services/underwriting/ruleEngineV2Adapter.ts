@@ -21,8 +21,10 @@ import {
 import type { RuleSetWithRules } from "./ruleService";
 import type { AcceptanceDecision } from "./acceptanceService";
 import type { HealthClass } from "./premiumMatrixService";
-import type { DraftRuleInfo } from "@/features/underwriting/types/underwriting.types";
-import type { MedicationInfo } from "@/features/underwriting";
+import type {
+  DraftRuleInfo,
+  MedicationInfo,
+} from "@/features/underwriting/types/underwriting.types";
 import { deriveRuleConditionCodes } from "./derivedConditionCodes";
 
 // =============================================================================

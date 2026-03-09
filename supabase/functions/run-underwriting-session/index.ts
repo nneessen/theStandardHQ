@@ -32,19 +32,12 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
-    const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    if (!supabaseUrl || !supabaseAnonKey || !supabaseServiceRoleKey) {
+    if (!supabaseUrl || !supabaseAnonKey) {
       throw new Error("Supabase environment is not configured");
     }
 
     const client = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
-    });
-    const adminClient = createClient(supabaseUrl, supabaseServiceRoleKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
     });
 
     const {
@@ -90,80 +83,23 @@ serve(async (req) => {
 
     const payload = sanitizeUnderwritingPayload(await req.json(), {
       allowRunKey: true,
+      requireRunKey: true,
       allowSelectedTermYears: true,
     });
 
-    const runResult = await computeAuthoritativeUnderwritingRun({
+    const result = await computeAuthoritativeUnderwritingRun({
       client,
       payload,
       imoId: profile.imo_id,
       requestId,
     });
 
-    const rpcPayload = {
-      sessionRecommendations: runResult.sessionRecommendations,
-      eligibilitySummary: runResult.eligibilitySummary,
-      rateTableRecommendations: runResult.rateTableRecommendations,
-      evaluationMetadata: runResult.evaluationMetadata,
-    };
-
-    const { data, error } = await adminClient.rpc(
-      "persist_underwriting_run_v1",
-      {
-        p_actor_id: user.id,
-        p_input: payload,
-        p_result: rpcPayload,
-        p_audit_rows: runResult.auditRows,
-      },
-    );
-
-    if (error) {
-      console.error("[save-underwriting-session] RPC error", {
-        requestId,
-        userId: user.id,
-        code: error.code,
-        message: error.message,
-      });
-      return new Response(
-        JSON.stringify({
-          success: false,
-          code: "save_failed",
-          error: "Failed to save underwriting session",
-          requestId,
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
-    }
-
-    const parsed = data as {
-      success?: boolean;
-      session?: unknown;
-      error?: string;
-    } | null;
-
-    if (!parsed?.success || !parsed.session) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          code: "save_failed",
-          error: parsed?.error || "Failed to save underwriting session",
-          requestId,
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
-    }
-
     return new Response(
       JSON.stringify({
         success: true,
-        session: parsed.session,
         requestId,
+        decisionResult: result.decisionResult,
+        evaluationMetadata: result.evaluationMetadata,
       }),
       {
         status: 200,
@@ -171,16 +107,13 @@ serve(async (req) => {
       },
     );
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Failed to save underwriting session";
+    const message = error instanceof Error ? error.message : "Run failed";
     const isPayloadError =
       message.includes("required") ||
       message.includes("must") ||
       message.includes("Only raw wizard inputs");
 
-    console.error("[save-underwriting-session] failed", {
+    console.error("[run-underwriting-session] failed", {
       requestId,
       error: message,
     });
@@ -188,8 +121,10 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        code: isPayloadError ? "invalid_payload" : "save_failed",
-        error: isPayloadError ? message : "Failed to save underwriting session",
+        code: isPayloadError ? "invalid_payload" : "evaluation_failed",
+        error: isPayloadError
+          ? message
+          : "Failed to compute underwriting recommendations",
         requestId,
       }),
       {

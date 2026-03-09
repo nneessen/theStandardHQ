@@ -6,7 +6,7 @@
 // - Derived fields only computed when source exists
 // - Conditions without transformers pass through raw data with warning
 
-import type { ConditionResponse } from "@/features/underwriting";
+import type { ConditionResponse } from "@/features/underwriting/types/underwriting.types.ts";
 
 // ============================================================================
 // Types

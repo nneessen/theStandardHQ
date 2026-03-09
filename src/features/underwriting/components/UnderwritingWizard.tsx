@@ -25,7 +25,7 @@ import {
   UWAnalysisError,
   useSaveUnderwritingSession,
   useDecisionEngineRecommendations,
-  transformWizardToDecisionEngineInput,
+  buildAuthoritativeUnderwritingRunInput,
   useHealthConditions,
   useUWWizardUsage,
   useRecordUWWizardRun,
@@ -34,10 +34,7 @@ import {
 } from "../hooks";
 import { calculateBMI } from "../utils/bmiCalculator";
 import { getMissingRequiredFollowUps } from "../utils/follow-up-validation";
-import {
-  buildSessionHealthSnapshot,
-  parseSessionHealthSnapshot,
-} from "../utils/session-health-snapshot";
+import { parseSessionHealthSnapshot } from "../utils/session-health-snapshot";
 import { getRequestedFaceAmounts } from "../utils/session-persistence";
 import type {
   WizardFormData,
@@ -361,13 +358,13 @@ function UnderwritingWizardInner() {
         runKey,
       };
 
-      const decisionInput = transformWizardToDecisionEngineInput(
-        formData.client,
-        formData.health,
-        formData.coverage,
-        user?.imo_id || "",
+      const decisionInput = buildAuthoritativeUnderwritingRunInput({
+        clientInfo: formData.client,
+        healthInfo: formData.health,
+        coverageRequest: formData.coverage,
+        runKey,
         selectedTermYears,
-      );
+      });
 
       setLastAnalyzedData(currentDataHash);
 
@@ -375,9 +372,7 @@ function UnderwritingWizardInner() {
         onSuccess: (result) => {
           analysisInFlightRef.current = false;
           setAnalysisResult(result);
-
           const pendingRunKey = pendingRunKeyRef.current;
-          pendingRunKeyRef.current = null;
 
           if (result.usageRecorded !== true && pendingRunKey && user?.imo_id) {
             recordRunMutation.mutate(
@@ -510,46 +505,37 @@ function UnderwritingWizardInner() {
   const handleTermChange = useCallback(
     (termYears: number | null) => {
       setSelectedTermYears(termYears);
-      const decisionInput = transformWizardToDecisionEngineInput(
-        formData.client,
-        formData.health,
-        formData.coverage,
-        user?.imo_id || "",
-        termYears,
-      );
+      const decisionInput = buildAuthoritativeUnderwritingRunInput({
+        clientInfo: formData.client,
+        healthInfo: formData.health,
+        coverageRequest: formData.coverage,
+        runKey: pendingRunKeyRef.current || crypto.randomUUID(),
+        selectedTermYears: termYears,
+      });
+      if (!pendingRunKeyRef.current) {
+        pendingRunKeyRef.current = decisionInput.runKey;
+      }
       decisionEngineMutation.mutate(decisionInput);
     },
-    [formData, user?.imo_id, decisionEngineMutation],
+    [formData, decisionEngineMutation],
   );
 
   const handleSaveSession = useCallback(async () => {
     const decisionResult = decisionEngineMutation.data;
     if (!analysisResult || !decisionResult) return;
 
-    const sessionData: SessionSaveInput = {
-      clientName: formData.client.name || undefined,
-      clientDob: formData.client.dob,
-      clientAge: formData.client.age,
-      clientGender: formData.client.gender,
-      clientState: formData.client.state,
-      clientHeightInches:
-        formData.client.heightFeet * 12 + formData.client.heightInches,
-      clientWeightLbs: formData.client.weight,
-      healthResponses: buildSessionHealthSnapshot(
-        formData.health.conditions,
-        formData.health.medications,
-      ),
-      conditionsReported: formData.health.conditions.map(
-        (c) => c.conditionCode,
-      ),
-      tobaccoUse: formData.health.tobacco.currentUse,
-      tobaccoDetails: formData.health.tobacco,
-      requestedFaceAmounts: formData.coverage.faceAmounts,
-      requestedProductTypes: formData.coverage.productTypes,
-      sessionDurationSeconds: Math.floor(
-        (Date.now() - sessionStartTime) / 1000,
-      ),
-    };
+    const sessionData: SessionSaveInput =
+      buildAuthoritativeUnderwritingRunInput({
+        clientInfo: formData.client,
+        healthInfo: formData.health,
+        coverageRequest: formData.coverage,
+        runKey: pendingRunKeyRef.current || crypto.randomUUID(),
+        selectedTermYears,
+        sessionDurationSeconds: Math.floor(
+          (Date.now() - sessionStartTime) / 1000,
+        ),
+      });
+    pendingRunKeyRef.current = sessionData.runKey || pendingRunKeyRef.current;
 
     try {
       await saveSessionMutation.mutateAsync(sessionData);
@@ -564,6 +550,7 @@ function UnderwritingWizardInner() {
     sessionStartTime,
     saveSessionMutation,
     navigate,
+    selectedTermYears,
   ]);
 
   const handleLoadSession = useCallback(
@@ -616,6 +603,7 @@ function UnderwritingWizardInner() {
       setSelectedTermYears(null);
       analysisMutation.reset();
       decisionEngineMutation.reset();
+      pendingRunKeyRef.current = null;
       setCurrentStepIndex(0);
       setShowHistorySheet(false);
       setErrors({});
@@ -840,7 +828,9 @@ function UnderwritingWizardInner() {
             {isLastStep ? (
               <Button
                 onClick={handleSaveSession}
-                disabled={isSaving || !analysisResult}
+                disabled={
+                  isSaving || !analysisResult || !decisionEngineMutation.data
+                }
                 size="sm"
                 className="h-8 text-xs px-4 bg-emerald-600 hover:bg-emerald-700 text-white"
               >

@@ -10893,16 +10893,20 @@ export type Database = {
           created_by: string;
           decision_tree_id: string | null;
           eligibility_summary: Json | null;
+          evaluation_metadata: Json;
           health_responses: Json;
           health_tier: string | null;
           id: string;
           imo_id: string;
           notes: string | null;
           recommendations: Json;
+          result_source: string;
+          run_key: string | null;
           requested_face_amount: number | null;
           requested_face_amounts: Json;
           requested_product_types: string[] | null;
           risk_factors: string[] | null;
+          selected_term_years: number | null;
           session_duration_seconds: number | null;
           status: string | null;
           tobacco_details: Json | null;
@@ -10925,16 +10929,20 @@ export type Database = {
           created_by: string;
           decision_tree_id?: string | null;
           eligibility_summary?: Json | null;
+          evaluation_metadata?: Json;
           health_responses?: Json;
           health_tier?: string | null;
           id?: string;
           imo_id: string;
           notes?: string | null;
           recommendations?: Json;
+          result_source?: string;
+          run_key?: string | null;
           requested_face_amount?: number | null;
           requested_face_amounts?: Json;
           requested_product_types?: string[] | null;
           risk_factors?: string[] | null;
+          selected_term_years?: number | null;
           session_duration_seconds?: number | null;
           status?: string | null;
           tobacco_details?: Json | null;
@@ -10957,16 +10965,20 @@ export type Database = {
           created_by?: string;
           decision_tree_id?: string | null;
           eligibility_summary?: Json | null;
+          evaluation_metadata?: Json;
           health_responses?: Json;
           health_tier?: string | null;
           id?: string;
           imo_id?: string;
           notes?: string | null;
           recommendations?: Json;
+          result_source?: string;
+          run_key?: string | null;
           requested_face_amount?: number | null;
           requested_face_amounts?: Json;
           requested_product_types?: string[] | null;
           risk_factors?: string[] | null;
+          selected_term_years?: number | null;
           session_duration_seconds?: number | null;
           status?: string | null;
           tobacco_details?: Json | null;
@@ -16739,6 +16751,15 @@ export type Database = {
           p_user_id: string;
         };
         Returns: string;
+      };
+      persist_underwriting_run_v1: {
+        Args: {
+          p_actor_id: string;
+          p_audit_rows?: Json;
+          p_input: Json;
+          p_result: Json;
+        };
+        Returns: Json;
       };
       record_uw_wizard_run: {
         Args: {

@@ -1,6 +1,6 @@
 // src/features/underwriting/types/build-table.types.ts
 
-import type { Database } from "@/types/database.types";
+import type { Database } from "@/types/database.types.ts";
 
 // ============================================================================
 // Database Row Types (derived from database.types.ts)

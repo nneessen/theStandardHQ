@@ -2,7 +2,7 @@
 // Type definitions for the Decision Engine
 // Extracted from decisionEngine.ts for modularity
 
-import type { Database } from "@/types/database.types";
+import type { Database } from "@/types/database.types.ts";
 import type {
   EligibilityStatus,
   MissingFieldInfo,
@@ -10,20 +10,20 @@ import type {
   DraftRuleInfo,
   RuleProvenance,
   MedicationInfo,
-} from "@/features/underwriting";
+  AcceptanceDecision,
+} from "@/features/underwriting/types/underwriting.types.ts";
 import type {
   GenderType,
   RateableHealthClass,
   AlternativeQuote,
   PremiumMatrix,
-} from "./premiumMatrixService";
+} from "./premium-matrix-core.ts";
 import type {
   BuildTableType,
   BuildTableData,
   BmiTableData,
   BuildRatingClass,
-} from "@/features/underwriting";
-import type { AcceptanceDecision } from "./acceptanceService";
+} from "@/features/underwriting/types/build-table.types.ts";
 
 // Re-export commonly used types for convenience
 export type { GenderType, AcceptanceDecision };
