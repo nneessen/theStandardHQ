@@ -374,6 +374,37 @@ export interface SessionRecommendation {
   createdAt: string;
 }
 
+export interface SessionRecommendationInput {
+  productId: string;
+  carrierId: string;
+  eligibilityStatus: EligibilityStatus;
+  eligibilityReasons: string[];
+  missingFields: MissingFieldInfo[];
+  confidence: number;
+  approvalLikelihood: number | null;
+  healthClassResult: string | null;
+  conditionDecisions: ConditionDecision[];
+  monthlyPremium: number | null;
+  annualPremium: number | null;
+  costPerThousand: number | null;
+  score: number | null;
+  scoreComponents: ScoreComponents | null;
+  recommendationReason:
+    | "best_value"
+    | "cheapest"
+    | "best_approval"
+    | "highest_coverage"
+    | null;
+  recommendationRank: number | null;
+  draftRulesFyi: DraftRuleInfo[];
+}
+
+export interface SessionEligibilitySummary {
+  eligible: number;
+  unknown: number;
+  ineligible: number;
+}
+
 // ============================================================================
 // Phase 5: Criteria Evaluation Types
 // ============================================================================
@@ -593,10 +624,13 @@ export interface SessionHealthSnapshot {
 
 export interface SessionSaveData {
   clientName?: string;
+  clientDob?: string | null;
   clientAge: number;
   clientGender: string;
   clientState: string;
   clientBmi: number;
+  clientHeightInches: number;
+  clientWeightLbs: number;
   healthResponses: Record<string, ConditionResponse> | SessionHealthSnapshot;
   conditionsReported: string[];
   tobaccoUse: boolean;
@@ -608,6 +642,8 @@ export interface SessionSaveData {
   riskFactors: string[];
   // Can be AI recommendations (legacy) or rate table recommendations (new)
   recommendations: CarrierRecommendation[] | RateTableRecommendation[];
+  eligibilitySummary: SessionEligibilitySummary;
+  sessionRecommendations: SessionRecommendationInput[];
   decisionTreeId?: string;
   sessionDurationSeconds?: number;
   notes?: string;
