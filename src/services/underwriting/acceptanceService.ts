@@ -421,11 +421,15 @@ export async function bulkUpsertAcceptanceRules(
 /**
  * Delete an acceptance rule
  */
-export async function deleteAcceptanceRule(ruleId: string): Promise<void> {
+export async function deleteAcceptanceRule(
+  ruleId: string,
+  imoId: string,
+): Promise<void> {
   const { error } = await supabase
     .from("carrier_condition_acceptance")
     .delete()
-    .eq("id", ruleId);
+    .eq("id", ruleId)
+    .eq("imo_id", imoId);
 
   if (error) {
     console.error("Error deleting acceptance rule:", error);

@@ -39,11 +39,13 @@ async function fetchUserSessions(
 
 async function fetchAgencySessions(
   agencyId: string,
+  imoId: string,
 ): Promise<UnderwritingSession[]> {
   const { data, error } = await supabase
     .from("underwriting_sessions")
     .select("*")
     .eq("agency_id", agencyId)
+    .eq("imo_id", imoId)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -55,6 +57,7 @@ async function fetchAgencySessions(
 
 async function fetchAgencySessionsPaginated(
   agencyId: string,
+  imoId: string,
   { page, pageSize, search }: PaginatedSessionsParams,
 ): Promise<PaginatedSessionsResult> {
   const from = page * pageSize;
@@ -63,7 +66,8 @@ async function fetchAgencySessionsPaginated(
   let query = supabase
     .from("underwriting_sessions")
     .select("*", { count: "exact" })
-    .eq("agency_id", agencyId);
+    .eq("agency_id", agencyId)
+    .eq("imo_id", imoId);
 
   if (search.trim()) {
     const pattern = `%${search.trim()}%`;
@@ -128,60 +132,48 @@ async function fetchSession(sessionId: string): Promise<UnderwritingSession> {
 }
 
 interface SaveSessionParams {
-  imoId: string;
-  agencyId: string | null;
   data: SessionSaveData;
+}
+
+interface SaveUnderwritingSessionResult {
+  success: boolean;
+  error?: string;
+  session?: UnderwritingSession;
 }
 
 async function saveSession(
   params: SaveSessionParams,
 ): Promise<UnderwritingSession> {
-  const { imoId, agencyId, data } = params;
-
-  // Get the current user for created_by
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("User must be authenticated to save a session");
-  }
-
-  const { data: session, error } = await supabase
-    .from("underwriting_sessions")
-    .insert({
-      imo_id: imoId,
-      agency_id: agencyId,
-      created_by: user.id,
-      client_name: data.clientName,
-      client_age: data.clientAge,
-      client_gender: data.clientGender,
-      client_state: data.clientState,
-      client_bmi: data.clientBmi,
-      health_responses: data.healthResponses,
-      conditions_reported: data.conditionsReported,
-      tobacco_use: data.tobaccoUse,
-      tobacco_details: data.tobaccoDetails,
-      // Store primary face amount (database uses single number column)
-      requested_face_amount: data.requestedFaceAmounts?.[0] ?? null,
-      requested_product_types: data.requestedProductTypes,
-      ai_analysis: data.aiAnalysis,
-      health_tier: data.healthTier,
-      risk_factors: data.riskFactors,
-      recommendations: data.recommendations,
-      decision_tree_id: data.decisionTreeId,
-      session_duration_seconds: data.sessionDurationSeconds,
-      notes: data.notes,
-      status: "saved",
-    })
-    .select()
-    .single();
+  const { data } = params;
+  const { data: result, error } = await supabase.functions.invoke(
+    "save-underwriting-session",
+    {
+      body: data,
+    },
+  );
 
   if (error) {
-    throw new Error(`Failed to save session: ${error.message}`);
+    let message = error.message;
+
+    try {
+      const ctx = (error as { context?: Response }).context;
+      if (ctx && typeof ctx.json === "function") {
+        const body = (await ctx.json()) as { error?: string };
+        message = body.error || message;
+      }
+    } catch {
+      // Ignore response body parsing failures and surface the transport error.
+    }
+
+    throw new Error(`Failed to save session: ${message}`);
   }
 
-  return session;
+  const parsed = result as SaveUnderwritingSessionResult | null;
+  if (!parsed?.success || !parsed.session) {
+    throw new Error(parsed?.error || "Failed to save session");
+  }
+
+  return parsed.session;
 }
 
 /**
@@ -194,6 +186,8 @@ export function useUnderwritingSessions() {
     queryKey: underwritingQueryKeys.sessions(user?.id || ""),
     queryFn: () => fetchUserSessions(user!.id!),
     enabled: !!user?.id && !userLoading,
+    staleTime: 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 }
 
@@ -205,6 +199,8 @@ export function useUnderwritingSession(sessionId: string) {
     queryKey: underwritingQueryKeys.session(sessionId),
     queryFn: () => fetchSession(sessionId),
     enabled: !!sessionId,
+    staleTime: 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 }
 
@@ -214,10 +210,10 @@ export function useUnderwritingSession(sessionId: string) {
 export function useSaveUnderwritingSession() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { agency } = useImo();
+  const { agency, imo } = useImo();
 
   return useMutation({
-    mutationFn: saveSession,
+    mutationFn: (data: SessionSaveData) => saveSession({ data }),
     onSuccess: () => {
       // Invalidate the sessions list (both user and agency)
       if (user?.id) {
@@ -225,9 +221,9 @@ export function useSaveUnderwritingSession() {
           queryKey: underwritingQueryKeys.sessions(user.id),
         });
       }
-      if (agency?.id) {
+      if (agency?.id && imo?.id) {
         queryClient.invalidateQueries({
-          queryKey: underwritingQueryKeys.agencySessions(agency.id),
+          queryKey: underwritingQueryKeys.agencySessions(imo.id, agency.id),
         });
       }
     },
@@ -238,12 +234,17 @@ export function useSaveUnderwritingSession() {
  * Hook to fetch all sessions for the current agency (agency-wide access)
  */
 export function useAgencySessions() {
-  const { agency, loading: imoLoading } = useImo();
+  const { agency, imo, loading: imoLoading } = useImo();
 
   return useQuery({
-    queryKey: underwritingQueryKeys.agencySessions(agency?.id || ""),
-    queryFn: () => fetchAgencySessions(agency!.id!),
-    enabled: !!agency?.id && !imoLoading,
+    queryKey: underwritingQueryKeys.agencySessions(
+      imo?.id || "",
+      agency?.id || "",
+    ),
+    queryFn: () => fetchAgencySessions(agency!.id!, imo!.id),
+    enabled: !!agency?.id && !!imo?.id && !imoLoading,
+    staleTime: 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   });
 }
 
@@ -255,19 +256,26 @@ export function useAgencySessionsPaginated(
   pageSize: number,
   search: string,
 ) {
-  const { agency, loading: imoLoading } = useImo();
+  const { agency, imo, loading: imoLoading } = useImo();
 
   return useQuery({
     queryKey: underwritingQueryKeys.agencySessionsPaginated(
+      imo?.id || "",
       agency?.id || "",
       page,
       pageSize,
       search,
     ),
     queryFn: () =>
-      fetchAgencySessionsPaginated(agency!.id!, { page, pageSize, search }),
-    enabled: !!agency?.id && !imoLoading,
+      fetchAgencySessionsPaginated(agency!.id!, imo!.id, {
+        page,
+        pageSize,
+        search,
+      }),
+    enabled: !!agency?.id && !!imo?.id && !imoLoading,
     placeholderData: (prev) => prev,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 }
 
@@ -292,5 +300,7 @@ export function useUserSessionsPaginated(
       fetchUserSessionsPaginated(user!.id!, { page, pageSize, search }),
     enabled: !!user?.id && !userLoading,
     placeholderData: (prev) => prev,
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
   });
 }

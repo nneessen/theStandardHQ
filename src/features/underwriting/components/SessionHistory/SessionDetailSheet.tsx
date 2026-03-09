@@ -33,6 +33,7 @@ import {
   safeParseJsonArray,
 } from "../../utils/formatters";
 import { parseSessionHealthSnapshot } from "../../utils/session-health-snapshot";
+import { formatRequestedFaceAmounts } from "../../utils/session-persistence";
 
 interface SessionDetailSheetProps {
   session: UnderwritingSession | null;
@@ -194,8 +195,8 @@ export function SessionDetailSheet({
             >
               <div className="grid grid-cols-2 gap-x-8 gap-y-3">
                 <InfoRow
-                  label="Face Amount"
-                  value={formatCurrency(session.requested_face_amount || 0)}
+                  label="Face Amounts"
+                  value={formatRequestedFaceAmounts(session)}
                   valueClassName="font-semibold"
                 />
                 <InfoRow

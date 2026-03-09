@@ -28,10 +28,10 @@ import type { UnderwritingSession } from "../../types/underwriting.types";
 import { getHealthTierLabel } from "../../types/underwriting.types";
 import {
   formatSessionDate,
-  formatCurrency,
   getHealthTierBadgeColor,
   isValidHealthTier,
 } from "../../utils/formatters";
+import { formatRequestedFaceAmounts } from "../../utils/session-persistence";
 
 const PAGE_SIZE = 20;
 
@@ -40,8 +40,12 @@ export function SessionHistoryList() {
   const [page, setPage] = useState(0);
   const deferredSearch = useDeferredValue(search);
 
-  const { data: result, isLoading, error, isFetching } =
-    useUserSessionsPaginated(page, PAGE_SIZE, deferredSearch);
+  const {
+    data: result,
+    isLoading,
+    error,
+    isFetching,
+  } = useUserSessionsPaginated(page, PAGE_SIZE, deferredSearch);
 
   const sessions = result?.data ?? [];
   const totalCount = result?.count ?? 0;
@@ -116,7 +120,7 @@ export function SessionHistoryList() {
                 </div>
               </TableHead>
               <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 text-right">
-                Face Amount
+                Face Amounts
               </TableHead>
               <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 w-[80px]">
                 Actions
@@ -175,7 +179,7 @@ export function SessionHistoryList() {
                     </Badge>
                   </TableCell>
                   <TableCell className="px-3 py-2 text-[11px] text-zinc-700 dark:text-zinc-300 text-right font-medium">
-                    {formatCurrency(session.requested_face_amount || 0)}
+                    {formatRequestedFaceAmounts(session)}
                   </TableCell>
                   <TableCell className="px-3 py-2">
                     <Button

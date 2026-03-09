@@ -2,6 +2,7 @@
 // React Query hooks for v2 rules (individual rules within rule sets)
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   createRule,
   updateRule,
@@ -21,17 +22,19 @@ import { coverageStatsKeys } from "./useCoverageStats";
  */
 export function useCreateRule() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const imoId = user?.imo_id;
 
   return useMutation({
     mutationFn: (input: CreateRuleInput) => createRule(input),
     onSuccess: (_, variables) => {
       // Invalidate the parent rule set to refresh rules list
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.ruleSet(variables.ruleSetId),
+        queryKey: ruleEngineKeys.ruleSet(imoId, variables.ruleSetId),
       });
       // Also invalidate needing review since rule changes may affect status
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.needingReview(),
+        queryKey: ruleEngineKeys.needingReview(imoId),
       });
     },
   });
@@ -42,6 +45,8 @@ export function useCreateRule() {
  */
 export function useUpdateRule() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const imoId = user?.imo_id;
 
   return useMutation({
     mutationFn: ({
@@ -57,13 +62,13 @@ export function useUpdateRule() {
     }) => updateRule(id, updates),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.ruleSet(variables.ruleSetId),
+        queryKey: ruleEngineKeys.ruleSet(imoId, variables.ruleSetId),
       });
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.ruleSets(variables.carrierId),
+        queryKey: ruleEngineKeys.ruleSetsForCarrier(imoId, variables.carrierId),
       });
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.needingReview(),
+        queryKey: ruleEngineKeys.needingReview(imoId),
       });
       queryClient.invalidateQueries({
         queryKey: coverageStatsKeys.all,
@@ -77,6 +82,8 @@ export function useUpdateRule() {
  */
 export function useDeleteRule() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const imoId = user?.imo_id;
 
   return useMutation({
     mutationFn: ({
@@ -90,13 +97,13 @@ export function useDeleteRule() {
     }) => deleteRule(id),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.ruleSet(variables.ruleSetId),
+        queryKey: ruleEngineKeys.ruleSet(imoId, variables.ruleSetId),
       });
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.ruleSets(variables.carrierId),
+        queryKey: ruleEngineKeys.ruleSetsForCarrier(imoId, variables.carrierId),
       });
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.needingReview(),
+        queryKey: ruleEngineKeys.needingReview(imoId),
       });
       queryClient.invalidateQueries({
         queryKey: coverageStatsKeys.all,
@@ -110,6 +117,8 @@ export function useDeleteRule() {
  */
 export function useReorderRules() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const imoId = user?.imo_id;
 
   return useMutation({
     mutationFn: ({
@@ -123,10 +132,10 @@ export function useReorderRules() {
     }) => reorderRules(ruleSetId, ruleIds),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.ruleSet(variables.ruleSetId),
+        queryKey: ruleEngineKeys.ruleSet(imoId, variables.ruleSetId),
       });
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.ruleSets(variables.carrierId),
+        queryKey: ruleEngineKeys.ruleSetsForCarrier(imoId, variables.carrierId),
       });
     },
   });

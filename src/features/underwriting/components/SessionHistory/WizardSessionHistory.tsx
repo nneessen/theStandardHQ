@@ -47,6 +47,7 @@ import {
   safeParseJsonArray,
 } from "../../utils/formatters";
 import { parseSessionHealthSnapshot } from "../../utils/session-health-snapshot";
+import { formatRequestedFaceAmounts } from "../../utils/session-persistence";
 
 const PAGE_SIZE = 15;
 
@@ -167,7 +168,7 @@ export function WizardSessionHistory({
                       </div>
                     </TableHead>
                     <TableHead className="h-9 px-3 text-[10px] font-semibold text-right">
-                      Face Amount
+                      Face Amounts
                     </TableHead>
                     <TableHead className="h-9 px-3 text-[10px] font-semibold w-[130px]">
                       Actions
@@ -204,7 +205,7 @@ export function WizardSessionHistory({
                         </Badge>
                       </TableCell>
                       <TableCell className="px-3 py-2 text-[11px] text-foreground text-right font-medium">
-                        {formatCurrency(session.requested_face_amount || 0)}
+                        {formatRequestedFaceAmounts(session)}
                       </TableCell>
                       <TableCell className="px-3 py-2">
                         <div className="flex items-center gap-1">
@@ -437,8 +438,8 @@ function SessionDetailView({
           >
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               <InfoItem
-                label="Face Amount"
-                value={formatCurrency(session.requested_face_amount || 0)}
+                label="Face Amounts"
+                value={formatRequestedFaceAmounts(session)}
                 bold
               />
               <InfoItem

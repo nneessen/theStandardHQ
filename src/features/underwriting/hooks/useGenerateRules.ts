@@ -75,11 +75,11 @@ export function useGenerateKnockoutRules() {
     onSuccess: (_result, { carrierId }) => {
       // Invalidate rule sets cache for this carrier
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.ruleSets(carrierId),
+        queryKey: ruleEngineKeys.ruleSetsForCarrier(imo?.id, carrierId),
       });
       // Also invalidate the "needing review" list
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.needingReview(),
+        queryKey: ruleEngineKeys.needingReview(imo?.id),
       });
     },
   });
@@ -117,11 +117,11 @@ export function useGenerateAgeRules() {
     onSuccess: (_result, { carrierId }) => {
       // Invalidate rule sets cache for this carrier
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.ruleSets(carrierId),
+        queryKey: ruleEngineKeys.ruleSetsForCarrier(imo?.id, carrierId),
       });
       // Also invalidate the "needing review" list
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.needingReview(),
+        queryKey: ruleEngineKeys.needingReview(imo?.id),
       });
     },
   });
@@ -158,10 +158,10 @@ export function useGenerateGuaranteedIssueRules() {
     },
     onSuccess: (_result, { carrierId }) => {
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.ruleSets(carrierId),
+        queryKey: ruleEngineKeys.ruleSetsForCarrier(imo?.id, carrierId),
       });
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.needingReview(),
+        queryKey: ruleEngineKeys.needingReview(imo?.id),
       });
     },
   });

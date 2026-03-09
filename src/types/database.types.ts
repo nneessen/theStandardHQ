@@ -16557,6 +16557,21 @@ export type Database = {
         };
         Returns: string;
       };
+      log_underwriting_rule_evaluation: {
+        Args: {
+          p_condition_code: string | null;
+          p_failed_conditions?: Json | null;
+          p_input_hash?: string | null;
+          p_matched_conditions?: Json | null;
+          p_missing_fields?: Json | null;
+          p_outcome_applied?: Json | null;
+          p_predicate_result: string;
+          p_rule_id: string | null;
+          p_rule_set_id: string | null;
+          p_session_id: string;
+        };
+        Returns: Json;
+      };
       lookup_user_by_email: {
         Args: { p_email: string };
         Returns: {
@@ -16777,6 +16792,10 @@ export type Database = {
         Args: { p_notes: string; p_rule_set_id: string };
         Returns: Json;
       };
+      reorder_underwriting_rules: {
+        Args: { p_rule_ids: string[]; p_rule_set_id: string };
+        Returns: Json;
+      };
       release_alert_rules: { Args: { p_rule_ids: string[] }; Returns: number };
       resend_recruit_invitation: {
         Args: { p_invitation_id: string };
@@ -16795,6 +16814,10 @@ export type Database = {
         Returns: Json;
       };
       safe_uuid_from_text: { Args: { input: string }; Returns: string };
+      save_underwriting_session: {
+        Args: { p_payload: Json; p_user_id: string };
+        Returns: Json;
+      };
       save_workflow_as_org_template: {
         Args: { p_workflow_id: string };
         Returns: string;

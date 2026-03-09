@@ -23,12 +23,36 @@ export const underwritingQueryKeys = {
     [...underwritingQueryKeys.all, "sessions", userId] as const,
   session: (sessionId: string) =>
     [...underwritingQueryKeys.all, "session", sessionId] as const,
-  agencySessions: (agencyId: string) =>
-    [...underwritingQueryKeys.all, "agency-sessions", agencyId] as const,
-  agencySessionsPaginated: (agencyId: string, page: number, pageSize: number, search: string) =>
-    [...underwritingQueryKeys.all, "agency-sessions", agencyId, { page, pageSize, search }] as const,
-  sessionsPaginated: (userId: string, page: number, pageSize: number, search: string) =>
-    [...underwritingQueryKeys.all, "sessions", userId, { page, pageSize, search }] as const,
+  agencySessions: (imoId: string | null | undefined, agencyId: string) =>
+    [
+      ...underwritingQueryKeys.all,
+      "agency-sessions",
+      imoId || "no-imo",
+      agencyId,
+    ] as const,
+  agencySessionsPaginated: (
+    imoId: string | null | undefined,
+    agencyId: string,
+    page: number,
+    pageSize: number,
+    search: string,
+  ) =>
+    [
+      ...underwritingQueryKeys.agencySessions(imoId, agencyId),
+      { page, pageSize, search },
+    ] as const,
+  sessionsPaginated: (
+    userId: string,
+    page: number,
+    pageSize: number,
+    search: string,
+  ) =>
+    [
+      ...underwritingQueryKeys.all,
+      "sessions",
+      userId,
+      { page, pageSize, search },
+    ] as const,
   featureEnabled: (agencyId: string) =>
     [...underwritingQueryKeys.all, "feature-enabled", agencyId] as const,
 };

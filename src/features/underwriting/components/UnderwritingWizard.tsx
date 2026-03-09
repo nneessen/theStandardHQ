@@ -38,6 +38,11 @@ import {
   buildSessionHealthSnapshot,
   parseSessionHealthSnapshot,
 } from "../utils/session-health-snapshot";
+import {
+  buildEligibilitySummary,
+  buildSessionRecommendations,
+  getRequestedFaceAmounts,
+} from "../utils/session-persistence";
 import type {
   WizardFormData,
   WizardStep,
@@ -522,7 +527,8 @@ function UnderwritingWizardInner() {
   );
 
   const handleSaveSession = useCallback(async () => {
-    if (!analysisResult || !user?.imo_id) return;
+    const decisionResult = decisionEngineMutation.data;
+    if (!analysisResult || !decisionResult) return;
 
     const bmi = calculateBMI(
       formData.client.heightFeet,
@@ -566,10 +572,14 @@ function UnderwritingWizardInner() {
 
     const sessionData: SessionSaveData = {
       clientName: formData.client.name || undefined,
+      clientDob: formData.client.dob,
       clientAge: formData.client.age,
       clientGender: formData.client.gender,
       clientState: formData.client.state,
       clientBmi: bmi,
+      clientHeightInches:
+        formData.client.heightFeet * 12 + formData.client.heightInches,
+      clientWeightLbs: formData.client.weight,
       healthResponses: buildSessionHealthSnapshot(
         formData.health.conditions,
         formData.health.medications,
@@ -585,17 +595,15 @@ function UnderwritingWizardInner() {
       healthTier: analysisResult.healthTier,
       riskFactors: analysisResult.riskFactors,
       recommendations: topRateTableRecs,
+      eligibilitySummary: buildEligibilitySummary(decisionResult),
+      sessionRecommendations: buildSessionRecommendations(decisionResult),
       sessionDurationSeconds: Math.floor(
         (Date.now() - sessionStartTime) / 1000,
       ),
     };
 
     try {
-      await saveSessionMutation.mutateAsync({
-        imoId: user.imo_id,
-        agencyId: user.agency_id || null,
-        data: sessionData,
-      });
+      await saveSessionMutation.mutateAsync(sessionData);
       navigate({ to: "/policies" });
     } catch {
       setErrors({ submit: "Failed to save session. Please try again." });
@@ -603,7 +611,6 @@ function UnderwritingWizardInner() {
   }, [
     analysisResult,
     decisionEngineMutation.data,
-    user,
     formData,
     sessionStartTime,
     saveSessionMutation,
@@ -624,6 +631,7 @@ function UnderwritingWizardInner() {
       const productTypes = safeParseJsonArray<ProductType>(
         session.requested_product_types,
       );
+      const requestedFaceAmounts = getRequestedFaceAmounts(session);
 
       const loadedFormData: WizardFormData = {
         client: {
@@ -645,13 +653,10 @@ function UnderwritingWizardInner() {
             healthSnapshot.medications || initialHealthInfo.medications,
         },
         coverage: {
-          faceAmounts: session.requested_face_amount
-            ? [
-                Math.max(50000, Math.round(session.requested_face_amount / 2)),
-                session.requested_face_amount,
-                Math.min(5000000, session.requested_face_amount * 2),
-              ]
-            : [250000, 500000, 1000000],
+          faceAmounts:
+            requestedFaceAmounts.length > 0
+              ? requestedFaceAmounts
+              : [250000, 500000, 1000000],
           productTypes: productTypes.length > 0 ? productTypes : ["term_life"],
         },
       };

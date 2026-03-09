@@ -2,6 +2,7 @@
 // React Query hooks for rule set approval workflow
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   submitForReview,
   approveRuleSet,
@@ -19,6 +20,8 @@ import { ruleEngineKeys } from "./useRuleSets";
  */
 export function useSubmitForReview() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const imoId = user?.imo_id;
 
   return useMutation({
     mutationFn: ({
@@ -32,15 +35,18 @@ export function useSubmitForReview() {
       if (result.success) {
         // Invalidate the specific rule set
         queryClient.invalidateQueries({
-          queryKey: ruleEngineKeys.ruleSet(variables.ruleSetId),
+          queryKey: ruleEngineKeys.ruleSet(imoId, variables.ruleSetId),
         });
         // Invalidate rule sets list for this carrier
         queryClient.invalidateQueries({
-          queryKey: ruleEngineKeys.ruleSets(variables.carrierId),
+          queryKey: ruleEngineKeys.ruleSetsForCarrier(
+            imoId,
+            variables.carrierId,
+          ),
         });
         // Invalidate needing review list
         queryClient.invalidateQueries({
-          queryKey: ruleEngineKeys.needingReview(),
+          queryKey: ruleEngineKeys.needingReview(imoId),
         });
       }
     },
@@ -52,6 +58,8 @@ export function useSubmitForReview() {
  */
 export function useApproveRuleSet() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const imoId = user?.imo_id;
 
   return useMutation({
     mutationFn: ({
@@ -67,15 +75,18 @@ export function useApproveRuleSet() {
       if (result.success) {
         // Invalidate the specific rule set
         queryClient.invalidateQueries({
-          queryKey: ruleEngineKeys.ruleSet(variables.ruleSetId),
+          queryKey: ruleEngineKeys.ruleSet(imoId, variables.ruleSetId),
         });
         // Invalidate rule sets list for this carrier
         queryClient.invalidateQueries({
-          queryKey: ruleEngineKeys.ruleSets(variables.carrierId),
+          queryKey: ruleEngineKeys.ruleSetsForCarrier(
+            imoId,
+            variables.carrierId,
+          ),
         });
         // Invalidate needing review list
         queryClient.invalidateQueries({
-          queryKey: ruleEngineKeys.needingReview(),
+          queryKey: ruleEngineKeys.needingReview(imoId),
         });
       }
     },
@@ -87,6 +98,8 @@ export function useApproveRuleSet() {
  */
 export function useRejectRuleSet() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const imoId = user?.imo_id;
 
   return useMutation({
     mutationFn: ({
@@ -102,15 +115,18 @@ export function useRejectRuleSet() {
       if (result.success) {
         // Invalidate the specific rule set
         queryClient.invalidateQueries({
-          queryKey: ruleEngineKeys.ruleSet(variables.ruleSetId),
+          queryKey: ruleEngineKeys.ruleSet(imoId, variables.ruleSetId),
         });
         // Invalidate rule sets list for this carrier
         queryClient.invalidateQueries({
-          queryKey: ruleEngineKeys.ruleSets(variables.carrierId),
+          queryKey: ruleEngineKeys.ruleSetsForCarrier(
+            imoId,
+            variables.carrierId,
+          ),
         });
         // Invalidate needing review list
         queryClient.invalidateQueries({
-          queryKey: ruleEngineKeys.needingReview(),
+          queryKey: ruleEngineKeys.needingReview(imoId),
         });
       }
     },
@@ -122,6 +138,8 @@ export function useRejectRuleSet() {
  */
 export function useRevertToDraft() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const imoId = user?.imo_id;
 
   return useMutation({
     mutationFn: ({
@@ -135,15 +153,18 @@ export function useRevertToDraft() {
       if (result.success) {
         // Invalidate the specific rule set
         queryClient.invalidateQueries({
-          queryKey: ruleEngineKeys.ruleSet(variables.ruleSetId),
+          queryKey: ruleEngineKeys.ruleSet(imoId, variables.ruleSetId),
         });
         // Invalidate rule sets list for this carrier
         queryClient.invalidateQueries({
-          queryKey: ruleEngineKeys.ruleSets(variables.carrierId),
+          queryKey: ruleEngineKeys.ruleSetsForCarrier(
+            imoId,
+            variables.carrierId,
+          ),
         });
         // Invalidate needing review list
         queryClient.invalidateQueries({
-          queryKey: ruleEngineKeys.needingReview(),
+          queryKey: ruleEngineKeys.needingReview(imoId),
         });
       }
     },

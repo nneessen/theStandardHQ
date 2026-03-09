@@ -106,25 +106,27 @@ export async function evaluateUnderwritingV2(
   for (const ruleSet of globalRuleSets) {
     const result = evaluateRuleSet(toRuleSetForEvaluation(ruleSet), facts);
 
-    // Log evaluation
-    await logEvaluation(
-      imoId,
-      sessionId ?? null,
-      ruleSet.id,
-      result.matchedRules[0]?.ruleId ?? null,
-      null,
-      result.matchedRules.length > 0
-        ? "matched"
-        : result.missingFields.length > 0
-          ? "unknown"
-          : "failed",
-      {
-        matchedConditions: result.matchedRules.map((r) => r.matchedConditions),
-        missingFields: result.missingFields,
-        outcomeApplied: result.matchedRules[0]?.outcome ?? null,
-        inputHash,
-      },
-    );
+    if (sessionId) {
+      await logEvaluation(
+        sessionId,
+        ruleSet.id,
+        result.matchedRules[0]?.ruleId ?? null,
+        null,
+        result.matchedRules.length > 0
+          ? "matched"
+          : result.missingFields.length > 0
+            ? "unknown"
+            : "failed",
+        {
+          matchedConditions: result.matchedRules.map(
+            (rule) => rule.matchedConditions,
+          ),
+          missingFields: result.missingFields,
+          outcomeApplied: result.matchedRules[0]?.outcome ?? null,
+          inputHash,
+        },
+      );
+    }
 
     if (result.eligibility === "ineligible") {
       // Early decline from global rule
@@ -171,25 +173,27 @@ export async function evaluateUnderwritingV2(
     const ruleSet = conditionRuleSets[0];
     const result = evaluateRuleSet(toRuleSetForEvaluation(ruleSet), facts);
 
-    // Log evaluation
-    await logEvaluation(
-      imoId,
-      sessionId ?? null,
-      ruleSet.id,
-      result.matchedRules[0]?.ruleId ?? null,
-      conditionCode,
-      result.matchedRules.length > 0
-        ? "matched"
-        : result.missingFields.length > 0
-          ? "unknown"
-          : "failed",
-      {
-        matchedConditions: result.matchedRules.map((r) => r.matchedConditions),
-        missingFields: result.missingFields,
-        outcomeApplied: result.matchedRules[0]?.outcome ?? null,
-        inputHash,
-      },
-    );
+    if (sessionId) {
+      await logEvaluation(
+        sessionId,
+        ruleSet.id,
+        result.matchedRules[0]?.ruleId ?? null,
+        conditionCode,
+        result.matchedRules.length > 0
+          ? "matched"
+          : result.missingFields.length > 0
+            ? "unknown"
+            : "failed",
+        {
+          matchedConditions: result.matchedRules.map(
+            (rule) => rule.matchedConditions,
+          ),
+          missingFields: result.missingFields,
+          outcomeApplied: result.matchedRules[0]?.outcome ?? null,
+          inputHash,
+        },
+      );
+    }
 
     conditionOutcomes.push(result);
   }

@@ -75,6 +75,12 @@ export interface CreateRuleInput {
   sourceSnippet?: string;
 }
 
+interface ReorderRulesResult {
+  success: boolean;
+  updated?: number;
+  error?: string;
+}
+
 // =============================================================================
 // RULE SET OPERATIONS
 // =============================================================================
@@ -232,7 +238,10 @@ export async function getRulesNeedingReview(
 /**
  * Get a single rule set by ID
  */
-export async function getRuleSet(id: string): Promise<RuleSetWithRules | null> {
+export async function getRuleSet(
+  id: string,
+  imoId: string,
+): Promise<RuleSetWithRules | null> {
   const { data, error } = await supabase
     .from("underwriting_rule_sets")
     .select(
@@ -242,6 +251,7 @@ export async function getRuleSet(id: string): Promise<RuleSetWithRules | null> {
     `,
     )
     .eq("id", id)
+    .eq("imo_id", imoId)
     .single();
 
   if (error) {
@@ -322,11 +332,12 @@ export async function updateRuleSet(
 /**
  * Delete a rule set (cascades to rules)
  */
-export async function deleteRuleSet(id: string): Promise<void> {
+export async function deleteRuleSet(id: string, imoId: string): Promise<void> {
   const { error } = await supabase
     .from("underwriting_rule_sets")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .eq("imo_id", imoId);
 
   if (error) {
     console.error("Error deleting rule set:", error);
@@ -483,26 +494,19 @@ export async function reorderRules(
   ruleSetId: string,
   ruleIds: string[],
 ): Promise<void> {
-  // Update priorities based on array order
-  const updates = ruleIds.map((id, index) => ({
-    id,
-    priority: (index + 1) * 10, // 10, 20, 30, ...
-  }));
+  const { data, error } = await supabase.rpc("reorder_underwriting_rules", {
+    p_rule_set_id: ruleSetId,
+    p_rule_ids: ruleIds,
+  });
 
-  for (const update of updates) {
-    const { error } = await supabase
-      .from("underwriting_rules")
-      .update({
-        priority: update.priority,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", update.id)
-      .eq("rule_set_id", ruleSetId);
+  if (error) {
+    console.error("Error reordering rules:", error);
+    throw error;
+  }
 
-    if (error) {
-      console.error("Error reordering rules:", error);
-      throw error;
-    }
+  const result = data as ReorderRulesResult;
+  if (!result.success) {
+    throw new Error(result.error || "Failed to reorder rules");
   }
 }
 
@@ -594,8 +598,7 @@ export async function revertToDraft(
  * Log a rule evaluation (for audit trail)
  */
 export async function logEvaluation(
-  imoId: string,
-  sessionId: string | null,
+  sessionId: string,
   ruleSetId: string | null,
   ruleId: string | null,
   conditionCode: string | null,
@@ -608,24 +611,30 @@ export async function logEvaluation(
     inputHash?: string;
   },
 ): Promise<void> {
-  const { error } = await supabase
-    .from("underwriting_rule_evaluation_log")
-    .insert({
-      imo_id: imoId,
-      session_id: sessionId,
-      rule_set_id: ruleSetId,
-      rule_id: ruleId,
-      condition_code: conditionCode,
-      predicate_result: result,
-      matched_conditions: details.matchedConditions ?? null,
-      failed_conditions: details.failedConditions ?? null,
-      missing_fields: details.missingFields ?? null,
-      outcome_applied: details.outcomeApplied ?? null,
-      input_hash: details.inputHash ?? null,
-    });
+  const { data, error } = await supabase.rpc(
+    "log_underwriting_rule_evaluation",
+    {
+      p_condition_code: conditionCode,
+      p_failed_conditions: details.failedConditions ?? null,
+      p_input_hash: details.inputHash ?? null,
+      p_matched_conditions: details.matchedConditions ?? null,
+      p_missing_fields: details.missingFields ?? null,
+      p_outcome_applied: details.outcomeApplied ?? null,
+      p_predicate_result: result,
+      p_rule_id: ruleId,
+      p_rule_set_id: ruleSetId,
+      p_session_id: sessionId,
+    },
+  );
 
   if (error) {
-    // Log but don't throw - evaluation logging is non-critical
-    console.error("Error logging evaluation:", error);
+    throw new Error(`Failed to write underwriting audit log: ${error.message}`);
+  }
+
+  const rpcResult = data as { success: boolean; error?: string } | null;
+  if (!rpcResult?.success) {
+    throw new Error(
+      rpcResult?.error || "Failed to write underwriting audit log",
+    );
   }
 }

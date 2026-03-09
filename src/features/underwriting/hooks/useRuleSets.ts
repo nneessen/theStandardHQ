@@ -25,22 +25,50 @@ import type {
 } from "@/services/underwriting/ruleEngineDSL";
 import { coverageStatsKeys } from "./useCoverageStats";
 
+function normalizeRuleReviewStatusKey(
+  reviewStatus?: RuleReviewStatus | RuleReviewStatus[],
+): RuleReviewStatus[] | ["all"] {
+  if (!reviewStatus) {
+    return ["all"];
+  }
+
+  return Array.isArray(reviewStatus)
+    ? [...reviewStatus].sort()
+    : [reviewStatus];
+}
+
 // ============================================================================
 // Query Keys
 // ============================================================================
 
 export const ruleEngineKeys = {
   all: ["rule-engine"] as const,
-  ruleSets: (carrierId: string, productId?: string | null) =>
+  ruleSets: (
+    imoId: string | null | undefined,
+    carrierId: string,
+    options?: {
+      productId?: string | null;
+      includeInactive?: boolean;
+      reviewStatus?: RuleReviewStatus | RuleReviewStatus[];
+    },
+  ) =>
     [
       ...ruleEngineKeys.all,
       "rule-sets",
+      imoId || "no-imo",
       carrierId,
-      productId ?? "all",
+      {
+        includeInactive: options?.includeInactive ?? false,
+        productId: options?.productId ?? null,
+        reviewStatus: normalizeRuleReviewStatusKey(options?.reviewStatus),
+      },
     ] as const,
-  ruleSet: (ruleSetId: string) =>
-    [...ruleEngineKeys.all, "rule-set", ruleSetId] as const,
-  needingReview: () => [...ruleEngineKeys.all, "needing-review"] as const,
+  ruleSetsForCarrier: (imoId: string | null | undefined, carrierId: string) =>
+    [...ruleEngineKeys.all, "rule-sets", imoId || "no-imo", carrierId] as const,
+  ruleSet: (imoId: string | null | undefined, ruleSetId: string) =>
+    [...ruleEngineKeys.all, "rule-set", imoId || "no-imo", ruleSetId] as const,
+  needingReview: (imoId: string | null | undefined) =>
+    [...ruleEngineKeys.all, "needing-review", imoId || "no-imo"] as const,
 };
 
 // ============================================================================
@@ -62,7 +90,7 @@ export function useRuleSets(
   const imoId = user?.imo_id;
 
   return useQuery({
-    queryKey: ruleEngineKeys.ruleSets(carrierId || "", options?.productId),
+    queryKey: ruleEngineKeys.ruleSets(imoId, carrierId || "", options),
     queryFn: () =>
       getRuleSetsForCarrier(carrierId!, imoId!, {
         includeInactive: options?.includeInactive,
@@ -77,11 +105,20 @@ export function useRuleSets(
  * Fetch a single rule set by ID with all rules
  */
 export function useRuleSet(ruleSetId: string | undefined) {
+  const { user } = useAuth();
+  const imoId = user?.imo_id;
+
   return useQuery({
-    queryKey: ruleEngineKeys.ruleSet(ruleSetId || ""),
-    queryFn: () => getRuleSet(ruleSetId!),
-    enabled: !!ruleSetId,
+    queryKey: ruleEngineKeys.ruleSet(imoId, ruleSetId || ""),
+    queryFn: () => {
+      if (!imoId) {
+        throw new Error("User must have an IMO to fetch rule sets");
+      }
+      return getRuleSet(ruleSetId!, imoId);
+    },
+    enabled: !!ruleSetId && !!imoId,
     staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
   });
 }
 
@@ -93,10 +130,11 @@ export function useRulesNeedingReview() {
   const imoId = user?.imo_id;
 
   return useQuery({
-    queryKey: ruleEngineKeys.needingReview(),
+    queryKey: ruleEngineKeys.needingReview(imoId),
     queryFn: () => getRulesNeedingReview(imoId!),
     enabled: !!imoId,
     staleTime: 2 * 60 * 1000, // 2 minutes - check more frequently
+    gcTime: 10 * 60 * 1000,
   });
 }
 
@@ -123,11 +161,11 @@ export function useCreateRuleSet() {
     onSuccess: (data) => {
       // Invalidate rule sets list for this carrier
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.ruleSets(data.carrier_id),
+        queryKey: ruleEngineKeys.ruleSetsForCarrier(imoId, data.carrier_id),
       });
       // Also invalidate needing review since new rule sets are drafts
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.needingReview(),
+        queryKey: ruleEngineKeys.needingReview(imoId),
       });
     },
   });
@@ -138,6 +176,8 @@ export function useCreateRuleSet() {
  */
 export function useUpdateRuleSet() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const imoId = user?.imo_id;
 
   return useMutation({
     mutationFn: ({
@@ -150,15 +190,15 @@ export function useUpdateRuleSet() {
     onSuccess: (data) => {
       // Invalidate the specific rule set
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.ruleSet(data.id),
+        queryKey: ruleEngineKeys.ruleSet(imoId, data.id),
       });
       // Invalidate rule sets list for this carrier
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.ruleSets(data.carrier_id),
+        queryKey: ruleEngineKeys.ruleSetsForCarrier(imoId, data.carrier_id),
       });
       // Invalidate needing review
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.needingReview(),
+        queryKey: ruleEngineKeys.needingReview(imoId),
       });
       // Invalidate coverage stats (active/inactive changes affect coverage)
       queryClient.invalidateQueries({
@@ -173,6 +213,8 @@ export function useUpdateRuleSet() {
  */
 export function useDeleteRuleSet() {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const imoId = user?.imo_id;
 
   return useMutation({
     mutationFn: ({
@@ -181,19 +223,24 @@ export function useDeleteRuleSet() {
     }: {
       id: string;
       carrierId: string;
-    }) => deleteRuleSet(id),
+    }) => {
+      if (!imoId) {
+        throw new Error("User must have an IMO to delete rule sets");
+      }
+      return deleteRuleSet(id, imoId);
+    },
     onSuccess: (_, variables) => {
       // Invalidate rule sets list for this carrier
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.ruleSets(variables.carrierId),
+        queryKey: ruleEngineKeys.ruleSetsForCarrier(imoId, variables.carrierId),
       });
       // Remove the specific rule set from cache
       queryClient.removeQueries({
-        queryKey: ruleEngineKeys.ruleSet(variables.id),
+        queryKey: ruleEngineKeys.ruleSet(imoId, variables.id),
       });
       // Invalidate needing review
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.needingReview(),
+        queryKey: ruleEngineKeys.needingReview(imoId),
       });
       // Invalidate coverage stats
       queryClient.invalidateQueries({

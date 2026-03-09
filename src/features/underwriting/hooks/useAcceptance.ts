@@ -231,7 +231,12 @@ export function useDeleteAcceptanceRule() {
     }: {
       ruleId: string;
       carrierId: string;
-    }) => deleteAcceptanceRule(ruleId),
+    }) => {
+      if (!imoId) {
+        throw new Error("User must have an IMO to delete acceptance rules");
+      }
+      return deleteAcceptanceRule(ruleId, imoId);
+    },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: acceptanceKeys.forCarrier(variables.carrierId, imoId || ""),

@@ -2,6 +2,7 @@
 // Multi-step guided dialog for creating condition acceptance rules with flexible multi-criteria tiers
 
 import { useState, useMemo } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Dialog,
   DialogContent,
@@ -276,6 +277,8 @@ export function GuidedRuleBuilderDialog({
   followUpSchema,
 }: GuidedRuleBuilderDialogProps) {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const imoId = user?.imo_id;
   const createRuleSetMutation = useCreateRuleSet();
   const createRuleMutation = useCreateRule();
   const updateRuleSetMutation = useUpdateRuleSet();
@@ -577,7 +580,7 @@ export function GuidedRuleBuilderDialog({
         queryKey: coverageStatsKeys.all,
       });
       queryClient.invalidateQueries({
-        queryKey: ruleEngineKeys.ruleSets(carrierId),
+        queryKey: ruleEngineKeys.ruleSetsForCarrier(imoId, carrierId),
       });
 
       handleOpenChange(false);
@@ -589,7 +592,9 @@ export function GuidedRuleBuilderDialog({
       if (ruleSetId) {
         try {
           const { deleteRuleSet } = await import("../../hooks/useRuleSets");
-          await deleteRuleSet(ruleSetId);
+          if (imoId) {
+            await deleteRuleSet(ruleSetId, imoId);
+          }
         } catch {
           // Silently fail cleanup
         }

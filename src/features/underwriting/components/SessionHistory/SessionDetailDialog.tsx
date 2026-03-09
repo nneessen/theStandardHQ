@@ -23,7 +23,6 @@ import type {
 import { getHealthTierLabel } from "../../types/underwriting.types";
 import {
   formatSessionDateLong,
-  formatCurrency,
   getHealthTierBadgeColor,
   capitalizeFirst,
   formatProductType,
@@ -31,6 +30,7 @@ import {
   safeParseJsonArray,
 } from "../../utils/formatters";
 import { parseSessionHealthSnapshot } from "../../utils/session-health-snapshot";
+import { formatRequestedFaceAmounts } from "../../utils/session-persistence";
 
 interface SessionDetailDialogProps {
   session: UnderwritingSession | null;
@@ -186,8 +186,8 @@ export function SessionDetailDialog({
           >
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               <InfoRow
-                label="Face Amount"
-                value={formatCurrency(session.requested_face_amount || 0)}
+                label="Face Amounts"
+                value={formatRequestedFaceAmounts(session)}
                 valueClassName="font-semibold"
               />
               <InfoRow

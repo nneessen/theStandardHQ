@@ -381,43 +381,40 @@ export async function calculateApprovalV2(params: {
       ? 0
       : Math.min(...conditionDecisions.map((d) => d.likelihood), 0.95);
 
-  // Audit logging (non-blocking, fire and forget)
-  // Only log if we have a session ID (from wizard context)
+  // Persist audit records before returning a saved-session result.
   if (sessionId) {
     const inputHash = generateInputHash(facts);
 
-    // Log aggregate outcome per condition (not per-rule to reduce DB writes)
-    for (const outcome of conditionOutcomes) {
-      // Find the rule set ID that was used for this condition
-      const ruleSetId = byCondition.get(outcome.conditionCode)?.[0]?.id ?? null;
+    await Promise.all(
+      conditionOutcomes.map((outcome) => {
+        const ruleSetId =
+          byCondition.get(outcome.conditionCode)?.[0]?.id ?? null;
+        const predicateResult: "matched" | "failed" | "unknown" | "skipped" =
+          outcome.eligibility === "eligible"
+            ? "matched"
+            : outcome.eligibility === "ineligible"
+              ? "failed"
+              : "unknown";
 
-      const predicateResult: "matched" | "failed" | "unknown" | "skipped" =
-        outcome.eligibility === "eligible"
-          ? "matched"
-          : outcome.eligibility === "ineligible"
-            ? "failed"
-            : "unknown";
-
-      // Fire and forget - don't await to avoid blocking the response
-      logEvaluation(
-        imoId,
-        sessionId,
-        ruleSetId,
-        null, // rule_id - we're logging at rule set level
-        outcome.conditionCode,
-        predicateResult,
-        {
-          matchedConditions: outcome.matchedRules,
-          missingFields: outcome.missingFields,
-          outcomeApplied: {
-            eligibility: outcome.eligibility,
-            healthClass: outcome.healthClass,
-            tableUnits: outcome.tableUnits,
+        return logEvaluation(
+          sessionId,
+          ruleSetId,
+          null,
+          outcome.conditionCode,
+          predicateResult,
+          {
+            matchedConditions: outcome.matchedRules,
+            missingFields: outcome.missingFields,
+            outcomeApplied: {
+              eligibility: outcome.eligibility,
+              healthClass: outcome.healthClass,
+              tableUnits: outcome.tableUnits,
+            },
+            inputHash,
           },
-          inputHash,
-        },
-      ).catch((err) => console.error("Audit log failed:", err));
-    }
+        );
+      }),
+    );
   }
 
   return {
