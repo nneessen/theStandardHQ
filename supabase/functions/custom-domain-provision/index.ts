@@ -4,7 +4,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
 import { getCorsHeaders, corsResponse } from "../_shared/cors.ts";
-import { addDomainToVercel } from "../_shared/vercel-api.ts";
+import { addDomainToVercel, getDomainConfig } from "../_shared/vercel-api.ts";
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -87,8 +87,12 @@ serve(async (req) => {
       });
     }
 
-    // Check status is verified (must complete DNS verification first)
-    if (domain.status !== "verified") {
+    // Check status: must be verified, OR error with a previous verified_at (retry)
+    const canProvision =
+      domain.status === "verified" ||
+      (domain.status === "error" && domain.verified_at != null);
+
+    if (!canProvision) {
       return new Response(
         JSON.stringify({
           error: `Cannot provision domain in ${domain.status} status. DNS verification required first.`,
@@ -160,8 +164,15 @@ serve(async (req) => {
 
     const vercelData = vercelResult.data!;
 
-    // Check if domain is already configured (SSL ready)
-    if (vercelData.configured) {
+    // Dual-check: also hit getDomainConfig for the reliable misconfigured flag
+    const configResult = await getDomainConfig(domain.hostname);
+    const configData = configResult.success ? configResult.data : null;
+
+    // Domain is active if EITHER check confirms it
+    const isConfigured =
+      vercelData.configured === true || configData?.misconfigured === false;
+
+    if (isConfigured) {
       // Domain is immediately active!
       const { data: activeDomain, error: activeError } =
         await supabaseAdmin.rpc("admin_update_domain_status", {

@@ -22,7 +22,10 @@ import {
 } from "@/hooks";
 import { DnsInstructions } from "./DnsInstructions";
 import { DomainProgressIndicator } from "./DomainProgressIndicator";
-import type { CustomDomain } from "@/types/custom-domain.types";
+import type {
+  CustomDomain,
+  DomainDiagnostics,
+} from "@/types/custom-domain.types";
 import { STATUS_LABELS, STATUS_COLORS } from "@/types/custom-domain.types";
 
 interface DomainCardProps {
@@ -34,29 +37,35 @@ export function DomainCard({ domain }: DomainCardProps) {
   const [copied, setCopied] = useState(false);
   const [pollCount, setPollCount] = useState(0);
   const [isPolling, setIsPolling] = useState(false);
+  const [diagnostics, setDiagnostics] = useState<DomainDiagnostics | null>(
+    null,
+  );
 
   const verifyDomain = useVerifyCustomDomain();
   const provisionDomain = useProvisionCustomDomain();
   const deleteDomain = useDeleteCustomDomain();
   const checkStatus = useCheckDomainStatus();
 
-  // Polling for provisioning status
+  // Polling for provisioning status — extended backoff for SSL provisioning
+  // 10s(x1), 20s(x2), 30s(x3), 60s(x5), 120s(x5), 300s(x10) = ~50 min total
   useEffect(() => {
     if (domain.status !== "provisioning") {
       setIsPolling(false);
       setPollCount(0);
+      setDiagnostics(null);
       return;
     }
 
     setIsPolling(true);
 
-    // Backoff intervals: 10s, 20s, 30s, 60s
-    const getInterval = (count: number) => {
-      if (count < 1) return 10000;
-      if (count < 3) return 20000;
-      if (count < 6) return 30000;
-      if (count < 9) return 60000;
-      return null; // Stop after ~3 min
+    const getInterval = (count: number): number | null => {
+      if (count < 1) return 10000; // 10s x1
+      if (count < 3) return 20000; // 20s x2
+      if (count < 6) return 30000; // 30s x3
+      if (count < 11) return 60000; // 60s x5
+      if (count < 16) return 120000; // 120s x5
+      if (count < 26) return 300000; // 300s x10
+      return null; // Stop after ~50 min
     };
 
     const interval = getInterval(pollCount);
@@ -67,8 +76,11 @@ export function DomainCard({ domain }: DomainCardProps) {
 
     const timer = setTimeout(() => {
       checkStatus.mutate(domain.id, {
-        onSuccess: () => {
+        onSuccess: (data) => {
           setPollCount((c) => c + 1);
+          if (data.diagnostics) {
+            setDiagnostics(data.diagnostics);
+          }
         },
       });
     }, interval);
@@ -108,13 +120,23 @@ export function DomainCard({ domain }: DomainCardProps) {
 
   const handleCheckStatus = () => {
     setPollCount(0);
-    checkStatus.mutate(domain.id);
+    checkStatus.mutate(domain.id, {
+      onSuccess: (data) => {
+        if (data.diagnostics) {
+          setDiagnostics(data.diagnostics);
+        }
+      },
+    });
+  };
+
+  const handleRetryProvision = () => {
+    provisionDomain.mutate(domain.id);
   };
 
   const provisioningTimedOut = useMemo(() => {
     if (domain.status !== "provisioning") return false;
     const age = Date.now() - new Date(domain.updated_at).getTime();
-    return age > 30 * 60 * 1000;
+    return age > 2 * 60 * 60 * 1000; // 2 hours (matches edge function timeout)
   }, [domain.status, domain.updated_at]);
 
   const isLoading =
@@ -233,9 +255,8 @@ export function DomainCard({ domain }: DomainCardProps) {
                     Provisioning is taking longer than expected
                   </p>
                   <p className="mt-1 text-[10px] text-amber-700">
-                    SSL provisioning has exceeded 30 minutes. This usually
-                    indicates a DNS configuration issue. Delete this domain and
-                    try again.
+                    SSL provisioning has exceeded 2 hours. This usually
+                    indicates a DNS configuration issue.
                   </p>
                   <button
                     onClick={handleDelete}
@@ -259,13 +280,57 @@ export function DomainCard({ domain }: DomainCardProps) {
                   <p className="mt-1 text-[10px] text-purple-700">
                     Vercel is generating your SSL certificate. This typically
                     takes <span className="font-medium">1-15 minutes</span> but
-                    can occasionally take up to 30 minutes for new domains.
+                    can take up to 2 hours for new domains.
                   </p>
                   <p className="mt-1.5 text-[10px] text-purple-600">
                     You can leave this page — the process continues in the
                     background.
                   </p>
                 </div>
+              </div>
+            </div>
+          )}
+          {/* Diagnostics panel */}
+          {diagnostics && (
+            <div className="rounded border border-zinc-200 bg-zinc-50 p-2">
+              <p className="text-[10px] font-medium text-zinc-600">
+                DNS Diagnostics
+              </p>
+              <div className="mt-1 space-y-0.5">
+                <p className="text-[10px] text-zinc-500">
+                  CNAME detected:{" "}
+                  <span
+                    className={
+                      diagnostics.dns_configured
+                        ? "font-medium text-green-600"
+                        : "font-medium text-amber-600"
+                    }
+                  >
+                    {diagnostics.dns_configured ? "Yes" : "No"}
+                  </span>
+                </p>
+                {diagnostics.cnames_found.length > 0 && (
+                  <p className="text-[10px] text-zinc-500">
+                    Points to:{" "}
+                    <code className="bg-zinc-100 px-0.5">
+                      {diagnostics.cnames_found.join(", ")}
+                    </code>
+                  </p>
+                )}
+                {diagnostics.misconfigured !== null && (
+                  <p className="text-[10px] text-zinc-500">
+                    DNS misconfigured:{" "}
+                    <span
+                      className={
+                        diagnostics.misconfigured
+                          ? "font-medium text-red-600"
+                          : "font-medium text-green-600"
+                      }
+                    >
+                      {diagnostics.misconfigured ? "Yes" : "No"}
+                    </span>
+                  </p>
+                )}
               </div>
             </div>
           )}
@@ -372,20 +437,37 @@ export function DomainCard({ domain }: DomainCardProps) {
         )}
 
         {domain.status === "error" && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleRetry}
-            disabled={isLoading}
-            className="h-7 text-xs"
-          >
-            {verifyDomain.isPending ? (
-              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-            ) : (
-              <RefreshCw className="mr-1 h-3 w-3" />
+          <>
+            {domain.verified_at && (
+              <Button
+                size="sm"
+                onClick={handleRetryProvision}
+                disabled={isLoading}
+                className="h-7 text-xs"
+              >
+                {provisionDomain.isPending ? (
+                  <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                ) : (
+                  <RefreshCw className="mr-1 h-3 w-3" />
+                )}
+                Retry Provisioning
+              </Button>
             )}
-            Retry
-          </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleRetry}
+              disabled={isLoading}
+              className="h-7 text-xs"
+            >
+              {verifyDomain.isPending ? (
+                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-1 h-3 w-3" />
+              )}
+              Retry DNS
+            </Button>
+          </>
         )}
 
         {domain.status === "active" && (

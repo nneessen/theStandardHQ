@@ -4,7 +4,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
 import { getCorsHeaders, corsResponse } from "../_shared/cors.ts";
-import { getDomainStatus } from "../_shared/vercel-api.ts";
+import { getDomainStatus, getDomainConfig } from "../_shared/vercel-api.ts";
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -100,27 +100,48 @@ serve(async (req) => {
       // Timeout detection first — use the DB timestamp (before any updates)
       const provisioningAge =
         Date.now() - new Date(domain.updated_at).getTime();
-      const THIRTY_MINUTES = 30 * 60 * 1000;
+      const TWO_HOURS = 2 * 60 * 60 * 1000;
 
       console.log(
         "[custom-domain-status] Checking Vercel status:",
         domain.hostname,
       );
 
-      const vercelResult = await getDomainStatus(domain.hostname);
+      // Dual-check: getDomainStatus (v9 project domains) + getDomainConfig (v6 domain config)
+      // getDomainStatus.configured is unreliable (often undefined), so we also check
+      // getDomainConfig.misconfigured which is the reliable indicator
+      const [vercelResult, configResult] = await Promise.all([
+        getDomainStatus(domain.hostname),
+        getDomainConfig(domain.hostname),
+      ]);
 
-      if (vercelResult.success && vercelResult.data) {
-        const vercelData = vercelResult.data;
+      const vercelData = vercelResult.success ? vercelResult.data : null;
+      const configData = configResult.success ? configResult.data : null;
 
-        // Check if now configured (SSL ready)
-        if (vercelData.configured) {
+      // Build diagnostics for the frontend
+      const diagnostics = {
+        dns_configured: configData?.misconfigured === false,
+        cnames_found: configData?.cnames ?? [],
+        misconfigured: configData?.misconfigured ?? null,
+        vercel_verified: vercelData?.verified ?? null,
+        vercel_configured: vercelData?.configured ?? null,
+        configured_by: configData?.configuredBy ?? null,
+      };
+
+      // Domain is active if EITHER check confirms it
+      const isConfigured =
+        vercelData?.configured === true || configData?.misconfigured === false;
+
+      if (vercelData || configData) {
+        if (isConfigured) {
           // Transition to active!
+          const metadata = vercelData ?? configData;
           const { data: activeDomain, error: activeError } =
             await supabaseAdmin.rpc("admin_update_domain_status", {
               p_domain_id: domain.id,
               p_user_id: user.id,
               p_new_status: "active",
-              p_provider_metadata: JSON.stringify(vercelData),
+              p_provider_metadata: JSON.stringify(metadata),
             });
 
           if (activeError) {
@@ -132,12 +153,17 @@ serve(async (req) => {
             console.log(
               "[custom-domain-status] Domain now active:",
               domain.hostname,
+              "detected via:",
+              vercelData?.configured === true
+                ? "v9 configured"
+                : "v6 !misconfigured",
             );
 
             return new Response(
               JSON.stringify({
                 status: "active",
                 domain: activeDomain,
+                diagnostics,
                 message: "Domain is now active! SSL certificate is ready.",
               }),
               {
@@ -149,21 +175,24 @@ serve(async (req) => {
         }
 
         // Not configured yet — check if we've exceeded the timeout
-        if (provisioningAge > THIRTY_MINUTES) {
+        if (provisioningAge > TWO_HOURS) {
           console.log(
             "[custom-domain-status] Provisioning timeout:",
             domain.hostname,
             `(${Math.round(provisioningAge / 60000)}m)`,
           );
 
+          const timeoutDetails = configData?.misconfigured
+            ? "DNS appears misconfigured. Check your CNAME record points to cname.vercel-dns.com."
+            : "SSL provisioning timed out after 2 hours.";
+
           const { data: errorDomain, error: errorTransition } =
             await supabaseAdmin.rpc("admin_update_domain_status", {
               p_domain_id: domain.id,
               p_user_id: user.id,
               p_new_status: "error",
-              p_provider_metadata: JSON.stringify(vercelData),
-              p_last_error:
-                "SSL provisioning timed out after 30 minutes. Delete this domain and try again.",
+              p_provider_metadata: JSON.stringify(vercelData ?? configData),
+              p_last_error: `${timeoutDetails} You can retry provisioning or delete and re-add.`,
             });
 
           if (!errorTransition) {
@@ -171,8 +200,8 @@ serve(async (req) => {
               JSON.stringify({
                 status: "error",
                 domain: errorDomain,
-                message:
-                  "SSL provisioning timed out. Delete this domain and try again.",
+                diagnostics,
+                message: `${timeoutDetails} You can retry provisioning or delete and re-add.`,
               }),
               {
                 status: 200,
@@ -188,15 +217,19 @@ serve(async (req) => {
         // Update provider_metadata (but don't reset updated_at — preserve timeout tracking)
         await supabaseAdmin
           .from("custom_domains")
-          .update({ provider_metadata: vercelData })
+          .update({ provider_metadata: vercelData ?? domain.provider_metadata })
           .eq("id", domain.id);
 
-        // Still provisioning - return updated data
+        // Still provisioning - return updated data with diagnostics
         return new Response(
           JSON.stringify({
             status: "provisioning",
-            domain: { ...domain, provider_metadata: vercelData },
-            vercel_verification: vercelData.verification || [],
+            domain: {
+              ...domain,
+              provider_metadata: vercelData ?? domain.provider_metadata,
+            },
+            vercel_verification: vercelData?.verification || [],
+            diagnostics,
             message: "SSL certificate is still being provisioned.",
           }),
           {
@@ -204,15 +237,16 @@ serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           },
         );
-      } else if (vercelResult.error) {
-        // Vercel API error - don't fail, just return current state
+      } else {
+        // Both Vercel API calls failed
         console.error(
-          "[custom-domain-status] Vercel check failed:",
+          "[custom-domain-status] Both Vercel checks failed:",
           vercelResult.error,
+          configResult.error,
         );
 
         // Still check timeout even when Vercel API fails
-        if (provisioningAge > THIRTY_MINUTES) {
+        if (provisioningAge > TWO_HOURS) {
           console.log(
             "[custom-domain-status] Provisioning timeout (Vercel unreachable):",
             domain.hostname,
@@ -225,7 +259,7 @@ serve(async (req) => {
               p_new_status: "error",
               p_provider_metadata: JSON.stringify(domain.provider_metadata),
               p_last_error:
-                "SSL provisioning timed out after 30 minutes. Delete this domain and try again.",
+                "SSL provisioning timed out after 2 hours (Vercel unreachable). You can retry provisioning or delete and re-add.",
             });
 
           if (!errorTransition) {
@@ -234,7 +268,7 @@ serve(async (req) => {
                 status: "error",
                 domain: errorDomain,
                 message:
-                  "SSL provisioning timed out. Delete this domain and try again.",
+                  "SSL provisioning timed out. You can retry provisioning or delete and re-add.",
               }),
               {
                 status: 200,

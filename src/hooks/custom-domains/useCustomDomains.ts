@@ -241,11 +241,9 @@ export function useCheckDomainStatus() {
 
       return data;
     },
-    onSuccess: (data, domainId) => {
-      // Only invalidate if status changed to active
-      if (data.status === "active") {
-        queryClient.invalidateQueries({ queryKey: customDomainKeys.all });
-      }
+    onSuccess: (_, domainId) => {
+      // Always invalidate — status can change during provisioning/error cycles
+      queryClient.invalidateQueries({ queryKey: customDomainKeys.all });
       queryClient.invalidateQueries({
         queryKey: customDomainKeys.detail(domainId),
       });

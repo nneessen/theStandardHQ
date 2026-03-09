@@ -58,6 +58,15 @@ export interface ProvisionDomainResponse {
   message: string;
 }
 
+export interface DomainDiagnostics {
+  dns_configured: boolean;
+  cnames_found: string[];
+  misconfigured: boolean | null;
+  vercel_verified: boolean | null;
+  vercel_configured: boolean | null;
+  configured_by: string | null;
+}
+
 export interface DomainStatusResponse {
   status: CustomDomainStatus;
   domain: CustomDomain;
@@ -67,6 +76,7 @@ export interface DomainStatusResponse {
     value: string;
     reason: string;
   }>;
+  diagnostics?: DomainDiagnostics;
   message: string;
 }
 
