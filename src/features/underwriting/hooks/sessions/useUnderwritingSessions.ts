@@ -5,6 +5,11 @@ import { supabase } from "@/services/base/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useImo } from "@/contexts/ImoContext";
 import { underwritingQueryKeys } from "../shared/query-keys";
+import {
+  createUnderwritingRequestError,
+  extractUnderwritingRequestError,
+  UnderwritingRequestError,
+} from "../shared/request-error";
 import type {
   SaveAuthoritativeSessionInput,
   UnderwritingSession,
@@ -96,7 +101,9 @@ interface SaveSessionParams {
 
 interface SaveUnderwritingSessionResult {
   success: boolean;
+  code?: string;
   error?: string;
+  requestId?: string;
   session?: UnderwritingSession;
 }
 
@@ -112,24 +119,15 @@ async function saveSession(
   );
 
   if (error) {
-    let message = error.message;
-
-    try {
-      const ctx = (error as { context?: Response }).context;
-      if (ctx && typeof ctx.json === "function") {
-        const body = (await ctx.json()) as { error?: string };
-        message = body.error || message;
-      }
-    } catch {
-      // Ignore response body parsing failures and surface the transport error.
-    }
-
-    throw new Error(`Failed to save session: ${message}`);
+    throw await extractUnderwritingRequestError(
+      error,
+      "Failed to save session",
+    );
   }
 
   const parsed = result as SaveUnderwritingSessionResult | null;
   if (!parsed?.success || !parsed.session) {
-    throw new Error(parsed?.error || "Failed to save session");
+    throw createUnderwritingRequestError(parsed, "Failed to save session");
   }
 
   return parsed.session;
@@ -156,7 +154,11 @@ export function useSaveUnderwritingSession() {
   const { user } = useAuth();
   const { agency, imo } = useImo();
 
-  return useMutation({
+  return useMutation<
+    UnderwritingSession,
+    UnderwritingRequestError,
+    SaveAuthoritativeSessionInput
+  >({
     mutationFn: (data: SaveAuthoritativeSessionInput) => saveSession({ data }),
     onSuccess: () => {
       // Invalidate the sessions list (both user and agency)

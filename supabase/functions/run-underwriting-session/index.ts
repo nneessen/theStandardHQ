@@ -9,6 +9,11 @@ import { sanitizeUnderwritingPayload } from "../_shared/underwriting/payload.ts"
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req.headers.get("origin"));
   const requestId = crypto.randomUUID();
+  const jsonHeaders = {
+    ...corsHeaders,
+    "Content-Type": "application/json",
+    "X-Request-Id": requestId,
+  };
 
   if (req.method === "OPTIONS") {
     return corsResponse(req);
@@ -26,7 +31,7 @@ serve(async (req) => {
         }),
         {
           status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: jsonHeaders,
         },
       );
     }
@@ -57,7 +62,7 @@ serve(async (req) => {
         }),
         {
           status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: jsonHeaders,
         },
       );
     }
@@ -78,7 +83,7 @@ serve(async (req) => {
         }),
         {
           status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: jsonHeaders,
         },
       );
     }
@@ -87,6 +92,14 @@ serve(async (req) => {
       allowRunKey: true,
       requireRunKey: true,
       allowSelectedTermYears: true,
+    });
+
+    console.info("[run-underwriting-session] started", {
+      requestId,
+      userId: user.id,
+      imoId: profile.imo_id,
+      runKey: payload.runKey,
+      selectedTermYears: payload.selectedTermYears ?? null,
     });
 
     const result = await computeAuthoritativeUnderwritingRun({
@@ -106,6 +119,15 @@ serve(async (req) => {
       },
     );
 
+    console.info("[run-underwriting-session] completed", {
+      requestId,
+      userId: user.id,
+      runKey: payload.runKey,
+      recommendationCount: result.decisionResult.recommendations.length,
+      eligibleCount: result.decisionResult.eligibleProducts.length,
+      unknownCount: result.decisionResult.unknownEligibility.length,
+    });
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -116,7 +138,7 @@ serve(async (req) => {
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: jsonHeaders,
       },
     );
   } catch (error) {
@@ -142,7 +164,7 @@ serve(async (req) => {
       }),
       {
         status: isPayloadError ? 400 : 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: jsonHeaders,
       },
     );
   }

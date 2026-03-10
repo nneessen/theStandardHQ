@@ -31,6 +31,7 @@ import {
   buildAuthoritativeSessionSaveInput,
 } from "../../hooks/wizard/useDecisionEngineRecommendations";
 import { useHealthConditions } from "../../hooks/shared/useHealthConditions";
+import { formatUnderwritingRequestErrorMessage } from "../../hooks/shared/request-error";
 import {
   useUWWizardUsage,
   useRecordUWWizardRun,
@@ -192,6 +193,24 @@ function UnderwritingWizardInner() {
   const usageStatus = getUsageStatus(usageData);
 
   const currentStep = WIZARD_STEPS[currentStepIndex];
+
+  const clearSubmitError = useCallback(() => {
+    setErrors((prev) => {
+      if (!prev.submit) {
+        return prev;
+      }
+
+      const { submit, ...rest } = prev;
+      return rest;
+    });
+  }, []);
+
+  const setSubmitError = useCallback((message: string) => {
+    setErrors((prev) => ({
+      ...prev,
+      submit: message,
+    }));
+  }, []);
 
   // Validation functions
   const validateClientInfo = (): boolean => {
@@ -370,6 +389,7 @@ function UnderwritingWizardInner() {
         selectedTermYears,
       });
 
+      clearSubmitError();
       setLastAnalyzedData(currentDataHash);
 
       analysisMutation.mutate(aiRequest, {
@@ -420,10 +440,22 @@ function UnderwritingWizardInner() {
             }
           }
 
-          setErrors({ submit: "AI analysis failed. Please try again." });
+          setSubmitError("AI analysis failed. Please try again.");
         },
       });
-      decisionEngineMutation.mutate(decisionInput);
+      decisionEngineMutation.mutate(decisionInput, {
+        onSuccess: () => {
+          clearSubmitError();
+        },
+        onError: (error) => {
+          setSubmitError(
+            formatUnderwritingRequestErrorMessage(
+              error,
+              "Failed to compute underwriting recommendations.",
+            ),
+          );
+        },
+      });
 
       setCurrentStepIndex((prev) => prev + 1);
       return;
@@ -519,9 +551,22 @@ function UnderwritingWizardInner() {
       if (!pendingRunKeyRef.current) {
         pendingRunKeyRef.current = decisionInput.runKey;
       }
-      decisionEngineMutation.mutate(decisionInput);
+      clearSubmitError();
+      decisionEngineMutation.mutate(decisionInput, {
+        onSuccess: () => {
+          clearSubmitError();
+        },
+        onError: (error) => {
+          setSubmitError(
+            formatUnderwritingRequestErrorMessage(
+              error,
+              "Failed to refresh underwriting recommendations.",
+            ),
+          );
+        },
+      });
     },
-    [formData, decisionEngineMutation],
+    [clearSubmitError, decisionEngineMutation, formData, setSubmitError],
   );
 
   const handleSaveSession = useCallback(async () => {
@@ -546,17 +591,25 @@ function UnderwritingWizardInner() {
 
     try {
       await saveSessionMutation.mutateAsync(sessionData);
+      clearSubmitError();
       navigate({ to: "/policies" });
-    } catch {
-      setErrors({ submit: "Failed to save session. Please try again." });
+    } catch (error) {
+      setSubmitError(
+        formatUnderwritingRequestErrorMessage(
+          error,
+          "Failed to save session. Please try again.",
+        ),
+      );
     }
   }, [
     analysisResult,
+    clearSubmitError,
     decisionEngineMutation.data,
     formData,
     sessionStartTime,
     saveSessionMutation,
     navigate,
+    setSubmitError,
     selectedTermYears,
   ]);
 

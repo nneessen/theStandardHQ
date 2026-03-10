@@ -3,6 +3,11 @@ import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/services/base/supabase";
 import type { DecisionEngineResult } from "@/services/underwriting/workflows/decisionEngine";
 import {
+  createUnderwritingRequestError,
+  extractUnderwritingRequestError,
+  UnderwritingRequestError,
+} from "../shared/request-error";
+import {
   buildAuthoritativeUnderwritingRunInput,
   buildAuthoritativeSessionSaveInput,
   type UnderwritingDecisionRunInput,
@@ -31,23 +36,15 @@ async function runDecisionEngine(
   );
 
   if (error) {
-    let message = error.message;
-
-    try {
-      const ctx = (error as { context?: Response }).context;
-      if (ctx && typeof ctx.json === "function") {
-        const body = (await ctx.json()) as { error?: string };
-        message = body.error || message;
-      }
-    } catch {
-      // ignore transport body parsing failures
-    }
-
-    throw new Error(message || "Failed to compute underwriting run");
+    throw await extractUnderwritingRequestError(
+      error,
+      "Failed to compute underwriting run",
+    );
   }
 
   const parsed = data as {
     success?: boolean;
+    code?: string;
     requestId?: string;
     decisionResult?: DecisionEngineResult;
     authoritativeRunEnvelope?: SignedAuthoritativeRunEnvelope;
@@ -60,7 +57,10 @@ async function runDecisionEngine(
     !parsed.decisionResult ||
     !parsed.authoritativeRunEnvelope
   ) {
-    throw new Error(parsed?.error || "Failed to compute underwriting run");
+    throw createUnderwritingRequestError(
+      parsed,
+      "Failed to compute underwriting run",
+    );
   }
 
   return {
@@ -73,7 +73,7 @@ async function runDecisionEngine(
 export function useDecisionEngineRecommendations() {
   return useMutation<
     UnderwritingDecisionRunResponse,
-    Error,
+    UnderwritingRequestError,
     UnderwritingDecisionRunInput
   >({
     mutationFn: runDecisionEngine,

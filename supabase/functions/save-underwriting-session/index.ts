@@ -8,6 +8,11 @@ import { sanitizeUnderwritingPayload } from "../_shared/underwriting/payload.ts"
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req.headers.get("origin"));
   const requestId = crypto.randomUUID();
+  const jsonHeaders = (responseRequestId = requestId) => ({
+    ...corsHeaders,
+    "Content-Type": "application/json",
+    "X-Request-Id": responseRequestId,
+  });
 
   if (req.method === "OPTIONS") {
     return corsResponse(req);
@@ -25,7 +30,7 @@ serve(async (req) => {
         }),
         {
           status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: jsonHeaders(),
         },
       );
     }
@@ -62,7 +67,7 @@ serve(async (req) => {
         }),
         {
           status: 401,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: jsonHeaders(),
         },
       );
     }
@@ -83,7 +88,7 @@ serve(async (req) => {
         }),
         {
           status: 403,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: jsonHeaders(),
         },
       );
     }
@@ -114,6 +119,12 @@ serve(async (req) => {
       secret: supabaseServiceRoleKey,
     });
 
+    console.info("[save-underwriting-session] started", {
+      requestId: verifiedRun.requestId,
+      userId: user.id,
+      runKey: verifiedRun.input.runKey,
+    });
+
     const { data, error } = await adminClient.rpc(
       "persist_underwriting_run_v1",
       {
@@ -140,7 +151,7 @@ serve(async (req) => {
         }),
         {
           status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: jsonHeaders(verifiedRun.requestId),
         },
       );
     }
@@ -161,10 +172,19 @@ serve(async (req) => {
         }),
         {
           status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: jsonHeaders(verifiedRun.requestId),
         },
       );
     }
+
+    const session = parsed.session as { id?: string } | null;
+
+    console.info("[save-underwriting-session] completed", {
+      requestId: verifiedRun.requestId,
+      userId: user.id,
+      runKey: verifiedRun.input.runKey,
+      sessionId: session?.id ?? null,
+    });
 
     return new Response(
       JSON.stringify({
@@ -174,7 +194,7 @@ serve(async (req) => {
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: jsonHeaders(verifiedRun.requestId),
       },
     );
   } catch (error) {
@@ -211,7 +231,7 @@ serve(async (req) => {
       }),
       {
         status: isAccessDenied ? 403 : isPayloadError ? 400 : 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: jsonHeaders(),
       },
     );
   }
