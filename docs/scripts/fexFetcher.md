@@ -8,6 +8,10 @@
 2. Shows you a numbered list of carriers in the console
 3. You type a number to select the carrier
 4. Script fetches ALL rates for that carrier only
+5. Re-reads auth token on every request (survives token refresh mid-run)
+6. Detects access-denied responses and pauses/retries instead of skipping
+7. Supports resume after interruption with `resumeFexFetcher()`
+8. Partial CSV download with `downloadPartialFexCsv()`
 
 **What it fetches:**
 
@@ -32,6 +36,8 @@
 6. **Type** `selectCarrier(1)` (or 2, 3, etc.) to pick a carrier
 7. Script runs automatically
 8. CSV downloads when done
+9. If it stops, run `resumeFexFetcher()` to continue
+10. Run `downloadPartialFexCsv()` to save progress at any time
 
 **Note:** You may see red 400 errors and "message channel closed" warnings in console - this is NORMAL. The script handles these automatically and continues running. Don't stop the script!
 
@@ -39,361 +45,553 @@
 
 ```javascript
 // ============================================
-// FINAL EXPENSE RATE FETCHER - INTERACTIVE
+// FINAL EXPENSE RATE FETCHER - HARDENED
 // ============================================
 
 let AVAILABLE_CARRIERS = [];
 let SELECTED_CARRIER = null;
 
-// Step 1: Fetch sample to discover carriers
-const discoverCarriers = async () => {
-  const token = localStorage.getItem("accessToken");
-  if (!token) {
-    console.error("❌ No access token found. Make sure you are logged in.");
+const FEX_CONFIG = {
+  state: "IL",
+  faceAmounts: [
+    5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000,
+    16000, 17000, 18000, 19000, 20000, 21000, 22000, 23000, 24000, 25000,
+  ],
+  ages: [
+    46, 47, 48, 49, 51, 52, 53, 54, 56, 57, 58, 59, 61, 62, 63, 64, 66, 67,
+    68, 69, 71, 72, 73, 74, 76, 77, 78, 79, 82, 82, 83, 84,
+  ],
+  genders: ["Male", "Female"],
+  tobaccos: ["None", "Tobacco"],
+  coverageType: "Graded/Modified", // "Level", "Graded/Modified", or "Guaranteed"
+  requestDelayMs: 600,
+  batchPauseEvery: 50,
+  batchPauseMs: 5000,
+  pauseBetweenAgeGroupsMs: 3000,
+  accessDeniedPauseMs: 90000,
+  maxAccessDeniedRetries: 3,
+};
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const decodeJwtPayload = (token) => {
+  if (!token || typeof token !== "string") return null;
+  const parts = token.split(".");
+  if (parts.length !== 3) return null;
+
+  try {
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+    return JSON.parse(atob(padded));
+  } catch {
+    return null;
+  }
+};
+
+const getAccessToken = () => {
+  const directKeys = [
+    "accessToken",
+    "itk:accessToken",
+    "token:accessToken",
+    "auth.accessToken",
+  ];
+
+  for (const store of [localStorage, sessionStorage]) {
+    for (const key of directKeys) {
+      const value = store.getItem(key);
+      if (value) return value;
+    }
+  }
+
+  for (const store of [localStorage, sessionStorage]) {
+    for (let i = 0; i < store.length; i++) {
+      const key = store.key(i);
+      const raw = key ? store.getItem(key) : null;
+      if (!raw) continue;
+
+      if (key && /token/i.test(key) && raw.split(".").length === 3) {
+        return raw;
+      }
+
+      try {
+        const parsed = JSON.parse(raw);
+        if (typeof parsed?.accessToken === "string") return parsed.accessToken;
+        if (typeof parsed?.access_token === "string")
+          return parsed.access_token;
+      } catch {
+        // Ignore non-JSON storage entries
+      }
+    }
+  }
+
+  return null;
+};
+
+const getTokenExpirationIso = () => {
+  const token = getAccessToken();
+  const decoded = decodeJwtPayload(token);
+  return decoded?.exp
+    ? new Date(decoded.exp * 1000).toISOString()
+    : "unknown";
+};
+
+const resolveApiBase = async () => {
+  if (window.__fexFetcherApiBase) return window.__fexFetcherApiBase;
+
+  try {
+    const res = await fetch("/assets/config.json", {
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+
+    if (res.ok) {
+      const config = await res.json();
+      const rootUrl =
+        config?.rootUrl ??
+        config?.apiRootUrl ??
+        config?.apiUrl ??
+        config?.generatedApiRootUrl;
+
+      if (typeof rootUrl === "string" && rootUrl.startsWith("http")) {
+        window.__fexFetcherApiBase = rootUrl.replace(/\/+$/, "");
+        return window.__fexFetcherApiBase;
+      }
+    }
+  } catch {
+    // Fall through to hard-coded default
+  }
+
+  window.__fexFetcherApiBase = "https://api.insurancetoolkits.com";
+  return window.__fexFetcherApiBase;
+};
+
+const getQuoteUrl = async () => `${await resolveApiBase()}/quoter/`;
+
+const parseJsonSafely = async (response) => {
+  const text = await response.text();
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { rawText: text };
+  }
+};
+
+const carrierNameFromCompany = (company) => {
+  const match = String(company || "").match(/^([^(]+)/);
+  return match ? match[1].trim() : String(company || "").trim();
+};
+
+const parseNum = (s) => {
+  if (!s) return 0;
+  return parseFloat(String(s).replace(/,/g, ""));
+};
+
+const isAccessDeniedResponse = (status, body) =>
+  status === 400 &&
+  /do not have access to this toolkit|account is not active/i.test(
+    String(body?.error || body?.rawText || ""),
+  );
+
+const csvEscape = (value) => {
+  const str = String(value ?? "");
+  if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+};
+
+const downloadCsv = (rows, filename) => {
+  if (!rows.length) {
+    console.warn("⚠️ No rows available to download.");
     return;
   }
 
+  const headers = Object.keys(rows[0]);
+  const csvContent = [
+    headers.join(","),
+    ...rows.map((row) => headers.map((header) => csvEscape(row[header])).join(",")),
+  ].join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+};
+
+const requestQuote = async (payload) => {
+  const token = getAccessToken();
+  if (!token) {
+    throw new Error(
+      "No access token found. Make sure you are logged in and the page is fully loaded.",
+    );
+  }
+
+  const url = await getQuoteUrl();
+  const response = await fetch(url, {
+    method: "POST",
+    cache: "no-store",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const body = await parseJsonSafely(response);
+  return { response, body, url };
+};
+
+const buildCombinations = () => {
+  const combinations = [];
+
+  for (const sex of FEX_CONFIG.genders) {
+    for (const tobacco of FEX_CONFIG.tobaccos) {
+      for (const age of FEX_CONFIG.ages) {
+        for (const faceAmount of FEX_CONFIG.faceAmounts) {
+          combinations.push({ sex, tobacco, age, faceAmount });
+        }
+      }
+    }
+  }
+
+  return combinations;
+};
+
+const createFreshRunState = () => ({
+  startedAt: Date.now(),
+  running: false,
+  selectedCarrier: SELECTED_CARRIER,
+  nextIndex: 0,
+  total: 0,
+  allQuotes: [],
+  skippedCombos: [],
+  lastFailure: null,
+});
+
+const resetRunState = () => {
+  window.fexFetcherState = createFreshRunState();
+  return window.fexFetcherState;
+};
+
+const getRunState = () => window.fexFetcherState || resetRunState();
+
+const formatComboLabel = ({ sex, tobacco, age, faceAmount }) =>
+  `${sex}/${tobacco}/age${age}/$${faceAmount.toLocaleString()}`;
+
+window.debugFexFetcher = async () => {
+  const snapshot = {
+    page: window.location.href,
+    apiBase: await resolveApiBase(),
+    tokenFound: Boolean(getAccessToken()),
+    tokenExpiresAt: getTokenExpirationIso(),
+    selectedCarrier: SELECTED_CARRIER || "",
+    currentRequest: getRunState().nextIndex,
+    collectedQuotes: getRunState().allQuotes.length,
+  };
+
+  console.table(snapshot);
+  return snapshot;
+};
+
+window.downloadPartialFexCsv = () => {
+  const state = getRunState();
+  const carrierSafe = (state.selectedCarrier || "unknown").replace(/\s+/g, "_");
+  downloadCsv(
+    state.allQuotes,
+    `fex_partial_${FEX_CONFIG.state}_${carrierSafe}.csv`,
+  );
+};
+
+const discoverCarriers = async () => {
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  console.log("📊 Final Expense Rate Fetcher - Interactive Mode");
+  console.log("📊 Final Expense Rate Fetcher - Hardened");
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  console.log("🔍 Fetching sample quote to discover carriers...\n");
+  console.log("🔍 Fetching sample quote to discover carriers...");
+  console.log(`🔐 Token expires at: ${getTokenExpirationIso()}\n`);
 
   try {
-    const res = await fetch("https://api.insurancetoolkits.com/quoter/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        faceAmount: 25000,
-        coverageType: "Level",
-        sex: "Male",
-        state: "IL",
-        age: 65,
-        tobacco: "None",
-        feet: "",
-        inches: "",
-        weight: "",
-        paymentType: "Bank Draft/EFT",
-        underwritingItems: [],
-        toolkit: "FEX",
-      }),
+    const { response, body } = await requestQuote({
+      faceAmount: 25000,
+      coverageType: "Level",
+      sex: "Male",
+      state: FEX_CONFIG.state,
+      age: 65,
+      tobacco: "None",
+      feet: "",
+      inches: "",
+      weight: "",
+      paymentType: "Bank Draft/EFT",
+      underwritingItems: [],
+      toolkit: "FEX",
     });
 
-    const data = await res.json();
-
-    if (!data.quotes || data.quotes.length === 0) {
-      console.error("❌ No quotes returned. Check your login status.");
+    if (!response.ok) {
+      console.error(
+        `❌ Sample quote failed with HTTP ${response.status}:`,
+        body?.error || body?.rawText || body,
+      );
       return;
     }
 
-    // Extract unique carrier names
+    if (!body?.quotes?.length) {
+      console.error("❌ No quotes returned from sample request.", body);
+      return;
+    }
+
     const carrierSet = new Set();
-    data.quotes.forEach((q) => {
-      // Extract carrier name before parentheses
-      const match = q.company.match(/^([^(]+)/);
-      if (match) {
-        carrierSet.add(match[1].trim());
-      }
+    body.quotes.forEach((quote) => {
+      const carrier = carrierNameFromCompany(quote.company);
+      if (carrier) carrierSet.add(carrier);
     });
 
     AVAILABLE_CARRIERS = Array.from(carrierSet).sort();
 
-    console.log("✅ Available Carriers:\n");
+    console.log("✅ Available carriers:\n");
     AVAILABLE_CARRIERS.forEach((carrier, index) => {
       console.log(`  ${index + 1}. ${carrier}`);
     });
 
     console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     console.log("👉 To select a carrier, type:");
-    console.log("   selectCarrier(1)  // Replace 1 with your carrier number");
+    console.log("   selectCarrier(1)");
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-  } catch (e) {
-    console.error("❌ Error fetching sample:", e.message);
+  } catch (error) {
+    console.error("❌ Error discovering carriers:", error.message);
   }
 };
 
-// Step 2: User selects carrier
+const fetchAllRates = async ({ resume = false } = {}) => {
+  if (!SELECTED_CARRIER) {
+    console.error("❌ No carrier selected.");
+    return [];
+  }
+
+  const combinations = buildCombinations();
+  let state = getRunState();
+
+  if (!resume || state.selectedCarrier !== SELECTED_CARRIER) {
+    state = resetRunState();
+  }
+
+  state.selectedCarrier = SELECTED_CARRIER;
+  state.total = combinations.length;
+  state.running = true;
+
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log(`🎯 Carrier: ${SELECTED_CARRIER}`);
+  console.log(`📍 State: ${FEX_CONFIG.state}`);
+  console.log(`📦 Coverage Type: ${FEX_CONFIG.coverageType}`);
+  console.log(`📈 Total Requests: ${state.total.toLocaleString()}`);
+  console.log(`▶ Starting At Request: ${(state.nextIndex + 1).toLocaleString()}`);
+  console.log(`🔐 Token expires at: ${getTokenExpirationIso()}`);
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+
+  for (let index = state.nextIndex; index < combinations.length; index++) {
+    const combo = combinations[index];
+    const label = formatComboLabel(combo);
+    let accessDeniedAttempts = 0;
+
+    while (true) {
+      try {
+        const { response, body, url } = await requestQuote({
+          faceAmount: combo.faceAmount,
+          coverageType: FEX_CONFIG.coverageType,
+          sex: combo.sex,
+          state: FEX_CONFIG.state,
+          age: combo.age,
+          tobacco: combo.tobacco,
+          feet: "",
+          inches: "",
+          weight: "",
+          paymentType: "Bank Draft/EFT",
+          underwritingItems: [],
+          toolkit: "FEX",
+        });
+
+        if (response.ok) {
+          const carrierQuotes = (body?.quotes || [])
+            .filter(
+              (quote) =>
+                carrierNameFromCompany(quote.company) === SELECTED_CARRIER ||
+                String(quote.company || "").includes(SELECTED_CARRIER),
+            )
+            .map((quote) => ({
+              face_amount: combo.faceAmount,
+              company: quote.company,
+              plan_name: quote.plan_name,
+              tier_name: quote.tier_name,
+              coverage_type: FEX_CONFIG.coverageType,
+              monthly: parseNum(quote.monthly),
+              yearly: parseNum(quote.yearly),
+              state: FEX_CONFIG.state,
+              gender: combo.sex,
+              age: combo.age,
+              term_years: "",
+              tobacco: combo.tobacco,
+            }));
+
+          state.allQuotes.push(...carrierQuotes);
+          state.nextIndex = index + 1;
+          break;
+        }
+
+        if (isAccessDeniedResponse(response.status, body)) {
+          accessDeniedAttempts += 1;
+          state.lastFailure = {
+            when: new Date().toISOString(),
+            status: response.status,
+            combo,
+            error: body?.error || body?.rawText || null,
+            url,
+            tokenExpiresAt: getTokenExpirationIso(),
+          };
+
+          console.warn(`⚠️ Access-denied 400 at ${label}`);
+          console.warn(body?.error || body?.rawText || body);
+
+          if (accessDeniedAttempts > FEX_CONFIG.maxAccessDeniedRetries) {
+            state.running = false;
+            console.error(
+              "❌ Still getting the toolkit-access 400 after retries. Stopping.",
+            );
+            console.log("Run debugFexFetcher() for a quick auth snapshot.");
+            console.log(
+              "Run downloadPartialFexCsv() to save the rows collected so far.",
+            );
+            window.fetchedRates = state.allQuotes;
+            window.skippedCombos = state.skippedCombos;
+            window.fexFetcherLastFailure = state.lastFailure;
+            return state.allQuotes;
+          }
+
+          console.warn(
+            `⏸️ Waiting ${Math.round(
+              FEX_CONFIG.accessDeniedPauseMs / 1000,
+            )} seconds, then retrying (${accessDeniedAttempts}/${FEX_CONFIG.maxAccessDeniedRetries})...`,
+          );
+          await sleep(FEX_CONFIG.accessDeniedPauseMs);
+          continue;
+        }
+
+        if (response.status === 429) {
+          console.warn(
+            `⚠️ Rate limited at ${label}. Pausing 15 seconds...`,
+          );
+          await sleep(15000);
+          continue;
+        }
+
+        if (response.status === 400) {
+          state.skippedCombos.push(label);
+          state.nextIndex = index + 1;
+          break;
+        }
+
+        console.warn(
+          `⚠️ HTTP ${response.status} at ${label}:`,
+          body?.error || body?.rawText || body,
+        );
+        state.nextIndex = index + 1;
+        break;
+      } catch (error) {
+        console.warn(`⚠️ Exception at ${label}: ${error.message}`);
+        await sleep(FEX_CONFIG.batchPauseMs);
+      }
+    }
+
+    if (!state.running) break;
+
+    if (state.nextIndex % FEX_CONFIG.batchPauseEvery === 0) {
+      const elapsedSeconds = (Date.now() - state.startedAt) / 1000;
+      const requestsPerSecond = state.nextIndex / Math.max(elapsedSeconds, 1);
+      const remainingSeconds =
+        (state.total - state.nextIndex) / Math.max(requestsPerSecond, 0.001);
+
+      console.log(
+        `Progress: ${state.nextIndex}/${state.total} (${Math.round(
+          (state.nextIndex / state.total) * 100,
+        )}%) | Collected: ${state.allQuotes.length} | Skipped: ${state.skippedCombos.length} | ETA: ${Math.ceil(
+          remainingSeconds / 60,
+        )}m`,
+      );
+
+      console.log(
+        `⏸️ Batch pause: ${Math.round(
+          FEX_CONFIG.batchPauseMs / 1000,
+        )} seconds...`,
+      );
+      await sleep(FEX_CONFIG.batchPauseMs);
+    } else {
+      await sleep(FEX_CONFIG.requestDelayMs);
+    }
+
+    const nextCombo = combinations[state.nextIndex];
+    const currentCombo = combinations[index];
+    if (
+      nextCombo &&
+      currentCombo &&
+      nextCombo.age !== currentCombo.age
+    ) {
+      console.log(
+        `✓ Completed ${currentCombo.sex} ${currentCombo.tobacco} age ${currentCombo.age}`,
+      );
+      await sleep(FEX_CONFIG.pauseBetweenAgeGroupsMs);
+    }
+  }
+
+  state.running = false;
+  window.fetchedRates = state.allQuotes;
+  window.skippedCombos = state.skippedCombos;
+
+  console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+  console.log(
+    `✅ Done! ${state.allQuotes.length} rates fetched for ${SELECTED_CARRIER}`,
+  );
+  console.log(
+    `⚠️ Skipped ${state.skippedCombos.length} combinations that returned normal 400s.`,
+  );
+  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+
+  const carrierSafe = SELECTED_CARRIER.replace(/\s+/g, "_");
+  const filename = `fex_${FEX_CONFIG.coverageType.toLowerCase().replace(/\//g, "_")}_${FEX_CONFIG.state}_${carrierSafe}.csv`;
+  downloadCsv(state.allQuotes, filename);
+  console.log(`📁 CSV downloaded: ${filename}`);
+
+  return state.allQuotes;
+};
+
 window.selectCarrier = (number) => {
-  if (!AVAILABLE_CARRIERS || AVAILABLE_CARRIERS.length === 0) {
-    console.error("❌ No carriers available. Run discoverCarriers() first.");
+  if (!AVAILABLE_CARRIERS.length) {
+    console.error("❌ No carriers available yet. Wait for discovery to finish.");
     return;
   }
 
   const index = number - 1;
   if (index < 0 || index >= AVAILABLE_CARRIERS.length) {
-    console.error(
-      `❌ Invalid number. Please choose 1-${AVAILABLE_CARRIERS.length}`,
-    );
+    console.error(`❌ Invalid number. Choose 1-${AVAILABLE_CARRIERS.length}.`);
     return;
   }
 
   SELECTED_CARRIER = AVAILABLE_CARRIERS[index];
+  resetRunState();
   console.log(`\n✅ Selected: ${SELECTED_CARRIER}`);
   console.log("🚀 Starting rate fetch...\n");
-
-  // Start the full fetch
-  fetchAllRates();
+  fetchAllRates({ resume: false });
 };
 
-// Step 3: Fetch all rates for selected carrier
-const fetchAllRates = async () => {
-  const token = localStorage.getItem("accessToken");
-  if (!token) {
-    console.error("❌ No access token found.");
-    return;
-  }
-
-  if (!SELECTED_CARRIER) {
-    console.error("❌ No carrier selected.");
-    return;
-  }
-
-  const CONFIG = {
-    state: "IL",
-    faceAmounts: [
-      5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000,
-      16000, 17000, 18000, 19000, 20000, 21000, 22000, 23000, 24000, 25000,
-    ],
-    ages: [
-      46, 47, 48, 49, 51, 52, 53, 54, 56, 57, 58, 59, 61, 62, 63, 64, 66, 67,
-      68, 69, 71, 72, 73, 74, 76, 77, 78, 79, 82, 82, 83, 84,
-    ],
-    genders: ["Male", "Female"],
-    tobaccos: ["None", "Tobacco"],
-    coverageType: "Graded/Modified", // "Level", "Graded/Modified", or "Guaranteed"
-  };
-
-  const total =
-    CONFIG.ages.length *
-    CONFIG.genders.length *
-    CONFIG.tobaccos.length *
-    CONFIG.faceAmounts.length;
-
-  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  console.log(`🎯 Carrier: ${SELECTED_CARRIER}`);
-  console.log(`📍 State: ${CONFIG.state}`);
-  console.log(`📦 Coverage Type: ${CONFIG.coverageType}`);
-  console.log(`📈 Total Requests: ${total.toLocaleString()}`);
-  console.log(`⏱️  Estimated Time: ~${Math.ceil((total * 0.3) / 60)} minutes`);
-  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-
-  const allQuotes = [];
-  const skippedCombos = [];
-  const url = "https://api.insurancetoolkits.com/quoter/";
-  let current = 0;
-  let errorCount = 0;
-  const startTime = Date.now();
-
-  // Helper to parse numeric values with commas
-  const parseNum = (s) => {
-    if (!s) return 0;
-    return parseFloat(String(s).replace(/,/g, ""));
-  };
-
-  // Nested loops for all combinations
-  for (const sex of CONFIG.genders) {
-    for (const tobacco of CONFIG.tobaccos) {
-      for (const age of CONFIG.ages) {
-        for (const faceAmount of CONFIG.faceAmounts) {
-          current++;
-
-          try {
-            const res = await fetch(url, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                faceAmount,
-                coverageType: CONFIG.coverageType,
-                sex,
-                state: CONFIG.state,
-                age,
-                tobacco,
-                feet: "",
-                inches: "",
-                weight: "",
-                paymentType: "Bank Draft/EFT",
-                underwritingItems: [],
-                toolkit: "FEX",
-              }),
-            });
-
-            // Check for bad request (invalid combination)
-            if (!res.ok) {
-              if (res.status === 400) {
-                // 400 = Invalid combination for this carrier, skip silently
-                skippedCombos.push(
-                  `${sex}/${tobacco}/age${age}/$${faceAmount.toLocaleString()}`,
-                );
-                // Don't increment error count for expected 400s
-              } else if (res.status === 429) {
-                // Rate limited - pause longer
-                console.warn(
-                  `⚠️  Rate limited at request ${current}, pausing 15 seconds...`,
-                );
-                await new Promise((r) => setTimeout(r, 15000));
-                errorCount++;
-
-                // If we hit rate limit multiple times, slow down even more
-                if (errorCount > 3) {
-                  console.warn(
-                    `⚠️  Repeated rate limiting, pausing 45 seconds...`,
-                  );
-                  await new Promise((r) => setTimeout(r, 45000));
-                  errorCount = 0;
-                }
-              } else {
-                // Other HTTP errors
-                errorCount++;
-                if (errorCount > 10) {
-                  console.error(
-                    `❌ Too many errors (${errorCount}), pausing 20 seconds...`,
-                  );
-                  await new Promise((r) => setTimeout(r, 20000));
-                  errorCount = 0;
-                }
-              }
-
-              // Rate limiting: same delay even after error
-              await new Promise((r) => setTimeout(r, 600));
-              continue;
-            }
-
-            // Parse response
-            let data;
-            try {
-              data = await res.json();
-            } catch (jsonError) {
-              console.error(`❌ Failed to parse JSON at request ${current}`);
-              await new Promise((r) => setTimeout(r, 600));
-              continue;
-            }
-
-            errorCount = 0; // Reset on success
-
-            if (data.quotes && data.quotes.length > 0) {
-              for (const q of data.quotes) {
-                // Filter to selected carrier only
-                if (!q.company.includes(SELECTED_CARRIER)) {
-                  continue;
-                }
-
-                allQuotes.push({
-                  face_amount: faceAmount,
-                  company: q.company,
-                  plan_name: q.plan_name,
-                  tier_name: q.tier_name,
-                  coverage_type: CONFIG.coverageType,
-                  monthly: parseNum(q.monthly),
-                  yearly: parseNum(q.yearly),
-                  state: CONFIG.state,
-                  gender: sex,
-                  age: age,
-                  term_years: "", // Empty for whole life - import will use null
-                  tobacco: tobacco,
-                });
-              }
-            }
-
-            // Progress every 25 requests
-            if (current % 25 === 0) {
-              const elapsed = (Date.now() - startTime) / 1000;
-              const rate = current / elapsed;
-              const remaining = (total - current) / rate;
-              console.log(
-                `Progress: ${current}/${total} (${Math.round((current / total) * 100)}%) | ` +
-                  `Collected: ${allQuotes.length} quotes | Skipped: ${skippedCombos.length} | ` +
-                  `ETA: ${Math.ceil(remaining / 60)}m ${Math.ceil(remaining % 60)}s`,
-              );
-            }
-
-            // Rate limiting: 600ms between requests (more conservative for FEX)
-            await new Promise((r) => setTimeout(r, 600));
-
-            // Extra pause every 50 requests
-            if (current % 50 === 0) {
-              console.log(`⏸️  Pausing 5 seconds at request ${current}...`);
-              await new Promise((r) => setTimeout(r, 5000));
-            }
-          } catch (e) {
-            console.error(
-              `❌ Exception at ${sex}/${tobacco}/age${age}/$${faceAmount.toLocaleString()}:`,
-              e.message,
-            );
-            errorCount++;
-          }
-        }
-
-        // Pause between age groups
-        console.log(
-          `✓ Completed: ${sex} ${tobacco} age ${age} - ${allQuotes.length} quotes collected, ${skippedCombos.length} skipped`,
-        );
-        await new Promise((r) => setTimeout(r, 3000));
-      }
-    }
-  }
-
-  console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  console.log(
-    `✅ Done! ${allQuotes.length} rates fetched for ${SELECTED_CARRIER}`,
-  );
-  if (skippedCombos.length > 0) {
-    console.log(
-      `⚠️  Skipped ${skippedCombos.length} invalid combinations (age/face amount not offered by carrier)`,
-    );
-  }
-  console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-
-  // Store in window for inspection
-  window.fetchedRates = allQuotes;
-  window.skippedCombos = skippedCombos;
-
-  // Generate CSV
-  if (allQuotes.length > 0) {
-    const headers = Object.keys(allQuotes[0]);
-
-    // CSV escape function
-    const csvEscape = (val) => {
-      const str = String(val ?? "");
-      if (str.includes(",") || str.includes('"') || str.includes("\n")) {
-        return '"' + str.replace(/"/g, '""') + '"';
-      }
-      return str;
-    };
-
-    const csvContent = [
-      headers.join(","),
-      ...allQuotes.map((row) =>
-        headers.map((h) => csvEscape(row[h])).join(","),
-      ),
-    ].join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-
-    const carrierSafe = SELECTED_CARRIER.replace(/\s+/g, "_");
-    a.download = `fex_${CONFIG.coverageType.toLowerCase()}_${CONFIG.state}_${carrierSafe}.csv`;
-
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    console.log(`📁 CSV downloaded: ${a.download}`);
-  } else {
-    console.warn(`⚠️  No quotes found for ${SELECTED_CARRIER}`);
-  }
-
-  return allQuotes;
+window.resumeFexFetcher = () => {
+  console.log("🔁 Resuming from the last saved request index...\n");
+  return fetchAllRates({ resume: true });
 };
 
-// Auto-run discovery when script loads
 discoverCarriers();
 ```
 
@@ -436,6 +634,12 @@ And it starts fetching!
 
 - Refresh page and try again
 - Check you're logged into Insurance Toolkits
+- Run `debugFexFetcher()` to check token status
+
+**Script stops mid-run:**
+
+- Run `resumeFexFetcher()` to continue from where it left off
+- Run `downloadPartialFexCsv()` to save what's been collected so far
 
 **Can't find selectCarrier function:**
 
@@ -450,5 +654,14 @@ And it starts fetching!
 
 **Rate limiting errors:**
 
-- Script already uses conservative 300ms delays
-- If still issues, increase to 500ms in the code
+- Script uses 600ms delays + 5s pauses every 50 requests
+- If still issues, increase `requestDelayMs` in FEX_CONFIG
+
+## What I Would Need If This Still Stops
+
+If the script hits access-denied 400s, provide these from DevTools:
+
+1. The output of `debugFexFetcher()`
+2. One successful request from the Network tab (headers + payload + response)
+3. The first failing request from the Network tab
+4. Whether the normal UI quote form still works manually after the script fails

@@ -1,8 +1,8 @@
 // scripts/invoke-slack-ip-leaderboard.js
-// Manually triggers IP (Issued Premium) leaderboard report to Slack
+// Manually triggers IP (Issued Premium) + Submits leaderboard report to Slack
 //
 // IP (Issued Premium) = Approved & placed policies by effective_date
-// Does NOT include pending policies that have not been issued yet
+// Submits = All submitted policies (active/pending/approved) by submit_date
 //
 // Usage:
 //   npm run slack:ip-leaderboard
@@ -17,9 +17,9 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const IMO_ID = "ffffffff-ffff-ffff-ffff-ffffffffffff"; // Founders Financial Group
 
 async function main() {
-  console.log("📊 IP Leaderboard - Weekly Report\n");
-  console.log("IP (Issued Premium) = Approved & placed policies");
-  console.log("Based on effective_date, NOT submit_date\n");
+  console.log("📊 IP & Submits Leaderboard - Weekly Report\n");
+  console.log("IP (Issued Premium) = Approved & placed policies by effective_date");
+  console.log("Submits = All submitted policies by submit_date\n");
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
     console.error("❌ Missing VITE_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env");
@@ -29,7 +29,7 @@ async function main() {
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
   const functionUrl = `${SUPABASE_URL}/functions/v1/slack-ip-leaderboard`;
 
-  console.log("📤 Posting IP report to Slack...\n");
+  console.log("📤 Posting IP & submits report to Slack...\n");
 
   try {
     const response = await fetch(functionUrl, {
@@ -56,13 +56,19 @@ async function main() {
         if (Array.isArray(data.results[0].topWTD)) {
           console.log("🏆 Top WTD preview:");
           for (const row of data.results[0].topWTD) {
-            console.log(`   - ${row.name}: $${row.ip} (${row.policies})`);
+            console.log(`   - ${row.name}: $${row.ip} IP (${row.policies} issued) · ${row.submits} submitted ($${row.submitAP} AP)`);
           }
         }
         if (Array.isArray(data.results[0].topMTD)) {
           console.log("📈 Top MTD preview:");
           for (const row of data.results[0].topMTD) {
-            console.log(`   - ${row.name}: $${row.ip} (${row.policies})`);
+            console.log(`   - ${row.name}: $${row.ip} IP (${row.policies} issued) · ${row.submits} submitted ($${row.submitAP} AP)`);
+          }
+        }
+        if (Array.isArray(data.results[0].topAgencies)) {
+          console.log("🏢 Top Agencies preview:");
+          for (const row of data.results[0].topAgencies) {
+            console.log(`   - ${row.name}: WTD $${row.wtd} / ${row.wtdSubmits} apps · MTD $${row.mtd} / ${row.mtdSubmits} apps`);
           }
         }
       }
