@@ -17,6 +17,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
+    "test:uw:db": "RUN_DB_TESTS=1 vitest run src/features/underwriting/__tests__/session-history.rpc.integration.test.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "quick-check": "npm run typecheck && npm run lint",
