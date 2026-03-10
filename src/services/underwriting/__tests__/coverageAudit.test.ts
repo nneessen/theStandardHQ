@@ -6,7 +6,7 @@ import {
   type CoverageAuditAcceptanceRule,
   type CoverageAuditCarrierProduct,
   type CoverageAuditRuleSet,
-} from "../coverageAudit";
+} from "../core/coverageAudit";
 
 describe("classifyRuleSetCoverage", () => {
   it("flags decisive rule sets and medication-aware predicates", () => {

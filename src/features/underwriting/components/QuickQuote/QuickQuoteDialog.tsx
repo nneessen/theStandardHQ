@@ -40,7 +40,7 @@ import {
   TERM_COVERAGE_PRESETS,
   PERM_COVERAGE_PRESETS,
 } from "./quick-options-presets";
-import { useAllPremiumMatrices } from "../../hooks/useQuickQuote";
+import { useAllPremiumMatrices } from "../../hooks/quotes/useQuickQuote";
 // eslint-disable-next-line no-restricted-imports
 import {
   calculateQuotesForCoverage,
@@ -51,13 +51,13 @@ import {
   type QuickQuoteInput,
   type QuickQuoteProductType,
   type QuickQuoteResult,
-} from "@/services/underwriting/quickQuoteCalculator";
+} from "@/services/underwriting/core/quickQuoteCalculator";
 // eslint-disable-next-line no-restricted-imports
 import type {
   GenderType,
   HealthClass,
   TermYears,
-} from "@/services/underwriting/premiumMatrixService";
+} from "@/services/underwriting/repositories/premiumMatrixService";
 
 // =============================================================================
 // Types & Constants

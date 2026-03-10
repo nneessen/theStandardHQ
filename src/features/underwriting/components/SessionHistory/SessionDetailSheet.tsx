@@ -31,9 +31,9 @@ import {
   formatProductType,
   isValidHealthTier,
   safeParseJsonArray,
-} from "../../utils/formatters";
-import { parseSessionHealthSnapshot } from "../../utils/session-health-snapshot";
-import { formatRequestedFaceAmounts } from "../../utils/session-persistence";
+} from "../../utils/shared/formatters";
+import { parseSessionHealthSnapshot } from "../../utils/sessions/session-health-snapshot";
+import { formatRequestedFaceAmounts } from "../../utils/sessions/session-persistence";
 
 interface SessionDetailSheetProps {
   session: UnderwritingSession | null;

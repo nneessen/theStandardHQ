@@ -47,7 +47,7 @@ import {
   useUpsertAcceptanceRule,
   useDeleteAcceptanceRule,
   useHealthConditions,
-} from "../../hooks/useAcceptance";
+} from "../../hooks/rules/useAcceptance";
 // eslint-disable-next-line no-restricted-imports
 import {
   ACCEPTANCE_OPTIONS,
@@ -56,7 +56,7 @@ import {
   groupConditionsByCategory,
   type AcceptanceDecision,
   type CarrierAcceptance,
-} from "@/services/underwriting/acceptanceService";
+} from "@/services/underwriting/repositories/acceptanceService";
 import { toast } from "sonner";
 
 interface AcceptanceRuleFormProps {

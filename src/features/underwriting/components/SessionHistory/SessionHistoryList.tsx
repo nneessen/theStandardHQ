@@ -22,7 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useUserSessionsPaginated } from "../../hooks/useUnderwritingSessions";
+import { useUserSessionsPaginated } from "../../hooks/sessions/useUnderwritingSessions";
 import { SessionDetailDialog } from "./SessionDetailDialog";
 import type { UnderwritingSession } from "../../types/underwriting.types";
 import { getHealthTierLabel } from "../../types/underwriting.types";
@@ -30,8 +30,8 @@ import {
   formatSessionDate,
   getHealthTierBadgeColor,
   isValidHealthTier,
-} from "../../utils/formatters";
-import { formatRequestedFaceAmounts } from "../../utils/session-persistence";
+} from "../../utils/shared/formatters";
+import { formatRequestedFaceAmounts } from "../../utils/sessions/session-persistence";
 
 const PAGE_SIZE = 20;
 

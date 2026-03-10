@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveRuleConditionCodes } from "../derivedConditionCodes";
+import { deriveRuleConditionCodes } from "../core/derivedConditionCodes";
 
 describe("deriveRuleConditionCodes", () => {
   it("derives diabetes aliases for type 1 / insulin-dependent risk patterns", () => {

@@ -4,27 +4,27 @@ import type { Database } from "../../../../src/types/database.types.ts";
 import {
   transformConditionResponses,
   type TransformedConditionResponses,
-} from "../../../../src/services/underwriting/conditionResponseTransformer.ts";
+} from "../../../../src/services/underwriting/core/conditionResponseTransformer.ts";
 import {
   checkEligibility,
   getMaxFaceAmountForAgeTerm,
-} from "../../../../src/services/underwriting/eligibility-filter.ts";
-import { lookupBuildRatingUnified } from "../../../../src/features/underwriting/utils/buildTableLookup.ts";
-import { calculateBMI } from "../../../../src/features/underwriting/utils/bmiCalculator.ts";
+} from "../../../../src/services/underwriting/core/eligibility-filter.ts";
+import { lookupBuildRatingUnified } from "../../../../src/features/underwriting/utils/rates/buildTableLookup.ts";
+import { calculateBMI } from "../../../../src/features/underwriting/utils/shared/bmiCalculator.ts";
 import {
   buildFactMap,
   evaluateRuleSet,
   aggregateOutcomes,
   generateInputHash,
-} from "../../../../src/services/underwriting/ruleEvaluator.ts";
+} from "../../../../src/services/underwriting/core/ruleEvaluator.ts";
 import {
   UnderwritingRuleSetSchema,
   type ConditionOutcome,
   type FactMap,
   type HealthClass as DSLHealthClass,
   type UnderwritingRuleSet,
-} from "../../../../src/services/underwriting/ruleEngineDSL.ts";
-import { deriveRuleConditionCodes } from "../../../../src/services/underwriting/derivedConditionCodes.ts";
+} from "../../../../src/services/underwriting/core/ruleEngineDSL.ts";
+import { deriveRuleConditionCodes } from "../../../../src/services/underwriting/core/derivedConditionCodes.ts";
 import type {
   BuildChartInfo,
   DecisionEngineResult,
@@ -33,14 +33,14 @@ import type {
   Recommendation,
   EvaluatedProduct,
   ScoreComponents,
-} from "../../../../src/services/underwriting/decision-engine.types.ts";
+} from "../../../../src/services/underwriting/core/decision-engine.types.ts";
 import type {
   AlternativeQuote,
   GenderType,
   HealthClass,
   PremiumMatrix,
   TermYears,
-} from "../../../../src/services/underwriting/premium-matrix-core.ts";
+} from "../../../../src/services/underwriting/core/premium-matrix-core.ts";
 import {
   calculateAlternativeQuotes,
   getAvailableRateClassesForQuote,
@@ -48,7 +48,7 @@ import {
   getComparisonFaceAmounts,
   getLongestAvailableTermForAge,
   interpolatePremium,
-} from "../../../../src/services/underwriting/premium-matrix-core.ts";
+} from "../../../../src/services/underwriting/core/premium-matrix-core.ts";
 import type {
   DraftRuleInfo,
   RateTableRecommendation,

@@ -19,8 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useUploadGuide } from "../../hooks/useUnderwritingGuides";
-import { useCarriersWithProducts } from "../../hooks/useCarriersWithProducts";
+import { useUploadGuide } from "../../hooks/guides/useUnderwritingGuides";
+import { useCarriersWithProducts } from "../../hooks/coverage/useCarriersWithProducts";
 
 interface GuideUploaderProps {
   open: boolean;

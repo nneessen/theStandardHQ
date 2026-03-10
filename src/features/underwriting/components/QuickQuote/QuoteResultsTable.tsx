@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 // eslint-disable-next-line no-restricted-imports
-import type { QuoteResult } from "@/services/underwriting/quotingService";
+import type { QuoteResult } from "@/services/underwriting/workflows/quotingService";
 
 interface QuoteResultsTableProps {
   quotes: QuoteResult[];

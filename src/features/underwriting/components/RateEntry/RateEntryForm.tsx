@@ -27,7 +27,7 @@ import {
   useProductRates,
   useUpsertRate,
   useBulkUpsertRates,
-} from "../../hooks/useRates";
+} from "../../hooks/rates/useRates";
 // eslint-disable-next-line no-restricted-imports
 import {
   AGE_BANDS,
@@ -38,7 +38,7 @@ import {
   type TobaccoClass,
   type HealthClass,
   parseRateCSV,
-} from "@/services/underwriting/rateService";
+} from "@/services/underwriting/repositories/rateService";
 import { toast } from "sonner";
 
 interface RateEntryFormProps {

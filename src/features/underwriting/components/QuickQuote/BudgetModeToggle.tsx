@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DollarSign, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 // eslint-disable-next-line no-restricted-imports
-import type { QuoteMode } from "@/services/underwriting/quotingService";
+import type { QuoteMode } from "@/services/underwriting/workflows/quotingService";
 
 interface BudgetModeToggleProps {
   mode: QuoteMode;

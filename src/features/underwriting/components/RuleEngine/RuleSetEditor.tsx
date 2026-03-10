@@ -22,8 +22,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
-import type { RuleSetWithRules, RuleSetScope } from "../../hooks/useRuleSets";
-import { useHealthConditions } from "../../hooks/useAcceptance";
+import type {
+  RuleSetWithRules,
+  RuleSetScope,
+} from "../../hooks/rules/useRuleSets";
+import { useHealthConditions } from "../../hooks/rules/useAcceptance";
 import { RuleEditor, type RuleFormData } from "./RuleEditor";
 import { ConditionRuleSetView } from "./ConditionRuleSetView";
 import { getAvailableConditionCodes } from "./fieldRegistry";

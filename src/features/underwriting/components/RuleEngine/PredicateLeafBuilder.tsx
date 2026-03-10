@@ -19,7 +19,7 @@ import { Trash2 } from "lucide-react";
 import type {
   FieldCondition,
   NullHandler,
-} from "@/services/underwriting/ruleEngineDSL";
+} from "@/services/underwriting/core/ruleEngineDSL";
 import {
   type AllOperators,
   getFieldsByCategory,

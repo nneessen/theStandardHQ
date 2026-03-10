@@ -15,19 +15,19 @@ import { Input } from "@/components/ui/input";
 import {
   useHealthConditions,
   groupConditionsByCategory,
-} from "../../hooks/useHealthConditions";
-import { useRuleSets, useDeleteRuleSet } from "../../hooks/useRuleSets";
+} from "../../hooks/shared/useHealthConditions";
+import { useRuleSets, useDeleteRuleSet } from "../../hooks/rules/useRuleSets";
 import {
   useCoverageStats,
   getProductCoverage,
-} from "../../hooks/useCoverageStats";
+} from "../../hooks/coverage/useCoverageStats";
 import {
   CONDITION_CATEGORY_LABELS,
   type ConditionCategory,
   type HealthCondition,
   type FollowUpSchema,
 } from "../../types/underwriting.types";
-import type { RuleSetWithRules } from "../../hooks/useRuleSets";
+import type { RuleSetWithRules } from "../../hooks/rules/useRuleSets";
 import { GuidedRuleBuilderDialog } from "./GuidedRuleBuilderDialog";
 import { RuleSetEditor } from "../RuleEngine/RuleSetEditor";
 import {
@@ -35,8 +35,8 @@ import {
   useUpdateRule,
   useDeleteRule,
   useReorderRules,
-} from "../../hooks/useRules";
-import { useUpdateRuleSet } from "../../hooks/useRuleSets";
+} from "../../hooks/rules/useRules";
+import { useUpdateRuleSet } from "../../hooks/rules/useRuleSets";
 
 interface ConditionChecklistProps {
   carrierId: string;

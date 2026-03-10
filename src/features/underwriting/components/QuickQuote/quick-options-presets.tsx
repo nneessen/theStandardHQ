@@ -13,9 +13,9 @@ import { cn } from "@/lib/utils";
 import {
   useQuickQuotePresets,
   useUpdatePresets,
-} from "../../hooks/useQuickQuote";
+} from "../../hooks/quotes/useQuickQuote";
 // eslint-disable-next-line no-restricted-imports
-import type { PresetTuple } from "@/services/underwriting/quickQuotePresetsService";
+import type { PresetTuple } from "@/services/underwriting/repositories/quickQuotePresetsService";
 
 // =============================================================================
 // System Default Presets

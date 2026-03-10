@@ -5,7 +5,7 @@
 // never false/[] - this is essential for rule evaluation semantics.
 
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { transformConditionResponses } from "./conditionResponseTransformer";
+import { transformConditionResponses } from "./core/conditionResponseTransformer";
 
 describe("transformConditionResponses", () => {
   // Capture console.warn calls

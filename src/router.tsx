@@ -67,7 +67,7 @@ import { CampaignEditorPage } from "./features/marketing/components/campaigns/Ca
 
 // Lazy-loaded underwriting pages
 const UnderwritingWizardPage = lazy(
-  () => import("./features/underwriting/components/UnderwritingWizard"),
+  () => import("./features/underwriting/components/Wizard"),
 );
 const QuickQuotePage = lazy(
   () =>

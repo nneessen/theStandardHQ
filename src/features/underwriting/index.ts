@@ -1,9 +1,9 @@
 // src/features/underwriting/index.ts
 
 // Page components (full-page routes, no props)
-export { default as UnderwritingWizardPage } from "./components/UnderwritingWizard";
+export { default as UnderwritingWizardPage } from "./components/Wizard";
 export { QuickQuotePage } from "./components/QuickQuote";
-export { UnderwritingSettingsTab } from "./components/UnderwritingSettingsTab";
+export { UnderwritingSettingsTab } from "./components/Settings";
 export {
   SessionHistoryList,
   SessionDetailDialog,
@@ -76,7 +76,7 @@ export {
   getBMIRiskLevel,
   calculateAge,
   formatHeight,
-} from "./utils/bmiCalculator";
+} from "./utils/shared/bmiCalculator";
 
 export {
   getHealthTierBadgeColor,
@@ -88,7 +88,7 @@ export {
   isValidHealthTier,
   safeParseJsonArray,
   safeParseJsonObject,
-} from "./utils/formatters";
+} from "./utils/shared/formatters";
 
 // Build Table Types & Utilities
 export type {
@@ -121,9 +121,9 @@ export {
   exportBuildTableToCsv,
   generateCsvTemplate,
   downloadCsv,
-} from "./utils/buildTableCsvParser";
+} from "./utils/rates/buildTableCsvParser";
 
-export { lookupBuildRatingUnified } from "./utils/buildTableLookup";
+export { lookupBuildRatingUnified } from "./utils/rates/buildTableLookup";
 
 // Additional underwriting types used by services
 export type {
@@ -144,8 +144,8 @@ export {
   getUsageStatus,
   getDaysRemaining,
   uwWizardUsageKeys,
-} from "./hooks/useUWWizardUsage";
-export type { UWWizardUsage } from "./hooks/useUWWizardUsage";
+} from "./hooks/wizard/useUWWizardUsage";
+export type { UWWizardUsage } from "./hooks/wizard/useUWWizardUsage";
 
 // Product Constraints Types
 export type {

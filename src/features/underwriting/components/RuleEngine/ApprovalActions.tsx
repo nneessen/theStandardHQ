@@ -22,7 +22,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 // eslint-disable-next-line no-restricted-imports
-import type { RuleReviewStatus } from "@/services/underwriting/ruleService";
+import type { RuleReviewStatus } from "@/services/underwriting/repositories/ruleService";
 
 // ============================================================================
 // Types

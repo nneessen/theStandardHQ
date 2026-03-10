@@ -12,13 +12,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useCoverageAudit } from "../../hooks/useCoverageAudit";
+import { useCoverageAudit } from "../../hooks/coverage/useCoverageAudit";
 // eslint-disable-next-line no-restricted-imports
 import type {
   CoverageAuditConditionRow,
   CoverageAuditProductRow,
   CoverageAuditProductStatus,
-} from "@/services/underwriting/coverageAudit";
+} from "@/services/underwriting/core/coverageAudit";
 
 interface CoverageAuditViewProps {
   onOpenBuilder?: (args: {

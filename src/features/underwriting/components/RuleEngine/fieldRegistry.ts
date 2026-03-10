@@ -10,7 +10,7 @@ import type {
   SetOperator,
   ArrayOperator,
   NullOperator,
-} from "@/services/underwriting/ruleEngineDSL";
+} from "@/services/underwriting/core/ruleEngineDSL";
 
 // ============================================================================
 // Field Type Definitions

@@ -52,12 +52,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCriteriaList } from "../../hooks/useCriteria";
+import { useCriteriaList } from "../../hooks/criteria/useCriteria";
 import {
   useDeleteCriteria,
   useUpdateCriteriaContent,
-} from "../../hooks/useExtractCriteria";
-import { useCanManageUnderwriting } from "../../hooks/useUnderwritingFeatureFlag";
+} from "../../hooks/criteria/useExtractCriteria";
+import { useCanManageUnderwriting } from "../../hooks/wizard/useUnderwritingFeatureFlag";
 import { CriteriaEditor } from "./CriteriaEditor";
 import { CreateCriteriaDialog } from "./CreateCriteriaDialog";
 import type {
@@ -67,7 +67,7 @@ import type {
   ReviewStatus,
 } from "../../types/underwriting.types";
 import type { Json } from "@/types/database.types";
-import { formatSessionDate } from "../../utils/formatters";
+import { formatSessionDate } from "../../utils/shared/formatters";
 
 type SortField = "created_at" | "confidence" | "carrier" | "review_status";
 type SortDirection = "asc" | "desc";

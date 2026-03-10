@@ -28,14 +28,15 @@ import {
   useCreateRuleSet,
   useUpdateRuleSet,
   ruleEngineKeys,
-} from "../../hooks/useRuleSets";
-import { useCreateRule } from "../../hooks/useRules";
-import { coverageStatsKeys } from "../../hooks/useCoverageStats";
+  deleteRuleSet,
+} from "../../hooks/rules/useRuleSets";
+import { useCreateRule } from "../../hooks/rules/useRules";
+import { coverageStatsKeys } from "../../hooks/coverage/useCoverageStats";
 import type {
   PredicateGroup,
   HealthClass,
   TableRating,
-} from "../../hooks/useRuleSets";
+} from "../../hooks/rules/useRuleSets";
 import type {
   FollowUpSchema,
   FollowUpQuestion,
@@ -591,7 +592,6 @@ export function GuidedRuleBuilderDialog({
       // Clean up orphan rule set on failure
       if (ruleSetId) {
         try {
-          const { deleteRuleSet } = await import("../../hooks/useRuleSets");
           if (imoId) {
             await deleteRuleSet(ruleSetId, imoId);
           }

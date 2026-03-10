@@ -14,9 +14,9 @@ import { Plus, Trash2, Layers } from "lucide-react";
 import type {
   PredicateGroup,
   FieldCondition,
-} from "@/services/underwriting/ruleEngineDSL";
+} from "@/services/underwriting/core/ruleEngineDSL";
 // eslint-disable-next-line no-restricted-imports
-import { isFieldCondition } from "@/services/underwriting/ruleEngineDSL";
+import { isFieldCondition } from "@/services/underwriting/core/ruleEngineDSL";
 import {
   PredicateLeafBuilder,
   createDefaultCondition,

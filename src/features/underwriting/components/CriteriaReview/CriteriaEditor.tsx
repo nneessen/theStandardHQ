@@ -44,7 +44,7 @@ import type {
 import {
   parseExtractedCriteria,
   parseSourceExcerpts,
-} from "../../utils/criteriaValidation";
+} from "../../utils/criteria/criteriaValidation";
 
 interface CriteriaEditorProps {
   criteria: CriteriaWithRelations;

@@ -19,7 +19,10 @@ import {
   Trash2,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { parsePredicate, type RuleSetWithRules } from "../../hooks/useRuleSets";
+import {
+  parsePredicate,
+  type RuleSetWithRules,
+} from "../../hooks/rules/useRuleSets";
 import { ConditionInfoPanel } from "./ConditionInfoPanel";
 import { RuleCard } from "./RuleCard";
 import type { RuleFormData } from "./RuleEditor";

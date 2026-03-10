@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Code2, Eye } from "lucide-react";
 // eslint-disable-next-line no-restricted-imports
-import type { PredicateGroup } from "@/services/underwriting/ruleEngineDSL";
+import type { PredicateGroup } from "@/services/underwriting/core/ruleEngineDSL";
 import { PredicateGroupBuilder } from "./PredicateGroupBuilder";
 import { PredicateJsonEditor } from "./PredicateJsonEditor";
 

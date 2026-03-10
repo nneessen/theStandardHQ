@@ -15,7 +15,7 @@ import {
   type TobaccoClass,
   type RateableHealthClass,
   type TermYears,
-} from "../premiumMatrixService";
+} from "../repositories/premiumMatrixService";
 
 // =============================================================================
 // Test Fixtures

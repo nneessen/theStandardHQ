@@ -12,9 +12,12 @@ import {
   HEALTH_CLASS_SEVERITY,
   applyBuildConstraint,
   determineHealthClass,
-} from "../approval-scoring";
+} from "../core/approval-scoring";
 
-import type { HealthClass, ConditionDecision } from "../decision-engine.types";
+import type {
+  HealthClass,
+  ConditionDecision,
+} from "../core/decision-engine.types";
 import type { BuildRatingClass } from "@/features/underwriting";
 
 // =============================================================================
@@ -194,7 +197,9 @@ describe("determineHealthClass", () => {
 
   describe("single condition", () => {
     it("returns health class from single decision", () => {
-      const decisions = [createConditionDecision({ healthClassResult: "standard" })];
+      const decisions = [
+        createConditionDecision({ healthClassResult: "standard" }),
+      ];
       const result = determineHealthClass(decisions);
       expect(result).toBe("standard");
     });
@@ -206,13 +211,17 @@ describe("determineHealthClass", () => {
     });
 
     it("maps table_a to table_rated", () => {
-      const decisions = [createConditionDecision({ healthClassResult: "table_a" })];
+      const decisions = [
+        createConditionDecision({ healthClassResult: "table_a" }),
+      ];
       const result = determineHealthClass(decisions);
       expect(result).toBe("table_rated");
     });
 
     it("maps table_d to table_rated", () => {
-      const decisions = [createConditionDecision({ healthClassResult: "table_d" })];
+      const decisions = [
+        createConditionDecision({ healthClassResult: "table_d" }),
+      ];
       const result = determineHealthClass(decisions);
       expect(result).toBe("table_rated");
     });
@@ -221,8 +230,14 @@ describe("determineHealthClass", () => {
   describe("multiple conditions - worst class wins", () => {
     it("returns standard when one condition is standard and one is preferred", () => {
       const decisions = [
-        createConditionDecision({ conditionCode: "diabetes", healthClassResult: "preferred" }),
-        createConditionDecision({ conditionCode: "hypertension", healthClassResult: "standard" }),
+        createConditionDecision({
+          conditionCode: "diabetes",
+          healthClassResult: "preferred",
+        }),
+        createConditionDecision({
+          conditionCode: "hypertension",
+          healthClassResult: "standard",
+        }),
       ];
       const result = determineHealthClass(decisions);
       expect(result).toBe("standard");
@@ -230,9 +245,18 @@ describe("determineHealthClass", () => {
 
     it("returns table_rated when any condition is table rated", () => {
       const decisions = [
-        createConditionDecision({ conditionCode: "diabetes", healthClassResult: "preferred" }),
-        createConditionDecision({ conditionCode: "obesity", healthClassResult: "table_b" }),
-        createConditionDecision({ conditionCode: "hypertension", healthClassResult: "standard" }),
+        createConditionDecision({
+          conditionCode: "diabetes",
+          healthClassResult: "preferred",
+        }),
+        createConditionDecision({
+          conditionCode: "obesity",
+          healthClassResult: "table_b",
+        }),
+        createConditionDecision({
+          conditionCode: "hypertension",
+          healthClassResult: "standard",
+        }),
       ];
       const result = determineHealthClass(decisions);
       expect(result).toBe("table_rated");
@@ -240,8 +264,14 @@ describe("determineHealthClass", () => {
 
     it("returns preferred when best condition is preferred", () => {
       const decisions = [
-        createConditionDecision({ conditionCode: "mild_condition", healthClassResult: "preferred" }),
-        createConditionDecision({ conditionCode: "another", healthClassResult: null }),
+        createConditionDecision({
+          conditionCode: "mild_condition",
+          healthClassResult: "preferred",
+        }),
+        createConditionDecision({
+          conditionCode: "another",
+          healthClassResult: null,
+        }),
       ];
       const result = determineHealthClass(decisions);
       expect(result).toBe("preferred");
@@ -249,9 +279,18 @@ describe("determineHealthClass", () => {
 
     it("returns standard_plus correctly", () => {
       const decisions = [
-        createConditionDecision({ conditionCode: "cond1", healthClassResult: "preferred" }),
-        createConditionDecision({ conditionCode: "cond2", healthClassResult: "standard_plus" }),
-        createConditionDecision({ conditionCode: "cond3", healthClassResult: "preferred_plus" }),
+        createConditionDecision({
+          conditionCode: "cond1",
+          healthClassResult: "preferred",
+        }),
+        createConditionDecision({
+          conditionCode: "cond2",
+          healthClassResult: "standard_plus",
+        }),
+        createConditionDecision({
+          conditionCode: "cond3",
+          healthClassResult: "preferred_plus",
+        }),
       ];
       const result = determineHealthClass(decisions);
       expect(result).toBe("standard_plus");
@@ -259,7 +298,10 @@ describe("determineHealthClass", () => {
   });
 
   describe("all health class levels", () => {
-    const testCases: Array<{ healthClass: HealthClass; expected: HealthClass }> = [
+    const testCases: Array<{
+      healthClass: HealthClass;
+      expected: HealthClass;
+    }> = [
       { healthClass: "preferred_plus", expected: "preferred_plus" },
       { healthClass: "preferred", expected: "preferred" },
       { healthClass: "standard_plus", expected: "standard_plus" },
@@ -269,7 +311,9 @@ describe("determineHealthClass", () => {
 
     testCases.forEach(({ healthClass, expected }) => {
       it(`correctly identifies ${healthClass}`, () => {
-        const decisions = [createConditionDecision({ healthClassResult: healthClass })];
+        const decisions = [
+          createConditionDecision({ healthClassResult: healthClass }),
+        ];
         const result = determineHealthClass(decisions);
         expect(result).toBe(expected);
       });
@@ -279,9 +323,18 @@ describe("determineHealthClass", () => {
   describe("mixed null and valid health classes", () => {
     it("ignores null and uses valid health class", () => {
       const decisions = [
-        createConditionDecision({ conditionCode: "cond1", healthClassResult: null }),
-        createConditionDecision({ conditionCode: "cond2", healthClassResult: null }),
-        createConditionDecision({ conditionCode: "cond3", healthClassResult: "standard_plus" }),
+        createConditionDecision({
+          conditionCode: "cond1",
+          healthClassResult: null,
+        }),
+        createConditionDecision({
+          conditionCode: "cond2",
+          healthClassResult: null,
+        }),
+        createConditionDecision({
+          conditionCode: "cond3",
+          healthClassResult: "standard_plus",
+        }),
       ];
       const result = determineHealthClass(decisions);
       expect(result).toBe("standard_plus");
@@ -289,8 +342,14 @@ describe("determineHealthClass", () => {
 
     it("returns preferred_plus when all health classes are null", () => {
       const decisions = [
-        createConditionDecision({ conditionCode: "cond1", healthClassResult: null }),
-        createConditionDecision({ conditionCode: "cond2", healthClassResult: null }),
+        createConditionDecision({
+          conditionCode: "cond1",
+          healthClassResult: null,
+        }),
+        createConditionDecision({
+          conditionCode: "cond2",
+          healthClassResult: null,
+        }),
       ];
       const result = determineHealthClass(decisions);
       expect(result).toBe("preferred_plus");

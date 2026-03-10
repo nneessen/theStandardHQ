@@ -12,7 +12,7 @@ import {
   checkEligibility,
   getMaxFaceAmountForAgeTerm,
   getFullUnderwritingThreshold,
-} from "../eligibility-filter";
+} from "../core/eligibility-filter";
 
 import type {
   ProductCandidate,
@@ -20,7 +20,7 @@ import type {
   ClientProfile,
   CoverageRequest,
   ExtractedCriteria,
-} from "../decision-engine.types";
+} from "../core/decision-engine.types";
 
 // =============================================================================
 // Test Helpers

@@ -21,7 +21,7 @@ import {
   type EligibilityStatus,
   type HealthClass,
   type TableRating,
-} from "@/services/underwriting/ruleEngineDSL";
+} from "@/services/underwriting/core/ruleEngineDSL";
 
 // ============================================================================
 // Types

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { supabase } from "@/services/base/supabase";
-import { logEvaluation, reorderRules } from "../ruleService";
+import { logEvaluation, reorderRules } from "../repositories/ruleService";
 
 vi.mock("@/services/base/supabase", () => ({
   supabase: {
@@ -44,12 +44,7 @@ describe("underwriting ruleService", () => {
     );
   });
 
-  it("throws when underwriting audit logging fails", async () => {
-    vi.mocked(supabase.rpc).mockResolvedValue({
-      data: null,
-      error: { message: "rpc failed" },
-    } as never);
-
+  it("blocks client-side underwriting audit writes", async () => {
     await expect(
       logEvaluation(
         "session-1",
@@ -62,26 +57,10 @@ describe("underwriting ruleService", () => {
           matchedConditions: [{ field: "client.age" }],
         },
       ),
-    ).rejects.toThrow("Failed to write underwriting audit log: rpc failed");
-  });
+    ).rejects.toThrow(
+      "Client-side underwriting audit writes are disabled. Persist audit logs via the backend authoritative save path.",
+    );
 
-  it("surfaces logical underwriting audit log failures from the RPC", async () => {
-    vi.mocked(supabase.rpc).mockResolvedValue({
-      data: { success: false, error: "Access denied" },
-      error: null,
-    } as never);
-
-    await expect(
-      logEvaluation(
-        "session-1",
-        "rule-set-1",
-        "rule-1",
-        "diabetes",
-        "matched",
-        {
-          inputHash: "hash-1",
-        },
-      ),
-    ).rejects.toThrow("Access denied");
+    expect(supabase.rpc).not.toHaveBeenCalled();
   });
 });

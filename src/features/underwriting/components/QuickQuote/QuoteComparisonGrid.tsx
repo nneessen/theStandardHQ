@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import type {
   QuickQuoteResult,
   QuickQuoteProductType,
-} from "@/services/underwriting/quickQuoteCalculator";
+} from "@/services/underwriting/core/quickQuoteCalculator";
 
 // =============================================================================
 // Types

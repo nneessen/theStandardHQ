@@ -17,7 +17,7 @@ import { Loader2, Save, Check } from "lucide-react";
 import {
   usePremiumMatrixForClassification,
   useBulkUpsertPremiumMatrix,
-} from "../../hooks/usePremiumMatrix";
+} from "../../hooks/rates/usePremiumMatrix";
 // eslint-disable-next-line no-restricted-imports
 import {
   GRID_AGES,
@@ -34,7 +34,7 @@ import {
   type TobaccoClass,
   type HealthClass,
   type TermYears,
-} from "@/services/underwriting/premiumMatrixService";
+} from "@/services/underwriting/repositories/premiumMatrixService";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 

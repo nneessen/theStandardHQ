@@ -40,7 +40,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useCarriersWithProducts } from "../../hooks/useCarriersWithProducts";
+import { useCarriersWithProducts } from "../../hooks/coverage/useCarriersWithProducts";
 import {
   useRuleSets,
   useRuleSet,
@@ -48,20 +48,20 @@ import {
   useUpdateRuleSet,
   useDeleteRuleSet,
   type RuleSetWithRules,
-} from "../../hooks/useRuleSets";
+} from "../../hooks/rules/useRuleSets";
 import {
   useCreateRule,
   useUpdateRule,
   useDeleteRule,
   useReorderRules,
-} from "../../hooks/useRules";
+} from "../../hooks/rules/useRules";
 import {
   useGenerateKnockoutRules,
   useGenerateAgeRules,
   useGenerateGuaranteedIssueRules,
   useKnockoutCodes,
   type GenerationStrategy,
-} from "../../hooks/useGenerateRules";
+} from "../../hooks/rules/useGenerateRules";
 import {
   RuleSetList,
   RuleSetEditor,

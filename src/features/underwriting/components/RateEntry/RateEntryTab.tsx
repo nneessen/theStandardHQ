@@ -13,8 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, DollarSign, CheckCircle2, Upload } from "lucide-react";
 import { RateImportDialog } from "./RateImportDialog";
-import { useCarriersWithProducts } from "../../hooks/useCarriersWithProducts";
-import { useProductsWithPremiumMatrix } from "../../hooks/usePremiumMatrix";
+import { useCarriersWithProducts } from "../../hooks/coverage/useCarriersWithProducts";
+import { useProductsWithPremiumMatrix } from "../../hooks/rates/usePremiumMatrix";
 import { PremiumMatrixGrid } from "./PremiumMatrixGrid";
 import type { CarrierWithProducts } from "../../types/underwriting.types";
 

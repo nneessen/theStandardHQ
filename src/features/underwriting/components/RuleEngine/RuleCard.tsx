@@ -14,12 +14,12 @@ import { Pencil, Trash2, ChevronUp, ChevronDown, FileText } from "lucide-react";
 import type {
   PredicateGroup,
   FieldCondition,
-} from "@/services/underwriting/ruleEngineDSL";
+} from "@/services/underwriting/core/ruleEngineDSL";
 // eslint-disable-next-line no-restricted-imports
 import {
   isFieldCondition,
   parsePredicate,
-} from "@/services/underwriting/ruleEngineDSL";
+} from "@/services/underwriting/core/ruleEngineDSL";
 import {
   getFieldDefinition,
   getOperatorLabel,

@@ -13,7 +13,7 @@ import {
   buildApprovalClientProfile,
   calculateScore,
   requiresManualReviewForRecommendation,
-} from "../product-evaluation";
+} from "../workflows/product-evaluation";
 
 import type { ScoreComponents } from "@/features/underwriting";
 

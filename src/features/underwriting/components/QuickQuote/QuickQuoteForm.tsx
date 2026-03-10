@@ -16,12 +16,12 @@ import BudgetModeToggle from "./BudgetModeToggle";
 import type {
   QuoteInput,
   ProductType,
-} from "@/services/underwriting/quotingService";
+} from "@/services/underwriting/workflows/quotingService";
 // eslint-disable-next-line no-restricted-imports
 import type {
   HealthClass,
   TermYears,
-} from "@/services/underwriting/premiumMatrixService";
+} from "@/services/underwriting/repositories/premiumMatrixService";
 import { US_STATES } from "@/constants/states";
 
 interface QuickQuoteFormProps {

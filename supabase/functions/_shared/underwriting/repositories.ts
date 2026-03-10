@@ -5,16 +5,16 @@ import type {
   BuildChartInfo,
   ExtractedCriteria,
   ProductCandidate,
-} from "../../../../src/services/underwriting/decision-engine.types.ts";
+} from "../../../../src/services/underwriting/core/decision-engine.types.ts";
 import type {
   PremiumMatrix,
   GenderType,
   TobaccoClass,
-} from "../../../../src/services/underwriting/premium-matrix-core.ts";
+} from "../../../../src/services/underwriting/core/premium-matrix-core.ts";
 import type {
   RuleSetScope,
   ReviewStatus,
-} from "../../../../src/services/underwriting/ruleEngineDSL.ts";
+} from "../../../../src/services/underwriting/core/ruleEngineDSL.ts";
 
 type RuleSetRow = Database["public"]["Tables"]["underwriting_rule_sets"]["Row"];
 type RuleRow = Database["public"]["Tables"]["underwriting_rules"]["Row"];

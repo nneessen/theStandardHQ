@@ -3,12 +3,12 @@
 
 import { useMemo } from "react";
 import { ChevronRight } from "lucide-react";
-import { useCarriersWithProducts } from "../../hooks/useCarriersWithProducts";
-import { useHealthConditions } from "../../hooks/useHealthConditions";
+import { useCarriersWithProducts } from "../../hooks/coverage/useCarriersWithProducts";
+import { useHealthConditions } from "../../hooks/shared/useHealthConditions";
 import {
   useCoverageStats,
   getCarrierAggregateCoverage,
-} from "../../hooks/useCoverageStats";
+} from "../../hooks/coverage/useCoverageStats";
 
 interface CarrierCoverageListProps {
   onSelectCarrier: (carrierId: string, carrierName: string) => void;
@@ -21,8 +21,7 @@ export function CarrierCoverageList({
     useCarriersWithProducts();
   const { data: conditions, isLoading: conditionsLoading } =
     useHealthConditions();
-  const { data: coverageMap, isLoading: coverageLoading } =
-    useCoverageStats();
+  const { data: coverageMap, isLoading: coverageLoading } = useCoverageStats();
 
   const totalConditions = conditions?.length ?? 0;
 
@@ -30,8 +29,10 @@ export function CarrierCoverageList({
     if (!carriers) return [];
     return carriers
       .map((carrier) => {
-        const configured =
-          getCarrierAggregateCoverage(coverageMap, carrier.id).size;
+        const configured = getCarrierAggregateCoverage(
+          coverageMap,
+          carrier.id,
+        ).size;
         const pct =
           totalConditions > 0
             ? Math.round((configured / totalConditions) * 100)

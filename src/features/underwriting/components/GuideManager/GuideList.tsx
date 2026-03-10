@@ -65,13 +65,13 @@ import {
   useDeleteGuide,
   useGuideSignedUrl,
   useUpdateGuide,
-} from "../../hooks/useUnderwritingGuides";
-import { useParseGuide } from "../../hooks/useParseGuide";
-import { useCriteriaByGuide } from "../../hooks/useCriteria";
-import { useExtractCriteria } from "../../hooks/useExtractCriteria";
+} from "../../hooks/guides/useUnderwritingGuides";
+import { useParseGuide } from "../../hooks/guides/useParseGuide";
+import { useCriteriaByGuide } from "../../hooks/criteria/useCriteria";
+import { useExtractCriteria } from "../../hooks/criteria/useExtractCriteria";
 import { GuideUploader } from "./GuideUploader";
 import type { UnderwritingGuide } from "../../types/underwriting.types";
-import { formatSessionDate } from "../../utils/formatters";
+import { formatSessionDate } from "../../utils/shared/formatters";
 
 export function GuideList() {
   const { data: guides, isLoading, error } = useUnderwritingGuides();

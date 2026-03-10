@@ -5,12 +5,12 @@ import { useMemo } from "react";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useCarriersWithProducts } from "../../hooks/useCarriersWithProducts";
-import { useHealthConditions } from "../../hooks/useHealthConditions";
+import { useCarriersWithProducts } from "../../hooks/coverage/useCarriersWithProducts";
+import { useHealthConditions } from "../../hooks/shared/useHealthConditions";
 import {
   useCoverageStats,
   getProductCoverage,
-} from "../../hooks/useCoverageStats";
+} from "../../hooks/coverage/useCoverageStats";
 
 interface ProductCoverageListProps {
   carrierId: string;
@@ -29,8 +29,7 @@ export function ProductCoverageList({
     useCarriersWithProducts();
   const { data: conditions, isLoading: conditionsLoading } =
     useHealthConditions();
-  const { data: coverageMap, isLoading: coverageLoading } =
-    useCoverageStats();
+  const { data: coverageMap, isLoading: coverageLoading } = useCoverageStats();
 
   const totalConditions = conditions?.length ?? 0;
 

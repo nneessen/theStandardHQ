@@ -29,9 +29,9 @@ import {
   SkipForward,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { useCarriersWithProducts } from "../../hooks/useCarriersWithProducts";
+import { useCarriersWithProducts } from "../../hooks/coverage/useCarriersWithProducts";
 // eslint-disable-next-line no-restricted-imports
-import { bulkUpsertPremiumMatrix } from "@/services/underwriting/premiumMatrixService";
+import { bulkUpsertPremiumMatrix } from "@/services/underwriting/repositories/premiumMatrixService";
 // eslint-disable-next-line no-restricted-imports
 import type {
   GenderType,
@@ -39,7 +39,7 @@ import type {
   HealthClass,
   TermYears,
   BulkPremiumEntry,
-} from "@/services/underwriting/premiumMatrixService";
+} from "@/services/underwriting/repositories/premiumMatrixService";
 // CarrierWithProducts type available via useCarriersWithProducts hook
 // import type { CarrierWithProducts } from "../../types/underwriting.types";
 

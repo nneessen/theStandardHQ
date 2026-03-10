@@ -8,8 +8,8 @@
 // - Fallback to longest available term when none specified
 
 import { describe, it, expect } from "vitest";
-import { getMaxFaceAmountForAgeTerm } from "../eligibility-filter";
-import type { ProductMetadata } from "../decision-engine.types";
+import { getMaxFaceAmountForAgeTerm } from "../core/eligibility-filter";
+import type { ProductMetadata } from "../core/decision-engine.types";
 
 // =============================================================================
 // Test: getMaxFaceAmountForAgeTerm helper function

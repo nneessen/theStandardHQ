@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildFactMap } from "../ruleEvaluator";
+import { buildFactMap } from "../core/ruleEvaluator";
 
 describe("buildFactMap", () => {
   it("adds medication facts to the canonical rule map", () => {

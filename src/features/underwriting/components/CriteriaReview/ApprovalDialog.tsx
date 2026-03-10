@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge as _Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUpdateCriteriaReview } from "../../hooks/useExtractCriteria";
+import { useUpdateCriteriaReview } from "../../hooks/criteria/useExtractCriteria";
 import { ReviewStatusBadge } from "./ReviewStatusBadge";
 import type {
   CriteriaWithRelations,
