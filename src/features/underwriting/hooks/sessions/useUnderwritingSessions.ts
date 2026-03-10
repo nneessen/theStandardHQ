@@ -11,8 +11,6 @@ import type {
   UnderwritingSessionSummary,
 } from "../../types/underwriting.types";
 
-const SESSION_HISTORY_DEFAULT_PAGE_SIZE = 250;
-
 export interface PaginatedSessionsResult<TSession> {
   data: TSession[];
   count: number;
@@ -26,40 +24,6 @@ interface PaginatedSessionsParams {
 
 function getPaginatedSessionCount(rows: UnderwritingSessionSummary[]): number {
   return rows[0]?.total_count ?? 0;
-}
-
-async function fetchUserSessions(): Promise<UnderwritingSessionSummary[]> {
-  const { data, error } = await supabase.rpc(
-    "list_my_underwriting_sessions_v1",
-    {
-      p_page: 0,
-      p_page_size: SESSION_HISTORY_DEFAULT_PAGE_SIZE,
-      p_search: null,
-    },
-  );
-
-  if (error) {
-    throw new Error(`Failed to fetch sessions: ${error.message}`);
-  }
-
-  return data || [];
-}
-
-async function fetchAgencySessions(): Promise<UnderwritingSessionSummary[]> {
-  const { data, error } = await supabase.rpc(
-    "list_agency_underwriting_sessions_v1",
-    {
-      p_page: 0,
-      p_page_size: SESSION_HISTORY_DEFAULT_PAGE_SIZE,
-      p_search: null,
-    },
-  );
-
-  if (error) {
-    throw new Error(`Failed to fetch agency sessions: ${error.message}`);
-  }
-
-  return data || [];
 }
 
 async function fetchAgencySessionsPaginated({
@@ -172,21 +136,6 @@ async function saveSession(
 }
 
 /**
- * Hook to fetch the current user's underwriting sessions
- */
-export function useUnderwritingSessions() {
-  const { user, loading: userLoading } = useAuth();
-
-  return useQuery({
-    queryKey: underwritingQueryKeys.sessions(user?.id || ""),
-    queryFn: fetchUserSessions,
-    enabled: !!user?.id && !userLoading,
-    staleTime: 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
-}
-
-/**
  * Hook to fetch a specific session by ID
  */
 export function useUnderwritingSession(sessionId: string) {
@@ -222,24 +171,6 @@ export function useSaveUnderwritingSession() {
         });
       }
     },
-  });
-}
-
-/**
- * Hook to fetch all sessions for the current agency (agency-wide access)
- */
-export function useAgencySessions() {
-  const { agency, imo, loading: imoLoading } = useImo();
-
-  return useQuery({
-    queryKey: underwritingQueryKeys.agencySessions(
-      imo?.id || "",
-      agency?.id || "",
-    ),
-    queryFn: fetchAgencySessions,
-    enabled: !!agency?.id && !!imo?.id && !imoLoading,
-    staleTime: 60 * 1000,
-    gcTime: 10 * 60 * 1000,
   });
 }
 
