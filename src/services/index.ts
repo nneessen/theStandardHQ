@@ -23,6 +23,7 @@ export * from "./subscription";
 export * from "./recruiting";
 export * from "./underwriting";
 export * from "./documents";
+export * from "./document-extraction";
 export * from "./leads";
 export * from "./clients";
 // Individual service exports for backward compatibility
