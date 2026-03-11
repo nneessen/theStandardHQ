@@ -7,12 +7,31 @@ import type {
   SourceExcerpt,
 } from "../../types/underwriting.types";
 
+// ─── Null coercion ───────────────────────────────────────────────────────────
+// AI extraction returns `null` for "not found" fields, but Zod's `.optional()`
+// only accepts `undefined`. Recursively coerce null → undefined before parsing.
+
+function deepCoerceNulls(obj: unknown): unknown {
+  if (obj === null) return undefined;
+  if (Array.isArray(obj)) return obj.map(deepCoerceNulls);
+  if (typeof obj === "object" && obj !== null) {
+    return Object.fromEntries(
+      Object.entries(obj).map(([k, v]) => [k, deepCoerceNulls(v)]),
+    );
+  }
+  return obj;
+}
+
+// ─── Schemas ─────────────────────────────────────────────────────────────────
+// Inner leaf fields use `.optional()` where the AI may return null (coerced to
+// undefined by deepCoerceNulls). Top-level fields already use `.optional()`.
+
 /**
  * Schema for age-based tier limits
  */
 const ageTierSchema = z.object({
-  minAge: z.number(),
-  maxAge: z.number(),
+  minAge: z.number().optional(),
+  maxAge: z.number().optional(),
   maxFaceAmount: z.number(),
 });
 
@@ -28,8 +47,8 @@ const ageLimitsSchema = z.object({
  * Schema for face amount limits
  */
 const faceAmountLimitsSchema = z.object({
-  minimum: z.number(),
-  maximum: z.number(),
+  minimum: z.number().optional(),
+  maximum: z.number().optional(),
   ageTiers: z.array(ageTierSchema).optional(),
 });
 
@@ -65,7 +84,7 @@ const buildRequirementsSchema = z.object({
  */
 const smokingClassificationSchema = z.object({
   classification: z.string(),
-  requiresCleanMonths: z.number(),
+  requiresCleanMonths: z.number().optional(),
 });
 
 /**
@@ -73,7 +92,7 @@ const smokingClassificationSchema = z.object({
  */
 const tobaccoRulesSchema = z.object({
   smokingClassifications: z.array(smokingClassificationSchema),
-  nicotineTestRequired: z.boolean(),
+  nicotineTestRequired: z.boolean().optional(),
 });
 
 /**
@@ -169,7 +188,11 @@ export function parseExtractedCriteria(
     };
   }
 
-  const result = extractedCriteriaSchema.safeParse(data);
+  // Coerce null → undefined throughout: AI extraction returns null for "not found"
+  // but Zod's .optional() only accepts undefined.
+  const coerced = deepCoerceNulls(data) as Record<string, unknown>;
+
+  const result = extractedCriteriaSchema.safeParse(coerced);
 
   if (result.success) {
     return { success: true, data: result.data as ExtractedCriteria };
@@ -181,60 +204,57 @@ export function parseExtractedCriteria(
   );
   console.warn("Criteria validation failed:", errors);
 
-  // Return partial data - cast the original object but exclude invalid fields
-  // This allows the UI to still show valid fields
+  // Return partial data - validate each field individually and include only valid ones
   const partialData: ExtractedCriteria = {};
-  const rawData = data as Record<string, unknown>;
 
-  // Validate each field individually and include only valid ones
   if (
-    rawData.ageLimits &&
-    ageLimitsSchema.safeParse(rawData.ageLimits).success
+    coerced.ageLimits &&
+    ageLimitsSchema.safeParse(coerced.ageLimits).success
   ) {
-    partialData.ageLimits = rawData.ageLimits as ExtractedCriteria["ageLimits"];
+    partialData.ageLimits = coerced.ageLimits as ExtractedCriteria["ageLimits"];
   }
   if (
-    rawData.faceAmountLimits &&
-    faceAmountLimitsSchema.safeParse(rawData.faceAmountLimits).success
+    coerced.faceAmountLimits &&
+    faceAmountLimitsSchema.safeParse(coerced.faceAmountLimits).success
   ) {
     partialData.faceAmountLimits =
-      rawData.faceAmountLimits as ExtractedCriteria["faceAmountLimits"];
+      coerced.faceAmountLimits as ExtractedCriteria["faceAmountLimits"];
   }
   if (
-    rawData.knockoutConditions &&
-    knockoutConditionsSchema.safeParse(rawData.knockoutConditions).success
+    coerced.knockoutConditions &&
+    knockoutConditionsSchema.safeParse(coerced.knockoutConditions).success
   ) {
     partialData.knockoutConditions =
-      rawData.knockoutConditions as ExtractedCriteria["knockoutConditions"];
+      coerced.knockoutConditions as ExtractedCriteria["knockoutConditions"];
   }
   if (
-    rawData.buildRequirements &&
-    buildRequirementsSchema.safeParse(rawData.buildRequirements).success
+    coerced.buildRequirements &&
+    buildRequirementsSchema.safeParse(coerced.buildRequirements).success
   ) {
     partialData.buildRequirements =
-      rawData.buildRequirements as ExtractedCriteria["buildRequirements"];
+      coerced.buildRequirements as ExtractedCriteria["buildRequirements"];
   }
   if (
-    rawData.tobaccoRules &&
-    tobaccoRulesSchema.safeParse(rawData.tobaccoRules).success
+    coerced.tobaccoRules &&
+    tobaccoRulesSchema.safeParse(coerced.tobaccoRules).success
   ) {
     partialData.tobaccoRules =
-      rawData.tobaccoRules as ExtractedCriteria["tobaccoRules"];
+      coerced.tobaccoRules as ExtractedCriteria["tobaccoRules"];
   }
   if (
-    rawData.medicationRestrictions &&
-    medicationRestrictionsSchema.safeParse(rawData.medicationRestrictions)
+    coerced.medicationRestrictions &&
+    medicationRestrictionsSchema.safeParse(coerced.medicationRestrictions)
       .success
   ) {
     partialData.medicationRestrictions =
-      rawData.medicationRestrictions as ExtractedCriteria["medicationRestrictions"];
+      coerced.medicationRestrictions as ExtractedCriteria["medicationRestrictions"];
   }
   if (
-    rawData.stateAvailability &&
-    stateAvailabilitySchema.safeParse(rawData.stateAvailability).success
+    coerced.stateAvailability &&
+    stateAvailabilitySchema.safeParse(coerced.stateAvailability).success
   ) {
     partialData.stateAvailability =
-      rawData.stateAvailability as ExtractedCriteria["stateAvailability"];
+      coerced.stateAvailability as ExtractedCriteria["stateAvailability"];
   }
 
   return { success: false, data: partialData, errors };

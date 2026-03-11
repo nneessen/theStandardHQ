@@ -1,4 +1,4 @@
-import { defineConfig, Plugin } from "vite";
+import { defineConfig, loadEnv, Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
 import fs from "fs";
@@ -49,35 +49,48 @@ function versionPlugin(): Plugin {
 }
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react(), versionPlugin()],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
-  server: {
-    port: 3000,
-    open: true,
-    proxy: {
-      "/api/pdf-extract": {
-        target: "https://pdf-extractor-web-production.up.railway.app",
-        changeOrigin: true,
-        rewrite: (p) => p.replace("/api/pdf-extract", "/api/extract"),
-      },
-      "/api/paddle-ocr": {
-        target: process.env.PADDLEOCR_SERVICE_URL || "http://localhost:8000",
-        changeOrigin: true,
-        rewrite: (p) => p.replace("/api/paddle-ocr", "/api/extract"),
+export default defineConfig(({ mode }) => {
+  // Load all env vars (including .env.local) into a local object.
+  // The empty prefix "" loads ALL vars, not just VITE_-prefixed ones.
+  const env = loadEnv(mode, process.cwd(), "");
+
+  return {
+    plugins: [react(), versionPlugin()],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
       },
     },
-  },
-  build: {
-    outDir: "build",
-    sourcemap: true,
-  },
-  define: {
-    // Replace process.env for browser compatibility
-    global: "globalThis",
-  },
+    server: {
+      port: 3000,
+      open: true,
+      proxy: {
+        "/api/pdf-extract": {
+          target: "https://pdf-extractor-web-production.up.railway.app",
+          changeOrigin: true,
+          rewrite: (p) => p.replace("/api/pdf-extract", "/api/extract"),
+        },
+        "/api/paddle-ocr": {
+          target: env.PADDLEOCR_SERVICE_URL || "http://localhost:8000",
+          changeOrigin: true,
+          rewrite: (p) => p.replace("/api/paddle-ocr", "/api/extract"),
+          configure: (proxy) => {
+            // Inject API key server-side so it never appears in browser DevTools
+            proxy.on("proxyReq", (proxyReq) => {
+              const key = env.PADDLEOCR_API_KEY;
+              if (key) proxyReq.setHeader("X-API-Key", key);
+            });
+          },
+        },
+      },
+    },
+    build: {
+      outDir: "build",
+      sourcemap: true,
+    },
+    define: {
+      // Replace process.env for browser compatibility
+      global: "globalThis",
+    },
+  };
 });

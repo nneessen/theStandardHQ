@@ -198,21 +198,29 @@ async def extract(file: UploadFile = File(...), _auth=Depends(verify_api_key)):
         raise HTTPException(status_code=400, detail="Only PDF files are accepted")
 
     start = time.time()
+    tmp_path: str | None = None
+    content_size = 0
 
-    # Write upload to a temp file for pdf2image
-    with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
-        content = await file.read()
-        if len(content) > MAX_FILE_BYTES:
-            raise HTTPException(
-                status_code=413,
-                detail=f"File too large ({len(content)} bytes). Max: {MAX_FILE_BYTES}",
-            )
-        tmp.write(content)
-        tmp_path = tmp.name
+    # Stream upload to temp file in chunks to prevent OOM on large uploads
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+            tmp_path = tmp.name
+            while chunk := await file.read(65536):
+                content_size += len(chunk)
+                if content_size > MAX_FILE_BYTES:
+                    raise HTTPException(
+                        status_code=413,
+                        detail=f"File too large (>{MAX_FILE_BYTES} bytes). Max: {MAX_FILE_BYTES}",
+                    )
+                tmp.write(chunk)
+    except HTTPException:
+        # Clean up temp file on size limit exceeded
+        if tmp_path:
+            Path(tmp_path).unlink(missing_ok=True)
+        raise
 
     try:
-        # Get page count (fast, runs in thread to not block)
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         info = await loop.run_in_executor(
             _executor, partial(pdfinfo_from_path, tmp_path)
         )
@@ -224,7 +232,7 @@ async def extract(file: UploadFile = File(...), _auth=Depends(verify_api_key)):
             )
 
         logger.info(
-            f"Starting extraction: {file.filename} ({len(content)} bytes, {total_pages} pages)"
+            f"Starting extraction: {file.filename} ({content_size} bytes, {total_pages} pages)"
         )
 
         # Run CPU-bound OCR in thread pool — event loop stays free for health checks
@@ -249,7 +257,8 @@ async def extract(file: UploadFile = File(...), _auth=Depends(verify_api_key)):
         )
 
     finally:
-        Path(tmp_path).unlink(missing_ok=True)
+        if tmp_path:
+            Path(tmp_path).unlink(missing_ok=True)
         gc.collect()
 
 

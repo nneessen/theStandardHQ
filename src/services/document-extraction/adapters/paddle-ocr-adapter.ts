@@ -100,26 +100,33 @@ export class PaddleOcrAdapter implements ExtractionAdapter {
   async extract(request: ExtractionRequest): Promise<ExtractionResult> {
     const guideId = request.context?.guideId;
 
-    // SECURITY: Pre-validate IMO ownership before any side effects.
-    // RLS on this SELECT ensures we only proceed if the guide belongs
-    // to the current user's IMO.
+    // SECURITY + RACE GUARD: Atomically set parsing_status = "processing"
+    // via UPDATE (not SELECT). This validates three things in one query:
+    //   1. Guide exists (row found)
+    //   2. User has write access (RLS UPDATE policy requires is_imo_admin())
+    //   3. Guide is not already being parsed (neq "processing")
+    // If count=0: guide is missing, user lacks admin rights, or it's already parsing.
     if (guideId) {
-      const { data, error } = await supabase
+      const { count, error } = await supabase
         .from("underwriting_guides")
-        .select("id")
+        .update(
+          { parsing_status: "processing", parsing_error: null },
+          { count: "exact" },
+        )
         .eq("id", guideId)
-        .single();
+        .neq("parsing_status", "processing");
 
-      if (error || !data) {
+      if (error) {
         throw new Error(
-          `[PaddleOcrAdapter] Guide ${guideId} not found or not accessible — RLS blocked`,
+          `[PaddleOcrAdapter] Failed to acquire guide ${guideId}: ${error.message}`,
         );
       }
-    }
 
-    // Mark guide as processing before starting OCR
-    if (guideId) {
-      await this.updateGuideStatus(guideId, "processing");
+      if (count === 0) {
+        throw new Error(
+          `[PaddleOcrAdapter] Guide ${guideId} not found, not accessible (requires admin), or already being parsed`,
+        );
+      }
     }
 
     try {

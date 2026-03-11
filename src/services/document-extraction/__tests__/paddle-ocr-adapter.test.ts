@@ -7,18 +7,16 @@ const {
   mockDownload,
   mockUpdate,
   mockUpdateEq,
+  mockPreflightNeq,
   mockFrom,
   mockFromTable,
-  mockSelect,
-  mockSingle,
 } = vi.hoisted(() => ({
   mockDownload: vi.fn(),
   mockUpdate: vi.fn(),
   mockUpdateEq: vi.fn(),
+  mockPreflightNeq: vi.fn(),
   mockFrom: vi.fn(),
   mockFromTable: vi.fn(),
-  mockSelect: vi.fn(),
-  mockSingle: vi.fn(),
 }));
 
 vi.mock("../../base/supabase", () => ({
@@ -34,18 +32,25 @@ vi.mock("../../base/supabase", () => ({
     from: (table: string) => {
       mockFromTable(table);
       return {
-        update: (data: Record<string, unknown>) => {
-          mockUpdate(data);
+        update: (data: Record<string, unknown>, options?: unknown) => {
+          mockUpdate(data, options);
           return {
-            eq: (...args: unknown[]) => mockUpdateEq(...args),
-          };
-        },
-        select: (columns: string) => {
-          mockSelect(columns);
-          return {
-            eq: () => ({
-              single: () => mockSingle(),
-            }),
+            eq: (...args: unknown[]) => {
+              const directResult = mockUpdateEq(...args);
+              // Return object that is both thenable (for direct await)
+              // and chainable (for .neq() pre-flight chain)
+              return {
+                neq: () => mockPreflightNeq(),
+                then: (
+                  resolve: (v: unknown) => void,
+                  reject?: (e: unknown) => void,
+                ) =>
+                  (directResult instanceof Promise
+                    ? directResult
+                    : Promise.resolve(directResult)
+                  ).then(resolve, reject),
+              };
+            },
           };
         },
       };
@@ -179,12 +184,9 @@ describe("PaddleOcrAdapter", () => {
     mockFetch.mockReset();
     mockUpdate.mockClear();
     mockUpdateEq.mockReset().mockResolvedValue({ error: null });
+    mockPreflightNeq.mockReset().mockResolvedValue({ count: 1, error: null });
     mockFrom.mockClear();
     mockFromTable.mockClear();
-    mockSelect.mockClear();
-    mockSingle
-      .mockReset()
-      .mockResolvedValue({ data: { id: "guide-abc" }, error: null });
     mockDownload.mockReset().mockResolvedValue({
       data: new Blob(["fake-pdf"], { type: "application/pdf" }),
       error: null,
@@ -375,17 +377,19 @@ describe("PaddleOcrAdapter", () => {
   // ─── DB persistence ───────────────────────────────────────────────────
 
   describe("DB persistence", () => {
-    it("sets parsing_status to 'processing' before OCR", async () => {
+    it("atomically sets parsing_status to 'processing' via pre-flight UPDATE", async () => {
       mockFetch.mockResolvedValue(jsonResponse(makePaddleResponse()));
 
       await adapter.extract(makeRequest());
 
-      // First update call should be "processing"
-      const firstUpdateCall = mockUpdate.mock.calls[0];
-      expect(firstUpdateCall[0]).toEqual({
+      // First update call is the atomic pre-flight (sets processing + checks ownership)
+      const preflightCall = mockUpdate.mock.calls[0];
+      expect(preflightCall[0]).toEqual({
         parsing_status: "processing",
         parsing_error: null,
       });
+      // Second arg should be { count: "exact" }
+      expect(preflightCall[1]).toEqual({ count: "exact" });
     });
 
     it("persists parsed_content in UwParsedContent format on success", async () => {
@@ -393,7 +397,7 @@ describe("PaddleOcrAdapter", () => {
 
       await adapter.extract(makeRequest());
 
-      // Second update call should be the parsed_content write
+      // Second update call = persist (after pre-flight + OCR)
       const persistCall = mockUpdate.mock.calls[1];
       expect(persistCall[0]).toHaveProperty("parsing_status", "completed");
       expect(persistCall[0]).toHaveProperty("parsing_error", null);
@@ -427,7 +431,7 @@ describe("PaddleOcrAdapter", () => {
         "OCR service unreachable",
       );
 
-      // Should have: 1) processing, 2) failed
+      // Should have: 1) pre-flight (processing), 2) failed status
       expect(mockUpdate).toHaveBeenCalledTimes(2);
       const failCall = mockUpdate.mock.calls[1];
       expect(failCall[0].parsing_status).toBe("failed");
@@ -444,51 +448,56 @@ describe("PaddleOcrAdapter", () => {
     });
   });
 
-  // ─── RLS pre-flight ownership check ──────────────────────────────────
+  // ─── Pre-flight ownership + race guard ─────────────────────────────
 
-  describe("RLS pre-flight check", () => {
-    it("throws before OCR when RLS ownership check fails", async () => {
-      mockSingle.mockResolvedValue({
-        data: null,
-        error: { message: "new row violates row-level security" },
-      });
+  describe("pre-flight ownership + race guard", () => {
+    it("throws before OCR when UPDATE returns count=0 (RLS blocked or not found)", async () => {
+      mockPreflightNeq.mockResolvedValue({ count: 0, error: null });
 
       await expect(adapter.extract(makeRequest())).rejects.toThrow(
-        "Guide guide-abc not found or not accessible — RLS blocked",
+        "not found, not accessible (requires admin), or already being parsed",
       );
 
       // OCR service was never called
       expect(mockFetch).not.toHaveBeenCalled();
-      // No DB status updates were made
-      expect(mockUpdate).not.toHaveBeenCalled();
     });
 
-    it("throws when guide does not exist (data is null, no error)", async () => {
-      mockSingle.mockResolvedValue({ data: null, error: null });
+    it("throws before OCR when UPDATE returns a DB error", async () => {
+      mockPreflightNeq.mockResolvedValue({
+        count: null,
+        error: { message: "connection timeout" },
+      });
 
       await expect(adapter.extract(makeRequest())).rejects.toThrow(
-        "not found or not accessible — RLS blocked",
+        "Failed to acquire guide",
       );
 
       expect(mockFetch).not.toHaveBeenCalled();
     });
 
-    it("passes RLS check with select on underwriting_guides", async () => {
+    it("uses UPDATE with count:'exact' and neq('processing') for atomic guard", async () => {
       mockFetch.mockResolvedValue(jsonResponse(makePaddleResponse()));
 
       await adapter.extract(makeRequest());
 
-      expect(mockSelect).toHaveBeenCalledWith("id");
-      expect(mockSingle).toHaveBeenCalled();
+      // Verify the pre-flight used UPDATE (not SELECT)
+      const preflightCall = mockUpdate.mock.calls[0];
+      expect(preflightCall[0]).toEqual({
+        parsing_status: "processing",
+        parsing_error: null,
+      });
+      expect(preflightCall[1]).toEqual({ count: "exact" });
+      // Verify .neq() was called (race guard against concurrent parse)
+      expect(mockPreflightNeq).toHaveBeenCalled();
     });
 
-    it("skips RLS check when no guideId in context", async () => {
+    it("skips pre-flight when no guideId in context", async () => {
       mockFetch.mockResolvedValue(jsonResponse(makePaddleResponse()));
 
       await adapter.extract(makeRequest({ context: undefined }));
 
-      expect(mockSelect).not.toHaveBeenCalled();
-      expect(mockSingle).not.toHaveBeenCalled();
+      expect(mockPreflightNeq).not.toHaveBeenCalled();
+      expect(mockUpdate).not.toHaveBeenCalled();
     });
   });
 
@@ -497,11 +506,13 @@ describe("PaddleOcrAdapter", () => {
   describe("persistence failure surfacing", () => {
     it("adds PERSISTENCE_FAILED warning when DB write fails", async () => {
       mockFetch.mockResolvedValue(jsonResponse(makePaddleResponse()));
-      // First updateEq call = "processing" → success
-      // Second updateEq call = persist parsed_content → failure
+      // Pre-flight .eq() is called but its value is ignored (uses .neq() chain)
+      // Persist .eq() is the second call — this one matters
       mockUpdateEq
-        .mockResolvedValueOnce({ error: null })
-        .mockResolvedValueOnce({ error: { message: "DB permission denied" } });
+        .mockResolvedValueOnce({ error: null }) // pre-flight .eq() — ignored
+        .mockResolvedValueOnce({
+          error: { message: "DB permission denied" },
+        }); // persist .eq() — fails
 
       const result = await adapter.extract(makeRequest());
 
@@ -515,8 +526,8 @@ describe("PaddleOcrAdapter", () => {
     it("returns result successfully even when persistence fails", async () => {
       mockFetch.mockResolvedValue(jsonResponse(makePaddleResponse()));
       mockUpdateEq
-        .mockResolvedValueOnce({ error: null })
-        .mockResolvedValueOnce({ error: { message: "timeout" } });
+        .mockResolvedValueOnce({ error: null }) // pre-flight .eq() — ignored
+        .mockResolvedValueOnce({ error: { message: "timeout" } }); // persist .eq() — fails
 
       const result = await adapter.extract(makeRequest());
 
