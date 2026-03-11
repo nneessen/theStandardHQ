@@ -279,6 +279,7 @@ export function RecruitDetailPanel({
       email: recruit.email,
       fullName: `${recruit.first_name || ""} ${recruit.last_name || ""}`.trim(),
       roles: (recruit.roles as string[]) || ["recruit"],
+      existingProfileId: recruit.id,
     });
   };
 

@@ -49,10 +49,15 @@ export function useResendInvite() {
       email,
       fullName,
       roles,
+      existingProfileId,
     }: {
       email: string;
       fullName: string;
       roles: string[];
+      /** The recruit's user_profiles.id — required when the profile was created
+       *  before the auth user (e.g., from lead acceptance). Ensures the auth user
+       *  is created with the same UUID. */
+      existingProfileId?: string;
     }) => {
       const redirectTo = `${window.location.origin}/auth/callback`;
 
@@ -79,6 +84,7 @@ export function useResendInvite() {
           roles,
           isAdmin: false,
           skipPipeline: true,
+          existingProfileId,
         });
 
         return {

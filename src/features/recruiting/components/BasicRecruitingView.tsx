@@ -226,6 +226,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
         fullName:
           `${recruit.first_name || ""} ${recruit.last_name || ""}`.trim(),
         roles: recruit.roles || ["recruit"],
+        existingProfileId: recruit.id,
       });
     } finally {
       setResendingRecruitId(null);

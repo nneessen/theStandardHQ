@@ -42,6 +42,8 @@ import { useToggleUserUWAccess } from "@/hooks/admin";
 import { userApprovalService } from "@/services/users/userService";
 // eslint-disable-next-line no-restricted-imports
 import { supabase } from "@/services/base/supabase";
+// eslint-disable-next-line no-restricted-imports
+import { createAuthUserWithProfile } from "@/services/recruiting";
 import { toast } from "sonner";
 import {
   Mail,
@@ -566,16 +568,8 @@ export default function EditUserDialog({
     if (!user) return;
     setIsSendingInvite(true);
 
-    console.log("[handleResendInvite] Sending password reset for:", {
-      email: user.email,
-      userId: user.id,
-      hasAuthUser:
-        "unknown - check Supabase Dashboard > Authentication > Users",
-    });
-
     try {
-      // Use custom Mailgun edge function instead of Supabase's built-in email
-      // Route to /auth/callback which is whitelisted and handles recovery type
+      // First, try to send password reset (works if auth user exists)
       const { data, error: fnError } = await supabase.functions.invoke(
         "send-password-reset",
         {
@@ -586,23 +580,41 @@ export default function EditUserDialog({
         },
       );
 
-      console.log("[handleResendInvite] Response:", { data, fnError });
-
-      if (fnError) {
-        console.error(
-          "[handleResendInvite] Function error - user may not exist in auth.users:",
-          fnError,
-        );
-        toast.error(`Failed to send confirmation email: ${fnError.message}`);
-      } else if (data?.success === false) {
-        toast.error(`Failed to send confirmation email: ${data.error}`);
-      } else {
+      if (!fnError && data?.success !== false) {
         toast.success(
           `Confirmation email sent to ${user.email} to set password`,
         );
+        return;
+      }
+
+      // Auth user likely doesn't exist — create one with matching profile ID
+      console.log(
+        "[handleResendInvite] Password reset failed, creating auth user for:",
+        user.email,
+      );
+      const fullName =
+        `${user.first_name || ""} ${user.last_name || ""}`.trim();
+      const createResult = await createAuthUserWithProfile({
+        email: user.email,
+        fullName,
+        roles: (user.roles as string[]) || ["recruit"],
+        isAdmin: false,
+        skipPipeline: true,
+        existingProfileId: user.id,
+      });
+
+      if (createResult.emailSent) {
+        toast.success(`Login instructions sent to ${user.email}`);
+      } else if (createResult.message?.includes("already exists")) {
+        toast.success("User already has an account.");
+      } else {
+        toast.success(
+          "Account created but email may not have sent. Check edge function logs.",
+        );
       }
     } catch (error) {
-      toast.error("An error occurred while sending confirmation email");
+      const msg = error instanceof Error ? error.message : "Unknown error";
+      toast.error(`Failed to send confirmation email: ${msg}`);
       console.error("Resend confirmation email error:", error);
     } finally {
       setIsSendingInvite(false);

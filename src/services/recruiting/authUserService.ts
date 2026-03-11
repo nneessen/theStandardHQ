@@ -8,6 +8,10 @@ export interface CreateAuthUserParams {
   roles: string[];
   isAdmin?: boolean;
   skipPipeline?: boolean;
+  /** Pass when the user_profiles record already exists (e.g., from lead acceptance).
+   *  Ensures auth.users.id matches user_profiles.id so the handle_new_user trigger
+   *  hits ON CONFLICT (id) instead of violating the UNIQUE (email) constraint. */
+  existingProfileId?: string;
 }
 
 export interface CreateAuthUserResult {
@@ -32,6 +36,7 @@ export async function createAuthUserWithProfile({
   roles,
   isAdmin = false,
   skipPipeline = false,
+  existingProfileId,
 }: CreateAuthUserParams): Promise<CreateAuthUserResult> {
   try {
     // Call Edge Function to create user with proper password reset email
@@ -44,6 +49,7 @@ export async function createAuthUserWithProfile({
           roles,
           isAdmin,
           skipPipeline,
+          existingProfileId,
         },
       },
     );
