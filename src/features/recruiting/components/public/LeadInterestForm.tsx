@@ -631,8 +631,9 @@ export function LeadInterestForm({
             </Label>
             <Textarea
               id="whyInterested"
+              variant="ghost"
               placeholder="Tell us a bit about yourself and what draws you to this opportunity..."
-              className={`min-h-[70px] text-sm resize-none bg-background text-foreground border-2 border-zinc-300 dark:border-zinc-700 rounded-lg focus:border-zinc-900 dark:focus:border-zinc-100 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
+              className={`min-h-[56px] text-sm resize-none bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-2 border-zinc-300 dark:border-zinc-700 rounded-lg focus:border-zinc-900 dark:focus:border-zinc-100 focus:bg-white dark:focus:bg-zinc-800 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
               onBlur={field.handleBlur}

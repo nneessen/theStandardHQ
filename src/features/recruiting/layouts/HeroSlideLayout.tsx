@@ -253,9 +253,9 @@ export function HeroSlideLayout({
           isFormOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <div className="h-full flex flex-col overflow-y-auto">
+        <div className="h-full flex flex-col">
           {/* Panel header */}
-          <div className="flex items-center justify-between p-4 border-b border-border">
+          <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
             <div className="flex items-center gap-2">
               {theme.logo_dark_url ? (
                 <img
@@ -292,8 +292,8 @@ export function HeroSlideLayout({
             </Button>
           </div>
 
-          {/* Form content */}
-          <div className="flex-1 p-5">
+          {/* Form content - scrollable */}
+          <div className="flex-1 overflow-y-auto p-5">
             <div className="mb-4">
               <h2
                 className="text-lg font-bold text-foreground mb-1"
@@ -314,7 +314,7 @@ export function HeroSlideLayout({
           </div>
 
           {/* Disclaimer */}
-          <div className="p-4 border-t border-border">
+          <div className="p-4 border-t border-border shrink-0">
             <p className="text-[10px] text-muted-foreground text-center">
               {theme.disclaimer_text ||
                 "By submitting, you agree to be contacted about career opportunities."}
