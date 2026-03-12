@@ -133,7 +133,7 @@ export function MonitoringTab() {
           />
           {status.label}
         </div>
-        <div className="grid grid-cols-4 gap-2 mt-2">
+        <div className="grid grid-cols-5 gap-2 mt-2">
           <StatusPill
             label="Bot Enabled"
             active={monitoring.botStatus.botEnabled}
@@ -156,6 +156,10 @@ export function MonitoringTab() {
           <StatusPill
             label="Follow-Up"
             active={monitoring.botStatus.followUpEnabled}
+          />
+          <StatusPill
+            label="Reminders"
+            active={monitoring.botStatus.remindersEnabled}
           />
         </div>
       </div>

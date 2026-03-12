@@ -21,6 +21,7 @@ export interface AgentMonitoringResponse {
     googleConnected: boolean;
     calendarProvider: "google" | "calendly" | null;
     followUpEnabled: boolean;
+    remindersEnabled: boolean;
   };
   activity24h: ActivityWindow;
   activity7d: ActivityWindow;

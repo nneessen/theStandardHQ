@@ -58,6 +58,7 @@ export interface ChatBotAgent {
   website?: string | null;
   location?: string | null;
   businessHours?: { days: number[]; startTime: string; endTime: string } | null;
+  remindersEnabled?: boolean;
   billingExempt?: boolean;
   dailyMessageLimit?: number | null;
   maxMessagesPerConversation?: number | null;
@@ -271,9 +272,7 @@ export function useIsOnExemptTeam() {
   return useQuery<boolean>({
     queryKey: chatBotKeys.teamAccess(user?.id),
     queryFn: async () =>
-      (
-        await chatBotApi<TeamAccessResponse>("get_team_access")
-      ).hasTeamAccess,
+      (await chatBotApi<TeamAccessResponse>("get_team_access")).hasTeamAccess,
     enabled: !!user?.id,
     staleTime: 300_000, // 5 min — team structure rarely changes
   });
@@ -523,6 +522,7 @@ export function useUpdateBotConfig() {
       specialties?: string[] | null;
       website?: string | null;
       location?: string | null;
+      remindersEnabled?: boolean;
       dailyMessageLimit?: number | null;
       maxMessagesPerConversation?: number | null;
     }) => chatBotApi<{ success: boolean }>("update_config", config),

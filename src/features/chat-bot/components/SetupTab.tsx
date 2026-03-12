@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   RefreshCw,
   Clock,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -349,6 +350,52 @@ export function SetupTab() {
           </div>
         </div>
       </div>
+
+      {/* Appointment Reminders */}
+      {agent && (
+        <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
+                <Bell className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
+              </div>
+              <div>
+                <h2 className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                  Appointment Reminders
+                </h2>
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  Automatically send an SMS reminder 24 hours before each
+                  appointment.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={agent.remindersEnabled ?? false}
+              disabled={updateConfig.isPending}
+              onClick={() =>
+                updateConfig.mutate({
+                  remindersEnabled: !(agent.remindersEnabled ?? false),
+                })
+              }
+              className={cn(
+                "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors disabled:opacity-50",
+                agent.remindersEnabled
+                  ? "bg-violet-600"
+                  : "bg-zinc-200 dark:bg-zinc-700",
+              )}
+            >
+              <span
+                className={cn(
+                  "pointer-events-none block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform",
+                  agent.remindersEnabled ? "translate-x-4" : "translate-x-0.5",
+                )}
+              />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Agent Profile */}
       <AgentProfileSection />
