@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { execFileSync, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { isManualOnlyTermProduct } from "./term-fetch-exclusions.mjs";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, "..");
@@ -41,6 +42,9 @@ function printUsage() {
     --carrier "Transamerica" \\
     --product "Trendsetter Super" \\
     [--imo-id <uuid>] \\
+    [--grid-mode explicit --age-min 25 --age-max 85 --age-step 1] \\
+    [--face-min 50000 --face-max 500000 --face-step 1000] \\
+    [--chunk-size 250 --chunk-number 1] \\
     [--output ./tmp/trendsetter-super-bundle.js] \\
     [--copy]
 
@@ -48,6 +52,7 @@ What it does:
   - extracts the browser fetcher script from docs/scripts/termFetcher.md
   - generates the matching setTermFetcherTargets(...) block
   - combines both into one paste-ready JavaScript file
+  - forwards any extra generator flags to scripts/generate-term-fetch-targets.mjs
 `);
 }
 
@@ -59,7 +64,16 @@ function extractFirstJavascriptBlock(markdown) {
   return match[1].trim();
 }
 
-function buildTargetBlock({ carrier, product, imoId }) {
+function stripAutoStart(script) {
+  return script
+    .replace(
+      /\n\/\/ ─── Start ───────────────────────────────────\ndiscoverCarriers\(\);\s*$/u,
+      "",
+    )
+    .trim();
+}
+
+function buildTargetBlock({ carrier, product, imoId, passthroughArgs }) {
   const args = [
     "scripts/generate-term-fetch-targets.mjs",
     "--carrier",
@@ -72,6 +86,13 @@ function buildTargetBlock({ carrier, product, imoId }) {
     args.push("--imo-id", imoId);
   }
 
+  for (const [key, value] of passthroughArgs) {
+    args.push(`--${key}`);
+    if (value !== true) {
+      args.push(String(value));
+    }
+  }
+
   const output = execFileSync("node", args, {
     cwd: REPO_ROOT,
     env: process.env,
@@ -80,6 +101,31 @@ function buildTargetBlock({ carrier, product, imoId }) {
   });
 
   return output.trim();
+}
+
+function extractSummaryComments(targetBlock) {
+  const lines = String(targetBlock || "").split("\n");
+  const summaryLines = [];
+
+  for (const line of lines) {
+    if (!line.startsWith("//")) {
+      break;
+    }
+    summaryLines.push(line);
+  }
+
+  return summaryLines;
+}
+
+function printBundleSummary(summaryLines) {
+  if (summaryLines.length === 0) {
+    return;
+  }
+
+  console.error("Bundle target summary:");
+  for (const line of summaryLines) {
+    console.error(line);
+  }
 }
 
 function copyToClipboard(text) {
@@ -105,15 +151,36 @@ function main() {
   const carrier = String(args.carrier || "").trim();
   const product = String(args.product || "").trim();
   const imoId = args["imo-id"] ? String(args["imo-id"]).trim() : "";
+  const reservedArgs = new Set([
+    "carrier",
+    "product",
+    "imo-id",
+    "output",
+    "copy",
+    "help",
+    "h",
+  ]);
+  const passthroughArgs = Object.entries(args).filter(([key]) => !reservedArgs.has(key));
 
   if (!carrier || !product) {
     printUsage();
     process.exit(1);
   }
+  if (isManualOnlyTermProduct(carrier, product)) {
+    throw new Error(
+      `carrier="${carrier}" product="${product}" is marked manual-only and will never use the Insurance Toolkits term fetcher.`,
+    );
+  }
 
   const markdown = fs.readFileSync(TERM_FETCHER_DOC_PATH, "utf8");
-  const browserFetcherScript = extractFirstJavascriptBlock(markdown);
-  const targetBlock = buildTargetBlock({ carrier, product, imoId });
+  const browserFetcherScript = stripAutoStart(extractFirstJavascriptBlock(markdown));
+  const targetBlock = buildTargetBlock({
+    carrier,
+    product,
+    imoId,
+    passthroughArgs,
+  });
+  const targetSummaryLines = extractSummaryComments(targetBlock);
 
   const bundle = [
     browserFetcherScript,
@@ -121,18 +188,23 @@ function main() {
     "// Generated target block",
     targetBlock,
     "",
+    "// Auto-start after target block",
+    "discoverCarriers();",
+    "",
   ].join("\n");
 
   if (args.output) {
     const outputPath = path.resolve(REPO_ROOT, String(args.output));
     ensureParentDir(outputPath);
     fs.writeFileSync(outputPath, bundle, "utf8");
+    printBundleSummary(targetSummaryLines);
     console.log(outputPath);
     return;
   }
 
   if (args.copy) {
     copyToClipboard(bundle);
+    printBundleSummary(targetSummaryLines);
     console.log("Copied paste-ready term fetcher bundle to clipboard.");
     return;
   }

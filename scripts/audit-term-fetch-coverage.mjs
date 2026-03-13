@@ -5,17 +5,11 @@ import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Client } from "pg";
+import { isManualOnlyTermProduct } from "./term-fetch-exclusions.mjs";
 
 const VALID_FORMATS = new Set(["summary", "json"]);
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(SCRIPT_DIR, "..");
-const NON_TOOLKIT_TERM_PRODUCTS = new Set([
-  "Baltimore Life|aPriority Level Term",
-  "Foresters Financial|Your Term Medical",
-  "Legal & General|Term",
-  "Mutual of Omaha|Term Life Answers",
-  "SBLI|Term",
-]);
 
 function parseArgs(argv) {
   const args = {};
@@ -100,7 +94,7 @@ async function loadTermProducts(client) {
     productId: row.id,
     imoId: row.imo_id,
     matrixRows: Number(row.matrix_rows),
-    inToolkit: !NON_TOOLKIT_TERM_PRODUCTS.has(`${row.carrier_name}|${row.product_name}`),
+    inToolkit: !isManualOnlyTermProduct(row.carrier_name, row.product_name),
   }));
 }
 
@@ -115,6 +109,10 @@ function loadGeneratorSummary(product) {
       product.productName,
       "--imo-id",
       product.imoId,
+      "--grid-mode",
+      "matrix",
+      "--missing-mode",
+      "combo",
       "--format",
       "summary",
     ],

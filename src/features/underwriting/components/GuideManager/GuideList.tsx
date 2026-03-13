@@ -16,6 +16,7 @@ import {
   Clock,
   Pencil,
   ScanEye,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -71,6 +72,7 @@ import { useParseGuide } from "../../hooks/guides/useParseGuide";
 import { useCriteriaByGuide } from "../../hooks/criteria/useCriteria";
 import { useExtractCriteria } from "../../hooks/criteria/useExtractCriteria";
 import { GuideUploader } from "./GuideUploader";
+import { ParsedContentPreview } from "./ParsedContentPreview";
 import type { UnderwritingGuide } from "../../types/underwriting.types";
 import { formatSessionDate } from "../../utils/shared/formatters";
 
@@ -98,6 +100,7 @@ export function GuideList() {
   const [extractingGuideId, setExtractingGuideId] = useState<string | null>(
     null,
   );
+  const [previewGuideId, setPreviewGuideId] = useState<string | null>(null);
 
   const handleDeleteClick = (guide: UnderwritingGuide) => {
     setGuideToDelete(guide);
@@ -387,20 +390,6 @@ export function GuideList() {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
-                          onClick={() => handleParseClick(guide)}
-                          disabled={isGuideBeingParsed(guide.id)}
-                          className="text-[11px]"
-                        >
-                          {isGuideBeingParsed(guide.id) ? (
-                            <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                          ) : (
-                            <RefreshCw className="h-3 w-3 mr-2" />
-                          )}
-                          {guide.parsing_status === "completed"
-                            ? "Re-parse"
-                            : "Parse"}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
                           onClick={() => handleParseClick(guide, true)}
                           disabled={isGuideBeingParsed(guide.id)}
                           className="text-[11px]"
@@ -410,8 +399,19 @@ export function GuideList() {
                           ) : (
                             <ScanEye className="h-3 w-3 mr-2" />
                           )}
-                          Parse with OCR
+                          {guide.parsing_status === "completed"
+                            ? "Re-parse"
+                            : "Parse"}
                         </DropdownMenuItem>
+                        {guide.parsing_status === "completed" && (
+                          <DropdownMenuItem
+                            onClick={() => setPreviewGuideId(guide.id)}
+                            className="text-[11px]"
+                          >
+                            <Eye className="h-3 w-3 mr-2" />
+                            Preview Parsed
+                          </DropdownMenuItem>
+                        )}
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => handleDeleteClick(guide)}
@@ -479,6 +479,15 @@ export function GuideList() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Parsed Content Preview */}
+      {previewGuideId && (
+        <ParsedContentPreview
+          guideId={previewGuideId}
+          open={!!previewGuideId}
+          onOpenChange={(open) => !open && setPreviewGuideId(null)}
+        />
+      )}
 
       {/* Edit Guide Dialog */}
       <Dialog

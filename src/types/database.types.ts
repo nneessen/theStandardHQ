@@ -10900,12 +10900,12 @@ export type Database = {
           imo_id: string;
           notes: string | null;
           recommendations: Json;
-          result_source: string;
-          run_key: string | null;
           requested_face_amount: number | null;
           requested_face_amounts: Json;
           requested_product_types: string[] | null;
+          result_source: string;
           risk_factors: string[] | null;
+          run_key: string | null;
           selected_term_years: number | null;
           session_duration_seconds: number | null;
           status: string | null;
@@ -10936,12 +10936,12 @@ export type Database = {
           imo_id: string;
           notes?: string | null;
           recommendations?: Json;
-          result_source?: string;
-          run_key?: string | null;
           requested_face_amount?: number | null;
           requested_face_amounts?: Json;
           requested_product_types?: string[] | null;
+          result_source?: string;
           risk_factors?: string[] | null;
+          run_key?: string | null;
           selected_term_years?: number | null;
           session_duration_seconds?: number | null;
           status?: string | null;
@@ -10972,12 +10972,12 @@ export type Database = {
           imo_id?: string;
           notes?: string | null;
           recommendations?: Json;
-          result_source?: string;
-          run_key?: string | null;
           requested_face_amount?: number | null;
           requested_face_amounts?: Json;
           requested_product_types?: string[] | null;
+          result_source?: string;
           risk_factors?: string[] | null;
+          run_key?: string | null;
           selected_term_years?: number | null;
           session_duration_seconds?: number | null;
           status?: string | null;
@@ -16558,6 +16558,46 @@ export type Database = {
       };
       is_upline_of: { Args: { target_user_id: string }; Returns: boolean };
       is_user_approved: { Args: never; Returns: boolean };
+      list_agency_underwriting_sessions_v1: {
+        Args: { p_page?: number; p_page_size?: number; p_search?: string };
+        Returns: {
+          client_age: number;
+          client_gender: string;
+          client_name: string;
+          client_state: string;
+          created_at: string;
+          eligibility_summary: Json;
+          health_tier: string;
+          requested_face_amount: number;
+          requested_face_amounts: Json;
+          requested_product_types: string[];
+          result_source: string;
+          selected_term_years: number;
+          session_id: string;
+          top_recommendation: Json;
+          total_count: number;
+        }[];
+      };
+      list_my_underwriting_sessions_v1: {
+        Args: { p_page?: number; p_page_size?: number; p_search?: string };
+        Returns: {
+          client_age: number;
+          client_gender: string;
+          client_name: string;
+          client_state: string;
+          created_at: string;
+          eligibility_summary: Json;
+          health_tier: string;
+          requested_face_amount: number;
+          requested_face_amounts: Json;
+          requested_product_types: string[];
+          result_source: string;
+          selected_term_years: number;
+          session_id: string;
+          top_recommendation: Json;
+          total_count: number;
+        }[];
+      };
       log_audit_event: {
         Args: {
           p_action: Database["public"]["Enums"]["audit_action"];
@@ -16574,15 +16614,15 @@ export type Database = {
       };
       log_underwriting_rule_evaluation: {
         Args: {
-          p_condition_code: string | null;
-          p_failed_conditions?: Json | null;
-          p_input_hash?: string | null;
-          p_matched_conditions?: Json | null;
-          p_missing_fields?: Json | null;
-          p_outcome_applied?: Json | null;
+          p_condition_code: string;
+          p_failed_conditions?: Json;
+          p_input_hash?: string;
+          p_matched_conditions?: Json;
+          p_missing_fields?: Json;
+          p_outcome_applied?: Json;
           p_predicate_result: string;
-          p_rule_id: string | null;
-          p_rule_set_id: string | null;
+          p_rule_id: string;
+          p_rule_set_id: string;
           p_session_id: string;
         };
         Returns: Json;
@@ -16636,6 +16676,15 @@ export type Database = {
           p_user_id: string;
         };
         Returns: undefined;
+      };
+      persist_underwriting_run_v1: {
+        Args: {
+          p_actor_id: string;
+          p_audit_rows?: Json;
+          p_input: Json;
+          p_result: Json;
+        };
+        Returns: Json;
       };
       process_pending_workflow_runs: {
         Args: never;
@@ -16752,63 +16801,6 @@ export type Database = {
         };
         Returns: string;
       };
-      persist_underwriting_run_v1: {
-        Args: {
-          p_actor_id: string;
-          p_audit_rows?: Json;
-          p_input: Json;
-          p_result: Json;
-        };
-        Returns: Json;
-      };
-      list_agency_underwriting_sessions_v1: {
-        Args: {
-          p_page?: number;
-          p_page_size?: number;
-          p_search?: string;
-        };
-        Returns: {
-          client_age: number;
-          client_gender: string | null;
-          client_name: string | null;
-          client_state: string | null;
-          created_at: string;
-          eligibility_summary: Json;
-          health_tier: string | null;
-          requested_face_amount: number | null;
-          requested_face_amounts: Json;
-          requested_product_types: string[] | null;
-          result_source: string;
-          selected_term_years: number | null;
-          session_id: string;
-          top_recommendation: Json;
-          total_count: number;
-        }[];
-      };
-      list_my_underwriting_sessions_v1: {
-        Args: {
-          p_page?: number;
-          p_page_size?: number;
-          p_search?: string;
-        };
-        Returns: {
-          client_age: number;
-          client_gender: string | null;
-          client_name: string | null;
-          client_state: string | null;
-          created_at: string;
-          eligibility_summary: Json;
-          health_tier: string | null;
-          requested_face_amount: number | null;
-          requested_face_amounts: Json;
-          requested_product_types: string[] | null;
-          result_source: string;
-          selected_term_years: number | null;
-          session_id: string;
-          top_recommendation: Json;
-          total_count: number;
-        }[];
-      };
       record_uw_wizard_run: {
         Args: {
           p_imo_id: string;
@@ -16862,10 +16854,6 @@ export type Database = {
       };
       reject_underwriting_rule_set: {
         Args: { p_notes: string; p_rule_set_id: string };
-        Returns: Json;
-      };
-      reorder_underwriting_rules: {
-        Args: { p_rule_ids: string[]; p_rule_set_id: string };
         Returns: Json;
       };
       release_alert_rules: { Args: { p_rule_ids: string[] }; Returns: number };
@@ -16934,54 +16922,31 @@ export type Database = {
         Args: { p_auth_user_id?: string; p_data: Json; p_token: string };
         Returns: Json;
       };
-      submit_recruiting_lead:
-        | {
-            Args: {
-              p_availability: string;
-              p_city: string;
-              p_email: string;
-              p_first_name: string;
-              p_income_goals?: string;
-              p_insurance_experience?: string;
-              p_ip_address?: unknown;
-              p_last_name: string;
-              p_phone: string;
-              p_recruiter_slug: string;
-              p_referrer_url?: string;
-              p_state: string;
-              p_user_agent?: string;
-              p_utm_campaign?: string;
-              p_utm_medium?: string;
-              p_utm_source?: string;
-              p_why_interested?: string;
-            };
-            Returns: Json;
-          }
-        | {
-            Args: {
-              p_availability: string;
-              p_city: string;
-              p_current_imo_name?: string;
-              p_email: string;
-              p_first_name: string;
-              p_income_goals?: string;
-              p_insurance_experience?: string;
-              p_ip_address?: unknown;
-              p_is_licensed?: boolean;
-              p_last_name: string;
-              p_phone: string;
-              p_recruiter_slug: string;
-              p_referrer_url?: string;
-              p_specialties?: string[];
-              p_state: string;
-              p_user_agent?: string;
-              p_utm_campaign?: string;
-              p_utm_medium?: string;
-              p_utm_source?: string;
-              p_why_interested?: string;
-            };
-            Returns: Json;
-          };
+      submit_recruiting_lead: {
+        Args: {
+          p_availability: string;
+          p_city: string;
+          p_current_imo_name?: string;
+          p_email: string;
+          p_first_name: string;
+          p_income_goals?: string;
+          p_insurance_experience?: string;
+          p_ip_address?: unknown;
+          p_is_licensed?: boolean;
+          p_last_name: string;
+          p_phone: string;
+          p_recruiter_slug: string;
+          p_referrer_url?: string;
+          p_specialties?: string[];
+          p_state: string;
+          p_user_agent?: string;
+          p_utm_campaign?: string;
+          p_utm_medium?: string;
+          p_utm_source?: string;
+          p_why_interested?: string;
+        };
+        Returns: Json;
+      };
       submit_rule_set_for_review: {
         Args: { p_rule_set_id: string };
         Returns: Json;

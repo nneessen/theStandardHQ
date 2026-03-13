@@ -1,6 +1,10 @@
 # services/paddleocr-service/app.py
-# Minimal PaddleOCR extraction service — accepts PDF, returns structured JSON.
+# PaddleOCR extraction service — accepts PDF, returns structured JSON.
 # Deployed as a standalone container (Railway, Fly, etc).
+#
+# Performance: batch-rasterize all pages once, then OCR sequentially.
+# PaddlePaddle's PP-Structure is not thread-safe so we can't parallelize
+# the OCR step, but eliminating per-page rasterization is the big win.
 
 import asyncio
 import gc
@@ -24,7 +28,7 @@ from paddleocr import PPStructure
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("paddleocr-service")
 
-app = FastAPI(title="PaddleOCR Extraction Service", version="1.2.0")
+app = FastAPI(title="PaddleOCR Extraction Service", version="1.3.0")
 
 # Lazy-init the engine on first request (avoids slow import at module level
 # in some deployment environments).
@@ -34,7 +38,7 @@ _engine: PPStructure | None = None
 _executor = ThreadPoolExecutor(max_workers=1)
 
 MAX_FILE_BYTES = int(os.environ.get("MAX_FILE_BYTES", str(10 * 1024 * 1024)))  # 10MB
-MAX_PAGES = int(os.environ.get("MAX_PAGES", "50"))
+MAX_PAGES = int(os.environ.get("MAX_PAGES", "100"))
 DPI = int(os.environ.get("PADDLEOCR_DPI", "150"))
 
 # API key for request authentication — optional (skip auth if not set).
@@ -62,35 +66,47 @@ def get_engine() -> PPStructure:
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "engine": "paddleocr-pp-structure", "version": "1.2.0"}
+    return {"status": "ok", "engine": "paddleocr-pp-structure", "version": "1.3.0"}
 
 
 def _process_pdf_sync(tmp_path: str, total_pages: int) -> dict:
-    """Synchronous PDF processing — runs in thread pool to avoid blocking event loop."""
+    """Synchronous PDF processing — runs in thread pool to avoid blocking event loop.
+
+    Performance strategy:
+    - Batch-rasterize ALL pages in one pdf2image call (avoids re-parsing PDF per page)
+    - Process each rasterized image through PP-Structure sequentially
+      (PP-Structure is not thread-safe)
+    - Free each image immediately after OCR to control memory
+    """
     engine = get_engine()
     pages = []
     all_tables = []
 
-    for page_num in range(1, total_pages + 1):
-        logger.info(f"Processing page {page_num}/{total_pages}")
+    # === BATCH RASTERIZE ===
+    # Single call converts all pages. This reads the PDF once instead of N times.
+    raster_start = time.time()
+    logger.info(f"Batch-rasterizing {total_pages} pages at {DPI} DPI...")
+    all_images = convert_from_path(tmp_path, dpi=DPI)
+    raster_ms = int((time.time() - raster_start) * 1000)
+    logger.info(f"Rasterization complete: {len(all_images)} pages in {raster_ms}ms")
 
-        images = convert_from_path(
-            tmp_path, dpi=DPI, first_page=page_num, last_page=page_num
-        )
-        if not images:
-            continue
+    # === OCR EACH PAGE ===
+    for page_idx, img in enumerate(all_images):
+        page_num = page_idx + 1
+        ocr_start = time.time()
 
-        img = images[0]
         img_array = np.array(img)
         width, height = img.width, img.height
 
-        # Free the PIL image immediately
-        del images, img
+        # Free PIL image immediately
+        all_images[page_idx] = None  # type: ignore[assignment]
+        del img
 
         result = engine(img_array)
-
-        # Free the numpy array immediately
         del img_array
+
+        ocr_ms = int((time.time() - ocr_start) * 1000)
+        logger.info(f"Page {page_num}/{total_pages}: {len(result)} regions in {ocr_ms}ms")
 
         blocks = []
         page_text_parts = []
@@ -103,13 +119,10 @@ def _process_pdf_sync(tmp_path: str, total_pages: int) -> dict:
                 table_html = region.get("res", {}).get("html", "")
                 table_id = f"t-p{page_num}-{len(all_tables)}"
 
-                # Parse HTML to extract cell values — PP-Structure
-                # returns data in HTML only (cell_texts is usually empty)
                 values = _parse_table_html(table_html)
                 rows_count = len(values)
                 cols_count = max((len(row) for row in values), default=0)
 
-                # Build text representation of table for fullText
                 table_text_lines = []
                 for row in values:
                     table_text_lines.append(" | ".join(row))
@@ -187,7 +200,13 @@ def _process_pdf_sync(tmp_path: str, total_pages: int) -> dict:
             }
         )
 
-        gc.collect()
+        # Periodic GC every 10 pages to keep memory in check
+        if page_num % 10 == 0:
+            gc.collect()
+
+    # Final cleanup
+    del all_images
+    gc.collect()
 
     return {"pages": pages, "tables": all_tables}
 
@@ -242,7 +261,8 @@ async def extract(file: UploadFile = File(...), _auth=Depends(verify_api_key)):
 
         processing_time_ms = int((time.time() - start) * 1000)
         logger.info(
-            f"Extraction complete: {file.filename} in {processing_time_ms}ms"
+            f"Extraction complete: {file.filename} in {processing_time_ms}ms "
+            f"({len(result['pages'])} pages, {len(result['tables'])} tables)"
         )
 
         return JSONResponse(

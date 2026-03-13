@@ -1,0 +1,161 @@
+// src/features/business-tools/components/UploadResultSummary.tsx
+// Detailed breakdown after job completes, showing file-by-file status
+
+import { CheckCircle2, XCircle, AlertCircle, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import type { PipelineJob, BusinessToolsTab } from "../types";
+
+interface UploadResultSummaryProps {
+  job: PipelineJob;
+  onSwitchTab: (tab: BusinessToolsTab) => void;
+  onReset: () => void;
+}
+
+interface FileResult {
+  filename: string;
+  status: "imported" | "skipped" | "unsupported" | "error";
+  reason?: string;
+  transactions_count?: number;
+}
+
+export function UploadResultSummary({
+  job,
+  onSwitchTab,
+  onReset,
+}: UploadResultSummaryProps) {
+  // Parse result if available — the API may return structured results
+  const result = job.result as {
+    files?: FileResult[];
+    total_transactions?: number;
+    total_statements?: number;
+    needs_review?: number;
+  } | null;
+
+  const files = result?.files ?? [];
+  const totalTx = result?.total_transactions ?? 0;
+  const totalStmts = result?.total_statements ?? 0;
+  const needsReview = result?.needs_review ?? 0;
+  const isComplete = job.status === "complete";
+  const isFailed = job.status === "failed";
+
+  return (
+    <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 space-y-3">
+      {/* Header */}
+      <div className="flex items-center gap-2">
+        {isComplete ? (
+          <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+        ) : (
+          <XCircle className="h-4 w-4 text-red-500" />
+        )}
+        <span className="text-xs font-medium text-zinc-800 dark:text-zinc-200">
+          {isComplete ? "Processing Complete" : "Processing Failed"}
+        </span>
+      </div>
+
+      {/* Summary stats */}
+      {isComplete && (totalTx > 0 || totalStmts > 0) && (
+        <div className="flex items-center gap-4 text-[11px]">
+          {totalTx > 0 && (
+            <span className="text-zinc-600 dark:text-zinc-400">
+              <strong className="text-zinc-800 dark:text-zinc-200">
+                {totalTx}
+              </strong>{" "}
+              transactions
+            </span>
+          )}
+          {totalStmts > 0 && (
+            <span className="text-zinc-600 dark:text-zinc-400">
+              <strong className="text-zinc-800 dark:text-zinc-200">
+                {totalStmts}
+              </strong>{" "}
+              statements
+            </span>
+          )}
+          {needsReview > 0 && (
+            <span className="text-amber-600 dark:text-amber-400">
+              <strong>{needsReview}</strong> need review
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* File-by-file status */}
+      {files.length > 0 && (
+        <div className="space-y-1">
+          {files.map((f, i) => (
+            <div
+              key={i}
+              className={cn(
+                "flex items-center gap-2 px-2 py-1 rounded text-[10px]",
+                f.status === "imported"
+                  ? "bg-emerald-50 dark:bg-emerald-900/10"
+                  : f.status === "error"
+                    ? "bg-red-50 dark:bg-red-900/10"
+                    : "bg-zinc-50 dark:bg-zinc-800/30",
+              )}
+            >
+              {f.status === "imported" ? (
+                <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
+              ) : f.status === "error" ? (
+                <XCircle className="h-3 w-3 text-red-500 shrink-0" />
+              ) : (
+                <AlertCircle className="h-3 w-3 text-zinc-400 shrink-0" />
+              )}
+              <span className="text-zinc-700 dark:text-zinc-300 truncate">
+                {f.filename}
+              </span>
+              {f.transactions_count != null && (
+                <span className="text-zinc-500 ml-auto shrink-0">
+                  {f.transactions_count} txns
+                </span>
+              )}
+              {f.reason && (
+                <span className="text-zinc-400 ml-auto shrink-0">
+                  {f.reason}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Error message */}
+      {isFailed && job.error && (
+        <p className="text-[10px] text-red-500">{job.error}</p>
+      )}
+
+      {/* Actions */}
+      <div className="flex items-center gap-2">
+        {isComplete && needsReview > 0 && (
+          <Button
+            size="sm"
+            className="h-7 text-[11px] bg-teal-600 hover:bg-teal-700 text-white"
+            onClick={() => onSwitchTab("transactions")}
+          >
+            Start Reviewing
+            <ArrowRight className="h-3 w-3 ml-1" />
+          </Button>
+        )}
+        {isComplete && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-[11px]"
+            onClick={() => onSwitchTab("transactions")}
+          >
+            View Transactions
+          </Button>
+        )}
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7 text-[11px] text-zinc-500"
+          onClick={onReset}
+        >
+          Upload More
+        </Button>
+      </div>
+    </div>
+  );
+}

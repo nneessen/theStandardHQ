@@ -18,6 +18,7 @@ import {
   FileSearch,
   ClipboardCheck,
   AlertTriangle,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -353,6 +354,24 @@ export function CriteriaEditor({
               >
                 <StateAvailabilitySection
                   data={extractedCriteria.stateAvailability}
+                />
+              </CriteriaSection>
+
+              {/* Coverage Options */}
+              <CriteriaSection
+                title="Coverage Options"
+                icon={<Shield className="h-3 w-3" />}
+                isEmpty={!extractedCriteria.coverageOptions}
+                badge={
+                  extractedCriteria.coverageOptions?.riders?.length ? (
+                    <Badge variant="secondary" className="text-[8px] px-1 py-0">
+                      {extractedCriteria.coverageOptions.riders.length} riders
+                    </Badge>
+                  ) : null
+                }
+              >
+                <CoverageOptionsSection
+                  data={extractedCriteria.coverageOptions}
                 />
               </CriteriaSection>
             </div>
@@ -868,6 +887,181 @@ function StateAvailabilitySection({
               </Badge>
             ))}
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CoverageOptionsSection({
+  data,
+}: {
+  data: ExtractedCriteria["coverageOptions"];
+}) {
+  if (!data) return null;
+
+  const formatLabel = (s: string) =>
+    s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+  return (
+    <div className="space-y-3">
+      {/* Product Types & Underwriting Type */}
+      <div className="grid grid-cols-2 gap-4">
+        {data.productTypes && data.productTypes.length > 0 && (
+          <div>
+            <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1 block">
+              Product Types
+            </label>
+            <div className="flex flex-wrap gap-1">
+              {data.productTypes.map((t) => (
+                <Badge
+                  key={t}
+                  variant="secondary"
+                  className="text-[9px] px-1.5 py-0 capitalize"
+                >
+                  {formatLabel(t)}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+        {data.underwritingType && (
+          <div>
+            <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+              Underwriting Type
+            </label>
+            <p className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100 capitalize">
+              {formatLabel(data.underwritingType)}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Available Terms */}
+      {data.availableTerms && data.availableTerms.length > 0 && (
+        <div>
+          <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1 block">
+            Available Terms
+          </label>
+          <div className="flex flex-wrap gap-1">
+            {data.availableTerms
+              .sort((a, b) => a - b)
+              .map((t) => (
+                <Badge
+                  key={t}
+                  variant="secondary"
+                  className="text-[9px] px-1.5 py-0"
+                >
+                  {t} years
+                </Badge>
+              ))}
+          </div>
+        </div>
+      )}
+
+      {/* Rating Classes */}
+      {data.ratingClasses && data.ratingClasses.length > 0 && (
+        <div>
+          <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1 block">
+            Rating Classes
+          </label>
+          <div className="flex flex-wrap gap-1">
+            {data.ratingClasses.map((c) => (
+              <Badge
+                key={c}
+                variant="secondary"
+                className="text-[9px] px-1.5 py-0 capitalize"
+              >
+                {formatLabel(c)}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Conversion Privilege & Accelerated UW */}
+      <div className="grid grid-cols-2 gap-4">
+        {data.conversionPrivilege && (
+          <div>
+            <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+              Conversion Privilege
+            </label>
+            <div className="flex items-center gap-2 mt-0.5">
+              <Badge
+                variant={
+                  data.conversionPrivilege.allowed ? "default" : "destructive"
+                }
+                className="text-[9px] px-1.5 py-0"
+              >
+                {data.conversionPrivilege.allowed ? "Allowed" : "Not Allowed"}
+              </Badge>
+              {data.conversionPrivilege.maxAge && (
+                <span className="text-[10px] text-zinc-500">
+                  to age {data.conversionPrivilege.maxAge}
+                </span>
+              )}
+              {data.conversionPrivilege.maxYears && (
+                <span className="text-[10px] text-zinc-500">
+                  within {data.conversionPrivilege.maxYears} yrs
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+        {data.acceleratedUnderwriting !== undefined && (
+          <div>
+            <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+              Accelerated Underwriting
+            </label>
+            <Badge
+              variant={data.acceleratedUnderwriting ? "default" : "secondary"}
+              className="text-[9px] px-1.5 py-0 mt-0.5"
+            >
+              {data.acceleratedUnderwriting ? "Available" : "Not Available"}
+            </Badge>
+          </div>
+        )}
+      </div>
+
+      {/* Riders */}
+      {data.riders && data.riders.length > 0 && (
+        <div>
+          <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1 block">
+            Riders ({data.riders.length})
+          </label>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="h-7 text-[9px] px-2">Rider</TableHead>
+                <TableHead className="h-7 text-[9px] px-2">
+                  Description
+                </TableHead>
+                <TableHead className="h-7 text-[9px] px-2 w-20">
+                  Included
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.riders.map((rider, idx) => (
+                <TableRow key={idx}>
+                  <TableCell className="py-1.5 px-2 text-[10px] font-medium">
+                    {rider.name}
+                  </TableCell>
+                  <TableCell className="py-1.5 px-2 text-[10px] text-zinc-500">
+                    {rider.description || "—"}
+                  </TableCell>
+                  <TableCell className="py-1.5 px-2">
+                    <Badge
+                      variant={rider.included ? "default" : "secondary"}
+                      className="text-[8px] px-1 py-0"
+                    >
+                      {rider.included ? "Included" : "Optional"}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>

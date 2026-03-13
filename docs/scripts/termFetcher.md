@@ -26,6 +26,10 @@ v3 fixes all of this with a **multi-layered auth strategy**:
    `node scripts/generate-term-fetch-targets.mjs --carrier "American Amicable" --product "Term Made Simple" > /tmp/aa-term-targets.js`
    If the product has zero `premium_matrix` rows, add `--bootstrap-empty` so the generator seeds a request grid from shared term ages/face amounts plus product metadata.
    The default grid mode is now metadata-aware. Use `--grid-mode matrix` only if you want the old behavior that checks holes inside the already-imported grid.
+   If you want a deliberate dense fetch grid instead of the current DB grid, use `--grid-mode explicit`, for example:
+   `node scripts/generate-term-fetch-targets.mjs --carrier "Transamerica" --product "Trendsetter Super" --grid-mode explicit --age-min 25 --age-max 85 --age-step 1 --face-min 50000 --face-max 100000 --face-step 1000 --chunk-size 250 --chunk-number 1 > /tmp/ta-trendsetter-super-chunk-1.js`
+   Important: explicit mode now snaps requested face amounts to supported direct-quote face points by default, because the Toolkit quoter rejects many arbitrary `$1k` face values with misleading 400 errors.
+   Important: target generation now defaults to combo-only gaps, not "missing health classes inside an existing combo", because those partial-class retries often produce the fake toolkit-access 400.
 3. Navigate to: `https://app.insurancetoolkits.com/term/quoter`
 4. Open DevTools Console (F12)
 5. Paste the entire script below
@@ -36,10 +40,15 @@ v3 fixes all of this with a **multi-layered auth strategy**:
 10. Run `downloadPartialTermCsv()` any time to save progress
 
 Performance note: with DB-driven targets, the planned sleep floor now scales with the real missing combo count instead of a guessed full matrix. You can still tune pacing with `setTermFetcherSpeed("safe" | "balanced" | "fast")`.
+Chunking note: for big products, prefer `--chunk-size` plus `--chunk-number` so each browser run is short, resumable, and less likely to die mid-stream.
 
 Targeting note: the browser fetcher no longer needs a hardcoded age/face grid when you use `setTermFetcherTargets(...)`. The local generator script reads `premium_matrix`, finds incomplete request combinations, and emits the exact combo list for the fetcher to run.
+Explicit-grid note: if your real goal is "ages 25-85 and $1k face steps", the generator can now target that deliberate grid even when the current DB only contains a partial set of ages or face amounts, but direct quote requests will be snapped to supported face points unless you explicitly disable that behavior with `--face-snap none`. In safe combo mode, face support is also constrained by the exact face pattern already observed for that age inside the product's live quote matrix.
+Missing-mode note: the default is now `combo` mode, which targets only age/face requests with zero existing `premium_matrix` rows. Use `--missing-mode class` only if you intentionally want to retry partially populated combos.
 Bootstrap note: empty products are a separate case. Use `--bootstrap-empty` when there are no existing rows for the product and you need a seed request grid. That will over-request some invalid combinations by design; the browser fetcher skips those with 400s.
 Availability note: some term products may not exist in the Insurance Toolkits term quoter at all. The audit script separates those into a manual/non-Toolkit bucket so you do not waste time generating browser targets for the wrong source.
+Manual-only note: the generator and bundle builder now hard-block these products because they will never use the Insurance Toolkits term fetcher: `Baltimore Life / aPriority Level Term`, `Foresters Financial / Your Term Medical`, `Legal & General / Term`, `Mutual of Omaha / Term Life Answers`, and `SBLI / Term`.
+Discovery note: the carrier list in the browser is session-based and sample-based. If you already know the carrier you want, `selectCarrierByName("Carrier Name")` is authoritative and does not depend on the discovery list being exhaustive.
 
 ## Script
 
@@ -56,7 +65,7 @@ Availability note: some term products may not exist in the Insurance Toolkits te
 
 let AVAILABLE_CARRIERS = [];
 let SELECTED_CARRIER = null;
-const TERM_FETCHER_VERSION = "2026-03-10b";
+const TERM_FETCHER_VERSION = "2026-03-12g";
 
 const TERM_FETCHER_SPEED_PROFILES = {
   safe: {
@@ -92,6 +101,9 @@ const TERM_FETCHER_CONFIG = {
   tokenExpiryBufferMs: 120000,
   stateStorageKey: "__termFetcherState_v5_dynamic_targets",
   checkpointMinIntervalMs: 45000,
+  progressLogEvery: 25,
+  verboseAccessDeniedLogs: false,
+  accessDeniedSummaryEvery: 25,
   skipBlockOnAccessDenied400: false,
   targetCombos: null,
   targetLabel: "",
@@ -599,6 +611,28 @@ const buildPayload = ({ faceAmount, sex, term, age, tobacco }) => ({
   toolkit: "TERM",
 });
 
+const TERM_FETCHER_DISCOVERY_COMBOS = [
+  { faceAmount: 100000, sex: "Male", term: "10", age: 25, tobacco: "None" },
+  { faceAmount: 100000, sex: "Female", term: "20", age: 35, tobacco: "None" },
+  { faceAmount: 100000, sex: "Male", term: "30", age: 45, tobacco: "None" },
+  { faceAmount: 50000, sex: "Female", term: "20", age: 55, tobacco: "Tobacco" },
+  { faceAmount: 50000, sex: "Male", term: "15", age: 65, tobacco: "None" },
+];
+
+const getDiscoveryCombos = () => {
+  const discovered = [];
+  const seen = new Set();
+
+  for (const combo of TERM_FETCHER_DISCOVERY_COMBOS) {
+    const key = formatComboLabel(combo);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    discovered.push(combo);
+  }
+
+  return discovered;
+};
+
 const buildCombinations = () => {
   if (
     Array.isArray(TERM_FETCHER_CONFIG.targetCombos) &&
@@ -631,6 +665,7 @@ window.setTermFetcherTargets = (combos, metadata = {}) => {
   if (!normalizedCombos.length) {
     throw new Error("No valid target combos were provided.");
   }
+  const selection = metadata?.source?.selection;
 
   const previousStorageKey = TERM_FETCHER_CONFIG.stateStorageKey;
   const nextStorageKey =
@@ -655,10 +690,50 @@ window.setTermFetcherTargets = (combos, metadata = {}) => {
   window.termFetcherState = createFreshRunState();
 
   console.log(
-    `  Loaded ${normalizedCombos.length.toLocaleString()} DB-derived target combination${normalizedCombos.length === 1 ? "" : "s"}.`,
+    selection?.totalTargets && selection.totalTargets !== normalizedCombos.length
+      ? `  Loaded ${normalizedCombos.length.toLocaleString()} DB-derived target combination${normalizedCombos.length === 1 ? "" : "s"} from a ${selection.totalTargets.toLocaleString()}-combo target set.`
+      : `  Loaded ${normalizedCombos.length.toLocaleString()} DB-derived target combination${normalizedCombos.length === 1 ? "" : "s"}.`,
   );
   if (TERM_FETCHER_CONFIG.targetLabel) {
     console.log(`  Target label: ${TERM_FETCHER_CONFIG.targetLabel}`);
+  }
+  if (metadata?.source?.missingMode) {
+    console.log(`  Missing mode: ${metadata.source.missingMode}`);
+  }
+  if (metadata?.source?.prioritization) {
+    console.log(`  Prioritization: ${metadata.source.prioritization}`);
+  }
+  if (selection?.chunkSize !== null && selection?.chunkNumber) {
+    console.log(
+      `  Active chunk: ${selection.chunkNumber}/${selection.totalChunks} (${selection.returnedTargets.toLocaleString()}/${selection.totalTargets.toLocaleString()} combos).`,
+    );
+  } else if (selection?.totalTargets && selection.totalTargets !== normalizedCombos.length) {
+    console.log(
+      `  Active slice: offset ${selection.offset.toLocaleString()} limit ${(selection.limit ?? normalizedCombos.length).toLocaleString()} (${selection.returnedTargets.toLocaleString()}/${selection.totalTargets.toLocaleString()} combos).`,
+    );
+  }
+  if (metadata.generatedAt) {
+    console.log(`  Generated at: ${metadata.generatedAt}`);
+  }
+  console.log(`  First target: ${formatComboLabel(normalizedCombos[0])}`);
+  const requestedGrid = metadata?.source?.requestedGrid;
+  if (
+    requestedGrid?.ageSnapMode === "supported" &&
+    Array.isArray(requestedGrid.skippedUnsupportedAges) &&
+    requestedGrid.skippedUnsupportedAges.length > 0
+  ) {
+    console.log(
+      `  Age grid snapped to ${requestedGrid.ages.length} supported direct-quote age${requestedGrid.ages.length === 1 ? "" : "s"}; skipped ${requestedGrid.skippedUnsupportedAges.length} unsupported age${requestedGrid.skippedUnsupportedAges.length === 1 ? "" : "s"}.`,
+    );
+  }
+  if (
+    requestedGrid?.faceSnapMode === "supported" &&
+    Array.isArray(requestedGrid.skippedUnsupportedFaceAmounts) &&
+    requestedGrid.skippedUnsupportedFaceAmounts.length > 0
+  ) {
+    console.log(
+      `  Face grid snapped to ${requestedGrid.faceAmounts.length} supported direct-quote value${requestedGrid.faceAmounts.length === 1 ? "" : "s"}; skipped ${requestedGrid.skippedUnsupportedFaceAmounts.length} unsupported value${requestedGrid.skippedUnsupportedFaceAmounts.length === 1 ? "" : "s"}.`,
+    );
   }
   if (TERM_FETCHER_CONFIG.preferredCarrier) {
     console.log(
@@ -818,7 +893,9 @@ const createFreshRunState = () => ({
   total: 0,
   allQuotes: [],
   skippedCombos: [],
+  accessDeniedCount: 0,
   lastFailure: null,
+  lastAccessDeniedLabel: null,
   lastCheckpointAt: 0,
   lastCheckpointIndex: 0,
 });
@@ -855,6 +932,8 @@ window.debugTermFetcher = async () => {
     selectedCarrier: SELECTED_CARRIER || "",
     currentRequest: getRunState().nextIndex,
     collectedQuotes: getRunState().allQuotes.length,
+    accessDeniedCount: getRunState().accessDeniedCount,
+    lastAccessDeniedLabel: getRunState().lastAccessDeniedLabel,
     savedState: Boolean(loadStateFromDisk()),
   };
 
@@ -938,47 +1017,53 @@ const discoverCarriers = async () => {
   if (TERM_FETCHER_CONFIG.preferredCarrier) {
     console.log(`  Preferred carrier: ${TERM_FETCHER_CONFIG.preferredCarrier}`);
   }
-  console.log("  Fetching one live sample quote to discover carriers for this session...\n");
+  const discoveryCombos = getDiscoveryCombos();
+  console.log(
+    `  Fetching ${discoveryCombos.length} live sample quote${discoveryCombos.length === 1 ? "" : "s"} to discover carriers for this session...\n`,
+  );
 
   try {
-    const sampleCombo = buildCombinations()[0] || {
-      faceAmount: 170000,
-      sex: "Male",
-      term: "10",
-      age: 25,
-      tobacco: "None",
-    };
-    const { response, body } = await requestQuote(
-      buildPayload(sampleCombo),
-    );
-
-    if (!response.ok) {
-      console.error(
-        `  Sample quote failed with HTTP ${response.status}:`,
-        body?.error || body?.detail || body?.rawText || body,
-      );
-      return;
-    }
-
-    if (!body?.quotes?.length) {
-      console.error("  No quotes returned from sample request.", body);
-      return;
-    }
-
     const carrierSet = new Set();
-    body.quotes.forEach((quote) => {
-      const carrier = carrierNameFromCompany(quote.company);
-      if (carrier) carrierSet.add(carrier);
-    });
+    let successfulSamples = 0;
+
+    for (const sampleCombo of discoveryCombos) {
+      const { response, body } = await requestQuote(buildPayload(sampleCombo));
+
+      if (!response.ok) {
+        console.warn(
+          `  Discovery sample failed for ${formatComboLabel(sampleCombo)} (HTTP ${response.status})`,
+        );
+        continue;
+      }
+
+      if (!body?.quotes?.length) {
+        continue;
+      }
+
+      successfulSamples += 1;
+      body.quotes.forEach((quote) => {
+        const carrier = carrierNameFromCompany(quote.company);
+        if (carrier) carrierSet.add(carrier);
+      });
+
+      await sleep(TERM_FETCHER_CONFIG.requestDelayMs);
+    }
+
+    if (!carrierSet.size) {
+      console.error("  No carriers returned from discovery samples.");
+      return;
+    }
 
     AVAILABLE_CARRIERS = Array.from(carrierSet).sort();
 
-    console.log("  Carriers returned by this live sample quote:\n");
+    console.log(
+      `  Carriers returned across ${successfulSamples}/${discoveryCombos.length} live sample quote${discoveryCombos.length === 1 ? "" : "s"}:\n`,
+    );
     AVAILABLE_CARRIERS.forEach((carrier, index) => {
       console.log(`  ${index + 1}. ${carrier}`);
     });
     console.log(
-      "\n  Note: this is not a full database list. It only reflects carriers returned by one live Insurance Toolkits quote in your current session.",
+      '\n  Note: this is still a session-based discovery list. If you already know the carrier, run selectCarrierByName("Carrier Name") directly.',
     );
 
     console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
@@ -1042,6 +1127,7 @@ const fetchAllRates = async ({ resume = false } = {}) => {
   ) {
     const combo = combinations[index];
     const label = formatComboLabel(combo);
+    const progressLabel = `[${(index + 1).toLocaleString()}/${state.total.toLocaleString()}]`;
     let authRetries = 0;
 
     while (true) {
@@ -1097,7 +1183,7 @@ const fetchAllRates = async ({ resume = false } = {}) => {
             tokenExpiresAt: getTokenExpirationIso(),
           };
 
-          console.warn(`  Auth error (HTTP ${response.status}) at ${label}`);
+          console.warn(`  Auth error (HTTP ${response.status}) at ${progressLabel} ${label}`);
           console.warn(`  ${getErrorText(body) || "No error message"}`);
 
           if (authRetries > TERM_FETCHER_CONFIG.maxAuthRetries) {
@@ -1132,6 +1218,28 @@ const fetchAllRates = async ({ resume = false } = {}) => {
 
         if (isAccessDenied400(response.status, body)) {
           const errorText = getErrorText(body);
+          const logAccessDeniedSummary = (message) => {
+            state.accessDeniedCount += 1;
+            state.lastAccessDeniedLabel = label;
+
+            if (TERM_FETCHER_CONFIG.verboseAccessDeniedLogs) {
+              console.warn(message);
+              if (errorText) {
+                console.warn(`  ${errorText}`);
+              }
+              return;
+            }
+
+            if (
+              state.accessDeniedCount === 1 ||
+              state.accessDeniedCount % TERM_FETCHER_CONFIG.accessDeniedSummaryEvery === 0
+            ) {
+              console.warn(
+                `  Access-denied 400 count: ${state.accessDeniedCount} | Latest ${progressLabel} ${label}`,
+              );
+            }
+          };
+
           if (TERM_FETCHER_CONFIG.skipBlockOnAccessDenied400) {
             const previousCombo = combinations[index - 1];
             const atStartOfAgeBlock = !sameProfileWithoutFaceAmount(previousCombo, combo);
@@ -1140,25 +1248,19 @@ const fetchAllRates = async ({ resume = false } = {}) => {
               : getNextProfileIndex(combinations, index);
             const skippedCount = nextIndex - index;
 
-            console.warn(
+            logAccessDeniedSummary(
               atStartOfAgeBlock
-                ? `  Access-denied 400 at ${label}; skipping ${skippedCount} combination${skippedCount === 1 ? "" : "s"} from this age onward for the current gender/tobacco/term.`
-                : `  Access-denied 400 at ${label}; skipping ${skippedCount} combination${skippedCount === 1 ? "" : "s"} in this age/profile block.`,
+                ? `  Access-denied 400 at ${progressLabel} ${label}; skipping ${skippedCount} combination${skippedCount === 1 ? "" : "s"} from this age onward for the current gender/tobacco/term.`
+                : `  Access-denied 400 at ${progressLabel} ${label}; skipping ${skippedCount} combination${skippedCount === 1 ? "" : "s"} in this age/profile block.`,
             );
-            if (errorText) {
-              console.warn(`  ${errorText}`);
-            }
             for (let skipIndex = index; skipIndex < nextIndex; skipIndex += 1) {
               state.skippedCombos.push(formatComboLabel(combinations[skipIndex]));
             }
             state.nextIndex = nextIndex;
           } else {
-            console.warn(
-              `  Access-denied 400 at ${label}; skipping only this combination.`,
+            logAccessDeniedSummary(
+              `  Access-denied 400 at ${progressLabel} ${label}; skipping only this combination.`,
             );
-            if (errorText) {
-              console.warn(`  ${errorText}`);
-            }
             state.skippedCombos.push(label);
             state.nextIndex = index + 1;
           }
@@ -1167,7 +1269,7 @@ const fetchAllRates = async ({ resume = false } = {}) => {
 
         // ── Rate limit ──
         if (response.status === 429) {
-          console.warn(`  Rate limited at ${label}. Pausing ${Math.round(TERM_FETCHER_CONFIG.batchPauseMs / 1000)}s...`);
+          console.warn(`  Rate limited at ${progressLabel} ${label}. Pausing ${Math.round(TERM_FETCHER_CONFIG.batchPauseMs / 1000)}s...`);
           await sleep(TERM_FETCHER_CONFIG.batchPauseMs);
           continue;
         }
@@ -1180,16 +1282,26 @@ const fetchAllRates = async ({ resume = false } = {}) => {
         }
 
         // ── Other errors ──
-        console.warn(`  HTTP ${response.status} at ${label}:`, body?.error || body?.rawText || body);
+        console.warn(`  HTTP ${response.status} at ${progressLabel} ${label}:`, body?.error || body?.rawText || body);
         state.nextIndex = index + 1;
         break;
       } catch (error) {
-        console.warn(`  Exception at ${label}: ${error.message}`);
+        console.warn(`  Exception at ${progressLabel} ${label}: ${error.message}`);
         await sleep(TERM_FETCHER_CONFIG.batchPauseMs);
       }
     }
 
     if (!state.running) break;
+
+    if (
+      state.nextIndex > 0 &&
+      state.nextIndex % TERM_FETCHER_CONFIG.progressLogEvery === 0 &&
+      state.nextIndex % TERM_FETCHER_CONFIG.batchPauseEvery !== 0
+    ) {
+      console.log(
+        `Progress: ${state.nextIndex}/${state.total} | Collected: ${state.allQuotes.length} | Skipped: ${state.skippedCombos.length}`,
+      );
+    }
 
     // ── Batch pause + progress ──
     if (state.nextIndex % TERM_FETCHER_CONFIG.batchPauseEvery === 0) {
@@ -1236,6 +1348,11 @@ const fetchAllRates = async ({ resume = false } = {}) => {
   console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
   console.log(`  Done! ${state.allQuotes.length} rates fetched for ${SELECTED_CARRIER}`);
   console.log(`  Skipped ${state.skippedCombos.length} invalid combinations.`);
+  if (state.accessDeniedCount > 0) {
+    console.log(
+      `  Access-denied 400s encountered: ${state.accessDeniedCount}${state.lastAccessDeniedLabel ? ` | Last: ${state.lastAccessDeniedLabel}` : ""}`,
+    );
+  }
   console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
   const carrierSafe = SELECTED_CARRIER.replace(/\s+/g, "_");

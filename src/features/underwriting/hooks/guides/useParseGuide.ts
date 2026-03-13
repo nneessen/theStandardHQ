@@ -53,8 +53,18 @@ export function useParseGuide() {
         context: { guideId },
       };
 
-      const { result, adapterUsed, durationMs } =
-        await extractionGateway.extract(request);
+      // Show progress toast — OCR on large guides can take several minutes
+      const progressToast = toast.loading(
+        "Parsing guide with OCR — this may take a few minutes for large documents...",
+      );
+
+      let result, adapterUsed, durationMs;
+      try {
+        ({ result, adapterUsed, durationMs } =
+          await extractionGateway.extract(request));
+      } finally {
+        toast.dismiss(progressToast);
+      }
 
       return {
         pageCount: result.metadata.pageCount,

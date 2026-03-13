@@ -842,6 +842,8 @@ class AdminSubscriptionService {
         recruiting_basic: false,
         recruiting_custom_pipeline: false,
         custom_branding: false,
+        // Tools features
+        business_tools: false,
       };
 
       const { data, error } = await supabase
@@ -1126,9 +1128,7 @@ class AdminSubscriptionService {
    * Invoke the setup-addon-stripe-products edge function to auto-create
    * Stripe product + prices for a given addon's tiers.
    */
-  async setupAddonStripeProducts(
-    addonName: string,
-  ): Promise<{
+  async setupAddonStripeProducts(addonName: string): Promise<{
     results: Array<{
       tierId: string;
       monthlyPriceId?: string;

@@ -30,6 +30,7 @@ import {
   Store,
   LifeBuoy,
   Megaphone,
+  Briefcase,
 } from "lucide-react";
 import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
 import { SupportDialog } from "./SupportDialog";
@@ -354,6 +355,13 @@ export default function Sidebar({
           icon: CloseCrmIcon,
           label: "Chat Bot",
           href: "/chat-bot",
+          public: true,
+        },
+        // Business Tools — page handles upsell internally
+        {
+          icon: Briefcase,
+          label: "Business Tools",
+          href: "/business-tools",
           public: true,
         },
       ] as NavItem[],

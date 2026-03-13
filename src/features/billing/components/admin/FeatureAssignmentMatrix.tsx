@@ -14,6 +14,7 @@ import {
   MessageSquare,
   BarChart3,
   Palette,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ const CATEGORY_ICONS_RESOLVED: Record<FeatureCategory, LucideIcon> = {
   messaging: MessageSquare,
   analytics: BarChart3,
   branding: Palette,
+  tools: Wrench,
 };
 
 interface FeatureAssignmentMatrixProps {

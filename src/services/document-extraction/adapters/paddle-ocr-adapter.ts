@@ -76,8 +76,8 @@ interface UwParsedContent {
 /** Proxied through Vite dev server + Vercel rewrite to avoid CORS. */
 const EXTRACTOR_URL = "/api/paddle-ocr";
 
-/** Default timeout (3 minutes — OCR is slower than text extraction). */
-const DEFAULT_TIMEOUT_MS = 180_000;
+/** Default timeout (10 minutes — large guides with 50+ pages need time for OCR). */
+const DEFAULT_TIMEOUT_MS = 600_000;
 
 // ─── Adapter ──────────────────────────────────────────────────────────────────
 

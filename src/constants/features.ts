@@ -8,7 +8,8 @@ export type FeatureCategory =
   | "team"
   | "messaging"
   | "analytics"
-  | "branding";
+  | "branding"
+  | "tools";
 
 export interface FeatureDefinition {
   key: string;
@@ -206,6 +207,15 @@ export const FEATURE_REGISTRY: Record<string, FeatureDefinition> = {
       "Custom domain, personalized recruiting link, and landing page customization",
     category: "branding",
   },
+
+  // Tools Features
+  business_tools: {
+    key: "business_tools",
+    displayName: "Business Tools",
+    description:
+      "Financial statement processing, transaction categorization, and workbook export",
+    category: "tools",
+  },
 } as const;
 
 // ============================================
@@ -312,6 +322,10 @@ export const FEATURE_CATEGORIES: Record<
     label: "Branding & White Label",
     description: "Custom branding and white-label features",
   },
+  tools: {
+    label: "Tools",
+    description: "Business productivity tools",
+  },
 };
 
 /** Accent dot colors for category headers (Tailwind bg classes) */
@@ -323,6 +337,7 @@ export const CATEGORY_ACCENT_COLORS: Record<FeatureCategory, string> = {
   messaging: "bg-cyan-500",
   analytics: "bg-rose-500",
   branding: "bg-fuchsia-500",
+  tools: "bg-teal-500",
 };
 
 /** Left border accent colors for feature rows within each category */
@@ -334,6 +349,7 @@ export const CATEGORY_BORDER_COLORS: Record<FeatureCategory, string> = {
   messaging: "border-l-cyan-500/40",
   analytics: "border-l-rose-500/40",
   branding: "border-l-fuchsia-500/40",
+  tools: "border-l-teal-500/40",
 };
 
 /** Lucide icon name string per category (resolved in component) */
@@ -345,6 +361,7 @@ export const CATEGORY_ICONS: Record<FeatureCategory, string> = {
   messaging: "MessageSquare",
   analytics: "BarChart3",
   branding: "Palette",
+  tools: "Wrench",
 };
 
 /**
@@ -362,6 +379,7 @@ export function getFeaturesByCategory(): Record<
     messaging: [],
     analytics: [],
     branding: [],
+    tools: [],
   };
 
   for (const feature of Object.values(FEATURE_REGISTRY)) {

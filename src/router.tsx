@@ -65,6 +65,11 @@ import { MarketingHubPage } from "./features/marketing";
 import { TemplateEditorPage } from "./features/marketing/components/templates/TemplateEditorPage";
 import { CampaignEditorPage } from "./features/marketing/components/campaigns/CampaignEditorPage";
 
+// Lazy-loaded business tools page
+const BusinessToolsPage = lazy(
+  () => import("./features/business-tools/BusinessToolsPage"),
+);
+
 // Lazy-loaded underwriting pages
 const UnderwritingWizardPage = lazy(
   () => import("./features/underwriting/components/Wizard"),
@@ -542,6 +547,17 @@ const chatBotRoute = createRoute({
   ),
 });
 
+// Business Tools route - Financial statement processing, page handles upsell internally
+const businessToolsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "business-tools",
+  component: () => (
+    <RouteGuard noRecruits noStaffRoles>
+      <BusinessToolsPage />
+    </RouteGuard>
+  ),
+});
+
 // Alternative join route - catches /join-* pattern using catch-all
 // This handles URLs like /join-the-standard without redirect
 // Uses stable wrapper component (not inline function) so React Query works correctly
@@ -942,6 +958,7 @@ const routeTree = rootRoute.addChildren([
   underwritingWizardRoute,
   quickQuoteRoute,
   chatBotRoute,
+  businessToolsRoute,
   publicJoinAltRoute, // Catch-all for /join-* pattern - must be last
 ]);
 
