@@ -724,6 +724,14 @@ serve(async (req) => {
               item.uri ||
               item.calendly_url ||
               null,
+            endAt: item.endAt || item.end_at || item.end_time || null,
+            source: item.source || null,
+            reminder24hSentAt:
+              item.reminder24hSentAt || item.reminder_24h_sent_at || null,
+            reminder1hSentAt:
+              item.reminder1hSentAt || item.reminder_1h_sent_at || null,
+            reminder15mSentAt:
+              item.reminder15mSentAt || item.reminder_15m_sent_at || null,
           };
         });
         const pagination = meta?.pagination || {};

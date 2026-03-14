@@ -102,9 +102,14 @@ export interface ChatBotAppointment {
   id: string;
   leadName: string;
   scheduledAt: string | null;
+  endAt: string | null;
   status: string;
+  source: "bot" | "calendar_sync" | null;
   createdAt: string | null;
   eventUrl?: string | null;
+  reminder24hSentAt: string | null;
+  reminder1hSentAt: string | null;
+  reminder15mSentAt: string | null;
 }
 
 export interface ChatBotUsage {
