@@ -1,17 +1,11 @@
 // src/services/base/supabase.ts
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { supabaseUrl, supabaseAnonKey } from "./supabase-config";
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error(
-    "Missing Supabase environment variables. Please check your .env file.",
-  );
-}
-
-export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey);
+export const supabase: SupabaseClient = createClient(
+  supabaseUrl,
+  supabaseAnonKey,
+);
 
 // Re-export TABLES from dedicated module
 export { TABLES } from "./tables";
-

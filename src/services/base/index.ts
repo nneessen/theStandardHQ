@@ -1,6 +1,12 @@
 // src/services/base/index.ts
 export { supabase } from "./supabase";
 export {
+  supabaseUrl,
+  supabaseAnonKey,
+  supabaseFunctionsUrl,
+  isLocalSupabase,
+} from "./supabase-config";
+export {
   BaseRepository,
   type BaseEntity,
   type QueryOptions,

@@ -356,7 +356,7 @@ export const recruitInvitationService = {
   /**
    * Submits the registration form data with password
    * This is called from the public registration page
-   * Creates the auth account via edge function (Admin API), then updates the profile via RPC
+   * Validates the invitation and completes auth/profile creation in one edge flow
    */
   async submitRegistrationWithPassword(
     token: string,
@@ -367,36 +367,17 @@ export const recruitInvitationService = {
     console.log("[submitRegistrationWithPassword] Starting for token:", token);
 
     try {
-      // Step 1: Create auth account with password via edge function
-      // This uses the Admin API with email_confirm=true, bypassing confirmation email
       console.log(
-        "[submitRegistrationWithPassword] Creating auth account via edge function...",
+        "[submitRegistrationWithPassword] Completing invite registration via edge function...",
       );
 
-      const fullName = `${formData.first_name} ${formData.last_name}`.trim();
-
       const { data: edgeFnData, error: edgeFnError } =
-        await supabase.functions.invoke("create-auth-user", {
+        await supabase.functions.invoke("complete-recruit-registration", {
           body: {
+            token,
             email,
-            password, // User's chosen password
-            fullName,
-            roles: ["recruit"],
-            phone: formData.phone,
-            profileData: {
-              first_name: formData.first_name,
-              last_name: formData.last_name,
-              phone: formData.phone,
-              date_of_birth: formData.date_of_birth,
-              street_address: formData.street_address,
-              city: formData.city,
-              state: formData.state,
-              zip: formData.zip,
-              instagram_username: formData.instagram_username,
-              facebook_handle: formData.facebook_handle,
-              personal_website: formData.personal_website,
-              referral_source: formData.referral_source,
-            },
+            password,
+            formData,
           },
         });
 
@@ -412,62 +393,10 @@ export const recruitInvitationService = {
         };
       }
 
-      // Check for error in response body
-      if (edgeFnData?.error) {
+      if (!edgeFnData) {
         console.error(
-          "[submitRegistrationWithPassword] Edge function returned error:",
-          edgeFnData.error,
+          "[submitRegistrationWithPassword] No data returned from edge function",
         );
-        return {
-          success: false,
-          error: "auth_failed",
-          message: edgeFnData.error,
-        };
-      }
-
-      const authUserId = edgeFnData?.user?.id;
-      if (!authUserId) {
-        console.error(
-          "[submitRegistrationWithPassword] No user ID returned from edge function",
-        );
-        return {
-          success: false,
-          error: "auth_failed",
-          message: "Failed to create account. Please try again.",
-        };
-      }
-
-      console.log(
-        "[submitRegistrationWithPassword] Auth account created:",
-        authUserId,
-      );
-
-      // Step 2: Update profile and complete registration via RPC
-      const { data, error } = await supabase.rpc(
-        "submit_recruit_registration",
-        {
-          p_token: token,
-          p_data: formData,
-          p_auth_user_id: authUserId,
-        },
-      );
-
-      console.log("[submitRegistrationWithPassword] RPC response:", {
-        data,
-        error,
-      });
-
-      if (error) {
-        console.error("[submitRegistrationWithPassword] RPC Error:", error);
-        return {
-          success: false,
-          error: "submission_failed",
-          message: "Failed to complete registration. Please try again.",
-        };
-      }
-
-      if (!data) {
-        console.error("[submitRegistrationWithPassword] No data returned");
         return {
           success: false,
           error: "submission_failed",
@@ -475,7 +404,25 @@ export const recruitInvitationService = {
         };
       }
 
-      const result = data as RegistrationResult;
+      if (edgeFnData.success !== true) {
+        console.error(
+          "[submitRegistrationWithPassword] Registration failed:",
+          edgeFnData,
+        );
+        return {
+          success: false,
+          error:
+            typeof edgeFnData.error === "string"
+              ? edgeFnData.error
+              : "submission_failed",
+          message:
+            typeof edgeFnData.message === "string"
+              ? edgeFnData.message
+              : "Failed to complete registration. Please try again.",
+        };
+      }
+
+      const result = edgeFnData as RegistrationResult;
       console.log("[submitRegistrationWithPassword] Success:", result);
 
       return result;

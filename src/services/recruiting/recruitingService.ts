@@ -1,5 +1,6 @@
 // src/services/recruiting/recruitingService.ts
 import { supabase } from "../base/supabase";
+import { supabaseFunctionsUrl } from "../base";
 import {
   workflowEventEmitter,
   WORKFLOW_EVENTS,
@@ -122,15 +123,9 @@ export const recruitingService = {
       keys: Object.keys(profileData),
     });
 
-    const response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-auth-user`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({
+    const { data: result, error: invokeError } =
+      await supabase.functions.invoke("create-auth-user", {
+        body: {
           email: recruit.email.toLowerCase().trim(),
           fullName,
           roles,
@@ -139,31 +134,27 @@ export const recruitingService = {
           phone: recruit.phone,
           // Pass all profile data to be applied by edge function (bypasses RLS)
           profileData,
-        }),
-      },
-    );
-
-    const result = await response.json();
+        },
+      });
 
     // Debug: Log the full result from edge function
     console.log("[recruitingService.createRecruit] Edge function result:", {
-      ok: response.ok,
-      status: response.status,
-      hasProfile: !!result.profile,
-      profileUpdateError: result.profileUpdateError,
-      alreadyExists: result.alreadyExists,
+      ok: !invokeError,
+      hasProfile: !!result?.profile,
+      profileUpdateError: result?.profileUpdateError,
+      alreadyExists: result?.alreadyExists,
     });
 
-    if (!response.ok) {
-      console.error("[recruitingService.createRecruit] Edge function failed:", {
-        status: response.status,
-        statusText: response.statusText,
-        error: result.error,
-        details: result.details,
-      });
-      throw new Error(
-        result.error || `Failed to create auth user: ${response.statusText}`,
+    if (invokeError) {
+      console.error(
+        "[recruitingService.createRecruit] Edge function failed:",
+        invokeError,
       );
+      throw new Error(invokeError.message || "Failed to create auth user");
+    }
+
+    if (!result) {
+      throw new Error("Auth user creation returned no data");
     }
 
     const authUserId = result.user?.id;
@@ -447,7 +438,7 @@ export const recruitingService = {
 
   getInstagramOAuthUrl(userId: string) {
     const INSTAGRAM_APP_ID = import.meta.env.VITE_INSTAGRAM_APP_ID;
-    const REDIRECT_URI = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/instagram-oauth`;
+    const REDIRECT_URI = `${supabaseFunctionsUrl}/instagram-oauth`;
     const state = userId;
     const scope = "user_profile,user_media";
 

@@ -37,6 +37,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
 import { US_STATES } from "@/constants/states";
+import { usePermissionCheck } from "@/hooks/permissions";
 
 // Helper function to auto-prepend https:// to URLs
 // TODO: helper function should also not be in this file.
@@ -121,10 +122,13 @@ export function AddRecruitDialog({
   onSuccess,
 }: AddRecruitDialogProps) {
   const { user } = useAuth();
+  const { canAny, isAdmin } = usePermissionCheck();
   const createRecruitMutation = useCreateRecruit();
   const checkEmailMutation = useCheckEmailExists();
   const initializeProgressMutation = useInitializeRecruitProgress();
   const [activeTab, setActiveTab] = useState("basic");
+  const canManageUsers =
+    isAdmin() || canAny(["nav.user_management", "users.manage"]);
 
   const form = useForm({
     defaultValues: {
@@ -169,7 +173,11 @@ export function AddRecruitDialog({
 
       // Determine agent status based on checkboxes
       let agent_status: AgentStatus = "unlicensed";
-      if (value.skip_pipeline || value.is_admin) {
+      const isAdminRecruit = canManageUsers && value.is_admin;
+      const skipPipeline =
+        canManageUsers && (value.skip_pipeline || isAdminRecruit);
+
+      if (skipPipeline || isAdminRecruit) {
         agent_status = "not_applicable";
       } else if (value.is_licensed_agent) {
         agent_status = "licensed";
@@ -199,8 +207,8 @@ export function AddRecruitDialog({
         zip: value.zip || undefined,
         agent_status,
         licensing_info,
-        skip_pipeline: value.skip_pipeline || value.is_admin,
-        is_admin: value.is_admin,
+        skip_pipeline: skipPipeline,
+        is_admin: isAdminRecruit,
         recruiter_id: user.id,
         upline_id: value.upline_id || undefined,
         referral_source: value.referral_source || undefined,
@@ -549,39 +557,46 @@ export function AddRecruitDialog({
                   )}
                 </form.Field>
 
-                <form.Field name="skip_pipeline">
-                  {(field) => (
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="skip_pipeline"
-                        checked={field.state.value}
-                        onCheckedChange={(checked) => {
-                          field.handleChange(checked === true);
-                          // If licensed is checked, uncheck it
-                          if (checked && form.state.values.is_licensed_agent) {
-                            form.setFieldValue("is_licensed_agent", false);
-                          }
-                        }}
-                      />
-                      <Label
-                        htmlFor="skip_pipeline"
-                        className="text-[11px] cursor-pointer"
-                      >
-                        Skip onboarding pipeline (admin/office staff)
-                      </Label>
-                    </div>
-                  )}
-                </form.Field>
+                {canManageUsers && (
+                  <>
+                    <form.Field name="skip_pipeline">
+                      {(field) => (
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="skip_pipeline"
+                            checked={field.state.value}
+                            onCheckedChange={(checked) => {
+                              field.handleChange(checked === true);
+                              // If licensed is checked, uncheck it
+                              if (
+                                checked &&
+                                form.state.values.is_licensed_agent
+                              ) {
+                                form.setFieldValue("is_licensed_agent", false);
+                              }
+                            }}
+                          />
+                          <Label
+                            htmlFor="skip_pipeline"
+                            className="text-[11px] cursor-pointer"
+                          >
+                            Skip onboarding pipeline (admin/office staff)
+                          </Label>
+                        </div>
+                      )}
+                    </form.Field>
 
-                {/* Info alert about pipeline assignment */}
-                {form.state.values.skip_pipeline && (
-                  <Alert className="py-2">
-                    <InfoIcon className="h-3 w-3" />
-                    <AlertDescription className="text-[10px]">
-                      This user will not be added to any onboarding pipeline and
-                      won't appear in recruiting dashboards.
-                    </AlertDescription>
-                  </Alert>
+                    {/* Info alert about pipeline assignment */}
+                    {form.state.values.skip_pipeline && (
+                      <Alert className="py-2">
+                        <InfoIcon className="h-3 w-3" />
+                        <AlertDescription className="text-[10px]">
+                          This user will not be added to any onboarding pipeline
+                          and won't appear in recruiting dashboards.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -732,37 +747,38 @@ export function AddRecruitDialog({
                 )}
               </form.Field>
 
-              {/* Admin checkbox */}
-              <form.Field name="is_admin">
-                {(field) => (
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="is_admin"
-                        checked={field.state.value}
-                        onCheckedChange={(checked) =>
-                          field.handleChange(checked === true)
-                        }
-                      />
-                      <Label
-                        htmlFor="is_admin"
-                        className="text-[11px] cursor-pointer"
-                      >
-                        Grant admin privileges
-                      </Label>
+              {canManageUsers && (
+                <form.Field name="is_admin">
+                  {(field) => (
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="is_admin"
+                          checked={field.state.value}
+                          onCheckedChange={(checked) =>
+                            field.handleChange(checked === true)
+                          }
+                        />
+                        <Label
+                          htmlFor="is_admin"
+                          className="text-[11px] cursor-pointer"
+                        >
+                          Grant admin privileges
+                        </Label>
+                      </div>
+                      {field.state.value && (
+                        <Alert className="py-2">
+                          <InfoIcon className="h-3 w-3" />
+                          <AlertDescription className="text-[10px]">
+                            Admin users have full system access and will not be
+                            added to any onboarding pipeline.
+                          </AlertDescription>
+                        </Alert>
+                      )}
                     </div>
-                    {field.state.value && (
-                      <Alert className="py-2">
-                        <InfoIcon className="h-3 w-3" />
-                        <AlertDescription className="text-[10px]">
-                          Admin users have full system access and will not be
-                          added to any onboarding pipeline.
-                        </AlertDescription>
-                      </Alert>
-                    )}
-                  </div>
-                )}
-              </form.Field>
+                  )}
+                </form.Field>
+              )}
             </TabsContent>
 
             {/* Social/Referral Tab */}

@@ -2,12 +2,129 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
+import { z } from "npm:zod@3.23.8";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+const INTERNAL_ROLE_ALLOWLIST = new Set([
+  "admin",
+  "agent",
+  "active_agent",
+  "trainer",
+  "contracting_manager",
+  "recruiter",
+  "upline_manager",
+  "office_staff",
+]);
+
+const UPLINE_ROLE_ALLOWLIST = new Set([
+  "admin",
+  "agent",
+  "active_agent",
+  "trainer",
+  "contracting_manager",
+  "upline_manager",
+]);
+
+const RECRUITING_PERMISSION_CODES = ["nav.recruiting_pipeline"];
+const USER_MANAGEMENT_PERMISSION_CODES = [
+  "nav.user_management",
+  "users.manage",
+];
+
+const profileDataSchema = z
+  .object({
+    first_name: z.string().max(200).optional(),
+    last_name: z.string().max(200).optional(),
+    phone: z.string().max(50).nullable().optional(),
+    date_of_birth: z.string().max(50).nullable().optional(),
+    street_address: z.string().max(255).nullable().optional(),
+    city: z.string().max(100).nullable().optional(),
+    state: z.string().max(50).nullable().optional(),
+    resident_state: z.string().max(50).nullable().optional(),
+    zip: z.string().max(20).nullable().optional(),
+    agent_status: z
+      .enum(["unlicensed", "licensed", "not_applicable"])
+      .optional(),
+    licensing_info: z.record(z.unknown()).optional(),
+    pipeline_template_id: z.string().uuid().nullable().optional(),
+    onboarding_status: z.string().max(100).nullable().optional(),
+    current_onboarding_phase: z.string().max(100).nullable().optional(),
+    onboarding_started_at: z.string().max(100).nullable().optional(),
+    hierarchy_path: z.string().max(1000).optional(),
+    hierarchy_depth: z.number().int().min(0).optional(),
+    contract_level: z.number().finite().nullable().optional(),
+    approval_status: z.string().max(50).optional(),
+    recruiter_id: z.string().uuid().nullable().optional(),
+    upline_id: z.string().uuid().nullable().optional(),
+    referral_source: z.string().max(255).nullable().optional(),
+    imo_id: z.string().uuid().nullable().optional(),
+    agency_id: z.string().uuid().nullable().optional(),
+    roles: z.array(z.string().min(1)).max(10).optional(),
+    is_admin: z.boolean().optional(),
+    license_number: z.string().max(100).nullable().optional(),
+    npn: z.string().max(100).nullable().optional(),
+  })
+  .strict();
+
+const createAuthUserRequestSchema = z
+  .object({
+    email: z.string().email(),
+    fullName: z.string().max(255).optional().default(""),
+    roles: z.array(z.string().min(1)).max(10).optional().default(["recruit"]),
+    isAdmin: z.boolean().optional().default(false),
+    skipPipeline: z.boolean().optional().default(false),
+    phone: z.string().max(50).nullable().optional(),
+    profileData: profileDataSchema.optional(),
+    existingProfileId: z.string().uuid().optional(),
+    password: z.string().optional(),
+  })
+  .strict();
+
+type CallerContext = {
+  userId: string;
+  roles: string[];
+  isAdmin: boolean;
+  imoId: string | null;
+  agencyId: string | null;
+  canManageUsers: boolean;
+  canCreateRecruits: boolean;
+};
+
+type ProfileData = z.infer<typeof profileDataSchema>;
+type CreateAuthUserRequest = z.infer<typeof createAuthUserRequestSchema>;
+
+function jsonResponse(status: number, payload: Record<string, unknown>) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+function maskEmail(email: string) {
+  const [localPart, domain = ""] = email.split("@");
+  if (!localPart) return "***";
+  if (localPart.length <= 2) {
+    return `${localPart[0] ?? "*"}***@${domain}`;
+  }
+  return `${localPart.slice(0, 2)}***@${domain}`;
+}
+
+function maskPhone(phoneNumber: string) {
+  const digits = phoneNumber.replace(/\D/g, "");
+  if (digits.length < 4) return "***";
+  return `***${digits.slice(-4)}`;
+}
+
+function normalizeRoles(roles: string[]) {
+  return [
+    ...new Set(roles.map((role) => role.trim().toLowerCase()).filter(Boolean)),
+  ];
+}
 
 // Helper function to send password reset email via Mailgun
 async function sendPasswordResetEmail(
@@ -146,7 +263,7 @@ async function sendSmsNotification(
   if (cleanPhone.length < 10) {
     console.log(
       "[create-auth-user] SMS skipped - Invalid phone number:",
-      phoneNumber,
+      maskPhone(phoneNumber),
     );
     return { success: false, error: "Invalid phone number" };
   }
@@ -180,7 +297,10 @@ async function sendSmsNotification(
       return { success: false, error: `Twilio API error: ${response.status}` };
     }
 
-    console.log("[create-auth-user] SMS sent successfully to:", formattedPhone);
+    console.log(
+      "[create-auth-user] SMS sent successfully to:",
+      maskPhone(formattedPhone),
+    );
     return { success: true };
   } catch (err) {
     console.error("[create-auth-user] SMS send error:", err);
@@ -189,6 +309,227 @@ async function sendSmsNotification(
       error: err instanceof Error ? err.message : "Unknown error",
     };
   }
+}
+
+async function hasAnyPermission(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  userId: string,
+  permissionCodes: string[],
+) {
+  for (const permissionCode of permissionCodes) {
+    const { data, error } = await supabaseAdmin.rpc("has_permission", {
+      target_user_id: userId,
+      permission_code: permissionCode,
+    });
+
+    if (error) {
+      console.warn("[create-auth-user] Permission check failed:", {
+        userId,
+        permissionCode,
+        error: error.message,
+      });
+      continue;
+    }
+
+    if (data === true) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+async function resolveAssignableUpline(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  caller: CallerContext,
+  requestedUplineId: string | null | undefined,
+) {
+  if (!requestedUplineId) {
+    return caller.userId;
+  }
+
+  if (caller.canManageUsers) {
+    return requestedUplineId;
+  }
+
+  const { data: uplineProfile, error } = await supabaseAdmin
+    .from("user_profiles")
+    .select("id, roles, is_admin, imo_id")
+    .eq("id", requestedUplineId)
+    .maybeSingle();
+
+  if (error || !uplineProfile) {
+    return null;
+  }
+
+  const uplineRoles = Array.isArray(uplineProfile.roles)
+    ? uplineProfile.roles
+    : [];
+
+  const isAssignable =
+    uplineProfile.imo_id === caller.imoId &&
+    (uplineProfile.is_admin === true ||
+      uplineRoles.some((role) => UPLINE_ROLE_ALLOWLIST.has(role)));
+
+  return isAssignable ? uplineProfile.id : null;
+}
+
+async function resolveAssignablePipelineTemplate(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  caller: CallerContext,
+  pipelineTemplateId: string | null | undefined,
+) {
+  if (!pipelineTemplateId || caller.canManageUsers) {
+    return pipelineTemplateId ?? null;
+  }
+
+  const { data: template, error } = await supabaseAdmin
+    .from("pipeline_templates")
+    .select("id, imo_id, is_active")
+    .eq("id", pipelineTemplateId)
+    .maybeSingle();
+
+  if (error || !template) {
+    return null;
+  }
+
+  return template.is_active === true && template.imo_id === caller.imoId
+    ? template.id
+    : null;
+}
+
+async function validateExistingProfileId(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  caller: CallerContext,
+  existingProfileId: string,
+  normalizedEmail: string,
+) {
+  const { data: existingProfile, error } = await supabaseAdmin
+    .from("user_profiles")
+    .select("id, email, recruiter_id, upline_id, imo_id, roles")
+    .eq("id", existingProfileId)
+    .maybeSingle();
+
+  if (error || !existingProfile) {
+    return false;
+  }
+
+  const existingEmail = existingProfile.email?.toLowerCase().trim();
+  if (existingEmail !== normalizedEmail) {
+    return false;
+  }
+
+  if (caller.canManageUsers) {
+    return true;
+  }
+
+  const existingRoles = Array.isArray(existingProfile.roles)
+    ? existingProfile.roles
+    : [];
+
+  return (
+    existingProfile.imo_id === caller.imoId &&
+    existingRoles.includes("recruit") &&
+    (existingProfile.recruiter_id === caller.userId ||
+      existingProfile.upline_id === caller.userId)
+  );
+}
+
+async function authorizeInternalCaller(
+  req: Request,
+  supabaseAdmin: ReturnType<typeof createClient>,
+): Promise<
+  | {
+      ok: true;
+      caller: CallerContext;
+    }
+  | {
+      ok: false;
+      response: Response;
+    }
+> {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return {
+      ok: false,
+      response: jsonResponse(401, { error: "Unauthorized" }),
+    };
+  }
+
+  const {
+    data: { user },
+    error: authError,
+  } = await supabaseAdmin.auth.getUser(authHeader.slice(7));
+
+  if (authError || !user) {
+    return {
+      ok: false,
+      response: jsonResponse(401, { error: "Unauthorized" }),
+    };
+  }
+
+  const { data: callerProfile, error: profileError } = await supabaseAdmin
+    .from("user_profiles")
+    .select("roles, is_admin, imo_id, agency_id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (profileError) {
+    console.error("[create-auth-user] Failed to load caller profile:", {
+      userId: user.id,
+      error: profileError,
+    });
+    return {
+      ok: false,
+      response: jsonResponse(500, { error: "Failed to validate caller" }),
+    };
+  }
+
+  const callerRoles = Array.isArray(callerProfile?.roles)
+    ? callerProfile.roles
+    : [];
+
+  const hasAllowedRole =
+    callerProfile?.is_admin === true ||
+    callerRoles.some((role) => INTERNAL_ROLE_ALLOWLIST.has(role));
+
+  const canManageUsers =
+    callerProfile?.is_admin === true ||
+    callerRoles.includes("admin") ||
+    (await hasAnyPermission(
+      supabaseAdmin,
+      user.id,
+      USER_MANAGEMENT_PERMISSION_CODES,
+    ));
+
+  const canCreateRecruits =
+    canManageUsers ||
+    hasAllowedRole ||
+    (await hasAnyPermission(
+      supabaseAdmin,
+      user.id,
+      RECRUITING_PERMISSION_CODES,
+    ));
+
+  if (!canCreateRecruits) {
+    return {
+      ok: false,
+      response: jsonResponse(403, { error: "Forbidden" }),
+    };
+  }
+
+  return {
+    ok: true,
+    caller: {
+      userId: user.id,
+      roles: callerRoles,
+      isAdmin: callerProfile?.is_admin === true,
+      imoId: callerProfile?.imo_id ?? null,
+      agencyId: callerProfile?.agency_id ?? null,
+      canManageUsers,
+      canCreateRecruits,
+    },
+  };
 }
 
 serve(async (req) => {
@@ -209,103 +550,147 @@ serve(async (req) => {
       },
     );
 
+    const callerResult = await authorizeInternalCaller(req, supabaseAdmin);
+    if (!callerResult.ok) {
+      return callerResult.response;
+    }
+
+    const rawBody = await req.json();
+    const parsedRequest = createAuthUserRequestSchema.safeParse(rawBody);
+
+    if (!parsedRequest.success) {
+      return jsonResponse(400, {
+        error: "Invalid request payload",
+        details: parsedRequest.error.flatten(),
+      });
+    }
+
     const {
       email,
       fullName,
       roles,
       isAdmin,
       skipPipeline,
-      profileId: _profileId,
       phone,
       profileData,
-      // If an existing user_profiles record was already created (e.g., from registration form),
-      // pass its ID here so the auth user is created with the same ID
       existingProfileId,
-      // If password is provided, use it directly (for self-registration)
-      // and skip the password reset email
       password: providedPassword,
-    } = await req.json();
+    }: CreateAuthUserRequest = parsedRequest.data;
 
-    if (!email) {
-      throw new Error("Email is required");
+    if (providedPassword) {
+      return jsonResponse(400, {
+        error:
+          "Direct password creation is not allowed on create-auth-user. Use complete-recruit-registration instead.",
+      });
     }
 
     // Normalize email to lowercase for consistent checking
     const normalizedEmail = email.toLowerCase().trim();
+    const requestedRoles = normalizeRoles(roles);
 
-    // First, check if user already exists
-    const { data: existingUsers, error: listError } =
-      await supabaseAdmin.auth.admin.listUsers();
+    if (
+      !callerResult.caller.canManageUsers &&
+      (isAdmin === true ||
+        skipPipeline === true ||
+        requestedRoles.some((role) => role !== "recruit"))
+    ) {
+      return jsonResponse(403, {
+        error:
+          "Recruit creation is limited to pipeline recruits for this account.",
+      });
+    }
 
-    if (listError) {
-      console.error("[create-auth-user] Failed to list users:", listError);
-    } else {
-      const existingUser = existingUsers?.users?.find(
-        (u) => u.email?.toLowerCase() === normalizedEmail,
+    const effectiveRoles =
+      callerResult.caller.canManageUsers && requestedRoles.length > 0
+        ? requestedRoles
+        : ["recruit"];
+    const effectiveIsAdmin =
+      callerResult.caller.canManageUsers && isAdmin === true;
+    const effectiveSkipPipeline =
+      callerResult.caller.canManageUsers && skipPipeline === true;
+
+    let sanitizedProfileData: ProfileData | undefined = profileData
+      ? { ...profileData }
+      : undefined;
+
+    if (sanitizedProfileData) {
+      const resolvedUplineId = await resolveAssignableUpline(
+        supabaseAdmin,
+        callerResult.caller,
+        sanitizedProfileData.upline_id,
       );
-      if (existingUser) {
-        console.log(
-          "[create-auth-user] User already exists, updating profile:",
-          { email: normalizedEmail, userId: existingUser.id },
-        );
 
-        // User exists - still update their profile with any new data (like upline_id)
-        let existingProfile = null;
-        if (profileData) {
-          const { data: updatedProfile, error: profileError } =
-            await supabaseAdmin
-              .from("user_profiles")
-              .update(profileData)
-              .eq("id", existingUser.id)
-              .select()
-              .single();
+      if (
+        sanitizedProfileData.upline_id !== undefined &&
+        resolvedUplineId === null
+      ) {
+        return jsonResponse(403, {
+          error: "The requested upline assignment is not allowed.",
+        });
+      }
 
-          if (profileError) {
-            console.error(
-              "[create-auth-user] Profile update failed for existing user:",
-              profileError,
-            );
-          } else {
-            existingProfile = updatedProfile;
-            console.log(
-              "[create-auth-user] Profile updated for existing user:",
-              {
-                userId: existingUser.id,
-                upline_id: existingProfile?.upline_id,
-              },
-            );
-          }
-        }
+      const resolvedTemplateId = await resolveAssignablePipelineTemplate(
+        supabaseAdmin,
+        callerResult.caller,
+        sanitizedProfileData.pipeline_template_id,
+      );
 
-        return new Response(
-          JSON.stringify({
-            user: existingUser,
-            profile: existingProfile,
-            message: "User already exists - profile updated",
-            emailSent: false,
-            alreadyExists: true,
-          }),
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-          },
-        );
+      if (
+        sanitizedProfileData.pipeline_template_id !== undefined &&
+        resolvedTemplateId === null
+      ) {
+        return jsonResponse(403, {
+          error: "The requested pipeline template is not allowed.",
+        });
+      }
+
+      sanitizedProfileData = {
+        ...sanitizedProfileData,
+        roles: effectiveRoles,
+        is_admin: effectiveIsAdmin,
+        upline_id:
+          resolvedUplineId ??
+          sanitizedProfileData.upline_id ??
+          callerResult.caller.userId,
+        pipeline_template_id: resolvedTemplateId,
+      };
+
+      if (!callerResult.caller.canManageUsers) {
+        sanitizedProfileData = {
+          ...sanitizedProfileData,
+          recruiter_id: callerResult.caller.userId,
+          imo_id: callerResult.caller.imoId,
+          agency_id: callerResult.caller.agencyId,
+          approval_status: "pending",
+          onboarding_status:
+            sanitizedProfileData.onboarding_status ?? "prospect",
+          current_onboarding_phase:
+            sanitizedProfileData.current_onboarding_phase ?? "prospect",
+          onboarding_started_at:
+            sanitizedProfileData.onboarding_started_at ?? null,
+        };
       }
     }
 
-    // Use provided password (from self-registration) or generate a temp one
-    const userPassword =
-      providedPassword || crypto.randomUUID() + crypto.randomUUID();
-    const isDirectPassword = !!providedPassword;
+    if (existingProfileId) {
+      const isExistingProfileAllowed = await validateExistingProfileId(
+        supabaseAdmin,
+        callerResult.caller,
+        existingProfileId,
+        normalizedEmail,
+      );
 
-    console.log(
-      "[create-auth-user] Password mode:",
-      isDirectPassword ? "user-provided" : "temp-generated",
-    );
+      if (!isExistingProfileAllowed) {
+        return jsonResponse(403, {
+          error: "The existing profile ID is not allowed for this request.",
+        });
+      }
+    }
 
-    // Create user with email_confirm=true (pre-confirmed)
-    // If password provided directly (self-registration), use it; otherwise use temp password
-    // If existingProfileId is provided, use it as the auth user's ID to match user_profiles
+    const userPassword = crypto.randomUUID() + crypto.randomUUID();
+
+    // Create user with email_confirm=true and a generated temporary password.
+    // Internal flows always direct the user to the password-reset link.
     const createUserParams: Parameters<
       typeof supabaseAdmin.auth.admin.createUser
     >[0] = {
@@ -314,9 +699,9 @@ serve(async (req) => {
       email_confirm: true, // Pre-confirm email - user can log in immediately
       user_metadata: {
         full_name: fullName,
-        roles: roles || [],
-        is_admin: isAdmin || false,
-        skip_pipeline: skipPipeline || false,
+        roles: effectiveRoles,
+        is_admin: effectiveIsAdmin,
+        skip_pipeline: effectiveSkipPipeline,
       },
     };
 
@@ -341,23 +726,16 @@ serve(async (req) => {
         errorMsg.includes("already exists") ||
         errorMsg.includes("duplicate")
       ) {
-        // User already exists - handle as success (race condition)
-        console.log(
-          "[create-auth-user] Duplicate detected during create, treating as success:",
-          { email: normalizedEmail },
-        );
-        return new Response(
-          JSON.stringify({
-            user: null,
-            message: "User already exists (detected during create)",
-            emailSent: false,
-            alreadyExists: true,
-          }),
-          {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-          },
-        );
+        console.log("[create-auth-user] Duplicate detected during create:", {
+          email: maskEmail(normalizedEmail),
+          callerUserId: callerResult.caller.userId,
+        });
+        return jsonResponse(200, {
+          user: null,
+          message: "User already exists",
+          emailSent: false,
+          alreadyExists: true,
+        });
       }
       throw authError;
     }
@@ -369,21 +747,21 @@ serve(async (req) => {
     // Update the profile with additional data if provided (using service role to bypass RLS)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let profile: any = null;
-    if (authUser.user && profileData) {
+    if (authUser.user && sanitizedProfileData) {
       // Small delay to ensure trigger has completed
       await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Debug: Log what we're about to update
       console.log("[create-auth-user] Updating profile with data:", {
         userId: authUser.user.id,
-        upline_id: profileData.upline_id,
-        imo_id: profileData.imo_id,
-        keys: Object.keys(profileData),
+        upline_id: sanitizedProfileData.upline_id,
+        imo_id: sanitizedProfileData.imo_id,
+        keys: Object.keys(sanitizedProfileData),
       });
 
       const { data: updatedProfile, error: profileError } = await supabaseAdmin
         .from("user_profiles")
-        .update(profileData)
+        .update(sanitizedProfileData)
         .eq("id", authUser.user.id)
         .select()
         .single();
@@ -394,8 +772,8 @@ serve(async (req) => {
           JSON.stringify(profileError),
         );
         console.error(
-          "[create-auth-user] ProfileData that failed:",
-          JSON.stringify(profileData),
+          "[create-auth-user] Profile update keys:",
+          Object.keys(sanitizedProfileData),
         );
         // Don't throw - auth user was created, profile will have minimal data
       } else {
@@ -409,9 +787,8 @@ serve(async (req) => {
     }
 
     // Send password reset email via Mailgun ONLY if temp password was generated
-    // Skip if user provided their own password (self-registration flow)
     let emailSent = false;
-    if (authUser.user && !isDirectPassword) {
+    if (authUser.user) {
       const siteUrl =
         Deno.env.get("SITE_URL") || "https://www.thestandardhq.com";
       const MAILGUN_API_KEY = Deno.env.get("MAILGUN_API_KEY");
@@ -477,27 +854,11 @@ serve(async (req) => {
           }
         }
       }
-    } else if (authUser.user && isDirectPassword) {
-      console.log(
-        "[create-auth-user] Password provided directly - skipping reset email",
-      );
     }
 
     // Send SMS notification if phone provided
-    // Different message based on whether this is self-registration or admin-created
     let smsSent = false;
-    if (phone && isDirectPassword) {
-      // Self-registration - user already knows their password
-      const smsResult = await sendSmsNotification(
-        phone,
-        "Welcome to The Standard HQ! Your account has been created. You can now log in.",
-      );
-      smsSent = smsResult.success;
-      console.log("[create-auth-user] SMS result:", {
-        success: smsSent,
-        error: smsResult.error || null,
-      });
-    } else if (phone && emailSent) {
+    if (phone && emailSent) {
       const smsResult = await sendSmsNotification(
         phone,
         "Welcome to The Standard HQ! Check your email to set your password. The link expires in 72 hours.",
@@ -507,59 +868,42 @@ serve(async (req) => {
         success: smsSent,
         error: smsResult.error || null,
       });
-    } else if (phone && !emailSent && !isDirectPassword) {
+    } else if (phone && !emailSent) {
       console.log("[create-auth-user] SMS skipped - email was not sent");
     }
 
     // Log final status
     console.log("[create-auth-user] Complete:", {
       userId: authUser.user?.id,
-      email: normalizedEmail,
+      email: maskEmail(normalizedEmail),
       emailSent,
       smsSent,
-      directPassword: isDirectPassword,
+      callerUserId: callerResult.caller.userId,
     });
 
-    // Build response message based on creation mode
-    let message = "User created successfully.";
-    if (isDirectPassword) {
-      message =
-        "User created successfully. User can now log in with their password.";
-    } else if (emailSent) {
-      message = "User created successfully. Password reset email sent.";
-    } else {
-      message =
-        "User created but email could not be sent. Check edge function logs.";
-    }
+    const message = emailSent
+      ? "User created successfully. Password reset email sent."
+      : "User created but email could not be sent. Check edge function logs.";
 
-    return new Response(
-      JSON.stringify({
-        user: authUser.user,
-        profile, // Include the updated profile (or null if profileData wasn't provided)
-        profileUpdateError: profile
-          ? null
-          : "Profile update may have failed - check logs",
-        message,
-        emailSent,
-        smsSent,
-        directPassword: isDirectPassword,
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      },
-    );
+    return jsonResponse(200, {
+      user: authUser.user,
+      profile, // Include the updated profile (or null if profileData wasn't provided)
+      profileUpdateError: profile
+        ? null
+        : "Profile update may have failed - check logs",
+      message,
+      emailSent,
+      smsSent,
+    });
   } catch (error) {
     console.error("Error in create-auth-user function:", error);
-    return new Response(
-      JSON.stringify({
-        error: error.message || "Failed to create user",
-        details: error.toString(),
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 400,
-      },
-    );
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to create user";
+    const errorDetails =
+      error instanceof Error ? error.toString() : String(error);
+    return jsonResponse(400, {
+      error: errorMessage,
+      details: errorDetails,
+    });
   }
 });

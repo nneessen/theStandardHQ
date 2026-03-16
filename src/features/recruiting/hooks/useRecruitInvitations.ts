@@ -383,7 +383,7 @@ export function useInvitationByToken(token: string | undefined) {
 
 /**
  * Submits registration with password - for public registration page
- * Creates auth account with password, then updates profile via RPC
+ * Completes invite validation + auth/profile creation in a single edge flow
  */
 export function useSubmitRegistrationWithPassword() {
   return useMutation({
