@@ -44,6 +44,7 @@ export const recruitingService = {
     const {
       skip_pipeline,
       pipeline_template_id: explicitTemplateId,
+      email: _email,
       ...dbFields
     } = recruit;
 
