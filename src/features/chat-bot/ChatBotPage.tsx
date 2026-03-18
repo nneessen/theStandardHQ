@@ -323,7 +323,7 @@ export function ChatBotPage() {
             currentTierId={currentTierId}
             onPlanActivated={handlePlanActivated}
             isTeamMember={isTeamMember}
-            isBillingExempt={agent?.billingExempt}
+            isBillingExempt={agent?.billingExempt === true}
           />
         )}
 
@@ -358,11 +358,12 @@ export function ChatBotPage() {
                   <Bot className="h-5 w-5 text-indigo-500" />
                 </div>
                 <h3 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
-                  Activate Your Team Bot
+                  Load Your Team Bot
                 </h3>
                 <p className="text-[11px] text-zinc-500 dark:text-zinc-400 text-center max-w-xs mb-4">
-                  As a team member, you get free access to the AI Chat Bot with
-                  no lead limits. Click below to get started.
+                  Free team access is available for your account. If you already
+                  have a configured bot, this reconnects it instead of creating
+                  a duplicate.
                 </p>
                 <Button
                   size="sm"
@@ -383,9 +384,7 @@ export function ChatBotPage() {
                   ) : (
                     <Bot className="h-3.5 w-3.5 mr-1.5" />
                   )}
-                  {provisionTeamBot.isPending
-                    ? "Activating..."
-                    : "Activate Free Team Bot"}
+                  {provisionTeamBot.isPending ? "Loading..." : "Load Team Bot"}
                 </Button>
               </div>
             ) : isServiceError ? (

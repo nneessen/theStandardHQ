@@ -5,6 +5,10 @@ import type { ReactNode } from "react";
 
 vi.mock("@/services/base/supabase", () => ({
   supabase: {
+    auth: {
+      getSession: vi.fn(),
+      refreshSession: vi.fn(),
+    },
     functions: {
       invoke: vi.fn(),
     },
@@ -32,6 +36,21 @@ describe("useIsOnExemptTeam", () => {
       },
     });
     vi.clearAllMocks();
+    vi.mocked(supabase.auth.getSession).mockResolvedValue({
+      data: {
+        session: {
+          access_token: "test-access-token",
+        },
+      },
+      error: null,
+    } as Awaited<ReturnType<typeof supabase.auth.getSession>>);
+    vi.mocked(supabase.auth.refreshSession).mockResolvedValue({
+      data: {
+        session: null,
+        user: null,
+      },
+      error: null,
+    } as Awaited<ReturnType<typeof supabase.auth.refreshSession>>);
   });
 
   const wrapper = ({ children }: { children: ReactNode }) => (
@@ -55,6 +74,7 @@ describe("useIsOnExemptTeam", () => {
 
     expect(result.current.data).toBe(true);
     expect(supabase.functions.invoke).toHaveBeenCalledWith("chat-bot-api", {
+      headers: { Authorization: "Bearer test-access-token" },
       body: { action: "get_team_access" },
     });
   });

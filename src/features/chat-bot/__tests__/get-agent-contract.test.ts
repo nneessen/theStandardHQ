@@ -22,11 +22,13 @@ function transformGetAgentResponse(
     botEnabled: agentData.botEnabled ?? false,
     timezone: agentData.timezone ?? "America/New_York",
     isActive: agentData.isActive ?? true,
+    billingExempt: agentData.billingExempt ?? false,
     createdAt: agentData.createdAt,
     autoOutreachLeadSources: agentData.autoOutreachLeadSources || [],
     allowedLeadStatuses: agentData.allowedLeadStatuses || [],
     calendlyEventTypeSlug: agentData.calendlyEventTypeSlug || null,
     leadSourceEventTypeMappings: agentData.leadSourceEventTypeMappings || [],
+    responseSchedule: agentData.responseSchedule || null,
     connections: {
       close: closeConn
         ? { connected: true, orgName: closeConn.orgId || undefined }
@@ -45,6 +47,7 @@ describe("get_agent contract", () => {
     botEnabled: true,
     timezone: "America/Chicago",
     isActive: true,
+    billingExempt: true,
     createdAt: "2026-01-01T00:00:00Z",
     autoOutreachLeadSources: ["Sitka Life"],
     allowedLeadStatuses: ["Potential"],
@@ -56,6 +59,18 @@ describe("get_agent contract", () => {
         eventTypeSlug: "veteran-benefits",
       },
     ],
+    responseSchedule: {
+      days: [
+        {
+          day: 6,
+          responsesEnabled: true,
+          responseStartTime: "09:00",
+          responseEndTime: "17:00",
+          sameDayBookingEnabled: true,
+          sameDayBookingCutoffTime: "15:00",
+        },
+      ],
+    },
   };
 
   it("includes leadSourceEventTypeMappings in the response", () => {
@@ -83,6 +98,33 @@ describe("get_agent contract", () => {
     expect(response.calendlyEventTypeSlug).toBe("mortgage-protection");
   });
 
+  it("includes billingExempt in the response", () => {
+    const response = transformGetAgentResponse(mockAgentData);
+    expect(response.billingExempt).toBe(true);
+  });
+
+  it("defaults billingExempt to false when missing from API", () => {
+    const { billingExempt: _, ...agentWithoutBillingExempt } = mockAgentData;
+    const response = transformGetAgentResponse(agentWithoutBillingExempt);
+    expect(response.billingExempt).toBe(false);
+  });
+
+  it("includes responseSchedule in the response", () => {
+    const response = transformGetAgentResponse(mockAgentData);
+    expect(response.responseSchedule).toEqual({
+      days: [
+        {
+          day: 6,
+          responsesEnabled: true,
+          responseStartTime: "09:00",
+          responseEndTime: "17:00",
+          sameDayBookingEnabled: true,
+          sameDayBookingCutoffTime: "15:00",
+        },
+      ],
+    });
+  });
+
   it("returns all required fields for ChatBotAgent type", () => {
     const response = transformGetAgentResponse(
       mockAgentData,
@@ -96,11 +138,13 @@ describe("get_agent contract", () => {
     expect(response).toHaveProperty("botEnabled");
     expect(response).toHaveProperty("timezone");
     expect(response).toHaveProperty("isActive");
+    expect(response).toHaveProperty("billingExempt");
     expect(response).toHaveProperty("createdAt");
     expect(response).toHaveProperty("autoOutreachLeadSources");
     expect(response).toHaveProperty("allowedLeadStatuses");
     expect(response).toHaveProperty("calendlyEventTypeSlug");
     expect(response).toHaveProperty("leadSourceEventTypeMappings");
+    expect(response).toHaveProperty("responseSchedule");
     expect(response).toHaveProperty("connections");
 
     // Connection sub-shapes

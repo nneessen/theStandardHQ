@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import type { AgentMonitoringResponse } from "@/types/chat-bot-monitoring";
 
 import { useAuth } from "@/contexts/AuthContext";
+import type { ResponseSchedule } from "../lib/response-schedule";
 
 // ─── Query Key Factory ──────────────────────────────────────────
 
@@ -58,6 +59,7 @@ export interface ChatBotAgent {
   website?: string | null;
   location?: string | null;
   businessHours?: { days: number[]; startTime: string; endTime: string } | null;
+  responseSchedule?: ResponseSchedule | null;
   remindersEnabled?: boolean;
   billingExempt?: boolean;
   dailyMessageLimit?: number | null;
@@ -167,7 +169,20 @@ export async function chatBotApi<T>(
   action: string,
   params?: Record<string, unknown>,
 ): Promise<T> {
+  let accessToken: string | undefined = (await supabase.auth.getSession()).data
+    .session?.access_token;
+
+  if (!accessToken) {
+    const {
+      data: { session },
+    } = await supabase.auth.refreshSession();
+    accessToken = session?.access_token;
+  }
+
   const { data, error } = await supabase.functions.invoke("chat-bot-api", {
+    headers: accessToken
+      ? { Authorization: `Bearer ${accessToken}` }
+      : undefined,
     body: { action, ...params },
   });
 
@@ -236,6 +251,7 @@ export async function chatBotApi<T>(
 // ─── Queries ────────────────────────────────────────────────────
 
 export function useChatBotAgent(enabled = true) {
+  const { user, loading } = useAuth();
   return useQuery<ChatBotAgent | null, ChatBotApiError>({
     queryKey: chatBotKeys.agent(),
     queryFn: async () => {
@@ -253,7 +269,7 @@ export function useChatBotAgent(enabled = true) {
         throw err;
       }
     },
-    enabled,
+    enabled: enabled && !!user?.id && !loading,
     staleTime: 60_000,
     retry: (failureCount, error) => {
       // Never retry if not provisioned or function missing
@@ -273,12 +289,12 @@ export function useChatBotAgent(enabled = true) {
  * upline with billing_exempt = true.
  */
 export function useIsOnExemptTeam() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   return useQuery<boolean>({
     queryKey: chatBotKeys.teamAccess(user?.id),
     queryFn: async () =>
       (await chatBotApi<TeamAccessResponse>("get_team_access")).hasTeamAccess,
-    enabled: !!user?.id,
+    enabled: !!user?.id && !loading,
     staleTime: 300_000, // 5 min — team structure rarely changes
   });
 }
@@ -528,6 +544,7 @@ export function useUpdateBotConfig() {
       website?: string | null;
       location?: string | null;
       remindersEnabled?: boolean;
+      responseSchedule?: ResponseSchedule | null;
       dailyMessageLimit?: number | null;
       maxMessagesPerConversation?: number | null;
     }) => chatBotApi<{ success: boolean }>("update_config", config),
@@ -563,7 +580,7 @@ export function useProvisionTeamBot() {
     mutationFn: () =>
       chatBotApi<{ success: boolean; agentId: string }>("team_provision"),
     onSuccess: () => {
-      toast.success("Team bot activated! Let's configure your bot.");
+      toast.success("Bot access ready. Loading your bot.");
       queryClient.invalidateQueries({ queryKey: chatBotKeys.all });
     },
     onError: (error: Error) => {

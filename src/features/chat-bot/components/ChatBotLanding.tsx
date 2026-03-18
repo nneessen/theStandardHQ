@@ -334,8 +334,8 @@ export function ChatBotLanding({
                       Team Access — Free
                     </h3>
                     <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                      Unlimited leads, no billing — included with your team
-                      membership.
+                      Unlimited leads, no billing. If you already have a bot,
+                      this reconnects it instead of creating a duplicate.
                     </p>
                   </div>
                 </div>
@@ -358,7 +358,7 @@ export function ChatBotLanding({
                     {provisionTeamBot.isPending ? (
                       <Loader2 className="h-3 w-3 animate-spin mr-1" />
                     ) : null}
-                    Activate Bot
+                    {provisionTeamBot.isPending ? "Loading..." : "Load Bot"}
                   </Button>
                 )}
               </div>

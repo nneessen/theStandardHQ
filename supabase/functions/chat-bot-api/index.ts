@@ -108,17 +108,22 @@ async function getTeamAccessStatus(
     first_name: string | null;
     last_name: string | null;
     hierarchy_path: string | null;
+    is_super_admin: boolean | null;
   } | null;
   isOnExemptTeam: boolean;
 }> {
   const { data: profile } = await supabase
     .from("user_profiles")
-    .select("first_name, last_name, hierarchy_path")
+    .select("first_name, last_name, hierarchy_path, is_super_admin")
     .eq("id", userId)
     .maybeSingle();
 
   if (!profile) {
     return { profile: null, isOnExemptTeam: false };
+  }
+
+  if (profile.is_super_admin === true) {
+    return { profile, isOnExemptTeam: true };
   }
 
   const hierarchyPath = profile.hierarchy_path || userId;
@@ -213,46 +218,39 @@ serve(async (req) => {
         .maybeSingle();
 
       if (existing?.provisioning_status === "active") {
-        if (!existing.billing_exempt) {
-          const upgradeRes = await callChatBotApi(
-            "PATCH",
-            `/api/external/agents/${existing.external_agent_id}`,
-            { billingExempt: true },
+        const upgradeRes = await callChatBotApi(
+          "PATCH",
+          `/api/external/agents/${existing.external_agent_id}`,
+          { billingExempt: true },
+        );
+
+        if (!upgradeRes.ok) {
+          console.error(
+            `[chat-bot-api] Failed to sync billing-exempt access for agent ${existing.external_agent_id} and user ${user.id}:`,
+            upgradeRes.data,
           );
-
-          if (!upgradeRes.ok) {
-            console.error(
-              `[chat-bot-api] Failed to upgrade agent ${existing.external_agent_id} to billing-exempt for user ${user.id}:`,
-              upgradeRes.data,
-            );
-            return jsonResponse(
-              {
-                error: "Failed to enable team access for existing bot",
-                details: upgradeRes.data,
-              },
-              safeStatus(upgradeRes.status),
-            );
-          }
-
-          await supabase
-            .from("chat_bot_agents")
-            .update({
-              billing_exempt: true,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", existing.id);
-
-          return jsonResponse({
-            success: true,
-            agentId: existing.external_agent_id,
-            upgradedToTeamAccess: true,
-          });
+          return jsonResponse(
+            {
+              error: "Failed to enable team access for existing bot",
+              details: upgradeRes.data,
+            },
+            safeStatus(upgradeRes.status),
+          );
         }
+
+        await supabase
+          .from("chat_bot_agents")
+          .update({
+            billing_exempt: true,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", existing.id);
 
         return jsonResponse({
           success: true,
           agentId: existing.external_agent_id,
           alreadyProvisioned: true,
+          upgradedToTeamAccess: existing.billing_exempt !== true,
         });
       }
 
@@ -319,7 +317,7 @@ serve(async (req) => {
     // Look up active chat bot agent for this user
     const { data: agent } = await supabase
       .from("chat_bot_agents")
-      .select("external_agent_id, provisioning_status")
+      .select("external_agent_id, provisioning_status, billing_exempt")
       .eq("user_id", user.id)
       .eq("provisioning_status", "active")
       .maybeSingle();
@@ -329,6 +327,7 @@ serve(async (req) => {
     }
 
     const agentId = agent.external_agent_id;
+    const localBillingExempt = agent.billing_exempt === true;
 
     switch (action) {
       // ──────────────────────────────────────────────
@@ -362,8 +361,28 @@ serve(async (req) => {
           );
         }
 
+        const { isOnExemptTeam } = await getTeamAccessStatus(supabase, user.id);
+        const effectiveUnlimitedAccess = localBillingExempt || isOnExemptTeam;
+
         // Transform: flatten agent + reshape connections
-        const agentData = payload.agent || {};
+        const agentData = { ...(payload.agent || {}) };
+        if (effectiveUnlimitedAccess && agentData.billingExempt !== true) {
+          const syncRes = await callChatBotApi(
+            "PATCH",
+            `/api/external/agents/${agentId}`,
+            { billingExempt: true },
+          );
+
+          if (!syncRes.ok) {
+            console.warn(
+              `[chat-bot-api] Failed to re-sync billing-exempt access for agent ${agentId} and user ${user.id}:`,
+              syncRes.data,
+            );
+          } else {
+            agentData.billingExempt = true;
+          }
+        }
+
         const closeConn = payload.connections?.close;
         const calendlyConn = payload.connections?.calendly;
         const googleConn = payload.connections?.google;
@@ -390,8 +409,10 @@ serve(async (req) => {
           website: agentData.website || null,
           location: agentData.location || null,
           businessHours: agentData.businessHours || null,
+          responseSchedule: agentData.responseSchedule || null,
           remindersEnabled: agentData.remindersEnabled ?? false,
-          billingExempt: agentData.billingExempt ?? false,
+          billingExempt:
+            agentData.billingExempt === true || effectiveUnlimitedAccess,
           dailyMessageLimit: agentData.dailyMessageLimit ?? null,
           maxMessagesPerConversation:
             agentData.maxMessagesPerConversation ?? null,
