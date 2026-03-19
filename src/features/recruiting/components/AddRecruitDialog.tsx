@@ -28,7 +28,6 @@ import {
   useCreateRecruit,
   useCheckEmailExists,
 } from "../hooks/useRecruitMutations";
-import { useInitializeRecruitProgress } from "../hooks/useRecruitProgress";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, UserPlus } from "lucide-react";
 import { UserSearchCombobox } from "@/components/shared/user-search-combobox";
@@ -38,6 +37,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
 import { US_STATES } from "@/constants/states";
 import { usePermissionCheck } from "@/hooks/permissions";
+import { buildRecruitCreateAssignmentFields } from "../utils/recruit-create-assignment";
 
 // Helper function to auto-prepend https:// to URLs
 // TODO: helper function should also not be in this file.
@@ -125,7 +125,6 @@ export function AddRecruitDialog({
   const { canAny, isAdmin } = usePermissionCheck();
   const createRecruitMutation = useCreateRecruit();
   const checkEmailMutation = useCheckEmailExists();
-  const initializeProgressMutation = useInitializeRecruitProgress();
   const [activeTab, setActiveTab] = useState("basic");
   const canManageUsers =
     isAdmin() || canAny(["nav.user_management", "users.manage"]);
@@ -194,6 +193,14 @@ export function AddRecruitDialog({
           }
         : undefined;
 
+      const assignmentFields = buildRecruitCreateAssignmentFields({
+        canManageUsers,
+        currentUserId: user.id,
+        selectedUplineId: value.upline_id,
+        imoId: user.imo_id ?? undefined,
+        agencyId: user.agency_id ?? undefined,
+      });
+
       const recruit = await createRecruitMutation.mutateAsync({
         first_name: value.first_name,
         last_name: value.last_name,
@@ -209,27 +216,11 @@ export function AddRecruitDialog({
         licensing_info,
         skip_pipeline: skipPipeline,
         is_admin: isAdminRecruit,
-        recruiter_id: user.id,
-        upline_id: value.upline_id || undefined,
+        ...assignmentFields,
         referral_source: value.referral_source || undefined,
-        imo_id: user?.imo_id ?? undefined,
-        agency_id: user?.agency_id ?? undefined,
       });
 
       if (recruit) {
-        // Initialize phase progress only if the recruit has a pipeline
-        if (recruit.pipeline_template_id) {
-          try {
-            await initializeProgressMutation.mutateAsync({
-              userId: recruit.id,
-              templateId: recruit.pipeline_template_id,
-            });
-          } catch (error) {
-            console.error("Failed to initialize recruit progress:", error);
-            // Don't block the success flow - the recruit was created
-          }
-        }
-
         // Always close dialog and reset form on successful recruit creation
         onOpenChange(false);
         form.reset();
@@ -873,29 +864,21 @@ export function AddRecruitDialog({
                 onOpenChange(false);
                 setActiveTab("basic");
               }}
-              disabled={
-                createRecruitMutation.isPending ||
-                initializeProgressMutation.isPending
-              }
+              disabled={createRecruitMutation.isPending}
             >
               Cancel
             </Button>
             <Button
               type="submit"
               className="h-6 text-[10px]"
-              disabled={
-                createRecruitMutation.isPending ||
-                initializeProgressMutation.isPending
-              }
+              disabled={createRecruitMutation.isPending}
             >
-              {(createRecruitMutation.isPending ||
-                initializeProgressMutation.isPending) && (
+              {createRecruitMutation.isPending && (
                 <Loader2 className="mr-1 h-3 w-3 animate-spin" />
               )}
-              {!(
-                createRecruitMutation.isPending ||
-                initializeProgressMutation.isPending
-              ) && <UserPlus className="mr-1 h-3 w-3" />}
+              {!createRecruitMutation.isPending && (
+                <UserPlus className="mr-1 h-3 w-3" />
+              )}
               Add Recruit
             </Button>
           </DialogFooter>

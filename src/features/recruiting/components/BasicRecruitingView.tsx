@@ -103,6 +103,7 @@ import { VALID_CONTRACT_LEVELS } from "@/lib/constants";
 import type { RecruitFilters } from "@/types/recruiting.types";
 import { TERMINAL_STATUS_COLORS } from "@/types/recruiting.types";
 import type { UserProfile } from "@/types/hierarchy.types";
+import { buildRecruitCreateAssignmentFields } from "../utils/recruit-create-assignment";
 import { Link, useSearch } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
 
@@ -1255,6 +1256,13 @@ function BasicAddRecruitDialog({
       const contractLevel = formData.contract_level
         ? parseInt(formData.contract_level, 10)
         : undefined;
+      const assignmentFields = buildRecruitCreateAssignmentFields({
+        canManageUsers: false,
+        currentUserId: user?.id,
+        selectedUplineId: user?.id,
+        imoId: user?.imo_id ?? undefined,
+        agencyId: user?.agency_id ?? undefined,
+      });
 
       await createRecruit.mutateAsync({
         first_name: formData.first_name.trim(),
@@ -1265,10 +1273,7 @@ function BasicAddRecruitDialog({
         agent_status: agentStatus,
         contract_level:
           contractLevel && !isNaN(contractLevel) ? contractLevel : undefined,
-        recruiter_id: user?.id,
-        upline_id: user?.id,
-        imo_id: user?.imo_id ?? undefined,
-        agency_id: user?.agency_id ?? undefined,
+        ...assignmentFields,
       });
 
       // Success toast is handled by the mutation's onSuccess callback
