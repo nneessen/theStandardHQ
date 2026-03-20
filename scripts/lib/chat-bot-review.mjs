@@ -144,9 +144,658 @@ function buildFinding({
   summary,
   evidence = [],
   inference = false,
+  codePath = null,
 }) {
-  return { code, severity, priority, summary, evidence, inference };
+  const finding = { code, severity, priority, summary, evidence, inference };
+  if (codePath) finding.codePath = codePath;
+  return finding;
 }
+
+// --- Utility functions for deep analysis ---
+
+function tokenize(text) {
+  if (!text) return new Set();
+  return new Set(text.toLowerCase().match(/\b\w+\b/g) || []);
+}
+
+function jaccardSimilarity(textA, textB) {
+  const setA = tokenize(textA);
+  const setB = tokenize(textB);
+  if (setA.size === 0 && setB.size === 0) return 1;
+  if (setA.size === 0 || setB.size === 0) return 0;
+  let intersection = 0;
+  for (const word of setA) {
+    if (setB.has(word)) intersection++;
+  }
+  const union = new Set([...setA, ...setB]).size;
+  return union === 0 ? 0 : intersection / union;
+}
+
+function isIntroPattern(text) {
+  if (!text) return false;
+  return /^(hi|hey|hello|good\s+(morning|afternoon|evening))\b.*\bthis is\b/i.test(text.trim());
+}
+
+function containsPriceLanguage(text) {
+  if (!text) return false;
+  return /\$\d|(?:^|\s)(premium|rate|cost|quote|price|pricing)\b/i.test(text);
+}
+
+function containsLifeInsuranceLabel(text) {
+  if (!text) return false;
+  return /life insurance/i.test(text);
+}
+
+function containsDobRequest(text) {
+  if (!text) return false;
+  return /\b(DOB|date of birth|birthday|birth date|how old|your age)\b/i.test(text);
+}
+
+function containsBookingConfirmationLanguage(text) {
+  if (!text) return false;
+  return /\b(you'?re all set|booked|confirmed|appointment is set|scheduled for you)\b/i.test(text);
+}
+
+function containsEmojiCharacters(text) {
+  if (!text) return false;
+  try {
+    return /\p{Extended_Pictographic}/u.test(text);
+  } catch {
+    return false;
+  }
+}
+
+function isTruncated(text) {
+  if (!text || text.trim().length === 0) return false;
+  const trimmed = text.trim();
+  const words = trimmed.split(/\s+/);
+  // Complete-looking short messages are not truncated
+  if (/[.!?…"')}\]]$/.test(trimmed)) return false;
+  // Common short phrases (greetings, interjections) are not truncated
+  if (words.length <= 2 && trimmed.length <= 15) return false;
+  // Ends mid-word with a very short trailing fragment (1-3 lowercase chars), no terminal punctuation
+  if (/\w$/.test(trimmed)) {
+    const lastWord = words[words.length - 1] || "";
+    if (lastWord.length <= 3 && /^[a-z]/.test(lastWord)) return true;
+  }
+  return false;
+}
+
+function containsMarkdown(text) {
+  if (!text) return false;
+  return /\*\*|##|^- /m.test(text);
+}
+
+function parseTimezoneHour(dateString, timezone) {
+  if (!dateString || !timezone) return null;
+  const date = parseDate(dateString);
+  if (!date) return null;
+  try {
+    const hour = Number(
+      new Intl.DateTimeFormat("en-US", { timeZone: timezone, hour: "numeric", hour12: false }).format(date),
+    );
+    return hour;
+  } catch {
+    return null;
+  }
+}
+
+// --- Six Analysis Passes ---
+
+function analyzeRepetition({ outboundMessages }) {
+  const findings = [];
+
+  // Repeated outbound content (Jaccard > 0.7)
+  const longOutbound = outboundMessages.filter((m) => (m.content || "").length >= 20);
+  const repeatedPairs = [];
+  for (let i = 0; i < longOutbound.length; i++) {
+    for (let j = i + 1; j < longOutbound.length; j++) {
+      if (jaccardSimilarity(longOutbound[i].content, longOutbound[j].content) > 0.7) {
+        repeatedPairs.push([longOutbound[i], longOutbound[j]]);
+      }
+    }
+  }
+  if (repeatedPairs.length > 0) {
+    findings.push(
+      buildFinding({
+        code: "repeated_outbound_content",
+        severity: "warning",
+        priority: 65,
+        summary: `${repeatedPairs.length} pair${repeatedPairs.length === 1 ? "" : "s"} of outbound messages have highly similar content (Jaccard > 0.7).`,
+        evidence: repeatedPairs.slice(0, 3).map(
+          ([a, b]) => `"${truncate(a.content, 80)}" ~ "${truncate(b.content, 80)}"`,
+        ),
+        codePath: "ai-helpers.ts > enforceReplyGuardrails()",
+      }),
+    );
+  }
+
+  // Repeated intro messages
+  const introMessages = outboundMessages.filter((m) => isIntroPattern(m.content));
+  if (introMessages.length >= 2) {
+    findings.push(
+      buildFinding({
+        code: "repeated_intro_messages",
+        severity: "warning",
+        priority: 60,
+        summary: `${introMessages.length} outbound messages match the intro pattern ("Hi/Hey X, this is...").`,
+        evidence: introMessages.slice(0, 3).map(
+          (m) => `At \`${m.createdAt}\`: "${truncate(m.content, 100)}"`,
+        ),
+        codePath: "ai-helpers.ts > stripRedundantIntro()",
+      }),
+    );
+  }
+
+  // Repeated fallback reply
+  const fallbackCounts = {};
+  for (const m of outboundMessages) {
+    if (m.fallbackKind) {
+      fallbackCounts[m.fallbackKind] = (fallbackCounts[m.fallbackKind] || 0) + 1;
+    }
+  }
+  for (const [kind, count] of Object.entries(fallbackCounts)) {
+    if (count >= 3) {
+      findings.push(
+        buildFinding({
+          code: "repeated_fallback_reply",
+          severity: "warning",
+          priority: 62,
+          summary: `Fallback kind "${kind}" used ${count} times across outbound messages.`,
+          evidence: [`\`fallbackKind="${kind}"\` appeared on ${count} outbound messages.`],
+          codePath: "ai-helpers.ts > buildNonSilentReplyFallback()",
+        }),
+      );
+    }
+  }
+
+  // Repeated qualification topic
+  const qualViolationMessages = outboundMessages.filter(
+    (m) => Array.isArray(m.guardrailViolations) && m.guardrailViolations.includes("repeated_qualification_question"),
+  );
+  if (qualViolationMessages.length >= 2) {
+    findings.push(
+      buildFinding({
+        code: "repeated_qualification_topic",
+        severity: "warning",
+        priority: 58,
+        summary: `${qualViolationMessages.length} outbound messages flagged for repeated qualification questions.`,
+        evidence: qualViolationMessages.slice(0, 3).map(
+          (m) => `At \`${m.createdAt}\`: guardrailViolations includes "repeated_qualification_question"`,
+        ),
+        codePath: "ai-helpers.ts > deriveConversationMemory()",
+      }),
+    );
+  }
+
+  return findings;
+}
+
+function analyzeMessageQuality({ outboundMessages }) {
+  const findings = [];
+
+  // Truncated messages
+  const truncatedMessages = outboundMessages.filter((m) => isTruncated(m.content));
+  for (const m of truncatedMessages) {
+    findings.push(
+      buildFinding({
+        code: "truncated_message",
+        severity: "critical",
+        priority: 78,
+        summary: `Outbound message appears truncated: "${truncate(m.content, 60)}".`,
+        evidence: [
+          `At \`${m.createdAt}\`: "${truncate(m.content, 120)}" — ends mid-word or lacks terminal punctuation.`,
+        ],
+        codePath: "CRM send path",
+      }),
+    );
+  }
+
+  // Markdown in SMS
+  const markdownMessages = outboundMessages.filter((m) => containsMarkdown(m.content));
+  if (markdownMessages.length > 0) {
+    findings.push(
+      buildFinding({
+        code: "markdown_in_sms",
+        severity: "warning",
+        priority: 42,
+        summary: `${markdownMessages.length} outbound message${markdownMessages.length === 1 ? "" : "s"} contain markdown formatting (**, ##, or list markers).`,
+        evidence: markdownMessages.slice(0, 3).map(
+          (m) => `At \`${m.createdAt}\`: "${truncate(m.content, 100)}"`,
+        ),
+        codePath: "sanitize-sms.ts > sanitizeSmsReply()",
+      }),
+    );
+  }
+
+  // Wall of text
+  const longMessages = outboundMessages.filter((m) => (m.content || "").length > 320);
+  if (longMessages.length > 0) {
+    findings.push(
+      buildFinding({
+        code: "wall_of_text",
+        severity: "warning",
+        priority: 38,
+        summary: `${longMessages.length} outbound message${longMessages.length === 1 ? "" : "s"} exceed 320 characters.`,
+        evidence: longMessages.slice(0, 3).map(
+          (m) => `At \`${m.createdAt}\`: ${(m.content || "").length} chars — "${truncate(m.content, 80)}"`,
+        ),
+        codePath: "Prompt construction",
+      }),
+    );
+  }
+
+  // Emoji in outbound
+  const emojiMessages = outboundMessages.filter((m) => containsEmojiCharacters(m.content));
+  if (emojiMessages.length > 0) {
+    findings.push(
+      buildFinding({
+        code: "emoji_in_outbound",
+        severity: "info",
+        priority: 20,
+        summary: `${emojiMessages.length} outbound message${emojiMessages.length === 1 ? "" : "s"} contain emoji characters.`,
+        evidence: emojiMessages.slice(0, 3).map(
+          (m) => `At \`${m.createdAt}\`: "${truncate(m.content, 100)}"`,
+        ),
+        codePath: "sanitize-sms.ts > sanitizeSmsReply()",
+      }),
+    );
+  }
+
+  return findings;
+}
+
+function analyzeConversationFlow({ normalizedMessages, outboundMessages, inboundMessages, agentBundle }) {
+  const findings = [];
+
+  // Outbound spam ratio
+  if (outboundMessages.length >= 5 && inboundMessages.length > 0) {
+    const ratio = outboundMessages.length / inboundMessages.length;
+    if (ratio >= 5) {
+      findings.push(
+        buildFinding({
+          code: "outbound_spam_ratio",
+          severity: "warning",
+          priority: 72,
+          summary: `Outbound-to-inbound ratio is ${ratio.toFixed(1)}:1 (${outboundMessages.length} outbound, ${inboundMessages.length} inbound).`,
+          evidence: [
+            `${outboundMessages.length} outbound vs ${inboundMessages.length} inbound messages.`,
+          ],
+          codePath: "Intro + follow-up handlers",
+        }),
+      );
+    }
+  }
+
+  // Conversation stuck — 3+ consecutive outbound with same replyCategory
+  const consecutiveRuns = [];
+  let currentRun = [];
+  for (const m of normalizedMessages) {
+    if (m.direction === "outbound" && m.replyCategory) {
+      if (currentRun.length === 0 || currentRun[0].replyCategory === m.replyCategory) {
+        currentRun.push(m);
+      } else {
+        if (currentRun.length >= 3) consecutiveRuns.push([...currentRun]);
+        currentRun = [m];
+      }
+    } else {
+      if (currentRun.length >= 3) consecutiveRuns.push([...currentRun]);
+      currentRun = [];
+    }
+  }
+  if (currentRun.length >= 3) consecutiveRuns.push([...currentRun]);
+
+  for (const run of consecutiveRuns) {
+    findings.push(
+      buildFinding({
+        code: "conversation_stuck",
+        severity: "warning",
+        priority: 55,
+        summary: `${run.length} consecutive outbound messages with replyCategory="${run[0].replyCategory}" and no inbound between them.`,
+        evidence: run.slice(0, 3).map(
+          (m) => `At \`${m.createdAt}\`: [${m.replyCategory}] "${truncate(m.content, 80)}"`,
+        ),
+        codePath: "ai-reply.ts > handleAiReply()",
+      }),
+    );
+  }
+
+  // Response gap — inbound→outbound gap > 10 min, or no outbound before next inbound
+  for (let i = 0; i < normalizedMessages.length; i++) {
+    const msg = normalizedMessages[i];
+    if (msg.direction !== "inbound") continue;
+    const inboundTime = parseDate(msg.createdAt)?.getTime();
+    if (!inboundTime) continue;
+
+    const nextOutbound = normalizedMessages.slice(i + 1).find((m) => m.direction === "outbound");
+    const nextInbound = normalizedMessages.slice(i + 1).find((m) => m.direction === "inbound");
+
+    if (!nextOutbound) continue; // already caught by other checks
+    const outboundTime = parseDate(nextOutbound.createdAt)?.getTime();
+    if (!outboundTime) continue;
+
+    const gapMinutes = (outboundTime - inboundTime) / 60000;
+    const nextInboundTime = nextInbound ? parseDate(nextInbound.createdAt)?.getTime() : null;
+    const nextInboundBeforeReply = nextInboundTime && nextInboundTime < outboundTime;
+
+    if (gapMinutes > 10 || nextInboundBeforeReply) {
+      findings.push(
+        buildFinding({
+          code: "response_gap_detected",
+          severity: "warning",
+          priority: 60,
+          summary: nextInboundBeforeReply
+            ? `Lead sent another inbound before bot replied to message at \`${msg.createdAt}\`.`
+            : `${Math.round(gapMinutes)} minute response gap after inbound at \`${msg.createdAt}\`.`,
+          evidence: [
+            `Inbound at \`${msg.createdAt}\`, next outbound at \`${nextOutbound.createdAt}\` (${Math.round(gapMinutes)} min gap).`,
+          ],
+          codePath: "sms-received.handler.ts",
+        }),
+      );
+      break; // report first gap only
+    }
+  }
+
+  // After-hours send
+  const agentTimezone = agentBundle?.agent?.agent?.timezone ?? null;
+  if (agentTimezone) {
+    const afterHoursSends = outboundMessages.filter((m) => {
+      const hour = parseTimezoneHour(m.createdAt, agentTimezone);
+      return hour !== null && (hour >= 21 || hour < 8);
+    });
+    if (afterHoursSends.length > 0) {
+      findings.push(
+        buildFinding({
+          code: "after_hours_send",
+          severity: "info",
+          priority: 25,
+          summary: `${afterHoursSends.length} outbound message${afterHoursSends.length === 1 ? " was" : "s were"} sent outside 8am-9pm in agent timezone (${agentTimezone}).`,
+          evidence: afterHoursSends.slice(0, 3).map(
+            (m) => `At \`${m.createdAt}\` (${parseTimezoneHour(m.createdAt, agentTimezone)}:00 local)`,
+          ),
+          codePath: "Business hours config",
+        }),
+      );
+    }
+  }
+
+  return findings;
+}
+
+function analyzeGuardrailsAndFallbacks({ outboundMessages }) {
+  const findings = [];
+
+  if (outboundMessages.length === 0) return findings;
+
+  // All messages are fallbacks
+  const fallbackMessages = outboundMessages.filter((m) => m.fallbackKind != null);
+  if (fallbackMessages.length === outboundMessages.length && outboundMessages.length >= 2) {
+    findings.push(
+      buildFinding({
+        code: "all_messages_are_fallbacks",
+        severity: "critical",
+        priority: 82,
+        summary: `Every outbound message (${outboundMessages.length}) used a fallback reply — the AI never generated a primary response.`,
+        evidence: [
+          `Fallback kinds: ${[...new Set(fallbackMessages.map((m) => m.fallbackKind))].join(", ")}`,
+        ],
+        codePath: "ai-helpers.ts > buildNonSilentReplyFallback()",
+      }),
+    );
+  }
+
+  // High guardrail violation rate
+  const violationMessages = outboundMessages.filter(
+    (m) => Array.isArray(m.guardrailViolations) && m.guardrailViolations.length > 0,
+  );
+  const violationRate = violationMessages.length / outboundMessages.length;
+  if (violationRate > 0.5 && violationMessages.length >= 2) {
+    findings.push(
+      buildFinding({
+        code: "high_guardrail_violation_rate",
+        severity: "warning",
+        priority: 68,
+        summary: `${Math.round(violationRate * 100)}% of outbound messages triggered guardrail violations (${violationMessages.length}/${outboundMessages.length}).`,
+        evidence: violationMessages.slice(0, 3).map(
+          (m) => `At \`${m.createdAt}\`: violations=[${m.guardrailViolations.join(", ")}]`,
+        ),
+        codePath: "ai-helpers.ts > enforceReplyGuardrails()",
+      }),
+    );
+  }
+
+  // Frequent violation type
+  const violationCounts = {};
+  for (const m of outboundMessages) {
+    if (!Array.isArray(m.guardrailViolations)) continue;
+    for (const v of m.guardrailViolations) {
+      violationCounts[v] = (violationCounts[v] || 0) + 1;
+    }
+  }
+  for (const [violation, count] of Object.entries(violationCounts)) {
+    if (count >= 3) {
+      findings.push(
+        buildFinding({
+          code: "frequent_violation_type",
+          severity: "info",
+          priority: 30,
+          summary: `Guardrail violation "${violation}" triggered ${count} times.`,
+          evidence: [`"${violation}" appeared in ${count} outbound messages' guardrailViolations.`],
+          codePath: "ai-helpers.ts > enforceReplyGuardrails()",
+        }),
+      );
+    }
+  }
+
+  // False appointment confirmation detected
+  const falseConfirmations = outboundMessages.filter(
+    (m) => Array.isArray(m.guardrailViolations) && m.guardrailViolations.includes("false_appointment_confirmation"),
+  );
+  if (falseConfirmations.length > 0) {
+    findings.push(
+      buildFinding({
+        code: "false_appointment_confirmation_detected",
+        severity: "critical",
+        priority: 80,
+        summary: `${falseConfirmations.length} outbound message${falseConfirmations.length === 1 ? "" : "s"} flagged for false appointment confirmation.`,
+        evidence: falseConfirmations.slice(0, 3).map(
+          (m) => `At \`${m.createdAt}\`: "${truncate(m.content, 100)}"`,
+        ),
+        codePath: "ai-helpers.ts > containsAppointmentConfirmation()",
+      }),
+    );
+  }
+
+  // Price quote violation detected
+  const priceViolations = outboundMessages.filter(
+    (m) => Array.isArray(m.guardrailViolations) && m.guardrailViolations.includes("price_quote"),
+  );
+  if (priceViolations.length > 0) {
+    findings.push(
+      buildFinding({
+        code: "price_quote_violation_detected",
+        severity: "critical",
+        priority: 85,
+        summary: `${priceViolations.length} outbound message${priceViolations.length === 1 ? "" : "s"} flagged for quoting prices.`,
+        evidence: priceViolations.slice(0, 3).map(
+          (m) => `At \`${m.createdAt}\`: "${truncate(m.content, 100)}"`,
+        ),
+        codePath: "ai-helpers.ts > containsPriceQuote()",
+      }),
+    );
+  }
+
+  return findings;
+}
+
+function analyzeScheduling({ outboundMessages, conversation, agentBundle }) {
+  const findings = [];
+  const appointments = Array.isArray(agentBundle?.appointments) ? agentBundle.appointments : [];
+  const matchingAppointment =
+    appointments.find(
+      (a) => a.closeLeadId && a.closeLeadId === conversation?.closeLeadId,
+    ) ?? appointments[0] ?? null;
+
+  const schedulingOutbound = outboundMessages.filter((m) => m.replyCategory === "scheduling");
+
+  // Scheduling without resolution
+  if (
+    ["scheduling", "stale"].includes(conversation?.status) &&
+    !matchingAppointment &&
+    schedulingOutbound.length >= 3
+  ) {
+    findings.push(
+      buildFinding({
+        code: "scheduling_without_resolution",
+        severity: "warning",
+        priority: 56,
+        summary: `Conversation status is "${conversation.status}" with ${schedulingOutbound.length} scheduling messages but no appointment created.`,
+        evidence: [
+          `Status: ${conversation.status}, scheduling outbound: ${schedulingOutbound.length}, appointments: 0.`,
+        ],
+        codePath: "prepareSchedulingState()",
+      }),
+    );
+  }
+
+  // False booking confirmation — outbound has booking language but no matching appointment
+  const bookingConfirmationMessages = outboundMessages.filter(
+    (m) => containsBookingConfirmationLanguage(m.content),
+  );
+  if (bookingConfirmationMessages.length > 0 && !matchingAppointment) {
+    findings.push(
+      buildFinding({
+        code: "false_booking_confirmation",
+        severity: "critical",
+        priority: 84,
+        summary: `Outbound message contains booking confirmation language but no appointment exists.`,
+        evidence: bookingConfirmationMessages.slice(0, 3).map(
+          (m) => `At \`${m.createdAt}\`: "${truncate(m.content, 100)}"`,
+        ),
+        codePath: "buildBookedAppointmentReply()",
+      }),
+    );
+  }
+
+  // Multiple scheduling attempts
+  if (schedulingOutbound.length >= 5) {
+    findings.push(
+      buildFinding({
+        code: "multiple_scheduling_attempts",
+        severity: "info",
+        priority: 35,
+        summary: `${schedulingOutbound.length} outbound messages with replyCategory="scheduling" — may indicate scheduling difficulty.`,
+        evidence: [
+          `${schedulingOutbound.length} scheduling outbound messages in this conversation.`,
+        ],
+        codePath: "Scheduling pipeline",
+      }),
+    );
+  }
+
+  return findings;
+}
+
+function analyzeCompliance({ outboundMessages, conversation }) {
+  const findings = [];
+
+  // Price language in outbound
+  const priceMessages = outboundMessages.filter((m) => containsPriceLanguage(m.content));
+  if (priceMessages.length > 0) {
+    findings.push(
+      buildFinding({
+        code: "price_language_in_outbound",
+        severity: "critical",
+        priority: 87,
+        summary: `${priceMessages.length} outbound message${priceMessages.length === 1 ? "" : "s"} contain price/quote language.`,
+        evidence: priceMessages.slice(0, 3).map(
+          (m) => `At \`${m.createdAt}\`: "${truncate(m.content, 100)}"`,
+        ),
+        codePath: "enforceReplyGuardrails()",
+      }),
+    );
+  }
+
+  // Life insurance label misuse
+  const lifeInsuranceMessages = outboundMessages.filter((m) => containsLifeInsuranceLabel(m.content));
+  const mortgageProtectionMessages = outboundMessages.filter(
+    (m) => /mortgage protection/i.test(m.content || ""),
+  );
+  if (lifeInsuranceMessages.length > 0 && mortgageProtectionMessages.length > 0) {
+    findings.push(
+      buildFinding({
+        code: "life_insurance_label_misuse",
+        severity: "critical",
+        priority: 86,
+        summary: `Outbound messages use both "life insurance" and "mortgage protection" — likely wrong label for a mortgage protection lead.`,
+        evidence: lifeInsuranceMessages.slice(0, 2).map(
+          (m) => `At \`${m.createdAt}\`: "${truncate(m.content, 100)}"`,
+        ),
+        codePath: "getLeadSourceRules()",
+      }),
+    );
+  }
+
+  // DOB request in outbound
+  const dobMessages = outboundMessages.filter((m) => containsDobRequest(m.content));
+  if (dobMessages.length > 0) {
+    findings.push(
+      buildFinding({
+        code: "dob_request_in_outbound",
+        severity: "warning",
+        priority: 45,
+        summary: `${dobMessages.length} outbound message${dobMessages.length === 1 ? "" : "s"} ask for date of birth or age.`,
+        evidence: dobMessages.slice(0, 3).map(
+          (m) => `At \`${m.createdAt}\`: "${truncate(m.content, 100)}"`,
+        ),
+        codePath: "enforceReplyGuardrails()",
+      }),
+    );
+  }
+
+  // Pushy after decline
+  const pushyAfterDecline = conversation?.declineState === "hard" &&
+    outboundMessages.some((m) => m.replyCategory === "scheduling");
+  if (pushyAfterDecline) {
+    const pushyMessages = outboundMessages.filter((m) => m.replyCategory === "scheduling");
+    findings.push(
+      buildFinding({
+        code: "pushy_after_decline",
+        severity: "warning",
+        priority: 50,
+        summary: `Bot sent scheduling messages after lead's hard decline.`,
+        evidence: pushyMessages.slice(0, 3).map(
+          (m) => `At \`${m.createdAt}\`: [scheduling] "${truncate(m.content, 100)}"`,
+        ),
+        codePath: "enforceReplyGuardrails()",
+      }),
+    );
+  }
+
+  return findings;
+}
+
+// Export analysis passes and utilities for testing
+export {
+  tokenize,
+  jaccardSimilarity,
+  isIntroPattern,
+  containsPriceLanguage,
+  containsLifeInsuranceLabel,
+  containsDobRequest,
+  containsBookingConfirmationLanguage,
+  containsEmojiCharacters,
+  isTruncated,
+  containsMarkdown,
+  parseTimezoneHour,
+  analyzeRepetition,
+  analyzeMessageQuality,
+  analyzeConversationFlow,
+  analyzeGuardrailsAndFallbacks,
+  analyzeScheduling,
+  analyzeCompliance,
+};
 
 export function analyzeChatBotLeadReview({
   target,
@@ -521,10 +1170,26 @@ export function analyzeChatBotLeadReview({
             `Appointment \`${matchingAppointment.id}\` starts at \`${matchingAppointment.startAt}\`, which is \`${leadClock}\` in ${leadTimeZone} and \`${agentClock}\` in ${agentTimeZone}.`,
             `Reminder messages used \`${agentClock}\` instead of \`${leadClock}\`.`,
           ],
+          codePath: "buildReminderMessage()",
         }),
       );
     }
   }
+
+  // --- Deep analysis passes ---
+  // Only analyze bot-sent outbound messages — exclude manually sent human agent messages
+  const botOutboundMessages = outboundMessages.filter(
+    (message) => message.senderType !== "human",
+  );
+  const passContext = { normalizedMessages, outboundMessages: botOutboundMessages, inboundMessages, conversation, agentBundle };
+  findings.push(
+    ...analyzeRepetition(passContext),
+    ...analyzeMessageQuality(passContext),
+    ...analyzeConversationFlow(passContext),
+    ...analyzeGuardrailsAndFallbacks(passContext),
+    ...analyzeScheduling(passContext),
+    ...analyzeCompliance(passContext),
+  );
 
   const sortedFindings = findings.sort((left, right) => right.priority - left.priority);
   const primaryFinding =
@@ -554,6 +1219,10 @@ export function analyzeChatBotLeadReview({
       direction: message.direction,
       senderType: message.senderType ?? null,
       content: message.content ?? "",
+      replyCategory: message.replyCategory ?? null,
+      fallbackKind: message.fallbackKind ?? null,
+      guardrailViolations: message.guardrailViolations ?? null,
+      messageKind: message.messageKind ?? null,
     })),
     gaps: [
       "The current bot-platform API does not expose Close lead source/status for an arbitrary lead ID, so source/status mismatch can only be inferred when no conversation exists.",
@@ -587,9 +1256,23 @@ function formatDiagnosticReview(review) {
     lines.push("");
     lines.push("Timeline:");
     for (const item of review.timeline) {
+      const categoryTag = item.replyCategory ? ` [replyCategory=${item.replyCategory}]` : "";
       lines.push(
-        `- ${item.createdAt} | ${item.direction} | ${truncate(item.content, 220)}`,
+        `- ${item.createdAt} | ${item.direction}${categoryTag} | ${truncate(item.content, 220)}`,
       );
+      const meta = [];
+      if (item.guardrailViolations && item.guardrailViolations.length > 0) {
+        meta.push(`guardrails: ${item.guardrailViolations.join(", ")}`);
+      }
+      if (item.fallbackKind) {
+        meta.push(`fallback: ${item.fallbackKind}`);
+      }
+      if (item.messageKind) {
+        meta.push(`kind: ${item.messageKind}`);
+      }
+      if (meta.length > 0) {
+        lines.push(`  ${meta.join(" | ")}`);
+      }
     }
   }
 
@@ -700,6 +1383,207 @@ export function buildChatBotImprovementBrief(review) {
           "Inbound SMS from an allowed lead with healthy dependencies should produce an outbound reply within expected SLA.",
         );
         break;
+      case "repeated_outbound_content":
+        recommendationSet.add(
+          "Add deduplication logic in `enforceReplyGuardrails()` to detect and block outbound messages that are too similar to recent sends.",
+        );
+        testCaseSet.add(
+          "Bot generates reply with >70% Jaccard similarity to previous outbound: verify it is blocked or rewritten.",
+        );
+        break;
+      case "repeated_intro_messages":
+        recommendationSet.add(
+          "Strengthen `stripRedundantIntro()` to detect and remove intro patterns when the conversation already has an outbound intro.",
+        );
+        testCaseSet.add(
+          "Second outbound starts with 'Hi X, this is...': verify intro is stripped before send.",
+        );
+        break;
+      case "repeated_fallback_reply":
+        recommendationSet.add(
+          "Vary fallback replies or escalate to manual review after 2+ consecutive fallbacks of the same kind.",
+        );
+        testCaseSet.add(
+          "Same fallbackKind fires 3+ times: verify bot escalates or varies response.",
+        );
+        break;
+      case "repeated_qualification_topic":
+        recommendationSet.add(
+          "Check `deriveConversationMemory()` — the bot may be losing track of previously asked qualification questions.",
+        );
+        testCaseSet.add(
+          "Bot asks lead's state twice in same conversation: verify memory prevents re-asking.",
+        );
+        break;
+      case "truncated_message":
+        recommendationSet.add(
+          "Investigate the CRM send path for message truncation — the outbound message ended mid-word.",
+        );
+        testCaseSet.add(
+          "Long outbound message: verify it is delivered complete without truncation.",
+        );
+        openQuestionSet.add(
+          "Is there a character limit on the CRM send path that silently truncates?",
+        );
+        break;
+      case "markdown_in_sms":
+        recommendationSet.add(
+          "Ensure `sanitizeSmsReply()` strips all markdown formatting (**, ##, list markers) before sending.",
+        );
+        testCaseSet.add(
+          "AI reply contains `**bold**` or `## heading`: verify sanitizer removes formatting before SMS send.",
+        );
+        break;
+      case "wall_of_text":
+        recommendationSet.add(
+          "Add a character limit guard in prompt construction or post-processing to keep SMS under 320 chars.",
+        );
+        testCaseSet.add(
+          "AI generates 400+ char reply: verify it is shortened or split before send.",
+        );
+        break;
+      case "emoji_in_outbound":
+        recommendationSet.add(
+          "Verify `sanitizeSmsReply()` strips emoji characters — the bot rules prohibit emoji in SMS.",
+        );
+        testCaseSet.add(
+          "AI reply contains emoji: verify sanitizer removes them before send.",
+        );
+        break;
+      case "outbound_spam_ratio":
+        recommendationSet.add(
+          "Review intro and follow-up handlers — the bot sent 5x more messages than the lead, indicating possible over-messaging.",
+        );
+        testCaseSet.add(
+          "Bot sends 5+ outbound with only 1 inbound: verify rate limiting or conversation pausing kicks in.",
+        );
+        openQuestionSet.add(
+          "Should the bot cap outbound messages before a lead reply to prevent spam perception?",
+        );
+        break;
+      case "conversation_stuck":
+        recommendationSet.add(
+          "Detect consecutive outbound with same replyCategory and either vary the approach or pause the conversation.",
+        );
+        testCaseSet.add(
+          "3+ outbound with same replyCategory and no inbound: verify bot changes strategy or stops.",
+        );
+        break;
+      case "response_gap_detected":
+        recommendationSet.add(
+          "Investigate response latency in `sms-received.handler.ts` — lead waited 10+ minutes for a reply.",
+        );
+        testCaseSet.add(
+          "Inbound message arrives: verify outbound reply within SLA (e.g. 2 minutes).",
+        );
+        break;
+      case "after_hours_send":
+        recommendationSet.add(
+          "Verify business hours configuration — outbound messages were sent outside 8am-9pm in the agent timezone.",
+        );
+        testCaseSet.add(
+          "Outbound scheduled at 10pm agent time: verify it is deferred to next morning.",
+        );
+        break;
+      case "all_messages_are_fallbacks":
+        recommendationSet.add(
+          "Every outbound used a fallback — the AI primary response path is failing. Check `buildNonSilentReplyFallback()` triggers and AI provider health.",
+        );
+        testCaseSet.add(
+          "AI provider returns error: verify fallback fires once, then escalates rather than repeating fallback.",
+        );
+        openQuestionSet.add(
+          "Is the AI provider consistently failing, or is the prompt causing guardrail rejections?",
+        );
+        break;
+      case "high_guardrail_violation_rate":
+        recommendationSet.add(
+          "Over 50% of outbound triggered guardrails — review `enforceReplyGuardrails()` thresholds or prompt wording.",
+        );
+        testCaseSet.add(
+          "Standard conversation flow: verify guardrail violation rate stays below 50%.",
+        );
+        break;
+      case "frequent_violation_type":
+        recommendationSet.add(
+          "A specific guardrail violation is firing repeatedly — may indicate a prompt issue or overly aggressive guardrail.",
+        );
+        testCaseSet.add(
+          "Replay conversation: verify the specific violation type is addressed by prompt or guardrail tuning.",
+        );
+        break;
+      case "false_appointment_confirmation_detected":
+        recommendationSet.add(
+          "Bot sent appointment confirmation language without a real booking — check `containsAppointmentConfirmation()` detection.",
+        );
+        testCaseSet.add(
+          "AI reply says 'you\\'re all set' with no appointment: verify guardrail catches and blocks it.",
+        );
+        break;
+      case "price_quote_violation_detected":
+        recommendationSet.add(
+          "Bot quoted prices despite guardrail — strengthen `containsPriceQuote()` detection or prompt instructions.",
+        );
+        testCaseSet.add(
+          "AI reply contains dollar amounts: verify guardrail blocks before send.",
+        );
+        break;
+      case "scheduling_without_resolution":
+        recommendationSet.add(
+          "Multiple scheduling messages sent but no appointment created — check `prepareSchedulingState()` and calendar availability.",
+        );
+        testCaseSet.add(
+          "3+ scheduling outbound with no appointment: verify bot either books or explains the blocker.",
+        );
+        break;
+      case "false_booking_confirmation":
+        recommendationSet.add(
+          "Bot said the appointment was booked but no appointment exists — check `buildBookedAppointmentReply()` trigger conditions.",
+        );
+        testCaseSet.add(
+          "Outbound says 'booked' or 'confirmed': verify a matching appointment record exists.",
+        );
+        break;
+      case "multiple_scheduling_attempts":
+        recommendationSet.add(
+          "Many scheduling attempts may indicate calendar availability issues or lead confusion — review the scheduling pipeline.",
+        );
+        testCaseSet.add(
+          "5+ scheduling outbound: verify bot is not looping on unavailable slots.",
+        );
+        break;
+      case "price_language_in_outbound":
+        recommendationSet.add(
+          "CRITICAL: Bot sent price/quote language over SMS — this violates compliance rules. Strengthen `enforceReplyGuardrails()` price detection.",
+        );
+        testCaseSet.add(
+          "AI reply mentions '$', 'premium', 'rate', 'cost': verify guardrail blocks before send.",
+        );
+        break;
+      case "life_insurance_label_misuse":
+        recommendationSet.add(
+          "Bot used 'life insurance' for a mortgage protection lead — check `getLeadSourceRules()` and prompt injection of source rules.",
+        );
+        testCaseSet.add(
+          "Mortgage protection lead conversation: verify no outbound contains 'life insurance'.",
+        );
+        break;
+      case "dob_request_in_outbound":
+        recommendationSet.add(
+          "Bot asked for date of birth or age — this should not be requested over SMS. Check guardrail detection.",
+        );
+        testCaseSet.add(
+          "AI reply asks for DOB or age: verify guardrail catches and removes the request.",
+        );
+        break;
+      case "pushy_after_decline":
+        recommendationSet.add(
+          "Bot continued scheduling push after lead's hard decline — check `enforceReplyGuardrails()` decline state handling.",
+        );
+        testCaseSet.add(
+          "Lead hard-declines: verify no further scheduling outbound messages are sent.",
+        );
+        break;
       default:
         break;
     }
@@ -782,6 +1666,25 @@ export function buildChatBotImprovementBrief(review) {
     lines.push("Gaps");
     for (const gap of review.gaps) {
       lines.push(`- ${gap}`);
+    }
+  }
+
+  // Code Paths to Investigate — deduped, grouped by file
+  const codePathFindings = review.findings.filter((f) => f.codePath);
+  if (codePathFindings.length > 0) {
+    const pathsByFile = {};
+    for (const f of codePathFindings) {
+      const parts = f.codePath.split(" > ");
+      const file = parts[0] || f.codePath;
+      if (!pathsByFile[file]) pathsByFile[file] = new Set();
+      pathsByFile[file].add(f.codePath);
+    }
+    lines.push("");
+    lines.push("Code Paths to Investigate");
+    for (const paths of Object.values(pathsByFile)) {
+      for (const path of paths) {
+        lines.push(`- ${path}`);
+      }
     }
   }
 
