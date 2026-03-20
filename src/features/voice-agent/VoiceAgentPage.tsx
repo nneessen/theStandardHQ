@@ -855,26 +855,40 @@ export function VoiceAgentPage() {
     createVoiceAgent.mutate({ templateKey: "default_sales" });
   };
 
+  // ── Auto-navigation from setup-state ──
+  // If the user lands on "setup" but the agent isn't created yet, redirect to create.
   useEffect(() => {
     if (activeTab === "setup" && !canOpenSetup) {
       setActiveTab("create");
     }
   }, [activeTab, canOpenSetup]);
 
+  // If the agent is created and the user is on the "create" tab, auto-advance
+  // to the appropriate setup tab based on the backend's nextAction.key.
   useEffect(() => {
     if (activeTab !== "create") return;
-    if (!SETUP_REDIRECT_ACTION_KEYS.has(voiceNextActionKey)) return;
     if (!canOpenSetup) return;
 
-    setActiveSetupTab(getSetupTabForNextAction(voiceNextActionKey));
-    setActiveTab("setup");
-  }, [activeTab, canOpenSetup, voiceNextActionKey]);
+    // Agent exists — the create flow is done. Advance to setup.
+    if (
+      voiceAgentCreated ||
+      SETUP_REDIRECT_ACTION_KEYS.has(voiceNextActionKey)
+    ) {
+      setActiveSetupTab(getSetupTabForNextAction(voiceNextActionKey));
+      setActiveTab("setup");
+    }
+  }, [activeTab, canOpenSetup, voiceAgentCreated, voiceNextActionKey]);
 
+  // Once the agent is created, the create flow is done — hide the tab.
+  // Before creation, setup is disabled and create is the entry point.
   const tabs = useMemo(
     () =>
       [
         { id: "overview", label: "Overview", icon: Sparkles },
-        { id: "create", label: "Create Agent", icon: ShieldCheck },
+        // Only show "Create Agent" when the agent doesn't exist yet
+        ...(!voiceAgentCreated
+          ? [{ id: "create", label: "Create Agent", icon: ShieldCheck }]
+          : []),
         {
           id: "setup",
           label: "Setup",
@@ -891,7 +905,7 @@ export function VoiceAgentPage() {
         icon: ElementType;
         disabled?: boolean;
       }[],
-    [canOpenSetup, isSuperAdmin],
+    [canOpenSetup, isSuperAdmin, voiceAgentCreated],
   );
 
   const landingPrimaryActionHref = BILLING_NEXT_ACTION_KEYS.has(
@@ -899,50 +913,61 @@ export function VoiceAgentPage() {
   )
     ? "/billing"
     : undefined;
-  const landingPrimaryActionLabel = BILLING_NEXT_ACTION_KEYS.has(
-    voiceNextActionKey,
-  )
-    ? "View Billing"
-    : voiceNextActionKey === "connect_close" ||
-        voiceNextActionKey === "create_agent"
-      ? "Open Create Flow"
-      : voiceNextActionKey === "wait_for_provisioning"
-        ? "Refresh Status"
-        : voiceNextActionKey === "publish_agent" ||
-            voiceNextActionKey === "review_guardrails"
-          ? "Open Launch"
-          : canOpenSetup
-            ? "Open Setup"
-            : "View Billing";
+  const landingPrimaryActionLabel = (() => {
+    switch (voiceNextActionKey) {
+      case "activate_trial":
+        return "Start Voice Trial";
+      case "resolve_billing":
+        return "Resolve Billing";
+      case "resolve_suspension":
+        return "Resolve Suspension";
+      case "replenish_minutes":
+        return "Add Minutes";
+      case "reactivate_voice":
+      case "activate_voice":
+        return "Activate Voice";
+      case "connect_close":
+        return "Connect Close CRM";
+      case "create_agent":
+        return "Create Voice Agent";
+      case "wait_for_provisioning":
+        return "Refresh Status";
+      case "repair_agent":
+        return "Repair Agent";
+      case "publish_agent":
+        return "Open Setup & Publish";
+      case "review_guardrails":
+        return "Review Setup";
+      case "connect_calendar":
+        return "Finish Setup";
+      default:
+        return canOpenSetup ? "Open Setup" : "View Billing";
+    }
+  })();
   const landingPrimaryActionDisabled =
     voiceNextActionKey === "wait_for_provisioning"
       ? voiceSetupStateRefetching || entitlementRefetching || usageRefetching
       : false;
   const handleLandingPrimaryAction = () => {
-    if (
-      voiceNextActionKey === "connect_close" ||
-      voiceNextActionKey === "create_agent"
-    ) {
-      setActiveTab("create");
-      return;
-    }
-    if (
-      voiceNextActionKey === "publish_agent" ||
-      voiceNextActionKey === "review_guardrails"
-    ) {
-      setActiveSetupTab("launch");
-      setActiveTab("setup");
-      return;
-    }
-    if (voiceNextActionKey === "connect_calendar") {
-      setActiveSetupTab("call-flow");
-      setActiveTab("setup");
-      return;
-    }
+    // Billing actions navigate via href — no tab switch needed
+    if (BILLING_NEXT_ACTION_KEYS.has(voiceNextActionKey)) return;
+
     if (voiceNextActionKey === "wait_for_provisioning") {
       handleRefresh();
       return;
     }
+
+    // Pre-create actions go to the create tab (only shown when agent doesn't exist)
+    if (
+      !voiceAgentCreated &&
+      (voiceNextActionKey === "connect_close" ||
+        voiceNextActionKey === "create_agent")
+    ) {
+      setActiveTab("create");
+      return;
+    }
+
+    // Post-create actions go to the appropriate setup sub-tab
     if (canOpenSetup) {
       setActiveSetupTab(getSetupTabForNextAction(voiceNextActionKey));
       setActiveTab("setup");
@@ -953,7 +978,7 @@ export function VoiceAgentPage() {
     <Badge className="h-4 bg-red-100 px-1.5 text-[9px] text-red-700 dark:bg-red-950/40 dark:text-red-300">
       Service Issue
     </Badge>
-  ) : launchReady ? (
+  ) : voiceAgentPublished ? (
     <Badge className="h-4 bg-emerald-100 px-1.5 text-[9px] text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
       Live
     </Badge>
@@ -961,17 +986,17 @@ export function VoiceAgentPage() {
     <Badge className="h-4 bg-amber-100 px-1.5 text-[9px] text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
       Provisioning
     </Badge>
+  ) : voiceAgentCreated ? (
+    <Badge className="h-4 bg-amber-100 px-1.5 text-[9px] text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+      Draft
+    </Badge>
   ) : !voiceAccessActive ? (
     <Badge className="h-4 bg-zinc-100 px-1.5 text-[9px] text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-      Voice Access Required
-    </Badge>
-  ) : retellConnected ? (
-    <Badge className="h-4 bg-amber-100 px-1.5 text-[9px] text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-      Setup Required
+      Not Activated
     </Badge>
   ) : (
     <Badge className="h-4 bg-zinc-100 px-1.5 text-[9px] text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-      No Agent Yet
+      Not Created
     </Badge>
   );
 
@@ -1050,18 +1075,18 @@ export function VoiceAgentPage() {
 
             <div className="grid grid-cols-1 gap-3 xl:grid-cols-4">
               <OverviewCard
-                title="Managed Workspace"
+                title="Voice Access"
                 value={
-                  voiceAccessActive || closeConnected || voiceAgentCreated
-                    ? voiceAgentProvisioning
+                  voiceAccessActive
+                    ? "Active"
+                    : voiceAgentProvisioning
                       ? "Provisioning"
-                      : "Connected"
-                    : "Not created yet"
+                      : "Not active"
                 }
                 detail={
-                  voiceAccessActive || closeConnected || voiceAgentCreated
-                    ? "The Standard HQ has a managed workspace ready for this AI Voice Agent."
-                    : "The Standard HQ creates the managed workspace automatically as voice setup becomes active for this workspace."
+                  voiceAccessActive
+                    ? "Voice entitlement is active for this workspace."
+                    : "Voice access must be activated before a managed voice agent can be created."
                 }
               />
               <OverviewCard
@@ -1072,25 +1097,29 @@ export function VoiceAgentPage() {
                 value={closeConnected ? "Connected" : "Required"}
                 detail={
                   closeConnected
-                    ? "Inbound calls route through your Close CRM number, and the lead records the agent works against live in Close CRM."
-                    : "Connect Close CRM in the Create Agent tab. If you already use AI Chat Bot, this connection may already be active. If not, The Standard HQ will create the managed workspace for voice here."
+                    ? "Inbound calls route through your Close CRM number and lead records live in Close."
+                    : voiceAgentCreated
+                      ? "Connect Close CRM in the Setup tab to enable inbound call routing."
+                      : "Connect Close CRM in the Create Agent tab before creating the voice agent."
                 }
               />
               <OverviewCard
                 title="Voice Agent"
                 value={
-                  retellConnected
-                    ? "Ready for editing"
-                    : voiceAgentProvisioning
-                      ? "Creating now"
-                      : voiceAgentCreated
-                        ? "Finishing setup"
-                        : "Not created yet"
+                  voiceAgentPublished
+                    ? "Published"
+                    : voiceAgentCreated
+                      ? "Draft"
+                      : voiceAgentProvisioning
+                        ? "Creating"
+                        : "Not created"
                 }
                 detail={
-                  retellConnected
-                    ? "Voice, prompt, and publish controls are available in the Setup tab."
-                    : "Open Create Agent next. That tab walks through Close CRM, voice-agent creation, and setup in order."
+                  voiceAgentPublished
+                    ? "The voice agent is live. Edit voice, prompt, or call flow in Setup and republish."
+                    : voiceAgentCreated
+                      ? "The agent is provisioned. Configure voice, prompt, and call flow in Setup, then publish."
+                      : "Create the voice agent to unlock voice, prompt, and publish controls."
                 }
               />
               <OverviewCard
