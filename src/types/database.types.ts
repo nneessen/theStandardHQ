@@ -925,112 +925,6 @@ export type Database = {
           },
         ];
       };
-      chat_bot_conversation_reviews: {
-        Row: {
-          agent_snapshot: Json | null;
-          close_lead_id: string | null;
-          conversation_snapshot: Json | null;
-          conversation_status: string | null;
-          created_at: string;
-          external_agent_id: string;
-          external_conversation_id: string | null;
-          findings: Json;
-          found_conversation: boolean;
-          gaps: Json;
-          human_verdict: string | null;
-          id: string;
-          improvement_brief: string | null;
-          inbound_count: number;
-          outbound_count: number;
-          primary_reason: string;
-          primary_reason_code: string;
-          prompt_version: string | null;
-          resolution_status: string;
-          review_mode: string;
-          review_payload: Json;
-          target_payload: Json;
-          timeline: Json;
-          updated_at: string;
-          user_id: string;
-        };
-        Insert: {
-          agent_snapshot?: Json | null;
-          close_lead_id?: string | null;
-          conversation_snapshot?: Json | null;
-          conversation_status?: string | null;
-          created_at?: string;
-          external_agent_id: string;
-          external_conversation_id?: string | null;
-          findings?: Json;
-          found_conversation?: boolean;
-          gaps?: Json;
-          human_verdict?: string | null;
-          id?: string;
-          improvement_brief?: string | null;
-          inbound_count?: number;
-          outbound_count?: number;
-          primary_reason: string;
-          primary_reason_code: string;
-          prompt_version?: string | null;
-          resolution_status?: string;
-          review_mode: string;
-          review_payload?: Json;
-          target_payload?: Json;
-          timeline?: Json;
-          updated_at?: string;
-          user_id: string;
-        };
-        Update: {
-          agent_snapshot?: Json | null;
-          close_lead_id?: string | null;
-          conversation_snapshot?: Json | null;
-          conversation_status?: string | null;
-          created_at?: string;
-          external_agent_id?: string;
-          external_conversation_id?: string | null;
-          findings?: Json;
-          found_conversation?: boolean;
-          gaps?: Json;
-          human_verdict?: string | null;
-          id?: string;
-          improvement_brief?: string | null;
-          inbound_count?: number;
-          outbound_count?: number;
-          primary_reason?: string;
-          primary_reason_code?: string;
-          prompt_version?: string | null;
-          resolution_status?: string;
-          review_mode?: string;
-          review_payload?: Json;
-          target_payload?: Json;
-          timeline?: Json;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "active_user_profiles";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "user_management_view";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "user_profiles";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       bulk_email_campaigns: {
         Row: {
           audience_id: string | null;
@@ -1913,6 +1807,112 @@ export type Database = {
             foreignKeyName: "chat_bot_agents_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: true;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      chat_bot_conversation_reviews: {
+        Row: {
+          agent_snapshot: Json | null;
+          close_lead_id: string | null;
+          conversation_snapshot: Json | null;
+          conversation_status: string | null;
+          created_at: string;
+          external_agent_id: string;
+          external_conversation_id: string | null;
+          findings: Json;
+          found_conversation: boolean;
+          gaps: Json;
+          human_verdict: string | null;
+          id: string;
+          improvement_brief: string | null;
+          inbound_count: number;
+          outbound_count: number;
+          primary_reason: string;
+          primary_reason_code: string;
+          prompt_version: string | null;
+          resolution_status: string;
+          review_mode: string;
+          review_payload: Json;
+          target_payload: Json;
+          timeline: Json;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          agent_snapshot?: Json | null;
+          close_lead_id?: string | null;
+          conversation_snapshot?: Json | null;
+          conversation_status?: string | null;
+          created_at?: string;
+          external_agent_id: string;
+          external_conversation_id?: string | null;
+          findings?: Json;
+          found_conversation?: boolean;
+          gaps?: Json;
+          human_verdict?: string | null;
+          id?: string;
+          improvement_brief?: string | null;
+          inbound_count?: number;
+          outbound_count?: number;
+          primary_reason: string;
+          primary_reason_code: string;
+          prompt_version?: string | null;
+          resolution_status?: string;
+          review_mode: string;
+          review_payload?: Json;
+          target_payload?: Json;
+          timeline?: Json;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          agent_snapshot?: Json | null;
+          close_lead_id?: string | null;
+          conversation_snapshot?: Json | null;
+          conversation_status?: string | null;
+          created_at?: string;
+          external_agent_id?: string;
+          external_conversation_id?: string | null;
+          findings?: Json;
+          found_conversation?: boolean;
+          gaps?: Json;
+          human_verdict?: string | null;
+          id?: string;
+          improvement_brief?: string | null;
+          inbound_count?: number;
+          outbound_count?: number;
+          primary_reason?: string;
+          primary_reason_code?: string;
+          prompt_version?: string | null;
+          resolution_status?: string;
+          review_mode?: string;
+          review_payload?: Json;
+          target_payload?: Json;
+          timeline?: Json;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
             referencedRelation: "user_profiles";
             referencedColumns: ["id"];
           },
