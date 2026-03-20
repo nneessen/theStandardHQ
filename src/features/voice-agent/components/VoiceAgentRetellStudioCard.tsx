@@ -350,6 +350,9 @@ export function VoiceAgentRetellStudioCard({
   const selectedVoice = voices.find(
     (voice) => voice.voice_id === selectedVoiceId,
   );
+  const filteredVoices = voices.filter(
+    (voice) => voice.provider === voiceProvider,
+  );
   const viewCopy = getViewCopy(view);
   const voiceAgentProvisioning =
     isVoiceAgentProvisioningPending(provisioningState);
@@ -1043,11 +1046,22 @@ export function VoiceAgentRetellStudioCard({
                           id="voice-search-provider"
                           value={voiceProvider}
                           onChange={(event) => {
-                            setVoiceProvider(
-                              event.target
-                                .value as (typeof RETELL_VOICE_PROVIDERS)[number],
-                            );
+                            const newProvider = event.target
+                              .value as (typeof RETELL_VOICE_PROVIDERS)[number];
+                            setVoiceProvider(newProvider);
                             setSearchResults([]);
+                            if (searchQuery.trim()) {
+                              searchRetellVoices.mutate(
+                                {
+                                  searchQuery: searchQuery.trim(),
+                                  voiceProvider: newProvider,
+                                },
+                                {
+                                  onSuccess: (result) =>
+                                    setSearchResults(result.voices ?? []),
+                                },
+                              );
+                            }
                           }}
                           className="flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900"
                         >
@@ -1136,14 +1150,15 @@ export function VoiceAgentRetellStudioCard({
                       <div className="flex items-center justify-center py-8">
                         <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
                       </div>
-                    ) : voices.length === 0 ? (
+                    ) : filteredVoices.length === 0 ? (
                       <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
-                        No imported voices yet. Search above to bring one into
-                        your workspace.
+                        {voices.length === 0
+                          ? "No imported voices yet. Search above to bring one into your workspace."
+                          : `No imported voices from ${voiceProvider}. Search above or switch providers.`}
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 gap-2">
-                        {voices.map((voice) => {
+                        {filteredVoices.map((voice) => {
                           const isSelected = voice.voice_id === selectedVoiceId;
 
                           return (
