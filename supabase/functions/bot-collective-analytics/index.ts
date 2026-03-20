@@ -33,10 +33,12 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { from, to } = body;
 
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get(
-      "SUPABASE_SERVICE_ROLE_KEY",
-    )!;
+    // Prefer remote Supabase for real production data in local dev
+    const SUPABASE_URL =
+      Deno.env.get("REMOTE_SUPABASE_URL") || Deno.env.get("SUPABASE_URL")!;
+    const SUPABASE_SERVICE_ROLE_KEY =
+      Deno.env.get("REMOTE_SUPABASE_SERVICE_ROLE_KEY") ||
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const CHAT_BOT_API_URL =
       Deno.env.get("STANDARD_CHAT_BOT_API_URL") ||
       Deno.env.get("CHAT_BOT_API_URL");

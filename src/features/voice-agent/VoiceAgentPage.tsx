@@ -8,6 +8,7 @@ import {
   PhoneCall,
   Settings2,
   ShieldCheck,
+  Sparkles,
   Wrench,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -49,11 +50,12 @@ import {
   isVoiceAgentProvisioningPending,
 } from "./lib/voice-agent-contract";
 import type { VoiceEntitlementSnapshotView } from "./types";
+import { VoiceAgentOverviewTab } from "./components/VoiceAgentOverviewTab";
 
 const VOICE_LAUNCH_INCLUDED_MINUTES = 500;
 const VOICE_LAUNCH_INCLUDED_MINUTES_TRIAL = 15;
 
-type VoiceTabId = "subscription" | "setup" | "stats" | "admin";
+type VoiceTabId = "overview" | "plans" | "setup" | "stats" | "admin";
 type VoiceSetupTabId =
   | "voice"
   | "instructions"
@@ -513,7 +515,7 @@ function CreateVoiceAgentCard({
 }
 
 export function VoiceAgentPage() {
-  const [activeTab, setActiveTab] = useState<VoiceTabId>("subscription");
+  const [activeTab, setActiveTab] = useState<VoiceTabId>("overview");
   const [activeSetupTab, setActiveSetupTab] =
     useState<VoiceSetupTabId>("voice");
   const { isSuperAdmin } = useImo();
@@ -547,10 +549,13 @@ export function VoiceAgentPage() {
     isLoading: entitlementLoading,
     refetch: refetchEntitlement,
     isRefetching: entitlementRefetching,
-  } = useChatBotVoiceEntitlement(activeTab === "stats");
+  } = useChatBotVoiceEntitlement(
+    activeTab === "stats" || activeTab === "overview",
+  );
 
   const shouldLoadVoiceUsage =
-    activeTab === "stats" && Boolean(voiceAddon || voiceEntitlement);
+    (activeTab === "stats" || activeTab === "overview") &&
+    Boolean(voiceAddon || voiceEntitlement);
   const {
     data: voiceUsage,
     error: voiceUsageError,
@@ -801,7 +806,8 @@ export function VoiceAgentPage() {
       icon: ElementType;
       locked?: boolean;
     }[] = [
-      { id: "subscription", label: "Subscription", icon: CreditCard },
+      { id: "overview", label: "Overview", icon: Sparkles },
+      { id: "plans", label: "Plans", icon: CreditCard },
       {
         id: "setup",
         label: "Setup",
@@ -929,17 +935,59 @@ export function VoiceAgentPage() {
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col space-y-2.5 bg-zinc-50 p-3 dark:bg-zinc-950">
-      <div className="rounded-lg border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900">
-        <div className="flex items-center gap-2">
-          <PhoneCall className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            AI Voice Agent
-          </h1>
-          {statusBadge}
+      {/* Hero Header — identical structure to ChatBotPage */}
+      <div className="relative overflow-hidden rounded-xl bg-foreground">
+        <div className="absolute inset-0 opacity-[0.03]">
+          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern
+                id="va-grid"
+                width="32"
+                height="32"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M 32 0 L 0 0 0 32"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="0.5"
+                />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#va-grid)" />
+          </svg>
+        </div>
+        <div
+          className="absolute top-1/3 -left-16 w-64 h-64 rounded-full blur-3xl"
+          style={{ backgroundColor: "rgba(99,102,241,0.12)" }}
+        />
+        <div
+          className="absolute bottom-0 -right-16 w-48 h-48 rounded-full blur-3xl"
+          style={{ backgroundColor: "rgba(139,92,246,0.08)" }}
+        />
+        <div className="relative px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
+              style={{ backgroundColor: "rgba(99,102,241,0.2)" }}
+            >
+              <PhoneCall className="h-4 w-4 text-white dark:text-black" />
+            </div>
+            <div>
+              <h1 className="text-sm font-bold text-white dark:text-black tracking-tight">
+                AI Voice Agent
+              </h1>
+              <p className="text-[10px] text-white/50 dark:text-black/40">
+                Automated AI phone calls for follow-ups and inbound
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">{statusBadge}</div>
         </div>
       </div>
 
-      <div className="flex items-center gap-0.5 rounded-md bg-zinc-200/50 p-0.5 dark:bg-zinc-800/50">
+      {/* Tabs */}
+      <div className="flex items-center gap-0.5 rounded-md bg-zinc-200/50 p-0.5 dark:bg-zinc-800/50 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -947,7 +995,7 @@ export function VoiceAgentPage() {
               if (!tab.locked) setActiveTab(tab.id);
             }}
             className={cn(
-              "flex flex-1 items-center justify-center gap-1.5 rounded px-3 py-1.5 text-[11px] font-medium transition-all",
+              "flex items-center justify-center gap-1 rounded px-2.5 py-1.5 text-[10px] font-medium transition-all whitespace-nowrap flex-shrink-0",
               tab.locked
                 ? "cursor-not-allowed text-zinc-300 dark:text-zinc-600"
                 : activeTab === tab.id
@@ -967,7 +1015,39 @@ export function VoiceAgentPage() {
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {activeTab === "subscription" && (
+        {activeTab === "overview" && (
+          <VoiceAgentOverviewTab
+            voiceAccessActive={voiceAccessActive}
+            voiceAgentPublished={voiceAgentPublished}
+            voiceAgentCreated={voiceAgentCreated}
+            voiceAgentProvisioning={voiceAgentProvisioning}
+            closeConnected={closeConnected}
+            canOpenSetup={canOpenSetup}
+            setupSteps={setupSteps}
+            completedSteps={completedSteps}
+            nextStepTitle={nextStep.title}
+            nextStepDescription={nextStep.description}
+            primaryActionLabel={landingPrimaryActionLabel}
+            primaryActionHref={landingPrimaryActionHref}
+            primaryActionDisabled={landingPrimaryActionDisabled}
+            onPrimaryAction={handleLandingPrimaryAction}
+            onNavigateToSetup={() => {
+              setActiveSetupTab("voice");
+              setActiveTab("setup");
+            }}
+            onNavigateToStats={() => setActiveTab("stats")}
+            onNavigateToPlans={() => setActiveTab("plans")}
+            voiceEntitlement={voiceEntitlement}
+            voiceUsage={voiceUsage}
+            voiceSetupState={voiceSetupState}
+            voiceSnapshot={voiceSnapshot}
+            launchPriceLabel={launchPriceLabel}
+            trialIncludedMinutes={VOICE_LAUNCH_INCLUDED_MINUTES_TRIAL}
+            includedMinutes={VOICE_LAUNCH_INCLUDED_MINUTES}
+          />
+        )}
+
+        {activeTab === "plans" && (
           <div className="space-y-3">
             <VoiceAgentLanding
               voiceAccessActive={voiceAccessActive}
@@ -1096,9 +1176,9 @@ export function VoiceAgentPage() {
                   Create your voice agent first
                 </p>
                 <p className="mt-2 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
-                  Go to the Subscription tab to connect Close CRM and create the
-                  voice agent, then come back here for voice, instructions, call
-                  flow, advanced controls, and launch.
+                  Go to the Plans tab to connect Close CRM and create the voice
+                  agent, then come back here for voice, instructions, call flow,
+                  advanced controls, and launch.
                 </p>
               </div>
             ) : voiceAgentProvisioning && !retellConnected ? (
@@ -1110,7 +1190,7 @@ export function VoiceAgentPage() {
                   <p className="mt-2 text-[11px] leading-5 text-amber-800 dark:text-amber-200">
                     The Standard HQ is finishing the managed workspace and
                     loading the live draft. You can stay on this page while it
-                    finishes, or return to the Subscription tab and refresh in a
+                    finishes, or return to the Plans tab and refresh in a
                     moment.
                   </p>
                 </div>

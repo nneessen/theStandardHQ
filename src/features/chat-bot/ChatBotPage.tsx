@@ -19,6 +19,8 @@ import {
   HeartPulse,
   BookOpen,
   Power,
+  Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,9 +49,12 @@ import { AllBotsTab } from "./components/AllBotsTab";
 import { AnalyticsTab } from "./components/AnalyticsTab";
 import { MonitoringTab } from "./components/MonitoringTab";
 import { SetupGuideTab } from "./components/SetupGuideTab";
+import { ChatBotOverviewTab } from "./components/ChatBotOverviewTab";
+import { AdminTab } from "./components/AdminTab";
 
 type TabId =
   | "overview"
+  | "plans"
   | "guide"
   | "all-bots"
   | "setup"
@@ -57,7 +62,8 @@ type TabId =
   | "appointments"
   | "usage"
   | "analytics"
-  | "monitoring";
+  | "monitoring"
+  | "admin";
 
 // Read initial tab from URL search params (e.g., after Calendly OAuth redirect with ?tab=setup)
 // NOTE: Do NOT call history.replaceState here — it triggers TanStack Router's Transitioner
@@ -66,6 +72,7 @@ function getInitialTab(): TabId {
   const params = new URLSearchParams(window.location.search);
   const tab = params.get("tab");
   if (
+    tab === "plans" ||
     tab === "setup" ||
     tab === "guide" ||
     tab === "all-bots" ||
@@ -73,7 +80,8 @@ function getInitialTab(): TabId {
     tab === "appointments" ||
     tab === "usage" ||
     tab === "analytics" ||
-    tab === "monitoring"
+    tab === "monitoring" ||
+    tab === "admin"
   ) {
     return tab;
   }
@@ -200,7 +208,8 @@ export function ChatBotPage() {
     icon: React.ElementType;
     locked?: boolean;
   }[] = [
-    { id: "overview", label: "Subscription", icon: CreditCard },
+    { id: "overview", label: "Overview", icon: Sparkles },
+    { id: "plans", label: "Plans", icon: CreditCard },
     { id: "guide", label: "Setup Guide", icon: BookOpen },
     { id: "all-bots", label: "All Bots", icon: TrendingUp },
     {
@@ -222,6 +231,11 @@ export function ChatBotPage() {
     if (isSuperAdmin) {
       tabs.push({ id: "monitoring", label: "Monitoring", icon: HeartPulse });
     }
+  }
+
+  // Super-admin panel — always visible, no access/agent requirement
+  if (isSuperAdmin) {
+    tabs.push({ id: "admin", label: "Admin Panel", icon: ShieldCheck });
   }
 
   // Status badge
@@ -258,37 +272,79 @@ export function ChatBotPage() {
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5 bg-zinc-50 dark:bg-zinc-950">
-      {/* Header */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-2">
-          <Bot className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            AI Chat Bot
-          </h1>
-          {statusBadge}
-          {hasAccess &&
-            agent &&
-            (setupComplete || wizardDone) &&
-            !agent.botEnabled && (
-              <Button
-                size="sm"
-                className="h-7 px-4 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all animate-pulse"
-                disabled={updateConfig.isPending}
-                onClick={() => updateConfig.mutate({ botEnabled: true })}
+      {/* Hero Header */}
+      <div className="relative overflow-hidden rounded-xl bg-foreground">
+        <div className="absolute inset-0 opacity-[0.03]">
+          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern
+                id="cb-grid"
+                width="32"
+                height="32"
+                patternUnits="userSpaceOnUse"
               >
-                {updateConfig.isPending ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-                ) : (
-                  <Power className="h-3.5 w-3.5 mr-1.5" />
-                )}
-                Enable Bot
-              </Button>
-            )}
+                <path
+                  d="M 32 0 L 0 0 0 32"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="0.5"
+                />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#cb-grid)" />
+          </svg>
+        </div>
+        <div
+          className="absolute top-1/3 -left-16 w-64 h-64 rounded-full blur-3xl"
+          style={{ backgroundColor: "rgba(59,130,246,0.12)" }}
+        />
+        <div
+          className="absolute bottom-0 -right-16 w-48 h-48 rounded-full blur-3xl"
+          style={{ backgroundColor: "rgba(139,92,246,0.08)" }}
+        />
+        <div className="relative px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
+              style={{ backgroundColor: "rgba(59,130,246,0.2)" }}
+            >
+              <Bot className="h-4 w-4 text-white dark:text-black" />
+            </div>
+            <div>
+              <h1 className="text-sm font-bold text-white dark:text-black tracking-tight">
+                AI Chat Bot
+              </h1>
+              <p className="text-[10px] text-white/50 dark:text-black/40">
+                SMS appointment setter powered by AI
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {statusBadge}
+            {hasAccess &&
+              agent &&
+              (setupComplete || wizardDone) &&
+              !agent.botEnabled && (
+                <Button
+                  size="sm"
+                  className="h-7 px-4 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all animate-pulse"
+                  disabled={updateConfig.isPending}
+                  onClick={() => updateConfig.mutate({ botEnabled: true })}
+                >
+                  {updateConfig.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                  ) : (
+                    <Power className="h-3.5 w-3.5 mr-1.5" />
+                  )}
+                  Enable Bot
+                </Button>
+              )}
+          </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-0.5 bg-zinc-200/50 dark:bg-zinc-800/50 rounded-md p-0.5">
+      <div className="flex items-center gap-0.5 bg-zinc-200/50 dark:bg-zinc-800/50 rounded-md p-0.5 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -296,7 +352,7 @@ export function ChatBotPage() {
               if (!tab.locked) setActiveTab(tab.id);
             }}
             className={cn(
-              "flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
+              "flex items-center justify-center gap-1 px-2.5 py-1.5 text-[10px] font-medium rounded transition-all whitespace-nowrap flex-shrink-0",
               tab.locked
                 ? "text-zinc-300 dark:text-zinc-600 cursor-not-allowed"
                 : activeTab === tab.id
@@ -317,8 +373,21 @@ export function ChatBotPage() {
 
       {/* Tab Content */}
       <div className="flex-1 overflow-y-auto">
-        {/* Overview tab — plan selection + info */}
+        {/* Overview tab — SaaS marketing + live metrics */}
         {activeTab === "overview" && (
+          <ChatBotOverviewTab
+            hasAccess={hasAccess}
+            agent={agent}
+            setupComplete={setupComplete}
+            wizardDone={wizardDone}
+            isTeamMember={isTeamMember}
+            currentTierId={currentTierId}
+            onNavigateToTab={(tabId) => setActiveTab(tabId as TabId)}
+          />
+        )}
+
+        {/* Plans tab — plan selection + info */}
+        {activeTab === "plans" && (
           <ChatBotLanding
             currentTierId={currentTierId}
             onPlanActivated={handlePlanActivated}
@@ -339,15 +408,15 @@ export function ChatBotPage() {
                 Choose a Plan First
               </h3>
               <p className="text-[11px] text-zinc-500 dark:text-zinc-400 text-center max-w-xs mb-4">
-                Select a plan on the &quot;Subscription&quot; tab to unlock bot
+                Select a plan on the &quot;Plans&quot; tab to unlock bot
                 configuration. You can start with the free plan — no credit card
                 required.
               </p>
               <button
-                onClick={() => setActiveTab("overview")}
+                onClick={() => setActiveTab("plans")}
                 className="text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:underline"
               >
-                Go to Subscription
+                Go to Plans
               </button>
             </div>
           ) : !agent ? (
@@ -455,7 +524,7 @@ export function ChatBotPage() {
         {activeTab === "all-bots" && (
           <AllBotsTab
             onNavigateToSubscription={
-              !hasAccess ? () => setActiveTab("overview") : undefined
+              !hasAccess ? () => setActiveTab("plans") : undefined
             }
           />
         )}
@@ -466,6 +535,7 @@ export function ChatBotPage() {
         {activeTab === "usage" && <UsageTab />}
         {activeTab === "analytics" && <AnalyticsTab />}
         {activeTab === "monitoring" && <MonitoringTab />}
+        {activeTab === "admin" && <AdminTab />}
       </div>
     </div>
   );

@@ -441,12 +441,31 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { action, ...params } = body;
 
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get(
+    // ──────────────────────────────────────────────
+    // Two-client pattern: auth client validates JWTs against the local/native
+    // Supabase instance. Data client queries the production DB for real data
+    // even in local dev (when REMOTE_SUPABASE_URL is set).
+    // In production, both point to the same instance.
+    // ──────────────────────────────────────────────
+    const LOCAL_SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const LOCAL_SUPABASE_SERVICE_ROLE_KEY = Deno.env.get(
       "SUPABASE_SERVICE_ROLE_KEY",
     )!;
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const REMOTE_URL = Deno.env.get("REMOTE_SUPABASE_URL");
+    const REMOTE_KEY = Deno.env.get("REMOTE_SUPABASE_SERVICE_ROLE_KEY");
+
+    // Auth client — always uses the native Supabase (validates local JWTs)
+    const authClient = createClient(
+      LOCAL_SUPABASE_URL,
+      LOCAL_SUPABASE_SERVICE_ROLE_KEY,
+    );
+
+    // Data client — uses production when available, otherwise same as auth
+    const supabase =
+      REMOTE_URL && REMOTE_KEY
+        ? createClient(REMOTE_URL, REMOTE_KEY)
+        : authClient;
 
     // Authenticate user via JWT (deploy WITHOUT --no-verify-jwt so the full token passes through)
     const authHeader = req.headers.get("authorization") || "";
@@ -458,13 +477,217 @@ serve(async (req) => {
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser(token);
+    } = await authClient.auth.getUser(token);
     if (authError || !user) {
       return jsonResponse({ error: "Unauthorized" }, 401);
     }
 
+    // ──────────────────────────────────────────────
+    // Super-admin "act on behalf of" support
+    // ──────────────────────────────────────────────
+    let effectiveUserId = user.id;
+    let isSuperAdminCaller = false;
+
+    if (params.targetUserId && typeof params.targetUserId === "string") {
+      const callerProfile = await getUserProfile(supabase, user.id);
+      if (!callerProfile?.is_super_admin) {
+        return jsonResponse(
+          { error: "Only super-admins can act on behalf of other users" },
+          403,
+        );
+      }
+      isSuperAdminCaller = true;
+      effectiveUserId = params.targetUserId;
+    }
+
+    // ──────────────────────────────────────────────
+    // ADMIN ACTIONS — super-admin only
+    // ──────────────────────────────────────────────
+    if (action === "admin_list_agents") {
+      if (!isSuperAdminCaller) {
+        const callerProfile = await getUserProfile(supabase, user.id);
+        if (!callerProfile?.is_super_admin) {
+          return jsonResponse({ error: "Forbidden" }, 403);
+        }
+      }
+
+      // 1. Fetch provisioned agents
+      const { data: agents, error: agentsErr } = await supabase
+        .from("chat_bot_agents")
+        .select(
+          "id, user_id, external_agent_id, provisioning_status, billing_exempt, tier_id, error_message, created_at, updated_at",
+        )
+        .order("created_at", { ascending: false });
+
+      if (agentsErr) {
+        return jsonResponse({ error: agentsErr.message }, 400);
+      }
+
+      // 2. Also fetch users with chat bot addon (may not have agent row yet)
+      const { data: addonUsers } = await supabase
+        .from("user_subscription_addons")
+        .select("user_id, status, tier_id, subscription_addons!inner(name)")
+        .eq("subscription_addons.name", "ai_chat_bot");
+
+      // 3. Fetch team overrides
+      const { data: overrides } = await supabase
+        .from("chat_bot_team_overrides")
+        .select("id, user_id, granted_by, reason, created_at");
+
+      // 4. Build set of all relevant user IDs
+      const agentUserIds = new Set((agents || []).map((a) => a.user_id));
+      const allUserIds = new Set(agentUserIds);
+      for (const au of addonUsers || []) {
+        allUserIds.add(au.user_id);
+      }
+      for (const o of overrides || []) {
+        allUserIds.add(o.user_id);
+      }
+
+      // 5. Batch-fetch user profiles for all relevant users
+      const userIdArray = Array.from(allUserIds);
+      const { data: profiles } =
+        userIdArray.length > 0
+          ? await supabase
+              .from("user_profiles")
+              .select("id, first_name, last_name, email")
+              .in("id", userIdArray)
+          : { data: [] };
+
+      const profileMap: Record<
+        string,
+        { first_name: string | null; last_name: string | null; email: string }
+      > = {};
+      for (const p of profiles || []) {
+        profileMap[p.id] = p;
+      }
+
+      // 6. Enrich existing agents
+      const enrichedAgents = (agents || []).map((a) => {
+        const profile = profileMap[a.user_id];
+        return {
+          ...a,
+          userName: profile
+            ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() ||
+              null
+            : null,
+          userEmail: profile?.email || null,
+        };
+      });
+
+      // 7. Add "virtual" rows for users with addon but no agent row
+      for (const au of addonUsers || []) {
+        if (!agentUserIds.has(au.user_id)) {
+          const profile = profileMap[au.user_id];
+          enrichedAgents.push({
+            id: `addon_${au.user_id}`,
+            user_id: au.user_id,
+            external_agent_id: "",
+            provisioning_status:
+              au.status === "active" ? "not_provisioned" : au.status,
+            billing_exempt: false,
+            tier_id: au.tier_id || null,
+            error_message: null,
+            created_at: null,
+            updated_at: null,
+            userName: profile
+              ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() ||
+                null
+              : null,
+            userEmail: profile?.email || null,
+          });
+        }
+      }
+
+      // 8. Add "virtual" rows for users with team override but no agent/addon
+      const enrichedUserIds = new Set(enrichedAgents.map((a) => a.user_id));
+      for (const o of overrides || []) {
+        if (!enrichedUserIds.has(o.user_id)) {
+          const profile = profileMap[o.user_id];
+          enrichedAgents.push({
+            id: `override_${o.user_id}`,
+            user_id: o.user_id,
+            external_agent_id: "",
+            provisioning_status: "override_only",
+            billing_exempt: false,
+            tier_id: null,
+            error_message: null,
+            created_at: o.created_at,
+            updated_at: null,
+            userName: profile
+              ? `${profile.first_name || ""} ${profile.last_name || ""}`.trim() ||
+                null
+              : null,
+            userEmail: profile?.email || null,
+          });
+        }
+      }
+
+      return jsonResponse({
+        agents: enrichedAgents,
+        teamOverrides: overrides || [],
+      });
+    }
+
+    if (action === "admin_grant_team_access") {
+      if (!isSuperAdminCaller) {
+        const callerProfile = await getUserProfile(supabase, user.id);
+        if (!callerProfile?.is_super_admin) {
+          return jsonResponse({ error: "Forbidden" }, 403);
+        }
+      }
+
+      const { userId: targetId, reason } = params;
+      if (!targetId || typeof targetId !== "string") {
+        return jsonResponse({ error: "userId is required" }, 400);
+      }
+
+      const { error: upsertErr } = await supabase
+        .from("chat_bot_team_overrides")
+        .upsert(
+          {
+            user_id: targetId,
+            granted_by: user.id,
+            reason: typeof reason === "string" ? reason : null,
+          },
+          { onConflict: "user_id" },
+        );
+
+      if (upsertErr) {
+        return jsonResponse({ error: upsertErr.message }, 400);
+      }
+      return jsonResponse({ success: true });
+    }
+
+    if (action === "admin_revoke_team_access") {
+      if (!isSuperAdminCaller) {
+        const callerProfile = await getUserProfile(supabase, user.id);
+        if (!callerProfile?.is_super_admin) {
+          return jsonResponse({ error: "Forbidden" }, 403);
+        }
+      }
+
+      const { userId: targetId } = params;
+      if (!targetId || typeof targetId !== "string") {
+        return jsonResponse({ error: "userId is required" }, 400);
+      }
+
+      const { error: delErr } = await supabase
+        .from("chat_bot_team_overrides")
+        .delete()
+        .eq("user_id", targetId);
+
+      if (delErr) {
+        return jsonResponse({ error: delErr.message }, 400);
+      }
+      return jsonResponse({ success: true });
+    }
+
     if (action === "get_team_access") {
-      const { isOnExemptTeam } = await getTeamAccessStatus(supabase, user.id);
+      const { isOnExemptTeam } = await getTeamAccessStatus(
+        supabase,
+        effectiveUserId,
+      );
       return jsonResponse({ hasTeamAccess: isOnExemptTeam });
     }
 
@@ -489,7 +712,7 @@ serve(async (req) => {
     if (action === "team_provision") {
       const { profile, isOnExemptTeam } = await getTeamAccessStatus(
         supabase,
-        user.id,
+        effectiveUserId,
       );
       if (!profile) {
         return jsonResponse({ error: "User profile not found" }, 404);
@@ -509,7 +732,7 @@ serve(async (req) => {
       const { data: existing } = await supabase
         .from("chat_bot_agents")
         .select("id, external_agent_id, provisioning_status, billing_exempt")
-        .eq("user_id", user.id)
+        .eq("user_id", effectiveUserId)
         .maybeSingle();
 
       if (existing?.provisioning_status === "active") {
@@ -521,7 +744,7 @@ serve(async (req) => {
 
         if (!upgradeRes.ok) {
           console.error(
-            `[chat-bot-api] Failed to sync billing-exempt access for agent ${existing.external_agent_id} and user ${user.id}:`,
+            `[chat-bot-api] Failed to sync billing-exempt access for agent ${existing.external_agent_id} and user ${effectiveUserId}:`,
             upgradeRes.data,
           );
           return jsonResponse(
@@ -559,17 +782,17 @@ serve(async (req) => {
       const provisionRes = await callChatBotApi(
         "POST",
         "/api/external/agents",
-        { externalRef: user.id, name: agentName, billingExempt: true },
+        { externalRef: effectiveUserId, name: agentName, billingExempt: true },
       );
 
       if (!provisionRes.ok) {
         console.error(
-          `[chat-bot-api] team_provision failed for user ${user.id}:`,
+          `[chat-bot-api] team_provision failed for user ${effectiveUserId}:`,
           provisionRes.data,
         );
         await supabase.from("chat_bot_agents").upsert(
           {
-            user_id: user.id,
+            user_id: effectiveUserId,
             external_agent_id: "",
             provisioning_status: "failed",
             billing_exempt: true,
@@ -592,7 +815,7 @@ serve(async (req) => {
       // 5. Upsert local record
       await supabase.from("chat_bot_agents").upsert(
         {
-          user_id: user.id,
+          user_id: effectiveUserId,
           external_agent_id: String(newAgentId),
           provisioning_status: "active",
           billing_exempt: true,
@@ -604,7 +827,7 @@ serve(async (req) => {
       );
 
       console.log(
-        `[chat-bot-api] Team-provisioned agent ${newAgentId} for user ${user.id}`,
+        `[chat-bot-api] Team-provisioned agent ${newAgentId} for user ${effectiveUserId}`,
       );
       return jsonResponse({ success: true, agentId: newAgentId });
     }
@@ -633,7 +856,7 @@ serve(async (req) => {
       const { data: existingAddon } = await supabase
         .from("user_subscription_addons")
         .select("id, status")
-        .eq("user_id", user.id)
+        .eq("user_id", effectiveUserId)
         .eq("addon_id", voiceAddonSku.id)
         .maybeSingle();
 
@@ -655,7 +878,7 @@ serve(async (req) => {
       const { data: insertedAddon, error: insertError } = await supabase
         .from("user_subscription_addons")
         .insert({
-          user_id: user.id,
+          user_id: effectiveUserId,
           addon_id: voiceAddonSku.id,
           status: "active",
           tier_id: tier?.id ?? "voice_pro",
@@ -669,7 +892,7 @@ serve(async (req) => {
 
       if (insertError || !insertedAddon) {
         console.error(
-          `[chat-bot-api] Failed to insert voice trial addon for user ${user.id}:`,
+          `[chat-bot-api] Failed to insert voice trial addon for user ${effectiveUserId}:`,
           insertError,
         );
         return jsonResponse({ error: "Failed to activate voice trial." }, 500);
@@ -678,14 +901,14 @@ serve(async (req) => {
       // 5. Sync trial entitlement — optional, only if agent exists
       const trialAgentContext = await ensureAgentContext(
         supabase,
-        user.id,
+        effectiveUserId,
         false,
       );
 
       if (trialAgentContext.ok) {
         try {
           const voiceClient = createStandardChatBotVoiceClient();
-          const idempotencyKey = `trial_${user.id}_${Date.now()}`;
+          const idempotencyKey = `trial_${effectiveUserId}_${Date.now()}`;
           const syncResult = await voiceClient.upsertVoiceEntitlement(
             trialAgentContext.agentId,
             {
@@ -725,7 +948,7 @@ serve(async (req) => {
               .eq("id", insertedAddon.id);
           } else {
             console.error(
-              `[chat-bot-api] Voice trial sync failed for user ${user.id}:`,
+              `[chat-bot-api] Voice trial sync failed for user ${effectiveUserId}:`,
               syncResult.error,
             );
             await supabase
@@ -741,7 +964,7 @@ serve(async (req) => {
           }
         } catch (syncError) {
           console.error(
-            `[chat-bot-api] Voice trial sync threw for user ${user.id}:`,
+            `[chat-bot-api] Voice trial sync threw for user ${effectiveUserId}:`,
             syncError,
           );
           await supabase
@@ -756,7 +979,7 @@ serve(async (req) => {
       } else {
         // No agent yet — sync will happen when agent is created
         console.log(
-          `[chat-bot-api] Voice trial activated for user ${user.id} without agent sync (no chat bot agent exists yet)`,
+          `[chat-bot-api] Voice trial activated for user ${effectiveUserId} without agent sync (no chat bot agent exists yet)`,
         );
       }
 
@@ -773,7 +996,7 @@ serve(async (req) => {
 
       const setupAgentContext = await ensureAgentContext(
         supabase,
-        user.id,
+        effectiveUserId,
         false,
       );
 
@@ -783,7 +1006,7 @@ serve(async (req) => {
         const { data: voiceAddon } = await supabase
           .from("user_subscription_addons")
           .select("id, status")
-          .eq("user_id", user.id)
+          .eq("user_id", effectiveUserId)
           .eq(
             "addon_id",
             (
@@ -827,7 +1050,7 @@ serve(async (req) => {
 
     const agentContext = await ensureAgentContext(
       supabase,
-      user.id,
+      effectiveUserId,
       action === "connect_close" || action === "create_voice_agent",
     );
 
@@ -859,9 +1082,9 @@ serve(async (req) => {
                 error_message: "Agent not found on external platform",
                 updated_at: new Date().toISOString(),
               })
-              .eq("user_id", user.id);
+              .eq("user_id", effectiveUserId);
             console.log(
-              `[chat-bot-api] Marked agent ${agentId} as failed (404 from external API) for user ${user.id}`,
+              `[chat-bot-api] Marked agent ${agentId} as failed (404 from external API) for user ${effectiveUserId}`,
             );
           }
           return jsonResponse(
@@ -870,7 +1093,10 @@ serve(async (req) => {
           );
         }
 
-        const { isOnExemptTeam } = await getTeamAccessStatus(supabase, user.id);
+        const { isOnExemptTeam } = await getTeamAccessStatus(
+          supabase,
+          effectiveUserId,
+        );
         const effectiveUnlimitedAccess = localBillingExempt || isOnExemptTeam;
 
         // Transform: flatten agent + reshape connections
@@ -884,7 +1110,7 @@ serve(async (req) => {
 
           if (!syncRes.ok) {
             console.warn(
-              `[chat-bot-api] Failed to re-sync billing-exempt access for agent ${agentId} and user ${user.id}:`,
+              `[chat-bot-api] Failed to re-sync billing-exempt access for agent ${agentId} and user ${effectiveUserId}:`,
               syncRes.data,
             );
           } else {
@@ -1574,7 +1800,7 @@ serve(async (req) => {
           .select(
             "id, policy_id, attribution_type, match_method, confidence_score, lead_name, conversation_started_at, external_conversation_id, external_appointment_id, created_at, policies(id, policy_number, monthly_premium, annual_premium, effective_date, status, client_id)",
           )
-          .eq("user_id", user.id)
+          .eq("user_id", effectiveUserId)
           .order("created_at", { ascending: false });
 
         if (from) query = query.gte("created_at", from);
@@ -1654,7 +1880,7 @@ serve(async (req) => {
         if (!policy || !policy.clients) {
           return jsonResponse({ matched: false, reason: "no_client" });
         }
-        if (policy.user_id !== user.id) {
+        if (policy.user_id !== effectiveUserId) {
           return jsonResponse({ error: "Forbidden" }, 403);
         }
 
@@ -1712,7 +1938,7 @@ serve(async (req) => {
           .from("bot_policy_attributions")
           .insert({
             policy_id: policyId,
-            user_id: user.id,
+            user_id: effectiveUserId,
             external_conversation_id: bestMatch.id || bestMatch.conversationId,
             external_appointment_id: bestMatch.appointmentId || null,
             attribution_type: attributionType,
@@ -1761,7 +1987,7 @@ serve(async (req) => {
           .select("user_id")
           .eq("id", policyId)
           .single();
-        if (!linkPolicy || linkPolicy.user_id !== user.id) {
+        if (!linkPolicy || linkPolicy.user_id !== effectiveUserId) {
           return jsonResponse({ error: "Forbidden" }, 403);
         }
 
@@ -1770,7 +1996,7 @@ serve(async (req) => {
           .upsert(
             {
               policy_id: policyId,
-              user_id: user.id,
+              user_id: effectiveUserId,
               external_conversation_id: String(extConvoId),
               external_appointment_id: extApptId ? String(extApptId) : null,
               attribution_type: extApptId ? "bot_converted" : "bot_assisted",
@@ -1797,7 +2023,7 @@ serve(async (req) => {
           .from("bot_policy_attributions")
           .delete()
           .eq("id", attributionId)
-          .eq("user_id", user.id);
+          .eq("user_id", effectiveUserId);
 
         if (delErr) {
           return jsonResponse({ error: delErr.message }, 400);

@@ -166,7 +166,11 @@ export function useUnlinkAttribution() {
 
 // ─── Collective Analytics (no JWT required) ─────────────────────
 
-export function useCollectiveAnalytics(from: string, to: string) {
+export function useCollectiveAnalytics(
+  from: string,
+  to: string,
+  options?: { refetchInterval?: number },
+) {
   return useQuery<CollectiveAnalytics>({
     queryKey: analyticsKeys.collective(from, to),
     queryFn: async () => {
@@ -179,5 +183,6 @@ export function useCollectiveAnalytics(from: string, to: string) {
     },
     staleTime: 10 * 60 * 1000,
     retry: 1,
+    refetchInterval: options?.refetchInterval,
   });
 }
