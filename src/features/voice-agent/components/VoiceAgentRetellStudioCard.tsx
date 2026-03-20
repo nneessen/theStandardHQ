@@ -1,4 +1,11 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import {
   AlertTriangle,
   Bot,
@@ -9,6 +16,8 @@ import {
   Search,
   Sparkles,
   UploadCloud,
+  Volume2,
+  VolumeX,
   WandSparkles,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -264,12 +273,42 @@ export function VoiceAgentRetellStudioCard({
   const [searchResults, setSearchResults] = useState<
     ChatBotRetellVoiceSearchHit[]
   >([]);
+  const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [jsonOpen, setJsonOpen] = useState(false);
   const [agentJson, setAgentJson] = useState(savedAgentJson);
   const [agentJsonError, setAgentJsonError] = useState<string | null>(null);
   const [llmJson, setLlmJson] = useState(savedLlmJson);
   const [llmJsonError, setLlmJsonError] = useState<string | null>(null);
+
+  const handlePreviewVoice = useCallback(
+    (voiceId: string, previewUrl: string) => {
+      // If already playing this voice, stop it
+      if (playingVoiceId === voiceId && audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+        setPlayingVoiceId(null);
+        return;
+      }
+
+      // Stop any currently playing audio
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+
+      const audio = new Audio(previewUrl);
+      audioRef.current = audio;
+      setPlayingVoiceId(voiceId);
+      audio.play().catch(() => setPlayingVoiceId(null));
+      audio.addEventListener("ended", () => {
+        setPlayingVoiceId(null);
+        audioRef.current = null;
+      });
+    },
+    [playingVoiceId],
+  );
 
   useEffect(() => {
     setAgentForm(savedAgentForm);
@@ -1003,12 +1042,13 @@ export function VoiceAgentRetellStudioCard({
                         <select
                           id="voice-search-provider"
                           value={voiceProvider}
-                          onChange={(event) =>
+                          onChange={(event) => {
                             setVoiceProvider(
                               event.target
                                 .value as (typeof RETELL_VOICE_PROVIDERS)[number],
-                            )
-                          }
+                            );
+                            setSearchResults([]);
+                          }}
                           className="flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900"
                         >
                           {RETELL_VOICE_PROVIDERS.map((provider) => (
@@ -1141,19 +1181,42 @@ export function VoiceAgentRetellStudioCard({
                                   </div>
                                 </div>
 
-                                <Button
-                                  size="sm"
-                                  variant={isSelected ? "secondary" : "outline"}
-                                  onClick={() =>
-                                    updateFormField(
-                                      setAgentForm,
-                                      "voiceId",
-                                      voice.voice_id,
-                                    )
-                                  }
-                                >
-                                  {isSelected ? "Selected" : "Use Voice"}
-                                </Button>
+                                <div className="flex items-center gap-2">
+                                  {voice.preview_audio_url && (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-8 w-8 p-0"
+                                      onClick={() =>
+                                        handlePreviewVoice(
+                                          voice.voice_id,
+                                          voice.preview_audio_url!,
+                                        )
+                                      }
+                                    >
+                                      {playingVoiceId === voice.voice_id ? (
+                                        <VolumeX className="h-3.5 w-3.5" />
+                                      ) : (
+                                        <Volume2 className="h-3.5 w-3.5" />
+                                      )}
+                                    </Button>
+                                  )}
+                                  <Button
+                                    size="sm"
+                                    variant={
+                                      isSelected ? "secondary" : "outline"
+                                    }
+                                    onClick={() =>
+                                      updateFormField(
+                                        setAgentForm,
+                                        "voiceId",
+                                        voice.voice_id,
+                                      )
+                                    }
+                                  >
+                                    {isSelected ? "Selected" : "Use Voice"}
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           );
