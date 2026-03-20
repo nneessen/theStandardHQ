@@ -395,6 +395,17 @@ async function getTeamAccessStatus(
     return { profile, isOnExemptTeam: true };
   }
 
+  // Check for explicit team access override (e.g. upline users)
+  const { data: override } = await supabase
+    .from("chat_bot_team_overrides")
+    .select("id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (override) {
+    return { profile, isOnExemptTeam: true };
+  }
+
   const hierarchyPath = profile.hierarchy_path || userId;
   const uplineIds = hierarchyPath.split(".").slice(0, -1);
 

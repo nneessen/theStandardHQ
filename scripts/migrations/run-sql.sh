@@ -41,7 +41,12 @@ if [ -z "$DATABASE_URL" ]; then
     exit 1
 fi
 
-CONN_STR="${DATABASE_URL}?sslmode=require"
+# Skip SSL for local Supabase (127.0.0.1 / localhost)
+if echo "$DATABASE_URL" | grep -qE '(127\.0\.0\.1|localhost)'; then
+    CONN_STR="$DATABASE_URL"
+else
+    CONN_STR="${DATABASE_URL}?sslmode=require"
+fi
 
 # Check for function definitions in SQL and warn
 check_for_functions() {
