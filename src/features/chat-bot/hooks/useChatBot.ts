@@ -468,6 +468,9 @@ function invalidateVoiceAgentQueries(queryClient: QueryClient) {
   void queryClient.cancelQueries({
     queryKey: chatBotKeys.voiceSetupState(),
   });
+  void queryClient.invalidateQueries({
+    queryKey: chatBotKeys.voiceSetupState(),
+  });
   void queryClient.invalidateQueries({ queryKey: chatBotKeys.agent() });
   void queryClient.invalidateQueries({
     queryKey: chatBotKeys.voiceEntitlement(),
@@ -1045,8 +1048,7 @@ export function useStartVoiceTrial() {
         "Voice trial activated — you can now create your voice agent.",
       );
       // Invalidate addon queries so the page picks up the new addon row
-      void queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
-      void queryClient.invalidateQueries({ queryKey: ["user-addons"] });
+      void queryClient.invalidateQueries({ queryKey: ["subscription"] });
       invalidateVoiceAgentQueries(queryClient);
     },
     onError: (error: Error) => {

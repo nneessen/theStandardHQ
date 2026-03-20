@@ -598,8 +598,9 @@ export function VoiceAgentPage() {
     isLoading: retellVoicesLoading,
   } = useChatBotRetellVoices(shouldLoadRetellDetails);
   const voiceAccessActive =
-    voiceSetupState?.readiness?.entitlementActive ??
-    isVoiceAccessActive(voiceEntitlement?.status ?? voiceSnapshot?.status);
+    (voiceSetupState?.readiness?.entitlementActive ??
+      isVoiceAccessActive(voiceEntitlement?.status ?? voiceSnapshot?.status)) ||
+    voiceAddon?.status === "active";
   const voiceAgentPublished =
     voiceSetupState?.agent?.published === true ||
     retellRuntime?.agent?.is_published === true;
@@ -994,7 +995,7 @@ export function VoiceAgentPage() {
               voiceAgentPublished={voiceAgentPublished}
               voiceAgentProvisioning={voiceAgentProvisioning}
               onNavigateToSetup={() => {
-                setActiveSetupTab(getSetupTabForNextAction(voiceNextActionKey));
+                setActiveSetupTab("voice");
                 setActiveTab("setup");
               }}
               canOpenSetup={canOpenSetup}

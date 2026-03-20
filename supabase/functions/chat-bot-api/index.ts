@@ -235,16 +235,25 @@ async function ensureAgentContext(
     externalRef: userId,
     name: buildManagedWorkspaceName(profile),
     billingExempt,
+    ...(billingExempt ? {} : { leadLimit: 5 }),
   });
 
   if (!provisionRes.ok) {
+    console.error(
+      `[chat-bot-api] ensureAgentContext provision failed for user ${userId}:`,
+      `status=${provisionRes.status}`,
+      JSON.stringify(provisionRes.data),
+    );
     return {
       ok: false as const,
       status: safeStatus(provisionRes.status),
       error:
         typeof provisionRes.data?.error === "string"
           ? provisionRes.data.error
-          : "Failed to provision workspace",
+          : typeof provisionRes.data?.message === "string"
+            ? provisionRes.data.message
+            : `Failed to provision workspace (upstream ${provisionRes.status})`,
+      details: provisionRes.data,
     };
   }
 
