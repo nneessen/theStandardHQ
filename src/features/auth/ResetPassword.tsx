@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { logger } from "../../services/base/logger";
+import { isLocalSupabase } from "../../services/base";
 import { AuthErrorDisplay } from "./components/AuthErrorDisplay";
 import { AuthSuccessMessage } from "./components/AuthSuccessMessage";
 import { ArrowLeft, KeyRound, Mail } from "lucide-react";
@@ -22,7 +23,10 @@ import { SESSION_STORAGE_KEYS } from "../../constants/auth.constants";
 /**
  * Get user-friendly error message based on Supabase error codes
  */
-function getErrorMessage(code: string | null, description: string | null): string {
+function getErrorMessage(
+  code: string | null,
+  description: string | null,
+): string {
   if (code === "otp_expired") {
     return "This password reset link has expired. Please request a new one below.";
   }
@@ -37,7 +41,12 @@ function getErrorMessage(code: string | null, description: string | null): strin
 
 export const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
-  const { updatePassword, resetPassword, session, loading: authLoading } = useAuth();
+  const {
+    updatePassword,
+    resetPassword,
+    session,
+    loading: authLoading,
+  } = useAuth();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -61,23 +70,34 @@ export const ResetPassword: React.FC = () => {
     // Check for error state from AuthCallback redirect
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get("error") === "true") {
-      const storedError = sessionStorage.getItem(SESSION_STORAGE_KEYS.PASSWORD_RESET_ERROR);
+      const storedError = sessionStorage.getItem(
+        SESSION_STORAGE_KEYS.PASSWORD_RESET_ERROR,
+      );
       if (storedError) {
         try {
           const errorInfo = JSON.parse(storedError);
           sessionStorage.removeItem(SESSION_STORAGE_KEYS.PASSWORD_RESET_ERROR);
-          const errorMessage = getErrorMessage(errorInfo.code, errorInfo.description);
+          const errorMessage = getErrorMessage(
+            errorInfo.code,
+            errorInfo.description,
+          );
           setError(errorMessage);
           setShowRetryForm(true);
           setCheckedAuth(true);
           logger.auth("Password reset error from AuthCallback", errorInfo);
           return;
         } catch (e) {
-          logger.error("Failed to parse password reset error", e as Error, "Auth");
+          logger.error(
+            "Failed to parse password reset error",
+            e as Error,
+            "Auth",
+          );
         }
       }
       // Fallback error message if no stored error
-      setError("There was a problem with your password reset link. Please request a new one below.");
+      setError(
+        "There was a problem with your password reset link. Please request a new one below.",
+      );
       setShowRetryForm(true);
       setCheckedAuth(true);
       return;
@@ -90,7 +110,9 @@ export const ResetPassword: React.FC = () => {
 
     // Fallback: Check sessionStorage for recovery hash (stored by index.tsx before Supabase could clear it)
     if (!accessToken || !type) {
-      const storedHash = sessionStorage.getItem(SESSION_STORAGE_KEYS.RECOVERY_HASH);
+      const storedHash = sessionStorage.getItem(
+        SESSION_STORAGE_KEYS.RECOVERY_HASH,
+      );
       if (storedHash) {
         const storedParams = new URLSearchParams(storedHash.substring(1));
         accessToken = storedParams.get("access_token");
@@ -461,9 +483,18 @@ export const ResetPassword: React.FC = () => {
             {/* Retry Success Message */}
             {retrySuccess && (
               <div className="space-y-4">
-                <AuthSuccessMessage message="New password reset link sent! Check your email inbox." />
+                <AuthSuccessMessage
+                  message={
+                    isLocalSupabase
+                      ? "Redirecting to the local password reset flow..."
+                      : "New password reset link sent! Check your email inbox."
+                  }
+                />
                 <p className="text-xs text-muted-foreground text-center">
-                  Didn't receive it? Check your spam folder or{" "}
+                  Didn't receive it?{" "}
+                  {isLocalSupabase
+                    ? "If nothing happens, "
+                    : "Check your spam folder or "}
                   <button
                     type="button"
                     onClick={() => {

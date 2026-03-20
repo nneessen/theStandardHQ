@@ -43,6 +43,17 @@ const emptyEngagement = {
   hardNoRate: 0,
 } as const;
 
+const emptyMessagePerformance = {
+  trackedOutboundCount: 0,
+  resolvedOutcomeCount: 0,
+  resolvedOutcomeRate: 0,
+  positiveRate: 0,
+  negativeRate: 0,
+  schedulingRate: 0,
+  optOutRate: 0,
+  topReplyCategories: [],
+} as const;
+
 export function AnalyticsTab() {
   const [range, setRange] = useState(() => {
     const to = new Date().toISOString().slice(0, 10);
@@ -111,6 +122,9 @@ export function AnalyticsTab() {
             />
             <EngagementMetrics
               data={analytics.data.engagement ?? emptyEngagement}
+              messagePerformance={
+                analytics.data.messagePerformance ?? emptyMessagePerformance
+              }
             />
             <ConversionMetrics
               attributions={attributions.data || []}

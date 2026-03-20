@@ -24,8 +24,12 @@ async function callChatBotApi(
   path: string,
   body?: Record<string, unknown>,
 ): Promise<{ ok: boolean; status: number; data: Record<string, unknown> }> {
-  const CHAT_BOT_API_URL = Deno.env.get("CHAT_BOT_API_URL");
-  const CHAT_BOT_API_KEY = Deno.env.get("CHAT_BOT_API_KEY");
+  const CHAT_BOT_API_URL =
+    Deno.env.get("STANDARD_CHAT_BOT_API_URL") ||
+    Deno.env.get("CHAT_BOT_API_URL");
+  const CHAT_BOT_API_KEY =
+    Deno.env.get("STANDARD_CHAT_BOT_EXTERNAL_API_KEY") ||
+    Deno.env.get("CHAT_BOT_API_KEY");
 
   if (!CHAT_BOT_API_URL || !CHAT_BOT_API_KEY) {
     throw new Error("CHAT_BOT_API_URL or CHAT_BOT_API_KEY not configured");
@@ -68,6 +72,12 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get(
       "SUPABASE_SERVICE_ROLE_KEY",
     )!;
+
+    // Enforce service-role-only access — reject user JWTs
+    const token = authHeader.slice(7);
+    if (token !== SUPABASE_SERVICE_ROLE_KEY) {
+      return jsonResponse({ error: "Forbidden: service role required" }, 403);
+    }
 
     // Use service role client for all DB operations
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
@@ -461,9 +471,6 @@ serve(async (req) => {
     }
   } catch (err) {
     console.error("[chat-bot-provision] Unhandled error:", err);
-    return jsonResponse(
-      { error: "Internal server error", message: String(err) },
-      500,
-    );
+    return jsonResponse({ error: "Internal server error" }, 500);
   }
 });

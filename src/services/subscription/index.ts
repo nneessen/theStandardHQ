@@ -14,6 +14,27 @@ export {
   type TeamUWWizardSeat,
   type EligibleDownlineAgent,
 } from "./subscriptionService";
+export {
+  PREMIUM_VOICE_ADDON_NAME,
+  PREMIUM_VOICE_DEFAULT_PLAN_CODE,
+  DEFAULT_VOICE_FEATURES,
+  isPremiumVoiceAddon,
+  getTierUsageAmount,
+  getTierUsageUnit,
+  getVoiceTierConfig,
+  getUtcCalendarMonthCycle,
+  mapStripeStatusToVoiceStatus,
+  buildVoiceEntitlementPayload,
+  buildVoiceCancellationPayload,
+  syncVoiceEntitlementWithRetry,
+  type VoiceAddonTier,
+  type VoiceAddonTierConfig,
+  type VoiceEntitlementPayload,
+  type VoiceCancellationPayload,
+  type VoiceEntitlementSnapshot,
+  type VoiceEntitlementStatus,
+  type VoiceFeatureFlags,
+} from "./voice-sync";
 
 export { SubscriptionRepository } from "./SubscriptionRepository";
 export type { SubscriptionBaseEntity } from "./SubscriptionRepository";
@@ -24,6 +45,7 @@ export { type SubscriptionPlan as AdminSubscriptionPlan } from "./SubscriptionRe
 export {
   adminSubscriptionService,
   type SubscriptionAddon,
+  type AddonUserSummary,
   type UserSubscriptionAddon,
   type SubscriptionPlanChange,
   type UpdatePlanFeaturesParams,

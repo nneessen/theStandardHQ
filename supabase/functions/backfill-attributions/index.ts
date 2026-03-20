@@ -20,8 +20,12 @@ serve(async (req) => {
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const CHAT_BOT_API_URL = Deno.env.get("CHAT_BOT_API_URL");
-  const CHAT_BOT_API_KEY = Deno.env.get("CHAT_BOT_API_KEY");
+  const CHAT_BOT_API_URL =
+    Deno.env.get("STANDARD_CHAT_BOT_API_URL") ||
+    Deno.env.get("CHAT_BOT_API_URL");
+  const CHAT_BOT_API_KEY =
+    Deno.env.get("STANDARD_CHAT_BOT_EXTERNAL_API_KEY") ||
+    Deno.env.get("CHAT_BOT_API_KEY");
 
   if (!CHAT_BOT_API_URL || !CHAT_BOT_API_KEY) {
     return new Response(

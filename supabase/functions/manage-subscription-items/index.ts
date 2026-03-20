@@ -4,6 +4,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
 import Stripe from "https://esm.sh/stripe@17.7.0?target=deno";
+import {
+  PREMIUM_VOICE_ADDON_NAME,
+  PREMIUM_VOICE_COMING_SOON_MESSAGE,
+  PREMIUM_VOICE_SELF_SERVE_ENABLED,
+} from "../../../src/lib/subscription/voice-addon.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -117,6 +122,19 @@ serve(async (req) => {
           return jsonResponse(
             { error: "This addon is no longer available" },
             400,
+          );
+        }
+
+        if (
+          addon.name === PREMIUM_VOICE_ADDON_NAME &&
+          !PREMIUM_VOICE_SELF_SERVE_ENABLED
+        ) {
+          return jsonResponse(
+            {
+              error: PREMIUM_VOICE_COMING_SOON_MESSAGE,
+              comingSoon: true,
+            },
+            403,
           );
         }
 

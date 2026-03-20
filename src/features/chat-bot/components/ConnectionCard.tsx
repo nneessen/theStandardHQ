@@ -7,12 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import type { ConnectionVisualState } from "../lib/connection-state";
 
 interface ConnectionCardProps {
   title: string;
   icon: React.ReactNode;
   connected: boolean;
+  state?: ConnectionVisualState;
   statusLabel?: string;
+  unavailableLabel?: string;
   isLoading?: boolean;
   // For API key-based connection (Close)
   onConnect?: (apiKey: string) => void;
@@ -31,7 +34,9 @@ export function ConnectionCard({
   title,
   icon,
   connected,
+  state,
   statusLabel,
+  unavailableLabel,
   isLoading,
   onConnect,
   connectLoading,
@@ -43,6 +48,7 @@ export function ConnectionCard({
   disconnectLoading,
 }: ConnectionCardProps) {
   const [apiKey, setApiKey] = useState("");
+  const visualState = state ?? (connected ? "connected" : "disconnected");
 
   if (isLoading) {
     return (
@@ -62,9 +68,11 @@ export function ConnectionCard({
     <div
       className={cn(
         "p-3 border rounded-lg",
-        connected
+        visualState === "connected"
           ? "border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20"
-          : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900",
+          : visualState === "unavailable"
+            ? "border-amber-200 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/20"
+            : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900",
       )}
     >
       {/* Header row */}
@@ -73,10 +81,15 @@ export function ConnectionCard({
         <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
           {title}
         </span>
-        {connected ? (
+        {visualState === "connected" ? (
           <Badge className="text-[9px] h-4 px-1.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 ml-auto">
             <CheckCircle2 className="h-2 w-2 mr-0.5" />
             Connected
+          </Badge>
+        ) : visualState === "unavailable" ? (
+          <Badge className="ml-auto h-4 bg-amber-100 px-1.5 text-[9px] text-amber-700 dark:bg-amber-900/60 dark:text-amber-300">
+            <Loader2 className="mr-0.5 h-2 w-2" />
+            Unavailable
           </Badge>
         ) : (
           <Badge
@@ -90,14 +103,20 @@ export function ConnectionCard({
       </div>
 
       {/* Status label */}
-      {connected && statusLabel && (
+      {visualState === "connected" && statusLabel && (
         <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-2">
           {statusLabel}
         </p>
       )}
 
+      {visualState === "unavailable" && unavailableLabel && (
+        <p className="mb-2 text-[10px] text-amber-700 dark:text-amber-300">
+          {unavailableLabel}
+        </p>
+      )}
+
       {/* Connected state: disconnect button */}
-      {connected && onDisconnect && (
+      {visualState === "connected" && onDisconnect && (
         <Button
           variant="outline"
           size="sm"
@@ -115,7 +134,7 @@ export function ConnectionCard({
       )}
 
       {/* Not connected: API key input or OAuth button */}
-      {!connected && onConnect && (
+      {visualState === "disconnected" && onConnect && (
         <div className="flex items-center gap-1.5">
           <Input
             type="password"
@@ -141,7 +160,7 @@ export function ConnectionCard({
         </div>
       )}
 
-      {!connected && onOAuthConnect && (
+      {visualState === "disconnected" && onOAuthConnect && (
         <Button
           size="sm"
           className="h-7 text-[10px]"

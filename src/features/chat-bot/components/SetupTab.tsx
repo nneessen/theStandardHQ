@@ -1,21 +1,26 @@
-// src/features/chat-bot/components/SetupTab.tsx
-// Bot configuration + Close CRM / Calendly / Google Calendar connection management + lead source/status config
-
-import { useState, useEffect } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
-  Globe,
-  Power,
-  Tag,
-  ListChecks,
-  Check,
-  Loader2,
-  Calendar,
   AlertTriangle,
-  RefreshCw,
-  Clock,
   Bell,
+  Calendar,
+  Check,
+  Clock,
+  Globe,
+  ListChecks,
+  Loader2,
+  PlugZap,
+  Power,
+  RefreshCw,
+  Settings2,
+  Tag,
+  User,
+  Users,
 } from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -24,29 +29,34 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import { ConnectionCard } from "./ConnectionCard";
+
 import { AgentProfileSection } from "./AgentProfileSection";
+import { CalendarHealthBanner } from "./CalendarHealthBanner";
+import { ConnectionCard } from "./ConnectionCard";
 import { LeadSourceSelector } from "./LeadSourceSelector";
 import { LeadStatusSelector } from "./LeadStatusSelector";
+import { ResponseScheduleSection } from "./ResponseScheduleSection";
+import {
+  getConnectionStateLabel,
+  resolveConnectionState,
+} from "../lib/connection-state";
 import {
   useChatBotAgent,
-  useChatBotCloseStatus,
-  useChatBotCalendlyStatus,
   useChatBotCalendlyEventTypes,
+  useChatBotCalendlyStatus,
+  useChatBotCloseLeadStatuses,
+  useChatBotCloseStatus,
   useChatBotGoogleStatus,
   useConnectClose,
-  useDisconnectClose,
-  useGetCalendlyAuthUrl,
   useDisconnectCalendly,
-  useGetGoogleAuthUrl,
+  useDisconnectClose,
   useDisconnectGoogle,
-  useUpdateBusinessHours,
+  useGetCalendlyAuthUrl,
+  useGetGoogleAuthUrl,
   useUpdateBotConfig,
+  useUpdateBusinessHours,
 } from "../hooks/useChatBot";
-import { CalendarHealthBanner } from "./CalendarHealthBanner";
 
-// Common US timezones
 const TIMEZONES = [
   "America/New_York",
   "America/Chicago",
@@ -59,21 +69,91 @@ const TIMEZONES = [
 
 const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+function SectionCard({
+  icon,
+  title,
+  description,
+  children,
+}: {
+  icon: ReactNode;
+  title: string;
+  description?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="mb-3 flex items-start gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+          {icon}
+        </div>
+        <div>
+          <h2 className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+            {title}
+          </h2>
+          {description ? (
+            <p className="mt-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+              {description}
+            </p>
+          ) : null}
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+}
+
+function SummaryTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900">
+      <p className="text-[9px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        {label}
+      </p>
+      <p className="mt-1 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+        {value}
+      </p>
+    </div>
+  );
+}
+
 export function SetupTab() {
   const { data: agent } = useChatBotAgent();
-  const { data: closeStatus, isLoading: closeLoading } =
-    useChatBotCloseStatus();
-  const { data: calendlyStatus, isLoading: calendlyLoading } =
-    useChatBotCalendlyStatus();
-  const { data: googleStatus, isLoading: googleLoading } =
-    useChatBotGoogleStatus();
+  const {
+    data: closeStatus,
+    error: closeStatusError,
+    isLoading: closeLoading,
+  } = useChatBotCloseStatus();
+  const closeConnectionState = resolveConnectionState({
+    connected: closeStatus?.connected,
+    error: closeStatusError,
+  });
+  const closeConnected = closeConnectionState === "connected";
+  const { data: closeLeadStatuses } =
+    useChatBotCloseLeadStatuses(closeConnected);
+  const {
+    data: calendlyStatus,
+    error: calendlyStatusError,
+    isLoading: calendlyLoading,
+  } = useChatBotCalendlyStatus();
+  const {
+    data: googleStatus,
+    error: googleStatusError,
+    isLoading: googleLoading,
+  } = useChatBotGoogleStatus();
+  const calendlyConnectionState = resolveConnectionState({
+    connected: calendlyStatus?.connected,
+    error: calendlyStatusError,
+  });
+  const googleConnectionState = resolveConnectionState({
+    connected: googleStatus?.connected,
+    error: googleStatusError,
+  });
   const {
     data: eventTypes,
     isLoading: eventTypesLoading,
     isError: eventTypesError,
     error: eventTypesErrorObj,
     refetch: refetchEventTypes,
-  } = useChatBotCalendlyEventTypes(calendlyStatus?.connected || false);
+  } = useChatBotCalendlyEventTypes(calendlyConnectionState === "connected");
 
   const connectClose = useConnectClose();
   const disconnectClose = useDisconnectClose();
@@ -84,14 +164,13 @@ export function SetupTab() {
   const updateBusinessHours = useUpdateBusinessHours();
   const updateConfig = useUpdateBotConfig();
 
-  // Derive which calendar provider is connected
-  const calendarProvider: "google" | "calendly" | null = googleStatus?.connected
-    ? "google"
-    : calendlyStatus?.connected
-      ? "calendly"
-      : null;
+  const calendarProvider: "google" | "calendly" | null =
+    googleConnectionState === "connected"
+      ? "google"
+      : calendlyConnectionState === "connected"
+        ? "calendly"
+        : null;
 
-  // Local state for lead source/status editing
   const [leadSources, setLeadSources] = useState<string[] | null>(null);
   const [leadStatuses, setLeadStatuses] = useState<string[] | null>(null);
   const [sourcesDirty, setSourcesDirty] = useState(false);
@@ -101,13 +180,11 @@ export function SetupTab() {
   >(null);
   const [eventTypeDirty, setEventTypeDirty] = useState(false);
 
-  // Business hours local state
   const [bhDays, setBhDays] = useState<number[]>([1, 2, 3, 4, 5]);
   const [bhStart, setBhStart] = useState("09:00");
   const [bhEnd, setBhEnd] = useState("17:00");
   const [bhDirty, setBhDirty] = useState(false);
 
-  // Initialize business hours from agent data
   useEffect(() => {
     if (agent?.businessHours) {
       setBhDays(agent.businessHours.days);
@@ -117,9 +194,25 @@ export function SetupTab() {
     }
   }, [agent?.businessHours]);
 
-  // Resolve displayed values: local edits override agent data
   const displayedSources = leadSources ?? agent?.autoOutreachLeadSources ?? [];
   const displayedStatuses = leadStatuses ?? agent?.allowedLeadStatuses ?? [];
+  const displayedEventTypeMappings =
+    eventTypeMappings ?? agent?.leadSourceEventTypeMappings ?? [];
+
+  const hasInvalidMappings = displayedEventTypeMappings.some(
+    (mapping) => !mapping.leadSource.trim() || !mapping.eventTypeSlug.trim(),
+  );
+  const hasDuplicateMappings = (() => {
+    const seen = new Set<string>();
+    for (const mapping of displayedEventTypeMappings) {
+      const key = mapping.leadSource.trim().toLowerCase();
+      if (!key) continue;
+      if (seen.has(key)) return true;
+      seen.add(key);
+    }
+    return false;
+  })();
+  const mappingsValid = !hasInvalidMappings && !hasDuplicateMappings;
 
   const handleCalendlyConnect = async () => {
     const returnUrl = new URL(window.location.href);
@@ -132,7 +225,7 @@ export function SetupTab() {
         toast.error("Failed to get Calendly auth URL — no URL returned.");
       }
     } catch {
-      // Error toast handled by hook
+      // handled in hook
     }
   };
 
@@ -149,17 +242,13 @@ export function SetupTab() {
         );
       }
     } catch {
-      // Error toast handled by hook
+      // handled in hook
     }
   };
 
   const handleToggleBot = () => {
     if (!agent) return;
     updateConfig.mutate({ botEnabled: !agent.botEnabled });
-  };
-
-  const handleTimezoneChange = (tz: string) => {
-    updateConfig.mutate({ timezone: tz });
   };
 
   const handleSaveSources = () => {
@@ -203,34 +292,6 @@ export function SetupTab() {
     );
   };
 
-  const toggleDay = (day: number) => {
-    setBhDays((prev) =>
-      prev.includes(day)
-        ? prev.filter((d) => d !== day)
-        : [...prev, day].sort(),
-    );
-    setBhDirty(true);
-  };
-
-  const displayedEventTypeMappings =
-    eventTypeMappings ?? agent?.leadSourceEventTypeMappings ?? [];
-
-  // Client-side validation for event type mappings
-  const hasInvalidMappings = displayedEventTypeMappings.some(
-    (m) => !m.leadSource.trim() || !m.eventTypeSlug.trim(),
-  );
-  const hasDuplicateMappings = (() => {
-    const seen = new Set<string>();
-    for (const m of displayedEventTypeMappings) {
-      const key = m.leadSource.trim().toLowerCase();
-      if (!key) continue;
-      if (seen.has(key)) return true;
-      seen.add(key);
-    }
-    return false;
-  })();
-  const mappingsValid = !hasInvalidMappings && !hasDuplicateMappings;
-
   const handleSaveEventType = () => {
     updateConfig.mutate(
       { leadSourceEventTypeMappings: displayedEventTypeMappings },
@@ -243,72 +304,90 @@ export function SetupTab() {
     );
   };
 
+  const toggleDay = (day: number) => {
+    setBhDays((previous) =>
+      previous.includes(day)
+        ? previous.filter((value) => value !== day)
+        : [...previous, day].sort(),
+    );
+    setBhDirty(true);
+  };
+
+  const calendarLabel =
+    calendarProvider === "google"
+      ? "Google Calendar"
+      : calendarProvider === "calendly"
+        ? "Calendly"
+        : calendlyConnectionState === "unavailable" ||
+            googleConnectionState === "unavailable"
+          ? "Connection unavailable"
+          : "Not connected";
+
   return (
-    <div className="space-y-3">
-      {/* ═══════════ BOT POWER — full-width enable/disable card ═══════════ */}
+    <div className="space-y-4">
       {agent && !agent.botEnabled ? (
         <button
           type="button"
           disabled={updateConfig.isPending}
           onClick={handleToggleBot}
-          className="group w-full relative overflow-hidden rounded-xl border-2 border-amber-400 dark:border-amber-500 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 dark:from-amber-950/50 dark:via-yellow-950/40 dark:to-orange-950/40 p-5 text-left transition-all hover:border-amber-500 hover:shadow-lg hover:shadow-amber-200/40 dark:hover:shadow-amber-900/30 disabled:opacity-70"
+          className="group relative w-full overflow-hidden rounded-xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 p-5 text-left transition-all hover:border-amber-500 hover:shadow-lg hover:shadow-amber-200/40 disabled:opacity-70 dark:border-amber-500 dark:from-amber-950/50 dark:via-yellow-950/40 dark:to-orange-950/40 dark:hover:shadow-amber-900/30"
         >
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.15),transparent_60%)]" />
-          <div className="absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl from-amber-200/30 to-transparent dark:from-amber-700/20 rounded-bl-full" />
+          <div className="absolute right-0 top-0 h-40 w-40 rounded-bl-full bg-gradient-to-bl from-amber-200/30 to-transparent dark:from-amber-700/20" />
           <div className="relative flex items-center gap-5">
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 dark:from-amber-500 dark:to-orange-600 flex items-center justify-center flex-shrink-0 shadow-xl shadow-amber-400/30 dark:shadow-amber-600/30 group-hover:scale-105 transition-transform">
+            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-xl shadow-amber-400/30 transition-transform group-hover:scale-105 dark:from-amber-500 dark:to-orange-600 dark:shadow-amber-600/30">
               {updateConfig.isPending ? (
-                <Loader2 className="h-7 w-7 text-white animate-spin" />
+                <Loader2 className="h-7 w-7 animate-spin text-white" />
               ) : (
                 <Power className="h-7 w-7 text-white" />
               )}
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-base font-bold text-amber-900 dark:text-amber-100">
                 Your bot is ready — turn it on!
               </p>
-              <p className="text-[12px] text-amber-700 dark:text-amber-300 mt-1 leading-relaxed">
+              <p className="mt-1 text-[12px] leading-relaxed text-amber-700 dark:text-amber-300">
                 Everything is configured. Click here to enable the bot and start
                 responding to leads, handling objections, and booking
                 appointments automatically.
               </p>
             </div>
-            <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
-              <div className="w-16 h-16 rounded-2xl bg-emerald-500 group-hover:bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/30 group-hover:shadow-emerald-500/50 transition-all group-hover:scale-110">
+            <div className="flex flex-shrink-0 flex-col items-center gap-1.5">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500 shadow-lg shadow-emerald-500/30 transition-all group-hover:scale-110 group-hover:bg-emerald-600 group-hover:shadow-emerald-500/50">
                 <Power className="h-8 w-8 text-white" />
               </div>
-              <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                 Enable
               </span>
             </div>
           </div>
         </button>
       ) : agent?.botEnabled ? (
-        <div className="rounded-xl border-2 border-emerald-400 dark:border-emerald-600 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/40 dark:to-green-950/30 p-4">
+        <div className="rounded-xl border-2 border-emerald-400 bg-gradient-to-r from-emerald-50 to-green-50 p-4 dark:border-emerald-600 dark:from-emerald-950/40 dark:to-green-950/30">
           <div className="flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center flex-shrink-0 shadow-md shadow-emerald-400/30">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500 shadow-md shadow-emerald-400/30">
               <Power className="h-5 w-5 text-white" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="text-[13px] font-bold text-emerald-900 dark:text-emerald-100">
                 Bot is active and responding to leads
               </p>
-              <p className="text-[11px] text-emerald-700 dark:text-emerald-300 mt-0.5">
-                Your bot is live — it will respond to inbound messages and reach
-                out to new leads during business hours.
+              <p className="mt-0.5 text-[11px] text-emerald-700 dark:text-emerald-300">
+                Your bot is live and will follow the response schedule you set
+                below.
               </p>
             </div>
             <Button
               variant="outline"
               size="sm"
-              className="h-8 px-3 text-[11px] border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex-shrink-0"
+              className="h-8 flex-shrink-0 border-red-300 px-3 text-[11px] text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/30"
               disabled={updateConfig.isPending}
               onClick={handleToggleBot}
             >
               {updateConfig.isPending ? (
-                <Loader2 className="h-3 w-3 animate-spin mr-1.5" />
+                <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
               ) : (
-                <Power className="h-3 w-3 mr-1.5" />
+                <Power className="mr-1.5 h-3 w-3" />
               )}
               Disable Bot
             </Button>
@@ -316,536 +395,632 @@ export function SetupTab() {
         </div>
       ) : null}
 
-      {/* Bot Config Section */}
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-        <h2 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">
-          Bot Configuration
-        </h2>
-
-        <div className="space-y-2.5">
-          {/* Timezone selector */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <Globe className="h-3 w-3 text-zinc-400" />
-              <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
-                Timezone
-              </span>
-            </div>
-            <Select
-              value={agent?.timezone || "America/New_York"}
-              onValueChange={handleTimezoneChange}
-              disabled={updateConfig.isPending}
-            >
-              <SelectTrigger className="h-7 text-[11px] w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {TIMEZONES.map((tz) => (
-                  <SelectItem key={tz} value={tz} className="text-[11px]">
-                    {tz.replace("_", " ")}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
-
-      {/* Appointment Reminders */}
-      {agent && (
-        <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-          <div className="flex items-center justify-between">
+      <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-800 dark:bg-zinc-900/60">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+          <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center">
-                <Bell className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-zinc-700 shadow-sm dark:bg-zinc-900 dark:text-zinc-200">
+                <Settings2 className="h-4 w-4" />
               </div>
               <div>
-                <h2 className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
-                  Appointment Reminders
+                <h2 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100">
+                  Configuration Workspace
                 </h2>
                 <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                  Automatically send an SMS reminder 24 hours before each
-                  appointment.
+                  Split by section so you can adjust behavior without a long
+                  single-column form.
                 </p>
               </div>
             </div>
-            <button
-              type="button"
-              role="switch"
-              aria-checked={agent.remindersEnabled ?? false}
-              disabled={updateConfig.isPending}
-              onClick={() =>
-                updateConfig.mutate({
-                  remindersEnabled: !(agent.remindersEnabled ?? false),
-                })
-              }
-              className={cn(
-                "relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors disabled:opacity-50",
-                agent.remindersEnabled
-                  ? "bg-violet-600"
-                  : "bg-zinc-200 dark:bg-zinc-700",
-              )}
-            >
-              <span
-                className={cn(
-                  "pointer-events-none block h-3.5 w-3.5 rounded-full bg-white shadow-sm transition-transform",
-                  agent.remindersEnabled ? "translate-x-4" : "translate-x-0.5",
-                )}
-              />
-            </button>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+            <SummaryTile
+              label="Timezone"
+              value={agent?.timezone ?? "America/New_York"}
+            />
+            <SummaryTile label="Calendar" value={calendarLabel} />
+            <SummaryTile
+              label="CRM"
+              value={getConnectionStateLabel(closeConnectionState, {
+                connected: "Close connected",
+                disconnected: "Not connected",
+                unavailable: "Connection unavailable",
+              })}
+            />
+            <SummaryTile
+              label="Audience"
+              value={`${agent?.autoOutreachLeadSources?.length ?? 0} sources / ${agent?.allowedLeadStatuses?.length ?? 0} statuses`}
+            />
           </div>
         </div>
-      )}
+      </div>
 
-      {/* Agent Profile */}
-      <AgentProfileSection />
+      <Tabs defaultValue="automation" className="space-y-3">
+        <TabsList
+          variant="segment"
+          className="grid h-auto w-full grid-cols-2 gap-1 rounded-xl bg-zinc-200/70 p-1 lg:grid-cols-4 dark:bg-zinc-800/70"
+        >
+          <TabsTrigger
+            value="automation"
+            variant="segment"
+            size="sm"
+            className="h-9 gap-2"
+          >
+            <Power className="h-3.5 w-3.5" />
+            <span className="text-[10px] lg:text-[11px]">Automation</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="profile"
+            variant="segment"
+            size="sm"
+            className="h-9 gap-2"
+          >
+            <User className="h-3.5 w-3.5" />
+            <span className="text-[10px] lg:text-[11px]">Profile</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="integrations"
+            variant="segment"
+            size="sm"
+            className="h-9 gap-2"
+          >
+            <PlugZap className="h-3.5 w-3.5" />
+            <span className="text-[10px] lg:text-[11px]">Integrations</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="audience"
+            variant="segment"
+            size="sm"
+            className="h-9 gap-2"
+          >
+            <Users className="h-3.5 w-3.5" />
+            <span className="text-[10px] lg:text-[11px]">Audience</span>
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Close CRM Connection */}
-      <ConnectionCard
-        title="Close CRM"
-        icon={
-          <div className="w-6 h-6 rounded bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center">
-            <span className="text-[8px] font-bold text-white dark:text-zinc-900">
-              CRM
-            </span>
-          </div>
-        }
-        connected={closeStatus?.connected || false}
-        statusLabel={
-          closeStatus?.orgName
-            ? `Organization: ${closeStatus.orgName}`
-            : undefined
-        }
-        isLoading={closeLoading}
-        onConnect={(apiKey) => connectClose.mutate(apiKey)}
-        connectLoading={connectClose.isPending}
-        apiKeyPlaceholder="Close API key (api_...)"
-        onDisconnect={() => disconnectClose.mutate()}
-        disconnectLoading={disconnectClose.isPending}
-      />
-
-      {/* Calendar Connections — show both when none connected, single when one is */}
-      {calendarProvider === null ? (
-        <>
-          {/* Calendly */}
-          <ConnectionCard
-            title="Calendly"
-            icon={
-              <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center">
-                <span className="text-[8px] font-bold text-white">CAL</span>
-              </div>
-            }
-            connected={false}
-            isLoading={calendlyLoading}
-            onOAuthConnect={handleCalendlyConnect}
-            oauthLoading={getCalendlyAuth.isPending}
-            oauthLabel="Connect Calendly"
-            onDisconnect={() => disconnectCalendly.mutate()}
-            disconnectLoading={disconnectCalendly.isPending}
-          />
-
-          {/* Google Calendar */}
-          <ConnectionCard
-            title="Google Calendar"
-            icon={
-              <div className="w-6 h-6 rounded bg-red-500 flex items-center justify-center">
-                <Calendar className="h-3 w-3 text-white" />
-              </div>
-            }
-            connected={false}
-            isLoading={googleLoading}
-            onOAuthConnect={handleGoogleConnect}
-            oauthLoading={getGoogleAuth.isPending}
-            oauthLabel="Connect Google Calendar"
-            onDisconnect={() => disconnectGoogle.mutate()}
-            disconnectLoading={disconnectGoogle.isPending}
-          />
-        </>
-      ) : calendarProvider === "calendly" ? (
-        <ConnectionCard
-          title="Calendly"
-          icon={
-            <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center">
-              <span className="text-[8px] font-bold text-white">CAL</span>
-            </div>
-          }
-          connected={true}
-          statusLabel={
-            calendlyStatus?.userName
-              ? `${calendlyStatus.userName} (${calendlyStatus.userEmail})`
-              : "Connected to Calendly"
-          }
-          isLoading={calendlyLoading}
-          onOAuthConnect={handleCalendlyConnect}
-          oauthLoading={getCalendlyAuth.isPending}
-          oauthLabel="Connect Calendly"
-          onDisconnect={() => disconnectCalendly.mutate()}
-          disconnectLoading={disconnectCalendly.isPending}
-        />
-      ) : (
-        <ConnectionCard
-          title="Google Calendar"
-          icon={
-            <div className="w-6 h-6 rounded bg-red-500 flex items-center justify-center">
-              <Calendar className="h-3 w-3 text-white" />
-            </div>
-          }
-          connected={true}
-          statusLabel={
-            googleStatus?.userEmail
-              ? `Connected as ${googleStatus.userEmail}`
-              : "Connected to Google Calendar"
-          }
-          isLoading={googleLoading}
-          onOAuthConnect={handleGoogleConnect}
-          oauthLoading={getGoogleAuth.isPending}
-          oauthLabel="Connect Google Calendar"
-          onDisconnect={() => disconnectGoogle.mutate()}
-          disconnectLoading={disconnectGoogle.isPending}
-        />
-      )}
-
-      {/* Calendar Health Check */}
-      <CalendarHealthBanner enabled={calendarProvider !== null} />
-
-      {/* Business Hours (Google Calendar only) */}
-      {calendarProvider === "google" && (
-        <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Clock className="h-3 w-3 text-zinc-400" />
-            <h2 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              Business Hours
-            </h2>
-          </div>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-3">
-            Set available days and times for appointment scheduling via Google
-            Calendar.
-          </p>
-
-          {/* Day toggles */}
-          <div className="flex items-center gap-1 mb-3">
-            {DAY_LABELS.map((label, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => toggleDay(i)}
-                className={cn(
-                  "h-6 px-2 text-[10px] font-medium rounded-full border transition-colors",
-                  bhDays.includes(i)
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 border-zinc-300 dark:border-zinc-700 hover:border-zinc-400",
-                )}
+        <TabsContent value="automation" className="mt-0">
+          <div className="grid gap-3 xl:grid-cols-[320px_minmax(0,1fr)]">
+            <div className="space-y-3">
+              <SectionCard
+                icon={<Globe className="h-4 w-4" />}
+                title="Timezone"
+                description="Used as the fallback when a lead does not have a valid timezone."
               >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {/* Time range */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                From
-              </span>
-              <input
-                type="time"
-                value={bhStart}
-                onChange={(e) => {
-                  setBhStart(e.target.value);
-                  setBhDirty(true);
-                }}
-                className="h-7 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 text-[11px] text-zinc-900 dark:text-zinc-100"
-              />
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                To
-              </span>
-              <input
-                type="time"
-                value={bhEnd}
-                onChange={(e) => {
-                  setBhEnd(e.target.value);
-                  setBhDirty(true);
-                }}
-                className="h-7 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 text-[11px] text-zinc-900 dark:text-zinc-100"
-              />
-            </div>
-          </div>
-
-          {/* Validation error */}
-          {bhStart >= bhEnd && bhDirty && (
-            <p className="text-[10px] text-red-500 mt-1.5">
-              Start time must be before end time.
-            </p>
-          )}
-
-          {/* Save button */}
-          {bhDirty && (
-            <div className="flex items-center gap-2 pt-2 mt-2 border-t border-zinc-100 dark:border-zinc-800">
-              <Button
-                size="sm"
-                className="h-7 text-[10px]"
-                disabled={
-                  updateBusinessHours.isPending ||
-                  bhStart >= bhEnd ||
-                  bhDays.length === 0
-                }
-                onClick={handleSaveBusinessHours}
-              >
-                {updateBusinessHours.isPending ? (
-                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                ) : (
-                  <Check className="h-3 w-3 mr-1" />
-                )}
-                Save Business Hours
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Lead Source → Event Type Mappings (Calendly only) */}
-      {calendarProvider === "calendly" && (
-        <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Calendar className="h-3 w-3 text-zinc-400" />
-            <h2 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              Lead Source Event Types
-            </h2>
-          </div>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-2">
-            Map each lead source to a specific Calendly event type. Unmapped
-            sources fall back to auto-detection.
-          </p>
-
-          {eventTypesLoading ? (
-            <div className="h-7 rounded bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
-          ) : eventTypesError ? (
-            <div className="flex items-center gap-2 p-2 rounded-md bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
-              <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-              <span className="text-[10px] text-amber-700 dark:text-amber-400">
-                {eventTypesErrorObj &&
-                "isServiceError" in eventTypesErrorObj &&
-                eventTypesErrorObj.isServiceError
-                  ? "Bot service temporarily unavailable."
-                  : "Failed to load event types."}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-5 px-1.5 text-[9px] text-amber-600 hover:text-amber-800 ml-auto"
-                onClick={() => refetchEventTypes()}
-              >
-                <RefreshCw className="h-3 w-3 mr-0.5" />
-                Retry
-              </Button>
-            </div>
-          ) : eventTypes && eventTypes.length > 0 ? (
-            <div className="space-y-2">
-              {displayedEventTypeMappings.map((mapping, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={mapping.leadSource}
-                    onChange={(e) => {
-                      const updated = [...displayedEventTypeMappings];
-                      updated[index] = {
-                        ...updated[index],
-                        leadSource: e.target.value,
-                      };
-                      setEventTypeMappings(updated);
-                      setEventTypeDirty(true);
-                    }}
-                    placeholder="e.g. Sitka Life"
-                    disabled={updateConfig.isPending}
-                    className="flex-1 h-7 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 text-[11px]"
-                  />
-                  <Select
-                    value={mapping.eventTypeSlug || "__none__"}
-                    onValueChange={(val) => {
-                      const updated = [...displayedEventTypeMappings];
-                      updated[index] = {
-                        ...updated[index],
-                        eventTypeSlug: val === "__none__" ? "" : val,
-                      };
-                      setEventTypeMappings(updated);
-                      setEventTypeDirty(true);
-                    }}
-                    disabled={updateConfig.isPending}
-                  >
-                    <SelectTrigger className="h-7 text-[11px] flex-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none__" className="text-[11px]">
-                        Select event type
+                <Select
+                  value={agent?.timezone || "America/New_York"}
+                  onValueChange={(timezone) =>
+                    updateConfig.mutate({ timezone })
+                  }
+                  disabled={updateConfig.isPending}
+                >
+                  <SelectTrigger className="h-9 text-[11px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TIMEZONES.map((timezone) => (
+                      <SelectItem
+                        key={timezone}
+                        value={timezone}
+                        className="text-[11px]"
+                      >
+                        {timezone.replace("_", " ")}
                       </SelectItem>
-                      {eventTypes.map((et) => (
-                        <SelectItem
-                          key={et.slug}
-                          value={et.slug}
-                          className="text-[11px]"
+                    ))}
+                  </SelectContent>
+                </Select>
+              </SectionCard>
+
+              {agent ? (
+                <SectionCard
+                  icon={<Bell className="h-4 w-4" />}
+                  title="Appointment Reminders"
+                  description="Automatically send a reminder SMS 24 hours before each appointment."
+                >
+                  <div className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">
+                    <div>
+                      <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                        24-hour reminder
+                      </p>
+                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                        Sends one reminder before the scheduled appointment.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={agent.remindersEnabled ?? false}
+                      onCheckedChange={(checked) =>
+                        updateConfig.mutate({ remindersEnabled: checked })
+                      }
+                      disabled={updateConfig.isPending}
+                      variant="success"
+                    />
+                  </div>
+                </SectionCard>
+              ) : null}
+
+              <SectionCard
+                icon={<Clock className="h-4 w-4" />}
+                title="Schedule Behavior"
+                description="Defaults are 08:00-20:30 every day unless you save a custom schedule."
+              >
+                <div className="space-y-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/40">
+                    Automated replies follow the lead&apos;s timezone when it is
+                    available.
+                  </div>
+                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/40">
+                    Same-day booking can end earlier than replies by using a
+                    custom cutoff per day.
+                  </div>
+                </div>
+              </SectionCard>
+            </div>
+
+            <ResponseScheduleSection />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="profile" className="mt-0">
+          <AgentProfileSection />
+        </TabsContent>
+
+        <TabsContent value="integrations" className="mt-0">
+          <div className="grid gap-3 xl:grid-cols-2">
+            <div className="space-y-3">
+              <ConnectionCard
+                title="Close CRM"
+                icon={
+                  <div className="flex h-6 w-6 items-center justify-center rounded bg-zinc-900 dark:bg-zinc-100">
+                    <span className="text-[8px] font-bold text-white dark:text-zinc-900">
+                      CRM
+                    </span>
+                  </div>
+                }
+                connected={closeConnected}
+                state={closeConnectionState}
+                statusLabel={
+                  closeStatus?.orgName
+                    ? `Organization: ${closeStatus.orgName}`
+                    : undefined
+                }
+                unavailableLabel="We could not verify your Close CRM connection right now. Your existing bot connection may still be active."
+                isLoading={closeLoading}
+                onConnect={(apiKey) => connectClose.mutate(apiKey)}
+                connectLoading={connectClose.isPending}
+                apiKeyPlaceholder="Close API key (api_...)"
+                onDisconnect={() => disconnectClose.mutate()}
+                disconnectLoading={disconnectClose.isPending}
+              />
+
+              {calendarProvider === null ? (
+                <div className="grid gap-3 md:grid-cols-2">
+                  <ConnectionCard
+                    title="Calendly"
+                    icon={
+                      <div className="flex h-6 w-6 items-center justify-center rounded bg-blue-600">
+                        <span className="text-[8px] font-bold text-white">
+                          CAL
+                        </span>
+                      </div>
+                    }
+                    connected={false}
+                    state={calendlyConnectionState}
+                    isLoading={calendlyLoading}
+                    unavailableLabel="We could not verify your Calendly connection right now."
+                    onOAuthConnect={handleCalendlyConnect}
+                    oauthLoading={getCalendlyAuth.isPending}
+                    oauthLabel="Connect Calendly"
+                    onDisconnect={() => disconnectCalendly.mutate()}
+                    disconnectLoading={disconnectCalendly.isPending}
+                  />
+
+                  <ConnectionCard
+                    title="Google Calendar"
+                    icon={
+                      <div className="flex h-6 w-6 items-center justify-center rounded bg-red-500">
+                        <Calendar className="h-3 w-3 text-white" />
+                      </div>
+                    }
+                    connected={false}
+                    state={googleConnectionState}
+                    isLoading={googleLoading}
+                    unavailableLabel="We could not verify your Google Calendar connection right now."
+                    onOAuthConnect={handleGoogleConnect}
+                    oauthLoading={getGoogleAuth.isPending}
+                    oauthLabel="Connect Google Calendar"
+                    onDisconnect={() => disconnectGoogle.mutate()}
+                    disconnectLoading={disconnectGoogle.isPending}
+                  />
+                </div>
+              ) : calendarProvider === "calendly" ? (
+                <ConnectionCard
+                  title="Calendly"
+                  icon={
+                    <div className="flex h-6 w-6 items-center justify-center rounded bg-blue-600">
+                      <span className="text-[8px] font-bold text-white">
+                        CAL
+                      </span>
+                    </div>
+                  }
+                  connected={true}
+                  state={calendlyConnectionState}
+                  statusLabel={
+                    calendlyStatus?.userName
+                      ? `${calendlyStatus.userName} (${calendlyStatus.userEmail})`
+                      : "Connected to Calendly"
+                  }
+                  unavailableLabel="We could not verify your Calendly connection right now."
+                  isLoading={calendlyLoading}
+                  onOAuthConnect={handleCalendlyConnect}
+                  oauthLoading={getCalendlyAuth.isPending}
+                  oauthLabel="Reconnect Calendly"
+                  onDisconnect={() => disconnectCalendly.mutate()}
+                  disconnectLoading={disconnectCalendly.isPending}
+                />
+              ) : (
+                <ConnectionCard
+                  title="Google Calendar"
+                  icon={
+                    <div className="flex h-6 w-6 items-center justify-center rounded bg-red-500">
+                      <Calendar className="h-3 w-3 text-white" />
+                    </div>
+                  }
+                  connected={true}
+                  state={googleConnectionState}
+                  statusLabel={
+                    googleStatus?.userEmail
+                      ? `Connected as ${googleStatus.userEmail}`
+                      : "Connected to Google Calendar"
+                  }
+                  unavailableLabel="We could not verify your Google Calendar connection right now."
+                  isLoading={googleLoading}
+                  onOAuthConnect={handleGoogleConnect}
+                  oauthLoading={getGoogleAuth.isPending}
+                  oauthLabel="Reconnect Google Calendar"
+                  onDisconnect={() => disconnectGoogle.mutate()}
+                  disconnectLoading={disconnectGoogle.isPending}
+                />
+              )}
+
+              <CalendarHealthBanner enabled={calendarProvider !== null} />
+            </div>
+
+            <div className="space-y-3">
+              {calendarProvider === "google" ? (
+                <SectionCard
+                  icon={<Clock className="h-4 w-4" />}
+                  title="Business Hours"
+                  description="Set available days and times for Google Calendar scheduling."
+                >
+                  <div className="mb-3 flex flex-wrap gap-1">
+                    {DAY_LABELS.map((label, index) => (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => toggleDay(index)}
+                        className={cn(
+                          "h-7 rounded-full border px-2.5 text-[10px] font-medium transition-colors",
+                          bhDays.includes(index)
+                            ? "border-blue-600 bg-blue-600 text-white"
+                            : "border-zinc-300 bg-white text-zinc-500 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400",
+                        )}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <label className="space-y-1">
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                        Start
+                      </span>
+                      <input
+                        type="time"
+                        value={bhStart}
+                        onChange={(event) => {
+                          setBhStart(event.target.value);
+                          setBhDirty(true);
+                        }}
+                        className="h-8 w-full rounded-md border border-zinc-300 bg-white px-2 text-[11px] text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                      />
+                    </label>
+                    <label className="space-y-1">
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                        End
+                      </span>
+                      <input
+                        type="time"
+                        value={bhEnd}
+                        onChange={(event) => {
+                          setBhEnd(event.target.value);
+                          setBhDirty(true);
+                        }}
+                        className="h-8 w-full rounded-md border border-zinc-300 bg-white px-2 text-[11px] text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                      />
+                    </label>
+                  </div>
+
+                  {bhStart >= bhEnd && bhDirty ? (
+                    <p className="mt-2 text-[10px] text-red-500">
+                      Start time must be before end time.
+                    </p>
+                  ) : null}
+
+                  {bhDirty ? (
+                    <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                      <Button
+                        size="sm"
+                        className="h-7 text-[10px]"
+                        disabled={
+                          updateBusinessHours.isPending ||
+                          bhStart >= bhEnd ||
+                          bhDays.length === 0
+                        }
+                        onClick={handleSaveBusinessHours}
+                      >
+                        {updateBusinessHours.isPending ? (
+                          <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                        ) : (
+                          <Check className="mr-1 h-3 w-3" />
+                        )}
+                        Save Business Hours
+                      </Button>
+                    </div>
+                  ) : null}
+                </SectionCard>
+              ) : null}
+
+              {calendarProvider === "calendly" ? (
+                <SectionCard
+                  icon={<Calendar className="h-4 w-4" />}
+                  title="Lead Source Event Types"
+                  description="Map lead sources to specific Calendly event types."
+                >
+                  {eventTypesLoading ? (
+                    <div className="h-8 rounded bg-zinc-100 dark:bg-zinc-800" />
+                  ) : eventTypesError ? (
+                    <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 p-2 dark:border-amber-800 dark:bg-amber-950/30">
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                      <span className="text-[10px] text-amber-700 dark:text-amber-400">
+                        {eventTypesErrorObj &&
+                        "isServiceError" in eventTypesErrorObj &&
+                        eventTypesErrorObj.isServiceError
+                          ? "Bot service temporarily unavailable."
+                          : "Failed to load event types."}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="ml-auto h-5 px-1.5 text-[9px] text-amber-600 hover:text-amber-800"
+                        onClick={() => refetchEventTypes()}
+                      >
+                        <RefreshCw className="mr-0.5 h-3 w-3" />
+                        Retry
+                      </Button>
+                    </div>
+                  ) : eventTypes && eventTypes.length > 0 ? (
+                    <div className="space-y-2">
+                      {displayedEventTypeMappings.map((mapping, index) => (
+                        <div
+                          key={`${mapping.leadSource}-${index}`}
+                          className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
                         >
-                          {et.name} ({et.duration} min)
-                        </SelectItem>
+                          <input
+                            type="text"
+                            value={mapping.leadSource}
+                            onChange={(event) => {
+                              const updated = [...displayedEventTypeMappings];
+                              updated[index] = {
+                                ...updated[index],
+                                leadSource: event.target.value,
+                              };
+                              setEventTypeMappings(updated);
+                              setEventTypeDirty(true);
+                            }}
+                            placeholder="e.g. Sitka Life"
+                            disabled={updateConfig.isPending}
+                            className="h-8 rounded-md border border-zinc-300 bg-white px-2 text-[11px] dark:border-zinc-700 dark:bg-zinc-900"
+                          />
+                          <Select
+                            value={mapping.eventTypeSlug || "__none__"}
+                            onValueChange={(value) => {
+                              const updated = [...displayedEventTypeMappings];
+                              updated[index] = {
+                                ...updated[index],
+                                eventTypeSlug:
+                                  value === "__none__" ? "" : value,
+                              };
+                              setEventTypeMappings(updated);
+                              setEventTypeDirty(true);
+                            }}
+                            disabled={updateConfig.isPending}
+                          >
+                            <SelectTrigger className="h-8 text-[11px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem
+                                value="__none__"
+                                className="text-[11px]"
+                              >
+                                Select event type
+                              </SelectItem>
+                              {eventTypes.map((eventType) => (
+                                <SelectItem
+                                  key={eventType.slug}
+                                  value={eventType.slug}
+                                  className="text-[11px]"
+                                >
+                                  {eventType.name} ({eventType.duration} min)
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-[10px] text-red-500 hover:text-red-700"
+                            disabled={updateConfig.isPending}
+                            onClick={() => {
+                              setEventTypeMappings(
+                                displayedEventTypeMappings.filter(
+                                  (_, currentIndex) => currentIndex !== index,
+                                ),
+                              );
+                              setEventTypeDirty(true);
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </div>
                       ))}
-                    </SelectContent>
-                  </Select>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 border-dashed text-[10px]"
+                        disabled={updateConfig.isPending}
+                        onClick={() => {
+                          setEventTypeMappings([
+                            ...displayedEventTypeMappings,
+                            { leadSource: "", eventTypeSlug: "" },
+                          ]);
+                          setEventTypeDirty(true);
+                        }}
+                      >
+                        + Add Mapping
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                      No event types found. Create an event type in Calendly
+                      first.
+                    </p>
+                  )}
+
+                  {(hasInvalidMappings || hasDuplicateMappings) &&
+                  displayedEventTypeMappings.length > 0 ? (
+                    <div className="mt-2 space-y-1">
+                      {hasInvalidMappings ? (
+                        <p className="text-[10px] text-red-500">
+                          Each mapping must have both a lead source and an event
+                          type.
+                        </p>
+                      ) : null}
+                      {hasDuplicateMappings ? (
+                        <p className="text-[10px] text-red-500">
+                          Duplicate lead sources detected. Each source can only
+                          be mapped once.
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
+
+                  {eventTypeDirty ? (
+                    <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                      <Button
+                        size="sm"
+                        className="h-7 text-[10px]"
+                        disabled={updateConfig.isPending || !mappingsValid}
+                        onClick={handleSaveEventType}
+                      >
+                        {updateConfig.isPending ? (
+                          <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                        ) : (
+                          <Check className="mr-1 h-3 w-3" />
+                        )}
+                        Save Changes
+                      </Button>
+                    </div>
+                  ) : null}
+                </SectionCard>
+              ) : null}
+
+              {calendarProvider === null ? (
+                <SectionCard
+                  icon={<Calendar className="h-4 w-4" />}
+                  title="Calendar Rules"
+                  description="Connect a calendar provider to unlock scheduling-specific settings."
+                >
+                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    Google Calendar enables business hours. Calendly enables
+                    lead-source-to-event-type mapping.
+                  </p>
+                </SectionCard>
+              ) : null}
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="audience" className="mt-0">
+          <div className="grid gap-3 xl:grid-cols-2">
+            <SectionCard
+              icon={<Tag className="h-4 w-4" />}
+              title="Lead Sources"
+              description="The bot will respond to leads from these sources and can proactively reach out to new leads."
+            >
+              <LeadSourceSelector
+                selected={displayedSources}
+                onChange={(sources) => {
+                  setLeadSources(sources);
+                  setSourcesDirty(true);
+                }}
+                disabled={updateConfig.isPending}
+              />
+              {sourcesDirty ? (
+                <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
                   <Button
-                    variant="ghost"
                     size="sm"
-                    className="h-7 px-2 text-[10px] text-red-500 hover:text-red-700"
+                    className="h-7 text-[10px]"
                     disabled={updateConfig.isPending}
-                    onClick={() => {
-                      const updated = displayedEventTypeMappings.filter(
-                        (_, i) => i !== index,
-                      );
-                      setEventTypeMappings(updated);
-                      setEventTypeDirty(true);
-                    }}
+                    onClick={handleSaveSources}
                   >
-                    Remove
+                    {updateConfig.isPending ? (
+                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                    ) : (
+                      <Check className="mr-1 h-3 w-3" />
+                    )}
+                    Save Changes
                   </Button>
                 </div>
-              ))}
+              ) : null}
+            </SectionCard>
 
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-[10px] border-dashed"
-                disabled={updateConfig.isPending}
-                onClick={() => {
-                  setEventTypeMappings([
-                    ...displayedEventTypeMappings,
-                    { leadSource: "", eventTypeSlug: "" },
-                  ]);
-                  setEventTypeDirty(true);
+            <SectionCard
+              icon={<ListChecks className="h-4 w-4" />}
+              title="Lead Statuses"
+              description="The bot will only respond to leads in these Close statuses."
+            >
+              <LeadStatusSelector
+                options={closeLeadStatuses}
+                selected={displayedStatuses}
+                onChange={(statuses) => {
+                  setLeadStatuses(statuses);
+                  setStatusesDirty(true);
                 }}
-              >
-                + Add Mapping
-              </Button>
-            </div>
-          ) : (
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-              No event types found. Create an event type in Calendly first.
-            </p>
-          )}
-
-          {(hasInvalidMappings || hasDuplicateMappings) &&
-            displayedEventTypeMappings.length > 0 && (
-              <div className="mt-2 space-y-1">
-                {hasInvalidMappings && (
-                  <p className="text-[10px] text-red-500">
-                    Each mapping must have both a lead source and an event type.
-                  </p>
-                )}
-                {hasDuplicateMappings && (
-                  <p className="text-[10px] text-red-500">
-                    Duplicate lead sources detected. Each source can only be
-                    mapped once.
-                  </p>
-                )}
-              </div>
-            )}
-
-          {eventTypeDirty && (
-            <div className="flex items-center gap-2 pt-2 mt-2 border-t border-zinc-100 dark:border-zinc-800">
-              <Button
-                size="sm"
-                className="h-7 text-[10px]"
-                disabled={updateConfig.isPending || !mappingsValid}
-                onClick={handleSaveEventType}
-              >
-                {updateConfig.isPending ? (
-                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                ) : (
-                  <Check className="h-3 w-3 mr-1" />
-                )}
-                Save Changes
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Lead Sources */}
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-        <div className="flex items-center gap-1.5 mb-2">
-          <Tag className="h-3 w-3 text-zinc-400" />
-          <h2 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            Lead Sources
-          </h2>
-        </div>
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-2">
-          The bot will respond to leads from these sources and do proactive
-          outreach for new leads.
-        </p>
-        <LeadSourceSelector
-          selected={displayedSources}
-          onChange={(sources) => {
-            setLeadSources(sources);
-            setSourcesDirty(true);
-          }}
-          disabled={updateConfig.isPending}
-        />
-        {sourcesDirty && (
-          <div className="flex items-center gap-2 pt-2 mt-2 border-t border-zinc-100 dark:border-zinc-800">
-            <Button
-              size="sm"
-              className="h-7 text-[10px]"
-              disabled={updateConfig.isPending}
-              onClick={handleSaveSources}
-            >
-              {updateConfig.isPending ? (
-                <Loader2 className="h-3 w-3 animate-spin mr-1" />
-              ) : (
-                <Check className="h-3 w-3 mr-1" />
-              )}
-              Save Changes
-            </Button>
+                disabled={updateConfig.isPending}
+              />
+              {statusesDirty ? (
+                <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                  <Button
+                    size="sm"
+                    className="h-7 text-[10px]"
+                    disabled={updateConfig.isPending}
+                    onClick={handleSaveStatuses}
+                  >
+                    {updateConfig.isPending ? (
+                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                    ) : (
+                      <Check className="mr-1 h-3 w-3" />
+                    )}
+                    Save Changes
+                  </Button>
+                </div>
+              ) : null}
+            </SectionCard>
           </div>
-        )}
-      </div>
-
-      {/* Lead Statuses */}
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-        <div className="flex items-center gap-1.5 mb-2">
-          <ListChecks className="h-3 w-3 text-zinc-400" />
-          <h2 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            Lead Statuses
-          </h2>
-        </div>
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-2">
-          The bot will only respond to leads in these statuses. Leads in other
-          statuses will be skipped.
-        </p>
-        <LeadStatusSelector
-          selected={displayedStatuses}
-          onChange={(statuses) => {
-            setLeadStatuses(statuses);
-            setStatusesDirty(true);
-          }}
-          disabled={updateConfig.isPending}
-        />
-        {statusesDirty && (
-          <div className="flex items-center gap-2 pt-2 mt-2 border-t border-zinc-100 dark:border-zinc-800">
-            <Button
-              size="sm"
-              className="h-7 text-[10px]"
-              disabled={updateConfig.isPending}
-              onClick={handleSaveStatuses}
-            >
-              {updateConfig.isPending ? (
-                <Loader2 className="h-3 w-3 animate-spin mr-1" />
-              ) : (
-                <Check className="h-3 w-3 mr-1" />
-              )}
-              Save Changes
-            </Button>
-          </div>
-        )}
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

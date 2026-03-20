@@ -189,17 +189,22 @@ The Standard HQ is a full-featured platform designed specifically for insurance 
    Edit `.env` with your configuration:
 
    ```env
-   # Development mode (local PostgreSQL or Supabase cloud)
+   # Safe default: local Supabase via Docker
    VITE_USE_LOCAL=true
+   VITE_ALLOW_REMOTE_SUPABASE_DEV=false
 
-   # Supabase configuration
+   # Local Supabase defaults from `supabase start`
+   VITE_LOCAL_SUPABASE_URL=http://127.0.0.1:54321
+   VITE_LOCAL_SUPABASE_ANON_KEY=your-local-anon-key
+
+   # Remote Supabase is opt-in only
    VITE_SUPABASE_URL=https://your-project.supabase.co
-   VITE_SUPABASE_ANON_KEY=your-anon-key
+   VITE_SUPABASE_ANON_KEY=your-remote-anon-key
 
    # Admin email (auto-approved on signup)
    VITE_ADMIN_EMAIL=admin@example.com
 
-   # Local database (when VITE_USE_LOCAL=true)
+   # Local database
    DB_HOST=localhost
    DB_PORT=54322
    DB_NAME=postgres
@@ -207,16 +212,73 @@ The Standard HQ is a full-featured platform designed specifically for insurance 
    DB_PASS=postgres
    ```
 
-4. Start the development server:
+4. Start local Supabase:
+   ```bash
+   npm run supabase:start
+   ```
+
+5. Start the development server:
    ```bash
    npm run dev
    ```
+
+With `VITE_USE_LOCAL=true`, `npm run dev` now starts the local API server, Vite, and `supabase functions serve` automatically so `supabase.functions.invoke(...)` calls work against Dockerized Supabase. `npm run dev:local` remains available as the explicit local-only command.
+
+If you need local Supabase to mirror the current remote `auth`, `public`, and `storage` schemas exactly, run:
+
+```bash
+npm run supabase:clone-remote-schema
+```
+
+That command:
+
+- dumps the remote `auth/public/storage` schema
+- rebuilds the local `auth/public/storage` schemas from that dump
+- copies `storage.buckets` rows and `supabase_migrations.schema_migrations`
+- leaves application/auth/storage object data empty by design
+
+It requires `REMOTE_DATABASE_URL` to be set in your local env.
+
+To make that cloned schema usable for day-to-day local development, run the bootstrap immediately after:
+
+```bash
+npm run supabase:bootstrap-local-dev
+```
+
+That second step:
+
+- copies remote reference/config tables that the app expects at runtime
+- restores recruiting pipeline templates, phases, and checklist items
+- preserves the exact copied storage buckets metadata from the schema clone
+- writes local-safe `app_config` values so local never points back at the remote project
+- creates deterministic local auth users for the super admin, an active agent, a trainer, and a contracting manager
+
+For the full one-shot rebuild, use:
+
+```bash
+npm run supabase:sync-local-from-remote
+```
+
+If you intentionally need a remote Supabase project in development, set:
+
+```env
+VITE_USE_LOCAL=false
+VITE_ALLOW_REMOTE_SUPABASE_DEV=true
+```
 
 ### Available Scripts
 
 | Command                  | Description                                    |
 | ------------------------ | ---------------------------------------------- |
 | `npm run dev`            | Start development server                       |
+| `npm run dev:local`      | Start local API server, local edge functions, and Vite |
+| `npm run supabase:functions` | Serve local Supabase Edge Functions      |
+| `npm run supabase:start` | Start local Supabase via Docker                |
+| `npm run supabase:stop`  | Stop local Supabase                            |
+| `npm run supabase:status`| Show local Supabase status                     |
+| `npm run supabase:clone-remote-schema` | Rebuild local `auth/public/storage` from the remote schema, buckets, and migration history |
+| `npm run supabase:bootstrap-local-dev` | Seed local-safe runtime data and deterministic local auth users on top of the mirrored schema |
+| `npm run supabase:sync-local-from-remote` | Run the exact schema clone, then bootstrap the usable local runtime |
 | `npm run build`          | Build for production                           |
 | `npm run preview`        | Preview production build                       |
 | `npm run test`           | Run tests                                      |
@@ -227,6 +289,8 @@ The Standard HQ is a full-featured platform designed specifically for insurance 
 | `npm run email:dev`      | Start email template development server        |
 
 ## Database
+
+For development, the recommended path is the local Supabase stack on Docker. The app now defaults to local Supabase in dev and will refuse to use a remote Supabase project unless you explicitly opt in with `VITE_ALLOW_REMOTE_SUPABASE_DEV=true`.
 
 The application uses Supabase (PostgreSQL) with the following key entities:
 

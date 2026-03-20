@@ -26,6 +26,7 @@ import {
   useAddonUsers,
   type SubscriptionAddon,
 } from "@/hooks/admin";
+import { PREMIUM_VOICE_ADDON_NAME } from "@/lib/subscription/voice-addon";
 // eslint-disable-next-line no-restricted-imports
 import { adminSubscriptionService } from "@/services/subscription";
 import { AddonTierEditor, type TierConfig } from "./AddonTierEditor";
@@ -86,9 +87,33 @@ interface AddonCardProps {
   onEdit: () => void;
 }
 
+interface VoiceSnapshotSummary {
+  status?: string;
+  includedMinutes?: number;
+  usage?: {
+    usedMinutes?: number;
+    remainingMinutes?: number;
+  };
+}
+
+function parseVoiceSnapshot(value: unknown): VoiceSnapshotSummary | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+  return value as VoiceSnapshotSummary;
+}
+
+function formatSyncTime(value: string | null): string | null {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toLocaleString();
+}
+
 function AddonCard({ addon, onEdit }: AddonCardProps) {
   const [isUsersOpen, setIsUsersOpen] = useState(false);
   const { data: users, isLoading: usersLoading } = useAddonUsers(addon.id);
+  const isPremiumVoice = addon.name === PREMIUM_VOICE_ADDON_NAME;
 
   const formatPrice = (cents: number) => {
     if (cents === 0) return "Free";
@@ -162,23 +187,84 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-2">
             {users && users.length > 0 ? (
-              <div className="space-y-1 max-h-32 overflow-y-auto">
+              <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
                 {users.map((user) => (
                   <div
                     key={user.userId}
-                    className="flex items-center justify-between text-[10px] px-2 py-1 bg-zinc-50 dark:bg-zinc-900 rounded"
+                    className="rounded border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-[10px] dark:border-zinc-800 dark:bg-zinc-900"
                   >
-                    <span className="font-mono text-zinc-600 dark:text-zinc-400 truncate">
-                      {user.userId.slice(0, 8)}...
-                    </span>
-                    <Badge
-                      variant={
-                        user.status === "manual_grant" ? "secondary" : "default"
-                      }
-                      className="text-[9px]"
-                    >
-                      {user.status === "manual_grant" ? "Manual" : "Paid"}
-                    </Badge>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="truncate font-medium text-zinc-800 dark:text-zinc-100">
+                          {user.fullName}
+                        </div>
+                        <div className="truncate text-[9px] text-zinc-500 dark:text-zinc-400">
+                          {user.email || user.userId}
+                        </div>
+                        {isPremiumVoice && (
+                          <>
+                            <div className="truncate pt-1 font-mono text-[9px] text-zinc-500 dark:text-zinc-400">
+                              Agent: {user.standardChatBotAgentId || "Unmapped"}
+                            </div>
+                            {(user.voiceLastSyncedAt ||
+                              user.voiceLastSyncAttemptAt) && (
+                              <div className="pt-0.5 text-[9px] text-zinc-500 dark:text-zinc-400">
+                                {user.voiceLastSyncedAt
+                                  ? `Last synced ${formatSyncTime(user.voiceLastSyncedAt)}`
+                                  : `Last attempt ${formatSyncTime(user.voiceLastSyncAttemptAt)}`}
+                              </div>
+                            )}
+                            {(() => {
+                              const snapshot = parseVoiceSnapshot(
+                                user.voiceEntitlementSnapshot,
+                              );
+                              if (!snapshot) return null;
+                              return (
+                                <div className="pt-0.5 text-[9px] text-zinc-500 dark:text-zinc-400">
+                                  Entitlement: {snapshot.status || "unknown"}
+                                  {typeof snapshot.includedMinutes === "number"
+                                    ? ` • ${snapshot.includedMinutes} min`
+                                    : ""}
+                                  {typeof snapshot.usage?.usedMinutes ===
+                                  "number"
+                                    ? ` • ${snapshot.usage.usedMinutes} used`
+                                    : ""}
+                                  {typeof snapshot.usage?.remainingMinutes ===
+                                  "number"
+                                    ? ` • ${snapshot.usage.remainingMinutes} left`
+                                    : ""}
+                                </div>
+                              );
+                            })()}
+                            {user.voiceLastSyncError && (
+                              <div className="pt-1 text-[9px] text-red-600 dark:text-red-400">
+                                {user.voiceLastSyncError}
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        <Badge
+                          variant={
+                            user.status === "manual_grant"
+                              ? "secondary"
+                              : "default"
+                          }
+                          className="text-[9px]"
+                        >
+                          {user.status === "manual_grant" ? "Manual" : "Paid"}
+                        </Badge>
+                        {isPremiumVoice && (
+                          <Badge
+                            variant="outline"
+                            className="text-[9px] capitalize"
+                          >
+                            {user.voiceSyncStatus || "pending"}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -429,6 +515,7 @@ function AddonEditorDialog({
           {supportsTiers && (
             <div className="border-t pt-3">
               <AddonTierEditor
+                addonName={addon.name}
                 tierConfig={tierConfig}
                 onChange={setTierConfig}
               />

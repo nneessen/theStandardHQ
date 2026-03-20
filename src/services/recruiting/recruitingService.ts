@@ -22,6 +22,10 @@ import type { CreateRecruitInput } from "@/types/recruiting.types";
 // Repository instance
 const recruitRepository = new RecruitRepository();
 
+type EdgeFunctionInvokeError = Error & {
+  context?: Response;
+};
+
 export const recruitingService = {
   // ========================================
   // RECRUIT CRUD (using RecruitRepository)
@@ -40,77 +44,31 @@ export const recruitingService = {
   },
 
   async createRecruit(recruit: CreateRecruitInput) {
-    // Extract skip_pipeline and other non-database fields
-    const {
-      skip_pipeline,
-      pipeline_template_id: explicitTemplateId,
-      email: _email,
-      ...dbFields
-    } = recruit;
+    const skipPipeline = recruit.skip_pipeline === true;
+    const profileOverrides: Partial<CreateRecruitInput> = { ...recruit };
+    delete profileOverrides.skip_pipeline;
+    delete profileOverrides.email;
+    delete profileOverrides.pipeline_template_id;
 
-    // Determine role based on agent status and skip_pipeline flag
-    let roles: string[] = ["recruit"]; // Default
-    let pipelineTemplateId: string | null = null;
-
-    if (skip_pipeline || recruit.agent_status === "not_applicable") {
-      // Admin or non-agent roles - no pipeline
+    // Recruits are created as prospects. Pipeline enrollment happens later.
+    let roles: string[] = ["recruit"];
+    if (skipPipeline || recruit.agent_status === "not_applicable") {
       roles = recruit.roles || ["view_only"];
-      pipelineTemplateId = null;
-    } else if (explicitTemplateId) {
-      // Caller explicitly chose a pipeline template — use it directly
-      roles = ["recruit"];
-      pipelineTemplateId = explicitTemplateId;
-    } else if (recruit.agent_status === "licensed") {
-      // Licensed agent - gets recruit role during pipeline, same as unlicensed
-      // The 'agent' role is added when onboarding completes
-      roles = ["recruit"];
-
-      // Get the fast-track template (use maybeSingle to avoid 406 on no match)
-      const { data: template } = await supabase
-        .from("pipeline_templates")
-        .select("id")
-        .eq("name", "Licensed Agent Fast-Track")
-        .eq("is_active", true)
-        .maybeSingle();
-
-      pipelineTemplateId = template?.id || null;
-    } else {
-      // Unlicensed recruit - gets standard pipeline
-      roles = ["recruit"];
-
-      // Get the standard template (use maybeSingle to avoid 406 on no match)
-      const { data: template } = await supabase
-        .from("pipeline_templates")
-        .select("id")
-        .eq("name", "Standard Recruiting Pipeline")
-        .eq("is_active", true)
-        .maybeSingle();
-
-      pipelineTemplateId = template?.id || null;
     }
 
-    // Create auth user via Edge Function (this also creates user_profiles via trigger)
-    // This ensures recruit can receive password reset emails and eventually log in
     const fullName =
       `${recruit.first_name || ""} ${recruit.last_name || ""}`.trim();
 
-    // Prepare profile data to be applied by edge function (bypasses RLS)
     const profileData = {
-      ...dbFields,
+      ...profileOverrides,
       roles,
       agent_status: recruit.agent_status || "unlicensed",
-      pipeline_template_id: pipelineTemplateId,
       licensing_info: recruit.licensing_info || {},
-      // Start as prospect - no active pipeline enrollment yet
-      onboarding_status: skip_pipeline ? null : "prospect",
-      current_onboarding_phase: skip_pipeline ? null : "prospect",
-      onboarding_started_at: null, // Set when enrolled in pipeline
-      // Required hierarchy fields (set defaults)
-      hierarchy_path: "", // Will be updated by trigger
-      hierarchy_depth: 0, // Will be updated by trigger
-      // Set contract_level to null for new recruits unless explicitly provided
-      // Prevents default value of 80 from triggering hierarchy validation
-      // that requires upline contract_level > downline contract_level
+      onboarding_status: skipPipeline ? null : "prospect",
+      current_onboarding_phase: skipPipeline ? null : "prospect",
+      onboarding_started_at: null,
+      hierarchy_path: "",
+      hierarchy_depth: 0,
       contract_level: recruit.contract_level ?? null,
       approval_status: "pending",
       is_admin: recruit.is_admin || false,
@@ -131,7 +89,7 @@ export const recruitingService = {
           fullName,
           roles,
           isAdmin: recruit.is_admin || false,
-          skipPipeline: skip_pipeline || false,
+          skipPipeline,
           phone: recruit.phone,
           // Pass all profile data to be applied by edge function (bypasses RLS)
           profileData,
@@ -147,11 +105,34 @@ export const recruitingService = {
     });
 
     if (invokeError) {
+      let errorMessage = invokeError.message || "Failed to create auth user";
+
+      try {
+        const errorContext = (invokeError as EdgeFunctionInvokeError).context;
+        const errorBody = errorContext
+          ? ((await errorContext.json()) as {
+              error?: string;
+              details?: string;
+            })
+          : null;
+
+        if (typeof errorBody?.error === "string" && errorBody.error.trim()) {
+          errorMessage = errorBody.error;
+        } else if (
+          typeof errorBody?.details === "string" &&
+          errorBody.details.trim()
+        ) {
+          errorMessage = errorBody.details;
+        }
+      } catch {
+        // Fall back to the transport error message if the body cannot be read.
+      }
+
       console.error(
         "[recruitingService.createRecruit] Edge function failed:",
         invokeError,
       );
-      throw new Error(invokeError.message || "Failed to create auth user");
+      throw new Error(errorMessage);
     }
 
     if (!result) {

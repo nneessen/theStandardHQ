@@ -15,10 +15,7 @@ import {
   applyRecruitingTheme,
   clearRecruitingTheme,
 } from "@/lib/recruiting-theme";
-
-const SUPABASE_FUNCTIONS_URL =
-  import.meta.env.VITE_SUPABASE_FUNCTIONS_URL ||
-  `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+import { supabaseFunctionsUrl } from "@/services/base";
 
 // Primary domains (not custom domains)
 const PRIMARY_DOMAINS = [
@@ -83,7 +80,7 @@ export function CustomDomainProvider({ children }: CustomDomainProviderProps) {
     const resolveCustomDomain = async () => {
       try {
         const response = await fetch(
-          `${SUPABASE_FUNCTIONS_URL}/resolve-custom-domain?hostname=${encodeURIComponent(hostname)}`,
+          `${supabaseFunctionsUrl}/resolve-custom-domain?hostname=${encodeURIComponent(hostname)}`,
           {
             method: "GET",
             headers: {

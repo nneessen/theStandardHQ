@@ -246,15 +246,9 @@ class UserService {
         };
       }
 
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-auth-user`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
+      const { data: result, error: invokeError } =
+        await supabase.functions.invoke("create-auth-user", {
+          body: {
             email,
             fullName:
               userData.name ||
@@ -263,23 +257,24 @@ class UserService {
             isAdmin: assignedRoles.includes("admin"),
             skipPipeline: false,
             phone: userData.phone || null,
-          }),
-        },
-      );
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        console.error("[userService.create] Edge function failed:", {
-          status: response.status,
-          statusText: response.statusText,
-          error: result.error,
-          details: result.details,
-          fullResult: result,
+          },
         });
+
+      if (invokeError) {
+        console.error(
+          "[userService.create] Edge function failed:",
+          invokeError,
+        );
         return {
           success: false,
-          error: `Auth user creation failed: ${result.error || "Unknown error"} (Details: ${result.details || "none"})`,
+          error: `Auth user creation failed: ${invokeError.message || "Unknown error"}`,
+        };
+      }
+
+      if (!result) {
+        return {
+          success: false,
+          error: "Auth user creation returned no data",
         };
       }
 
@@ -287,6 +282,12 @@ class UserService {
       const inviteSent = result.emailSent === true;
 
       if (!authUserId) {
+        if (result.alreadyExists) {
+          return {
+            success: false,
+            error: `A user with email ${email} already exists`,
+          };
+        }
         return {
           success: false,
           error: "Auth user was created but no ID was returned",

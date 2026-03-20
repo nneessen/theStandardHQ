@@ -9,6 +9,7 @@ import {
   type SubscriptionAddon,
   type SubscriptionPlanChange,
   type UserSubscriptionAddon,
+  type AddonUserSummary,
   type UpdatePlanFeaturesParams,
   type UpdatePlanAnalyticsParams,
   type UpdatePlanPricingParams,
@@ -28,6 +29,7 @@ export type {
   SubscriptionAddon,
   SubscriptionPlanChange,
   UserSubscriptionAddon,
+  AddonUserSummary,
   SubscriptionFeatures,
   AddonTier,
   AddonTierConfig,
@@ -112,10 +114,7 @@ export function useAdminSubscriptionAddon(addonId: string) {
  * Get users with a specific add-on
  */
 export function useAddonUsers(addonId: string) {
-  return useQuery<
-    { userId: string; status: string; grantedBy: string | null }[],
-    Error
-  >({
+  return useQuery<AddonUserSummary[], Error>({
     queryKey: adminSubscriptionKeys.addonUsers(addonId),
     queryFn: () => adminSubscriptionService.getUsersWithAddon(addonId),
     enabled: !!addonId,

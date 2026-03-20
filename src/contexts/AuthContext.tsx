@@ -7,7 +7,7 @@ import React, {
   useState,
   useRef,
 } from "react";
-import { supabase } from "../services/base/supabase";
+import { isLocalSupabase, supabase } from "../services/base";
 import {
   User as SupabaseUser,
   Session,
@@ -396,20 +396,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setError(null);
       setLoading(true);
 
-      // Use custom Mailgun edge function instead of Supabase's built-in email
-      // Route to /auth/callback which is whitelisted and handles recovery type
+      const redirectTo = `${window.location.origin}/auth/callback`;
       const { data, error: fnError } = await supabase.functions.invoke(
         "send-password-reset",
         {
           body: {
             email,
-            redirectTo: `${window.location.origin}/auth/callback`,
+            redirectTo,
           },
         },
       );
 
       if (fnError) throw fnError;
       if (data?.success === false) throw new Error(data.error);
+
+      if (isLocalSupabase && typeof data?.recoveryUrl === "string") {
+        logger.auth("Redirecting browser to local password recovery flow");
+
+        if (!(import.meta.env.MODE === "test" || import.meta.env.VITEST)) {
+          window.location.assign(data.recoveryUrl);
+        }
+
+        return;
+      }
 
       logger.auth("Password reset email sent");
     } catch (err: unknown) {

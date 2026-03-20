@@ -1,0 +1,3 @@
+-- Intentionally minimal.
+-- For a remote-mirrored local environment, use:
+--   npm run supabase:sync-local-from-remote

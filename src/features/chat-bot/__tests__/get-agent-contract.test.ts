@@ -15,6 +15,7 @@ function transformGetAgentResponse(
   agentData: Record<string, unknown>,
   closeConn?: Record<string, unknown> | null,
   calendlyConn?: Record<string, unknown> | null,
+  retellConn?: Record<string, unknown> | null,
 ) {
   return {
     id: agentData.id,
@@ -29,12 +30,41 @@ function transformGetAgentResponse(
     calendlyEventTypeSlug: agentData.calendlyEventTypeSlug || null,
     leadSourceEventTypeMappings: agentData.leadSourceEventTypeMappings || [],
     responseSchedule: agentData.responseSchedule || null,
+    voiceEnabled: agentData.voiceEnabled ?? false,
+    voiceFollowUpEnabled: agentData.voiceFollowUpEnabled ?? false,
+    afterHoursInboundEnabled: agentData.afterHoursInboundEnabled ?? false,
+    afterHoursStartTime: agentData.afterHoursStartTime || null,
+    afterHoursEndTime: agentData.afterHoursEndTime || null,
+    afterHoursTimezone: agentData.afterHoursTimezone || null,
+    voiceProvider: agentData.voiceProvider || null,
+    voiceId: agentData.voiceId || null,
+    voiceFallbackVoiceId: agentData.voiceFallbackVoiceId || null,
+    voiceTransferNumber: agentData.voiceTransferNumber || null,
+    voiceMaxCallDurationSeconds: agentData.voiceMaxCallDurationSeconds ?? null,
+    voiceVoicemailEnabled: agentData.voiceVoicemailEnabled ?? true,
+    voiceHumanHandoffEnabled: agentData.voiceHumanHandoffEnabled ?? true,
+    voiceQuotedFollowupEnabled: agentData.voiceQuotedFollowupEnabled ?? false,
     connections: {
       close: closeConn
         ? { connected: true, orgName: closeConn.orgId || undefined }
         : { connected: false },
       calendly: calendlyConn
         ? { connected: true, eventType: calendlyConn.calendarId || undefined }
+        : { connected: false },
+      retell: retellConn
+        ? {
+            connected: true,
+            id: retellConn.id,
+            agentId: retellConn.agentId,
+            apiKeyMasked: retellConn.apiKeyMasked,
+            retellAgentId: retellConn.retellAgentId,
+            fromNumberSource: retellConn.fromNumberSource,
+            fromNumber: retellConn.fromNumber ?? null,
+            closePhoneNumber: retellConn.closePhoneNumber ?? null,
+            status: retellConn.status,
+            createdAt: retellConn.createdAt,
+            updatedAt: retellConn.updatedAt,
+          }
         : { connected: false },
     },
   };
@@ -71,6 +101,20 @@ describe("get_agent contract", () => {
         },
       ],
     },
+    voiceEnabled: true,
+    voiceFollowUpEnabled: true,
+    afterHoursInboundEnabled: true,
+    afterHoursStartTime: "20:30",
+    afterHoursEndTime: "08:00",
+    afterHoursTimezone: "America/New_York",
+    voiceProvider: "retell",
+    voiceId: "voice_123",
+    voiceFallbackVoiceId: "voice_fallback_123",
+    voiceTransferNumber: "+15551234567",
+    voiceMaxCallDurationSeconds: 300,
+    voiceVoicemailEnabled: true,
+    voiceHumanHandoffEnabled: true,
+    voiceQuotedFollowupEnabled: false,
   };
 
   it("includes leadSourceEventTypeMappings in the response", () => {
@@ -130,6 +174,17 @@ describe("get_agent contract", () => {
       mockAgentData,
       { orgId: "org_123" },
       { calendarId: "cal_123" },
+      {
+        id: "retell_conn_123",
+        agentId: "agent-123",
+        apiKeyMasked: "rtk_***1234",
+        retellAgentId: "agent_retell_123",
+        fromNumberSource: "retell",
+        fromNumber: "+15550001111",
+        status: "connected",
+        createdAt: "2026-01-01T00:00:00Z",
+        updatedAt: "2026-01-02T00:00:00Z",
+      },
     );
 
     // Required fields from ChatBotAgent interface
@@ -145,6 +200,9 @@ describe("get_agent contract", () => {
     expect(response).toHaveProperty("calendlyEventTypeSlug");
     expect(response).toHaveProperty("leadSourceEventTypeMappings");
     expect(response).toHaveProperty("responseSchedule");
+    expect(response).toHaveProperty("voiceEnabled");
+    expect(response).toHaveProperty("voiceProvider");
+    expect(response).toHaveProperty("voiceId");
     expect(response).toHaveProperty("connections");
 
     // Connection sub-shapes
@@ -156,11 +214,25 @@ describe("get_agent contract", () => {
       connected: true,
       eventType: "cal_123",
     });
+    expect(response.connections.retell).toEqual({
+      connected: true,
+      id: "retell_conn_123",
+      agentId: "agent-123",
+      apiKeyMasked: "rtk_***1234",
+      retellAgentId: "agent_retell_123",
+      fromNumberSource: "retell",
+      fromNumber: "+15550001111",
+      closePhoneNumber: null,
+      status: "connected",
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-02T00:00:00Z",
+    });
   });
 
   it("handles null/missing connections gracefully", () => {
-    const response = transformGetAgentResponse(mockAgentData, null, null);
+    const response = transformGetAgentResponse(mockAgentData, null, null, null);
     expect(response.connections.close).toEqual({ connected: false });
     expect(response.connections.calendly).toEqual({ connected: false });
+    expect(response.connections.retell).toEqual({ connected: false });
   });
 });

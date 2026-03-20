@@ -6,14 +6,19 @@ import type { ChatBotAnalytics } from "../../hooks/useChatBotAnalytics";
 
 export function EngagementMetrics({
   data,
+  messagePerformance,
 }: {
   data: ChatBotAnalytics["engagement"];
+  messagePerformance: ChatBotAnalytics["messagePerformance"];
 }) {
   const responseRate = data.responseRate ?? 0;
   const multiTurnRate = data.multiTurnRate ?? 0;
   const avgFirstResponseMin = data.avgFirstResponseMin ?? 0;
   const avgObjectionCount = data.avgObjectionCount ?? 0;
   const hardNoRate = data.hardNoRate ?? 0;
+  const positiveRate = messagePerformance.positiveRate ?? 0;
+  const negativeRate = messagePerformance.negativeRate ?? 0;
+  const topReplyCategories = messagePerformance.topReplyCategories ?? [];
 
   const rows = [
     {
@@ -40,6 +45,16 @@ export function EngagementMetrics({
       label: "Hard No Rate",
       value: `${(hardNoRate * 100).toFixed(1)}%`,
       good: hardNoRate < 0.2,
+    },
+    {
+      label: "Positive Outcome",
+      value: `${(positiveRate * 100).toFixed(1)}%`,
+      good: positiveRate >= 0.3,
+    },
+    {
+      label: "Negative Outcome",
+      value: `${(negativeRate * 100).toFixed(1)}%`,
+      good: negativeRate < 0.25,
     },
   ];
 
@@ -71,6 +86,33 @@ export function EngagementMetrics({
           </div>
         ))}
       </div>
+
+      {topReplyCategories.length > 0 ? (
+        <div className="mt-2 border-t border-zinc-200 dark:border-zinc-800 pt-2 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              Top Reply Types
+            </span>
+            <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
+              Pos / Neg
+            </span>
+          </div>
+          {topReplyCategories.slice(0, 3).map((row) => (
+            <div
+              key={row.category}
+              className="flex items-center justify-between gap-2"
+            >
+              <span className="text-[10px] text-zinc-700 dark:text-zinc-300 truncate">
+                {row.category.replace(/_/g, " ")}
+              </span>
+              <span className="text-[9px] text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
+                {Math.round((row.positiveRate ?? 0) * 100)}% /{" "}
+                {Math.round((row.negativeRate ?? 0) * 100)}%
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

@@ -5,11 +5,23 @@ import { Plus, Trash2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { PREMIUM_VOICE_ADDON_NAME } from "@/lib/subscription/voice-addon";
 
 export interface AddonTier {
   id: string;
   name: string;
   runs_per_month: number;
+  included_minutes?: number;
+  hard_limit_minutes?: number;
+  plan_code?: string;
+  allow_overage?: boolean;
+  overage_rate_cents?: number | null;
+  features?: {
+    missedAppointment?: boolean;
+    reschedule?: boolean;
+    quotedFollowup?: boolean;
+    afterHoursInbound?: boolean;
+  };
   price_monthly: number;
   price_annual: number;
   stripe_price_id_monthly?: string;
@@ -21,6 +33,7 @@ export interface TierConfig {
 }
 
 interface AddonTierEditorProps {
+  addonName?: string;
   tierConfig: TierConfig | null;
   onChange: (config: TierConfig) => void;
 }
@@ -34,10 +47,13 @@ const DEFAULT_TIER: AddonTier = {
 };
 
 export function AddonTierEditor({
+  addonName,
   tierConfig,
   onChange,
 }: AddonTierEditorProps) {
   const tiers = tierConfig?.tiers || [];
+  const usageLabel =
+    addonName === PREMIUM_VOICE_ADDON_NAME ? "Minutes/mo" : "Runs/mo";
 
   const fmt = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
@@ -52,11 +68,16 @@ export function AddonTierEditor({
   };
 
   const addTier = () => {
+    const defaultTier =
+      addonName === PREMIUM_VOICE_ADDON_NAME
+        ? { ...DEFAULT_TIER, runs_per_month: 500 }
+        : DEFAULT_TIER;
+
     onChange({
       tiers: [
         ...tiers,
         {
-          ...DEFAULT_TIER,
+          ...defaultTier,
           id: `tier_${Date.now()}`,
           name: `Tier ${tiers.length + 1}`,
         },
@@ -111,7 +132,7 @@ export function AddonTierEditor({
                 Name
               </th>
               <th className="px-2 py-1.5 text-left font-medium w-[70px]">
-                Runs/mo
+                {usageLabel}
               </th>
               <th className="px-2 py-1.5 text-left font-medium w-[90px]">
                 Monthly

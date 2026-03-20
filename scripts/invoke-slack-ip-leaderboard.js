@@ -7,13 +7,13 @@
 // Usage:
 //   npm run slack:ip-leaderboard
 
-import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Always use remote/production Supabase — edge functions are deployed there
+const SUPABASE_URL = process.env.REMOTE_SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.REMOTE_SUPABASE_SERVICE_ROLE_KEY;
 const IMO_ID = "ffffffff-ffff-ffff-ffff-ffffffffffff"; // Founders Financial Group
 
 async function main() {
@@ -22,11 +22,10 @@ async function main() {
   console.log("Submits = All submitted policies by submit_date\n");
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-    console.error("❌ Missing VITE_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env");
+    console.error("❌ Missing REMOTE_SUPABASE_URL or REMOTE_SUPABASE_SERVICE_ROLE_KEY in .env");
     process.exit(1);
   }
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
   const functionUrl = `${SUPABASE_URL}/functions/v1/slack-ip-leaderboard`;
 
   console.log("📤 Posting IP & submits report to Slack...\n");
@@ -76,7 +75,7 @@ async function main() {
       console.log(`❌ Failed: ${data.error || JSON.stringify(data)}`);
     }
   } catch (err) {
-    console.log(`❌ Error: ${err.message}`);
+    console.log(`❌ Error: ${err.message}${err.cause ? ` (${err.cause.message})` : ""}`);
   }
 
   console.log("\n✅ Done!");

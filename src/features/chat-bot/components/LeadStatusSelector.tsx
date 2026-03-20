@@ -3,41 +3,30 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-
-const PREDEFINED_STATUSES = [
-  "New",
-  "Contacted",
-  "Contacted/Texting",
-  "Contacted/Call Back",
-  "Contacted/Quoted",
-  "CONTACTED/MISSED APPOINTMENT",
-  "Contacted/No Answer",
-  "Contacted/Left VM",
-  "Contacted/Straight to VM",
-  "Contacted/Doesn't Ring",
-  "Contacted/Blocked",
-  "Contacted/Not In Service",
-  "Contacted/Hung Up",
-];
+import { resolveCloseLeadStatusLabels } from "../lib/close-metadata";
+import type { ChatBotCloseLeadStatus } from "../hooks/useChatBot";
 
 interface LeadStatusSelectorProps {
   selected: string[];
   onChange: (statuses: string[]) => void;
   disabled?: boolean;
+  options?: ChatBotCloseLeadStatus[] | null;
 }
 
 export function LeadStatusSelector({
   selected,
   onChange,
   disabled,
+  options,
 }: LeadStatusSelectorProps) {
-  const allSelected = PREDEFINED_STATUSES.every((s) => selected.includes(s));
+  const statusLabels = resolveCloseLeadStatusLabels(options);
+  const allSelected = statusLabels.every((status) => selected.includes(status));
 
   const toggleAll = () => {
     if (allSelected) {
       onChange([]);
     } else {
-      onChange([...PREDEFINED_STATUSES]);
+      onChange([...statusLabels]);
     }
   };
 
@@ -63,13 +52,13 @@ export function LeadStatusSelector({
           {allSelected ? "Deselect All" : "Select All"}
         </Button>
         <span className="text-[10px] text-zinc-400">
-          {selected.length} / {PREDEFINED_STATUSES.length}
+          {selected.length} / {statusLabels.length}
         </span>
       </div>
 
       {/* Status checkboxes */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-        {PREDEFINED_STATUSES.map((status) => (
+        {statusLabels.map((status) => (
           <label
             key={status}
             className="flex items-center gap-2 cursor-pointer"

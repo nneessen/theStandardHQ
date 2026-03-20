@@ -7,26 +7,24 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-
-const PREDEFINED_SOURCES = [
-  "Sitka Life",
-  "GOAT Realtime Mortgage",
-  "GOAT Realtime Veterans",
-];
+import { resolveCloseLeadSourceLabels } from "../lib/close-metadata";
 
 interface LeadSourceSelectorProps {
   selected: string[];
   onChange: (sources: string[]) => void;
   disabled?: boolean;
+  options?: string[] | null;
 }
 
 export function LeadSourceSelector({
   selected,
   onChange,
   disabled,
+  options,
 }: LeadSourceSelectorProps) {
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customValue, setCustomValue] = useState("");
+  const sourceLabels = resolveCloseLeadSourceLabels(options);
 
   const toggle = (source: string) => {
     if (selected.includes(source)) {
@@ -49,12 +47,14 @@ export function LeadSourceSelector({
     onChange(selected.filter((s) => s !== source));
   };
 
-  const customSources = selected.filter((s) => !PREDEFINED_SOURCES.includes(s));
+  const customSources = selected.filter(
+    (source) => !sourceLabels.includes(source),
+  );
 
   return (
     <div className="space-y-2">
       {/* Predefined sources */}
-      {PREDEFINED_SOURCES.map((source) => (
+      {sourceLabels.map((source) => (
         <label key={source} className="flex items-center gap-2 cursor-pointer">
           <Checkbox
             checked={selected.includes(source)}

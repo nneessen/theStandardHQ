@@ -18,8 +18,13 @@ import { ConnectionCard } from "./ConnectionCard";
 import { LeadSourceSelector } from "./LeadSourceSelector";
 import { LeadStatusSelector } from "./LeadStatusSelector";
 import {
+  getConnectionStateLabel,
+  resolveConnectionState,
+} from "../lib/connection-state";
+import {
   type ChatBotAgent,
   useChatBotCloseStatus,
+  useChatBotCloseLeadStatuses,
   useChatBotCalendlyStatus,
   useChatBotGoogleStatus,
   useConnectClose,
@@ -66,12 +71,36 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
   );
 
   // Queries
-  const { data: closeStatus, isLoading: closeLoading } =
-    useChatBotCloseStatus();
-  const { data: calendlyStatus, isLoading: calendlyLoading } =
-    useChatBotCalendlyStatus();
-  const { data: googleStatus, isLoading: googleLoading } =
-    useChatBotGoogleStatus();
+  const {
+    data: closeStatus,
+    error: closeStatusError,
+    isLoading: closeLoading,
+  } = useChatBotCloseStatus();
+  const closeConnectionState = resolveConnectionState({
+    connected: closeStatus?.connected,
+    error: closeStatusError,
+  });
+  const closeConnected = closeConnectionState === "connected";
+  const { data: closeLeadStatuses } =
+    useChatBotCloseLeadStatuses(closeConnected);
+  const {
+    data: calendlyStatus,
+    error: calendlyStatusError,
+    isLoading: calendlyLoading,
+  } = useChatBotCalendlyStatus();
+  const {
+    data: googleStatus,
+    error: googleStatusError,
+    isLoading: googleLoading,
+  } = useChatBotGoogleStatus();
+  const calendlyConnectionState = resolveConnectionState({
+    connected: calendlyStatus?.connected,
+    error: calendlyStatusError,
+  });
+  const googleConnectionState = resolveConnectionState({
+    connected: googleStatus?.connected,
+    error: googleStatusError,
+  });
 
   // Mutations
   const connectClose = useConnectClose();
@@ -83,11 +112,12 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
   const updateConfig = useUpdateBotConfig();
 
   // Derive which calendar provider is connected
-  const calendarProvider: "google" | "calendly" | null = googleStatus?.connected
-    ? "google"
-    : calendlyStatus?.connected
-      ? "calendly"
-      : null;
+  const calendarProvider: "google" | "calendly" | null =
+    googleConnectionState === "connected"
+      ? "google"
+      : calendlyConnectionState === "connected"
+        ? "calendly"
+        : null;
 
   const handleCalendlyConnect = async () => {
     const returnUrl = new URL(window.location.href);
@@ -151,14 +181,9 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
     (stepId: number): boolean => {
       switch (stepId) {
         case 1:
-          return closeStatus?.connected || false;
+          return closeConnected;
         case 2:
-          return (
-            calendlyStatus?.connected ||
-            false ||
-            googleStatus?.connected ||
-            false
-          );
+          return calendarProvider !== null;
         case 3:
           return sourcesSaved && leadSources.length > 0;
         case 4:
@@ -256,12 +281,14 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                   </span>
                 </div>
               }
-              connected={closeStatus?.connected || false}
+              connected={closeConnected}
+              state={closeConnectionState}
               statusLabel={
                 closeStatus?.orgName
                   ? `Organization: ${closeStatus.orgName}`
                   : undefined
               }
+              unavailableLabel="We could not verify your Close CRM connection right now. Your existing bot connection may still be active."
               isLoading={closeLoading}
               onConnect={(apiKey) => connectClose.mutate(apiKey)}
               connectLoading={connectClose.isPending}
@@ -298,7 +325,9 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                     </div>
                   }
                   connected={false}
+                  state={calendlyConnectionState}
                   isLoading={calendlyLoading}
+                  unavailableLabel="We could not verify your Calendly connection right now."
                   onOAuthConnect={handleCalendlyConnect}
                   oauthLoading={getCalendlyAuth.isPending}
                   oauthLabel="Connect Calendly"
@@ -313,7 +342,9 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                     </div>
                   }
                   connected={false}
+                  state={googleConnectionState}
                   isLoading={googleLoading}
+                  unavailableLabel="We could not verify your Google Calendar connection right now."
                   onOAuthConnect={handleGoogleConnect}
                   oauthLoading={getGoogleAuth.isPending}
                   oauthLabel="Connect Google Calendar"
@@ -330,11 +361,13 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                   </div>
                 }
                 connected={true}
+                state={calendlyConnectionState}
                 statusLabel={
                   calendlyStatus?.userName
                     ? `${calendlyStatus.userName} (${calendlyStatus.userEmail})`
                     : "Connected to Calendly"
                 }
+                unavailableLabel="We could not verify your Calendly connection right now."
                 isLoading={calendlyLoading}
                 onOAuthConnect={handleCalendlyConnect}
                 oauthLoading={getCalendlyAuth.isPending}
@@ -351,11 +384,13 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                   </div>
                 }
                 connected={true}
+                state={googleConnectionState}
                 statusLabel={
                   googleStatus?.userEmail
                     ? `Connected as ${googleStatus.userEmail}`
                     : "Connected to Google Calendar"
                 }
+                unavailableLabel="We could not verify your Google Calendar connection right now."
                 isLoading={googleLoading}
                 onOAuthConnect={handleGoogleConnect}
                 oauthLoading={getGoogleAuth.isPending}
@@ -424,6 +459,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
               </p>
             </div>
             <LeadStatusSelector
+              options={closeLeadStatuses}
               selected={leadStatuses}
               onChange={(statuses) => {
                 setLeadStatuses(statuses);
@@ -477,9 +513,11 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                 <Check className="h-3 w-3 text-emerald-500" />
                 <span className="text-zinc-600 dark:text-zinc-400">
                   Close CRM:{" "}
-                  {closeStatus?.connected
-                    ? closeStatus.orgName || "Connected"
-                    : "Not connected"}
+                  {getConnectionStateLabel(closeConnectionState, {
+                    connected: closeStatus?.orgName || "Connected",
+                    disconnected: "Not connected",
+                    unavailable: "Connection status unavailable",
+                  })}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-[10px]">
@@ -490,7 +528,10 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                     ? "Calendly connected"
                     : calendarProvider === "google"
                       ? "Google Calendar connected"
-                      : "Not connected"}
+                      : calendlyConnectionState === "unavailable" ||
+                          googleConnectionState === "unavailable"
+                        ? "Connection status unavailable"
+                        : "Not connected"}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-[10px]">

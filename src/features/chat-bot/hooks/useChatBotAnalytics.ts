@@ -30,6 +30,24 @@ export interface ChatBotAnalytics {
     cancelRate: number;
     avgDaysToAppointment: number;
   };
+  messagePerformance: {
+    trackedOutboundCount: number;
+    resolvedOutcomeCount: number;
+    resolvedOutcomeRate: number;
+    positiveRate: number;
+    negativeRate: number;
+    schedulingRate: number;
+    optOutRate: number;
+    topReplyCategories: {
+      category: string;
+      sentCount: number;
+      resolvedCount: number;
+      positiveRate: number;
+      negativeRate: number;
+      schedulingRate: number;
+      optOutRate: number;
+    }[];
+  };
   timeline: {
     date: string;
     conversations: number;

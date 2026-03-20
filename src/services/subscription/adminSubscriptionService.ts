@@ -28,6 +28,20 @@ export interface UserSubscriptionAddon extends UserSubscriptionAddonRow {
   addon?: SubscriptionAddon;
 }
 
+export interface AddonUserSummary {
+  userId: string;
+  status: string;
+  grantedBy: string | null;
+  fullName: string;
+  email: string | null;
+  standardChatBotAgentId: string | null;
+  voiceSyncStatus: string | null;
+  voiceLastSyncAttemptAt: string | null;
+  voiceLastSyncedAt: string | null;
+  voiceLastSyncError: string | null;
+  voiceEntitlementSnapshot: Database["public"]["Tables"]["user_subscription_addons"]["Row"]["voice_entitlement_snapshot"];
+}
+
 export interface SubscriptionPlanChange extends SubscriptionPlanChangeRow {
   changer?: {
     id: string;
@@ -106,6 +120,17 @@ export interface AddonTier {
   id: string;
   name: string;
   runs_per_month: number;
+  included_minutes?: number;
+  hard_limit_minutes?: number;
+  plan_code?: string;
+  allow_overage?: boolean;
+  overage_rate_cents?: number | null;
+  features?: {
+    missedAppointment?: boolean;
+    reschedule?: boolean;
+    quotedFollowup?: boolean;
+    afterHoursInbound?: boolean;
+  };
   price_monthly: number;
   price_annual: number;
   stripe_price_id_monthly?: string;
@@ -682,13 +707,13 @@ class AdminSubscriptionService {
   /**
    * Get all users with a specific add-on
    */
-  async getUsersWithAddon(
-    addonId: string,
-  ): Promise<{ userId: string; status: string; grantedBy: string | null }[]> {
+  async getUsersWithAddon(addonId: string): Promise<AddonUserSummary[]> {
     try {
       const { data, error } = await supabase
         .from("user_subscription_addons")
-        .select("user_id, status, granted_by")
+        .select(
+          "id, user_id, status, granted_by, voice_sync_status, voice_last_sync_attempt_at, voice_last_synced_at, voice_last_sync_error, voice_entitlement_snapshot",
+        )
         .eq("addon_id", addonId)
         .in("status", ["active", "manual_grant"]);
 
@@ -697,11 +722,72 @@ class AdminSubscriptionService {
         throw error;
       }
 
-      return (data || []).map((item) => ({
-        userId: item.user_id,
-        status: item.status,
-        grantedBy: item.granted_by,
-      }));
+      const userAddons = data || [];
+      if (userAddons.length === 0) {
+        return [];
+      }
+
+      const userIds = userAddons.map((item) => item.user_id);
+
+      const [
+        { data: profiles, error: profilesError },
+        { data: agents, error: agentsError },
+      ] = await Promise.all([
+        supabase
+          .from("user_profiles")
+          .select("id, first_name, last_name, email")
+          .in("id", userIds),
+        supabase
+          .from("chat_bot_agents")
+          .select("user_id, external_agent_id")
+          .in("user_id", userIds),
+      ]);
+
+      if (profilesError) {
+        logger.error(
+          "AdminSubscriptionService.getUsersWithAddon.profiles",
+          profilesError,
+        );
+        throw profilesError;
+      }
+
+      if (agentsError) {
+        logger.error(
+          "AdminSubscriptionService.getUsersWithAddon.agents",
+          agentsError,
+        );
+        throw agentsError;
+      }
+
+      const profilesById = new Map(
+        (profiles || []).map((profile) => [profile.id, profile]),
+      );
+      const agentsByUserId = new Map(
+        (agents || []).map((agent) => [agent.user_id, agent]),
+      );
+
+      return userAddons.map((item) => {
+        const profile = profilesById.get(item.user_id);
+        const agent = agentsByUserId.get(item.user_id);
+        const fullName =
+          `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() ||
+          profile?.email ||
+          item.user_id;
+
+        return {
+          userId: item.user_id,
+          status: item.status,
+          grantedBy: item.granted_by,
+          fullName,
+          email: profile?.email || null,
+          standardChatBotAgentId: agent?.external_agent_id || null,
+          voiceSyncStatus: item.voice_sync_status || null,
+          voiceLastSyncAttemptAt: item.voice_last_sync_attempt_at || null,
+          voiceLastSyncedAt: item.voice_last_synced_at || null,
+          voiceLastSyncError: item.voice_last_sync_error || null,
+          voiceEntitlementSnapshot: item.voice_entitlement_snapshot,
+        };
+      });
     } catch (error) {
       logger.error(
         "AdminSubscriptionService.getUsersWithAddon",

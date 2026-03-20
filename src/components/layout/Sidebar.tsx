@@ -31,6 +31,7 @@ import {
   LifeBuoy,
   Megaphone,
   Briefcase,
+  PhoneCall,
 } from "lucide-react";
 import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
 import { SupportDialog } from "./SupportDialog";
@@ -355,6 +356,12 @@ export default function Sidebar({
           icon: CloseCrmIcon,
           label: "Chat Bot",
           href: "/chat-bot",
+          public: true,
+        },
+        {
+          icon: PhoneCall,
+          label: "AI Voice Agent",
+          href: "/voice-agent",
           public: true,
         },
         // Business Tools — page handles upsell internally

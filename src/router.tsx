@@ -61,6 +61,7 @@ import { TheStandardTeamRoutePage } from "./features/the-standard-team";
 import { BillingPage } from "./features/billing/BillingPage";
 import { LeadIntelligenceDashboard } from "./features/admin/components/lead-vendors";
 import { ChatBotPage } from "./features/chat-bot";
+import { VoiceAgentPage } from "./features/voice-agent";
 import { MarketingHubPage } from "./features/marketing";
 import { TemplateEditorPage } from "./features/marketing/components/templates/TemplateEditorPage";
 import { CampaignEditorPage } from "./features/marketing/components/campaigns/CampaignEditorPage";
@@ -547,6 +548,17 @@ const chatBotRoute = createRoute({
   ),
 });
 
+// Voice Agent route - dedicated Premium Voice product surface
+const voiceAgentRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "voice-agent",
+  component: () => (
+    <RouteGuard noRecruits noStaffRoles>
+      <VoiceAgentPage />
+    </RouteGuard>
+  ),
+});
+
 // Business Tools route - Financial statement processing, page handles upsell internally
 const businessToolsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -958,6 +970,7 @@ const routeTree = rootRoute.addChildren([
   underwritingWizardRoute,
   quickQuoteRoute,
   chatBotRoute,
+  voiceAgentRoute,
   businessToolsRoute,
   publicJoinAltRoute, // Catch-all for /join-* pattern - must be last
 ]);

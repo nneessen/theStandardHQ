@@ -1,5 +1,7 @@
 // supabase/functions/send-password-reset/index.ts
-// Sends password reset emails via Mailgun (bypasses Supabase's built-in email)
+// Sends password reset emails via Mailgun in hosted environments.
+// In local Supabase, it returns a direct recovery link so the browser can enter
+// the password reset flow without relying on Mailpit.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
@@ -15,6 +17,41 @@ interface PasswordResetRequest {
   redirectTo?: string;
 }
 
+function jsonResponse(payload: unknown, status = 200) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+function buildGenerateLinkErrorResponse(
+  linkError: { message?: string; code?: string },
+  email: string,
+) {
+  console.error("[send-password-reset] Failed to generate link:", linkError);
+
+  const errorCode = linkError.code;
+  const isUserNotFound =
+    errorCode === "user_not_found" ||
+    linkError.message?.includes("User not found") ||
+    linkError.message?.includes("not found");
+
+  if (isUserNotFound) {
+    return jsonResponse(
+      {
+        success: false,
+        error: `No auth account found for ${email}. This user exists in user_profiles but NOT in auth.users. They need to be created properly via the Add User flow.`,
+      },
+      404,
+    );
+  }
+
+  return jsonResponse(
+    { success: false, error: linkError.message || "Failed to generate link" },
+    400,
+  );
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
@@ -22,8 +59,6 @@ serve(async (req) => {
   }
 
   try {
-    console.log("[send-password-reset] Function invoked");
-
     // Get credentials
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -31,6 +66,9 @@ serve(async (req) => {
     const MAILGUN_DOMAIN = Deno.env.get("MAILGUN_DOMAIN");
     const SITE_URL =
       Deno.env.get("SITE_URL") || "https://www.thestandardhq.com";
+    const isLocalSupabaseEnv =
+      SUPABASE_URL?.includes("127.0.0.1") ||
+      SUPABASE_URL?.includes("localhost");
 
     // Normalize to canonical URL (always use www for consistency)
     const normalizedSiteUrl = SITE_URL.replace(
@@ -40,26 +78,9 @@ serve(async (req) => {
 
     if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
       console.error("[send-password-reset] Missing Supabase credentials");
-      return new Response(
-        JSON.stringify({ success: false, error: "Server configuration error" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
-    }
-
-    if (!MAILGUN_API_KEY || !MAILGUN_DOMAIN) {
-      console.error("[send-password-reset] Missing Mailgun credentials");
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Email service not configured",
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+      return jsonResponse(
+        { success: false, error: "Server configuration error" },
+        500,
       );
     }
 
@@ -78,20 +99,69 @@ serve(async (req) => {
     const { email, redirectTo } = body;
 
     if (!email) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Email is required" }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+      return jsonResponse({ success: false, error: "Email is required" }, 400);
     }
 
     // Determine the redirect URL - use provided or default to normalized site URL
     const effectiveRedirectTo =
       redirectTo || `${normalizedSiteUrl}/auth/callback`;
-    console.log("[send-password-reset] Generating recovery link for:", email);
-    console.log("[send-password-reset] Using redirect URL:", effectiveRedirectTo);
+    const requestUrl = new URL(req.url);
+    const isLocalRequest =
+      isLocalSupabaseEnv ||
+      requestUrl.hostname === "127.0.0.1" ||
+      requestUrl.hostname === "localhost" ||
+      effectiveRedirectTo.includes("127.0.0.1") ||
+      effectiveRedirectTo.includes("localhost");
+
+    if (!MAILGUN_API_KEY || !MAILGUN_DOMAIN) {
+      if (!isLocalRequest) {
+        console.error("[send-password-reset] Missing Mailgun credentials");
+        return jsonResponse(
+          {
+            success: false,
+            error: "Email service not configured",
+          },
+          500,
+        );
+      }
+
+      const { data: localLinkData, error: localLinkError } =
+        await supabaseAdmin.auth.admin.generateLink({
+          type: "recovery",
+          email,
+          options: {
+            redirectTo: effectiveRedirectTo,
+            expiresIn: 3600,
+          },
+        });
+
+      if (localLinkError) {
+        return buildGenerateLinkErrorResponse(localLinkError, email);
+      }
+
+      const recoveryUrl = localLinkData?.properties?.action_link;
+
+      if (!recoveryUrl) {
+        console.error(
+          "[send-password-reset] No local recovery action link in response",
+        );
+        return jsonResponse(
+          {
+            success: false,
+            error: "Failed to generate local reset link",
+          },
+          500,
+        );
+      }
+
+      return jsonResponse({
+        success: true,
+        directReset: true,
+        recoveryUrl,
+        message:
+          "Local password reset link generated. Redirect the browser to complete the reset.",
+      });
+    }
 
     // Generate password reset link using Supabase Admin SDK
     // Use /auth/callback as redirect - it's whitelisted and handles recovery type
@@ -106,63 +176,21 @@ serve(async (req) => {
       });
 
     if (linkError) {
-      console.error(
-        "[send-password-reset] Failed to generate link:",
-        linkError,
-      );
-
-      // Check if user doesn't exist - check both code and message
-      // The AuthApiError has a 'code' property that's more reliable
-      const errorCode = (linkError as { code?: string }).code;
-      const isUserNotFound =
-        errorCode === "user_not_found" ||
-        linkError.message?.includes("User not found") ||
-        linkError.message?.includes("not found");
-
-      if (isUserNotFound) {
-        console.log(
-          "[send-password-reset] User not found in auth.users for email:",
-          email,
-        );
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: `No auth account found for ${email}. This user exists in user_profiles but NOT in auth.users. They need to be created properly via the Add User flow.`,
-          }),
-          {
-            status: 404,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          },
-        );
-      }
-
-      return new Response(
-        JSON.stringify({ success: false, error: linkError.message }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+      return buildGenerateLinkErrorResponse(linkError, email);
     }
 
     if (!linkData?.properties?.action_link) {
       console.error("[send-password-reset] No action link in response");
-      return new Response(
-        JSON.stringify({
+      return jsonResponse(
+        {
           success: false,
           error: "Failed to generate reset link",
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
+        500,
       );
     }
 
     const resetLink = linkData.properties.action_link;
-    console.log(
-      "[send-password-reset] Link generated, sending email via Mailgun",
-    );
 
     // Build the email HTML
     const emailHtml = `
@@ -258,19 +286,12 @@ If you didn't request this password reset, you can safely ignore this email.
     });
 
     const responseText = await response.text();
-    console.log("[send-password-reset] Mailgun response:", {
-      status: response.status,
-      body: responseText.substring(0, 200),
-    });
 
     if (!response.ok) {
       console.error("[send-password-reset] Mailgun API error:", responseText);
-      return new Response(
-        JSON.stringify({ success: false, error: "Failed to send email" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
+      return jsonResponse(
+        { success: false, error: "Failed to send email" },
+        500,
       );
     }
 
@@ -281,32 +302,15 @@ If you didn't request this password reset, you can safely ignore this email.
       mailgunData = { id: "unknown" };
     }
 
-    console.log(
-      "[send-password-reset] Email sent successfully:",
-      mailgunData.id,
-    );
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: "Password reset email sent",
-        mailgunId: mailgunData.id,
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
-    );
+    return jsonResponse({
+      success: true,
+      message: "Password reset email sent",
+      mailgunId: mailgunData.id,
+    });
   } catch (err) {
     console.error("[send-password-reset] Error:", err);
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
 
-    return new Response(
-      JSON.stringify({ success: false, error: errorMessage }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      },
-    );
+    return jsonResponse({ success: false, error: errorMessage }, 500);
   }
 });

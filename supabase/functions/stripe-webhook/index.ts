@@ -4,6 +4,16 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
 import Stripe from "https://esm.sh/stripe@17.7.0?target=deno";
+import { createStandardChatBotVoiceClient } from "../_shared/standard-chat-bot-voice.ts";
+import {
+  PREMIUM_VOICE_ADDON_NAME,
+  buildVoiceCancellationPayload,
+  buildVoiceEntitlementPayload,
+  getVoiceTierConfig,
+  syncVoiceEntitlementWithRetry,
+  type VoiceEntitlementStatus,
+  type VoiceEntitlementSnapshot,
+} from "../../../src/services/subscription/voice-sync.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -181,8 +191,12 @@ async function callChatBotApi(
   path: string,
   body?: Record<string, unknown>,
 ): Promise<{ ok: boolean; status: number; data: Record<string, unknown> }> {
-  const CHAT_BOT_API_URL = Deno.env.get("CHAT_BOT_API_URL");
-  const CHAT_BOT_API_KEY = Deno.env.get("CHAT_BOT_API_KEY");
+  const CHAT_BOT_API_URL =
+    Deno.env.get("STANDARD_CHAT_BOT_API_URL") ||
+    Deno.env.get("CHAT_BOT_API_URL");
+  const CHAT_BOT_API_KEY =
+    Deno.env.get("STANDARD_CHAT_BOT_EXTERNAL_API_KEY") ||
+    Deno.env.get("CHAT_BOT_API_KEY");
 
   if (!CHAT_BOT_API_URL || !CHAT_BOT_API_KEY) {
     console.warn(
@@ -206,6 +220,89 @@ async function callChatBotApi(
   const res = await fetch(url, options);
   const data = await res.json().catch(() => ({}));
   return { ok: res.ok, status: res.status, data };
+}
+
+function extractExternalAgentId(data: Record<string, unknown>): string | null {
+  const nested = data.data;
+  if (nested && typeof nested === "object") {
+    const nestedId = (nested as Record<string, unknown>).agentId;
+    if (typeof nestedId === "string" && nestedId.trim()) {
+      return nestedId.trim();
+    }
+  }
+
+  const directId = data.agentId;
+  if (typeof directId === "string" && directId.trim()) {
+    return directId.trim();
+  }
+
+  return null;
+}
+
+async function ensureManagedAgentMapping(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+): Promise<string | null> {
+  const { data: existingAgent } = await supabase
+    .from("chat_bot_agents")
+    .select("external_agent_id, provisioning_status, billing_exempt, tier_id")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (
+    existingAgent?.provisioning_status === "active" &&
+    typeof existingAgent.external_agent_id === "string" &&
+    existingAgent.external_agent_id.trim()
+  ) {
+    return existingAgent.external_agent_id.trim();
+  }
+
+  const { data: profile } = await supabase
+    .from("user_profiles")
+    .select("first_name, last_name")
+    .eq("id", userId)
+    .maybeSingle();
+
+  const agentName =
+    `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim() ||
+    "The Standard HQ Workspace";
+  const provisionRes = await callChatBotApi("POST", "/api/external/agents", {
+    externalRef: userId,
+    name: agentName,
+    billingExempt: existingAgent?.billing_exempt === true,
+  });
+
+  if (!provisionRes.ok) {
+    console.error(
+      `[stripe-webhook] Failed to auto-provision managed agent for voice user ${userId}:`,
+      provisionRes.data,
+    );
+    return null;
+  }
+
+  const agentId = extractExternalAgentId(provisionRes.data);
+  if (!agentId) {
+    console.error(
+      `[stripe-webhook] Provisioned managed agent for voice user ${userId} without agentId payload`,
+      provisionRes.data,
+    );
+    return null;
+  }
+
+  await supabase.from("chat_bot_agents").upsert(
+    {
+      user_id: userId,
+      external_agent_id: agentId,
+      provisioning_status: "active",
+      billing_exempt: existingAgent?.billing_exempt === true,
+      tier_id: existingAgent?.tier_id ?? null,
+      error_message: null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" },
+  );
+
+  return agentId;
 }
 
 // Sync chat bot addon after subscription update: provision, deprovision, or tier change
@@ -446,6 +543,341 @@ async function deprovisionChatBotAgent(
   }
 }
 
+function isActiveAddonStatus(status: string | null | undefined): boolean {
+  return status === "active" || status === "manual_grant";
+}
+
+function parseReferenceDate(value: string | null | undefined): Date {
+  if (!value) return new Date();
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return new Date();
+  return parsed;
+}
+
+async function markVoiceSyncAttempt(
+  supabase: ReturnType<typeof createClient>,
+  userAddonId: string,
+  eventId: string,
+): Promise<void> {
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from("user_subscription_addons")
+    .update({
+      voice_sync_status: "pending",
+      voice_last_sync_attempt_at: now,
+      voice_last_sync_event_id: eventId,
+      voice_last_sync_error: null,
+      voice_last_sync_http_status: null,
+      updated_at: now,
+    })
+    .eq("id", userAddonId);
+
+  if (error) {
+    console.error("[stripe-webhook] Failed to mark voice sync attempt:", error);
+  }
+}
+
+async function markVoiceSyncSuccess(
+  supabase: ReturnType<typeof createClient>,
+  userAddonId: string,
+  eventId: string,
+  statusCode: number,
+  snapshot: VoiceEntitlementSnapshot | null,
+): Promise<void> {
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .from("user_subscription_addons")
+    .update({
+      voice_sync_status: "synced",
+      voice_last_sync_attempt_at: now,
+      voice_last_synced_at: now,
+      voice_last_sync_event_id: eventId,
+      voice_last_sync_error: null,
+      voice_last_sync_http_status: statusCode,
+      voice_entitlement_snapshot: snapshot,
+      updated_at: now,
+    })
+    .eq("id", userAddonId);
+
+  if (error) {
+    console.error("[stripe-webhook] Failed to mark voice sync success:", error);
+  }
+}
+
+async function markVoiceSyncFailure(
+  supabase: ReturnType<typeof createClient>,
+  userAddonId: string,
+  eventId: string,
+  errorMessage: string,
+  statusCode?: number | null,
+  snapshot?: VoiceEntitlementSnapshot | null,
+): Promise<void> {
+  const now = new Date().toISOString();
+  const updateData: Record<string, unknown> = {
+    voice_sync_status: "degraded",
+    voice_last_sync_attempt_at: now,
+    voice_last_sync_event_id: eventId,
+    voice_last_sync_error: errorMessage,
+    voice_last_sync_http_status: statusCode ?? null,
+    updated_at: now,
+  };
+  if (snapshot !== undefined) {
+    updateData.voice_entitlement_snapshot = snapshot;
+  }
+
+  const { error } = await supabase
+    .from("user_subscription_addons")
+    .update(updateData)
+    .eq("id", userAddonId);
+
+  if (error) {
+    console.error("[stripe-webhook] Failed to mark voice sync failure:", error);
+  }
+}
+
+async function syncPremiumVoiceAddon(
+  supabase: ReturnType<typeof createClient>,
+  params: {
+    userId: string;
+    eventId: string;
+    stripeStatus?: string | null;
+    overrideStatus?: VoiceEntitlementStatus;
+    cancelAtPeriodEnd?: boolean;
+    immediateCancel?: boolean;
+    cancelReason?: string;
+    externalCustomerId?: string | null;
+    externalSubscriptionId?: string | null;
+    externalSubscriptionItemId?: string | null;
+    referenceDate?: Date;
+  },
+): Promise<void> {
+  try {
+    const [voiceAddonLookup, userSubscriptionLookup] = await Promise.all([
+      supabase
+        .from("subscription_addons")
+        .select("id, name, tier_config")
+        .eq("name", PREMIUM_VOICE_ADDON_NAME)
+        .maybeSingle(),
+      supabase
+        .from("user_subscriptions")
+        .select("stripe_customer_id")
+        .eq("user_id", params.userId)
+        .maybeSingle(),
+    ]);
+
+    if (!voiceAddonLookup.data?.id) {
+      return;
+    }
+
+    const { data: userAddon, error: userAddonError } = await supabase
+      .from("user_subscription_addons")
+      .select("*")
+      .eq("user_id", params.userId)
+      .eq("addon_id", voiceAddonLookup.data.id)
+      .maybeSingle();
+
+    if (userAddonError) {
+      console.error(
+        `[stripe-webhook] Failed to load premium voice addon for user ${params.userId}:`,
+        userAddonError,
+      );
+      return;
+    }
+
+    if (!userAddon) {
+      return;
+    }
+
+    await markVoiceSyncAttempt(supabase, userAddon.id, params.eventId);
+
+    const agentId = await ensureManagedAgentMapping(supabase, params.userId);
+    if (!agentId) {
+      await markVoiceSyncFailure(
+        supabase,
+        userAddon.id,
+        params.eventId,
+        "Missing managed workspace mapping",
+      );
+      return;
+    }
+
+    const client = createStandardChatBotVoiceClient();
+    const externalCustomerId =
+      params.externalCustomerId ??
+      userSubscriptionLookup.data?.stripe_customer_id;
+    const externalSubscriptionId =
+      params.externalSubscriptionId ?? userAddon.stripe_subscription_id;
+    const externalSubscriptionItemId =
+      params.externalSubscriptionItemId ??
+      userAddon.stripe_subscription_item_id;
+
+    if (params.immediateCancel || !isActiveAddonStatus(userAddon.status)) {
+      const cancelResult = await syncVoiceEntitlementWithRetry({
+        client,
+        agentId,
+        idempotencyKey: params.eventId,
+        action: {
+          operation: "cancel",
+          payload: buildVoiceCancellationPayload({
+            externalSubscriptionId,
+            reason: params.cancelReason ?? "addon_inactive",
+          }),
+        },
+      });
+
+      if (!cancelResult.ok) {
+        await markVoiceSyncFailure(
+          supabase,
+          userAddon.id,
+          params.eventId,
+          cancelResult.error ?? "Failed to cancel premium voice entitlement",
+          cancelResult.status,
+          cancelResult.snapshot,
+        );
+        return;
+      }
+
+      await markVoiceSyncSuccess(
+        supabase,
+        userAddon.id,
+        params.eventId,
+        cancelResult.status,
+        cancelResult.snapshot,
+      );
+      return;
+    }
+
+    const tier = getVoiceTierConfig(
+      voiceAddonLookup.data.tier_config,
+      userAddon.tier_id,
+    );
+    if (!tier) {
+      await markVoiceSyncFailure(
+        supabase,
+        userAddon.id,
+        params.eventId,
+        `Missing premium voice tier config for tier '${userAddon.tier_id ?? "default"}'`,
+      );
+      return;
+    }
+
+    const referenceDate =
+      params.referenceDate ??
+      parseReferenceDate(userAddon.current_period_start);
+    const upsertPayload = buildVoiceEntitlementPayload({
+      eventId: params.eventId,
+      tier,
+      referenceDate,
+      stripeStatus: params.stripeStatus ?? null,
+      overrideStatus: params.overrideStatus,
+      externalCustomerId,
+      externalSubscriptionId,
+      externalSubscriptionItemId,
+      effectiveAt: referenceDate,
+      metadata: {
+        subscriptionAddonId: userAddon.id,
+        userId: params.userId,
+      },
+    });
+
+    const upsertResult = await syncVoiceEntitlementWithRetry({
+      client,
+      agentId,
+      idempotencyKey: params.eventId,
+      action: {
+        operation: "upsert",
+        payload: upsertPayload,
+      },
+    });
+
+    if (!upsertResult.ok) {
+      await markVoiceSyncFailure(
+        supabase,
+        userAddon.id,
+        params.eventId,
+        upsertResult.error ?? "Failed to sync premium voice entitlement",
+        upsertResult.status,
+        upsertResult.snapshot,
+      );
+      return;
+    }
+
+    if (params.cancelAtPeriodEnd) {
+      const cancelResult = await syncVoiceEntitlementWithRetry({
+        client,
+        agentId,
+        idempotencyKey: params.eventId,
+        action: {
+          operation: "cancel",
+          payload: buildVoiceCancellationPayload({
+            externalSubscriptionId,
+            cancelAt: new Date(upsertPayload.cycleEndAt),
+            reason: params.cancelReason ?? "cancel_at_period_end",
+          }),
+        },
+      });
+
+      if (!cancelResult.ok) {
+        await markVoiceSyncFailure(
+          supabase,
+          userAddon.id,
+          params.eventId,
+          cancelResult.error ?? "Failed to schedule premium voice cancellation",
+          cancelResult.status,
+          upsertResult.snapshot,
+        );
+        return;
+      }
+
+      await markVoiceSyncSuccess(
+        supabase,
+        userAddon.id,
+        params.eventId,
+        cancelResult.status,
+        cancelResult.snapshot,
+      );
+      return;
+    }
+
+    await markVoiceSyncSuccess(
+      supabase,
+      userAddon.id,
+      params.eventId,
+      upsertResult.status,
+      upsertResult.snapshot,
+    );
+  } catch (err) {
+    console.error(
+      `[stripe-webhook] Premium voice sync error for user ${params.userId}:`,
+      err,
+    );
+
+    const { data: voiceAddonLookup } = await supabase
+      .from("subscription_addons")
+      .select("id")
+      .eq("name", PREMIUM_VOICE_ADDON_NAME)
+      .maybeSingle();
+
+    if (!voiceAddonLookup?.id) return;
+
+    const { data: userAddon } = await supabase
+      .from("user_subscription_addons")
+      .select("id")
+      .eq("user_id", params.userId)
+      .eq("addon_id", voiceAddonLookup.id)
+      .maybeSingle();
+
+    if (!userAddon?.id) return;
+
+    await markVoiceSyncFailure(
+      supabase,
+      userAddon.id,
+      params.eventId,
+      err instanceof Error ? err.message : "Premium voice sync failed",
+    );
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -608,6 +1040,12 @@ serve(async (req) => {
             `[stripe-webhook] Addon checkout completed: addon=${addonId}, tier=${tierId}, sub=${stripeSubId}`,
           );
 
+          const { data: addonDefinition } = await supabase
+            .from("subscription_addons")
+            .select("name, display_name")
+            .eq("id", addonId)
+            .maybeSingle();
+
           // Retrieve the subscription to get item details
           const addonSub = await stripe.subscriptions.retrieve(stripeSubId);
           const addonItem = addonSub.items?.data?.[0];
@@ -649,32 +1087,33 @@ serve(async (req) => {
               `[stripe-webhook] Addon record created from checkout: user=${userId}, addon=${addonId}, tier=${tierId}`,
             );
 
-            // Trigger provisioning
-            try {
-              const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-              const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get(
-                "SUPABASE_SERVICE_ROLE_KEY",
-              )!;
-              await fetch(`${SUPABASE_URL}/functions/v1/chat-bot-provision`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-                },
-                body: JSON.stringify({
-                  action: "provision",
-                  userId,
-                  tierId,
-                }),
-              });
-              console.log(
-                `[stripe-webhook] Triggered chat-bot-provision for user ${userId}`,
-              );
-            } catch (provisionErr) {
-              console.error(
-                "[stripe-webhook] Failed to trigger chat-bot-provision:",
-                provisionErr,
-              );
+            if (addonDefinition?.name === "ai_chat_bot") {
+              try {
+                const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+                const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get(
+                  "SUPABASE_SERVICE_ROLE_KEY",
+                )!;
+                await fetch(`${SUPABASE_URL}/functions/v1/chat-bot-provision`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+                  },
+                  body: JSON.stringify({
+                    action: "provision",
+                    userId,
+                    tierId,
+                  }),
+                });
+                console.log(
+                  `[stripe-webhook] Triggered chat-bot-provision for user ${userId}`,
+                );
+              } catch (provisionErr) {
+                console.error(
+                  "[stripe-webhook] Failed to trigger chat-bot-provision:",
+                  provisionErr,
+                );
+              }
             }
           }
 
@@ -687,7 +1126,7 @@ serve(async (req) => {
             const addonUserEmail = addonUserDetails?.email || "unknown";
             await sendAdminNotification(
               `New Addon Purchase: ${addonUserName} (${tierId})`,
-              `User: ${addonUserName}\nEmail: ${addonUserEmail}\nAddon: AI Chat Bot\nTier: ${tierId}`,
+              `User: ${addonUserName}\nEmail: ${addonUserEmail}\nAddon: ${addonDefinition?.display_name || addonDefinition?.name || addonId}\nTier: ${tierId}`,
             );
           } catch {
             // Non-fatal
@@ -1007,6 +1446,20 @@ serve(async (req) => {
         // CHAT BOT ADDON LIFECYCLE (provision/deprovision/tier update)
         // ──────────────────────────────────────────────
         await syncChatBotAddon(supabase, userId, subscription);
+        await syncPremiumVoiceAddon(supabase, {
+          userId,
+          eventId: event.id,
+          stripeStatus: subscription.status,
+          cancelAtPeriodEnd: subscription.cancel_at_period_end === true,
+          cancelReason: subscription.cancel_at_period_end
+            ? "cancel_at_period_end"
+            : undefined,
+          externalCustomerId: customerId || null,
+          externalSubscriptionId: subscription.id,
+          referenceDate: subscription.current_period_start
+            ? new Date(subscription.current_period_start * 1000)
+            : undefined,
+        });
 
         console.log(`[stripe-webhook] Processed ${event.type}:`, {
           eventId,
@@ -1138,6 +1591,14 @@ serve(async (req) => {
 
         // Deprovision chat bot agent if one exists
         await deprovisionChatBotAgent(supabase, userId);
+        await syncPremiumVoiceAddon(supabase, {
+          userId,
+          eventId: event.id,
+          immediateCancel: true,
+          cancelReason: "subscription_deleted",
+          externalCustomerId: customerId || null,
+          externalSubscriptionId: subscription.id,
+        });
 
         const { error: eventInsertError } = await supabase
           .from("subscription_events")
@@ -1251,6 +1712,16 @@ serve(async (req) => {
         }
 
         console.log(`[stripe-webhook] Subscription paused for user: ${userId}`);
+        await syncPremiumVoiceAddon(supabase, {
+          userId,
+          eventId: event.id,
+          overrideStatus: "suspended",
+          externalCustomerId: customerId || null,
+          externalSubscriptionId: subscription.id,
+          referenceDate: subscription.current_period_start
+            ? new Date(subscription.current_period_start * 1000)
+            : undefined,
+        });
         break;
       }
 
@@ -1380,6 +1851,13 @@ serve(async (req) => {
         }
 
         console.log(`[stripe-webhook] Payment recorded for user: ${userId}`);
+        await syncPremiumVoiceAddon(supabase, {
+          userId,
+          eventId: event.id,
+          overrideStatus: "active",
+          externalCustomerId: customerId || null,
+          externalSubscriptionId: subscriptionId || null,
+        });
         break;
       }
 
@@ -1504,6 +1982,13 @@ serve(async (req) => {
         }
 
         console.log(`[stripe-webhook] Payment failed for user: ${userId}`);
+        await syncPremiumVoiceAddon(supabase, {
+          userId,
+          eventId: event.id,
+          overrideStatus: "past_due",
+          externalCustomerId: customerId || null,
+          externalSubscriptionId: subscriptionId || null,
+        });
         break;
       }
 

@@ -348,6 +348,13 @@ async function resolveAssignableUpline(
     return caller.userId;
   }
 
+  // Callers who are allowed to create recruits should always be able to
+  // assign the recruit to themselves, even if their role is not in the
+  // stricter manager/upline allowlist.
+  if (requestedUplineId === caller.userId) {
+    return caller.userId;
+  }
+
   if (caller.canManageUsers) {
     return requestedUplineId;
   }
@@ -393,7 +400,8 @@ async function resolveAssignablePipelineTemplate(
     return null;
   }
 
-  return template.is_active === true && template.imo_id === caller.imoId
+  return template.is_active === true &&
+    (template.imo_id === caller.imoId || template.imo_id === null)
     ? template.id
     : null;
 }
@@ -614,6 +622,13 @@ serve(async (req) => {
       : undefined;
 
     if (sanitizedProfileData) {
+      // Agent-driven recruit creation should only create a prospect.
+      // Ignore any client-supplied pipeline assignment here so stale bundles
+      // cannot implicitly enroll recruits during the create step.
+      if (!callerResult.caller.canManageUsers) {
+        sanitizedProfileData.pipeline_template_id = undefined;
+      }
+
       const resolvedUplineId = await resolveAssignableUpline(
         supabaseAdmin,
         callerResult.caller,
@@ -652,8 +667,11 @@ serve(async (req) => {
           resolvedUplineId ??
           sanitizedProfileData.upline_id ??
           callerResult.caller.userId,
-        pipeline_template_id: resolvedTemplateId,
       };
+
+      if (sanitizedProfileData.pipeline_template_id !== undefined) {
+        sanitizedProfileData.pipeline_template_id = resolvedTemplateId;
+      }
 
       if (!callerResult.caller.canManageUsers) {
         sanitizedProfileData = {

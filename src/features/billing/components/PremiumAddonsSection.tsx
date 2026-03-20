@@ -2,7 +2,7 @@
 // Section for purchasing premium add-ons like UW Wizard with tier selection
 
 import { useState } from "react";
-import { Sparkles, Check, Loader2, Wand2, Zap } from "lucide-react";
+import { Sparkles, Check, Loader2, Wand2, Zap, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -23,17 +23,64 @@ import {
   useSubscription,
   subscriptionService,
   subscriptionKeys,
+  useUserActiveAddons,
 } from "@/hooks/subscription";
 import { userAddonKeys } from "@/hooks/subscription";
+import {
+  PREMIUM_VOICE_ADDON_NAME,
+  PREMIUM_VOICE_SELF_SERVE_ENABLED,
+  getTierUsageAmount,
+  getTierUsageUnit,
+} from "@/lib/subscription/voice-addon";
 import { TeamUWWizardManager } from "./TeamUWWizardManager";
 
 interface TierWithAddon extends AddonTier {
   addonId: string;
 }
 
+function getAddonIcon(addonName: string) {
+  return addonName === PREMIUM_VOICE_ADDON_NAME ? PhoneCall : Wand2;
+}
+
+function getTierAllowanceLabel(addonName: string, tier: AddonTier) {
+  const usageUnit = getTierUsageUnit(addonName);
+  const usageAmount = getTierUsageAmount(tier);
+  return `${usageAmount.toLocaleString()} ${usageUnit}/mo`;
+}
+
+function getAddonHighlights(addon: SubscriptionAddon, tier?: AddonTier) {
+  if (addon.name === PREMIUM_VOICE_ADDON_NAME) {
+    const features = tier?.features || {};
+    const labels = [
+      features.missedAppointment ? "Missed appointments" : null,
+      features.reschedule ? "Reschedules" : null,
+      features.afterHoursInbound ? "After-hours inbound" : null,
+      features.quotedFollowup ? "Quoted follow-up" : null,
+    ].filter(Boolean) as string[];
+
+    return labels.length > 0 ? labels : ["Month-aligned voice entitlement"];
+  }
+
+  if (addon.name === "uw_wizard") {
+    return ["AI Analysis", "Carrier Matching", "Health Class Prediction"];
+  }
+
+  return [];
+}
+
+function isAddonComingSoon(addon: SubscriptionAddon, hasAccess: boolean) {
+  return (
+    addon.name === PREMIUM_VOICE_ADDON_NAME &&
+    !PREMIUM_VOICE_SELF_SERVE_ENABLED &&
+    !hasAccess
+  );
+}
+
 export function PremiumAddonsSection() {
   const { user } = useAuth();
-  const [selectedTierId, setSelectedTierId] = useState<string>("professional");
+  const [selectedTierIds, setSelectedTierIds] = useState<
+    Record<string, string>
+  >({});
   const [purchaseLoading, setPurchaseLoading] = useState(false);
   const queryClient = useQueryClient();
 
@@ -45,6 +92,7 @@ export function PremiumAddonsSection() {
   // Check UW Wizard access and usage
   const { isEnabled: hasUwWizard, accessSource } = useUnderwritingFeatureFlag();
   const { data: uwUsage } = useUWWizardUsage();
+  const { activeAddons } = useUserActiveAddons();
 
   // Check if user is on Team plan
   const { subscription } = useSubscription();
@@ -72,6 +120,13 @@ export function PremiumAddonsSection() {
         queryKey: userAddonKeys.activeAddons(user.id),
       });
     }
+  };
+
+  const setSelectedTierForAddon = (addonId: string, tierId: string) => {
+    setSelectedTierIds((current) => ({
+      ...current,
+      [addonId]: tierId,
+    }));
   };
 
   const handlePurchaseTier = async (tier: TierWithAddon) => {
@@ -184,9 +239,14 @@ export function PremiumAddonsSection() {
             /* Non-team users: show standalone addon tiers (Starter + Professional only) */
             addons.map((addon) => {
               const isUwWizard = addon.name === "uw_wizard";
-              const hasAccess = isUwWizard && hasUwWizard;
+              const activeAddon = activeAddons.find(
+                (userAddon) => userAddon.addon_id === addon.id,
+              );
+              const hasAccess = isUwWizard ? hasUwWizard : !!activeAddon;
               const tierConfig = getTierConfig(addon);
               const hasTiers = tierConfig && tierConfig.tiers.length > 0;
+              const AddonIcon = getAddonIcon(addon.name);
+              const comingSoon = isAddonComingSoon(addon, hasAccess);
 
               // For tiered addons with access, show current usage
               if (hasAccess && isUwWizard) {
@@ -257,50 +317,124 @@ export function PremiumAddonsSection() {
                 );
               }
 
-              // For tiered addons without access, show tier selection (2-column, no Agency)
-              if (hasTiers && isUwWizard) {
-                // Filter out agency tier
-                const availableTiers = tierConfig.tiers.filter(
-                  (t) => t.id !== "agency",
-                );
+              if (hasTiers) {
+                const availableTiers = isUwWizard
+                  ? tierConfig.tiers.filter((tier) => tier.id !== "agency")
+                  : tierConfig.tiers;
 
+                const activeTierId = activeAddon?.tier_id || null;
+                const selectedTierId =
+                  selectedTierIds[addon.id] ||
+                  activeTierId ||
+                  availableTiers[availableTiers.length - 1]?.id;
                 const selectedTier =
-                  availableTiers.find((t) => t.id === selectedTierId) ||
+                  availableTiers.find((tier) => tier.id === selectedTierId) ||
                   availableTiers[availableTiers.length - 1];
+
+                if (!selectedTier) {
+                  return null;
+                }
 
                 const selectedTierWithAddon: TierWithAddon = {
                   ...selectedTier,
                   addonId: addon.id,
                 };
-
+                const currentTier =
+                  availableTiers.find((tier) => tier.id === activeTierId) ||
+                  selectedTier;
                 const hasVariantIds =
                   selectedTier.stripe_price_id_monthly ||
                   selectedTier.stripe_price_id_annual;
+                const highlights = getAddonHighlights(addon, selectedTier);
+
+                if (hasAccess && !isUwWizard) {
+                  return (
+                    <div
+                      key={addon.id}
+                      className="relative rounded-lg border border-purple-300 bg-purple-50/50 p-3 dark:border-purple-700 dark:bg-purple-950/20"
+                    >
+                      <div className="absolute -top-2 right-3">
+                        <Badge className="bg-purple-500 px-1.5 text-[9px] text-white">
+                          <Check className="mr-0.5 h-2.5 w-2.5" />
+                          Active
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600">
+                          <AddonIcon className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                            {addon.display_name}
+                          </h3>
+                          <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+                            {addon.description}
+                          </p>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {getAddonHighlights(addon, currentTier).map(
+                              (label) => (
+                                <span
+                                  key={label}
+                                  className="rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                                >
+                                  {label}
+                                </span>
+                              ),
+                            )}
+                            <span className="rounded bg-purple-100 px-1.5 py-0.5 text-[9px] font-medium text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
+                              {getTierAllowanceLabel(addon.name, currentTier)}
+                            </span>
+                          </div>
+                          <p className="mt-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+                            Current tier: {currentTier.name}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
 
                 return (
                   <div
                     key={addon.id}
-                    className="relative p-3 rounded-lg border border-zinc-200 dark:border-zinc-700"
+                    className={cn(
+                      "rounded-lg border p-3",
+                      comingSoon
+                        ? "border-amber-200 bg-amber-50/60 dark:border-amber-800/70 dark:bg-amber-950/10"
+                        : "border-zinc-200 dark:border-zinc-700",
+                    )}
                   >
-                    {/* Header */}
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
-                        <Wand2 className="h-5 w-5 text-white" />
+                    <div className="mb-3 flex items-start gap-3">
+                      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600">
+                        <AddonIcon className="h-5 w-5 text-white" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                          {addon.display_name}
-                        </h3>
-                        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                            {addon.display_name}
+                          </h3>
+                          {comingSoon && (
+                            <Badge variant="outline" className="text-[9px]">
+                              Coming Soon
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
                           {addon.description ||
-                            "Advanced underwriting analysis with AI-powered recommendations."}
+                            "Enhance your subscription with a premium add-on tier."}
                         </p>
+                        {comingSoon && (
+                          <p className="mt-2 text-[10px] text-amber-700 dark:text-amber-300">
+                            Self-serve access opens soon. Team subscribers will
+                            get first access.
+                          </p>
+                        )}
                       </div>
                     </div>
 
-                    {/* Tier Selection - 2-column grid (no Agency) */}
                     <div className="mb-3">
-                      <div className="flex items-center gap-1.5 mb-2">
+                      <div className="mb-2 flex items-center gap-1.5">
                         <Zap className="h-3 w-3 text-amber-500" />
                         <span className="text-[10px] font-medium text-zinc-700 dark:text-zinc-300">
                           Choose Your Plan
@@ -308,17 +442,19 @@ export function PremiumAddonsSection() {
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         {availableTiers.map((tier) => {
-                          const isSelected = selectedTierId === tier.id;
+                          const isSelected = selectedTier.id === tier.id;
 
                           return (
                             <button
                               key={tier.id}
-                              onClick={() => setSelectedTierId(tier.id)}
+                              onClick={() =>
+                                setSelectedTierForAddon(addon.id, tier.id)
+                              }
                               className={cn(
-                                "p-2 rounded-lg border text-left transition-all",
+                                "rounded-lg border p-2 text-left transition-all",
                                 isSelected
                                   ? "border-purple-500 bg-purple-50 dark:bg-purple-950/30"
-                                  : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600",
+                                  : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600",
                               )}
                             >
                               <div className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
@@ -331,11 +467,11 @@ export function PremiumAddonsSection() {
                                 </span>
                               </div>
                               <div className="text-[9px] text-zinc-500 dark:text-zinc-400">
-                                {tier.runs_per_month.toLocaleString()} runs/mo
+                                {getTierAllowanceLabel(addon.name, tier)}
                               </div>
                               {isSelected && (
                                 <div className="mt-1">
-                                  <Badge className="text-[8px] bg-purple-500 text-white">
+                                  <Badge className="bg-purple-500 text-[8px] text-white">
                                     Selected
                                   </Badge>
                                 </div>
@@ -346,41 +482,36 @@ export function PremiumAddonsSection() {
                       </div>
                     </div>
 
-                    {/* Features for selected tier */}
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-                        AI Analysis
-                      </span>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-                        Carrier Matching
-                      </span>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-                        Health Class Prediction
-                      </span>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 font-medium">
-                        {selectedTier.runs_per_month.toLocaleString()}{" "}
-                        runs/month
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      {highlights.map((label) => (
+                        <span
+                          key={label}
+                          className="rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                        >
+                          {label}
+                        </span>
+                      ))}
+                      <span className="rounded bg-purple-100 px-1.5 py-0.5 text-[9px] font-medium text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
+                        {getTierAllowanceLabel(addon.name, selectedTier)}
                       </span>
                     </div>
 
-                    {/* Action Area */}
-                    <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
+                    <div className="flex items-center justify-between border-t border-zinc-100 pt-3 dark:border-zinc-800">
                       <p className="text-[9px] text-zinc-400">
                         Billed with your plan
                       </p>
 
-                      {/* Purchase Button */}
-                      {hasVariantIds ? (
+                      {hasVariantIds && !comingSoon ? (
                         <Button
                           size="sm"
-                          className="h-7 text-[10px] bg-purple-600 hover:bg-purple-700"
+                          className="h-7 bg-purple-600 text-[10px] hover:bg-purple-700"
                           disabled={purchaseLoading || !hasActiveSubscription}
                           onClick={() =>
                             handlePurchaseTier(selectedTierWithAddon)
                           }
                         >
                           {purchaseLoading ? (
-                            <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                            <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                           ) : null}
                           {hasActiveSubscription
                             ? `Add ${selectedTier.name}`

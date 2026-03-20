@@ -1,0 +1,1455 @@
+import {
+  type ElementType,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import {
+  Activity,
+  AlertTriangle,
+  Loader2,
+  PhoneCall,
+  Settings2,
+  ShieldCheck,
+  Sparkles,
+  Wrench,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { CloseCrmLogo } from "@/components/logos/CloseCrmLogo";
+import { useImo } from "@/contexts/ImoContext";
+import {
+  ChatBotApiError,
+  useChatBotAgent,
+  useCreateVoiceAgent,
+  useChatBotVoiceSetupState,
+  useConnectClose,
+  useDisconnectClose,
+  useChatBotRetellLlm,
+  useChatBotRetellRuntime,
+  useChatBotRetellVoices,
+  useChatBotVoiceEntitlement,
+  useChatBotVoiceUsage,
+} from "@/features/chat-bot";
+import { ConnectionCard } from "@/features/chat-bot";
+import { useUserActiveAddons } from "@/hooks/subscription";
+import {
+  PREMIUM_VOICE_ADDON_NAME,
+  PREMIUM_VOICE_LAUNCH_PRICE_MONTHLY_CENTS,
+} from "@/lib/subscription/voice-addon";
+import {
+  VoiceAgentLanding,
+  type VoiceAgentSetupStep,
+} from "./components/VoiceAgentLanding";
+import { VoiceAgentConnectionCard } from "./components/VoiceAgentConnectionCard";
+import { VoiceAgentRetellStudioCard } from "./components/VoiceAgentRetellStudioCard";
+import { VoiceAgentRuntimeCard } from "./components/VoiceAgentRuntimeCard";
+import { VoiceAgentStatusCard } from "./components/VoiceAgentStatusCard";
+import { VoiceAgentUsageCard } from "./components/VoiceAgentUsageCard";
+import {
+  isVoiceAgentProvisioned,
+  isVoiceAgentProvisioningPending,
+} from "./lib/voice-agent-contract";
+import type { VoiceEntitlementSnapshotView } from "./types";
+
+const VOICE_LAUNCH_INCLUDED_MINUTES = 500;
+
+type VoiceTabId = "overview" | "create" | "setup" | "stats" | "admin";
+type VoiceSetupTabId =
+  | "voice"
+  | "instructions"
+  | "call-flow"
+  | "advanced"
+  | "launch";
+
+type VoiceNextActionKey =
+  | "activate_trial"
+  | "resolve_billing"
+  | "resolve_suspension"
+  | "replenish_minutes"
+  | "reactivate_voice"
+  | "activate_voice"
+  | "connect_close"
+  | "create_agent"
+  | "wait_for_provisioning"
+  | "repair_agent"
+  | "publish_agent"
+  | "connect_calendar"
+  | "review_guardrails"
+  | "unknown";
+
+const ENTITLEMENT_ACTIVE_STATUSES = new Set(["active", "trialing"]);
+const BILLING_NEXT_ACTION_KEYS = new Set<VoiceNextActionKey>([
+  "activate_trial",
+  "resolve_billing",
+  "resolve_suspension",
+  "replenish_minutes",
+  "reactivate_voice",
+  "activate_voice",
+]);
+const SETUP_REDIRECT_ACTION_KEYS = new Set<VoiceNextActionKey>([
+  "wait_for_provisioning",
+  "publish_agent",
+  "connect_calendar",
+  "review_guardrails",
+]);
+
+function parseVoiceSnapshot(
+  value: unknown,
+): VoiceEntitlementSnapshotView | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  const raw = value as Record<string, unknown>;
+
+  // Validate expected top-level shape before trusting the cast.
+  // All fields are optional on VoiceEntitlementSnapshotView, so we only
+  // reject if the object has keys that are clearly wrong types.
+  if (raw.status !== undefined && typeof raw.status !== "string") return null;
+  if (
+    raw.includedMinutes !== undefined &&
+    typeof raw.includedMinutes !== "number"
+  )
+    return null;
+  if (raw.usage !== undefined && typeof raw.usage !== "object") return null;
+
+  return raw as VoiceEntitlementSnapshotView;
+}
+
+function hasUsageActivity(
+  snapshot: VoiceEntitlementSnapshotView | null,
+  includedMinutes?: number,
+  usedMinutes?: number,
+) {
+  return Boolean(
+    snapshot ||
+    (typeof includedMinutes === "number" && includedMinutes > 0) ||
+    (typeof usedMinutes === "number" && usedMinutes > 0),
+  );
+}
+
+function isServiceIssue(error: unknown) {
+  return error instanceof ChatBotApiError && error.isServiceError;
+}
+
+function isNonProvisioningError(error: unknown) {
+  return (
+    error instanceof ChatBotApiError &&
+    !error.isNotProvisioned &&
+    !error.isServiceError
+  );
+}
+
+function getLocalVoiceEnvWarning(error: unknown): string | null {
+  if (!(error instanceof ChatBotApiError)) return null;
+  if (
+    error.message.includes(
+      "Chat bot service is not configured in this local edge environment.",
+    )
+  ) {
+    return "Local voice setup is blocked because the local edge function is missing its upstream chat bot API env. Start the Supabase functions server with the project .env so voice reads can load.";
+  }
+
+  return null;
+}
+
+function isFilledString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function buildSetupSteps({
+  voiceAccessActive,
+  closeConnected,
+  voiceAgentCreated,
+  voiceAgentProvisioning,
+  voiceProfileReady,
+  promptReady,
+  callFlowReady,
+  launchReady,
+}: {
+  voiceAccessActive: boolean;
+  closeConnected: boolean;
+  voiceAgentCreated: boolean;
+  voiceAgentProvisioning: boolean;
+  voiceProfileReady: boolean;
+  promptReady: boolean;
+  callFlowReady: boolean;
+  launchReady: boolean;
+}): VoiceAgentSetupStep[] {
+  const rawSteps = [
+    {
+      id: "voice-access",
+      title: "Voice access",
+      description: voiceAccessActive
+        ? "Your workspace can provision and edit a managed voice agent."
+        : "Voice is not activated for this workspace yet. Activation or billing has to be resolved before agent creation.",
+      complete: voiceAccessActive,
+    },
+    {
+      id: "close",
+      title: "Close CRM",
+      description: closeConnected
+        ? "Your Close CRM connection is active for inbound voice routing and lead lookups."
+        : "Connect Close CRM first. Inbound calls and lead records come from Close CRM.",
+      complete: closeConnected,
+    },
+    {
+      id: "line",
+      title: voiceAgentCreated ? "Voice Agent" : "Create Your Voice Agent",
+      description: voiceAgentCreated
+        ? "Your voice agent is ready for setup."
+        : voiceAgentProvisioning
+          ? "Your voice agent is being created now. Setup unlocks as soon as the draft is ready."
+          : "Create the voice agent for this workspace before editing can start.",
+      complete: voiceAgentCreated,
+    },
+    {
+      id: "profile",
+      title: "Voice & greeting",
+      description: voiceProfileReady
+        ? "A voice and opening line are already in place."
+        : "Choose the spoken voice and write the opening greeting.",
+      complete: voiceProfileReady,
+    },
+    {
+      id: "prompt",
+      title: "Prompt & instructions",
+      description: promptReady
+        ? "The core instructions are already written."
+        : "Explain what the agent should say, do, and when it should transfer.",
+      complete: promptReady,
+    },
+    {
+      id: "call-flow",
+      title: "Call flow",
+      description: callFlowReady
+        ? "Availability and handoff rules are configured."
+        : "Choose when the agent answers and how calls should route.",
+      complete: callFlowReady,
+    },
+    {
+      id: "launch",
+      title: "Go live",
+      description: launchReady
+        ? "The live voice agent is already published."
+        : "Save the draft, then publish once the experience sounds right.",
+      complete: launchReady,
+    },
+  ];
+
+  const firstIncompleteIndex = rawSteps.findIndex((step) => !step.complete);
+
+  return rawSteps.map((step, index) => ({
+    id: step.id,
+    title: step.title,
+    description: step.description,
+    state: step.complete
+      ? "complete"
+      : firstIncompleteIndex === index
+        ? "current"
+        : "upcoming",
+  }));
+}
+
+function getNextStepCopy(steps: VoiceAgentSetupStep[]) {
+  const current = steps.find((step) => step.state === "current");
+  if (current) {
+    return {
+      title: current.title,
+      description: current.description,
+    };
+  }
+
+  return {
+    title: "Voice setup is ready",
+    description:
+      "Your draft is configured. Review it occasionally, then publish again any time you change the voice, greeting, or prompt.",
+  };
+}
+
+function isVoiceAccessActive(status: string | null | undefined) {
+  return typeof status === "string"
+    ? ENTITLEMENT_ACTIVE_STATUSES.has(status.trim().toLowerCase())
+    : false;
+}
+
+function normalizeNextActionKey(
+  value: string | null | undefined,
+): VoiceNextActionKey {
+  if (!value) return "unknown";
+
+  const normalizedValue = value.trim().toLowerCase() as VoiceNextActionKey;
+  return normalizedValue || "unknown";
+}
+
+function getDefaultNextActionCopy(key: VoiceNextActionKey) {
+  switch (key) {
+    case "activate_trial":
+      return {
+        title: "Activate your voice trial",
+        description:
+          "Voice access has to be active before a managed voice agent can be created.",
+      };
+    case "resolve_billing":
+      return {
+        title: "Resolve voice billing",
+        description:
+          "Voice access is blocked until the workspace billing issue is resolved.",
+      };
+    case "resolve_suspension":
+      return {
+        title: "Resolve the voice suspension",
+        description:
+          "Voice access is suspended for this workspace until the account issue is cleared.",
+      };
+    case "replenish_minutes":
+      return {
+        title: "Replenish voice minutes",
+        description:
+          "The workspace needs more voice minutes before additional voice actions can continue.",
+      };
+    case "reactivate_voice":
+      return {
+        title: "Reactivate voice access",
+        description:
+          "Voice was previously deactivated for this workspace and must be reactivated first.",
+      };
+    case "activate_voice":
+      return {
+        title: "Voice is not activated yet",
+        description:
+          "Activate voice access for this workspace before you try to create a managed voice agent.",
+      };
+    case "connect_close":
+      return {
+        title: "Connect Close CRM",
+        description:
+          "Connect Close CRM first so inbound calls and lead lookups can be routed correctly.",
+      };
+    case "create_agent":
+      return {
+        title: "Create your voice agent",
+        description:
+          "This workspace is ready to provision its managed Retell agent now.",
+      };
+    case "wait_for_provisioning":
+      return {
+        title: "Creating your voice agent",
+        description:
+          "The managed voice workspace is provisioning now. This usually takes less than a minute.",
+      };
+    case "repair_agent":
+      return {
+        title: "Repair the managed voice agent",
+        description:
+          "The backend detected a voice-agent mismatch and the linked agent needs repair.",
+      };
+    case "publish_agent":
+      return {
+        title: "Publish your draft",
+        description:
+          "The agent is provisioned and editable. Review the draft, then publish it live.",
+      };
+    case "connect_calendar":
+      return {
+        title: "Finish setup",
+        description:
+          "The agent is provisioned. Complete the remaining setup work before you go live.",
+      };
+    case "review_guardrails":
+      return {
+        title: "Review your live setup",
+        description:
+          "The voice agent is already provisioned. Review guardrails and launch settings before further changes.",
+      };
+    default:
+      return {
+        title: "Review voice setup",
+        description:
+          "Check the current voice setup state and continue the next required step.",
+      };
+  }
+}
+
+function getNextActionCopy({
+  key,
+  label,
+  description,
+  fallback,
+}: {
+  key: VoiceNextActionKey;
+  label?: string | null;
+  description?: string | null;
+  fallback: ReturnType<typeof getNextStepCopy>;
+}) {
+  const defaults = getDefaultNextActionCopy(key);
+
+  return {
+    title: isFilledString(label) ? label : defaults.title || fallback.title,
+    description: isFilledString(description)
+      ? description
+      : defaults.description || fallback.description,
+  };
+}
+
+function getSetupTabForNextAction(key: VoiceNextActionKey): VoiceSetupTabId {
+  switch (key) {
+    case "publish_agent":
+    case "review_guardrails":
+      return "launch";
+    case "connect_calendar":
+      return "call-flow";
+    default:
+      return "voice";
+  }
+}
+
+function shouldTreatCreateAsAvailable(key: VoiceNextActionKey) {
+  return key === "create_agent";
+}
+
+function OverviewCard({
+  icon,
+  title,
+  value,
+  detail,
+}: {
+  icon?: ReactNode;
+  title: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex items-center gap-2">
+        {icon ? <div className="shrink-0">{icon}</div> : null}
+        <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          {title}
+        </p>
+      </div>
+      <p className="mt-2 text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
+        {value}
+      </p>
+      <p className="mt-2 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
+        {detail}
+      </p>
+    </div>
+  );
+}
+
+function SetupStepButton({
+  active,
+  label,
+  description,
+  onClick,
+}: {
+  active: boolean;
+  label: string;
+  description: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-xl border px-4 py-3 text-left transition ${
+        active
+          ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
+          : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+      }`}
+    >
+      <p className="text-[12px] font-semibold">{label}</p>
+      <p
+        className={`mt-1 text-[10px] leading-5 ${
+          active
+            ? "text-zinc-300 dark:text-zinc-700"
+            : "text-zinc-500 dark:text-zinc-400"
+        }`}
+      >
+        {description}
+      </p>
+    </button>
+  );
+}
+
+function CreateVoiceAgentCard({
+  title,
+  description,
+  statusLabel,
+  statusTone,
+  onPrimaryAction,
+  primaryActionLabel,
+  primaryActionDisabled,
+  errorMessage,
+  actionUnavailable,
+  isSuperAdmin,
+}: {
+  title: string;
+  description: string;
+  statusLabel: string;
+  statusTone: "created" | "creating" | "required";
+  onPrimaryAction: () => void;
+  primaryActionLabel: ReactNode;
+  primaryActionDisabled: boolean;
+  errorMessage?: string | null;
+  actionUnavailable?: boolean;
+  isSuperAdmin?: boolean;
+}) {
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+        <div className="max-w-3xl">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+            {title}
+          </p>
+          <p className="mt-1 text-[12px] leading-6 text-zinc-600 dark:text-zinc-400">
+            {description}
+          </p>
+        </div>
+
+        <Badge
+          className={
+            statusTone === "created"
+              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+              : statusTone === "creating"
+                ? "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
+                : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+          }
+        >
+          {statusLabel}
+        </Badge>
+      </div>
+
+      <div className="mt-4 flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+        <div className="max-w-3xl" />
+
+        <Button
+          onClick={onPrimaryAction}
+          disabled={primaryActionDisabled || actionUnavailable}
+        >
+          {primaryActionLabel}
+        </Button>
+      </div>
+
+      {errorMessage && (
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-[11px] leading-5 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+            <div>
+              <p className="font-semibold">
+                Voice agent creation is unavailable right now
+              </p>
+              <p className="mt-1">{errorMessage}</p>
+              {isSuperAdmin && actionUnavailable && (
+                <p className="mt-2">
+                  This environment is missing the latest voice-agent create
+                  route. Deploy the updated voice API and edge function before
+                  testing this step.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function VoiceAgentPage() {
+  const [activeTab, setActiveTab] = useState<VoiceTabId>("overview");
+  const [activeSetupTab, setActiveSetupTab] =
+    useState<VoiceSetupTabId>("voice");
+  const { isSuperAdmin } = useImo();
+  const { activeAddons, isLoading: addonsLoading } = useUserActiveAddons();
+  const voiceAddon = activeAddons.find(
+    (addon) => addon.addon?.name === PREMIUM_VOICE_ADDON_NAME,
+  );
+  const chatBotAddon = activeAddons.find(
+    (addon) => addon.addon?.name === "ai_chat_bot",
+  );
+  const shouldLoadAgent =
+    activeTab === "setup" || activeTab === "stats" || activeTab === "admin";
+  const {
+    data: voiceSetupState,
+    error: voiceSetupStateError,
+    isLoading: voiceSetupStateLoading,
+    refetch: refetchVoiceSetupState,
+    isRefetching: voiceSetupStateRefetching,
+  } = useChatBotVoiceSetupState();
+
+  const voiceSnapshot = parseVoiceSnapshot(
+    voiceAddon?.voice_entitlement_snapshot,
+  );
+  const {
+    data: agent,
+    error: agentError,
+    isLoading: agentLoading,
+  } = useChatBotAgent(shouldLoadAgent);
+
+  const {
+    data: voiceEntitlement,
+    error: voiceEntitlementError,
+    isLoading: entitlementLoading,
+    refetch: refetchEntitlement,
+    isRefetching: entitlementRefetching,
+  } = useChatBotVoiceEntitlement(activeTab === "stats");
+
+  const shouldLoadVoiceUsage =
+    activeTab === "stats" && Boolean(voiceAddon || voiceEntitlement);
+  const {
+    data: voiceUsage,
+    error: voiceUsageError,
+    isLoading: usageLoading,
+    refetch: refetchUsage,
+    isRefetching: usageRefetching,
+  } = useChatBotVoiceUsage(shouldLoadVoiceUsage);
+  const createVoiceAgent = useCreateVoiceAgent();
+  const connectClose = useConnectClose();
+  const disconnectClose = useDisconnectClose();
+
+  const createdVoiceAgent = createVoiceAgent.data?.agent;
+  const closeConnected =
+    voiceSetupState?.connections?.close?.connected === true ||
+    Boolean(agent?.connections?.close?.connected);
+  const retellConnected =
+    voiceSetupState?.connections?.retell?.connected === true ||
+    Boolean(agent?.connections?.retell?.connected);
+  const voiceAgentProvisioningStatus =
+    voiceSetupState?.agent?.provisioningStatus ??
+    createdVoiceAgent?.provisioningStatus ??
+    (retellConnected ? "ready" : null);
+  const voiceAgentProvisioning = isVoiceAgentProvisioningPending(
+    voiceAgentProvisioningStatus,
+  );
+  const voiceAgentCreated =
+    voiceSetupState?.agent?.exists === true ||
+    retellConnected ||
+    createdVoiceAgent?.exists === true ||
+    isVoiceAgentProvisioned(voiceAgentProvisioningStatus);
+  const shouldLoadRetellDetails =
+    (activeTab === "setup" || activeTab === "admin") && retellConnected;
+  const {
+    data: retellRuntime,
+    error: retellRuntimeError,
+    isLoading: retellRuntimeLoading,
+  } = useChatBotRetellRuntime(shouldLoadRetellDetails);
+  const {
+    data: retellLlm,
+    error: retellLlmError,
+    isLoading: retellLlmLoading,
+  } = useChatBotRetellLlm(shouldLoadRetellDetails);
+  const {
+    data: retellVoices = [],
+    error: retellVoicesError,
+    isLoading: retellVoicesLoading,
+  } = useChatBotRetellVoices(shouldLoadRetellDetails);
+  const voiceAccessActive =
+    voiceSetupState?.readiness?.entitlementActive ??
+    isVoiceAccessActive(voiceEntitlement?.status ?? voiceSnapshot?.status);
+  const voiceAgentPublished =
+    voiceSetupState?.agent?.published === true ||
+    retellRuntime?.agent?.is_published === true;
+  const fallbackNextActionKey: VoiceNextActionKey = !voiceAccessActive
+    ? "activate_voice"
+    : !closeConnected
+      ? "connect_close"
+      : voiceAgentProvisioning
+        ? "wait_for_provisioning"
+        : !voiceAgentCreated
+          ? "create_agent"
+          : voiceAgentPublished
+            ? "review_guardrails"
+            : "publish_agent";
+  const setupStateNextActionKey = normalizeNextActionKey(
+    voiceSetupState?.nextAction?.key,
+  );
+  const voiceNextActionKey =
+    setupStateNextActionKey === "unknown"
+      ? fallbackNextActionKey
+      : setupStateNextActionKey;
+  const canOpenSetup =
+    voiceAgentCreated ||
+    voiceAgentProvisioning ||
+    SETUP_REDIRECT_ACTION_KEYS.has(voiceNextActionKey);
+
+  const hasManagedState = Boolean(
+    voiceSetupState?.readiness?.entitlementActive ||
+    voiceSetupState?.agent?.exists ||
+    voiceAddon ||
+    voiceEntitlement ||
+    hasUsageActivity(
+      voiceSnapshot,
+      voiceUsage?.includedMinutes,
+      voiceUsage?.usedMinutes,
+    ),
+  );
+
+  const showServiceWarning =
+    isServiceIssue(voiceSetupStateError) ||
+    isServiceIssue(agentError) ||
+    isServiceIssue(voiceEntitlementError) ||
+    isServiceIssue(voiceUsageError) ||
+    isServiceIssue(retellRuntimeError) ||
+    isServiceIssue(retellLlmError) ||
+    isServiceIssue(retellVoicesError);
+
+  const hasUnexpectedError =
+    isNonProvisioningError(voiceSetupStateError) ||
+    isNonProvisioningError(agentError) ||
+    isNonProvisioningError(voiceEntitlementError) ||
+    isNonProvisioningError(voiceUsageError) ||
+    isNonProvisioningError(retellRuntimeError) ||
+    isNonProvisioningError(retellLlmError) ||
+    isNonProvisioningError(retellVoicesError);
+  const hasDegradedState = showServiceWarning || hasUnexpectedError;
+  const localVoiceEnvWarning =
+    getLocalVoiceEnvWarning(voiceSetupStateError) ??
+    getLocalVoiceEnvWarning(agentError) ??
+    getLocalVoiceEnvWarning(voiceEntitlementError) ??
+    getLocalVoiceEnvWarning(voiceUsageError) ??
+    getLocalVoiceEnvWarning(retellRuntimeError) ??
+    getLocalVoiceEnvWarning(retellLlmError) ??
+    getLocalVoiceEnvWarning(retellVoicesError);
+
+  const mode = hasDegradedState
+    ? "degraded"
+    : hasManagedState || retellConnected
+      ? "managed"
+      : "coming-soon";
+
+  const isLoading = addonsLoading || voiceSetupStateLoading || agentLoading;
+
+  const statsCardLoading =
+    activeTab === "stats" &&
+    !voiceSetupState?.entitlement &&
+    !voiceSetupState?.usage &&
+    (entitlementLoading || usageLoading);
+
+  const launchPriceLabel = `$${(
+    PREMIUM_VOICE_LAUNCH_PRICE_MONTHLY_CENTS / 100
+  ).toFixed(0)}/mo`;
+
+  const voiceProfileReady =
+    (isFilledString(retellRuntime?.agent?.voice_id) &&
+      isFilledString(retellLlm?.begin_message)) ||
+    voiceNextActionKey === "publish_agent" ||
+    voiceNextActionKey === "connect_calendar" ||
+    voiceNextActionKey === "review_guardrails";
+  const promptReady =
+    isFilledString(retellLlm?.general_prompt) ||
+    voiceNextActionKey === "publish_agent" ||
+    voiceNextActionKey === "connect_calendar" ||
+    voiceNextActionKey === "review_guardrails";
+  const callFlowReady = Boolean(
+    agent?.voiceEnabled ||
+    agent?.afterHoursInboundEnabled ||
+    agent?.voiceFollowUpEnabled ||
+    agent?.voiceHumanHandoffEnabled ||
+    agent?.voiceVoicemailEnabled ||
+    isFilledString(agent?.voiceTransferNumber) ||
+    voiceNextActionKey === "publish_agent" ||
+    voiceNextActionKey === "connect_calendar" ||
+    voiceNextActionKey === "review_guardrails",
+  );
+  const launchReady = voiceAgentPublished;
+
+  const setupSteps = buildSetupSteps({
+    voiceAccessActive,
+    closeConnected,
+    voiceAgentCreated,
+    voiceAgentProvisioning,
+    voiceProfileReady,
+    promptReady,
+    callFlowReady,
+    launchReady,
+  });
+  const completedSteps = setupSteps.filter(
+    (step) => step.state === "complete",
+  ).length;
+  const nextStep = getNextActionCopy({
+    key: voiceNextActionKey,
+    label: voiceSetupState?.nextAction?.label,
+    description: voiceSetupState?.nextAction?.description,
+    fallback: getNextStepCopy(setupSteps),
+  });
+  const createActionUnavailable =
+    createVoiceAgent.error instanceof ChatBotApiError &&
+    createVoiceAgent.error.isNotProvisioned;
+  const createAgentErrorMessage = createActionUnavailable
+    ? "Voice agent creation is not available in this environment yet."
+    : (createVoiceAgent.error?.message ?? null);
+  const canCreateVoiceAgent =
+    shouldTreatCreateAsAvailable(voiceNextActionKey) &&
+    closeConnected &&
+    voiceAccessActive &&
+    !voiceAgentCreated &&
+    !voiceAgentProvisioning;
+  const createCardTitle =
+    !voiceAccessActive && BILLING_NEXT_ACTION_KEYS.has(voiceNextActionKey)
+      ? "Voice access is not active yet"
+      : "Step 2. Create Your Voice Agent";
+  const createCardDescription = voiceAgentCreated
+    ? "The setup tab now contains the full editor for voice selection, greeting, prompt, call routing, and publishing."
+    : voiceAgentProvisioning
+      ? "The Standard HQ is finishing the managed workspace and loading the live draft. Setup will unlock automatically as soon as it is ready."
+      : canCreateVoiceAgent
+        ? "This creates the voice agent for this workspace inside The Standard HQ. After that, voice, instructions, call flow, advanced options, and launch controls unlock in Setup."
+        : nextStep.description;
+  const createCardStatusLabel = voiceAgentCreated
+    ? "Created"
+    : voiceAgentProvisioning
+      ? "Creating"
+      : canCreateVoiceAgent
+        ? "Required"
+        : "Blocked";
+  const createCardStatusTone = voiceAgentCreated
+    ? ("created" as const)
+    : voiceAgentProvisioning
+      ? ("creating" as const)
+      : ("required" as const);
+  const createCardPrimaryActionLabel = voiceAgentCreated ? (
+    "Voice Agent Created"
+  ) : voiceAgentProvisioning ? (
+    <>
+      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      Finishing Setup
+    </>
+  ) : createVoiceAgent.isPending ? (
+    <>
+      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+      Creating Agent
+    </>
+  ) : canCreateVoiceAgent ? (
+    "Create Your Voice Agent"
+  ) : voiceNextActionKey === "connect_close" ? (
+    "Connect Close CRM First"
+  ) : !voiceAccessActive ? (
+    "Voice Access Required"
+  ) : (
+    "Create Unavailable"
+  );
+  const createCardPrimaryActionDisabled =
+    createVoiceAgent.isPending ||
+    voiceAgentCreated ||
+    voiceAgentProvisioning ||
+    !canCreateVoiceAgent;
+
+  const handleRefresh = () => {
+    void refetchVoiceSetupState();
+    void refetchEntitlement();
+    if (shouldLoadVoiceUsage) {
+      void refetchUsage();
+    }
+  };
+
+  const handleCreateVoiceAgent = () => {
+    if (!canCreateVoiceAgent) return;
+    createVoiceAgent.mutate({ templateKey: "default_sales" });
+  };
+
+  useEffect(() => {
+    if (activeTab === "setup" && !canOpenSetup) {
+      setActiveTab("create");
+    }
+  }, [activeTab, canOpenSetup]);
+
+  useEffect(() => {
+    if (activeTab !== "create") return;
+    if (!SETUP_REDIRECT_ACTION_KEYS.has(voiceNextActionKey)) return;
+    if (!canOpenSetup) return;
+
+    setActiveSetupTab(getSetupTabForNextAction(voiceNextActionKey));
+    setActiveTab("setup");
+  }, [activeTab, canOpenSetup, voiceNextActionKey]);
+
+  const tabs = useMemo(
+    () =>
+      [
+        { id: "overview", label: "Overview", icon: Sparkles },
+        { id: "create", label: "Create Agent", icon: ShieldCheck },
+        {
+          id: "setup",
+          label: "Setup",
+          icon: Settings2,
+          disabled: !canOpenSetup,
+        },
+        { id: "stats", label: "Stats", icon: Activity },
+        ...(isSuperAdmin
+          ? [{ id: "admin", label: "Admin", icon: Wrench }]
+          : []),
+      ] as {
+        id: VoiceTabId;
+        label: string;
+        icon: ElementType;
+        disabled?: boolean;
+      }[],
+    [canOpenSetup, isSuperAdmin],
+  );
+
+  const landingPrimaryActionHref = BILLING_NEXT_ACTION_KEYS.has(
+    voiceNextActionKey,
+  )
+    ? "/billing"
+    : undefined;
+  const landingPrimaryActionLabel = BILLING_NEXT_ACTION_KEYS.has(
+    voiceNextActionKey,
+  )
+    ? "View Billing"
+    : voiceNextActionKey === "connect_close" ||
+        voiceNextActionKey === "create_agent"
+      ? "Open Create Flow"
+      : voiceNextActionKey === "wait_for_provisioning"
+        ? "Refresh Status"
+        : voiceNextActionKey === "publish_agent" ||
+            voiceNextActionKey === "review_guardrails"
+          ? "Open Launch"
+          : canOpenSetup
+            ? "Open Setup"
+            : "View Billing";
+  const landingPrimaryActionDisabled =
+    voiceNextActionKey === "wait_for_provisioning"
+      ? voiceSetupStateRefetching || entitlementRefetching || usageRefetching
+      : false;
+  const handleLandingPrimaryAction = () => {
+    if (
+      voiceNextActionKey === "connect_close" ||
+      voiceNextActionKey === "create_agent"
+    ) {
+      setActiveTab("create");
+      return;
+    }
+    if (
+      voiceNextActionKey === "publish_agent" ||
+      voiceNextActionKey === "review_guardrails"
+    ) {
+      setActiveSetupTab("launch");
+      setActiveTab("setup");
+      return;
+    }
+    if (voiceNextActionKey === "connect_calendar") {
+      setActiveSetupTab("call-flow");
+      setActiveTab("setup");
+      return;
+    }
+    if (voiceNextActionKey === "wait_for_provisioning") {
+      handleRefresh();
+      return;
+    }
+    if (canOpenSetup) {
+      setActiveSetupTab(getSetupTabForNextAction(voiceNextActionKey));
+      setActiveTab("setup");
+    }
+  };
+
+  const statusBadge = hasDegradedState ? (
+    <Badge className="h-4 bg-red-100 px-1.5 text-[9px] text-red-700 dark:bg-red-950/40 dark:text-red-300">
+      Service Issue
+    </Badge>
+  ) : launchReady ? (
+    <Badge className="h-4 bg-emerald-100 px-1.5 text-[9px] text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+      Live
+    </Badge>
+  ) : voiceAgentProvisioning ? (
+    <Badge className="h-4 bg-amber-100 px-1.5 text-[9px] text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+      Provisioning
+    </Badge>
+  ) : !voiceAccessActive ? (
+    <Badge className="h-4 bg-zinc-100 px-1.5 text-[9px] text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+      Voice Access Required
+    </Badge>
+  ) : retellConnected ? (
+    <Badge className="h-4 bg-amber-100 px-1.5 text-[9px] text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+      Setup Required
+    </Badge>
+  ) : (
+    <Badge className="h-4 bg-zinc-100 px-1.5 text-[9px] text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+      No Agent Yet
+    </Badge>
+  );
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[calc(100vh-4rem)] flex-col bg-zinc-50 p-3 dark:bg-zinc-950">
+        <div className="flex flex-1 items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-[calc(100vh-4rem)] flex-col space-y-2.5 bg-zinc-50 p-3 dark:bg-zinc-950">
+      <div className="rounded-lg border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="flex items-center gap-2">
+          <PhoneCall className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
+          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            AI Voice Agent
+          </h1>
+          {statusBadge}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-0.5 rounded-md bg-zinc-200/50 p-0.5 dark:bg-zinc-800/50">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => {
+              if (!tab.disabled) {
+                setActiveTab(tab.id);
+              }
+            }}
+            disabled={tab.disabled}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded px-3 py-1.5 text-[11px] font-medium transition-all ${
+              activeTab === tab.id
+                ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-zinc-100"
+                : tab.disabled
+                  ? "cursor-not-allowed text-zinc-400 dark:text-zinc-600"
+                  : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
+            }`}
+          >
+            <tab.icon className="h-3 w-3" />
+            <span>{tab.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        {activeTab === "overview" && (
+          <div className="space-y-3">
+            <VoiceAgentLanding
+              mode={mode}
+              chatBotActive={Boolean(chatBotAddon)}
+              voiceAddonActive={Boolean(voiceAddon)}
+              launchPriceLabel={launchPriceLabel}
+              includedMinutes={VOICE_LAUNCH_INCLUDED_MINUTES}
+              showServiceWarning={hasDegradedState}
+              localDevWarning={localVoiceEnvWarning}
+              isRefreshing={
+                voiceSetupStateRefetching ||
+                entitlementRefetching ||
+                usageRefetching
+              }
+              onRefresh={handleRefresh}
+              primaryActionLabel={landingPrimaryActionLabel}
+              primaryActionHref={landingPrimaryActionHref}
+              primaryActionDisabled={landingPrimaryActionDisabled}
+              onPrimaryAction={handleLandingPrimaryAction}
+              setupSteps={setupSteps}
+              completedSteps={completedSteps}
+              nextStepTitle={nextStep.title}
+              nextStepDescription={nextStep.description}
+            />
+
+            <div className="grid grid-cols-1 gap-3 xl:grid-cols-4">
+              <OverviewCard
+                title="Managed Workspace"
+                value={
+                  voiceAccessActive || closeConnected || voiceAgentCreated
+                    ? voiceAgentProvisioning
+                      ? "Provisioning"
+                      : "Connected"
+                    : "Not created yet"
+                }
+                detail={
+                  voiceAccessActive || closeConnected || voiceAgentCreated
+                    ? "The Standard HQ has a managed workspace ready for this AI Voice Agent."
+                    : "The Standard HQ creates the managed workspace automatically as voice setup becomes active for this workspace."
+                }
+              />
+              <OverviewCard
+                icon={
+                  <CloseCrmLogo className="h-4 w-auto text-zinc-900 dark:text-zinc-100" />
+                }
+                title="Close CRM"
+                value={closeConnected ? "Connected" : "Required"}
+                detail={
+                  closeConnected
+                    ? "Inbound calls route through your Close CRM number, and the lead records the agent works against live in Close CRM."
+                    : "Connect Close CRM in the Create Agent tab. If you already use AI Chat Bot, this connection may already be active. If not, The Standard HQ will create the managed workspace for voice here."
+                }
+              />
+              <OverviewCard
+                title="Voice Agent"
+                value={
+                  retellConnected
+                    ? "Ready for editing"
+                    : voiceAgentProvisioning
+                      ? "Creating now"
+                      : voiceAgentCreated
+                        ? "Finishing setup"
+                        : "Not created yet"
+                }
+                detail={
+                  retellConnected
+                    ? "Voice, prompt, and publish controls are available in the Setup tab."
+                    : "Open Create Agent next. That tab walks through Close CRM, voice-agent creation, and setup in order."
+                }
+              />
+              <OverviewCard
+                title="Next Step"
+                value={nextStep.title}
+                detail={nextStep.description}
+              />
+            </div>
+          </div>
+        )}
+
+        {activeTab === "create" && (
+          <div className="space-y-3">
+            <>
+              <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="max-w-3xl">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+                      Step 1. Connect Close CRM
+                    </p>
+                    <p className="mt-1 text-[12px] leading-6 text-zinc-600 dark:text-zinc-400">
+                      The voice agent uses Close CRM to identify the lead,
+                      decide whether AI is allowed to answer, and save call
+                      results back to the lead record.
+                    </p>
+                  </div>
+
+                  <Badge
+                    className={
+                      closeConnected
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                        : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                    }
+                  >
+                    {closeConnected ? "Connected" : "Required"}
+                  </Badge>
+                </div>
+
+                <div className="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-[1.1fr_0.9fr]">
+                  <ConnectionCard
+                    title="Close CRM"
+                    icon={
+                      <CloseCrmLogo className="h-4 w-auto text-zinc-900 dark:text-zinc-100" />
+                    }
+                    connected={closeConnected}
+                    statusLabel={
+                      voiceSetupState?.connections?.close?.orgName
+                        ? `Connected to ${voiceSetupState.connections.close.orgName}`
+                        : agent?.connections?.close?.orgName
+                          ? `Connected to ${agent.connections.close.orgName}`
+                          : closeConnected
+                            ? "Connected"
+                            : undefined
+                    }
+                    onConnect={(apiKey) => connectClose.mutate(apiKey)}
+                    connectLoading={connectClose.isPending}
+                    apiKeyPlaceholder="Close API key (api_...)"
+                    onDisconnect={
+                      closeConnected
+                        ? () => disconnectClose.mutate()
+                        : undefined
+                    }
+                    disconnectLoading={disconnectClose.isPending}
+                  />
+
+                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
+                    <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                      What this step does
+                    </p>
+                    <p className="mt-2 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
+                      If you already use AI Chat Bot, this connection may
+                      already exist already. If not, create or copy a Close API
+                      key from{" "}
+                      <span className="font-medium">Close Settings</span>
+                      {" > "}
+                      <span className="font-medium">API Keys</span>, then
+                      connect it here.
+                    </p>
+                    <p className="mt-3 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
+                      Leads keep calling the same Close number they already
+                      know. The AI Voice Agent uses that Close connection to
+                      look up the lead and decide whether AI is allowed to
+                      answer.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <CreateVoiceAgentCard
+                  title={createCardTitle}
+                  description={createCardDescription}
+                  statusLabel={createCardStatusLabel}
+                  statusTone={createCardStatusTone}
+                  onPrimaryAction={handleCreateVoiceAgent}
+                  primaryActionLabel={createCardPrimaryActionLabel}
+                  primaryActionDisabled={createCardPrimaryActionDisabled}
+                  errorMessage={createAgentErrorMessage}
+                  actionUnavailable={createActionUnavailable}
+                  isSuperAdmin={isSuperAdmin}
+                />
+
+                <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                    <div className="max-w-3xl">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+                        Step 3. Continue to Setup
+                      </p>
+                      <p className="mt-1 text-[12px] leading-6 text-zinc-600 dark:text-zinc-400">
+                        Setup is where users choose the voice, write the
+                        greeting, add instructions, configure call flow, review
+                        advanced options, and publish the agent live.
+                      </p>
+                    </div>
+
+                    <Button
+                      onClick={() => {
+                        setActiveSetupTab("voice");
+                        setActiveTab("setup");
+                      }}
+                      disabled={!canOpenSetup}
+                    >
+                      Continue to Setup
+                    </Button>
+                  </div>
+
+                  <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
+                    <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                      What unlocks next
+                    </p>
+                    <p className="mt-2 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
+                      Voice selection, greeting, prompt, call handling, advanced
+                      options, testing, and publish controls all live in the
+                      Setup tab after the voice agent exists.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </>
+          </div>
+        )}
+
+        {activeTab === "setup" && (
+          <div className="space-y-3">
+            {!canOpenSetup ? (
+              <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  Create your voice agent first
+                </p>
+                <p className="mt-2 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
+                  Move through the Create Agent tab in order: connect Close CRM,
+                  create the voice agent, then come back here for voice,
+                  instructions, call flow, advanced controls, and launch.
+                </p>
+              </div>
+            ) : voiceAgentProvisioning && !retellConnected ? (
+              <div className="space-y-3">
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/20">
+                  <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">
+                    Your voice agent is being created now
+                  </p>
+                  <p className="mt-2 text-[11px] leading-5 text-amber-800 dark:text-amber-200">
+                    The Standard HQ is finishing the managed workspace and
+                    loading the live draft. You can stay on this page while it
+                    finishes, or return to Create Agent and refresh in a moment.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                  <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+                        Setup Steps
+                      </p>
+                      <p className="mt-1 text-[12px] text-zinc-600 dark:text-zinc-400">
+                        Move through these steps in order. Advanced settings
+                        stay separate so the main setup flow stays clear.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/40">
+                      <ShieldCheck className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                      <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                        {completedSteps} of {setupSteps.length} launch steps
+                        ready
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-5">
+                    <SetupStepButton
+                      active={activeSetupTab === "voice"}
+                      label="1. Voice"
+                      description="Voice, greeting, and tone"
+                      onClick={() => setActiveSetupTab("voice")}
+                    />
+                    <SetupStepButton
+                      active={activeSetupTab === "instructions"}
+                      label="2. Instructions"
+                      description="Prompt and behavior guidance"
+                      onClick={() => setActiveSetupTab("instructions")}
+                    />
+                    <SetupStepButton
+                      active={activeSetupTab === "call-flow"}
+                      label="3. Call Flow"
+                      description="Availability, transfers, and follow-up"
+                      onClick={() => setActiveSetupTab("call-flow")}
+                    />
+                    <SetupStepButton
+                      active={activeSetupTab === "advanced"}
+                      label="4. Advanced"
+                      description="Optional model, tools, and guardrails"
+                      onClick={() => setActiveSetupTab("advanced")}
+                    />
+                    <SetupStepButton
+                      active={activeSetupTab === "launch"}
+                      label="5. Launch"
+                      description="Readiness review and publish"
+                      onClick={() => setActiveSetupTab("launch")}
+                    />
+                  </div>
+
+                  {!closeConnected && (
+                    <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-[11px] leading-5 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-300">
+                      <div className="mb-2 flex items-center gap-2">
+                        <CloseCrmLogo className="h-4 w-auto text-amber-700 dark:text-amber-300" />
+                        <span className="font-semibold">
+                          Close CRM required
+                        </span>
+                      </div>
+                      Calls come through your Close number, and the lead record
+                      the AI Voice Agent works with lives in Close CRM.
+                    </div>
+                  )}
+                </div>
+
+                <div
+                  className={
+                    activeSetupTab === "call-flow" ? "hidden" : "block"
+                  }
+                >
+                  {activeSetupTab === "launch" && (
+                    <div className="mb-3">
+                      <VoiceAgentConnectionCard
+                        connection={agent?.connections?.retell}
+                        closeConnected={Boolean(
+                          voiceSetupState?.connections?.close?.connected ??
+                          agent?.connections?.close?.connected,
+                        )}
+                      />
+                    </div>
+                  )}
+
+                  <VoiceAgentRetellStudioCard
+                    connection={agent?.connections?.retell}
+                    runtime={retellRuntime}
+                    llm={retellLlm}
+                    voices={retellVoices}
+                    runtimeLoading={retellRuntimeLoading}
+                    llmLoading={retellLlmLoading}
+                    voicesLoading={retellVoicesLoading}
+                    provisioningState={voiceAgentProvisioningStatus}
+                    view={
+                      activeSetupTab === "voice"
+                        ? "voice"
+                        : activeSetupTab === "instructions"
+                          ? "instructions"
+                          : activeSetupTab === "advanced"
+                            ? "advanced"
+                            : "launch"
+                    }
+                  />
+                </div>
+
+                {activeSetupTab === "call-flow" && (
+                  <VoiceAgentRuntimeCard agent={agent} />
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {activeTab === "stats" && (
+          <div className="space-y-3">
+            <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+                Voice Stats
+              </p>
+              <p className="mt-1 text-[12px] text-zinc-600 dark:text-zinc-400">
+                Your plan, sync status, and minute usage live here in one place.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 xl:grid-cols-[0.95fr_1.05fr]">
+              <VoiceAgentStatusCard
+                hasVoiceAddon={Boolean(voiceAddon)}
+                syncStatus={voiceAddon?.voice_sync_status}
+                lastSyncedAt={voiceAddon?.voice_last_synced_at}
+                lastSyncAttemptAt={voiceAddon?.voice_last_sync_attempt_at}
+                lastSyncHttpStatus={voiceAddon?.voice_last_sync_http_status}
+                voiceEntitlement={voiceEntitlement}
+                voiceSetupState={voiceSetupState}
+                snapshot={voiceSnapshot}
+                showServiceWarning={hasDegradedState}
+                retellConnected={retellConnected}
+              />
+
+              <VoiceAgentUsageCard
+                isLoading={statsCardLoading}
+                launchIncludedMinutes={VOICE_LAUNCH_INCLUDED_MINUTES}
+                voiceSetupState={voiceSetupState}
+                voiceEntitlement={voiceEntitlement}
+                voiceUsage={voiceUsage}
+                snapshot={voiceSnapshot}
+                showServiceWarning={hasDegradedState}
+              />
+            </div>
+          </div>
+        )}
+
+        {activeTab === "admin" && isSuperAdmin && (
+          <div className="space-y-3">
+            {!agent ? (
+              <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  No workspace is available for admin voice controls yet
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+                    Super-Admin Controls
+                  </p>
+                  <p className="mt-1 text-[12px] text-zinc-600 dark:text-zinc-400">
+                    Internal setup, advanced tuning, and raw payload editing
+                    stay isolated here so the customer flow remains clean.
+                  </p>
+                </div>
+
+                <VoiceAgentConnectionCard
+                  connection={agent.connections?.retell}
+                  closeConnected={Boolean(
+                    voiceSetupState?.connections?.close?.connected ??
+                    agent.connections?.close?.connected,
+                  )}
+                  isSuperAdmin
+                />
+
+                <VoiceAgentRetellStudioCard
+                  connection={agent.connections?.retell}
+                  runtime={retellRuntime}
+                  llm={retellLlm}
+                  voices={retellVoices}
+                  runtimeLoading={retellRuntimeLoading}
+                  llmLoading={retellLlmLoading}
+                  voicesLoading={retellVoicesLoading}
+                  view="admin"
+                />
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

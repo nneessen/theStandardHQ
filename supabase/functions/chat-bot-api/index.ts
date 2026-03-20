@@ -4,6 +4,16 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
+import {
+  assertNoVoiceActionParams,
+  parseAddRetellVoiceParams,
+  parseCreateVoiceAgentParams,
+  parseRetellAgentUpdateParams,
+  parseRetellConnectionParams,
+  parseRetellLlmUpdateParams,
+  parseRetellSearchParams,
+  parseUpdateConfigParams,
+} from "../../../src/features/voice-agent/lib/voice-agent-contract.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,8 +36,12 @@ async function callChatBotApi(
   body?: Record<string, unknown>,
   // deno-lint-ignore no-explicit-any
 ): Promise<{ ok: boolean; status: number; data: any }> {
-  const CHAT_BOT_API_URL = Deno.env.get("CHAT_BOT_API_URL");
-  const CHAT_BOT_API_KEY = Deno.env.get("CHAT_BOT_API_KEY");
+  const CHAT_BOT_API_URL =
+    Deno.env.get("STANDARD_CHAT_BOT_API_URL") ||
+    Deno.env.get("CHAT_BOT_API_URL");
+  const CHAT_BOT_API_KEY =
+    Deno.env.get("STANDARD_CHAT_BOT_EXTERNAL_API_KEY") ||
+    Deno.env.get("CHAT_BOT_API_KEY");
 
   if (!CHAT_BOT_API_URL || !CHAT_BOT_API_KEY) {
     throw new Error("CHAT_BOT_API_URL or CHAT_BOT_API_KEY not configured");
@@ -49,6 +63,219 @@ async function callChatBotApi(
   const res = await fetch(url, options);
   const data = await res.json().catch(() => ({}));
   return { ok: res.ok, status: res.status, data };
+}
+
+async function upsertRetellConnection(
+  agentId: string,
+  params: Record<string, unknown>,
+) {
+  const existing = await callChatBotApi(
+    "GET",
+    `/api/external/agents/${agentId}/connections/retell`,
+  );
+
+  if (existing.ok) {
+    return await callChatBotApi(
+      "PATCH",
+      `/api/external/agents/${agentId}/connections/retell`,
+      params,
+    );
+  }
+
+  if (existing.status !== 404) {
+    return existing;
+  }
+
+  return await callChatBotApi(
+    "POST",
+    `/api/external/agents/${agentId}/connections/retell`,
+    params,
+  );
+}
+
+function extractExternalAgentId(data: unknown): string | null {
+  if (data && typeof data === "object") {
+    const record = data as Record<string, unknown>;
+    const nestedData = record.data;
+    if (nestedData && typeof nestedData === "object") {
+      const nestedId = (nestedData as Record<string, unknown>).agentId;
+      if (typeof nestedId === "string" && nestedId.trim()) {
+        return nestedId.trim();
+      }
+    }
+
+    const directId = record.agentId;
+    if (typeof directId === "string" && directId.trim()) {
+      return directId.trim();
+    }
+  }
+
+  return null;
+}
+
+function buildManagedWorkspaceName(
+  profile: {
+    first_name: string | null;
+    last_name: string | null;
+  } | null,
+): string {
+  const displayName =
+    `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim();
+
+  return displayName || "The Standard HQ Workspace";
+}
+
+async function getUserProfile(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+) {
+  const { data: profile } = await supabase
+    .from("user_profiles")
+    .select("first_name, last_name, is_super_admin")
+    .eq("id", userId)
+    .maybeSingle();
+
+  return profile;
+}
+
+function extractErrorMessage(data: unknown): string | null {
+  if (!data || typeof data !== "object") {
+    return null;
+  }
+
+  const record = data as Record<string, unknown>;
+  const error = record.error;
+  if (typeof error === "string" && error.trim()) {
+    return error.trim();
+  }
+  if (error && typeof error === "object") {
+    const message = (error as Record<string, unknown>).message;
+    if (typeof message === "string" && message.trim()) {
+      return message.trim();
+    }
+  }
+  const message = record.message;
+  if (typeof message === "string" && message.trim()) {
+    return message.trim();
+  }
+
+  return null;
+}
+
+function isVoiceCreateRouteUnavailable(res: {
+  status: number;
+  data: unknown;
+}): boolean {
+  if (res.status !== 404) {
+    return false;
+  }
+
+  const message = extractErrorMessage(res.data)?.toLowerCase();
+  if (!message) {
+    return true;
+  }
+
+  return (
+    message === "not found" ||
+    message.includes("function not found") ||
+    message.includes("route") ||
+    message.includes("cannot post")
+  );
+}
+
+async function ensureAgentContext(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  allowAutoProvision: boolean,
+) {
+  const { data: existingAgent } = await supabase
+    .from("chat_bot_agents")
+    .select(
+      "id, external_agent_id, provisioning_status, billing_exempt, tier_id",
+    )
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (
+    existingAgent?.provisioning_status === "active" &&
+    typeof existingAgent.external_agent_id === "string" &&
+    existingAgent.external_agent_id.trim()
+  ) {
+    return {
+      ok: true as const,
+      agentId: existingAgent.external_agent_id.trim(),
+      localBillingExempt: existingAgent.billing_exempt === true,
+    };
+  }
+
+  if (!allowAutoProvision) {
+    return {
+      ok: false as const,
+      status: 404,
+      error: "No active chat bot found",
+    };
+  }
+
+  const profile = await getUserProfile(supabase, userId);
+  const { isOnExemptTeam } = await getTeamAccessStatus(supabase, userId);
+  const billingExempt =
+    existingAgent?.billing_exempt === true || isOnExemptTeam;
+  const provisionRes = await callChatBotApi("POST", "/api/external/agents", {
+    externalRef: userId,
+    name: buildManagedWorkspaceName(profile),
+    billingExempt,
+  });
+
+  if (!provisionRes.ok) {
+    return {
+      ok: false as const,
+      status: safeStatus(provisionRes.status),
+      error:
+        typeof provisionRes.data?.error === "string"
+          ? provisionRes.data.error
+          : "Failed to provision workspace",
+    };
+  }
+
+  const newAgentId = extractExternalAgentId(provisionRes.data);
+  if (!newAgentId) {
+    return {
+      ok: false as const,
+      status: 400,
+      error: "Provisioning did not return an external agent ID",
+    };
+  }
+
+  const { error: upsertError } = await supabase.from("chat_bot_agents").upsert(
+    {
+      user_id: userId,
+      external_agent_id: newAgentId,
+      provisioning_status: "active",
+      billing_exempt: billingExempt,
+      tier_id: existingAgent?.tier_id ?? null,
+      error_message: null,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "user_id" },
+  );
+
+  if (upsertError) {
+    console.error(
+      `[chat-bot-api] Failed to persist workspace context for user ${userId}:`,
+      upsertError,
+    );
+    return {
+      ok: false as const,
+      status: 400,
+      error: "Failed to persist workspace context",
+    };
+  }
+
+  return {
+    ok: true as const,
+    agentId: newAgentId,
+    localBillingExempt: billingExempt,
+  };
 }
 
 // Never return 5xx from edge function — Supabase runtime treats it as a crash (502 Bad Gateway).
@@ -98,6 +325,28 @@ function sendResult(res: { ok: boolean; status: number; data: any }): Response {
     return jsonResponse({ error: errorMessage }, status);
   }
   return jsonResponse(payload, status);
+}
+
+function sendConnectionStatusResult(
+  res: { ok: boolean; status: number; data: any },
+  mapPayload: (payload: any) => Record<string, unknown>,
+): Response {
+  if (res.status === 404) {
+    return jsonResponse({ connected: false });
+  }
+
+  const { payload, status, errorMessage, serviceDown } = unwrap(res);
+  if (errorMessage) {
+    return jsonResponse(
+      {
+        error: errorMessage,
+        serviceDown,
+      },
+      status,
+    );
+  }
+
+  return jsonResponse(mapPayload(payload), status);
 }
 
 async function getTeamAccessStatus(
@@ -186,6 +435,21 @@ serve(async (req) => {
     if (action === "get_team_access") {
       const { isOnExemptTeam } = await getTeamAccessStatus(supabase, user.id);
       return jsonResponse({ hasTeamAccess: isOnExemptTeam });
+    }
+
+    if (
+      action === "save_retell_connection" ||
+      action === "disconnect_retell_connection"
+    ) {
+      const profile = await getUserProfile(supabase, user.id);
+      if (!profile?.is_super_admin) {
+        return jsonResponse(
+          {
+            error: "Only super-admins can manage the manual voice runtime link",
+          },
+          403,
+        );
+      }
     }
 
     // ──────────────────────────────────────────────
@@ -314,20 +578,18 @@ serve(async (req) => {
       return jsonResponse({ success: true, agentId: newAgentId });
     }
 
-    // Look up active chat bot agent for this user
-    const { data: agent } = await supabase
-      .from("chat_bot_agents")
-      .select("external_agent_id, provisioning_status, billing_exempt")
-      .eq("user_id", user.id)
-      .eq("provisioning_status", "active")
-      .maybeSingle();
+    const agentContext = await ensureAgentContext(
+      supabase,
+      user.id,
+      action === "connect_close" || action === "create_voice_agent",
+    );
 
-    if (!agent) {
-      return jsonResponse({ error: "No active chat bot found" }, 404);
+    if (!agentContext.ok) {
+      return jsonResponse({ error: agentContext.error }, agentContext.status);
     }
 
-    const agentId = agent.external_agent_id;
-    const localBillingExempt = agent.billing_exempt === true;
+    const agentId = agentContext.agentId;
+    const localBillingExempt = agentContext.localBillingExempt;
 
     switch (action) {
       // ──────────────────────────────────────────────
@@ -386,6 +648,7 @@ serve(async (req) => {
         const closeConn = payload.connections?.close;
         const calendlyConn = payload.connections?.calendly;
         const googleConn = payload.connections?.google;
+        const retellConn = payload.connections?.retell;
 
         return jsonResponse({
           id: agentData.id,
@@ -416,6 +679,22 @@ serve(async (req) => {
           dailyMessageLimit: agentData.dailyMessageLimit ?? null,
           maxMessagesPerConversation:
             agentData.maxMessagesPerConversation ?? null,
+          voiceEnabled: agentData.voiceEnabled ?? false,
+          voiceFollowUpEnabled: agentData.voiceFollowUpEnabled ?? false,
+          afterHoursInboundEnabled: agentData.afterHoursInboundEnabled ?? false,
+          afterHoursStartTime: agentData.afterHoursStartTime ?? null,
+          afterHoursEndTime: agentData.afterHoursEndTime ?? null,
+          afterHoursTimezone: agentData.afterHoursTimezone ?? null,
+          voiceProvider: agentData.voiceProvider ?? null,
+          voiceId: agentData.voiceId ?? null,
+          voiceFallbackVoiceId: agentData.voiceFallbackVoiceId ?? null,
+          voiceTransferNumber: agentData.voiceTransferNumber ?? null,
+          voiceMaxCallDurationSeconds:
+            agentData.voiceMaxCallDurationSeconds ?? null,
+          voiceVoicemailEnabled: agentData.voiceVoicemailEnabled ?? true,
+          voiceHumanHandoffEnabled: agentData.voiceHumanHandoffEnabled ?? true,
+          voiceQuotedFollowupEnabled:
+            agentData.voiceQuotedFollowupEnabled ?? false,
           connections: {
             close: closeConn
               ? { connected: true, orgName: closeConn.orgId || undefined }
@@ -432,6 +711,21 @@ serve(async (req) => {
                   calendarId: googleConn.calendarId || undefined,
                 }
               : { connected: false },
+            retell: retellConn
+              ? {
+                  connected: true,
+                  id: retellConn.id,
+                  agentId: retellConn.agentId,
+                  apiKeyMasked: retellConn.apiKeyMasked,
+                  retellAgentId: retellConn.retellAgentId,
+                  fromNumberSource: retellConn.fromNumberSource,
+                  fromNumber: retellConn.fromNumber ?? null,
+                  closePhoneNumber: retellConn.closePhoneNumber ?? null,
+                  status: retellConn.status,
+                  createdAt: retellConn.createdAt,
+                  updatedAt: retellConn.updatedAt,
+                }
+              : { connected: false },
           },
         });
       }
@@ -445,10 +739,133 @@ serve(async (req) => {
       }
 
       case "update_config": {
+        const safeParams = parseUpdateConfigParams(params);
         const res = await callChatBotApi(
           "PATCH",
           `/api/external/agents/${agentId}`,
+          safeParams,
+        );
+        return sendResult(res);
+      }
+
+      case "create_voice_agent": {
+        const parsedParams = parseCreateVoiceAgentParams(params);
+        const res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/voice/agent/create`,
+          parsedParams,
+        );
+        if (isVoiceCreateRouteUnavailable(res)) {
+          return jsonResponse(
+            {
+              error:
+                "Voice agent creation is not available in this environment yet.",
+            },
+            404,
+          );
+        }
+        return sendResult(res);
+      }
+
+      case "get_voice_setup_state": {
+        assertNoVoiceActionParams(params, "Get voice setup state request");
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/voice/setup-state`,
+        );
+        return sendResult(res);
+      }
+
+      case "save_retell_connection": {
+        const parsedParams = parseRetellConnectionParams(params);
+        const res = await upsertRetellConnection(agentId, parsedParams);
+        return sendResult(res);
+      }
+
+      case "disconnect_retell_connection": {
+        assertNoVoiceActionParams(
           params,
+          "Disconnect voice connection request",
+        );
+        const res = await callChatBotApi(
+          "DELETE",
+          `/api/external/agents/${agentId}/connections/retell`,
+        );
+        return sendResult(res);
+      }
+
+      case "get_retell_runtime": {
+        assertNoVoiceActionParams(params, "Get voice runtime request");
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/retell/runtime`,
+        );
+        return sendResult(res);
+      }
+
+      case "get_retell_voices": {
+        assertNoVoiceActionParams(params, "Get voice library request");
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/retell/voices`,
+        );
+        return sendResult(res);
+      }
+
+      case "search_retell_voices": {
+        const parsedParams = parseRetellSearchParams(params);
+        const res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/retell/voices/search`,
+          parsedParams,
+        );
+        return sendResult(res);
+      }
+
+      case "add_retell_voice": {
+        const parsedParams = parseAddRetellVoiceParams(params);
+        const res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/retell/voices/add`,
+          parsedParams,
+        );
+        return sendResult(res);
+      }
+
+      case "update_retell_agent": {
+        const parsedParams = parseRetellAgentUpdateParams(params);
+        const res = await callChatBotApi(
+          "PATCH",
+          `/api/external/agents/${agentId}/retell/agent`,
+          parsedParams,
+        );
+        return sendResult(res);
+      }
+
+      case "publish_retell_agent": {
+        assertNoVoiceActionParams(params, "Publish voice draft request");
+        const res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/retell/agent/publish`,
+        );
+        return sendResult(res);
+      }
+
+      case "get_retell_llm": {
+        assertNoVoiceActionParams(params, "Get voice instructions request");
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/retell/llm`,
+        );
+        return sendResult(res);
+      }
+
+      case "update_retell_llm": {
+        const parsedParams = parseRetellLlmUpdateParams(params);
+        const res = await callChatBotApi(
+          "PATCH",
+          `/api/external/agents/${agentId}/retell/llm`,
+          parsedParams,
         );
         return sendResult(res);
       }
@@ -478,13 +895,23 @@ serve(async (req) => {
           "GET",
           `/api/external/agents/${agentId}/connections/close`,
         );
-        if (!res.ok) {
-          return jsonResponse({ connected: false });
-        }
-        const { payload } = unwrap(res);
-        return jsonResponse({
+        return sendConnectionStatusResult(res, (payload) => ({
           connected: true,
           orgName: payload?.orgId || undefined,
+        }));
+      }
+
+      case "get_close_lead_statuses": {
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/lead-statuses`,
+        );
+        const { payload, status, errorMessage } = unwrap(res);
+        if (errorMessage) {
+          return jsonResponse({ error: errorMessage }, status);
+        }
+        return jsonResponse({
+          statuses: Array.isArray(payload?.statuses) ? payload.statuses : [],
         });
       }
 
@@ -536,16 +963,12 @@ serve(async (req) => {
           "GET",
           `/api/external/agents/${agentId}/connections/calendly`,
         );
-        if (!res.ok) {
-          return jsonResponse({ connected: false });
-        }
-        const { payload } = unwrap(res);
-        return jsonResponse({
+        return sendConnectionStatusResult(res, (payload) => ({
           connected: true,
           eventType: payload?.calendarId ? "Connected" : undefined,
           userName: payload?.userName || undefined,
           userEmail: payload?.userEmail || undefined,
-        });
+        }));
       }
 
       case "get_calendar_health": {
@@ -577,15 +1000,11 @@ serve(async (req) => {
           "GET",
           `/api/external/agents/${agentId}/connections/google`,
         );
-        if (!res.ok) {
-          return jsonResponse({ connected: false });
-        }
-        const { payload } = unwrap(res);
-        return jsonResponse({
+        return sendConnectionStatusResult(res, (payload) => ({
           connected: true,
           calendarId: payload?.calendarId || undefined,
           userEmail: payload?.userEmail || undefined,
-        });
+        }));
       }
 
       case "disconnect_google": {
@@ -785,6 +1204,26 @@ serve(async (req) => {
           periodEnd: payload?.periodEnd ?? null,
           tierName: payload?.planName || "Free",
         });
+      }
+
+      case "get_voice_entitlement": {
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/voice-entitlement`,
+        );
+        const { payload, status, errorMessage } = unwrap(res);
+        if (errorMessage) {
+          return jsonResponse({ error: errorMessage }, status);
+        }
+        return jsonResponse({ entitlement: payload ?? null });
+      }
+
+      case "get_voice_usage": {
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/voice-usage`,
+        );
+        return sendResult(res);
       }
 
       case "get_calendly_event_types": {
@@ -1149,8 +1588,24 @@ serve(async (req) => {
     }
   } catch (err) {
     console.error("[chat-bot-api] Unhandled error:", err);
+
+    const message = err instanceof Error ? err.message : String(err);
+    if (
+      message.includes("CHAT_BOT_API_URL or CHAT_BOT_API_KEY not configured")
+    ) {
+      return jsonResponse(
+        {
+          error:
+            "Chat bot service is not configured in this local edge environment.",
+          serviceDown: true,
+          message,
+        },
+        400,
+      );
+    }
+
     return jsonResponse(
-      { error: "Internal server error", message: String(err) },
+      { error: "Internal server error", message },
       safeStatus(500),
     );
   }

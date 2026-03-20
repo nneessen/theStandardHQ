@@ -2,6 +2,7 @@
 // Service for managing AI-extracted underwriting criteria
 
 import { supabase } from "@/services/base/supabase";
+import { supabaseFunctionsUrl } from "@/services/base";
 import type {
   CriteriaWithRelations,
   ExtractedCriteria,
@@ -26,7 +27,7 @@ export async function triggerExtraction(
   }
 
   const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/extract-underwriting-criteria`,
+    `${supabaseFunctionsUrl}/extract-underwriting-criteria`,
     {
       method: "POST",
       headers: {

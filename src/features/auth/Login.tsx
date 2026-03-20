@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { useAuth } from "../../contexts/AuthContext";
+import { isLocalSupabase } from "../../services/base";
 import { Button } from "../../components/ui/button";
 import { Separator } from "../../components/ui/separator";
 import { SESSION_STORAGE_KEYS } from "../../constants/auth.constants";
@@ -52,7 +53,11 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
         onSuccess?.();
       } else if (mode === "reset") {
         await resetPassword(email);
-        setMessage("Password reset email sent! Check your inbox.");
+        setMessage(
+          isLocalSupabase
+            ? "Redirecting to the local password reset flow..."
+            : "Password reset email sent! Check your inbox.",
+        );
         setTimeout(() => setMode("signin"), 3000);
       }
     } catch (err) {

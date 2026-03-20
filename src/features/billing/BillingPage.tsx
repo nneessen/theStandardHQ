@@ -9,6 +9,7 @@ import {
   HelpCircle,
   Rocket,
   Brain,
+  PhoneCall,
   Plug2,
   BarChart3,
   Sparkles,
@@ -29,6 +30,10 @@ import { PlanComparisonTable } from "./components/PlanComparisonTable";
 import { AddonUpsellDialog } from "./components/AddonUpsellDialog";
 import { CheckoutSuccessDialog } from "./components/CheckoutSuccessDialog";
 import { AdminBillingPanel } from "./components/admin/AdminBillingPanel";
+import {
+  PREMIUM_VOICE_COMING_SOON_MESSAGE,
+  PREMIUM_VOICE_LAUNCH_PRICE_MONTHLY_CENTS,
+} from "@/lib/subscription/voice-addon";
 
 export function BillingPage() {
   const { isSuperAdmin } = useImo();
@@ -107,6 +112,10 @@ export function BillingPage() {
     setUpsellBillingInterval(billingInterval);
     setUpsellDiscountCode(discountCode);
   };
+
+  const premiumVoiceLaunchPrice = `$${(
+    PREMIUM_VOICE_LAUNCH_PRICE_MONTHLY_CENTS / 100
+  ).toFixed(0)}/mo`;
 
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
@@ -251,6 +260,56 @@ export function BillingPage() {
             <p className="text-[10px] text-violet-600 dark:text-violet-400">
               Every major addition ships to Team before any other tier — no
               waiting, no extra cost.
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
+          <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-zinc-100 dark:border-zinc-800">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white flex-shrink-0">
+                <PhoneCall className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    Premium Voice
+                  </h2>
+                  <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-amber-700 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
+                    Coming Soon
+                  </span>
+                </div>
+                <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400 max-w-2xl leading-relaxed">
+                  AI-powered call follow-up for missed appointments,
+                  reschedules, and after-hours inbound coverage for your
+                  standard-chat-bot.
+                </p>
+                <p className="mt-2 text-[10px] font-medium text-zinc-700 dark:text-zinc-300">
+                  Launch plan: Voice Pro at {premiumVoiceLaunchPrice} with 500
+                  included minutes.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="px-4 py-3 space-y-3">
+            <div className="flex flex-wrap gap-2">
+              {[
+                "Missed appointments",
+                "Reschedules",
+                "After-hours inbound",
+                "Minute-based entitlement",
+              ].map((label) => (
+                <span
+                  key={label}
+                  className="rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              {PREMIUM_VOICE_COMING_SOON_MESSAGE} Team subscribers will get
+              first access when rollout opens.
             </p>
           </div>
         </div>
