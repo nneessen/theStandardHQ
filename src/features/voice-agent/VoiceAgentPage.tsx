@@ -406,10 +406,6 @@ function getSetupTabForNextAction(key: VoiceNextActionKey): VoiceSetupTabId {
   }
 }
 
-function shouldTreatCreateAsAvailable(key: VoiceNextActionKey) {
-  return key === "create_agent";
-}
-
 function OverviewCard({
   icon,
   title,
@@ -569,8 +565,10 @@ export function VoiceAgentPage() {
   const chatBotAddon = activeAddons.find(
     (addon) => addon.addon?.name === "ai_chat_bot",
   );
-  const shouldLoadAgent =
-    activeTab === "setup" || activeTab === "stats" || activeTab === "admin";
+
+  // ── Setup-state is the CANONICAL source of truth ──
+  // Load on every mount. The backend returns the real state machine
+  // (nextAction.key, agent.exists, connections, readiness).
   const {
     data: voiceSetupState,
     error: voiceSetupStateError,
@@ -582,11 +580,11 @@ export function VoiceAgentPage() {
   const voiceSnapshot = parseVoiceSnapshot(
     voiceAddon?.voice_entitlement_snapshot,
   );
-  const {
-    data: agent,
-    error: agentError,
-    isLoading: agentLoading,
-  } = useChatBotAgent(shouldLoadAgent);
+
+  // Agent query is only needed for the full editor (setup/stats/admin tabs).
+  const shouldLoadAgent =
+    activeTab === "setup" || activeTab === "stats" || activeTab === "admin";
+  const { data: agent, error: agentError } = useChatBotAgent(shouldLoadAgent);
 
   const {
     data: voiceEntitlement,
@@ -609,7 +607,7 @@ export function VoiceAgentPage() {
   const connectClose = useConnectClose();
   const disconnectClose = useDisconnectClose();
 
-  const createdVoiceAgent = createVoiceAgent.data?.agent;
+  // ── Derive all booleans from setup-state first, fallback to legacy ──
   const closeConnected =
     voiceSetupState?.connections?.close?.connected === true ||
     Boolean(agent?.connections?.close?.connected);
@@ -618,7 +616,6 @@ export function VoiceAgentPage() {
     Boolean(agent?.connections?.retell?.connected);
   const voiceAgentProvisioningStatus =
     voiceSetupState?.agent?.provisioningStatus ??
-    createdVoiceAgent?.provisioningStatus ??
     (retellConnected ? "ready" : null);
   const voiceAgentProvisioning = isVoiceAgentProvisioningPending(
     voiceAgentProvisioningStatus,
@@ -626,7 +623,6 @@ export function VoiceAgentPage() {
   const voiceAgentCreated =
     voiceSetupState?.agent?.exists === true ||
     retellConnected ||
-    createdVoiceAgent?.exists === true ||
     isVoiceAgentProvisioned(voiceAgentProvisioningStatus);
   const shouldLoadRetellDetails =
     (activeTab === "setup" || activeTab === "admin") && retellConnected;
@@ -651,6 +647,11 @@ export function VoiceAgentPage() {
   const voiceAgentPublished =
     voiceSetupState?.agent?.published === true ||
     retellRuntime?.agent?.is_published === true;
+
+  // ── nextAction.key: trust setup-state, fallback only when absent ──
+  const setupStateNextActionKey = normalizeNextActionKey(
+    voiceSetupState?.nextAction?.key,
+  );
   const fallbackNextActionKey: VoiceNextActionKey = !voiceAccessActive
     ? "activate_voice"
     : !closeConnected
@@ -662,13 +663,12 @@ export function VoiceAgentPage() {
           : voiceAgentPublished
             ? "review_guardrails"
             : "publish_agent";
-  const setupStateNextActionKey = normalizeNextActionKey(
-    voiceSetupState?.nextAction?.key,
-  );
+  // Setup-state is canonical — use fallback only when setup-state has no answer
   const voiceNextActionKey =
-    setupStateNextActionKey === "unknown"
-      ? fallbackNextActionKey
-      : setupStateNextActionKey;
+    setupStateNextActionKey !== "unknown"
+      ? setupStateNextActionKey
+      : fallbackNextActionKey;
+
   const canOpenSetup =
     voiceAgentCreated ||
     voiceAgentProvisioning ||
@@ -719,7 +719,8 @@ export function VoiceAgentPage() {
       ? "managed"
       : "coming-soon";
 
-  const isLoading = addonsLoading || voiceSetupStateLoading || agentLoading;
+  // Setup-state is sufficient for initial page render — don't block on agent query
+  const isLoading = addonsLoading || voiceSetupStateLoading;
 
   const statsCardLoading =
     activeTab === "stats" &&
@@ -780,23 +781,28 @@ export function VoiceAgentPage() {
   const createAgentErrorMessage = createActionUnavailable
     ? "Voice agent creation is not available in this environment yet."
     : (createVoiceAgent.error?.message ?? null);
+  // Create is gated by the backend's nextAction.key — not local boolean assembly.
+  // The backend returns "create_agent" only when entitlement is active and the
+  // agent doesn't exist yet, so we don't need to re-check those conditions.
   const canCreateVoiceAgent =
-    shouldTreatCreateAsAvailable(voiceNextActionKey) &&
-    closeConnected &&
-    voiceAccessActive &&
+    voiceNextActionKey === "create_agent" &&
     !voiceAgentCreated &&
     !voiceAgentProvisioning;
   const createCardTitle =
     !voiceAccessActive && BILLING_NEXT_ACTION_KEYS.has(voiceNextActionKey)
       ? "Voice access is not active yet"
-      : "Step 2. Create Your Voice Agent";
+      : voiceNextActionKey === "connect_close"
+        ? "Step 1. Connect Close CRM first"
+        : "Step 2. Create Your Voice Agent";
   const createCardDescription = voiceAgentCreated
     ? "The setup tab now contains the full editor for voice selection, greeting, prompt, call routing, and publishing."
     : voiceAgentProvisioning
       ? "The Standard HQ is finishing the managed workspace and loading the live draft. Setup will unlock automatically as soon as it is ready."
       : canCreateVoiceAgent
         ? "This creates the voice agent for this workspace inside The Standard HQ. After that, voice, instructions, call flow, advanced options, and launch controls unlock in Setup."
-        : nextStep.description;
+        : !voiceAccessActive
+          ? "Voice access must be activated for this workspace before a managed voice agent can be created."
+          : nextStep.description;
   const createCardStatusLabel = voiceAgentCreated
     ? "Created"
     : voiceAgentProvisioning
