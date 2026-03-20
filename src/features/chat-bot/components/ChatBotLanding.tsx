@@ -589,75 +589,7 @@ export function ChatBotLanding({
         <ConversationDemo />
       </section>
 
-      {/* ═══════════ HOW IT WORKS + WHAT YOU GET (SIDE BY SIDE) ═══════════ */}
-      <section>
-        <div className="flex items-center gap-2 mb-3">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            How It Works
-          </h2>
-          <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
-        </div>
-
-        {/* 3-step flow */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          {[
-            {
-              step: 1,
-              icon: MessageSquare,
-              color: "blue",
-              title: "Lead Texts In",
-              desc: "A new lead sends an SMS to your Close CRM phone number",
-              bg: "bg-blue-50 dark:bg-blue-950/30",
-            },
-            {
-              step: 2,
-              icon: Bot,
-              color: "purple",
-              title: "AI Responds Instantly",
-              desc: "The bot replies within seconds, has a natural back-and-forth conversation, and offers appointment times",
-              bg: "bg-purple-50 dark:bg-purple-950/30",
-            },
-            {
-              step: 3,
-              icon: Calendar,
-              color: "emerald",
-              title: "Appointment Booked",
-              desc: "An event is created on your calendar and both you and the lead are notified",
-              bg: "bg-emerald-50 dark:bg-emerald-950/30",
-            },
-          ].map((item) => (
-            <div
-              key={item.step}
-              className={cn(
-                "p-3 rounded-lg border border-zinc-200/50 dark:border-zinc-800/50",
-                item.bg,
-              )}
-            >
-              <div className="flex items-center gap-1.5 mb-2">
-                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-white dark:bg-zinc-800 text-[9px] font-bold text-zinc-500 dark:text-zinc-400 shadow-sm">
-                  {item.step}
-                </span>
-                <item.icon
-                  className={cn(
-                    "h-3.5 w-3.5",
-                    item.color === "blue" && "text-blue-500",
-                    item.color === "purple" && "text-purple-500",
-                    item.color === "emerald" && "text-emerald-500",
-                  )}
-                />
-              </div>
-              <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
-                {item.title}
-              </p>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 leading-relaxed">
-                {item.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ═══════════ WHAT YOU GET ═══════════ */}
+      {/* ═══════════ WHAT YOU GET (compact inline list) ═══════════ */}
       <section>
         <div className="flex items-center gap-2 mb-3">
           <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
@@ -666,66 +598,63 @@ export function ChatBotLanding({
           <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {[
-            {
-              icon: Clock,
-              title: "Instant Response",
-              desc: "Leads get a reply within seconds during business hours. Off-hours messages queue for the next compliant window — no lead falls through the cracks",
-            },
-            {
-              icon: Calendar,
-              title: "Smart Scheduling",
-              desc: "Bot checks your real calendar availability and offers times that work for both of you",
-            },
-            {
-              icon: Globe,
-              title: "Timezone Aware",
-              desc: "Automatically adjusts appointment offers based on the lead's timezone",
-            },
-            {
-              icon: ShieldCheck,
-              title: "Compliant Conversations",
-              desc: "Never quotes prices or policy details over text — redirects all financial questions to the appointment",
-            },
-            {
-              icon: Zap,
-              title: "Proactive Outreach",
-              desc: "Automatically contacts new leads the moment they hit your CRM — no waiting for them to text first",
-            },
-            {
-              icon: MessageSquare,
-              title: "Objection Handling",
-              desc: "Handles pricing questions, hesitation, and common pushback with natural rebuttals that steer toward booking",
-            },
-            {
-              icon: RefreshCw,
-              title: "Follow-Up Re-engagement",
-              desc: "Re-engages cold leads with personalized follow-ups. Adapts messaging for mortgage protection, veteran, and other lead types",
-            },
-            {
-              icon: Bot,
-              title: "Natural Conversations",
-              desc: "Not a basic auto-responder — carries on real multi-message conversations that feel human",
-            },
-          ].map((f) => (
-            <div
-              key={f.title}
-              className="p-3 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800"
-            >
-              <div className="flex items-center gap-2 mb-1.5">
-                <div className="w-6 h-6 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                  <f.icon className="h-3 w-3 text-zinc-500 dark:text-zinc-400" />
+        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5">
+            {[
+              {
+                icon: Clock,
+                title: "Instant Response",
+                desc: "Reply in seconds during compliant hours",
+              },
+              {
+                icon: Calendar,
+                title: "Smart Scheduling",
+                desc: "Books from your real calendar availability",
+              },
+              {
+                icon: Globe,
+                title: "Timezone Aware",
+                desc: "Auto-adjusts appointment offers by timezone",
+              },
+              {
+                icon: ShieldCheck,
+                title: "Compliant",
+                desc: "Never quotes prices or policy details over text",
+              },
+              {
+                icon: Zap,
+                title: "Proactive Outreach",
+                desc: "Contacts new CRM leads automatically",
+              },
+              {
+                icon: MessageSquare,
+                title: "Objection Handling",
+                desc: "Natural rebuttals that steer toward booking",
+              },
+              {
+                icon: RefreshCw,
+                title: "Follow-Up",
+                desc: "Re-engages cold leads with personalized messages",
+              },
+              {
+                icon: Bot,
+                title: "Natural Conversations",
+                desc: "Multi-message conversations that feel human",
+              },
+            ].map((f) => (
+              <div key={f.title} className="flex items-center gap-2.5 py-0.5">
+                <f.icon className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400 flex-shrink-0" />
+                <div className="flex items-baseline gap-1.5 min-w-0">
+                  <span className="text-[10px] font-semibold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
+                    {f.title}
+                  </span>
+                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+                    — {f.desc}
+                  </span>
                 </div>
-                <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
-                  {f.title}
-                </span>
               </div>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                {f.desc}
-              </p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 

@@ -111,12 +111,17 @@ export const analyticsKeys = {
 
 // ─── Personal Analytics Queries ─────────────────────────────────
 
-export function useChatBotAnalytics(from: string, to: string) {
+export function useChatBotAnalytics(
+  from: string,
+  to: string,
+  options?: { enabled?: boolean },
+) {
   return useQuery<ChatBotAnalytics>({
     queryKey: analyticsKeys.analytics(from, to),
     queryFn: () => chatBotApi<ChatBotAnalytics>("get_analytics", { from, to }),
     staleTime: 5 * 60 * 1000,
     retry: 1,
+    enabled: options?.enabled ?? true,
   });
 }
 

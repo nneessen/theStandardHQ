@@ -516,6 +516,20 @@ function isNotProvisionedActionError(
     return true;
   }
 
+  // Any 404 from the edge relay (function not deployed, or "no active bot") is
+  // treated as "not provisioned" — prevents console spam in local dev where
+  // chat-bot-api isn't served.
+  if (status === 404) {
+    return true;
+  }
+
+  if (
+    normalizedMessage.includes("not found") ||
+    normalizedMessage.includes("function not found")
+  ) {
+    return true;
+  }
+
   if (action === "create_voice_agent") {
     return normalizedMessage.includes(
       "voice agent creation is not available in this environment yet.",
@@ -526,14 +540,7 @@ function isNotProvisionedActionError(
     return false;
   }
 
-  if (status === 404) {
-    return true;
-  }
-
-  return (
-    normalizedMessage.includes("not found") ||
-    normalizedMessage.includes("function not found")
-  );
+  return false;
 }
 
 export async function chatBotApi<T>(
@@ -599,7 +606,7 @@ export async function chatBotApi<T>(
       bodyServiceDown ||
       msg.includes("temporarily unavailable");
 
-    if (!isTransportError && !isServiceError) {
+    if (!isTransportError && !isServiceError && !isNotFound) {
       console.error(`[chatBotApi] ${action} failed (status=${status}):`, msg);
     }
     throw new ChatBotApiError(
@@ -616,9 +623,13 @@ export async function chatBotApi<T>(
       typeof errVal === "string"
         ? errVal
         : errVal?.message || "Unknown chat bot API error";
-    const isNotFound = isNotProvisionedActionError(action, msg);
-    console.error(`[chatBotApi] ${action} returned error in body:`, msg);
-    throw new ChatBotApiError(msg, isNotFound);
+    const isNotFound =
+      data?.notProvisioned === true || isNotProvisionedActionError(action, msg);
+    const isServiceDown = data?.serviceDown === true;
+    if (!isNotFound && !isServiceDown) {
+      console.error(`[chatBotApi] ${action} returned error in body:`, msg);
+    }
+    throw new ChatBotApiError(msg, isNotFound, isServiceDown);
   }
 
   return data as T;
@@ -634,11 +645,8 @@ export function useChatBotAgent(enabled = true) {
       try {
         return await chatBotApi<ChatBotAgent>("get_agent");
       } catch (err) {
-        // Only treat the explicit "no local workspace yet" case as an empty state.
-        if (
-          err instanceof ChatBotApiError &&
-          err.message.includes("No active chat bot")
-        ) {
+        // Treat "not provisioned" (no active bot, function 404, etc.) as empty state.
+        if (err instanceof ChatBotApiError && err.isNotProvisioned) {
           return null;
         }
         if (err instanceof ChatBotApiError && err.isServiceError) {
@@ -650,10 +658,7 @@ export function useChatBotAgent(enabled = true) {
     enabled: enabled && !!user?.id && !loading,
     staleTime: 60_000,
     retry: (failureCount, error) => {
-      if (
-        error instanceof ChatBotApiError &&
-        error.message.includes("No active chat bot")
-      ) {
+      if (error instanceof ChatBotApiError && error.isNotProvisioned) {
         return false;
       }
       if (error instanceof ChatBotApiError && error.isTransportError) {
@@ -733,11 +738,12 @@ export function useChatBotAppointments(page: number, limit: number) {
   });
 }
 
-export function useChatBotUsage() {
+export function useChatBotUsage(options?: { enabled?: boolean }) {
   return useQuery<ChatBotUsage, Error>({
     queryKey: chatBotKeys.usage(),
     queryFn: () => chatBotApi<ChatBotUsage>("get_usage"),
     staleTime: 60_000,
+    enabled: options?.enabled ?? true,
   });
 }
 

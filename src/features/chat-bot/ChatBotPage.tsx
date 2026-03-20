@@ -21,6 +21,7 @@ import {
   Power,
   Sparkles,
   ShieldCheck,
+  Lightbulb,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,12 +50,14 @@ import { AllBotsTab } from "./components/AllBotsTab";
 import { AnalyticsTab } from "./components/AnalyticsTab";
 import { MonitoringTab } from "./components/MonitoringTab";
 import { SetupGuideTab } from "./components/SetupGuideTab";
+import { HowItWorksTab } from "./components/HowItWorksTab";
 import { ChatBotOverviewTab } from "./components/ChatBotOverviewTab";
 import { AdminTab } from "./components/AdminTab";
 
 type TabId =
   | "overview"
   | "plans"
+  | "how-it-works"
   | "guide"
   | "all-bots"
   | "setup"
@@ -73,6 +76,7 @@ function getInitialTab(): TabId {
   const tab = params.get("tab");
   if (
     tab === "plans" ||
+    tab === "how-it-works" ||
     tab === "setup" ||
     tab === "guide" ||
     tab === "all-bots" ||
@@ -144,10 +148,17 @@ export function ChatBotPage() {
       );
       if (result.success) {
         toast.success("Bot provisioning started! Refreshing...");
-        queryClient.invalidateQueries({ queryKey: ["chat-bot"] });
+      } else if (
+        result.error?.toLowerCase().includes("already have this addon")
+      ) {
+        // Addon is active but agent fetch failed (e.g. remote DB mismatch in local dev).
+        // Just refetch — don't show an error.
+        toast.success("Addon is active. Refreshing bot status...");
       } else {
         toast.error(result.error || "Provisioning failed. Please try again.");
       }
+      // Always refetch agent status after retry
+      queryClient.invalidateQueries({ queryKey: ["chat-bot"] });
     } catch {
       toast.error("Provisioning failed. Please try again later.");
     } finally {
@@ -210,6 +221,7 @@ export function ChatBotPage() {
   }[] = [
     { id: "overview", label: "Overview", icon: Sparkles },
     { id: "plans", label: "Plans", icon: CreditCard },
+    { id: "how-it-works", label: "How It Works", icon: Lightbulb },
     { id: "guide", label: "Setup Guide", icon: BookOpen },
     { id: "all-bots", label: "All Bots", icon: TrendingUp },
     {
@@ -516,6 +528,9 @@ export function ChatBotPage() {
             /* Full config dashboard */
             <SetupTab />
           ))}
+
+        {/* How It Works — always visible */}
+        {activeTab === "how-it-works" && <HowItWorksTab />}
 
         {/* Setup Guide — always visible, fully static */}
         {activeTab === "guide" && <SetupGuideTab />}

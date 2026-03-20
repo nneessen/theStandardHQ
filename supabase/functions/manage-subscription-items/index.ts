@@ -56,14 +56,25 @@ serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get(
       "SUPABASE_SERVICE_ROLE_KEY",
     )!;
+    // For calling other edge functions (e.g. chat-bot-provision), prefer remote URL
+    // so provisioning always hits the production function even during local dev.
+    const FUNCTIONS_BASE_URL =
+      Deno.env.get("REMOTE_SUPABASE_URL") || SUPABASE_URL;
 
-    if (!STRIPE_SECRET_KEY) {
-      return jsonResponse({ error: "Stripe not configured" }, 500);
+    // Stripe is initialized lazily — only when a paid tier path needs it.
+    // This lets the free tier path work without STRIPE_SECRET_KEY.
+    let _stripe: InstanceType<typeof Stripe> | null = null;
+    function getStripe(): InstanceType<typeof Stripe> {
+      if (!_stripe) {
+        if (!STRIPE_SECRET_KEY) {
+          throw new Error("Stripe not configured");
+        }
+        _stripe = new Stripe(STRIPE_SECRET_KEY, {
+          apiVersion: "2024-12-18.acacia",
+        });
+      }
+      return _stripe;
     }
-
-    const stripe = new Stripe(STRIPE_SECRET_KEY, {
-      apiVersion: "2024-12-18.acacia",
-    });
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     // Verify user is authenticated
@@ -203,7 +214,7 @@ serve(async (req) => {
                 );
                 try {
                   const provisionRes = await fetch(
-                    `${SUPABASE_URL}/functions/v1/chat-bot-provision`,
+                    `${FUNCTIONS_BASE_URL}/functions/v1/chat-bot-provision`,
                     {
                       method: "POST",
                       headers: {
@@ -258,10 +269,11 @@ serve(async (req) => {
               }
             }
 
-            return jsonResponse(
-              { error: "You already have this addon active" },
-              400,
-            );
+            return jsonResponse({
+              success: true,
+              alreadyActive: true,
+              tier: resolvedTierId,
+            });
           }
 
           // Different tier — handle tier change (upgrade/downgrade)
@@ -272,7 +284,7 @@ serve(async (req) => {
           // Remove the old Stripe line item if the previous tier was paid
           if (existingAddon.stripe_subscription_item_id && stripeSubId) {
             try {
-              await stripe.subscriptions.update(stripeSubId, {
+              await getStripe().subscriptions.update(stripeSubId, {
                 items: [
                   {
                     id: existingAddon.stripe_subscription_item_id,
@@ -364,7 +376,7 @@ serve(async (req) => {
           }
           try {
             const provisionRes = await fetch(
-              `${SUPABASE_URL}/functions/v1/chat-bot-provision`,
+              `${FUNCTIONS_BASE_URL}/functions/v1/chat-bot-provision`,
               {
                 method: "POST",
                 headers: {
@@ -438,7 +450,8 @@ serve(async (req) => {
             sessionParams.customer_email = user.email;
           }
 
-          const session = await stripe.checkout.sessions.create(sessionParams);
+          const session =
+            await getStripe().checkout.sessions.create(sessionParams);
 
           console.log(
             `[manage-subscription-items] Created checkout session: ${session.id}, url=${session.url}`,
@@ -452,7 +465,7 @@ serve(async (req) => {
         }
 
         // Add line item to existing Stripe subscription
-        const updatedSub = await stripe.subscriptions.update(stripeSubId, {
+        const updatedSub = await getStripe().subscriptions.update(stripeSubId, {
           items: [{ price: priceId }],
           proration_behavior: "create_prorations",
         });
@@ -504,7 +517,7 @@ serve(async (req) => {
             addonError,
           );
           try {
-            await stripe.subscriptions.update(stripeSubId, {
+            await getStripe().subscriptions.update(stripeSubId, {
               items: [{ id: newItem.id, deleted: true }],
               proration_behavior: "none",
             });
@@ -528,7 +541,7 @@ serve(async (req) => {
         if (existingAddon) {
           try {
             const updateRes = await fetch(
-              `${SUPABASE_URL}/functions/v1/chat-bot-provision`,
+              `${FUNCTIONS_BASE_URL}/functions/v1/chat-bot-provision`,
               {
                 method: "POST",
                 headers: {
@@ -583,7 +596,7 @@ serve(async (req) => {
 
         // Remove Stripe line item (skip if free tier — no Stripe item)
         if (addonRecord.stripe_subscription_item_id && stripeSubId) {
-          await stripe.subscriptions.update(stripeSubId, {
+          await getStripe().subscriptions.update(stripeSubId, {
             items: [
               { id: addonRecord.stripe_subscription_item_id, deleted: true },
             ],
@@ -617,14 +630,15 @@ serve(async (req) => {
         }
         // Capture item count BEFORE adding, to detect if Stripe creates
         // a new item vs incrementing quantity on an existing one.
-        const currentSub = await stripe.subscriptions.retrieve(stripeSubId);
+        const currentSub =
+          await getStripe().subscriptions.retrieve(stripeSubId);
         const itemCountBefore = currentSub.items.data.length;
         const existingSeatItem = currentSub.items.data.find(
           (item) => item.price.id === SEAT_PACK_PRICE_ID,
         );
 
         // Add seat pack line item to subscription (price hardcoded server-side)
-        const updatedSub = await stripe.subscriptions.update(stripeSubId, {
+        const updatedSub = await getStripe().subscriptions.update(stripeSubId, {
           items: [{ price: SEAT_PACK_PRICE_ID }],
           proration_behavior: "create_prorations",
         });
@@ -672,7 +686,7 @@ serve(async (req) => {
           try {
             if (isQuantityIncrement && existingSeatItem) {
               // Decrement quantity back instead of deleting
-              await stripe.subscriptions.update(stripeSubId, {
+              await getStripe().subscriptions.update(stripeSubId, {
                 items: [
                   {
                     id: newSeatItem.id,
@@ -682,7 +696,7 @@ serve(async (req) => {
                 proration_behavior: "none",
               });
             } else {
-              await stripe.subscriptions.update(stripeSubId, {
+              await getStripe().subscriptions.update(stripeSubId, {
                 items: [{ id: newSeatItem.id, deleted: true }],
                 proration_behavior: "none",
               });
@@ -759,14 +773,15 @@ serve(async (req) => {
 
         if (otherActivePacksOnSameItem > 0) {
           // Other packs share this Stripe item — decrement quantity instead of deleting
-          const currentSub = await stripe.subscriptions.retrieve(stripeSubId);
+          const currentSub =
+            await getStripe().subscriptions.retrieve(stripeSubId);
           const seatItem = currentSub.items.data.find(
             (item) => item.id === seatPackRecord.stripe_subscription_item_id,
           );
           const currentQty = seatItem?.quantity || 1;
 
           if (currentQty > 1) {
-            await stripe.subscriptions.update(stripeSubId, {
+            await getStripe().subscriptions.update(stripeSubId, {
               items: [
                 {
                   id: seatPackRecord.stripe_subscription_item_id,
@@ -777,7 +792,7 @@ serve(async (req) => {
             });
           } else {
             // Quantity is already 1 but we have other DB records — just remove the item
-            await stripe.subscriptions.update(stripeSubId, {
+            await getStripe().subscriptions.update(stripeSubId, {
               items: [
                 {
                   id: seatPackRecord.stripe_subscription_item_id,
@@ -789,7 +804,7 @@ serve(async (req) => {
           }
         } else {
           // Only this pack uses the Stripe item — delete the item entirely
-          await stripe.subscriptions.update(stripeSubId, {
+          await getStripe().subscriptions.update(stripeSubId, {
             items: [
               {
                 id: seatPackRecord.stripe_subscription_item_id,

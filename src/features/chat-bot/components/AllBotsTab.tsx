@@ -70,27 +70,40 @@ export function AllBotsTab({
   }
 
   const metrics = [
-    { label: "Active Bots", value: String(data.activeBots) },
+    { label: "Active Bots", sublabel: "", value: String(data.activeBots) },
     {
-      label: "Conversations",
+      label: "Leads Engaged",
+      sublabel: "Total SMS conversations",
       value: data.totalConversations.toLocaleString(),
     },
     {
-      label: "Appointments",
+      label: "Appointments Booked",
+      sublabel: "Qualified meetings set",
       value: data.totalAppointments.toLocaleString(),
     },
-    { label: "Policies", value: data.totalAttributions.toLocaleString() },
+    {
+      label: "Policies Written",
+      sublabel: "Bot-attributed closings",
+      value: data.totalAttributions.toLocaleString(),
+    },
     {
       label: "Booking Rate",
+      sublabel: "Lead → Appointment",
       value: formatPercent(data.bookingRate * 100),
     },
     {
-      label: "Conversion Rate",
+      label: "Close Rate",
+      sublabel: "Lead → Policy",
       value: formatPercent(data.conversionRate),
     },
-    { label: "Premium", value: formatCurrency(data.totalPremium) },
     {
-      label: "Converted / Assisted",
+      label: "Revenue Impact",
+      sublabel: "Attributed annual premium",
+      value: formatCurrency(data.totalPremium),
+    },
+    {
+      label: "Direct / Assisted",
+      sublabel: "Full / partial attribution",
       value: `${data.botConverted} / ${data.botAssisted}`,
     },
   ];
@@ -99,7 +112,7 @@ export function AllBotsTab({
     <div className="space-y-3">
       {/* ── Metrics Strip ──────────────────────────────────────── */}
       <div className="rounded-lg border border-border bg-background p-3">
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex items-center gap-2 mb-0.5">
           <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">
             All Bots · Last 30 days
           </span>
@@ -108,6 +121,9 @@ export function AllBotsTab({
             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
           </span>
         </div>
+        <p className="text-[9px] text-muted-foreground mb-2">
+          Real-time performance across all SMS bots on the platform.
+        </p>
 
         {/* Desktop: single horizontal row with dividers */}
         <div className="hidden md:flex items-center divide-x divide-border">
@@ -115,6 +131,11 @@ export function AllBotsTab({
             <div key={m.label} className="flex-1 px-3 first:pl-0 last:pr-0">
               <div className="text-[9px] text-muted-foreground">{m.label}</div>
               <div className="text-sm font-bold text-foreground">{m.value}</div>
+              {m.sublabel && (
+                <div className="text-[8px] text-muted-foreground/70">
+                  {m.sublabel}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -127,6 +148,11 @@ export function AllBotsTab({
               <div className="text-[11px] font-bold text-foreground">
                 {m.value}
               </div>
+              {m.sublabel && (
+                <div className="text-[8px] text-muted-foreground/70">
+                  {m.sublabel}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -135,11 +161,14 @@ export function AllBotsTab({
       {/* ── Timeline (mini table) ──────────────────────────────── */}
       {data.timeline.length > 0 && (
         <div className="rounded-lg border border-border bg-background p-3">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-0.5">
             <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">
               Daily Activity
             </span>
           </div>
+          <p className="text-[9px] text-muted-foreground mb-2">
+            Last 7 days of activity
+          </p>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left">

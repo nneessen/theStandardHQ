@@ -1048,14 +1048,41 @@ serve(async (req) => {
       return sendResult(res);
     }
 
-    const agentContext = await ensureAgentContext(
+    let agentContext = await ensureAgentContext(
       supabase,
       effectiveUserId,
       action === "connect_close" || action === "create_voice_agent",
     );
 
+    // Fallback: if the data client is remote and couldn't find the agent,
+    // check the local DB. This handles local dev where the user exists
+    // locally but not in the remote/production DB.
+    if (!agentContext.ok && supabase !== authClient) {
+      const localContext = await ensureAgentContext(
+        authClient,
+        effectiveUserId,
+        false,
+      );
+      if (localContext.ok) {
+        console.log(
+          `[chat-bot-api] Agent not found in remote DB, using local fallback for user ${effectiveUserId}`,
+        );
+        agentContext = localContext;
+      }
+    }
+
     if (!agentContext.ok) {
-      return jsonResponse({ error: agentContext.error }, agentContext.status);
+      // Return 200 with error body for "not provisioned" (status 404) to avoid
+      // browser network-level 404 logs that cannot be suppressed by JS.
+      const httpStatus =
+        agentContext.status === 404 ? 200 : agentContext.status;
+      return jsonResponse(
+        {
+          error: agentContext.error,
+          notProvisioned: agentContext.status === 404,
+        },
+        httpStatus,
+      );
     }
 
     const agentId = agentContext.agentId;
