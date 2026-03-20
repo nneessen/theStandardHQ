@@ -241,18 +241,24 @@ export const PolicyList: React.FC<PolicyListProps> = ({
     {} as Record<string, (typeof commissions)[0]>,
   );
 
-  // Get commissions for current page policies to calculate commission metrics
-  const policyIds = new Set(policies.map((p) => p.id));
-  const relevantCommissions = commissions.filter(
-    (c) => c.policyId && policyIds.has(c.policyId),
+  // Commission metrics across ALL commissions (not filtered by current page)
+  const activeCommissions = commissions.filter(
+    (c) =>
+      c.status !== "charged_back" &&
+      c.status !== "reversed" &&
+      c.status !== "clawback",
   );
-  const earnedCommission = relevantCommissions.reduce(
+  const earnedCommission = activeCommissions.reduce(
     (sum, c) => sum + (c.earnedAmount || 0),
     0,
   );
-  const pendingCommission = relevantCommissions
+  const pendingCommission = commissions
     .filter((c) => c.status === "pending")
     .reduce((sum, c) => sum + (c.amount || 0), 0);
+  const totalAdvances = activeCommissions.reduce(
+    (sum, c) => sum + (c.amount || 0),
+    0,
+  );
 
   // Handle search with debounce
   useEffect(() => {
@@ -519,6 +525,15 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                   </span>
                   <span className="text-zinc-500 dark:text-zinc-400">
                     pending
+                  </span>
+                </div>
+                <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+                <div className="flex items-center gap-1">
+                  <span className="font-medium text-blue-600 dark:text-blue-400">
+                    ${(totalAdvances / 1000).toFixed(1)}k
+                  </span>
+                  <span className="text-zinc-500 dark:text-zinc-400">
+                    advanced
                   </span>
                 </div>
                 <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />

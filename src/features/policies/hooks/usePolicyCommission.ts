@@ -26,6 +26,8 @@ export interface UsePolicyCommissionOptions {
   isEditMode: boolean;
   /** The initial product ID when editing (to detect user changes) */
   initialProductId: string | null;
+  /** Carrier ID to scope comp_guide lookup to the correct carrier */
+  carrierId?: string;
 }
 
 export interface UsePolicyCommissionReturn {
@@ -54,6 +56,7 @@ export function usePolicyCommission({
   termLength,
   isEditMode,
   initialProductId,
+  carrierId,
 }: UsePolicyCommissionOptions): UsePolicyCommissionReturn {
   const [commissionPercentage, setCommissionPercentage] = useState(0);
   const [termModifiers, setTermModifiers] =
@@ -63,17 +66,21 @@ export function usePolicyCommission({
   >({});
   const [isLoading, setIsLoading] = useState(false);
 
-  // Fetch commission rate from comp_guide based on product and user's contract level
+  // Fetch commission rate from comp_guide based on product, contract level, and carrier
   const { data: compGuideData, isLoading: compGuideLoading } = useCompGuide(
     productId || "",
-    userContractLevel
+    userContractLevel,
+    carrierId,
   );
 
   // Update term modifiers when product changes (for term_life products)
   useEffect(() => {
     const selectedProduct = products.find((p) => p.id === productId);
 
-    if (selectedProduct?.product_type === "term_life" && selectedProduct.metadata) {
+    if (
+      selectedProduct?.product_type === "term_life" &&
+      selectedProduct.metadata
+    ) {
       const metadata = selectedProduct.metadata as ProductMetadata;
       if (metadata.termCommissionModifiers) {
         setTermModifiers(metadata.termCommissionModifiers);
@@ -122,7 +129,10 @@ export function usePolicyCommission({
         .order("effective_date", { ascending: false });
 
       if (error) {
-        console.error("[usePolicyCommission] Failed to fetch commission rates:", error);
+        console.error(
+          "[usePolicyCommission] Failed to fetch commission rates:",
+          error,
+        );
         setIsLoading(false);
         return;
       }
@@ -171,10 +181,17 @@ export function usePolicyCommission({
       setCommissionPercentage(
         selectedProduct?.commission_percentage
           ? selectedProduct.commission_percentage * 100
-          : 0
+          : 0,
       );
     }
-  }, [productId, compGuideData, compGuideLoading, products, isEditMode, initialProductId]);
+  }, [
+    productId,
+    compGuideData,
+    compGuideLoading,
+    products,
+    isEditMode,
+    initialProductId,
+  ]);
 
   return {
     commissionPercentage,
@@ -189,7 +206,7 @@ export function usePolicyCommission({
  */
 export function useUserContractLevel(
   userId: string | undefined,
-  fallbackLevel: number = 100
+  fallbackLevel: number = 100,
 ): number {
   const [contractLevel, setContractLevel] = useState<number | null>(null);
 
@@ -204,7 +221,10 @@ export function useUserContractLevel(
         .single();
 
       if (error) {
-        console.error("[useUserContractLevel] Failed to fetch contract level:", error);
+        console.error(
+          "[useUserContractLevel] Failed to fetch contract level:",
+          error,
+        );
         // Fall through to use fallback level
         return;
       }

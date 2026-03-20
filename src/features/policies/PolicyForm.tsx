@@ -127,6 +127,7 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
     termLength: formData.termLength,
     isEditMode: !!policyId,
     initialProductId,
+    carrierId: formData.carrierId,
   });
 
   useEffect(() => {
