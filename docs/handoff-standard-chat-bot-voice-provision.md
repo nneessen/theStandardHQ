@@ -188,11 +188,87 @@ curl -s -X POST "${CHAT_BOT_API_URL}/api/external/agents" \
 
 ---
 
-## Part 3: Fix order
+## Part 3: Default Voice Agent Prompt Template
 
-1. Fix bugs 1-3 in commissionTracker (query invalidation + voiceAccessActive fallback)
-2. Fix bug 5 in standard-chat-bot (make leadLimit optional or accept 0)
-3. Restart edge functions, test full flow:
-   - Start trial → page updates to show "Active" + connect Close CRM card
-   - Connect Close CRM → auto-provisions workspace + connects
-   - Create Voice Agent → agent created, Setup tab unlocks
+### Problem
+
+When `create_voice_agent` is called with `templateKey: "default_sales"`, the
+Standard-ChatBot API generates a bare-bones default prompt:
+
+```
+You are the phone assistant for Nick Neessen. The business timezone is
+America/New_York. Keep responses concise, natural, and practical. You may
+help with appointment scheduling, appointment rescheduling, callback
+collection, and after-hours triage. Do not provide quote details, policy
+advice, underwriting guidance, eligibility decisions, or product
+recommendations. When a request is ambiguous, high-risk, or needs a human,
+offer a callback or transfer instead of improvising.
+```
+
+This is too restrictive. It bans ALL product discussion, which turns leads
+away when they ask about mortgage protection, life insurance, IULs, etc.
+
+### Required Changes in Standard-ChatBot
+
+The `default_sales` template (or whatever template key the voice agent create
+handler uses) should generate a prompt with these sections:
+
+1. **Identity** — Uses `{{agent_name}}` and `{{company_name}}` variables
+2. **Dynamic Variables** — Lists all runtime variables the voice system injects
+3. **Style** — Concise, warm, one-question-at-a-time, natural tone
+4. **Insurance Knowledge** — Agent CAN discuss products in general educational
+   terms (mortgage protection, term life, IUL, final expense, the application
+   process). This is critical — leads asking about products should get helpful
+   answers, not refusals.
+5. **Pricing Handling** — "Bridge" technique: acknowledge question warmly,
+   explain rates are personalized (age, health, coverage amount), bridge to
+   scheduling an appointment. NEVER quote specific numbers.
+6. **Hard Limits** — No specific dollar amounts, no guarantees, no licensed
+   advice, no competitor comparisons, no fabricated facts
+7. **Task Flow** — Workflow-aware task steps with human handoff support
+8. **Workflow-Specific Openings** — Per-workflow greeting guidance
+   (missed_appointment, reschedule, after_hours_inbound, quoted_followup,
+   general inbound)
+
+### Full Template
+
+The complete recommended template is in the commissionTracker project at:
+`/Users/nickneessen/projects/commissionTracker/docs/voice-agent-prompt-template.md`
+
+Copy the content of that file as the `default_sales` template body in the
+voice agent create handler. The template should be set as the `general_prompt`
+field in the Retell LLM configuration when creating the voice agent.
+
+### Where to find the voice agent create handler
+
+Look for the route that handles:
+`POST /api/external/agents/:agentId/voice/agent/create`
+
+This handler receives `{ templateKey: "default_sales" }` and should:
+1. Look up the template by key
+2. Substitute agent-specific variables (agent name, company, timezone)
+3. Set it as the `general_prompt` on the Retell LLM config
+4. Set an appropriate `begin_message` (opening greeting)
+
+### Recommended default `begin_message`
+
+```
+Hi, this is {{agent_name}}'s office. How can I help you today?
+```
+
+Keep it short — the workflow system will override this per-call with
+context-specific openings.
+
+---
+
+## Part 4: Fix Order
+
+### Already fixed in commissionTracker (bugs 1-3):
+- [x] `invalidateVoiceAgentQueries` now invalidates `voiceSetupState`
+- [x] `useStartVoiceTrial.onSuccess` uses correct query key `["subscription"]`
+- [x] `voiceAccessActive` has addon status fallback
+
+### Still needed in standard-chat-bot:
+- [ ] Make `leadLimit` optional or accept 0 for voice-only workspaces
+- [ ] Update `default_sales` template to use the comprehensive prompt
+- [ ] Set appropriate default `begin_message`
