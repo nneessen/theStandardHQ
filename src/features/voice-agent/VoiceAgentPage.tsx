@@ -1,22 +1,18 @@
-import {
-  type ElementType,
-  type ReactNode,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { type ElementType, type ReactNode, useMemo, useState } from "react";
 import {
   Activity,
   AlertTriangle,
+  CreditCard,
   Loader2,
+  Lock,
   PhoneCall,
   Settings2,
   ShieldCheck,
-  Sparkles,
   Wrench,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { CloseCrmLogo } from "@/components/logos/CloseCrmLogo";
 import { useImo } from "@/contexts/ImoContext";
 import {
@@ -57,7 +53,7 @@ import type { VoiceEntitlementSnapshotView } from "./types";
 const VOICE_LAUNCH_INCLUDED_MINUTES = 500;
 const VOICE_LAUNCH_INCLUDED_MINUTES_TRIAL = 15;
 
-type VoiceTabId = "overview" | "create" | "setup" | "stats" | "admin";
+type VoiceTabId = "subscription" | "setup" | "stats" | "admin";
 type VoiceSetupTabId =
   | "voice"
   | "instructions"
@@ -83,11 +79,13 @@ type VoiceNextActionKey =
 
 const ENTITLEMENT_ACTIVE_STATUSES = new Set(["active", "trialing"]);
 const BILLING_NEXT_ACTION_KEYS = new Set<VoiceNextActionKey>([
-  "activate_trial",
   "resolve_billing",
   "resolve_suspension",
   "replenish_minutes",
   "reactivate_voice",
+]);
+const INLINE_ACTIVATION_KEYS = new Set<VoiceNextActionKey>([
+  "activate_trial",
   "activate_voice",
 ]);
 const SETUP_REDIRECT_ACTION_KEYS = new Set<VoiceNextActionKey>([
@@ -118,18 +116,6 @@ function parseVoiceSnapshot(
   if (raw.usage !== undefined && typeof raw.usage !== "object") return null;
 
   return raw as VoiceEntitlementSnapshotView;
-}
-
-function hasUsageActivity(
-  snapshot: VoiceEntitlementSnapshotView | null,
-  includedMinutes?: number,
-  usedMinutes?: number,
-) {
-  return Boolean(
-    snapshot ||
-    (typeof includedMinutes === "number" && includedMinutes > 0) ||
-    (typeof usedMinutes === "number" && usedMinutes > 0),
-  );
 }
 
 function isServiceIssue(error: unknown) {
@@ -408,35 +394,6 @@ function getSetupTabForNextAction(key: VoiceNextActionKey): VoiceSetupTabId {
   }
 }
 
-function OverviewCard({
-  icon,
-  title,
-  value,
-  detail,
-}: {
-  icon?: ReactNode;
-  title: string;
-  value: string;
-  detail: string;
-}) {
-  return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="flex items-center gap-2">
-        {icon ? <div className="shrink-0">{icon}</div> : null}
-        <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-          {title}
-        </p>
-      </div>
-      <p className="mt-2 text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
-        {value}
-      </p>
-      <p className="mt-2 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
-        {detail}
-      </p>
-    </div>
-  );
-}
-
 function SetupStepButton({
   active,
   label,
@@ -556,7 +513,7 @@ function CreateVoiceAgentCard({
 }
 
 export function VoiceAgentPage() {
-  const [activeTab, setActiveTab] = useState<VoiceTabId>("overview");
+  const [activeTab, setActiveTab] = useState<VoiceTabId>("subscription");
   const [activeSetupTab, setActiveSetupTab] =
     useState<VoiceSetupTabId>("voice");
   const { isSuperAdmin } = useImo();
@@ -564,10 +521,6 @@ export function VoiceAgentPage() {
   const voiceAddon = activeAddons.find(
     (addon) => addon.addon?.name === PREMIUM_VOICE_ADDON_NAME,
   );
-  const chatBotAddon = activeAddons.find(
-    (addon) => addon.addon?.name === "ai_chat_bot",
-  );
-
   // ── Setup-state is the CANONICAL source of truth ──
   // Load on every mount. The backend returns the real state machine
   // (nextAction.key, agent.exists, connections, readiness).
@@ -677,18 +630,6 @@ export function VoiceAgentPage() {
     voiceAgentProvisioning ||
     SETUP_REDIRECT_ACTION_KEYS.has(voiceNextActionKey);
 
-  const hasManagedState = Boolean(
-    voiceSetupState?.readiness?.entitlementActive ||
-    voiceSetupState?.agent?.exists ||
-    voiceAddon ||
-    voiceEntitlement ||
-    hasUsageActivity(
-      voiceSnapshot,
-      voiceUsage?.includedMinutes,
-      voiceUsage?.usedMinutes,
-    ),
-  );
-
   const showServiceWarning =
     isServiceIssue(voiceSetupStateError) ||
     isServiceIssue(agentError) ||
@@ -715,12 +656,6 @@ export function VoiceAgentPage() {
     getLocalVoiceEnvWarning(retellRuntimeError) ??
     getLocalVoiceEnvWarning(retellLlmError) ??
     getLocalVoiceEnvWarning(retellVoicesError);
-
-  const mode = hasDegradedState
-    ? "degraded"
-    : hasManagedState || retellConnected
-      ? "managed"
-      : "coming-soon";
 
   // Setup-state is sufficient for initial page render — don't block on agent query
   const isLoading = addonsLoading || voiceSetupStateLoading;
@@ -858,58 +793,32 @@ export function VoiceAgentPage() {
     createVoiceAgent.mutate({ templateKey: "default_sales" });
   };
 
-  // ── Auto-navigation from setup-state ──
-  // If the user lands on "setup" but the agent isn't created yet, redirect to create.
-  useEffect(() => {
-    if (activeTab === "setup" && !canOpenSetup) {
-      setActiveTab("create");
+  const tabs = useMemo(() => {
+    const result: {
+      id: VoiceTabId;
+      label: string;
+      icon: ElementType;
+      locked?: boolean;
+    }[] = [
+      { id: "subscription", label: "Subscription", icon: CreditCard },
+      {
+        id: "setup",
+        label: "Setup",
+        icon: Settings2,
+        locked: !canOpenSetup,
+      },
+      {
+        id: "stats",
+        label: "Stats",
+        icon: Activity,
+        locked: !voiceAgentCreated,
+      },
+    ];
+    if (isSuperAdmin) {
+      result.push({ id: "admin", label: "Admin", icon: Wrench });
     }
-  }, [activeTab, canOpenSetup]);
-
-  // If the agent is created and the user is on the "create" tab, auto-advance
-  // to the appropriate setup tab based on the backend's nextAction.key.
-  useEffect(() => {
-    if (activeTab !== "create") return;
-    if (!canOpenSetup) return;
-
-    // Agent exists — the create flow is done. Advance to setup.
-    if (
-      voiceAgentCreated ||
-      SETUP_REDIRECT_ACTION_KEYS.has(voiceNextActionKey)
-    ) {
-      setActiveSetupTab(getSetupTabForNextAction(voiceNextActionKey));
-      setActiveTab("setup");
-    }
-  }, [activeTab, canOpenSetup, voiceAgentCreated, voiceNextActionKey]);
-
-  // Once the agent is created, the create flow is done — hide the tab.
-  // Before creation, setup is disabled and create is the entry point.
-  const tabs = useMemo(
-    () =>
-      [
-        { id: "overview", label: "Overview", icon: Sparkles },
-        // Only show "Create Agent" when the agent doesn't exist yet
-        ...(!voiceAgentCreated
-          ? [{ id: "create", label: "Create Agent", icon: ShieldCheck }]
-          : []),
-        {
-          id: "setup",
-          label: "Setup",
-          icon: Settings2,
-          disabled: !canOpenSetup,
-        },
-        { id: "stats", label: "Stats", icon: Activity },
-        ...(isSuperAdmin
-          ? [{ id: "admin", label: "Admin", icon: Wrench }]
-          : []),
-      ] as {
-        id: VoiceTabId;
-        label: string;
-        icon: ElementType;
-        disabled?: boolean;
-      }[],
-    [canOpenSetup, isSuperAdmin, voiceAgentCreated],
-  );
+    return result;
+  }, [canOpenSetup, isSuperAdmin, voiceAgentCreated]);
 
   const landingPrimaryActionHref = BILLING_NEXT_ACTION_KEYS.has(
     voiceNextActionKey,
@@ -917,9 +826,16 @@ export function VoiceAgentPage() {
     ? "/billing"
     : undefined;
   const landingPrimaryActionLabel = (() => {
+    if (
+      INLINE_ACTIVATION_KEYS.has(voiceNextActionKey) &&
+      startVoiceTrial.isPending
+    ) {
+      return "Activating...";
+    }
     switch (voiceNextActionKey) {
       case "activate_trial":
-        return "Start Voice Trial";
+      case "activate_voice":
+        return "Start Free Trial";
       case "resolve_billing":
         return "Resolve Billing";
       case "resolve_suspension":
@@ -927,8 +843,7 @@ export function VoiceAgentPage() {
       case "replenish_minutes":
         return "Add Minutes";
       case "reactivate_voice":
-      case "activate_voice":
-        return "Activate Voice";
+        return "Reactivate Voice";
       case "connect_close":
         return "Connect Close CRM";
       case "create_agent":
@@ -950,23 +865,21 @@ export function VoiceAgentPage() {
   const landingPrimaryActionDisabled =
     voiceNextActionKey === "wait_for_provisioning"
       ? voiceSetupStateRefetching || entitlementRefetching || usageRefetching
-      : false;
+      : INLINE_ACTIVATION_KEYS.has(voiceNextActionKey)
+        ? startVoiceTrial.isPending
+        : false;
   const handleLandingPrimaryAction = () => {
     // Billing actions navigate via href — no tab switch needed
     if (BILLING_NEXT_ACTION_KEYS.has(voiceNextActionKey)) return;
 
-    if (voiceNextActionKey === "wait_for_provisioning") {
-      handleRefresh();
+    // Inline activation — call trial mutation directly
+    if (INLINE_ACTIVATION_KEYS.has(voiceNextActionKey)) {
+      startVoiceTrial.mutate();
       return;
     }
 
-    // Pre-create actions go to the create tab (only shown when agent doesn't exist)
-    if (
-      !voiceAgentCreated &&
-      (voiceNextActionKey === "connect_close" ||
-        voiceNextActionKey === "create_agent")
-    ) {
-      setActiveTab("create");
+    if (voiceNextActionKey === "wait_for_provisioning") {
+      handleRefresh();
       return;
     }
 
@@ -1030,34 +943,36 @@ export function VoiceAgentPage() {
           <button
             key={tab.id}
             onClick={() => {
-              if (!tab.disabled) {
-                setActiveTab(tab.id);
-              }
+              if (!tab.locked) setActiveTab(tab.id);
             }}
-            disabled={tab.disabled}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded px-3 py-1.5 text-[11px] font-medium transition-all ${
-              activeTab === tab.id
-                ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-zinc-100"
-                : tab.disabled
-                  ? "cursor-not-allowed text-zinc-400 dark:text-zinc-600"
-                  : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
-            }`}
+            className={cn(
+              "flex flex-1 items-center justify-center gap-1.5 rounded px-3 py-1.5 text-[11px] font-medium transition-all",
+              tab.locked
+                ? "cursor-not-allowed text-zinc-300 dark:text-zinc-600"
+                : activeTab === tab.id
+                  ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-zinc-100"
+                  : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300",
+            )}
+            title={tab.locked ? "Create voice agent first" : undefined}
           >
-            <tab.icon className="h-3 w-3" />
+            {tab.locked ? (
+              <Lock className="h-3 w-3" />
+            ) : (
+              <tab.icon className="h-3 w-3" />
+            )}
             <span>{tab.label}</span>
           </button>
         ))}
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {activeTab === "overview" && (
+        {activeTab === "subscription" && (
           <div className="space-y-3">
             <VoiceAgentLanding
-              mode={mode}
-              chatBotActive={Boolean(chatBotAddon)}
-              voiceAddonActive={Boolean(voiceAddon)}
+              voiceAccessActive={voiceAccessActive}
               launchPriceLabel={launchPriceLabel}
               includedMinutes={VOICE_LAUNCH_INCLUDED_MINUTES}
+              trialIncludedMinutes={VOICE_LAUNCH_INCLUDED_MINUTES_TRIAL}
               showServiceWarning={hasDegradedState}
               localDevWarning={localVoiceEnvWarning}
               isRefreshing={
@@ -1074,196 +989,87 @@ export function VoiceAgentPage() {
               completedSteps={completedSteps}
               nextStepTitle={nextStep.title}
               nextStepDescription={nextStep.description}
+              closeConnected={closeConnected}
+              voiceAgentCreated={voiceAgentCreated}
+              voiceAgentPublished={voiceAgentPublished}
+              voiceAgentProvisioning={voiceAgentProvisioning}
+              onNavigateToSetup={() => {
+                setActiveSetupTab(getSetupTabForNextAction(voiceNextActionKey));
+                setActiveTab("setup");
+              }}
+              canOpenSetup={canOpenSetup}
             />
 
-            <div className="grid grid-cols-1 gap-3 xl:grid-cols-4">
-              <OverviewCard
-                title="Voice Access"
-                value={
-                  voiceAccessActive
-                    ? "Active"
-                    : voiceAgentProvisioning
-                      ? "Provisioning"
-                      : "Not active"
-                }
-                detail={
-                  voiceAccessActive
-                    ? "Voice entitlement is active for this workspace."
-                    : "Voice access must be activated before a managed voice agent can be created."
-                }
-              />
-              <OverviewCard
-                icon={
-                  <CloseCrmLogo className="h-4 w-auto text-zinc-900 dark:text-zinc-100" />
-                }
-                title="Close CRM"
-                value={closeConnected ? "Connected" : "Required"}
-                detail={
-                  closeConnected
-                    ? "Inbound calls route through your Close CRM number and lead records live in Close."
-                    : voiceAgentCreated
-                      ? "Connect Close CRM in the Setup tab to enable inbound call routing."
-                      : "Connect Close CRM in the Create Agent tab before creating the voice agent."
-                }
-              />
-              <OverviewCard
-                title="Voice Agent"
-                value={
-                  voiceAgentPublished
-                    ? "Published"
-                    : voiceAgentCreated
-                      ? "Draft"
-                      : voiceAgentProvisioning
-                        ? "Creating"
-                        : "Not created"
-                }
-                detail={
-                  voiceAgentPublished
-                    ? "The voice agent is live. Edit voice, prompt, or call flow in Setup and republish."
-                    : voiceAgentCreated
-                      ? "The agent is provisioned. Configure voice, prompt, and call flow in Setup, then publish."
-                      : "Create the voice agent to unlock voice, prompt, and publish controls."
-                }
-              />
-              <OverviewCard
-                title="Next Step"
-                value={nextStep.title}
-                detail={nextStep.description}
-              />
-            </div>
-          </div>
-        )}
+            {/* Create flow — shown when voice active but agent not yet created */}
+            {voiceAccessActive && !voiceAgentCreated && (
+              <>
+                <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                    <div className="max-w-3xl">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+                        Connect Close CRM
+                      </p>
+                      <p className="mt-1 text-[12px] leading-6 text-zinc-600 dark:text-zinc-400">
+                        The voice agent uses Close CRM to identify the lead,
+                        decide whether AI is allowed to answer, and save call
+                        results back to the lead record.
+                      </p>
+                    </div>
 
-        {activeTab === "create" && (
-          <div className="space-y-3">
-            {!voiceAccessActive && (
-              <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="max-w-3xl">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
-                      Activate Voice Access
-                    </p>
-                    <p className="mt-1 text-[12px] leading-6 text-zinc-600 dark:text-zinc-400">
-                      Start a free voice trial with{" "}
-                      {VOICE_LAUNCH_INCLUDED_MINUTES_TRIAL} minutes included. No
-                      credit card required. You can upgrade to the full plan
-                      ($149/mo, 500 minutes) at any time.
-                    </p>
+                    <Badge
+                      className={
+                        closeConnected
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                          : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                      }
+                    >
+                      {closeConnected ? "Connected" : "Required"}
+                    </Badge>
                   </div>
 
-                  <Badge className="bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                    Not Activated
-                  </Badge>
-                </div>
+                  <div className="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-[1.1fr_0.9fr]">
+                    <ConnectionCard
+                      title="Close CRM"
+                      icon={
+                        <CloseCrmLogo className="h-4 w-auto text-zinc-900 dark:text-zinc-100" />
+                      }
+                      connected={closeConnected}
+                      statusLabel={
+                        voiceSetupState?.connections?.close?.orgName
+                          ? `Connected to ${voiceSetupState.connections.close.orgName}`
+                          : agent?.connections?.close?.orgName
+                            ? `Connected to ${agent.connections.close.orgName}`
+                            : closeConnected
+                              ? "Connected"
+                              : undefined
+                      }
+                      onConnect={(apiKey) => connectClose.mutate(apiKey)}
+                      connectLoading={connectClose.isPending}
+                      apiKeyPlaceholder="Close API key (api_...)"
+                      onDisconnect={
+                        closeConnected
+                          ? () => disconnectClose.mutate()
+                          : undefined
+                      }
+                      disconnectLoading={disconnectClose.isPending}
+                    />
 
-                <div className="mt-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950/40">
-                    <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
-                      Trial includes {VOICE_LAUNCH_INCLUDED_MINUTES_TRIAL}{" "}
-                      minutes with a hard cap — no overage charges.
-                    </p>
-                  </div>
-
-                  <Button
-                    onClick={() => startVoiceTrial.mutate()}
-                    disabled={startVoiceTrial.isPending}
-                  >
-                    {startVoiceTrial.isPending ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Activating
-                      </>
-                    ) : (
-                      "Start Free Trial"
-                    )}
-                  </Button>
-                </div>
-
-                {startVoiceTrial.error && (
-                  <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-[11px] text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
-                    {startVoiceTrial.error.message ||
-                      "Failed to activate voice trial."}
-                  </div>
-                )}
-              </div>
-            )}
-
-            <>
-              <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="max-w-3xl">
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
-                      Step 1. Connect Close CRM
-                    </p>
-                    <p className="mt-1 text-[12px] leading-6 text-zinc-600 dark:text-zinc-400">
-                      The voice agent uses Close CRM to identify the lead,
-                      decide whether AI is allowed to answer, and save call
-                      results back to the lead record.
-                    </p>
-                  </div>
-
-                  <Badge
-                    className={
-                      closeConnected
-                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-                        : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-                    }
-                  >
-                    {closeConnected ? "Connected" : "Required"}
-                  </Badge>
-                </div>
-
-                <div className="mt-4 grid grid-cols-1 gap-3 xl:grid-cols-[1.1fr_0.9fr]">
-                  <ConnectionCard
-                    title="Close CRM"
-                    icon={
-                      <CloseCrmLogo className="h-4 w-auto text-zinc-900 dark:text-zinc-100" />
-                    }
-                    connected={closeConnected}
-                    statusLabel={
-                      voiceSetupState?.connections?.close?.orgName
-                        ? `Connected to ${voiceSetupState.connections.close.orgName}`
-                        : agent?.connections?.close?.orgName
-                          ? `Connected to ${agent.connections.close.orgName}`
-                          : closeConnected
-                            ? "Connected"
-                            : undefined
-                    }
-                    onConnect={(apiKey) => connectClose.mutate(apiKey)}
-                    connectLoading={connectClose.isPending}
-                    apiKeyPlaceholder="Close API key (api_...)"
-                    onDisconnect={
-                      closeConnected
-                        ? () => disconnectClose.mutate()
-                        : undefined
-                    }
-                    disconnectLoading={disconnectClose.isPending}
-                  />
-
-                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
-                    <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                      What this step does
-                    </p>
-                    <p className="mt-2 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
-                      If you already use AI Chat Bot, this connection may
-                      already exist already. If not, create or copy a Close API
-                      key from{" "}
-                      <span className="font-medium">Close Settings</span>
-                      {" > "}
-                      <span className="font-medium">API Keys</span>, then
-                      connect it here.
-                    </p>
-                    <p className="mt-3 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
-                      Leads keep calling the same Close number they already
-                      know. The AI Voice Agent uses that Close connection to
-                      look up the lead and decide whether AI is allowed to
-                      answer.
-                    </p>
+                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
+                      <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                        What this step does
+                      </p>
+                      <p className="mt-2 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
+                        If you already use AI Chat Bot, this connection may
+                        already exist. If not, create or copy a Close API key
+                        from <span className="font-medium">Close Settings</span>
+                        {" > "}
+                        <span className="font-medium">API Keys</span>, then
+                        connect it here.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="space-y-3">
                 <CreateVoiceAgentCard
                   title={createCardTitle}
                   description={createCardDescription}
@@ -1276,44 +1082,8 @@ export function VoiceAgentPage() {
                   actionUnavailable={createActionUnavailable}
                   isSuperAdmin={isSuperAdmin}
                 />
-
-                <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-                  <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-                    <div className="max-w-3xl">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
-                        Step 3. Continue to Setup
-                      </p>
-                      <p className="mt-1 text-[12px] leading-6 text-zinc-600 dark:text-zinc-400">
-                        Setup is where users choose the voice, write the
-                        greeting, add instructions, configure call flow, review
-                        advanced options, and publish the agent live.
-                      </p>
-                    </div>
-
-                    <Button
-                      onClick={() => {
-                        setActiveSetupTab("voice");
-                        setActiveTab("setup");
-                      }}
-                      disabled={!canOpenSetup}
-                    >
-                      Continue to Setup
-                    </Button>
-                  </div>
-
-                  <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
-                    <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                      What unlocks next
-                    </p>
-                    <p className="mt-2 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
-                      Voice selection, greeting, prompt, call handling, advanced
-                      options, testing, and publish controls all live in the
-                      Setup tab after the voice agent exists.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </>
+              </>
+            )}
           </div>
         )}
 
@@ -1325,9 +1095,9 @@ export function VoiceAgentPage() {
                   Create your voice agent first
                 </p>
                 <p className="mt-2 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
-                  Move through the Create Agent tab in order: connect Close CRM,
-                  create the voice agent, then come back here for voice,
-                  instructions, call flow, advanced controls, and launch.
+                  Go to the Subscription tab to connect Close CRM and create the
+                  voice agent, then come back here for voice, instructions, call
+                  flow, advanced controls, and launch.
                 </p>
               </div>
             ) : voiceAgentProvisioning && !retellConnected ? (
@@ -1339,7 +1109,8 @@ export function VoiceAgentPage() {
                   <p className="mt-2 text-[11px] leading-5 text-amber-800 dark:text-amber-200">
                     The Standard HQ is finishing the managed workspace and
                     loading the live draft. You can stay on this page while it
-                    finishes, or return to Create Agent and refresh in a moment.
+                    finishes, or return to the Subscription tab and refresh in a
+                    moment.
                   </p>
                 </div>
               </div>
