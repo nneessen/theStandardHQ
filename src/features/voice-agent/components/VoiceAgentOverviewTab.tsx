@@ -5,11 +5,6 @@
 import { Link } from "@tanstack/react-router";
 import {
   PhoneCall,
-  Calendar,
-  CheckCircle,
-  Moon,
-  FileText,
-  CalendarCheck,
   ArrowRight,
   Settings2,
   BarChart3,
@@ -231,126 +226,28 @@ export function VoiceAgentOverviewTab({
         </div>
       )}
 
-      {/* ── How It Works ─────────────────────────────────────────── */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-            How It Works
-          </span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-
-        <div className="flex items-start gap-2">
-          {[
-            {
-              icon: Calendar,
-              title: "Lead Misses Appointment",
-              desc: "A lead no-shows or cancels their scheduled appointment",
-            },
-            {
-              icon: PhoneCall,
-              title: "AI Calls The Lead",
-              desc: "Your voice agent automatically calls within minutes",
-            },
-            {
-              icon: Calendar,
-              title: "Appointment Rescheduled",
-              desc: "The AI books a new appointment on your calendar",
-            },
-            {
-              icon: CheckCircle,
-              title: "CRM Updated",
-              desc: "Call results and new appointment saved to Close CRM",
-            },
-          ].map((step, i) => (
-            <div key={i} className="flex-1 flex items-start gap-2">
-              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-muted text-[9px] font-bold text-muted-foreground flex-shrink-0 mt-0.5">
-                {i + 1}
-              </span>
-              <div>
-                <div className="text-[11px] font-medium text-foreground">
-                  {step.title}
-                </div>
-                <div className="text-[10px] text-muted-foreground leading-snug">
-                  {step.desc}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Use Cases ────────────────────────────────────────────── */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-            What Your Voice Agent Can Do
-          </span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2">
-          {[
-            {
-              icon: Calendar,
-              title: "Missed Appointment Follow-Up",
-              desc: "Auto-calls leads who no-show their appointments",
-            },
-            {
-              icon: Moon,
-              title: "After-Hours Inbound",
-              desc: "Answers calls after hours, qualifies, books callbacks",
-            },
-            {
-              icon: FileText,
-              title: "Quote Follow-Up",
-              desc: "Follows up on sent quotes to keep deals moving",
-            },
-            {
-              icon: CalendarCheck,
-              title: "Rescheduling & Confirmation",
-              desc: "Handles date changes and appointment confirmations",
-            },
-          ].map((uc) => (
-            <div
-              key={uc.title}
-              className="flex items-start gap-2.5 p-2 rounded-lg border border-border/50 bg-muted/30"
-            >
-              <div
-                className="flex items-center justify-center w-7 h-7 rounded-md flex-shrink-0"
-                style={{ backgroundColor: "rgba(99,102,241,0.12)" }}
-              >
-                <uc.icon className="h-3.5 w-3.5" style={{ color: "#6366f1" }} />
-              </div>
-              <div className="pt-0.5">
-                <div className="text-[11px] font-medium text-foreground">
-                  {uc.title}
-                </div>
-                <div className="text-[10px] text-muted-foreground leading-snug">
-                  {uc.desc}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Voice Providers (non-subscribers) ────────────────────── */}
-      {!voiceAccessActive && (
-        <div>
+      {/* ── Setup Progress (subscribers, setup incomplete) ─────── */}
+      {voiceAccessActive && !setupComplete && (
+        <div className="rounded-lg border border-border bg-background p-3">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-              Voice Providers
+              Setup Progress
             </span>
-            <div className="flex-1 h-px bg-border" />
+            <span className="text-[9px] text-muted-foreground">
+              {completedSteps}/{setupSteps.length} complete
+            </span>
           </div>
-          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-            Choose from{" "}
-            {["ElevenLabs", "Cartesia", "Minimax", "Fish Audio"].map((p) => (
-              <Badge key={p} variant="outline" className="text-[9px] h-4">
-                {p}
-              </Badge>
+          <div className="flex gap-1 mb-2">
+            {setupSteps.map((_, i) => (
+              <div
+                key={i}
+                className={`h-1 flex-1 rounded-full ${i < completedSteps ? "bg-emerald-500" : "bg-muted"}`}
+              />
             ))}
+          </div>
+          <div className="text-[10px] text-muted-foreground">
+            Next:{" "}
+            <span className="font-medium text-foreground">{nextStepTitle}</span>
           </div>
         </div>
       )}

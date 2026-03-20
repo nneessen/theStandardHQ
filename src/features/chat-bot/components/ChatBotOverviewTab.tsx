@@ -2,24 +2,13 @@
 // Overview tab — compact metrics + feature showcase, muted zinc design
 
 import { useState } from "react";
-import {
-  Bot,
-  MessageSquare,
-  Calendar,
-  Clock,
-  Globe,
-  ShieldCheck,
-  Zap,
-  RefreshCw,
-  ArrowRight,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { type ChatBotAgent, useChatBotUsage } from "../hooks/useChatBot";
 import {
   useCollectiveAnalytics,
   useChatBotAnalytics,
 } from "../hooks/useChatBotAnalytics";
-import { ConversationDemo } from "./ConversationDemo";
 
 // ─── Props ──────────────────────────────────────────────────────
 
@@ -104,7 +93,7 @@ export function ChatBotOverviewTab({
     },
     {
       label: "Booking Rate",
-      value: `${(collective?.bookingRate ?? 0).toFixed(1)}%`,
+      value: `${((collective?.bookingRate ?? 0) * 100).toFixed(1)}%`,
     },
   ];
 
@@ -193,7 +182,8 @@ export function ChatBotOverviewTab({
                 Booking Rate
               </div>
               <div className="text-sm font-bold text-foreground">
-                {(analytics?.appointments?.bookingRate ?? 0).toFixed(1)}%
+                {((analytics?.appointments?.bookingRate ?? 0) * 100).toFixed(1)}
+                %
               </div>
             </div>
             <div className="flex-1 pl-3">
@@ -233,136 +223,6 @@ export function ChatBotOverviewTab({
           </div>
         </div>
       )}
-
-      {/* ── How It Works ─────────────────────────────────────────── */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-            How It Works
-          </span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-
-        <div className="flex items-start gap-2">
-          {[
-            {
-              icon: MessageSquare,
-              title: "Lead Texts In",
-              desc: "A new lead sends an SMS to your Close CRM phone number",
-            },
-            {
-              icon: Bot,
-              title: "AI Responds",
-              desc: "The bot replies within seconds with a natural conversation",
-            },
-            {
-              icon: Calendar,
-              title: "Appointment Booked",
-              desc: "An event is created on your calendar and both parties notified",
-            },
-          ].map((step, i) => (
-            <div key={i} className="flex-1 flex items-start gap-2">
-              <span className="flex items-center justify-center w-5 h-5 rounded-full bg-muted text-[9px] font-bold text-muted-foreground flex-shrink-0 mt-0.5">
-                {i + 1}
-              </span>
-              <div>
-                <div className="text-[11px] font-medium text-foreground">
-                  {step.title}
-                </div>
-                <div className="text-[10px] text-muted-foreground leading-snug">
-                  {step.desc}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── See It In Action ─────────────────────────────────────── */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-            See It In Action
-          </span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-        <ConversationDemo />
-      </div>
-
-      {/* ── What You Get ─────────────────────────────────────────── */}
-      <div>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-            What You Get
-          </span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-2">
-          {[
-            {
-              icon: Clock,
-              title: "Instant Response",
-              desc: "Leads get a reply within seconds during business hours",
-            },
-            {
-              icon: Calendar,
-              title: "Smart Scheduling",
-              desc: "Checks real calendar availability and offers times",
-            },
-            {
-              icon: Globe,
-              title: "Timezone Aware",
-              desc: "Adjusts appointment offers to the lead's timezone",
-            },
-            {
-              icon: ShieldCheck,
-              title: "Compliant",
-              desc: "Never quotes prices or policy details over text",
-            },
-            {
-              icon: Zap,
-              title: "Proactive Outreach",
-              desc: "Contacts new leads the moment they hit your CRM",
-            },
-            {
-              icon: MessageSquare,
-              title: "Objection Handling",
-              desc: "Handles pricing questions and common pushback",
-            },
-            {
-              icon: RefreshCw,
-              title: "Follow-Up",
-              desc: "Re-engages cold leads with personalized messages",
-            },
-            {
-              icon: Bot,
-              title: "Natural Conversations",
-              desc: "Real multi-message conversations that feel human",
-            },
-          ].map((f) => (
-            <div
-              key={f.title}
-              className="flex items-start gap-2.5 p-2 rounded-lg border border-border/50 bg-muted/30"
-            >
-              <div
-                className="flex items-center justify-center w-7 h-7 rounded-md flex-shrink-0"
-                style={{ backgroundColor: "rgba(59,130,246,0.12)" }}
-              >
-                <f.icon className="h-3.5 w-3.5" style={{ color: "#3b82f6" }} />
-              </div>
-              <div className="pt-0.5">
-                <div className="text-[11px] font-medium text-foreground">
-                  {f.title}
-                </div>
-                <div className="text-[10px] text-muted-foreground leading-snug">
-                  {f.desc}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
 
       {/* ── CTA Footer (non-subscribers) ────────────────────────── */}
       {!hasAccess && (

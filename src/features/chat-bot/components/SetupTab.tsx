@@ -514,26 +514,67 @@ export function SetupTab() {
                 <SectionCard
                   icon={<Bell className="h-4 w-4" />}
                   title="Appointment Reminders"
-                  description="Automatically send a reminder SMS 24 hours before each appointment."
+                  description="Send automated SMS reminders before each scheduled appointment."
                 >
-                  <div className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">
-                    <div>
-                      <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
-                        24-hour reminder
-                      </p>
-                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                        Sends one reminder before the scheduled appointment.
-                      </p>
+                  <div className="space-y-0 divide-y divide-zinc-200 rounded-lg border border-zinc-200 bg-zinc-50 dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-950/40">
+                    <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-3.5 w-3.5 text-zinc-400" />
+                        <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                          24-hour reminder
+                        </p>
+                      </div>
+                      <Switch
+                        checked={agent.remindersEnabled ?? false}
+                        onCheckedChange={(checked) =>
+                          updateConfig.mutate({ remindersEnabled: checked })
+                        }
+                        disabled={updateConfig.isPending}
+                        variant="success"
+                      />
                     </div>
-                    <Switch
-                      checked={agent.remindersEnabled ?? false}
-                      onCheckedChange={(checked) =>
-                        updateConfig.mutate({ remindersEnabled: checked })
-                      }
-                      disabled={updateConfig.isPending}
-                      variant="success"
-                    />
+                    <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-3.5 w-3.5 text-zinc-400" />
+                        <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                          1-hour reminder
+                        </p>
+                      </div>
+                      <span
+                        className={cn(
+                          "text-[10px] font-medium",
+                          agent.remindersEnabled
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-zinc-400 dark:text-zinc-500",
+                        )}
+                      >
+                        {agent.remindersEnabled ? "Enabled" : "Off"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-3 px-3 py-2.5">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-3.5 w-3.5 text-zinc-400" />
+                        <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                          15-minute reminder
+                        </p>
+                      </div>
+                      <span
+                        className={cn(
+                          "text-[10px] font-medium",
+                          agent.remindersEnabled
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-zinc-400 dark:text-zinc-500",
+                        )}
+                      >
+                        {agent.remindersEnabled ? "Enabled" : "Off"}
+                      </span>
+                    </div>
                   </div>
+                  <p className="mt-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+                    The toggle controls all three reminders. Each is sent
+                    automatically at the specified interval before the
+                    appointment.
+                  </p>
                 </SectionCard>
               ) : null}
 

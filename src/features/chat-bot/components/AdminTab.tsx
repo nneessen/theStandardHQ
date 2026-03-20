@@ -335,7 +335,7 @@ function AgentRow({
     <tr className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors">
       <td className="px-2 py-1.5">
         <div className="font-medium text-zinc-900 dark:text-zinc-100">
-          {agent.userName || "—"}
+          {agent.userName || "\u2014"}
         </div>
         <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate max-w-[200px]">
           {agent.userEmail || agent.user_id}
@@ -345,7 +345,7 @@ function AgentRow({
         <StatusBadge status={agent.provisioning_status} />
       </td>
       <td className="px-2 py-1.5 text-zinc-600 dark:text-zinc-400">
-        {agent.tier_id || "—"}
+        {agent.tier_id || "\u2014"}
       </td>
       <td className="px-2 py-1.5 text-center">
         {agent.billing_exempt ? (
@@ -353,7 +353,7 @@ function AgentRow({
             Yes
           </Badge>
         ) : (
-          <span className="text-zinc-400">—</span>
+          <span className="text-zinc-400">{"\u2014"}</span>
         )}
       </td>
       <td className="px-2 py-1.5 text-center">
@@ -601,9 +601,11 @@ function SmsConfigPanel({
           fieldKey="location"
           updateConfig={updateConfig}
         />
-        <FieldDisplay
+        <ToggleField
           label="Billing Exempt"
-          value={agent.billingExempt ? "Yes" : "No"}
+          value={agent.billingExempt ?? false}
+          fieldKey="billingExempt"
+          updateConfig={updateConfig}
         />
       </div>
 
@@ -763,7 +765,7 @@ function EditableField({
         {label}
       </div>
       <div className="text-zinc-700 dark:text-zinc-300 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-        {value || "—"}
+        {value || "\u2014"}
         <span className="invisible group-hover:visible text-[9px] text-blue-400 ml-1">
           edit
         </span>
@@ -969,7 +971,7 @@ function FieldDisplay({
         {label}
       </div>
       <div className="text-zinc-700 dark:text-zinc-300 truncate">
-        {value ?? "—"}
+        {value ?? "\u2014"}
       </div>
     </div>
   );
@@ -1275,6 +1277,7 @@ function TeamAccessPanel({
   agentListItem: AdminAgentListItem;
   override?: AdminTeamOverride;
 }) {
+  const updateConfig = useAdminUpdateConfig(userId);
   const grantAccess = useAdminGrantTeamAccess();
   const revokeAccess = useAdminRevokeTeamAccess();
   const [reason, setReason] = useState("");
@@ -1283,9 +1286,11 @@ function TeamAccessPanel({
     <div className="space-y-3 text-[11px]">
       {/* Current Status */}
       <div className="grid grid-cols-2 gap-2">
-        <FieldDisplay
+        <ToggleField
           label="Billing Exempt"
-          value={agentListItem.billing_exempt ? "Yes" : "No"}
+          value={agentListItem.billing_exempt ?? false}
+          fieldKey="billingExempt"
+          updateConfig={updateConfig}
         />
         <FieldDisplay label="Tier ID" value={agentListItem.tier_id || "None"} />
       </div>

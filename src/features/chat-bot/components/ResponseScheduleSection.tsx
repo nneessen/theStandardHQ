@@ -138,7 +138,7 @@ export function ResponseScheduleSection() {
         </div>
       </div>
 
-      <div className="hidden border-b border-zinc-100 px-4 py-2 text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:text-zinc-400 xl:grid xl:grid-cols-[110px_110px_240px_130px_220px] xl:gap-3">
+      <div className="hidden border-b border-zinc-100 px-4 py-2 text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:text-zinc-400 xl:grid xl:grid-cols-[100px_80px_1fr_100px_1fr] xl:gap-3">
         <span>Day</span>
         <span>Responses</span>
         <span>Reply Window</span>
@@ -156,7 +156,7 @@ export function ResponseScheduleSection() {
               key={day.day}
               className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 dark:border-zinc-800 dark:bg-zinc-950/40"
             >
-              <div className="grid gap-3 xl:grid-cols-[110px_110px_240px_130px_220px] xl:items-center">
+              <div className="grid gap-3 xl:grid-cols-[100px_80px_1fr_100px_1fr] xl:items-center">
                 <div className="flex items-center justify-between gap-3 xl:block">
                   <div>
                     <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
@@ -291,7 +291,7 @@ export function ResponseScheduleSection() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-8 shrink-0 text-[10px]"
+                      className="h-8 shrink-0 px-2 text-[10px]"
                       onClick={() =>
                         updateDay(day.day, (current) => ({
                           ...current,
@@ -305,7 +305,7 @@ export function ResponseScheduleSection() {
                         !day.sameDayBookingEnabled || updateConfig.isPending
                       }
                     >
-                      {usesResponseEndForCutoff ? "Use Custom" : "Use End"}
+                      {usesResponseEndForCutoff ? "Custom" : "End"}
                     </Button>
                   </div>
                   <p className="text-[10px] text-zinc-500 dark:text-zinc-400">

@@ -3,16 +3,7 @@
 // No PII, no agent names, no client data — pure aggregate metrics.
 
 import { useState } from "react";
-import {
-  Bot,
-  MessageSquare,
-  Calendar,
-  TrendingUp,
-  Loader2,
-  AlertTriangle,
-  Sparkles,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { AlertTriangle } from "lucide-react";
 import { useCollectiveAnalytics } from "../hooks/useChatBotAnalytics";
 
 function formatCurrency(amount: number): string {
@@ -47,9 +38,19 @@ export function AllBotsTab({
 
   if (isLoading) {
     return (
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+      <div className="rounded-lg border border-border bg-background p-3">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">
+            All Bots · 30 days
+          </span>
+        </div>
+        <div className="flex items-center divide-x divide-border">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="flex-1 px-3 first:pl-0 last:pr-0">
+              <div className="h-2.5 w-12 bg-muted rounded animate-pulse mb-1" />
+              <div className="h-4 w-8 bg-muted rounded animate-pulse" />
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -57,172 +58,153 @@ export function AllBotsTab({
 
   if (error || !data) {
     return (
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-        <div className="py-8 text-center">
-          <AlertTriangle className="h-6 w-6 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+      <div className="rounded-lg border border-border bg-background p-3">
+        <div className="flex items-center gap-2 mb-2">
+          <AlertTriangle className="h-3 w-3 text-muted-foreground" />
+          <span className="text-[9px] text-muted-foreground">
             Analytics temporarily unavailable
-          </p>
+          </span>
         </div>
       </div>
     );
   }
 
   const metrics = [
+    { label: "Active Bots", value: String(data.activeBots) },
     {
-      label: "Active Bots",
-      value: data.activeBots,
-      icon: Bot,
-      color: "text-blue-600 dark:text-blue-400",
-      bg: "bg-blue-50 dark:bg-blue-950",
-    },
-    {
-      label: "Total Conversations",
+      label: "Conversations",
       value: data.totalConversations.toLocaleString(),
-      icon: MessageSquare,
-      color: "text-emerald-600 dark:text-emerald-400",
-      bg: "bg-emerald-50 dark:bg-emerald-950",
     },
     {
-      label: "Appointments Booked",
+      label: "Appointments",
       value: data.totalAppointments.toLocaleString(),
-      icon: Calendar,
-      color: "text-violet-600 dark:text-violet-400",
-      bg: "bg-violet-50 dark:bg-violet-950",
+    },
+    { label: "Policies", value: data.totalAttributions.toLocaleString() },
+    {
+      label: "Booking Rate",
+      value: formatPercent(data.bookingRate * 100),
     },
     {
-      label: "Policies Attributed",
-      value: data.totalAttributions.toLocaleString(),
-      icon: TrendingUp,
-      color: "text-amber-600 dark:text-amber-400",
-      bg: "bg-amber-50 dark:bg-amber-950",
+      label: "Conversion Rate",
+      value: formatPercent(data.conversionRate),
+    },
+    { label: "Premium", value: formatCurrency(data.totalPremium) },
+    {
+      label: "Converted / Assisted",
+      value: `${data.botConverted} / ${data.botAssisted}`,
     },
   ];
 
   return (
     <div className="space-y-3">
-      {/* Hero Header */}
-      <div className="p-4 border border-zinc-200 dark:border-zinc-800 bg-gradient-to-br from-blue-50 via-white to-violet-50 dark:from-blue-950/30 dark:via-zinc-900 dark:to-violet-950/30 rounded-lg">
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            AI Chat Bot Performance
-          </h3>
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 ml-auto">
-            Last 30 days
+      {/* ── Metrics Strip ──────────────────────────────────────── */}
+      <div className="rounded-lg border border-border bg-background p-3">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">
+            All Bots · Last 30 days
+          </span>
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
           </span>
         </div>
 
-        {/* Metric Cards Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+        {/* Desktop: single horizontal row with dividers */}
+        <div className="hidden md:flex items-center divide-x divide-border">
           {metrics.map((m) => (
-            <div
-              key={m.label}
-              className="p-2.5 rounded-md bg-white/60 dark:bg-zinc-800/60 border border-zinc-100 dark:border-zinc-700/50"
-            >
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className={cn("p-1 rounded", m.bg)}>
-                  <m.icon className={cn("h-3 w-3", m.color)} />
-                </div>
-                <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                  {m.label}
-                </span>
-              </div>
-              <p className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+            <div key={m.label} className="flex-1 px-3 first:pl-0 last:pr-0">
+              <div className="text-[9px] text-muted-foreground">{m.label}</div>
+              <div className="text-sm font-bold text-foreground">{m.value}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile: 3-col compact grid */}
+        <div className="grid grid-cols-3 gap-x-3 gap-y-2 md:hidden">
+          {metrics.map((m) => (
+            <div key={m.label}>
+              <div className="text-[9px] text-muted-foreground">{m.label}</div>
+              <div className="text-[11px] font-bold text-foreground">
                 {m.value}
-              </p>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Conversion & Revenue Summary */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-        <StatCard
-          label="Booking Rate"
-          value={formatPercent(data.bookingRate)}
-          sublabel="Conversations → Appointments"
-        />
-        <StatCard
-          label="Conversion Rate"
-          value={formatPercent(data.conversionRate)}
-          sublabel="Conversations → Policies"
-        />
-        <StatCard
-          label="Total Premium"
-          value={formatCurrency(data.totalPremium)}
-          sublabel="Attributed annual premium"
-          highlight
-        />
-        <StatCard
-          label="Bot Converted"
-          value={`${data.botConverted}`}
-          sublabel={`${data.botAssisted} assisted`}
-        />
-      </div>
+      {/* ── Timeline (mini table) ──────────────────────────────── */}
+      {data.timeline.length > 0 && (
+        <div className="rounded-lg border border-border bg-background p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">
+              Daily Activity
+            </span>
+          </div>
 
-      {/* CTA for non-subscribers */}
-      {onNavigateToSubscription && (
-        <div className="p-3 border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/30 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
-                Start your AI Chat Bot
-              </p>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                Engage leads via SMS, book appointments, and close more sales
-                automatically.
-              </p>
-            </div>
-            <button
-              onClick={onNavigateToSubscription}
-              className="px-3 py-1.5 text-[11px] font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
-            >
-              Get Started
-            </button>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-[9px] text-muted-foreground font-medium pb-1 pr-3">
+                    Date
+                  </th>
+                  <th className="text-[9px] text-muted-foreground font-medium pb-1 pr-3 text-right">
+                    Conversations
+                  </th>
+                  <th className="text-[9px] text-muted-foreground font-medium pb-1 pr-3 text-right">
+                    Appointments
+                  </th>
+                  <th className="text-[9px] text-muted-foreground font-medium pb-1 text-right">
+                    Conversions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.timeline.slice(-7).map((row) => (
+                  <tr
+                    key={row.date}
+                    className="border-b border-border/50 last:border-0"
+                  >
+                    <td className="text-[10px] text-muted-foreground py-0.5 pr-3">
+                      {row.date}
+                    </td>
+                    <td className="text-[10px] font-medium text-foreground py-0.5 pr-3 text-right">
+                      {row.conversations}
+                    </td>
+                    <td className="text-[10px] font-medium text-foreground py-0.5 pr-3 text-right">
+                      {row.appointments}
+                    </td>
+                    <td className="text-[10px] font-medium text-foreground py-0.5 text-right">
+                      {row.conversions}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
-    </div>
-  );
-}
 
-function StatCard({
-  label,
-  value,
-  sublabel,
-  highlight,
-}: {
-  label: string;
-  value: string;
-  sublabel: string;
-  highlight?: boolean;
-}) {
-  return (
-    <div
-      className={cn(
-        "p-2.5 rounded-lg border",
-        highlight
-          ? "border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30"
-          : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900",
+      {/* ── CTA for non-subscribers ────────────────────────────── */}
+      {onNavigateToSubscription && (
+        <div className="rounded-lg border border-border bg-muted/30 p-3 flex items-center justify-between">
+          <div>
+            <p className="text-[11px] font-medium text-foreground">
+              Start your AI Chat Bot
+            </p>
+            <p className="text-[9px] text-muted-foreground mt-0.5">
+              Engage leads via SMS, book appointments, and close more sales
+              automatically.
+            </p>
+          </div>
+          <button
+            onClick={onNavigateToSubscription}
+            className="px-3 py-1.5 text-[10px] font-medium bg-primary hover:bg-primary/90 text-primary-foreground rounded-md transition-colors flex-shrink-0"
+          >
+            Get Started
+          </button>
+        </div>
       )}
-    >
-      <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-0.5">
-        {label}
-      </p>
-      <p
-        className={cn(
-          "text-sm font-bold",
-          highlight
-            ? "text-emerald-700 dark:text-emerald-400"
-            : "text-zinc-900 dark:text-zinc-100",
-        )}
-      >
-        {value}
-      </p>
-      <p className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-0.5">
-        {sublabel}
-      </p>
     </div>
   );
 }
