@@ -11,6 +11,7 @@ export {
   useChatBotVoiceEntitlement,
   useChatBotVoiceUsage,
   useChatBotCloseLeadStatuses,
+  useStartVoiceTrial,
   useCreateVoiceAgent,
   useConnectClose,
   useDisconnectClose,

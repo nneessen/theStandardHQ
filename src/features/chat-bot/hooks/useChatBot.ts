@@ -1035,6 +1035,26 @@ export function useUpdateBusinessHours() {
 
 // ─── Mutations ──────────────────────────────────────────────────
 
+export function useStartVoiceTrial() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      chatBotApi<{ success: boolean; trial: boolean }>("start_voice_trial"),
+    onSuccess: () => {
+      toast.success(
+        "Voice trial activated — you can now create your voice agent.",
+      );
+      // Invalidate addon queries so the page picks up the new addon row
+      void queryClient.invalidateQueries({ queryKey: ["subscriptions"] });
+      void queryClient.invalidateQueries({ queryKey: ["user-addons"] });
+      invalidateVoiceAgentQueries(queryClient);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to activate voice trial.");
+    },
+  });
+}
+
 export function useCreateVoiceAgent() {
   const queryClient = useQueryClient();
   return useMutation({

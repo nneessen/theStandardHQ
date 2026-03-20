@@ -14,6 +14,17 @@ import {
   parseRetellSearchParams,
   parseUpdateConfigParams,
 } from "../../../src/features/voice-agent/lib/voice-agent-contract.ts";
+import { createStandardChatBotVoiceClient } from "../_shared/standard-chat-bot-voice.ts";
+import {
+  DEFAULT_VOICE_FEATURES,
+  getUtcCalendarMonthCycle,
+  getVoiceTierConfig,
+} from "../../../src/services/subscription/voice-sync.ts";
+
+const PREMIUM_VOICE_ADDON_NAME = "premium_voice";
+const VOICE_TRIAL_INCLUDED_MINUTES = 15;
+const VOICE_TRIAL_HARD_LIMIT_MINUTES = 15;
+const VOICE_TRIAL_PLAN_CODE = "voice_trial";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -746,6 +757,148 @@ serve(async (req) => {
           safeParams,
         );
         return sendResult(res);
+      }
+
+      // ──────────────────────────────────────────────
+      // START VOICE TRIAL — app-managed, no Stripe
+      // ──────────────────────────────────────────────
+      case "start_voice_trial": {
+        assertNoVoiceActionParams(params, "Start voice trial request");
+
+        // 1. Look up premium_voice addon SKU
+        const { data: voiceAddonSku } = await supabase
+          .from("subscription_addons")
+          .select("id, tier_config")
+          .eq("name", PREMIUM_VOICE_ADDON_NAME)
+          .maybeSingle();
+
+        if (!voiceAddonSku?.id) {
+          return jsonResponse({ error: "Voice addon is not available." }, 404);
+        }
+
+        // 2. Check if user already has this addon
+        const { data: existingAddon } = await supabase
+          .from("user_subscription_addons")
+          .select("id, status")
+          .eq("user_id", user.id)
+          .eq("addon_id", voiceAddonSku.id)
+          .maybeSingle();
+
+        if (existingAddon) {
+          return jsonResponse(
+            { error: "Voice is already activated for this workspace." },
+            409,
+          );
+        }
+
+        // 3. Resolve tier for defaults
+        const tier = getVoiceTierConfig(voiceAddonSku.tier_config);
+        const now = new Date();
+        const cycle = getUtcCalendarMonthCycle(now);
+        const periodEnd = new Date(now);
+        periodEnd.setDate(periodEnd.getDate() + 30);
+
+        // 4. Insert addon row (app-managed trial — no Stripe fields)
+        const { data: insertedAddon, error: insertError } = await supabase
+          .from("user_subscription_addons")
+          .insert({
+            user_id: user.id,
+            addon_id: voiceAddonSku.id,
+            status: "active",
+            tier_id: tier?.id ?? "voice_pro",
+            billing_interval: "monthly",
+            current_period_start: now.toISOString(),
+            current_period_end: periodEnd.toISOString(),
+            voice_sync_status: "pending",
+          })
+          .select("id")
+          .single();
+
+        if (insertError || !insertedAddon) {
+          console.error(
+            `[chat-bot-api] Failed to insert voice trial addon for user ${user.id}:`,
+            insertError,
+          );
+          return jsonResponse(
+            { error: "Failed to activate voice trial." },
+            500,
+          );
+        }
+
+        // 5. Sync trial entitlement to Standard-ChatBot (hard-capped, no overage)
+        try {
+          const voiceClient = createStandardChatBotVoiceClient();
+          const idempotencyKey = `trial_${user.id}_${Date.now()}`;
+          const syncResult = await voiceClient.upsertVoiceEntitlement(
+            agentId,
+            {
+              status: "trialing",
+              planCode: VOICE_TRIAL_PLAN_CODE,
+              includedMinutes: VOICE_TRIAL_INCLUDED_MINUTES,
+              hardLimitMinutes: VOICE_TRIAL_HARD_LIMIT_MINUTES,
+              allowOverage: false,
+              overageRateCents: null,
+              cycleStartAt: cycle.cycleStartAt,
+              cycleEndAt: cycle.cycleEndAt,
+              effectiveAt: now.toISOString(),
+              features: {
+                ...DEFAULT_VOICE_FEATURES,
+                ...(tier?.features ?? {}),
+              },
+              metadata: {
+                source: "commissionTracker",
+                activationType: "trial",
+                tierId: tier?.id ?? "voice_pro",
+              },
+            },
+            idempotencyKey,
+          );
+
+          // 6. Update sync status + snapshot
+          if (syncResult.ok) {
+            await supabase
+              .from("user_subscription_addons")
+              .update({
+                voice_sync_status: "synced",
+                voice_last_synced_at: now.toISOString(),
+                voice_last_sync_attempt_at: now.toISOString(),
+                voice_entitlement_snapshot: syncResult.data ?? null,
+                voice_last_sync_error: null,
+                voice_last_sync_http_status: syncResult.status,
+              })
+              .eq("id", insertedAddon.id);
+          } else {
+            console.error(
+              `[chat-bot-api] Voice trial sync failed for user ${user.id}:`,
+              syncResult.error,
+            );
+            await supabase
+              .from("user_subscription_addons")
+              .update({
+                voice_sync_status: "degraded",
+                voice_last_sync_attempt_at: now.toISOString(),
+                voice_last_sync_error:
+                  syncResult.error ?? "Voice entitlement sync failed",
+                voice_last_sync_http_status: syncResult.status,
+              })
+              .eq("id", insertedAddon.id);
+          }
+        } catch (syncError) {
+          console.error(
+            `[chat-bot-api] Voice trial sync threw for user ${user.id}:`,
+            syncError,
+          );
+          await supabase
+            .from("user_subscription_addons")
+            .update({
+              voice_sync_status: "degraded",
+              voice_last_sync_attempt_at: now.toISOString(),
+              voice_last_sync_error: "Voice entitlement sync failed",
+            })
+            .eq("id", insertedAddon.id);
+        }
+
+        return jsonResponse({ success: true, trial: true });
       }
 
       case "create_voice_agent": {

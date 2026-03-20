@@ -23,6 +23,7 @@ import {
   ChatBotApiError,
   useChatBotAgent,
   useCreateVoiceAgent,
+  useStartVoiceTrial,
   useChatBotVoiceSetupState,
   useConnectClose,
   useDisconnectClose,
@@ -54,6 +55,7 @@ import {
 import type { VoiceEntitlementSnapshotView } from "./types";
 
 const VOICE_LAUNCH_INCLUDED_MINUTES = 500;
+const VOICE_LAUNCH_INCLUDED_MINUTES_TRIAL = 15;
 
 type VoiceTabId = "overview" | "create" | "setup" | "stats" | "admin";
 type VoiceSetupTabId =
@@ -604,6 +606,7 @@ export function VoiceAgentPage() {
     isRefetching: usageRefetching,
   } = useChatBotVoiceUsage(shouldLoadVoiceUsage);
   const createVoiceAgent = useCreateVoiceAgent();
+  const startVoiceTrial = useStartVoiceTrial();
   const connectClose = useConnectClose();
   const disconnectClose = useDisconnectClose();
 
@@ -1133,6 +1136,58 @@ export function VoiceAgentPage() {
 
         {activeTab === "create" && (
           <div className="space-y-3">
+            {!voiceAccessActive && (
+              <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                  <div className="max-w-3xl">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+                      Activate Voice Access
+                    </p>
+                    <p className="mt-1 text-[12px] leading-6 text-zinc-600 dark:text-zinc-400">
+                      Start a free voice trial with{" "}
+                      {VOICE_LAUNCH_INCLUDED_MINUTES_TRIAL} minutes included. No
+                      credit card required. You can upgrade to the full plan
+                      ($149/mo, 500 minutes) at any time.
+                    </p>
+                  </div>
+
+                  <Badge className="bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                    Not Activated
+                  </Badge>
+                </div>
+
+                <div className="mt-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950/40">
+                    <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                      Trial includes {VOICE_LAUNCH_INCLUDED_MINUTES_TRIAL}{" "}
+                      minutes with a hard cap — no overage charges.
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={() => startVoiceTrial.mutate()}
+                    disabled={startVoiceTrial.isPending}
+                  >
+                    {startVoiceTrial.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Activating
+                      </>
+                    ) : (
+                      "Start Free Trial"
+                    )}
+                  </Button>
+                </div>
+
+                {startVoiceTrial.error && (
+                  <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-[11px] text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
+                    {startVoiceTrial.error.message ||
+                      "Failed to activate voice trial."}
+                  </div>
+                )}
+              </div>
+            )}
+
             <>
               <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
