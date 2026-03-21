@@ -76,7 +76,7 @@ import {
 import { ProductType } from "../../types/product.types";
 import { formatCurrency, formatDate } from "../../lib/format";
 import { LeadPurchaseLinkDialog } from "./components/LeadPurchaseLinkDialog";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { policyQueries } from "./queries";
 import { toast } from "sonner";
 import {
@@ -241,8 +241,24 @@ export const PolicyList: React.FC<PolicyListProps> = ({
     {} as Record<string, (typeof commissions)[0]>,
   );
 
-  // Commission metrics across ALL commissions (not filtered by current page)
-  const activeCommissions = commissions.filter(
+  // When filters are active, fetch all matching policy IDs to scope commission metrics
+  const hasActiveFilters = filterCount > 0;
+  const { data: allFilteredPolicies } = useQuery({
+    ...policyQueries.list(filters),
+    enabled: hasActiveFilters,
+  });
+
+  // Scope commissions to filtered policies when filters are active
+  const filteredPolicyIds =
+    hasActiveFilters && allFilteredPolicies
+      ? new Set(allFilteredPolicies.map((p) => p.id))
+      : null;
+  const commissionsForMetrics = filteredPolicyIds
+    ? commissions.filter((c) => c.policyId && filteredPolicyIds.has(c.policyId))
+    : commissions;
+
+  // Commission metrics scoped to current filter selection
+  const activeCommissions = commissionsForMetrics.filter(
     (c) =>
       c.status !== "charged_back" &&
       c.status !== "reversed" &&
@@ -252,7 +268,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
     (sum, c) => sum + (c.earnedAmount || 0),
     0,
   );
-  const pendingCommission = commissions
+  const pendingCommission = commissionsForMetrics
     .filter((c) => c.status === "pending")
     .reduce((sum, c) => sum + (c.amount || 0), 0);
   const totalAdvances = activeCommissions.reduce(
