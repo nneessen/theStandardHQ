@@ -428,7 +428,7 @@ export function SetupTab() {
               })}
             />
             <SummaryTile
-              label="Audience"
+              label="Outbound Audience"
               value={`${agent?.autoOutreachLeadSources?.length ?? 0} sources / ${agent?.allowedLeadStatuses?.length ?? 0} statuses`}
             />
           </div>
@@ -1029,8 +1029,8 @@ export function SetupTab() {
 
             <SectionCard
               icon={<ListChecks className="h-4 w-4" />}
-              title="Lead Statuses"
-              description="The bot will only respond to leads in these Close statuses."
+              title="Outbound Lead Statuses"
+              description="Controls which lead statuses trigger automated outreach (intro SMS, drip campaigns). The bot always replies to inbound messages regardless of this setting. To fully stop the bot for a lead, set their status to 'Disable Bot' or 'DNC' in Close."
             >
               <LeadStatusSelector
                 options={closeLeadStatuses}

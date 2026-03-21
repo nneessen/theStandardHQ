@@ -626,7 +626,7 @@ function SmsConfigPanel({
           updateConfig={updateConfig}
         />
         <EditableList
-          label="Lead Statuses"
+          label="Outbound Lead Statuses"
           values={agent.allowedLeadStatuses || []}
           fieldKey="allowedLeadStatuses"
           updateConfig={updateConfig}

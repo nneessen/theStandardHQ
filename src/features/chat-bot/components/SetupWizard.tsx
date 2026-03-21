@@ -42,7 +42,7 @@ const STEPS = [
   { id: 1, title: "Connect Close" },
   { id: 2, title: "Connect Calendar" },
   { id: 3, title: "Lead Sources" },
-  { id: 4, title: "Lead Statuses" },
+  { id: 4, title: "Outbound Statuses" },
   { id: 5, title: "Done" },
 ] as const;
 
@@ -446,16 +446,19 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
           </div>
         )}
 
-        {/* Step 4: Lead Statuses */}
+        {/* Step 4: Outbound Lead Statuses */}
         {currentStep === 4 && (
           <div className="space-y-3">
             <div>
               <h3 className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                Configure Lead Statuses
+                Configure Outbound Statuses
               </h3>
               <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
-                Select which lead statuses the bot should respond to. Leads in
-                any other status (e.g. Sold, Do Not Contact) will be skipped.
+                Select which lead statuses trigger automated outreach (intro
+                SMS, drip campaigns). The bot always replies to inbound messages
+                regardless of this setting. To fully stop the bot for a lead,
+                set their status to &quot;Disable Bot&quot; or &quot;DNC&quot;
+                in Close.
               </p>
             </div>
             <LeadStatusSelector
@@ -477,7 +480,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                 {updateConfig.isPending ? (
                   <Loader2 className="h-3 w-3 animate-spin mr-1" />
                 ) : null}
-                {statusesSaved ? "Saved" : "Save Lead Statuses"}
+                {statusesSaved ? "Saved" : "Save Outbound Statuses"}
               </Button>
               {statusesSaved && (
                 <Badge className="text-[9px] h-4 px-1.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
@@ -502,8 +505,8 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
               <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto">
                 Your bot is configured and ready to go. When you click the
                 button below, the bot will be enabled and will start responding
-                to inbound SMS leads matching your configured sources and
-                statuses.
+                to inbound SMS leads and will send automated outreach to leads
+                matching your configured sources and statuses.
               </p>
             </div>
 
@@ -544,7 +547,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
               <div className="flex items-center gap-2 text-[10px]">
                 <Check className="h-3 w-3 text-emerald-500" />
                 <span className="text-zinc-600 dark:text-zinc-400">
-                  Lead Statuses: {leadStatuses.length} selected
+                  Outbound Statuses: {leadStatuses.length} selected
                 </span>
               </div>
             </div>
