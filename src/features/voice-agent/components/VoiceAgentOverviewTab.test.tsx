@@ -69,13 +69,10 @@ describe("VoiceAgentOverviewTab", () => {
     expect(screen.getByText("Voicemail Detection")).toBeInTheDocument();
   });
 
-  it("renders CTA for non-subscribers", () => {
+  it("renders CTA button in hero for non-subscribers", () => {
     render(<VoiceAgentOverviewTab {...baseProps} />);
 
-    expect(
-      screen.getByText("Ready to automate your phone follow-ups?"),
-    ).toBeInTheDocument();
-    expect(screen.getByText(/free 15-minute trial/)).toBeInTheDocument();
+    expect(screen.getByText("Start Free Trial")).toBeInTheDocument();
   });
 
   it("hides metrics strip for non-subscribers", () => {
@@ -264,7 +261,7 @@ describe("VoiceAgentOverviewTab", () => {
     expect(link).toHaveAttribute("href", "/billing");
   });
 
-  it("shows Complete Setup CTA for subscribers without setup", () => {
+  it("shows Complete Setup button in hero for subscribers without setup", () => {
     render(
       <VoiceAgentOverviewTab
         {...baseProps}
@@ -273,13 +270,10 @@ describe("VoiceAgentOverviewTab", () => {
       />,
     );
 
-    expect(
-      screen.getByText("Your voice agent is waiting to be configured"),
-    ).toBeInTheDocument();
     expect(screen.getByText("Complete Setup")).toBeInTheDocument();
   });
 
-  it("shows working CTA for subscribers with complete setup", () => {
+  it("shows View Stats button in hero for subscribers with complete setup", () => {
     render(
       <VoiceAgentOverviewTab
         {...baseProps}
@@ -288,9 +282,6 @@ describe("VoiceAgentOverviewTab", () => {
       />,
     );
 
-    expect(
-      screen.getByText("Your AI voice agent is working for you"),
-    ).toBeInTheDocument();
     expect(screen.getByText("View Stats")).toBeInTheDocument();
   });
 });

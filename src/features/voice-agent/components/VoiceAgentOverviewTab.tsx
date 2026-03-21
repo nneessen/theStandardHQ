@@ -117,7 +117,6 @@ export function VoiceAgentOverviewTab({
   voiceUsage,
   voiceSetupState,
   voiceSnapshot,
-  trialIncludedMinutes,
   includedMinutes,
 }: VoiceAgentOverviewTabProps) {
   const usage =
@@ -229,25 +228,59 @@ export function VoiceAgentOverviewTab({
                 with a managed workspace — no separate account needed.
               </p>
 
-              {/* Integration logos */}
-              <div className="flex items-center gap-3 mt-4">
-                <span className="text-[9px] text-white/30 dark:text-black/25 uppercase tracking-widest font-medium">
-                  Integrates with
-                </span>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-white/5 dark:bg-black/5 border border-white/10 dark:border-black/10">
-                    <CloseCrmLogo className="h-3.5 w-auto text-white dark:text-black" />
-                    <span className="text-[9px] text-white/60 dark:text-black/50 font-medium">
-                      Close CRM
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-white/5 dark:bg-black/5 border border-white/10 dark:border-black/10">
-                    <PhoneCall className="h-3.5 w-3.5 text-white/70 dark:text-black/60" />
-                    <span className="text-[9px] text-white/60 dark:text-black/50 font-medium">
-                      Retell.ai
-                    </span>
+              {/* CTA + Integration logos row */}
+              <div className="flex items-center justify-between gap-4 mt-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-[9px] text-white/30 dark:text-black/25 uppercase tracking-widest font-medium">
+                    Integrates with
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-white/5 dark:bg-black/5 border border-white/10 dark:border-black/10">
+                      <CloseCrmLogo className="h-3.5 w-auto text-white dark:text-black" />
+                      <span className="text-[9px] text-white/60 dark:text-black/50 font-medium">
+                        Close CRM
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-white/5 dark:bg-black/5 border border-white/10 dark:border-black/10">
+                      <PhoneCall className="h-3.5 w-3.5 text-white/70 dark:text-black/60" />
+                      <span className="text-[9px] text-white/60 dark:text-black/50 font-medium">
+                        Retell.ai
+                      </span>
+                    </div>
                   </div>
                 </div>
+
+                {/* Primary CTA */}
+                {primaryActionHref && !voiceAccessActive ? (
+                  <Button
+                    asChild
+                    size="sm"
+                    className="h-8 text-[10px] gap-1.5 px-4 text-white shadow-md flex-shrink-0"
+                    style={{
+                      background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}cc)`,
+                      boxShadow: `0 4px 14px ${ACCENT}30`,
+                    }}
+                  >
+                    <Link to={primaryActionHref}>
+                      {primaryActionLabel}
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    className="h-8 text-[10px] gap-1.5 px-4 text-white shadow-md flex-shrink-0"
+                    style={{
+                      background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}cc)`,
+                      boxShadow: `0 4px 14px ${ACCENT}30`,
+                    }}
+                    disabled={primaryActionDisabled}
+                    onClick={ctaAction}
+                  >
+                    {ctaLabel}
+                    <ArrowRight className="h-3 w-3" />
+                  </Button>
+                )}
               </div>
             </div>
           </div>
@@ -434,56 +467,6 @@ export function VoiceAgentOverviewTab({
           </div>
         </div>
       )}
-
-      {/* ══════ CTA ══════ */}
-      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4 flex items-center justify-between">
-        <div>
-          <div className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-            {!voiceAccessActive
-              ? "Ready to automate your phone follow-ups?"
-              : !isSetupDone
-                ? "Your voice agent is waiting to be configured"
-                : "Your AI voice agent is working for you"}
-          </div>
-          <div className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-            {!voiceAccessActive
-              ? `Start with a free ${trialIncludedMinutes}-minute trial — no credit card required.`
-              : !isSetupDone
-                ? "Connect Close CRM, choose a voice, and publish to start handling calls."
-                : "View your call stats, usage, and agent configuration."}
-          </div>
-        </div>
-        {primaryActionHref && !voiceAccessActive ? (
-          <Button
-            asChild
-            size="sm"
-            className="h-8 text-[10px] gap-1.5 px-4 text-white shadow-md flex-shrink-0"
-            style={{
-              background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}cc)`,
-              boxShadow: `0 4px 14px ${ACCENT}30`,
-            }}
-          >
-            <Link to={primaryActionHref}>
-              {primaryActionLabel}
-              <ArrowRight className="h-3 w-3" />
-            </Link>
-          </Button>
-        ) : (
-          <Button
-            size="sm"
-            className="h-8 text-[10px] gap-1.5 px-4 text-white shadow-md flex-shrink-0"
-            style={{
-              background: `linear-gradient(135deg, ${ACCENT}, ${ACCENT}cc)`,
-              boxShadow: `0 4px 14px ${ACCENT}30`,
-            }}
-            disabled={primaryActionDisabled}
-            onClick={ctaAction}
-          >
-            {ctaLabel}
-            <ArrowRight className="h-3 w-3" />
-          </Button>
-        )}
-      </div>
     </div>
   );
 }
