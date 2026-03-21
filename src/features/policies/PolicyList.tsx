@@ -258,20 +258,18 @@ export const PolicyList: React.FC<PolicyListProps> = ({
     : commissions;
 
   // Commission metrics scoped to current filter selection
-  const activeCommissions = commissionsForMetrics.filter(
-    (c) =>
-      c.status !== "charged_back" &&
-      c.status !== "reversed" &&
-      c.status !== "clawback",
+  // Only count commissions that have actually been paid out (advanced to agent)
+  const paidCommissions = commissionsForMetrics.filter(
+    (c) => c.status === "paid",
   );
-  const earnedCommission = activeCommissions.reduce(
+  const earnedCommission = paidCommissions.reduce(
     (sum, c) => sum + (c.earnedAmount || 0),
     0,
   );
   const pendingCommission = commissionsForMetrics
     .filter((c) => c.status === "pending")
     .reduce((sum, c) => sum + (c.amount || 0), 0);
-  const totalAdvances = activeCommissions.reduce(
+  const totalAdvances = paidCommissions.reduce(
     (sum, c) => sum + (c.amount || 0),
     0,
   );
