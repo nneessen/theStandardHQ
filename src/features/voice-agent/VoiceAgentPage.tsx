@@ -975,8 +975,6 @@ export function VoiceAgentPage() {
           <VoiceAgentOverviewTab
             voiceAccessActive={voiceAccessActive}
             voiceAgentPublished={voiceAgentPublished}
-            voiceAgentCreated={voiceAgentCreated}
-            voiceAgentProvisioning={voiceAgentProvisioning}
             setupSteps={setupSteps}
             completedSteps={completedSteps}
             nextStepTitle={nextStep.title}
@@ -994,7 +992,6 @@ export function VoiceAgentPage() {
             voiceUsage={voiceUsage}
             voiceSetupState={voiceSetupState}
             voiceSnapshot={voiceSnapshot}
-            launchPriceLabel={launchPriceLabel}
             trialIncludedMinutes={VOICE_LAUNCH_INCLUDED_MINUTES_TRIAL}
             includedMinutes={VOICE_LAUNCH_INCLUDED_MINUTES}
           />

@@ -139,6 +139,12 @@ function parsePatch(
   return { patch };
 }
 
+export function parseConnectCloseParams(params: Record<string, unknown>) {
+  assertNoUnknownKeys(params, ["apiKey"], "Connect Close request");
+  const apiKey = readRequiredTrimmedString(params.apiKey, "Close API key");
+  return { apiKey };
+}
+
 export function parseCreateVoiceAgentParams(params: Record<string, unknown>) {
   assertNoUnknownKeys(params, ["templateKey"], "Create voice agent request");
   const templateKey = readOptionalTrimmedString(

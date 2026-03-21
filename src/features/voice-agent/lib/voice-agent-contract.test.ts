@@ -4,6 +4,7 @@ import {
   isVoiceAgentProvisioned,
   isVoiceAgentProvisioningPending,
   parseAddRetellVoiceParams,
+  parseConnectCloseParams,
   parseCreateVoiceAgentParams,
   parseRetellAgentUpdateParams,
   parseRetellConnectionParams,
@@ -113,6 +114,23 @@ describe("voice-agent-contract", () => {
     expect(isVoiceAgentProvisioned("ready")).toBe(true);
     expect(isVoiceAgentProvisioned("linked")).toBe(true);
     expect(isVoiceAgentProvisioningPending("ready")).toBe(false);
+  });
+
+  it("validates connect close params with strict allowlist", () => {
+    expect(parseConnectCloseParams({ apiKey: "api_abc123" })).toEqual({
+      apiKey: "api_abc123",
+    });
+
+    expect(() => parseConnectCloseParams({})).toThrow(/required/i);
+    expect(() => parseConnectCloseParams({ apiKey: "  " })).toThrow(
+      /required/i,
+    );
+    expect(() =>
+      parseConnectCloseParams({ apiKey: "api_123", billingExempt: true }),
+    ).toThrow(/unsupported fields/i);
+    expect(() =>
+      parseConnectCloseParams({ apiKey: "api_123", isActive: true }),
+    ).toThrow(/unsupported fields/i);
   });
 
   it("requires empty params for no-body voice actions", () => {

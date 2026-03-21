@@ -12,8 +12,6 @@ vi.mock("@tanstack/react-router", () => ({
 const baseProps = {
   voiceAccessActive: false,
   voiceAgentPublished: false,
-  voiceAgentCreated: false,
-  voiceAgentProvisioning: false,
   setupSteps: [
     {
       id: "voice-access",
@@ -45,32 +43,46 @@ const baseProps = {
   voiceUsage: null,
   voiceSetupState: null,
   voiceSnapshot: null,
-  launchPriceLabel: "$149/mo",
   trialIncludedMinutes: 15,
   includedMinutes: 500,
 };
 
 describe("VoiceAgentOverviewTab", () => {
-  it("renders trial CTA for non-subscribers", () => {
+  it("renders hero section with badge and tagline", () => {
     render(<VoiceAgentOverviewTab {...baseProps} />);
 
-    // Both pricing section and CTA footer render trial elements
+    expect(screen.getByText("AI-Powered Voice Agent")).toBeInTheDocument();
     expect(
-      screen.getAllByText("Start Free Trial").length,
-    ).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText(/credit card/).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText(/15 min hard-capped/)).toBeInTheDocument();
+      screen.getByText(/Automate Follow-Ups & Inbound Calls/),
+    ).toBeInTheDocument();
     expect(screen.getByText("Close CRM")).toBeInTheDocument();
     expect(screen.getByText("Retell.ai")).toBeInTheDocument();
   });
 
-  it("renders pricing section with correct plan labels for non-subscribers", () => {
+  it("renders feature highlights grid", () => {
     render(<VoiceAgentOverviewTab {...baseProps} />);
 
-    expect(screen.getByText("$0")).toBeInTheDocument();
-    expect(screen.getByText("$149")).toBeInTheDocument();
-    expect(screen.getByText(/min\/month/)).toBeInTheDocument();
-    expect(screen.getByText("View Plans")).toBeInTheDocument();
+    expect(screen.getByText("What's Included")).toBeInTheDocument();
+    expect(screen.getByText("Missed Appointment Recovery")).toBeInTheDocument();
+    expect(screen.getByText("After-Hours Inbound")).toBeInTheDocument();
+    expect(screen.getByText("Human Handoff")).toBeInTheDocument();
+    expect(screen.getByText("Voicemail Detection")).toBeInTheDocument();
+  });
+
+  it("renders CTA for non-subscribers", () => {
+    render(<VoiceAgentOverviewTab {...baseProps} />);
+
+    expect(
+      screen.getByText("Ready to automate your phone follow-ups?"),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/free 15-minute trial/)).toBeInTheDocument();
+  });
+
+  it("hides metrics strip for non-subscribers", () => {
+    render(<VoiceAgentOverviewTab {...baseProps} />);
+
+    expect(screen.queryByText("Voice Metrics · This Cycle")).toBeNull();
+    expect(screen.queryByText("Your Voice Agent")).toBeNull();
   });
 
   it("renders voice metrics strip for active subscribers", () => {
@@ -78,7 +90,6 @@ describe("VoiceAgentOverviewTab", () => {
       <VoiceAgentOverviewTab
         {...baseProps}
         voiceAccessActive
-        voiceAgentCreated
         voiceEntitlement={{
           status: "active",
           usage: {
@@ -92,11 +103,47 @@ describe("VoiceAgentOverviewTab", () => {
       />,
     );
 
+    expect(screen.getByText("Voice Metrics · This Cycle")).toBeInTheDocument();
     expect(screen.getByText("12")).toBeInTheDocument();
     expect(screen.getByText("5")).toBeInTheDocument();
-    expect(screen.getByText("14")).toBeInTheDocument();
     expect(screen.getByText("42/500")).toBeInTheDocument();
     expect(screen.getByText("82.4%")).toBeInTheDocument();
+  });
+
+  it("shows Your Agent section for subscribers with setup complete", () => {
+    render(
+      <VoiceAgentOverviewTab
+        {...baseProps}
+        voiceAccessActive
+        voiceAgentPublished
+        completedSteps={3}
+        voiceEntitlement={{
+          status: "active",
+          usage: {
+            outboundCalls: 8,
+            inboundCalls: 3,
+            answeredCalls: 9,
+            usedMinutes: 30,
+            includedMinutes: 500,
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByText("Your Voice Agent")).toBeInTheDocument();
+    expect(screen.getByText("Published")).toBeInTheDocument();
+  });
+
+  it("shows Draft status for unpublished agent in Your Agent section", () => {
+    render(
+      <VoiceAgentOverviewTab
+        {...baseProps}
+        voiceAccessActive
+        completedSteps={3}
+      />,
+    );
+
+    expect(screen.getByText("Draft")).toBeInTheDocument();
   });
 
   it("shows setup progress when active but not fully set up", () => {
@@ -134,68 +181,6 @@ describe("VoiceAgentOverviewTab", () => {
     expect(screen.getByText("Setup Progress")).toBeInTheDocument();
     expect(screen.getByText("2/3 complete")).toBeInTheDocument();
     expect(screen.getByText("Create Agent")).toBeInTheDocument();
-  });
-
-  it("shows published badge for live agents", () => {
-    render(
-      <VoiceAgentOverviewTab
-        {...baseProps}
-        voiceAccessActive
-        voiceAgentPublished
-        voiceAgentCreated
-        completedSteps={3}
-      />,
-    );
-
-    expect(screen.getByText("Published")).toBeInTheDocument();
-  });
-
-  it("hides metrics strip and shows pricing for non-subscribers", () => {
-    const { container } = render(<VoiceAgentOverviewTab {...baseProps} />);
-
-    expect(container.querySelector('[class*="Voice Metrics"]')).toBeNull();
-    expect(screen.getByText("Plans")).toBeInTheDocument();
-  });
-
-  it("calls onPrimaryAction when trial button is clicked", () => {
-    const onPrimaryAction = vi.fn();
-    render(
-      <VoiceAgentOverviewTab
-        {...baseProps}
-        onPrimaryAction={onPrimaryAction}
-      />,
-    );
-
-    const buttons = screen.getAllByText("Start Free Trial");
-    fireEvent.click(buttons[0]);
-
-    expect(onPrimaryAction).toHaveBeenCalledTimes(1);
-  });
-
-  it("calls navigation callbacks from quick-nav buttons", () => {
-    const onNavigateToSetup = vi.fn();
-    const onNavigateToStats = vi.fn();
-    const onNavigateToPlans = vi.fn();
-
-    render(
-      <VoiceAgentOverviewTab
-        {...baseProps}
-        voiceAccessActive
-        voiceAgentCreated
-        onNavigateToSetup={onNavigateToSetup}
-        onNavigateToStats={onNavigateToStats}
-        onNavigateToPlans={onNavigateToPlans}
-      />,
-    );
-
-    fireEvent.click(screen.getByText("Setup"));
-    expect(onNavigateToSetup).toHaveBeenCalledTimes(1);
-
-    fireEvent.click(screen.getByText("Stats"));
-    expect(onNavigateToStats).toHaveBeenCalledTimes(1);
-
-    fireEvent.click(screen.getByText("Plan"));
-    expect(onNavigateToPlans).toHaveBeenCalledTimes(1);
   });
 
   it("renders answer rate as --% when total calls is zero", () => {
@@ -237,11 +222,36 @@ describe("VoiceAgentOverviewTab", () => {
     );
 
     expect(screen.getByText("7")).toBeInTheDocument();
-    expect(screen.getByText("3")).toBeInTheDocument();
     expect(screen.getByText("20/500")).toBeInTheDocument();
   });
 
-  it("uses href link when primaryActionHref is provided", () => {
+  it("calls navigation callbacks from quick-nav buttons in Your Agent section", () => {
+    const onNavigateToSetup = vi.fn();
+    const onNavigateToStats = vi.fn();
+    const onNavigateToPlans = vi.fn();
+
+    render(
+      <VoiceAgentOverviewTab
+        {...baseProps}
+        voiceAccessActive
+        completedSteps={3}
+        onNavigateToSetup={onNavigateToSetup}
+        onNavigateToStats={onNavigateToStats}
+        onNavigateToPlans={onNavigateToPlans}
+      />,
+    );
+
+    fireEvent.click(screen.getByText("Setup"));
+    expect(onNavigateToSetup).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByText("Stats"));
+    expect(onNavigateToStats).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByText("Plans"));
+    expect(onNavigateToPlans).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses href link when primaryActionHref is provided for non-subscribers", () => {
     render(
       <VoiceAgentOverviewTab
         {...baseProps}
@@ -250,17 +260,37 @@ describe("VoiceAgentOverviewTab", () => {
       />,
     );
 
-    const links = screen.getAllByText("Resolve Billing");
-    const link = links[0].closest("a");
+    const link = screen.getByText("Resolve Billing").closest("a");
     expect(link).toHaveAttribute("href", "/billing");
   });
 
-  it("disables action button when primaryActionDisabled is true", () => {
-    render(<VoiceAgentOverviewTab {...baseProps} primaryActionDisabled />);
+  it("shows Complete Setup CTA for subscribers without setup", () => {
+    render(
+      <VoiceAgentOverviewTab
+        {...baseProps}
+        voiceAccessActive
+        completedSteps={1}
+      />,
+    );
 
-    const ctaButton = screen
-      .getAllByRole("button")
-      .find((btn) => btn.textContent?.includes("Start Free Trial"));
-    expect(ctaButton).toBeDisabled();
+    expect(
+      screen.getByText("Your voice agent is waiting to be configured"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Complete Setup")).toBeInTheDocument();
+  });
+
+  it("shows working CTA for subscribers with complete setup", () => {
+    render(
+      <VoiceAgentOverviewTab
+        {...baseProps}
+        voiceAccessActive
+        completedSteps={3}
+      />,
+    );
+
+    expect(
+      screen.getByText("Your AI voice agent is working for you"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("View Stats")).toBeInTheDocument();
   });
 });

@@ -26,11 +26,33 @@ const VOICE_TRIAL_INCLUDED_MINUTES = 15;
 const VOICE_TRIAL_HARD_LIMIT_MINUTES = 15;
 const VOICE_TRIAL_PLAN_CODE = "voice_trial";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_ORIGINS = [
+  "https://app.thestandardhq.com",
+  "https://www.thestandardhq.com",
+  "https://thestandardhq.com",
+];
+
+function buildCorsHeaders(req?: Request) {
+  const isLocal =
+    Deno.env.get("ENVIRONMENT") === "local" ||
+    Deno.env.get("SUPABASE_URL")?.includes("127.0.0.1") ||
+    Deno.env.get("SUPABASE_URL")?.includes("localhost");
+  let origin = "*";
+  if (!isLocal && req) {
+    const reqOrigin = req.headers.get("origin") ?? "";
+    origin = ALLOWED_ORIGINS.includes(reqOrigin)
+      ? reqOrigin
+      : ALLOWED_ORIGINS[0];
+  }
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Headers":
+      "authorization, x-client-info, apikey, content-type",
+  };
+}
+
+// Default headers for non-request-scoped responses
+const corsHeaders = buildCorsHeaders();
 
 // deno-lint-ignore no-explicit-any
 function jsonResponse(data: any, status = 200): Response {
@@ -38,6 +60,27 @@ function jsonResponse(data: any, status = 200): Response {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+function validateReturnUrl(value: unknown): string {
+  if (!value || typeof value !== "string") return "";
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  try {
+    const url = new URL(trimmed);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return "";
+    // Allow production origins and localhost for dev
+    if (
+      ALLOWED_ORIGINS.some((o) => trimmed.startsWith(o)) ||
+      url.hostname === "localhost" ||
+      url.hostname === "127.0.0.1"
+    ) {
+      return trimmed;
+    }
+    return "";
+  } catch {
+    return "";
+  }
 }
 
 // Helper to call standard-chat-bot external API
@@ -428,12 +471,17 @@ async function getTeamAccessStatus(
 }
 
 serve(async (req) => {
+  const reqCorsHeaders = buildCorsHeaders(req);
+
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: reqCorsHeaders });
   }
 
   if (req.method !== "POST") {
-    return jsonResponse({ error: "Method not allowed" }, 405);
+    return new Response(JSON.stringify({ error: "Method not allowed" }), {
+      status: 405,
+      headers: { ...reqCorsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   try {
@@ -1365,10 +1413,27 @@ serve(async (req) => {
       // CLOSE CRM CONNECTION
       // ──────────────────────────────────────────────
       case "connect_close": {
+        const allowedKeys = ["apiKey"];
+        const invalidKeys = Object.keys(params).filter(
+          (k) => !allowedKeys.includes(k),
+        );
+        if (invalidKeys.length > 0) {
+          return jsonResponse(
+            {
+              error: `Connect Close request contains unsupported fields: ${invalidKeys.join(", ")}.`,
+            },
+            400,
+          );
+        }
+        const apiKey =
+          typeof params.apiKey === "string" ? params.apiKey.trim() : "";
+        if (!apiKey) {
+          return jsonResponse({ error: "Close API key is required." }, 400);
+        }
         const res = await callChatBotApi(
           "POST",
           `/api/external/agents/${agentId}/connections/close`,
-          params,
+          { apiKey },
         );
         return sendResult(res);
       }
@@ -1410,7 +1475,7 @@ serve(async (req) => {
       // CALENDLY CONNECTION
       // ──────────────────────────────────────────────
       case "get_calendly_auth_url": {
-        const returnUrl = params.returnUrl || "";
+        const returnUrl = validateReturnUrl(params.returnUrl);
         console.log(
           "[get_calendly_auth_url] agentId:",
           agentId,
@@ -1474,7 +1539,7 @@ serve(async (req) => {
       // GOOGLE CALENDAR CONNECTION
       // ──────────────────────────────────────────────
       case "get_google_auth_url": {
-        const returnUrl = params.returnUrl || "";
+        const returnUrl = validateReturnUrl(params.returnUrl);
         const res = await callChatBotApi(
           "GET",
           `/api/external/agents/${agentId}/google/authorize?returnUrl=${encodeURIComponent(returnUrl)}`,
