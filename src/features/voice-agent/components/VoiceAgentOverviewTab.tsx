@@ -15,17 +15,22 @@ import { Button } from "@/components/ui/button";
 import { CloseCrmLogo } from "@/components/logos/CloseCrmLogo";
 import type { VoiceAgentSetupStep } from "./VoiceAgentLanding";
 
+interface VoiceUsageLike {
+  outboundCalls?: number;
+  inboundCalls?: number;
+  answeredCalls?: number;
+  usedMinutes?: number;
+  includedMinutes?: number;
+}
+
 interface VoiceAgentOverviewTabProps {
   voiceAccessActive: boolean;
   voiceAgentPublished: boolean;
   voiceAgentCreated: boolean;
   voiceAgentProvisioning: boolean;
-  closeConnected: boolean;
-  canOpenSetup: boolean;
   setupSteps: VoiceAgentSetupStep[];
   completedSteps: number;
   nextStepTitle: string;
-  nextStepDescription: string;
   primaryActionLabel: string;
   primaryActionHref?: string;
   primaryActionDisabled?: boolean;
@@ -33,41 +38,10 @@ interface VoiceAgentOverviewTabProps {
   onNavigateToSetup: () => void;
   onNavigateToStats: () => void;
   onNavigateToPlans: () => void;
-  voiceEntitlement?: {
-    status?: string;
-    usage?: {
-      outboundCalls?: number;
-      inboundCalls?: number;
-      answeredCalls?: number;
-      usedMinutes?: number;
-      includedMinutes?: number;
-    };
-  } | null;
-  voiceUsage?: {
-    outboundCalls?: number;
-    inboundCalls?: number;
-    answeredCalls?: number;
-    usedMinutes?: number;
-    includedMinutes?: number;
-  } | null;
-  voiceSetupState?: {
-    usage?: {
-      outboundCalls?: number;
-      inboundCalls?: number;
-      answeredCalls?: number;
-      usedMinutes?: number;
-      includedMinutes?: number;
-    } | null;
-  } | null;
-  voiceSnapshot?: {
-    usage?: {
-      outboundCalls?: number;
-      inboundCalls?: number;
-      answeredCalls?: number;
-      usedMinutes?: number;
-      includedMinutes?: number;
-    };
-  } | null;
+  voiceEntitlement?: { status?: string; usage?: VoiceUsageLike } | null;
+  voiceUsage?: VoiceUsageLike | null;
+  voiceSetupState?: { usage?: VoiceUsageLike | null } | null;
+  voiceSnapshot?: { usage?: VoiceUsageLike } | null;
   launchPriceLabel: string;
   trialIncludedMinutes: number;
   includedMinutes: number;
@@ -78,12 +52,9 @@ export function VoiceAgentOverviewTab({
   voiceAgentPublished,
   voiceAgentCreated,
   voiceAgentProvisioning,
-  closeConnected: _closeConnected,
-  canOpenSetup: _canOpenSetup,
   setupSteps,
   completedSteps,
   nextStepTitle,
-  nextStepDescription: _nextStepDescription,
   primaryActionLabel,
   primaryActionHref,
   primaryActionDisabled = false,

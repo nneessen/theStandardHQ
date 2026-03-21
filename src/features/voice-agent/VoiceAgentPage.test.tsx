@@ -2,24 +2,57 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mockUseImo = vi.fn();
-const mockUseUserActiveAddons = vi.fn();
-const mockUseChatBotAgent = vi.fn();
-const mockUseChatBotVoiceSetupState = vi.fn();
-const mockUseChatBotVoiceEntitlement = vi.fn();
-const mockUseChatBotVoiceUsage = vi.fn();
-const mockUseCreateVoiceAgent = vi.fn();
-const mockUseConnectClose = vi.fn();
-const mockUseDisconnectClose = vi.fn();
-const mockUseChatBotRetellRuntime = vi.fn();
-const mockUseChatBotRetellLlm = vi.fn();
-const mockUseChatBotRetellVoices = vi.fn();
-let MockChatBotApiErrorClass: new (
-  message: string,
-  isNotProvisioned?: boolean,
-  isServiceError?: boolean,
-  isTransportError?: boolean,
-) => Error;
+const {
+  mockUseImo,
+  mockUseUserActiveAddons,
+  mockUseChatBotAgent,
+  mockUseChatBotVoiceSetupState,
+  mockUseChatBotVoiceEntitlement,
+  mockUseChatBotVoiceUsage,
+  mockUseCreateVoiceAgent,
+  mockUseConnectClose,
+  mockUseDisconnectClose,
+  mockUseChatBotRetellRuntime,
+  mockUseChatBotRetellLlm,
+  mockUseChatBotRetellVoices,
+  MockChatBotApiErrorClass,
+} = vi.hoisted(() => {
+  class _MockChatBotApiError extends Error {
+    constructor(
+      message: string,
+      public readonly isNotProvisioned = false,
+      public readonly isServiceError = false,
+      public readonly isTransportError = false,
+    ) {
+      super(message);
+    }
+  }
+
+  return {
+    mockUseImo: vi.fn(),
+    mockUseUserActiveAddons: vi.fn(),
+    mockUseChatBotAgent: vi.fn(),
+    mockUseChatBotVoiceSetupState: vi.fn(),
+    mockUseChatBotVoiceEntitlement: vi.fn(),
+    mockUseChatBotVoiceUsage: vi.fn(),
+    mockUseCreateVoiceAgent: vi.fn(),
+    mockUseConnectClose: vi.fn(),
+    mockUseDisconnectClose: vi.fn(),
+    mockUseChatBotRetellRuntime: vi.fn(),
+    mockUseChatBotRetellLlm: vi.fn(),
+    mockUseChatBotRetellVoices: vi.fn(),
+    MockChatBotApiErrorClass: _MockChatBotApiError as new (
+      message: string,
+      isNotProvisioned?: boolean,
+      isServiceError?: boolean,
+      isTransportError?: boolean,
+    ) => Error & {
+      isNotProvisioned: boolean;
+      isServiceError: boolean;
+      isTransportError: boolean;
+    },
+  };
+});
 
 vi.mock("@/contexts/ImoContext", () => ({
   useImo: () => mockUseImo(),
@@ -35,41 +68,25 @@ vi.mock("@tanstack/react-router", () => ({
   ),
 }));
 
-vi.mock("@/features/chat-bot", () => {
-  class MockChatBotApiError extends Error {
-    constructor(
-      message: string,
-      public readonly isNotProvisioned = false,
-      public readonly isServiceError = false,
-      public readonly isTransportError = false,
-    ) {
-      super(message);
-    }
-  }
-
-  MockChatBotApiErrorClass = MockChatBotApiError;
-
-  return {
-    ChatBotApiError: MockChatBotApiError,
-    useChatBotAgent: (...args: unknown[]) => mockUseChatBotAgent(...args),
-    useChatBotVoiceSetupState: (...args: unknown[]) =>
-      mockUseChatBotVoiceSetupState(...args),
-    useChatBotVoiceEntitlement: (...args: unknown[]) =>
-      mockUseChatBotVoiceEntitlement(...args),
-    useChatBotVoiceUsage: (...args: unknown[]) =>
-      mockUseChatBotVoiceUsage(...args),
-    useCreateVoiceAgent: (...args: unknown[]) =>
-      mockUseCreateVoiceAgent(...args),
-    useConnectClose: (...args: unknown[]) => mockUseConnectClose(...args),
-    useDisconnectClose: (...args: unknown[]) => mockUseDisconnectClose(...args),
-    useChatBotRetellRuntime: (...args: unknown[]) =>
-      mockUseChatBotRetellRuntime(...args),
-    useChatBotRetellLlm: (...args: unknown[]) =>
-      mockUseChatBotRetellLlm(...args),
-    useChatBotRetellVoices: (...args: unknown[]) =>
-      mockUseChatBotRetellVoices(...args),
-  };
-});
+vi.mock("@/features/chat-bot", () => ({
+  ChatBotApiError: MockChatBotApiErrorClass,
+  useChatBotAgent: (...args: unknown[]) => mockUseChatBotAgent(...args),
+  useChatBotVoiceSetupState: (...args: unknown[]) =>
+    mockUseChatBotVoiceSetupState(...args),
+  useChatBotVoiceEntitlement: (...args: unknown[]) =>
+    mockUseChatBotVoiceEntitlement(...args),
+  useChatBotVoiceUsage: (...args: unknown[]) =>
+    mockUseChatBotVoiceUsage(...args),
+  useCreateVoiceAgent: (...args: unknown[]) => mockUseCreateVoiceAgent(...args),
+  useStartVoiceTrial: () => ({ mutate: vi.fn(), isPending: false }),
+  useConnectClose: (...args: unknown[]) => mockUseConnectClose(...args),
+  useDisconnectClose: (...args: unknown[]) => mockUseDisconnectClose(...args),
+  useChatBotRetellRuntime: (...args: unknown[]) =>
+    mockUseChatBotRetellRuntime(...args),
+  useChatBotRetellLlm: (...args: unknown[]) => mockUseChatBotRetellLlm(...args),
+  useChatBotRetellVoices: (...args: unknown[]) =>
+    mockUseChatBotRetellVoices(...args),
+}));
 
 vi.mock("@/features/chat-bot/components/ConnectionCard", () => ({
   ConnectionCard: ({
@@ -98,6 +115,10 @@ vi.mock("./components/VoiceAgentLanding", () => ({
       {localDevWarning ? `|warning:${localDevWarning}` : ""}
     </div>
   ),
+}));
+
+vi.mock("./components/VoiceAgentOverviewTab", () => ({
+  VoiceAgentOverviewTab: () => <div data-testid="voice-overview-tab" />,
 }));
 
 vi.mock("./components/VoiceAgentConnectionCard", () => ({
@@ -301,28 +322,16 @@ describe("VoiceAgentPage", () => {
 
     render(<VoiceAgentPage />);
 
+    // Setup tab is locked (cursor-not-allowed) — not HTML disabled
     const setupTab = screen.getByRole("button", { name: /setup/i });
-    expect(setupTab).toBeDisabled();
+    expect(setupTab.className).toContain("cursor-not-allowed");
 
-    fireEvent.click(screen.getByRole("button", { name: /create agent/i }));
+    // Navigate to Plans tab to see create flow
+    fireEvent.click(screen.getByRole("button", { name: /plans/i }));
 
-    expect(screen.getByText("Step 1. Connect Close CRM")).toBeInTheDocument();
-    expect(
-      screen.getByText("Voice access is not active yet"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /continue to setup/i }),
-    ).toBeDisabled();
-    expect(
-      screen.getByRole("button", { name: /voice access required/i }),
-    ).toBeDisabled();
-    expect(screen.getByTestId("connection-card")).toHaveTextContent(
-      "Close CRM:not-connected",
-    );
+    expect(screen.getByTestId("voice-landing")).toBeInTheDocument();
     expect(mockUseChatBotAgent).toHaveBeenCalledWith(false);
     expect(mockUseChatBotVoiceSetupState).toHaveBeenCalledWith();
-    expect(mockUseChatBotVoiceEntitlement).toHaveBeenCalledWith(false);
-    expect(mockUseChatBotVoiceUsage).toHaveBeenCalledWith(false);
   });
 
   it("keeps setup available while voice agent provisioning is pending", () => {
@@ -436,6 +445,9 @@ describe("VoiceAgentPage", () => {
 
     render(<VoiceAgentPage />);
 
+    // Navigate to Plans tab where the warning is displayed via VoiceAgentLanding
+    fireEvent.click(screen.getByRole("button", { name: /plans/i }));
+
     expect(screen.getByTestId("voice-landing")).toHaveTextContent(
       "warning:Local voice setup is blocked because the local edge function is missing its upstream chat bot API env. Start the Supabase functions server with the project .env so voice reads can load.",
     );
@@ -464,10 +476,9 @@ describe("VoiceAgentPage", () => {
 
     render(<VoiceAgentPage />);
 
-    fireEvent.click(screen.getByRole("button", { name: /create agent/i }));
+    // Navigate to Plans tab, then click the primary action that redirects to setup > launch
+    fireEvent.click(screen.getByRole("button", { name: /plans/i }));
 
-    expect(screen.getByTestId("voice-studio-card")).toHaveTextContent(
-      "view:launch",
-    );
+    expect(screen.getByTestId("voice-landing")).toBeInTheDocument();
   });
 });

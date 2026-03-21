@@ -49,7 +49,11 @@ import {
   isVoiceAgentProvisioned,
   isVoiceAgentProvisioningPending,
 } from "./lib/voice-agent-contract";
-import type { VoiceEntitlementSnapshotView } from "./types";
+import {
+  normalizeNextActionKey,
+  parseVoiceSnapshot,
+  type VoiceNextActionKey,
+} from "./lib/voice-agent-helpers";
 import { VoiceAgentOverviewTab } from "./components/VoiceAgentOverviewTab";
 
 const VOICE_LAUNCH_INCLUDED_MINUTES = 500;
@@ -62,22 +66,6 @@ type VoiceSetupTabId =
   | "call-flow"
   | "advanced"
   | "launch";
-
-type VoiceNextActionKey =
-  | "activate_trial"
-  | "resolve_billing"
-  | "resolve_suspension"
-  | "replenish_minutes"
-  | "reactivate_voice"
-  | "activate_voice"
-  | "connect_close"
-  | "create_agent"
-  | "wait_for_provisioning"
-  | "repair_agent"
-  | "publish_agent"
-  | "connect_calendar"
-  | "review_guardrails"
-  | "unknown";
 
 const ENTITLEMENT_ACTIVE_STATUSES = new Set(["active", "trialing"]);
 const BILLING_NEXT_ACTION_KEYS = new Set<VoiceNextActionKey>([
@@ -96,29 +84,6 @@ const SETUP_REDIRECT_ACTION_KEYS = new Set<VoiceNextActionKey>([
   "connect_calendar",
   "review_guardrails",
 ]);
-
-function parseVoiceSnapshot(
-  value: unknown,
-): VoiceEntitlementSnapshotView | null {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    return null;
-  }
-
-  const raw = value as Record<string, unknown>;
-
-  // Validate expected top-level shape before trusting the cast.
-  // All fields are optional on VoiceEntitlementSnapshotView, so we only
-  // reject if the object has keys that are clearly wrong types.
-  if (raw.status !== undefined && typeof raw.status !== "string") return null;
-  if (
-    raw.includedMinutes !== undefined &&
-    typeof raw.includedMinutes !== "number"
-  )
-    return null;
-  if (raw.usage !== undefined && typeof raw.usage !== "object") return null;
-
-  return raw as VoiceEntitlementSnapshotView;
-}
 
 function isServiceIssue(error: unknown) {
   return error instanceof ChatBotApiError && error.isServiceError;
@@ -263,15 +228,6 @@ function isVoiceAccessActive(status: string | null | undefined) {
   return typeof status === "string"
     ? ENTITLEMENT_ACTIVE_STATUSES.has(status.trim().toLowerCase())
     : false;
-}
-
-function normalizeNextActionKey(
-  value: string | null | undefined,
-): VoiceNextActionKey {
-  if (!value) return "unknown";
-
-  const normalizedValue = value.trim().toLowerCase() as VoiceNextActionKey;
-  return normalizedValue || "unknown";
 }
 
 function getDefaultNextActionCopy(key: VoiceNextActionKey) {
@@ -1021,12 +977,9 @@ export function VoiceAgentPage() {
             voiceAgentPublished={voiceAgentPublished}
             voiceAgentCreated={voiceAgentCreated}
             voiceAgentProvisioning={voiceAgentProvisioning}
-            closeConnected={closeConnected}
-            canOpenSetup={canOpenSetup}
             setupSteps={setupSteps}
             completedSteps={completedSteps}
             nextStepTitle={nextStep.title}
-            nextStepDescription={nextStep.description}
             primaryActionLabel={landingPrimaryActionLabel}
             primaryActionHref={landingPrimaryActionHref}
             primaryActionDisabled={landingPrimaryActionDisabled}
