@@ -131,7 +131,7 @@ export function VoiceAgentOverviewTab({
   const answeredCalls = usage?.answeredCalls ?? 0;
   const minutesUsed = usage?.usedMinutes ?? 0;
   const effectiveIncludedMinutes =
-    usage?.includedMinutes ?? includedMinutes ?? 0;
+    usage?.includedMinutes || includedMinutes || 0;
   const totalCalls = outboundCalls + inboundCalls;
   const answerRate =
     totalCalls === 0

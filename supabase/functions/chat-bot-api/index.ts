@@ -30,6 +30,8 @@ const ALLOWED_ORIGINS = [
   "https://app.thestandardhq.com",
   "https://www.thestandardhq.com",
   "https://thestandardhq.com",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
 ];
 
 function buildCorsHeaders(req?: Request) {
@@ -900,45 +902,47 @@ serve(async (req) => {
         return jsonResponse({ error: "Voice addon is not available." }, 404);
       }
 
-      // 2. Check if user already has this addon
-      const { data: existingAddon } = await supabase
-        .from("user_subscription_addons")
-        .select("id, status")
-        .eq("user_id", effectiveUserId)
-        .eq("addon_id", voiceAddonSku.id)
-        .maybeSingle();
-
-      if (existingAddon) {
-        return jsonResponse(
-          { error: "Voice is already activated for this workspace." },
-          409,
-        );
-      }
-
-      // 3. Resolve tier for defaults
+      // 2. Resolve tier for defaults
       const tier = getVoiceTierConfig(voiceAddonSku.tier_config);
       const now = new Date();
       const cycle = getUtcCalendarMonthCycle(now);
       const periodEnd = new Date(now);
       periodEnd.setDate(periodEnd.getDate() + 30);
 
-      // 4. Insert addon row (app-managed trial — no Stripe fields)
+      // 3. Atomic upsert — INSERT with ON CONFLICT to prevent TOCTOU race.
+      // If two concurrent requests both pass the entitlement check, the UNIQUE
+      // constraint on (user_id, addon_id) ensures only one row is created.
       const { data: insertedAddon, error: insertError } = await supabase
         .from("user_subscription_addons")
-        .insert({
-          user_id: effectiveUserId,
-          addon_id: voiceAddonSku.id,
-          status: "active",
-          tier_id: tier?.id ?? "voice_pro",
-          billing_interval: "monthly",
-          current_period_start: now.toISOString(),
-          current_period_end: periodEnd.toISOString(),
-          voice_sync_status: "pending",
-        })
+        .upsert(
+          {
+            user_id: effectiveUserId,
+            addon_id: voiceAddonSku.id,
+            status: "active",
+            tier_id: tier?.id ?? "voice_pro",
+            billing_interval: "monthly",
+            current_period_start: now.toISOString(),
+            current_period_end: periodEnd.toISOString(),
+            voice_sync_status: "pending",
+          },
+          { onConflict: "user_id,addon_id", ignoreDuplicates: true },
+        )
         .select("id")
-        .single();
+        .maybeSingle();
 
-      if (insertError || !insertedAddon) {
+      // If upsert returned no row, it means the addon already existed (conflict ignored)
+      if (!insertedAddon && !insertError) {
+        return jsonResponse(
+          {
+            error: "Voice is already activated for this workspace.",
+            success: true,
+            trial: true,
+          },
+          200,
+        );
+      }
+
+      if (insertError) {
         console.error(
           `[chat-bot-api] Failed to insert voice trial addon for user ${effectiveUserId}:`,
           insertError,

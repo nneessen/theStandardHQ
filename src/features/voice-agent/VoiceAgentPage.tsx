@@ -537,10 +537,13 @@ export function VoiceAgentPage() {
   const voiceAgentProvisioning = isVoiceAgentProvisioningPending(
     voiceAgentProvisioningStatus,
   );
-  const voiceAgentCreated =
-    voiceSetupState?.agent?.exists === true ||
-    retellConnected ||
-    isVoiceAgentProvisioned(voiceAgentProvisioningStatus);
+  // Trust backend setup-state when available. Only fall back to connection
+  // status when setup-state is null (loading/error), preventing stale
+  // retellConnected from overriding the backend's "agent doesn't exist".
+  const voiceAgentCreated = voiceSetupState
+    ? voiceSetupState.agent?.exists === true ||
+      isVoiceAgentProvisioned(voiceAgentProvisioningStatus)
+    : retellConnected || isVoiceAgentProvisioned(voiceAgentProvisioningStatus);
   const shouldLoadRetellDetails =
     (activeTab === "setup" || activeTab === "admin") && retellConnected;
   const {
@@ -558,10 +561,12 @@ export function VoiceAgentPage() {
     error: retellVoicesError,
     isLoading: retellVoicesLoading,
   } = useChatBotRetellVoices(shouldLoadRetellDetails);
-  const voiceAccessActive =
-    (voiceSetupState?.readiness?.entitlementActive ??
-      isVoiceAccessActive(voiceEntitlement?.status ?? voiceSnapshot?.status)) ||
-    voiceAddon?.status === "active";
+  // Trust backend setup-state as canonical. Only fall back to local addon
+  // status when setup-state is unavailable (null/error), not as an OR override.
+  const voiceAccessActive = voiceSetupState
+    ? voiceSetupState.readiness?.entitlementActive === true
+    : isVoiceAccessActive(voiceEntitlement?.status ?? voiceSnapshot?.status) ||
+      voiceAddon?.status === "active";
   const voiceAgentPublished =
     voiceSetupState?.agent?.published === true ||
     retellRuntime?.agent?.is_published === true;
@@ -751,7 +756,7 @@ export function VoiceAgentPage() {
   };
 
   const handleCreateVoiceAgent = () => {
-    if (!canCreateVoiceAgent) return;
+    if (!canCreateVoiceAgent || createVoiceAgent.isPending) return;
     createVoiceAgent.mutate({ templateKey: "default_sales" });
   };
 
@@ -835,8 +840,9 @@ export function VoiceAgentPage() {
     // Billing actions navigate via href — no tab switch needed
     if (BILLING_NEXT_ACTION_KEYS.has(voiceNextActionKey)) return;
 
-    // Inline activation — call trial mutation directly
+    // Inline activation — call trial mutation directly (guard against double-click)
     if (INLINE_ACTIVATION_KEYS.has(voiceNextActionKey)) {
+      if (startVoiceTrial.isPending) return;
       startVoiceTrial.mutate();
       return;
     }
