@@ -1,6 +1,7 @@
 // src/features/channel-orchestration/ChannelOrchestrationPage.tsx
 import { useState } from "react";
 import {
+  Construction,
   Network,
   ListChecks,
   PhoneOutgoing,
@@ -136,6 +137,20 @@ export function ChannelOrchestrationPage() {
               </p>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Under Construction Banner */}
+      <div className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 dark:border-amber-700 dark:bg-amber-950/30">
+        <Construction className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+        <div>
+          <p className="text-[11px] font-semibold text-amber-800 dark:text-amber-200">
+            Under Construction
+          </p>
+          <p className="text-[10px] text-amber-600 dark:text-amber-400">
+            Channel Orchestration is actively being built. Rules, post-call
+            actions, and session history are not yet functional.
+          </p>
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import { type ElementType, type ReactNode, useMemo, useState } from "react";
 import {
   Activity,
   AlertTriangle,
+  Construction,
   CreditCard,
   Loader2,
   Lock,
@@ -945,6 +946,20 @@ export function VoiceAgentPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">{statusBadge}</div>
+        </div>
+      </div>
+
+      {/* Under Construction Banner */}
+      <div className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 dark:border-amber-700 dark:bg-amber-950/30">
+        <Construction className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+        <div>
+          <p className="text-[11px] font-semibold text-amber-800 dark:text-amber-200">
+            Under Construction
+          </p>
+          <p className="text-[10px] text-amber-600 dark:text-amber-400">
+            The AI Voice Agent is actively being built. Configuration and
+            calling features are not yet available for general use.
+          </p>
         </div>
       </div>
 
