@@ -1051,7 +1051,7 @@ export function SetupTab() {
             <SectionCard
               icon={<ListChecks className="h-4 w-4" />}
               title="Outbound Lead Statuses"
-              description="Controls which lead statuses trigger automated outreach (intro SMS, drip campaigns). The bot always replies to inbound messages regardless of this setting. To fully stop the bot for a lead, set their status to 'Disable Bot' or 'DNC' in Close."
+              description="Controls which lead statuses trigger automated outreach (intro SMS, drip campaigns). The bot always replies to inbound messages regardless of this setting. To fully silence the bot for a lead, add their status to Blocked Lead Statuses below."
             >
               <LeadStatusSelector
                 options={closeLeadStatuses}
@@ -1084,7 +1084,7 @@ export function SetupTab() {
             <SectionCard
               icon={<ShieldBan className="h-4 w-4" />}
               title="Blocked Lead Statuses"
-              description="Leads with these statuses are completely silenced — the bot will not respond to inbound or outbound messages. This overrides all other audience settings."
+              description="The bot will not respond to leads with any of these statuses. This applies to both inbound and outbound messages."
             >
               <BlockedLeadStatusSelector
                 options={closeLeadStatuses}
