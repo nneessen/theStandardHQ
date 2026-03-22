@@ -2143,6 +2143,308 @@ serve(async (req) => {
         return sendResult(res);
       }
 
+      // ──────────────────────────────────────────────
+      // CHANNEL ORCHESTRATION — RULESET
+      // ──────────────────────────────────────────────
+      case "get_orchestration_ruleset": {
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/orchestration`,
+        );
+        return sendResult(res);
+      }
+
+      case "update_orchestration_ruleset": {
+        const { name, isActive, rules, fallbackAction } = params;
+        const res = await callChatBotApi(
+          "PUT",
+          `/api/external/agents/${agentId}/orchestration`,
+          { name, isActive, rules, fallbackAction },
+        );
+        return sendResult(res);
+      }
+
+      case "patch_orchestration_ruleset": {
+        const { isActive, fallbackAction } = params;
+        const body: Record<string, unknown> = {};
+        if (isActive !== undefined) body.isActive = isActive;
+        if (fallbackAction !== undefined) body.fallbackAction = fallbackAction;
+        const res = await callChatBotApi(
+          "PATCH",
+          `/api/external/agents/${agentId}/orchestration`,
+          body,
+        );
+        return sendResult(res);
+      }
+
+      case "delete_orchestration_ruleset": {
+        const res = await callChatBotApi(
+          "DELETE",
+          `/api/external/agents/${agentId}/orchestration`,
+        );
+        return sendResult(res);
+      }
+
+      // ──────────────────────────────────────────────
+      // CHANNEL ORCHESTRATION — INDIVIDUAL RULES
+      // ──────────────────────────────────────────────
+      case "create_orchestration_rule": {
+        const { name, enabled, conditions, action: ruleAction } = params;
+        const res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/orchestration/rules`,
+          { name, enabled, conditions, action: ruleAction },
+        );
+        return sendResult(res);
+      }
+
+      case "update_orchestration_rule": {
+        const { ruleId, patch } = params;
+        if (!ruleId) {
+          return jsonResponse({ error: "ruleId is required" }, 400);
+        }
+        const res = await callChatBotApi(
+          "PATCH",
+          `/api/external/agents/${agentId}/orchestration/rules/${ruleId}`,
+          patch as Record<string, unknown>,
+        );
+        return sendResult(res);
+      }
+
+      case "delete_orchestration_rule": {
+        const { ruleId } = params;
+        if (!ruleId) {
+          return jsonResponse({ error: "ruleId is required" }, 400);
+        }
+        const res = await callChatBotApi(
+          "DELETE",
+          `/api/external/agents/${agentId}/orchestration/rules/${ruleId}`,
+        );
+        return sendResult(res);
+      }
+
+      case "toggle_orchestration_rule": {
+        const { ruleId, enabled } = params;
+        if (!ruleId) {
+          return jsonResponse({ error: "ruleId is required" }, 400);
+        }
+        const res = await callChatBotApi(
+          "PATCH",
+          `/api/external/agents/${agentId}/orchestration/rules/${ruleId}/enabled`,
+          { enabled },
+        );
+        return sendResult(res);
+      }
+
+      case "reorder_orchestration_rules": {
+        const { orderedRuleIds } = params;
+        if (!Array.isArray(orderedRuleIds)) {
+          return jsonResponse(
+            { error: "orderedRuleIds array is required" },
+            400,
+          );
+        }
+        const res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/orchestration/rules/reorder`,
+          { orderedRuleIds },
+        );
+        return sendResult(res);
+      }
+
+      // ──────────────────────────────────────────────
+      // CHANNEL ORCHESTRATION — TEMPLATES
+      // ──────────────────────────────────────────────
+      case "get_orchestration_templates": {
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/orchestration/templates`,
+        );
+        const { payload, status, errorMessage } = unwrap(res);
+        if (errorMessage) {
+          return jsonResponse({ error: errorMessage }, status);
+        }
+        return jsonResponse({
+          templates: Array.isArray(payload) ? payload : [],
+        });
+      }
+
+      case "get_orchestration_template_preview": {
+        const { templateKey } = params;
+        if (!templateKey) {
+          return jsonResponse({ error: "templateKey is required" }, 400);
+        }
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/orchestration/templates/${templateKey}/preview`,
+        );
+        return sendResult(res);
+      }
+
+      case "apply_orchestration_template": {
+        const { templateKey, mode } = params;
+        if (!templateKey) {
+          return jsonResponse({ error: "templateKey is required" }, 400);
+        }
+        const res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/orchestration/templates/${templateKey}/apply`,
+          { mode: mode || "replace" },
+        );
+        return sendResult(res);
+      }
+
+      // ──────────────────────────────────────────────
+      // CHANNEL ORCHESTRATION — EVALUATE
+      // ──────────────────────────────────────────────
+      case "evaluate_orchestration": {
+        const {
+          leadStatus,
+          leadSource,
+          conversationStatus,
+          channel,
+          evaluateAt,
+        } = params;
+        const res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/orchestration/evaluate`,
+          { leadStatus, leadSource, conversationStatus, channel, evaluateAt },
+        );
+        return sendResult(res);
+      }
+
+      // ──────────────────────────────────────────────
+      // CHANNEL ORCHESTRATION — POST-CALL CONFIG
+      // ──────────────────────────────────────────────
+      case "get_post_call_config": {
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/orchestration/post-call-config`,
+        );
+        return sendResult(res);
+      }
+
+      case "update_post_call_config": {
+        const { statusMapping, customFieldMapping, transcriptWriteback } =
+          params;
+        const body: Record<string, unknown> = {};
+        if (statusMapping !== undefined) body.statusMapping = statusMapping;
+        if (customFieldMapping !== undefined)
+          body.customFieldMapping = customFieldMapping;
+        if (transcriptWriteback !== undefined)
+          body.transcriptWriteback = transcriptWriteback;
+        const res = await callChatBotApi(
+          "PATCH",
+          `/api/external/agents/${agentId}/orchestration/post-call-config`,
+          body,
+        );
+        return sendResult(res);
+      }
+
+      // ──────────────────────────────────────────────
+      // VOICE SESSIONS
+      // ──────────────────────────────────────────────
+      case "get_voice_sessions": {
+        const qs = new URLSearchParams();
+        if (params.page) qs.set("page", String(params.page));
+        if (params.limit) qs.set("limit", String(params.limit));
+        const queryString = qs.toString() ? `?${qs.toString()}` : "";
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/voice-sessions${queryString}`,
+        );
+        const { payload, meta, status, errorMessage } = unwrap(res);
+        if (errorMessage) {
+          return jsonResponse({ error: errorMessage }, status);
+        }
+        const pagination = meta?.pagination || payload?.pagination || {};
+        return jsonResponse({
+          items: Array.isArray(payload?.items)
+            ? payload.items
+            : Array.isArray(payload)
+              ? payload
+              : [],
+          pagination: {
+            page: pagination.page ?? 1,
+            limit: pagination.limit ?? 20,
+            totalItems: pagination.totalItems ?? 0,
+            totalPages: pagination.totalPages ?? 0,
+            hasNext: pagination.hasNext ?? false,
+            hasPrev: pagination.hasPrev ?? false,
+          },
+        });
+      }
+
+      case "get_voice_session": {
+        const { sessionId } = params;
+        if (!sessionId) {
+          return jsonResponse({ error: "sessionId is required" }, 400);
+        }
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/voice-sessions/${sessionId}`,
+        );
+        return sendResult(res);
+      }
+
+      case "manual_voice_writeback": {
+        const { sessionId, format, includeRecordingLink } = params;
+        if (!sessionId) {
+          return jsonResponse({ error: "sessionId is required" }, 400);
+        }
+        const body: Record<string, unknown> = {};
+        if (format !== undefined) body.format = format;
+        if (includeRecordingLink !== undefined)
+          body.includeRecordingLink = includeRecordingLink;
+        const res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/voice-sessions/${sessionId}/writeback`,
+          body,
+        );
+        return sendResult(res);
+      }
+
+      // ──────────────────────────────────────────────
+      // CLOSE CRM DATA (for orchestration dropdowns)
+      // ──────────────────────────────────────────────
+      case "get_close_lead_sources": {
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/close/lead-sources`,
+        );
+        const { payload, status, errorMessage } = unwrap(res);
+        if (errorMessage) {
+          return jsonResponse({ error: errorMessage }, status);
+        }
+        return jsonResponse({ sources: Array.isArray(payload) ? payload : [] });
+      }
+
+      case "get_close_custom_fields": {
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/close/custom-fields`,
+        );
+        const { payload, status, errorMessage } = unwrap(res);
+        if (errorMessage) {
+          return jsonResponse({ error: errorMessage }, status);
+        }
+        return jsonResponse({ fields: Array.isArray(payload) ? payload : [] });
+      }
+
+      case "get_close_smart_views": {
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/close/smart-views`,
+        );
+        const { payload, status, errorMessage } = unwrap(res);
+        if (errorMessage) {
+          return jsonResponse({ error: errorMessage }, status);
+        }
+        return jsonResponse({
+          smartViews: Array.isArray(payload) ? payload : [],
+        });
+      }
+
       default:
         return jsonResponse({ error: `Unknown action: ${action}` }, 400);
     }

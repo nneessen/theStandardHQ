@@ -32,6 +32,7 @@ import {
   Megaphone,
   Briefcase,
   PhoneCall,
+  Network,
 } from "lucide-react";
 import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
 import { SupportDialog } from "./SupportDialog";
@@ -362,6 +363,12 @@ export default function Sidebar({
           icon: PhoneCall,
           label: "AI Voice Agent",
           href: "/voice-agent",
+          public: true,
+        },
+        {
+          icon: Network,
+          label: "Channel Rules",
+          href: "/channel-orchestration",
           public: true,
         },
         // Business Tools — page handles upsell internally

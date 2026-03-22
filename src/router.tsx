@@ -62,6 +62,7 @@ import { BillingPage } from "./features/billing/BillingPage";
 import { LeadIntelligenceDashboard } from "./features/admin/components/lead-vendors";
 import { ChatBotPage } from "./features/chat-bot";
 import { VoiceAgentPage } from "./features/voice-agent";
+import { ChannelOrchestrationPage } from "./features/channel-orchestration";
 import { MarketingHubPage } from "./features/marketing";
 import { TemplateEditorPage } from "./features/marketing/components/templates/TemplateEditorPage";
 import { CampaignEditorPage } from "./features/marketing/components/campaigns/CampaignEditorPage";
@@ -559,6 +560,17 @@ const voiceAgentRoute = createRoute({
   ),
 });
 
+// Channel Orchestration route - SMS + Voice routing rules, page handles access gating
+const channelOrchestrationRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "channel-orchestration",
+  component: () => (
+    <RouteGuard noRecruits noStaffRoles>
+      <ChannelOrchestrationPage />
+    </RouteGuard>
+  ),
+});
+
 // Business Tools route - Financial statement processing, page handles upsell internally
 const businessToolsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -971,6 +983,7 @@ const routeTree = rootRoute.addChildren([
   quickQuoteRoute,
   chatBotRoute,
   voiceAgentRoute,
+  channelOrchestrationRoute,
   businessToolsRoute,
   publicJoinAltRoute, // Catch-all for /join-* pattern - must be last
 ]);

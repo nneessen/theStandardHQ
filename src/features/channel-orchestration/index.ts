@@ -1,0 +1,71 @@
+// src/features/channel-orchestration/index.ts
+// Barrel export for channel-orchestration feature module
+
+export { ChannelOrchestrationPage } from "./ChannelOrchestrationPage";
+
+export {
+  orchestrationKeys,
+  useOrchestrationRuleset,
+  useOrchestrationTemplates,
+  useOrchestrationTemplatePreview,
+  usePostCallConfig,
+  useVoiceSessions,
+  useVoiceSession,
+  useCloseLeadSources,
+  useCloseCustomFields,
+  useCloseSmartViews,
+  useCreateOrUpdateRuleset,
+  usePatchRuleset,
+  useDeleteRuleset,
+  useCreateRule,
+  useUpdateRule,
+  useDeleteRule,
+  useToggleRule,
+  useReorderRules,
+  useApplyTemplate,
+  useEvaluateOrchestration,
+  useUpdatePostCallConfig,
+  useManualWriteback,
+} from "./hooks/useOrchestration";
+
+export type {
+  ChannelType,
+  ConversationStatus,
+  ComparisonOperator,
+  CustomFieldOperator,
+  TranscriptFormat,
+  VoiceOutcome,
+  WritebackEvent,
+  ChannelHistoryCondition,
+  CustomFieldCondition,
+  TimeWindow,
+  RuleConditions,
+  EscalationConfig,
+  RuleAction,
+  FallbackAction,
+  OrchestrationRule,
+  OrchestrationRuleset,
+  OrchestrationTemplate,
+  OrchestrationTemplatePreview,
+  EvaluationContext,
+  OrchestrationDecision,
+  StatusMapping,
+  CustomFieldMapping,
+  PostCallConfig,
+  VoiceSession,
+  VoiceSessionListResponse,
+  WritebackResult,
+  CloseLeadSource,
+  CloseCustomField,
+  CloseSmartView,
+  CreateRulePayload,
+  UpdateRulePayload,
+  CreateOrUpdateRulesetPayload,
+  ApplyTemplatePayload,
+} from "./types/orchestration.types";
+
+export {
+  WRITEBACK_EVENTS,
+  CONVERSATION_STATUSES,
+  VOICE_OUTCOMES,
+} from "./types/orchestration.types";

@@ -4,6 +4,7 @@
 export { ChatBotPage } from "./ChatBotPage";
 export { ConnectionCard } from "./components/ConnectionCard";
 export {
+  chatBotApi,
   chatBotKeys,
   ChatBotApiError,
   useChatBotAgent,
@@ -26,6 +27,7 @@ export {
   useSearchRetellVoices,
   useAddRetellVoice,
   useUpdateBotConfig,
+  useIsOnExemptTeam,
   type ChatBotAgent,
   type ChatBotCreateVoiceAgentResponse,
   type ChatBotCloseLeadStatus,
