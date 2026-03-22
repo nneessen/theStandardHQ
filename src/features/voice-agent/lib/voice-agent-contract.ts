@@ -18,6 +18,7 @@ const BOT_CONFIG_ALLOWED_KEYS = new Set([
   "timezone",
   "autoOutreachLeadSources",
   "allowedLeadStatuses",
+  "blockedLeadStatuses",
   "calendlyEventTypeSlug",
   "leadSourceEventTypeMappings",
   "companyName",

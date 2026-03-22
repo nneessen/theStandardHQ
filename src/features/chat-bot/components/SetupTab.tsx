@@ -12,6 +12,7 @@ import {
   Power,
   RefreshCw,
   Settings2,
+  ShieldBan,
   Tag,
   User,
   Users,
@@ -31,6 +32,7 @@ import {
 import { cn } from "@/lib/utils";
 
 import { AgentProfileSection } from "./AgentProfileSection";
+import { BlockedLeadStatusSelector } from "./BlockedLeadStatusSelector";
 import { CalendarHealthBanner } from "./CalendarHealthBanner";
 import { ConnectionCard } from "./ConnectionCard";
 import { LeadSourceSelector } from "./LeadSourceSelector";
@@ -127,7 +129,7 @@ export function SetupTab() {
     error: closeStatusError,
   });
   const closeConnected = closeConnectionState === "connected";
-  const { data: closeLeadStatuses } =
+  const { data: closeLeadStatuses, isLoading: closeLeadStatusesLoading } =
     useChatBotCloseLeadStatuses(closeConnected);
   const {
     data: calendlyStatus,
@@ -173,8 +175,10 @@ export function SetupTab() {
 
   const [leadSources, setLeadSources] = useState<string[] | null>(null);
   const [leadStatuses, setLeadStatuses] = useState<string[] | null>(null);
+  const [blockedStatuses, setBlockedStatuses] = useState<string[] | null>(null);
   const [sourcesDirty, setSourcesDirty] = useState(false);
   const [statusesDirty, setStatusesDirty] = useState(false);
+  const [blockedDirty, setBlockedDirty] = useState(false);
   const [eventTypeMappings, setEventTypeMappings] = useState<
     { leadSource: string; eventTypeSlug: string }[] | null
   >(null);
@@ -196,6 +200,8 @@ export function SetupTab() {
 
   const displayedSources = leadSources ?? agent?.autoOutreachLeadSources ?? [];
   const displayedStatuses = leadStatuses ?? agent?.allowedLeadStatuses ?? [];
+  const displayedBlockedStatuses =
+    blockedStatuses ?? agent?.blockedLeadStatuses ?? [];
   const displayedEventTypeMappings =
     eventTypeMappings ?? agent?.leadSourceEventTypeMappings ?? [];
 
@@ -268,6 +274,17 @@ export function SetupTab() {
       {
         onSuccess: () => {
           setStatusesDirty(false);
+        },
+      },
+    );
+  };
+
+  const handleSaveBlockedStatuses = () => {
+    updateConfig.mutate(
+      { blockedLeadStatuses: displayedBlockedStatuses },
+      {
+        onSuccess: () => {
+          setBlockedDirty(false);
         },
       },
     );
@@ -413,7 +430,7 @@ export function SetupTab() {
               </div>
             </div>
           </div>
-          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
             <SummaryTile
               label="Timezone"
               value={agent?.timezone ?? "America/New_York"}
@@ -430,6 +447,10 @@ export function SetupTab() {
             <SummaryTile
               label="Outbound Audience"
               value={`${agent?.autoOutreachLeadSources?.length ?? 0} sources / ${agent?.allowedLeadStatuses?.length ?? 0} statuses`}
+            />
+            <SummaryTile
+              label="Blocked Statuses"
+              value={`${agent?.blockedLeadStatuses?.length ?? 0} blocked`}
             />
           </div>
         </div>
@@ -1048,6 +1069,41 @@ export function SetupTab() {
                     className="h-7 text-[10px]"
                     disabled={updateConfig.isPending}
                     onClick={handleSaveStatuses}
+                  >
+                    {updateConfig.isPending ? (
+                      <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                    ) : (
+                      <Check className="mr-1 h-3 w-3" />
+                    )}
+                    Save Changes
+                  </Button>
+                </div>
+              ) : null}
+            </SectionCard>
+
+            <SectionCard
+              icon={<ShieldBan className="h-4 w-4" />}
+              title="Blocked Lead Statuses"
+              description="Leads with these statuses are completely silenced — the bot will not respond to inbound or outbound messages. This overrides all other audience settings."
+            >
+              <BlockedLeadStatusSelector
+                options={closeLeadStatuses}
+                selected={displayedBlockedStatuses}
+                onChange={(statuses) => {
+                  setBlockedStatuses(statuses);
+                  setBlockedDirty(true);
+                }}
+                disabled={updateConfig.isPending}
+                closeConnected={closeConnected}
+                isLoadingStatuses={closeLeadStatusesLoading}
+              />
+              {blockedDirty ? (
+                <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                  <Button
+                    size="sm"
+                    className="h-7 text-[10px]"
+                    disabled={updateConfig.isPending}
+                    onClick={handleSaveBlockedStatuses}
                   >
                     {updateConfig.isPending ? (
                       <Loader2 className="mr-1 h-3 w-3 animate-spin" />

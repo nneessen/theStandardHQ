@@ -632,6 +632,12 @@ function SmsConfigPanel({
           updateConfig={updateConfig}
         />
       </div>
+      <EditableList
+        label="Blocked Lead Statuses"
+        values={agent.blockedLeadStatuses || []}
+        fieldKey="blockedLeadStatuses"
+        updateConfig={updateConfig}
+      />
 
       {/* Response Schedule (read-only — complex structure) */}
       {agent.responseSchedule && (

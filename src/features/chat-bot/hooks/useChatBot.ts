@@ -60,6 +60,7 @@ export interface ChatBotAgent {
   createdAt: string;
   autoOutreachLeadSources?: string[];
   allowedLeadStatuses?: string[];
+  blockedLeadStatuses?: string[];
   calendlyEventTypeSlug?: string | null;
   leadSourceEventTypeMappings?: { leadSource: string; eventTypeSlug: string }[];
   companyName?: string | null;
@@ -1302,6 +1303,7 @@ export function useUpdateBotConfig() {
       timezone?: string;
       autoOutreachLeadSources?: string[];
       allowedLeadStatuses?: string[];
+      blockedLeadStatuses?: string[];
       calendlyEventTypeSlug?: string | null;
       leadSourceEventTypeMappings?: {
         leadSource: string;
