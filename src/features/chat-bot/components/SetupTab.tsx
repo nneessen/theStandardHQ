@@ -1051,7 +1051,7 @@ export function SetupTab() {
             <SectionCard
               icon={<ListChecks className="h-4 w-4" />}
               title="Outbound Lead Statuses"
-              description="Controls which lead statuses trigger automated outreach (intro SMS, drip campaigns). The bot always replies to inbound messages regardless of this setting. To fully silence the bot for a lead, add their status to Blocked Lead Statuses below."
+              description="Controls which lead statuses trigger automated outbound outreach (intro SMS, drip campaigns). This does not affect inbound — use Blocked Lead Statuses below to prevent the bot from responding entirely."
             >
               <LeadStatusSelector
                 options={closeLeadStatuses}

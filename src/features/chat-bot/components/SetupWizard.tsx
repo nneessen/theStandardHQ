@@ -454,11 +454,10 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                 Configure Outbound Statuses
               </h3>
               <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
-                Select which lead statuses trigger automated outreach (intro
-                SMS, drip campaigns). The bot always replies to inbound messages
-                regardless of this setting. To fully stop the bot for a lead,
-                set their status to &quot;Disable Bot&quot; or &quot;DNC&quot;
-                in Close.
+                Select which lead statuses trigger automated outbound outreach
+                (intro SMS, drip campaigns). This does not affect inbound — use
+                Blocked Lead Statuses in the Audience tab to prevent the bot
+                from responding entirely.
               </p>
             </div>
             <LeadStatusSelector
