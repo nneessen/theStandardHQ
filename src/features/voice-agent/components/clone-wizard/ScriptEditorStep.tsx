@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -41,6 +41,14 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
   );
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [confirmReset, setConfirmReset] = useState(false);
+  const [saveCooldown, setSaveCooldown] = useState(false);
+  const cooldownRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  );
+
+  useEffect(() => {
+    return () => clearTimeout(cooldownRef.current);
+  }, []);
 
   // Use local edits if they exist, otherwise use fetched data
   const scripts = localScripts ?? scriptsData?.scripts ?? [];
@@ -106,11 +114,15 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
   );
 
   const handleSave = useCallback(() => {
-    if (!localScripts) return;
+    if (!localScripts || saveCooldown) return;
     updateMutation.mutate(localScripts, {
-      onSuccess: () => setLocalScripts(null),
+      onSuccess: () => {
+        setLocalScripts(null);
+        setSaveCooldown(true);
+        cooldownRef.current = setTimeout(() => setSaveCooldown(false), 3000);
+      },
     });
-  }, [localScripts, updateMutation]);
+  }, [localScripts, saveCooldown, updateMutation]);
 
   const handleReset = useCallback(() => {
     resetMutation.mutate(undefined, {
@@ -134,7 +146,8 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
     if (!scripts[i].category.trim())
       validationErrors.push(`Script ${i + 1}: category required`);
   }
-  const canSave = hasLocalEdits && validationErrors.length === 0;
+  const canSave =
+    hasLocalEdits && validationErrors.length === 0 && !saveCooldown;
 
   if (isLoading) {
     return (

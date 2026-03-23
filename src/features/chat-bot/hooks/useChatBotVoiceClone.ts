@@ -193,13 +193,25 @@ export function useUpdateVoiceCloneScripts() {
         { scripts },
       ),
     onSuccess: () => {
+      void queryClient.cancelQueries({
+        queryKey: chatBotKeys.voiceCloneScripts(),
+      });
       void queryClient.invalidateQueries({
         queryKey: chatBotKeys.voiceCloneScripts(),
       });
       toast.success("Scripts saved");
     },
     onError: (err) => {
-      toast.error(err.message || "Failed to save scripts");
+      if (
+        err.message?.includes("recording") ||
+        err.message?.includes("in progress")
+      ) {
+        toast.error(
+          "Finish or reset your current recording before editing scripts",
+        );
+      } else {
+        toast.error(err.message || "Failed to save scripts");
+      }
     },
   });
 }
@@ -211,13 +223,25 @@ export function useResetVoiceCloneScripts() {
     mutationFn: () =>
       chatBotApi<VoiceCloneScriptsResponse>("reset_voice_clone_scripts"),
     onSuccess: () => {
+      void queryClient.cancelQueries({
+        queryKey: chatBotKeys.voiceCloneScripts(),
+      });
       void queryClient.invalidateQueries({
         queryKey: chatBotKeys.voiceCloneScripts(),
       });
       toast.success("Scripts reset to defaults");
     },
     onError: (err) => {
-      toast.error(err.message || "Failed to reset scripts");
+      if (
+        err.message?.includes("recording") ||
+        err.message?.includes("in progress")
+      ) {
+        toast.error(
+          "Finish or reset your current recording before editing scripts",
+        );
+      } else {
+        toast.error(err.message || "Failed to reset scripts");
+      }
     },
   });
 }

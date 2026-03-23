@@ -1896,23 +1896,55 @@ serve(async (req) => {
 
       case "update_voice_clone_scripts": {
         const scripts = params.scripts;
-        console.log(
-          "[update_voice_clone_scripts] scripts:",
-          Array.isArray(scripts)
-            ? `array of ${scripts.length}`
-            : typeof scripts,
-        );
         if (!Array.isArray(scripts)) {
           return jsonResponse({ error: "scripts array is required" }, 400);
+        }
+        // Validate script entries before forwarding (proxy-layer contract enforcement)
+        if (scripts.length < 15 || scripts.length > 25) {
+          return jsonResponse(
+            {
+              error: `scripts must contain 15-25 entries, received ${scripts.length}`,
+            },
+            400,
+          );
+        }
+        for (let i = 0; i < scripts.length; i++) {
+          const s = scripts[i];
+          if (!s || typeof s !== "object") {
+            return jsonResponse(
+              { error: `scripts[${i}] must be an object` },
+              400,
+            );
+          }
+          if (typeof s.segmentIndex !== "number" || s.segmentIndex !== i) {
+            return jsonResponse(
+              {
+                error: `scripts[${i}].segmentIndex must be ${i} (sequential, 0-indexed)`,
+              },
+              400,
+            );
+          }
+          if (!s.category || !s.title || !s.scriptText) {
+            return jsonResponse(
+              {
+                error: `scripts[${i}] requires category, title, and scriptText`,
+              },
+              400,
+            );
+          }
+          if (typeof s.scriptText === "string" && s.scriptText.length > 10000) {
+            return jsonResponse(
+              {
+                error: `scripts[${i}].scriptText exceeds 10000 character limit`,
+              },
+              400,
+            );
+          }
         }
         const res = await callChatBotApi(
           "PUT",
           `/api/external/agents/${agentId}/voice/clone/scripts`,
           { scripts },
-        );
-        console.log(
-          "[update_voice_clone_scripts] response:",
-          JSON.stringify(res.data),
         );
         return sendResult(res);
       }
@@ -1956,6 +1988,15 @@ serve(async (req) => {
         // (@fastify/multipart's request.file() only sees fields before the file part)
         const upstreamForm = new FormData();
         const file = incomingFormData.get("file");
+
+        // M1: Enforce max segment size (50 MB) at the proxy layer
+        if (file instanceof File && file.size > 52_428_800) {
+          return jsonResponse(
+            { error: "Audio segment exceeds 50 MB limit" },
+            413,
+          );
+        }
+
         const segmentIndex =
           incomingFormData.get("segmentIndex") ?? params.segmentIndex;
         const durationSeconds =
@@ -1974,10 +2015,6 @@ serve(async (req) => {
         const res = await callChatBotApiMultipart(
           `/api/external/agents/${agentId}/voice/clone/${cloneId}/segments`,
           upstreamForm,
-        );
-        console.log(
-          "[upload_voice_clone_segment] backend response:",
-          JSON.stringify(res.data),
         );
         return sendResult(res);
       }
