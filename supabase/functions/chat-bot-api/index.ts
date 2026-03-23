@@ -1896,6 +1896,12 @@ serve(async (req) => {
 
       case "update_voice_clone_scripts": {
         const scripts = params.scripts;
+        console.log(
+          "[update_voice_clone_scripts] scripts:",
+          Array.isArray(scripts)
+            ? `array of ${scripts.length}`
+            : typeof scripts,
+        );
         if (!Array.isArray(scripts)) {
           return jsonResponse({ error: "scripts array is required" }, 400);
         }
@@ -1903,6 +1909,10 @@ serve(async (req) => {
           "PUT",
           `/api/external/agents/${agentId}/voice/clone/scripts`,
           { scripts },
+        );
+        console.log(
+          "[update_voice_clone_scripts] response:",
+          JSON.stringify(res.data),
         );
         return sendResult(res);
       }
@@ -1942,24 +1952,32 @@ serve(async (req) => {
             400,
           );
         }
-        // Reconstruct FormData for upstream: file + segmentIndex + durationSeconds
+        // Reconstruct FormData for upstream: text fields MUST come before file
+        // (@fastify/multipart's request.file() only sees fields before the file part)
         const upstreamForm = new FormData();
         const file = incomingFormData.get("file");
-        if (file) upstreamForm.append("file", file);
         const segmentIndex =
           incomingFormData.get("segmentIndex") ?? params.segmentIndex;
+        const durationSeconds =
+          incomingFormData.get("durationSeconds") ?? params.durationSeconds;
+
+        // Append text fields first — fastify multipart requires this ordering
         if (segmentIndex !== undefined && segmentIndex !== null) {
           upstreamForm.append("segmentIndex", String(segmentIndex));
         }
-        const durationSeconds =
-          incomingFormData.get("durationSeconds") ?? params.durationSeconds;
         if (durationSeconds !== undefined && durationSeconds !== null) {
           upstreamForm.append("durationSeconds", String(durationSeconds));
         }
+        // File must be last
+        if (file) upstreamForm.append("file", file);
 
         const res = await callChatBotApiMultipart(
           `/api/external/agents/${agentId}/voice/clone/${cloneId}/segments`,
           upstreamForm,
+        );
+        console.log(
+          "[upload_voice_clone_segment] backend response:",
+          JSON.stringify(res.data),
         );
         return sendResult(res);
       }
