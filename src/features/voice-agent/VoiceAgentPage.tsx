@@ -30,6 +30,7 @@ import {
   useChatBotRetellVoices,
   useChatBotVoiceEntitlement,
   useChatBotVoiceUsage,
+  useChatBotVoiceCloneStatus,
 } from "@/features/chat-bot";
 import { ConnectionCard } from "@/features/chat-bot";
 import { useUserActiveAddons } from "@/hooks/subscription";
@@ -56,6 +57,7 @@ import {
   type VoiceNextActionKey,
 } from "./lib/voice-agent-helpers";
 import { VoiceAgentOverviewTab } from "./components/VoiceAgentOverviewTab";
+import { VoiceCloneStatusCard } from "./components/VoiceCloneStatusCard";
 
 const VOICE_LAUNCH_INCLUDED_MINUTES = 500;
 const VOICE_LAUNCH_INCLUDED_MINUTES_TRIAL = 15;
@@ -571,6 +573,14 @@ export function VoiceAgentPage() {
   const voiceAgentPublished =
     voiceSetupState?.agent?.published === true ||
     retellRuntime?.agent?.is_published === true;
+
+  const shouldLoadCloneStatus =
+    activeTab === "setup" &&
+    activeSetupTab === "voice" &&
+    voiceAgentCreated &&
+    voiceAccessActive;
+  const { data: voiceCloneStatus, isLoading: cloneStatusLoading } =
+    useChatBotVoiceCloneStatus(shouldLoadCloneStatus);
 
   // ── nextAction.key: trust setup-state, fallback only when absent ──
   const setupStateNextActionKey = normalizeNextActionKey(
@@ -1251,6 +1261,17 @@ export function VoiceAgentPage() {
                       />
                     </div>
                   )}
+
+                  {activeSetupTab === "voice" &&
+                    voiceAgentCreated &&
+                    voiceAccessActive && (
+                      <div className="mb-3">
+                        <VoiceCloneStatusCard
+                          cloneStatus={voiceCloneStatus}
+                          isLoading={cloneStatusLoading}
+                        />
+                      </div>
+                    )}
 
                   <VoiceAgentRetellStudioCard
                     connection={agent?.connections?.retell}

@@ -11,6 +11,7 @@ export {
   useChatBotVoiceSetupState,
   useChatBotVoiceEntitlement,
   useChatBotVoiceUsage,
+  useChatBotVoiceCloneStatus,
   useChatBotCloseLeadStatuses,
   useStartVoiceTrial,
   useCreateVoiceAgent,
@@ -40,5 +41,6 @@ export {
   type ChatBotRetellVoiceSearchHit,
   type ChatBotVoiceSetupState,
   type ChatBotVoiceEntitlement,
+  type ChatBotVoiceCloneStatus,
   type ChatBotVoiceUsage,
 } from "./hooks/useChatBot";

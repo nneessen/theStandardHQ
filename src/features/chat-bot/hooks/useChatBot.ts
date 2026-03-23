@@ -37,6 +37,7 @@ export const chatBotKeys = {
   usage: () => [...chatBotKeys.all, "usage"] as const,
   voiceEntitlement: () => [...chatBotKeys.all, "voice-entitlement"] as const,
   voiceUsage: () => [...chatBotKeys.all, "voice-usage"] as const,
+  voiceCloneStatus: () => [...chatBotKeys.all, "voice-clone-status"] as const,
   closeStatus: () => [...chatBotKeys.all, "close-status"] as const,
   closeLeadStatuses: () => [...chatBotKeys.all, "close-lead-statuses"] as const,
   calendlyStatus: () => [...chatBotKeys.all, "calendly-status"] as const,
@@ -205,6 +206,16 @@ export interface ChatBotVoiceUsage {
   outboundCalls: number;
   inboundCalls: number;
   answeredCalls: number;
+}
+
+export interface ChatBotVoiceCloneStatus {
+  hasActiveClone: boolean;
+  activeVoiceId: string | null;
+  inProgressCloneId: string | null;
+  completedSegments: number;
+  totalSegments: number;
+  remainingAttempts: number;
+  cloneWizardUrl: string | null;
 }
 
 export interface ChatBotVoiceSetupState {
@@ -842,6 +853,39 @@ export function useChatBotVoiceUsage(enabled = true) {
     queryFn: () => chatBotApi<ChatBotVoiceUsage>("get_voice_usage"),
     enabled,
     staleTime: 30_000,
+    retry: (failureCount, error) => {
+      if (error instanceof ChatBotApiError && error.isTransportError) {
+        return false;
+      }
+      return failureCount < 1;
+    },
+  });
+}
+
+export function useChatBotVoiceCloneStatus(enabled = true) {
+  return useQuery<ChatBotVoiceCloneStatus | null, ChatBotApiError>({
+    queryKey: chatBotKeys.voiceCloneStatus(),
+    queryFn: async () => {
+      try {
+        return await chatBotApi<ChatBotVoiceCloneStatus>(
+          "get_voice_clone_status",
+        );
+      } catch (err) {
+        if (
+          err instanceof ChatBotApiError &&
+          (err.isNotProvisioned || err.isServiceError)
+        ) {
+          return null;
+        }
+        throw err;
+      }
+    },
+    enabled,
+    staleTime: 30_000,
+    refetchInterval: (query) => {
+      if (query.state.data?.inProgressCloneId) return 5_000;
+      return false;
+    },
     retry: (failureCount, error) => {
       if (error instanceof ChatBotApiError && error.isTransportError) {
         return false;

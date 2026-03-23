@@ -398,6 +398,30 @@ function sendResult(res: { ok: boolean; status: number; data: any }): Response {
   return jsonResponse(payload, status);
 }
 
+function getWebAppUrl(): string | null {
+  const explicit = Deno.env.get("STANDARD_CHAT_BOT_WEB_APP_URL");
+  if (explicit) return explicit.replace(/\/$/, "");
+  const apiUrl =
+    Deno.env.get("STANDARD_CHAT_BOT_API_URL") ||
+    Deno.env.get("CHAT_BOT_API_URL");
+  if (apiUrl) {
+    try {
+      const url = new URL(apiUrl);
+      if (url.hostname.startsWith("api-")) {
+        url.hostname = url.hostname.replace(/^api-/, "app-");
+        return url.origin;
+      }
+      if (url.hostname.startsWith("api.")) {
+        url.hostname = url.hostname.replace(/^api\./, "app.");
+        return url.origin;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  return null;
+}
+
 function sendConnectionStatusResult(
   res: { ok: boolean; status: number; data: any },
   mapPayload: (payload: any) => Record<string, unknown>,
@@ -1790,6 +1814,22 @@ serve(async (req) => {
           `/api/external/agents/${agentId}/voice-usage`,
         );
         return sendResult(res);
+      }
+
+      case "get_voice_clone_status": {
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/voice/clone-status`,
+        );
+        const { payload, status, errorMessage } = unwrap(res);
+        if (errorMessage) {
+          return jsonResponse({ error: errorMessage }, status);
+        }
+        const webAppUrl = getWebAppUrl();
+        const cloneWizardUrl = webAppUrl
+          ? `${webAppUrl}/agents/${agentId}/voice/clone`
+          : null;
+        return jsonResponse({ ...(payload ?? {}), cloneWizardUrl });
       }
 
       case "get_calendly_event_types": {
