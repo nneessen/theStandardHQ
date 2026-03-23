@@ -62,6 +62,7 @@ import { BillingPage } from "./features/billing/BillingPage";
 import { LeadIntelligenceDashboard } from "./features/admin/components/lead-vendors";
 import { ChatBotPage } from "./features/chat-bot";
 import { VoiceAgentPage } from "./features/voice-agent";
+import { VoiceCloneWizardPage } from "./features/voice-agent/components/VoiceCloneWizardPage";
 import { ChannelOrchestrationPage } from "./features/channel-orchestration";
 import { MarketingHubPage } from "./features/marketing";
 import { TemplateEditorPage } from "./features/marketing/components/templates/TemplateEditorPage";
@@ -549,6 +550,17 @@ const chatBotRoute = createRoute({
   ),
 });
 
+// Voice Clone Wizard route - must be before voice-agent so the more-specific path matches first
+const voiceCloneRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "voice-agent/clone",
+  component: () => (
+    <RouteGuard noRecruits noStaffRoles>
+      <VoiceCloneWizardPage />
+    </RouteGuard>
+  ),
+});
+
 // Voice Agent route - dedicated Premium Voice product surface
 const voiceAgentRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -982,6 +994,7 @@ const routeTree = rootRoute.addChildren([
   underwritingWizardRoute,
   quickQuoteRoute,
   chatBotRoute,
+  voiceCloneRoute,
   voiceAgentRoute,
   channelOrchestrationRoute,
   businessToolsRoute,

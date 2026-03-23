@@ -38,6 +38,9 @@ export const chatBotKeys = {
   voiceEntitlement: () => [...chatBotKeys.all, "voice-entitlement"] as const,
   voiceUsage: () => [...chatBotKeys.all, "voice-usage"] as const,
   voiceCloneStatus: () => [...chatBotKeys.all, "voice-clone-status"] as const,
+  voiceCloneScripts: () => [...chatBotKeys.all, "voice-clone-scripts"] as const,
+  voiceCloneSession: (cloneId: string) =>
+    [...chatBotKeys.all, "voice-clone-session", cloneId] as const,
   closeStatus: () => [...chatBotKeys.all, "close-status"] as const,
   closeLeadStatuses: () => [...chatBotKeys.all, "close-lead-statuses"] as const,
   calendlyStatus: () => [...chatBotKeys.all, "calendly-status"] as const,
@@ -508,7 +511,7 @@ function invalidateVoiceSetupQueries(queryClient: QueryClient) {
   });
 }
 
-function invalidateVoiceAgentQueries(queryClient: QueryClient) {
+export function invalidateVoiceAgentQueries(queryClient: QueryClient) {
   // Cancel in-flight polls before invalidating to prevent stale poll responses
   // from overwriting the fresh post-mutation data in the query cache.
   void queryClient.cancelQueries({

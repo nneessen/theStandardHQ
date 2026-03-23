@@ -127,6 +127,40 @@ async function callChatBotApi(
   }
 }
 
+// Helper to forward multipart form data to standard-chat-bot (for audio uploads)
+async function callChatBotApiMultipart(
+  path: string,
+  formData: FormData,
+  timeoutMs = 60_000,
+  // deno-lint-ignore no-explicit-any
+): Promise<{ ok: boolean; status: number; data: any }> {
+  const CHAT_BOT_API_URL =
+    Deno.env.get("STANDARD_CHAT_BOT_API_URL") ||
+    Deno.env.get("CHAT_BOT_API_URL");
+  const CHAT_BOT_API_KEY =
+    Deno.env.get("STANDARD_CHAT_BOT_EXTERNAL_API_KEY") ||
+    Deno.env.get("CHAT_BOT_API_KEY");
+
+  if (!CHAT_BOT_API_URL || !CHAT_BOT_API_KEY) {
+    throw new Error("CHAT_BOT_API_URL or CHAT_BOT_API_KEY not configured");
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(`${CHAT_BOT_API_URL}${path}`, {
+      method: "POST",
+      headers: { "X-API-Key": CHAT_BOT_API_KEY },
+      body: formData,
+      signal: controller.signal,
+    });
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, data };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function upsertRetellConnection(
   agentId: string,
   params: Record<string, unknown>,
@@ -516,10 +550,30 @@ serve(async (req) => {
     });
   }
 
+  // deno-lint-ignore no-explicit-any
+  let incomingFormData: FormData | null = null;
+
   try {
-    // Parse body once upfront (avoids stream-consumed issues)
-    const body = await req.json().catch(() => ({}));
-    const { action, ...params } = body;
+    // Parse body: detect multipart (audio uploads) vs JSON (everything else)
+    const contentType = req.headers.get("content-type") || "";
+    // deno-lint-ignore no-explicit-any
+    let action: string;
+    // deno-lint-ignore no-explicit-any
+    let params: Record<string, any>;
+
+    if (contentType.includes("multipart/form-data")) {
+      incomingFormData = await req.formData();
+      action = (incomingFormData.get("action") as string) || "";
+      params = {};
+      for (const [key, value] of incomingFormData.entries()) {
+        if (key !== "action" && key !== "file" && typeof value === "string") {
+          params[key] = value;
+        }
+      }
+    } else {
+      const body = await req.json().catch(() => ({}));
+      ({ action, ...params } = body);
+    }
 
     // ──────────────────────────────────────────────
     // Two-client pattern: auth client validates JWTs against the local/native
@@ -1830,6 +1884,123 @@ serve(async (req) => {
           ? `${webAppUrl}/agents/${agentId}/voice/clone`
           : null;
         return jsonResponse({ ...(payload ?? {}), cloneWizardUrl });
+      }
+
+      case "get_voice_clone_scripts": {
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/voice/clone/scripts`,
+        );
+        return sendResult(res);
+      }
+
+      case "start_voice_clone": {
+        const res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/voice/clone/start`,
+          {
+            voiceName: params.voiceName,
+            consentAccepted:
+              params.consentAccepted === true ||
+              params.consentAccepted === "true",
+          },
+        );
+        return sendResult(res);
+      }
+
+      case "upload_voice_clone_segment": {
+        const cloneId = params.clone_id;
+        if (!cloneId) {
+          return jsonResponse({ error: "clone_id is required" }, 400);
+        }
+        if (!incomingFormData) {
+          return jsonResponse(
+            {
+              error: "upload_voice_clone_segment requires multipart/form-data",
+            },
+            400,
+          );
+        }
+        // Reconstruct FormData for upstream: file + segmentIndex + durationSeconds
+        const upstreamForm = new FormData();
+        const file = incomingFormData.get("file");
+        if (file) upstreamForm.append("file", file);
+        const segmentIndex =
+          incomingFormData.get("segmentIndex") ?? params.segmentIndex;
+        if (segmentIndex !== undefined && segmentIndex !== null) {
+          upstreamForm.append("segmentIndex", String(segmentIndex));
+        }
+        const durationSeconds =
+          incomingFormData.get("durationSeconds") ?? params.durationSeconds;
+        if (durationSeconds !== undefined && durationSeconds !== null) {
+          upstreamForm.append("durationSeconds", String(durationSeconds));
+        }
+
+        const res = await callChatBotApiMultipart(
+          `/api/external/agents/${agentId}/voice/clone/${cloneId}/segments`,
+          upstreamForm,
+        );
+        return sendResult(res);
+      }
+
+      case "get_voice_clone_session": {
+        const cloneId = params.clone_id;
+        if (!cloneId) {
+          return jsonResponse({ error: "clone_id is required" }, 400);
+        }
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/voice/clone/${cloneId}`,
+        );
+        return sendResult(res);
+      }
+
+      case "submit_voice_clone": {
+        const cloneId = params.clone_id;
+        if (!cloneId) {
+          return jsonResponse({ error: "clone_id is required" }, 400);
+        }
+        const res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/voice/clone/${cloneId}/submit`,
+        );
+        return sendResult(res);
+      }
+
+      case "activate_voice_clone": {
+        const cloneId = params.clone_id;
+        if (!cloneId) {
+          return jsonResponse({ error: "clone_id is required" }, 400);
+        }
+        const res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/voice/clone/${cloneId}/activate`,
+        );
+        return sendResult(res);
+      }
+
+      case "deactivate_voice_clone": {
+        const res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/voice/clone/deactivate`,
+        );
+        return sendResult(res);
+      }
+
+      case "delete_voice_clone_segment": {
+        const cloneId = params.clone_id;
+        const segmentIndex = params.segment_index;
+        if (!cloneId || segmentIndex === undefined || segmentIndex === null) {
+          return jsonResponse(
+            { error: "clone_id and segment_index are required" },
+            400,
+          );
+        }
+        const res = await callChatBotApi(
+          "DELETE",
+          `/api/external/agents/${agentId}/voice/clone/${cloneId}/segments/${segmentIndex}`,
+        );
+        return sendResult(res);
       }
 
       case "get_calendly_event_types": {

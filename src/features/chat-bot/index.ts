@@ -44,3 +44,20 @@ export {
   type ChatBotVoiceCloneStatus,
   type ChatBotVoiceUsage,
 } from "./hooks/useChatBot";
+
+export {
+  useVoiceCloneScripts,
+  useVoiceCloneSession,
+  useStartVoiceClone,
+  useUploadVoiceCloneSegment,
+  useSubmitVoiceClone,
+  useActivateVoiceClone,
+  useDeactivateVoiceClone,
+  useDeleteVoiceCloneSegment,
+  type VoiceCloneScript,
+  type VoiceCloneScriptsResponse,
+  type VoiceCloneStartResponse,
+  type VoiceCloneSession,
+  type VoiceCloneSessionSegment,
+  type VoiceCloneSegmentUploadResponse,
+} from "./hooks/useChatBotVoiceClone";

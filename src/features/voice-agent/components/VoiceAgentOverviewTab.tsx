@@ -18,7 +18,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CloseCrmLogo } from "@/components/logos/CloseCrmLogo";
+import type { ChatBotVoiceCloneStatus } from "@/features/chat-bot";
 import type { VoiceAgentSetupStep } from "./VoiceAgentLanding";
+import { VoiceCloneStatusCard } from "./VoiceCloneStatusCard";
 
 // ─── Props ──────────────────────────────────────────────────────
 
@@ -49,6 +51,11 @@ interface VoiceAgentOverviewTabProps {
   voiceSnapshot?: { usage?: VoiceUsageLike } | null;
   trialIncludedMinutes: number;
   includedMinutes: number;
+  voiceCloneStatus?: ChatBotVoiceCloneStatus | null;
+  cloneStatusLoading?: boolean;
+  voiceAgentCreated?: boolean;
+  externalAgentId?: string | null;
+  onNavigateToVoiceClone?: () => void;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────
@@ -118,6 +125,10 @@ export function VoiceAgentOverviewTab({
   voiceSetupState,
   voiceSnapshot,
   includedMinutes,
+  voiceCloneStatus,
+  cloneStatusLoading = false,
+  voiceAgentCreated = false,
+  externalAgentId,
 }: VoiceAgentOverviewTabProps) {
   const usage =
     voiceEntitlement?.usage ??
@@ -352,6 +363,15 @@ export function VoiceAgentOverviewTab({
             ))}
           </div>
         </div>
+      )}
+
+      {/* ══════ Voice Cloning (subscribers with agent created) ══════ */}
+      {voiceAccessActive && voiceAgentCreated && (
+        <VoiceCloneStatusCard
+          cloneStatus={voiceCloneStatus}
+          isLoading={cloneStatusLoading}
+          agentId={externalAgentId}
+        />
       )}
 
       {/* ══════ Your Agent (subscribers with setup done) ══════ */}
