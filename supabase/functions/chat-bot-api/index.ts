@@ -111,14 +111,20 @@ async function callChatBotApi(
   if (hasBody) {
     headers["Content-Type"] = "application/json";
   }
-  const options: RequestInit = { method, headers };
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15_000);
+  const options: RequestInit = { method, headers, signal: controller.signal };
   if (hasBody) {
     options.body = JSON.stringify(body || {});
   }
 
-  const res = await fetch(url, options);
-  const data = await res.json().catch(() => ({}));
-  return { ok: res.ok, status: res.status, data };
+  try {
+    const res = await fetch(url, options);
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, data };
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 async function upsertRetellConnection(

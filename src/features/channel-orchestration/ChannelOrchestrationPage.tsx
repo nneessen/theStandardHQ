@@ -1,6 +1,7 @@
 // src/features/channel-orchestration/ChannelOrchestrationPage.tsx
 import { useState } from "react";
 import {
+  AlertTriangle,
   Construction,
   Network,
   ListChecks,
@@ -140,19 +141,47 @@ export function ChannelOrchestrationPage() {
         </div>
       </div>
 
-      {/* Under Construction Banner */}
-      <div className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 dark:border-amber-700 dark:bg-amber-950/30">
-        <Construction className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
-        <div>
-          <p className="text-[11px] font-semibold text-amber-800 dark:text-amber-200">
-            Under Construction
-          </p>
-          <p className="text-[10px] text-amber-600 dark:text-amber-400">
-            Channel Orchestration is actively being built. Rules, post-call
-            actions, and session history are not yet functional.
+      {/* Channel availability warning */}
+      {!agent.botEnabled && !agent.voiceEnabled && (
+        <div className="flex items-center gap-3 rounded-lg border border-red-300 bg-red-50 px-4 py-2 dark:border-red-700 dark:bg-red-950/30">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
+          <p className="text-[10px] text-red-700 dark:text-red-300">
+            Both SMS Bot and Voice Agent are disabled. Orchestration rules will
+            not be evaluated until at least one channel is active.
           </p>
         </div>
-      </div>
+      )}
+
+      {/* Per-tab status banners */}
+      {activeTab === "rules" && (
+        <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50/50 px-4 py-2 dark:border-blue-800 dark:bg-blue-950/20">
+          <ListChecks className="h-3.5 w-3.5 shrink-0 text-blue-500 dark:text-blue-400" />
+          <p className="text-[10px] text-blue-700 dark:text-blue-300">
+            Rules are evaluated in real-time for SMS and voice channels.
+            {!agent.voiceEnabled &&
+              " Voice Agent is not active — voice-only rules will have no effect."}
+            {!agent.botEnabled &&
+              " SMS Bot is not active — SMS-only rules will have no effect."}
+          </p>
+        </div>
+      )}
+      {activeTab === "post-call" && (
+        <div className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 dark:border-amber-700 dark:bg-amber-950/30">
+          <Construction className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+          <p className="text-[10px] text-amber-600 dark:text-amber-400">
+            Configuration is saved. Automatic post-call execution requires
+            backend Retell integration (coming soon).
+          </p>
+        </div>
+      )}
+      {activeTab === "sessions" && (
+        <div className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 dark:border-amber-700 dark:bg-amber-950/30">
+          <Construction className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
+          <p className="text-[10px] text-amber-600 dark:text-amber-400">
+            Voice session history depends on backend call recording integration.
+          </p>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex items-center gap-0.5 bg-zinc-200/50 dark:bg-zinc-800/50 rounded-md p-0.5 overflow-x-auto">

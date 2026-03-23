@@ -1075,6 +1075,1802 @@ const plainProfessionalBlocks: EmailBlock[] = [
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
+// 9. AI SMS Bot — Launch Announcement
+// ─────────────────────────────────────────────────────────────────────────────
+const smsBotLaunchBlocks: EmailBlock[] = [
+  {
+    id: "c9d0e1f2-0009-4000-8000-000000000001",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0;font-size:11px;font-weight:600;letter-spacing:0.15em;color:#22c55e;text-transform:uppercase;">NEW FEATURE</p>',
+    },
+    styles: {
+      backgroundColor: "#18181b",
+      padding: "14px 32px 10px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "c9d0e1f2-0009-4000-8000-000000000002",
+    type: "header",
+    content: {
+      type: "header",
+      title: "Your Leads Are Getting Texted Back in Seconds",
+      showLogo: false,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#fafafa",
+      padding: "20px 32px 12px",
+      alignment: "left",
+      fontSize: "28px",
+      fontWeight: "700",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      letterSpacing: "-0.02em",
+    },
+  },
+  {
+    id: "c9d0e1f2-0009-4000-8000-000000000003",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0;font-size:14px;line-height:1.6;color:#a1a1aa;">AI SMS Chat Bot is now active on your account. Every new lead gets an instant, personalized text within seconds — 24/7, 365 days a year. No more missed opportunities sitting in your CRM overnight.</p>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px 20px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "c9d0e1f2-0009-4000-8000-000000000004",
+    type: "divider",
+    content: {
+      type: "divider",
+      color: "#22c55e",
+      thickness: 3,
+      style: "solid",
+    },
+    styles: { padding: "0 32px" },
+  },
+  {
+    id: "c9d0e1f2-0009-4000-8000-000000000005",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "c9d0e1f2-0009-4000-8000-000000000006",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0 0 14px;font-size:11px;font-weight:600;letter-spacing:0.12em;color:#71717a;text-transform:uppercase;">HOW IT WORKS</p><table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td style="padding:12px 0;border-bottom:1px solid #27272a;vertical-align:top;width:40px;"><span style="font-size:22px;font-weight:700;color:#22c55e;">01</span></td><td style="padding:12px 0 12px 16px;border-bottom:1px solid #27272a;vertical-align:top;"><span style="font-size:13px;font-weight:600;color:#fafafa;">New lead enters your CRM</span><br/><span style="font-size:12px;color:#71717a;">Bot sends a personalized text in under 30 seconds — before the lead forgets they inquired.</span></td></tr><tr><td style="padding:12px 0;border-bottom:1px solid #27272a;vertical-align:top;width:40px;"><span style="font-size:22px;font-weight:700;color:#22c55e;">02</span></td><td style="padding:12px 0 12px 16px;border-bottom:1px solid #27272a;vertical-align:top;"><span style="font-size:13px;font-weight:600;color:#fafafa;">Lead replies</span><br/><span style="font-size:12px;color:#71717a;">Bot handles objections, qualifies interest, and steers the conversation toward a booked appointment.</span></td></tr><tr><td style="padding:12px 0;vertical-align:top;width:40px;"><span style="font-size:22px;font-weight:700;color:#22c55e;">03</span></td><td style="padding:12px 0 12px 16px;vertical-align:top;"><span style="font-size:13px;font-weight:600;color:#fafafa;">Appointment booked</span><br/><span style="font-size:12px;color:#71717a;">You get notified. Calendar is updated. Lead shows up ready to buy — all without you lifting a finger.</span></td></tr></table>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "c9d0e1f2-0009-4000-8000-000000000007",
+    type: "spacer",
+    content: { type: "spacer", height: 24 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "c9d0e1f2-0009-4000-8000-000000000008",
+    type: "columns",
+    content: {
+      type: "columns",
+      columnCount: 2,
+      gap: 12,
+      columns: [
+        {
+          blocks: [
+            {
+              id: "c9d0e1f2-0009-4000-8000-000000000009",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0;font-size:28px;font-weight:700;color:#22c55e;line-height:1;">< 30s</p><p style="margin:6px 0 0;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#71717a;text-transform:uppercase;">AVG RESPONSE TIME</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "20px",
+                borderRadius: "2px",
+                alignment: "center",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+        {
+          blocks: [
+            {
+              id: "c9d0e1f2-0009-4000-8000-000000000010",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0;font-size:28px;font-weight:700;color:#22c55e;line-height:1;">24/7</p><p style="margin:6px 0 0;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#71717a;text-transform:uppercase;">ALWAYS-ON AVAILABILITY</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "20px",
+                borderRadius: "2px",
+                alignment: "center",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+      ],
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+    },
+  },
+  {
+    id: "c9d0e1f2-0009-4000-8000-000000000011",
+    type: "spacer",
+    content: { type: "spacer", height: 24 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "c9d0e1f2-0009-4000-8000-000000000012",
+    type: "button",
+    content: {
+      type: "button",
+      text: "View Your Bot Dashboard",
+      url: "#",
+      buttonColor: "#22c55e",
+      textColor: "#09090b",
+      variant: "solid",
+      fullWidth: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontWeight: "600",
+      fontSize: "14px",
+    },
+  },
+  {
+    id: "c9d0e1f2-0009-4000-8000-000000000013",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0;font-size:12px;color:#71717a;text-align:center;">Your bot is already active. No setup required.</p>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "12px 32px 8px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "c9d0e1f2-0009-4000-8000-000000000014",
+    type: "footer",
+    content: {
+      type: "footer",
+      text: "© 2026 Your Company · Powered by AI SMS Chat Bot",
+      showUnsubscribe: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#52525b",
+      padding: "16px 32px",
+      alignment: "center",
+      fontSize: "11px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 10. AI SMS Bot — ROI Showcase
+// ─────────────────────────────────────────────────────────────────────────────
+const smsBotRoiBlocks: EmailBlock[] = [
+  {
+    id: "d0e1f2a3-0010-4000-8000-000000000001",
+    type: "header",
+    content: {
+      type: "header",
+      title: "Your AI Bot Results This Month",
+      showLogo: false,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#fafafa",
+      padding: "24px 32px 8px",
+      alignment: "left",
+      fontSize: "24px",
+      fontWeight: "700",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      letterSpacing: "-0.02em",
+    },
+  },
+  {
+    id: "d0e1f2a3-0010-4000-8000-000000000002",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0;font-size:12px;color:#71717a;">Performance Report — March 2026</p>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px 16px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "d0e1f2a3-0010-4000-8000-000000000003",
+    type: "divider",
+    content: {
+      type: "divider",
+      color: "#27272a",
+      thickness: 1,
+      style: "solid",
+    },
+    styles: { padding: "0 32px", backgroundColor: "#09090b" },
+  },
+  {
+    id: "d0e1f2a3-0010-4000-8000-000000000004",
+    type: "spacer",
+    content: { type: "spacer", height: 16 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "d0e1f2a3-0010-4000-8000-000000000005",
+    type: "columns",
+    content: {
+      type: "columns",
+      columnCount: 3,
+      gap: 10,
+      columns: [
+        {
+          blocks: [
+            {
+              id: "d0e1f2a3-0010-4000-8000-000000000006",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0;font-size:30px;font-weight:700;color:#22c55e;line-height:1;">847</p><p style="margin:4px 0 2px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:#a1a1aa;text-transform:uppercase;">Leads Contacted</p><p style="margin:0;font-size:11px;font-weight:600;color:#22c55e;">↑ 34%</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "16px",
+                borderRadius: "2px",
+                alignment: "center",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+        {
+          blocks: [
+            {
+              id: "d0e1f2a3-0010-4000-8000-000000000007",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0;font-size:30px;font-weight:700;color:#22c55e;line-height:1;">73%</p><p style="margin:4px 0 2px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:#a1a1aa;text-transform:uppercase;">Response Rate</p><p style="margin:0;font-size:11px;font-weight:600;color:#22c55e;">↑ 12%</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "16px",
+                borderRadius: "2px",
+                alignment: "center",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+        {
+          blocks: [
+            {
+              id: "d0e1f2a3-0010-4000-8000-000000000008",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0;font-size:30px;font-weight:700;color:#22c55e;line-height:1;">142</p><p style="margin:4px 0 2px;font-size:10px;font-weight:600;letter-spacing:0.1em;color:#a1a1aa;text-transform:uppercase;">Appts Booked</p><p style="margin:0;font-size:11px;font-weight:600;color:#22c55e;">↑ 28%</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "16px",
+                borderRadius: "2px",
+                alignment: "center",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+      ],
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+    },
+  },
+  {
+    id: "d0e1f2a3-0010-4000-8000-000000000009",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "d0e1f2a3-0010-4000-8000-000000000010",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0 0 12px;font-size:11px;font-weight:600;letter-spacing:0.12em;color:#71717a;text-transform:uppercase;">ATTRIBUTION BREAKDOWN</p><table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr style="border-bottom:2px solid #27272a;"><td style="padding:8px 0;font-size:11px;font-weight:600;color:#a1a1aa;text-transform:uppercase;letter-spacing:0.05em;">Lead Source</td><td style="padding:8px 0;font-size:11px;font-weight:600;color:#a1a1aa;text-align:right;">Contacted</td><td style="padding:8px 0;font-size:11px;font-weight:600;color:#a1a1aa;text-align:right;">Replied</td><td style="padding:8px 0;font-size:11px;font-weight:600;color:#a1a1aa;text-align:right;">Booked</td></tr><tr style="border-bottom:1px solid #1c1c1f;"><td style="padding:8px 0;font-size:12px;color:#d4d4d8;">Facebook Ads</td><td style="padding:8px 0;font-size:12px;color:#d4d4d8;text-align:right;">312</td><td style="padding:8px 0;font-size:12px;color:#d4d4d8;text-align:right;">228</td><td style="padding:8px 0;font-size:12px;color:#22c55e;font-weight:600;text-align:right;">52</td></tr><tr style="border-bottom:1px solid #1c1c1f;"><td style="padding:8px 0;font-size:12px;color:#d4d4d8;">Google Leads</td><td style="padding:8px 0;font-size:12px;color:#d4d4d8;text-align:right;">245</td><td style="padding:8px 0;font-size:12px;color:#d4d4d8;text-align:right;">189</td><td style="padding:8px 0;font-size:12px;color:#22c55e;font-weight:600;text-align:right;">48</td></tr><tr style="border-bottom:1px solid #1c1c1f;"><td style="padding:8px 0;font-size:12px;color:#d4d4d8;">Referrals</td><td style="padding:8px 0;font-size:12px;color:#d4d4d8;text-align:right;">180</td><td style="padding:8px 0;font-size:12px;color:#d4d4d8;text-align:right;">156</td><td style="padding:8px 0;font-size:12px;color:#22c55e;font-weight:600;text-align:right;">32</td></tr><tr><td style="padding:8px 0;font-size:12px;color:#d4d4d8;">Website</td><td style="padding:8px 0;font-size:12px;color:#d4d4d8;text-align:right;">110</td><td style="padding:8px 0;font-size:12px;color:#d4d4d8;text-align:right;">74</td><td style="padding:8px 0;font-size:12px;color:#22c55e;font-weight:600;text-align:right;">10</td></tr></table>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "d0e1f2a3-0010-4000-8000-000000000011",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "d0e1f2a3-0010-4000-8000-000000000012",
+    type: "quote",
+    content: {
+      type: "quote",
+      text: "The bot booked 142 appointments this month that would have otherwise gone unanswered. At an average policy value of $2,400, that's $340,800 in pipeline.",
+      accentColor: "#22c55e",
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#d4d4d8",
+      padding: "0 32px",
+      fontSize: "13px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "d0e1f2a3-0010-4000-8000-000000000013",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "d0e1f2a3-0010-4000-8000-000000000014",
+    type: "button",
+    content: {
+      type: "button",
+      text: "Open Full Analytics",
+      url: "#",
+      buttonColor: "#22c55e",
+      textColor: "#09090b",
+      variant: "solid",
+      fullWidth: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontWeight: "600",
+      fontSize: "14px",
+    },
+  },
+  {
+    id: "d0e1f2a3-0010-4000-8000-000000000015",
+    type: "footer",
+    content: {
+      type: "footer",
+      text: "© 2026 Your Company · AI SMS Bot Monthly Report",
+      showUnsubscribe: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#52525b",
+      padding: "16px 32px",
+      alignment: "center",
+      fontSize: "11px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 11. AI SMS Bot — Feature Deep-Dive
+// ─────────────────────────────────────────────────────────────────────────────
+const smsBotFeaturesBlocks: EmailBlock[] = [
+  {
+    id: "e1f2a3b4-0011-4000-8000-000000000001",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0;font-size:11px;font-weight:600;letter-spacing:0.15em;color:#22c55e;text-transform:uppercase;">PRODUCT GUIDE</p>',
+    },
+    styles: {
+      backgroundColor: "#18181b",
+      padding: "14px 32px 10px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "e1f2a3b4-0011-4000-8000-000000000002",
+    type: "header",
+    content: {
+      type: "header",
+      title: "Everything Your AI SMS Bot Can Do",
+      showLogo: false,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#fafafa",
+      padding: "20px 32px 20px",
+      alignment: "left",
+      fontSize: "26px",
+      fontWeight: "700",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      letterSpacing: "-0.02em",
+    },
+  },
+  {
+    id: "e1f2a3b4-0011-4000-8000-000000000003",
+    type: "divider",
+    content: {
+      type: "divider",
+      color: "#22c55e",
+      thickness: 3,
+      style: "solid",
+    },
+    styles: { padding: "0 32px", backgroundColor: "#09090b" },
+  },
+  {
+    id: "e1f2a3b4-0011-4000-8000-000000000004",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "e1f2a3b4-0011-4000-8000-000000000005",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0 0 6px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#22c55e;text-transform:uppercase;">OBJECTION HANDLING</p><p style="margin:0;font-size:13px;line-height:1.6;color:#d4d4d8;">Handles "I\'m not interested", "I already have insurance", "Call me later" and 40+ more objections. Turns cold responses into booked appointments with natural, multi-turn conversations.</p>',
+    },
+    styles: {
+      backgroundColor: "#18181b",
+      padding: "16px 20px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "e1f2a3b4-0011-4000-8000-000000000006",
+    type: "spacer",
+    content: { type: "spacer", height: 8 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "e1f2a3b4-0011-4000-8000-000000000007",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0 0 6px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#22c55e;text-transform:uppercase;">REAL CALENDAR INTEGRATION</p><p style="margin:0;font-size:13px;line-height:1.6;color:#d4d4d8;">Real-time sync with Calendly and Google Calendar. Books directly into your available slots. No double-bookings. Leads pick from your actual availability — not fake time windows.</p>',
+    },
+    styles: {
+      backgroundColor: "#18181b",
+      padding: "16px 20px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "e1f2a3b4-0011-4000-8000-000000000008",
+    type: "spacer",
+    content: { type: "spacer", height: 8 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "e1f2a3b4-0011-4000-8000-000000000009",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0 0 6px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#22c55e;text-transform:uppercase;">COMPLIANCE FIRST</p><p style="margin:0;font-size:13px;line-height:1.6;color:#d4d4d8;">Never quotes prices or coverage details over SMS. Enforces business hours by timezone. TCPA-aware messaging patterns. Full conversation audit trail for every interaction.</p>',
+    },
+    styles: {
+      backgroundColor: "#18181b",
+      padding: "16px 20px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "e1f2a3b4-0011-4000-8000-000000000010",
+    type: "spacer",
+    content: { type: "spacer", height: 8 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "e1f2a3b4-0011-4000-8000-000000000011",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0 0 6px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#22c55e;text-transform:uppercase;">LEAD SOURCE TARGETING</p><p style="margin:0;font-size:13px;line-height:1.6;color:#d4d4d8;">Filter which leads the bot contacts by source. Run different engagement strategies for Facebook vs Google vs referral leads. Full attribution tracking tells you exactly which sources convert.</p>',
+    },
+    styles: {
+      backgroundColor: "#18181b",
+      padding: "16px 20px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "e1f2a3b4-0011-4000-8000-000000000012",
+    type: "spacer",
+    content: { type: "spacer", height: 8 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "e1f2a3b4-0011-4000-8000-000000000013",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0 0 6px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#22c55e;text-transform:uppercase;">SMART FOLLOW-UP SEQUENCES</p><p style="margin:0;font-size:13px;line-height:1.6;color:#d4d4d8;">Multi-turn sequences that re-engage leads who went cold. Automatic escalation timing based on conversation history. Business hour enforcement ensures messages never land at 2 AM.</p>',
+    },
+    styles: {
+      backgroundColor: "#18181b",
+      padding: "16px 20px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "e1f2a3b4-0011-4000-8000-000000000014",
+    type: "spacer",
+    content: { type: "spacer", height: 24 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "e1f2a3b4-0011-4000-8000-000000000015",
+    type: "button",
+    content: {
+      type: "button",
+      text: "Configure Your Bot",
+      url: "#",
+      buttonColor: "#22c55e",
+      textColor: "#09090b",
+      variant: "solid",
+      fullWidth: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontWeight: "600",
+      fontSize: "14px",
+    },
+  },
+  {
+    id: "e1f2a3b4-0011-4000-8000-000000000016",
+    type: "footer",
+    content: {
+      type: "footer",
+      text: "© 2026 Your Company · AI SMS Bot Product Guide",
+      showUnsubscribe: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#52525b",
+      padding: "16px 32px",
+      alignment: "center",
+      fontSize: "11px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 12. Voice Agent — Launch Announcement
+// ─────────────────────────────────────────────────────────────────────────────
+const voiceAgentLaunchBlocks: EmailBlock[] = [
+  {
+    id: "f2a3b4c5-0012-4000-8000-000000000001",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0;font-size:11px;font-weight:600;letter-spacing:0.15em;color:#3b82f6;text-transform:uppercase;">NOW LIVE</p>',
+    },
+    styles: {
+      backgroundColor: "#18181b",
+      padding: "14px 32px 10px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "f2a3b4c5-0012-4000-8000-000000000002",
+    type: "header",
+    content: {
+      type: "header",
+      title: "Your Phone Lines Never Go to Voicemail Again",
+      showLogo: false,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#fafafa",
+      padding: "20px 32px 12px",
+      alignment: "left",
+      fontSize: "26px",
+      fontWeight: "700",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      letterSpacing: "-0.02em",
+    },
+  },
+  {
+    id: "f2a3b4c5-0012-4000-8000-000000000003",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0;font-size:14px;line-height:1.6;color:#a1a1aa;">AI Voice Agent is handling your inbound calls 24/7. Natural voice, real conversations, instant scheduling. Every missed call was a missed sale — not anymore.</p>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px 20px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "f2a3b4c5-0012-4000-8000-000000000004",
+    type: "divider",
+    content: {
+      type: "divider",
+      color: "#3b82f6",
+      thickness: 3,
+      style: "solid",
+    },
+    styles: { padding: "0 32px" },
+  },
+  {
+    id: "f2a3b4c5-0012-4000-8000-000000000005",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "f2a3b4c5-0012-4000-8000-000000000006",
+    type: "columns",
+    content: {
+      type: "columns",
+      columnCount: 2,
+      gap: 10,
+      columns: [
+        {
+          blocks: [
+            {
+              id: "f2a3b4c5-0012-4000-8000-000000000007",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0 0 8px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#3b82f6;text-transform:uppercase;">INBOUND COVERAGE</p><p style="margin:0;font-size:13px;line-height:1.5;color:#d4d4d8;">Answers every call. Greets callers by name when possible. Captures intent, qualifies the lead, and books appointments — or transfers to a live agent on demand.</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "16px",
+                borderRadius: "2px",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+        {
+          blocks: [
+            {
+              id: "f2a3b4c5-0012-4000-8000-000000000008",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0 0 8px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#3b82f6;text-transform:uppercase;">MISSED APPT RECOVERY</p><p style="margin:0;font-size:13px;line-height:1.5;color:#d4d4d8;">Automatically calls leads who no-showed. Reschedules into your next available slot within minutes. Recovers revenue you would otherwise lose permanently.</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "16px",
+                borderRadius: "2px",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+      ],
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+    },
+  },
+  {
+    id: "f2a3b4c5-0012-4000-8000-000000000009",
+    type: "spacer",
+    content: { type: "spacer", height: 10 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "f2a3b4c5-0012-4000-8000-000000000010",
+    type: "columns",
+    content: {
+      type: "columns",
+      columnCount: 2,
+      gap: 10,
+      columns: [
+        {
+          blocks: [
+            {
+              id: "f2a3b4c5-0012-4000-8000-000000000011",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0 0 8px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#3b82f6;text-transform:uppercase;">QUOTED LEAD FOLLOW-UP</p><p style="margin:0;font-size:13px;line-height:1.5;color:#d4d4d8;">Calls leads who received a quote but never responded. Re-engages with full context from their original conversation. Turns stale quotes into closed deals.</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "16px",
+                borderRadius: "2px",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+        {
+          blocks: [
+            {
+              id: "f2a3b4c5-0012-4000-8000-000000000012",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0 0 8px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#3b82f6;text-transform:uppercase;">HUMAN HANDOFF</p><p style="margin:0;font-size:13px;line-height:1.5;color:#d4d4d8;">When a caller asks for a real person, the agent transfers immediately to your configured number. You get the full transcript and context before picking up.</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "16px",
+                borderRadius: "2px",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+      ],
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+    },
+  },
+  {
+    id: "f2a3b4c5-0012-4000-8000-000000000013",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "f2a3b4c5-0012-4000-8000-000000000014",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0;font-size:12px;color:#71717a;text-align:center;letter-spacing:0.03em;">100+ voice options &nbsp;·&nbsp; Call recording &amp; transcripts &nbsp;·&nbsp; Hard minute capping</p>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "12px 32px",
+      borderWidth: "0 0 2px 0",
+      borderColor: "#3b82f6",
+      borderStyle: "solid",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "f2a3b4c5-0012-4000-8000-000000000015",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "f2a3b4c5-0012-4000-8000-000000000016",
+    type: "button",
+    content: {
+      type: "button",
+      text: "Explore Voice Agent Settings",
+      url: "#",
+      buttonColor: "#3b82f6",
+      textColor: "#ffffff",
+      variant: "solid",
+      fullWidth: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontWeight: "600",
+      fontSize: "14px",
+    },
+  },
+  {
+    id: "f2a3b4c5-0012-4000-8000-000000000017",
+    type: "footer",
+    content: {
+      type: "footer",
+      text: "© 2026 Your Company · Powered by AI Voice Agent",
+      showUnsubscribe: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#52525b",
+      padding: "16px 32px",
+      alignment: "center",
+      fontSize: "11px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 13. Voice Agent — Use Cases
+// ─────────────────────────────────────────────────────────────────────────────
+const voiceAgentUseCasesBlocks: EmailBlock[] = [
+  {
+    id: "a3b4c5d6-0013-4000-8000-000000000001",
+    type: "header",
+    content: {
+      type: "header",
+      title: "Three Ways Voice AI Is Closing More Deals",
+      showLogo: false,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#fafafa",
+      padding: "24px 32px 16px",
+      alignment: "left",
+      fontSize: "26px",
+      fontWeight: "700",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      letterSpacing: "-0.02em",
+    },
+  },
+  {
+    id: "a3b4c5d6-0013-4000-8000-000000000002",
+    type: "divider",
+    content: {
+      type: "divider",
+      color: "#3b82f6",
+      thickness: 3,
+      style: "solid",
+    },
+    styles: { padding: "0 32px", backgroundColor: "#09090b" },
+  },
+  {
+    id: "a3b4c5d6-0013-4000-8000-000000000003",
+    type: "spacer",
+    content: { type: "spacer", height: 24 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "a3b4c5d6-0013-4000-8000-000000000004",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td style="vertical-align:top;width:60px;padding:0 16px 0 0;"><span style="font-size:36px;font-weight:700;color:#3b82f6;line-height:1;">01</span></td><td style="vertical-align:top;"><p style="margin:0 0 4px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#71717a;text-transform:uppercase;">MISSED APPOINTMENT RECOVERY</p><p style="margin:0 0 8px;font-size:13px;line-height:1.6;color:#d4d4d8;">A lead no-shows their 2pm appointment. By 2:05pm, Voice Agent has called them, confirmed their interest, and rescheduled for tomorrow at 10am. No staff time required.</p><p style="margin:0;font-size:12px;font-weight:600;color:#3b82f6;">Average recovery rate: 38%</p></td></tr></table>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px 20px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "a3b4c5d6-0013-4000-8000-000000000005",
+    type: "divider",
+    content: {
+      type: "divider",
+      color: "#27272a",
+      thickness: 1,
+      style: "solid",
+    },
+    styles: { padding: "0 32px", backgroundColor: "#09090b" },
+  },
+  {
+    id: "a3b4c5d6-0013-4000-8000-000000000006",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "a3b4c5d6-0013-4000-8000-000000000007",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td style="vertical-align:top;width:60px;padding:0 16px 0 0;"><span style="font-size:36px;font-weight:700;color:#3b82f6;line-height:1;">02</span></td><td style="vertical-align:top;"><p style="margin:0 0 4px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#71717a;text-transform:uppercase;">AFTER-HOURS INBOUND</p><p style="margin:0 0 8px;font-size:13px;line-height:1.6;color:#d4d4d8;">It\'s 8:47pm. A prospect calls about the life insurance quote they received. Voice Agent answers, pulls up their quote context, answers questions, and books a follow-up for 9am tomorrow.</p><p style="margin:0;font-size:12px;font-weight:600;color:#3b82f6;">47% of insurance calls happen outside business hours</p></td></tr></table>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px 20px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "a3b4c5d6-0013-4000-8000-000000000008",
+    type: "divider",
+    content: {
+      type: "divider",
+      color: "#27272a",
+      thickness: 1,
+      style: "solid",
+    },
+    styles: { padding: "0 32px", backgroundColor: "#09090b" },
+  },
+  {
+    id: "a3b4c5d6-0013-4000-8000-000000000009",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "a3b4c5d6-0013-4000-8000-000000000010",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td style="vertical-align:top;width:60px;padding:0 16px 0 0;"><span style="font-size:36px;font-weight:700;color:#3b82f6;line-height:1;">03</span></td><td style="vertical-align:top;"><p style="margin:0 0 4px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#71717a;text-transform:uppercase;">QUOTED LEAD RE-ENGAGEMENT</p><p style="margin:0 0 8px;font-size:13px;line-height:1.6;color:#d4d4d8;">A lead received an auto quote 3 days ago but never responded. Voice Agent calls them, references their specific quote, handles the "I need to think about it" objection, and books a meeting.</p><p style="margin:0;font-size:12px;font-weight:600;color:#3b82f6;">Quoted leads contacted within 72hrs close 2.3x more often</p></td></tr></table>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "a3b4c5d6-0013-4000-8000-000000000011",
+    type: "spacer",
+    content: { type: "spacer", height: 28 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "a3b4c5d6-0013-4000-8000-000000000012",
+    type: "button",
+    content: {
+      type: "button",
+      text: "Activate Voice Agent",
+      url: "#",
+      buttonColor: "#3b82f6",
+      textColor: "#ffffff",
+      variant: "solid",
+      fullWidth: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontWeight: "600",
+      fontSize: "14px",
+    },
+  },
+  {
+    id: "a3b4c5d6-0013-4000-8000-000000000013",
+    type: "footer",
+    content: {
+      type: "footer",
+      text: "© 2026 Your Company · AI Voice Agent Use Cases",
+      showUnsubscribe: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#52525b",
+      padding: "16px 32px",
+      alignment: "center",
+      fontSize: "11px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 14. Voice Agent — ROI Showcase
+// ─────────────────────────────────────────────────────────────────────────────
+const voiceAgentRoiBlocks: EmailBlock[] = [
+  {
+    id: "b4c5d6e7-0014-4000-8000-000000000001",
+    type: "header",
+    content: {
+      type: "header",
+      title: "Voice Agent Impact Report",
+      showLogo: false,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#fafafa",
+      padding: "24px 32px 8px",
+      alignment: "left",
+      fontSize: "24px",
+      fontWeight: "700",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      letterSpacing: "-0.02em",
+    },
+  },
+  {
+    id: "b4c5d6e7-0014-4000-8000-000000000002",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0;font-size:12px;color:#71717a;">Monthly Performance Summary</p>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px 16px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "b4c5d6e7-0014-4000-8000-000000000003",
+    type: "divider",
+    content: {
+      type: "divider",
+      color: "#27272a",
+      thickness: 1,
+      style: "solid",
+    },
+    styles: { padding: "0 32px", backgroundColor: "#09090b" },
+  },
+  {
+    id: "b4c5d6e7-0014-4000-8000-000000000004",
+    type: "spacer",
+    content: { type: "spacer", height: 16 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "b4c5d6e7-0014-4000-8000-000000000005",
+    type: "columns",
+    content: {
+      type: "columns",
+      columnCount: 3,
+      gap: 10,
+      columns: [
+        {
+          blocks: [
+            {
+              id: "b4c5d6e7-0014-4000-8000-000000000006",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0;font-size:30px;font-weight:700;color:#3b82f6;line-height:1;">1,247</p><p style="margin:4px 0 0;font-size:10px;font-weight:600;letter-spacing:0.1em;color:#a1a1aa;text-transform:uppercase;">Calls Handled</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "16px",
+                borderRadius: "2px",
+                alignment: "center",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+        {
+          blocks: [
+            {
+              id: "b4c5d6e7-0014-4000-8000-000000000007",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0;font-size:30px;font-weight:700;color:#3b82f6;line-height:1;">38%</p><p style="margin:4px 0 0;font-size:10px;font-weight:600;letter-spacing:0.1em;color:#a1a1aa;text-transform:uppercase;">No-Show Recovery</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "16px",
+                borderRadius: "2px",
+                alignment: "center",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+        {
+          blocks: [
+            {
+              id: "b4c5d6e7-0014-4000-8000-000000000008",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0;font-size:30px;font-weight:700;color:#3b82f6;line-height:1;">$89K</p><p style="margin:4px 0 0;font-size:10px;font-weight:600;letter-spacing:0.1em;color:#a1a1aa;text-transform:uppercase;">Pipeline Recovered</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "16px",
+                borderRadius: "2px",
+                alignment: "center",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+      ],
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+    },
+  },
+  {
+    id: "b4c5d6e7-0014-4000-8000-000000000009",
+    type: "spacer",
+    content: { type: "spacer", height: 24 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "b4c5d6e7-0014-4000-8000-000000000010",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0 0 12px;font-size:11px;font-weight:600;letter-spacing:0.12em;color:#71717a;text-transform:uppercase;">BEFORE vs AFTER</p><table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr style="border-bottom:2px solid #27272a;"><td style="padding:8px 0;font-size:11px;font-weight:600;color:#a1a1aa;text-transform:uppercase;letter-spacing:0.05em;">Metric</td><td style="padding:8px 0;font-size:11px;font-weight:600;color:#a1a1aa;text-align:right;">Before</td><td style="padding:8px 0;font-size:11px;font-weight:600;color:#a1a1aa;text-align:right;">After</td><td style="padding:8px 0;font-size:11px;font-weight:600;color:#a1a1aa;text-align:right;">Change</td></tr><tr style="border-bottom:1px solid #1c1c1f;"><td style="padding:8px 0;font-size:12px;color:#d4d4d8;">Missed calls / day</td><td style="padding:8px 0;font-size:12px;color:#71717a;text-align:right;">12</td><td style="padding:8px 0;font-size:12px;color:#d4d4d8;text-align:right;">0</td><td style="padding:8px 0;font-size:12px;font-weight:600;color:#22c55e;text-align:right;">-100%</td></tr><tr style="border-bottom:1px solid #1c1c1f;"><td style="padding:8px 0;font-size:12px;color:#d4d4d8;">Avg response time</td><td style="padding:8px 0;font-size:12px;color:#71717a;text-align:right;">4.2 hrs</td><td style="padding:8px 0;font-size:12px;color:#d4d4d8;text-align:right;">Instant</td><td style="padding:8px 0;font-size:12px;font-weight:600;color:#22c55e;text-align:right;">—</td></tr><tr style="border-bottom:1px solid #1c1c1f;"><td style="padding:8px 0;font-size:12px;color:#d4d4d8;">After-hours coverage</td><td style="padding:8px 0;font-size:12px;color:#71717a;text-align:right;">None</td><td style="padding:8px 0;font-size:12px;color:#d4d4d8;text-align:right;">24/7</td><td style="padding:8px 0;font-size:12px;font-weight:600;color:#3b82f6;text-align:right;">New</td></tr><tr><td style="padding:8px 0;font-size:12px;color:#d4d4d8;">No-show reschedule rate</td><td style="padding:8px 0;font-size:12px;color:#71717a;text-align:right;">8%</td><td style="padding:8px 0;font-size:12px;color:#d4d4d8;text-align:right;">38%</td><td style="padding:8px 0;font-size:12px;font-weight:600;color:#22c55e;text-align:right;">+375%</td></tr></table>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "b4c5d6e7-0014-4000-8000-000000000011",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "b4c5d6e7-0014-4000-8000-000000000012",
+    type: "quote",
+    content: {
+      type: "quote",
+      text: "We recovered 89 appointments from no-shows alone. That's $213,600 in annual premium that was walking out the door.",
+      accentColor: "#3b82f6",
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#d4d4d8",
+      padding: "0 32px",
+      fontSize: "13px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "b4c5d6e7-0014-4000-8000-000000000013",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "b4c5d6e7-0014-4000-8000-000000000014",
+    type: "button",
+    content: {
+      type: "button",
+      text: "View Full Call Analytics",
+      url: "#",
+      buttonColor: "#3b82f6",
+      textColor: "#ffffff",
+      variant: "solid",
+      fullWidth: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontWeight: "600",
+      fontSize: "14px",
+    },
+  },
+  {
+    id: "b4c5d6e7-0014-4000-8000-000000000015",
+    type: "footer",
+    content: {
+      type: "footer",
+      text: "© 2026 Your Company · Voice Agent Impact Report",
+      showUnsubscribe: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#52525b",
+      padding: "16px 32px",
+      alignment: "center",
+      fontSize: "11px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 15. Channel Orchestrator — Launch
+// ─────────────────────────────────────────────────────────────────────────────
+const orchestratorLaunchBlocks: EmailBlock[] = [
+  {
+    id: "c5d6e7f8-0015-4000-8000-000000000001",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0;font-size:11px;font-weight:600;letter-spacing:0.15em;color:#a855f7;text-transform:uppercase;">INTELLIGENCE LAYER</p>',
+    },
+    styles: {
+      backgroundColor: "#18181b",
+      padding: "14px 32px 10px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "c5d6e7f8-0015-4000-8000-000000000002",
+    type: "header",
+    content: {
+      type: "header",
+      title: "One Brain Controlling Every Touchpoint",
+      showLogo: false,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#fafafa",
+      padding: "20px 32px 12px",
+      alignment: "left",
+      fontSize: "26px",
+      fontWeight: "700",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      letterSpacing: "-0.02em",
+    },
+  },
+  {
+    id: "c5d6e7f8-0015-4000-8000-000000000003",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0;font-size:14px;line-height:1.6;color:#a1a1aa;">Channel Orchestrator decides whether to text or call each lead — and when. No more manual follow-up decisions. No more leads slipping through the cracks.</p>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px 20px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "c5d6e7f8-0015-4000-8000-000000000004",
+    type: "divider",
+    content: {
+      type: "divider",
+      color: "#a855f7",
+      thickness: 3,
+      style: "solid",
+    },
+    styles: { padding: "0 32px" },
+  },
+  {
+    id: "c5d6e7f8-0015-4000-8000-000000000005",
+    type: "spacer",
+    content: { type: "spacer", height: 24 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "c5d6e7f8-0015-4000-8000-000000000006",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td style="background:#18181b;border-left:4px solid #a855f7;padding:14px 16px;border-radius:2px;"><p style="margin:0 0 4px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#a855f7;text-transform:uppercase;">STEP 1</p><p style="margin:0;font-size:13px;font-weight:600;color:#fafafa;">Lead Enters Your CRM</p><p style="margin:4px 0 0;font-size:12px;color:#71717a;">New lead from any source — Facebook, Google, referral, website form.</p></td></tr><tr><td style="padding:6px 0 6px 20px;"><span style="font-size:16px;color:#52525b;">↓</span></td></tr><tr><td style="background:#18181b;border-left:4px solid #a855f7;padding:14px 16px;border-radius:2px;"><p style="margin:0 0 4px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#a855f7;text-transform:uppercase;">STEP 2</p><p style="margin:0;font-size:13px;font-weight:600;color:#fafafa;">Orchestrator Evaluates</p><p style="margin:4px 0 0;font-size:12px;color:#71717a;">Checks lead source, status, time of day, conversation history, and your custom rules.</p></td></tr><tr><td style="padding:6px 0 6px 20px;"><span style="font-size:16px;color:#52525b;">↓</span></td></tr><tr><td style="background:#18181b;border-left:4px solid #a855f7;padding:14px 16px;border-radius:2px;"><p style="margin:0 0 4px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#a855f7;text-transform:uppercase;">STEP 3</p><p style="margin:0;font-size:13px;font-weight:600;color:#fafafa;">Routes to Best Channel</p><p style="margin:4px 0 0;font-size:12px;color:#71717a;">SMS or Voice — right channel, right time, right message. Escalates automatically if needed.</p></td></tr></table>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "c5d6e7f8-0015-4000-8000-000000000007",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "c5d6e7f8-0015-4000-8000-000000000008",
+    type: "columns",
+    content: {
+      type: "columns",
+      columnCount: 2,
+      gap: 10,
+      columns: [
+        {
+          blocks: [
+            {
+              id: "c5d6e7f8-0015-4000-8000-000000000009",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0 0 8px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#a855f7;text-transform:uppercase;">SMART ESCALATION</p><p style="margin:0;font-size:13px;line-height:1.5;color:#d4d4d8;">Starts with SMS. If no response in your configured window, automatically escalates to a voice call. Configurable per lead source and status.</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "16px",
+                borderRadius: "2px",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+        {
+          blocks: [
+            {
+              id: "c5d6e7f8-0015-4000-8000-000000000010",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0 0 8px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#a855f7;text-transform:uppercase;">TIME WINDOWS</p><p style="margin:0;font-size:13px;line-height:1.5;color:#d4d4d8;">Respects business hours by timezone. Never texts at midnight. Knows when each lead\'s market is awake and queues outreach accordingly.</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "16px",
+                borderRadius: "2px",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+      ],
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+    },
+  },
+  {
+    id: "c5d6e7f8-0015-4000-8000-000000000011",
+    type: "spacer",
+    content: { type: "spacer", height: 24 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "c5d6e7f8-0015-4000-8000-000000000012",
+    type: "button",
+    content: {
+      type: "button",
+      text: "Configure Routing Rules",
+      url: "#",
+      buttonColor: "#a855f7",
+      textColor: "#ffffff",
+      variant: "solid",
+      fullWidth: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontWeight: "600",
+      fontSize: "14px",
+    },
+  },
+  {
+    id: "c5d6e7f8-0015-4000-8000-000000000013",
+    type: "footer",
+    content: {
+      type: "footer",
+      text: "© 2026 Your Company · Powered by Channel Orchestrator",
+      showUnsubscribe: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#52525b",
+      padding: "16px 32px",
+      alignment: "center",
+      fontSize: "11px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 16. Channel Orchestrator — Workflow Showcase
+// ─────────────────────────────────────────────────────────────────────────────
+const orchestratorWorkflowBlocks: EmailBlock[] = [
+  {
+    id: "d6e7f8a9-0016-4000-8000-000000000001",
+    type: "header",
+    content: {
+      type: "header",
+      title: "See the Orchestrator in Action",
+      showLogo: false,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#fafafa",
+      padding: "24px 32px 16px",
+      alignment: "left",
+      fontSize: "26px",
+      fontWeight: "700",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      letterSpacing: "-0.02em",
+    },
+  },
+  {
+    id: "d6e7f8a9-0016-4000-8000-000000000002",
+    type: "divider",
+    content: {
+      type: "divider",
+      color: "#a855f7",
+      thickness: 3,
+      style: "solid",
+    },
+    styles: { padding: "0 32px", backgroundColor: "#09090b" },
+  },
+  {
+    id: "d6e7f8a9-0016-4000-8000-000000000003",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "d6e7f8a9-0016-4000-8000-000000000004",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0;font-size:11px;font-weight:600;letter-spacing:0.15em;color:#a855f7;text-transform:uppercase;">SCENARIO: QUOTED LEAD GOES COLD</p>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px 16px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "d6e7f8a9-0016-4000-8000-000000000005",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;"><tr><td style="border-left:3px solid #52525b;padding:10px 0 10px 16px;"><span style="font-size:11px;font-weight:700;color:#71717a;">Day 0</span><br/><span style="font-size:13px;color:#d4d4d8;">Lead receives auto quote via email. No response.</span></td></tr><tr><td style="border-left:3px solid #a855f7;padding:10px 0 10px 16px;background:#18181b1a;"><span style="font-size:11px;font-weight:700;color:#a855f7;">Day 1</span><br/><span style="font-size:13px;color:#d4d4d8;">Orchestrator triggers SMS: "Hi Sarah, I saw you got a quote for your auto coverage. Have a few minutes to go over it?"</span></td></tr><tr><td style="border-left:3px solid #a855f7;padding:10px 0 10px 16px;"><span style="font-size:11px;font-weight:700;color:#a855f7;">Day 1 +4h</span><br/><span style="font-size:13px;color:#d4d4d8;">No reply. Orchestrator queues voice call for next business morning.</span></td></tr><tr><td style="border-left:3px solid #22c55e;padding:10px 0 10px 16px;background:#18181b1a;"><span style="font-size:11px;font-weight:700;color:#22c55e;">Day 2 · 9:01am</span><br/><span style="font-size:13px;color:#d4d4d8;">Voice Agent calls Sarah. She had questions about deductibles. Agent answers them, books appointment for Thursday 2pm.</span></td></tr><tr><td style="border-left:3px solid #22c55e;padding:10px 0 10px 16px;"><span style="font-size:11px;font-weight:700;color:#22c55e;">Day 2 · 9:03am</span><br/><span style="font-size:13px;color:#d4d4d8;">CRM status auto-updated to "Appointment Set". Transcript written to lead notes. Custom fields populated with call outcome.</span></td></tr></table>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "d6e7f8a9-0016-4000-8000-000000000006",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "d6e7f8a9-0016-4000-8000-000000000007",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<div style="border-left:4px solid #22c55e;background:#18181b;padding:14px 16px;border-radius:2px;"><p style="margin:0 0 4px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#22c55e;text-transform:uppercase;">OUTCOME</p><p style="margin:0;font-size:13px;line-height:1.5;color:#d4d4d8;">Lead converted from cold quote to booked appointment in 26 hours with zero human effort. CRM fully updated. Agent prepared with full context before the meeting.</p></div>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "d6e7f8a9-0016-4000-8000-000000000008",
+    type: "spacer",
+    content: { type: "spacer", height: 24 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "d6e7f8a9-0016-4000-8000-000000000009",
+    type: "button",
+    content: {
+      type: "button",
+      text: "Build Your First Rule",
+      url: "#",
+      buttonColor: "#a855f7",
+      textColor: "#ffffff",
+      variant: "solid",
+      fullWidth: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontWeight: "600",
+      fontSize: "14px",
+    },
+  },
+  {
+    id: "d6e7f8a9-0016-4000-8000-000000000010",
+    type: "footer",
+    content: {
+      type: "footer",
+      text: "© 2026 Your Company · Channel Orchestrator Workflow",
+      showUnsubscribe: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#52525b",
+      padding: "16px 32px",
+      alignment: "center",
+      fontSize: "11px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 17. Channel Orchestrator — Integration Highlight
+// ─────────────────────────────────────────────────────────────────────────────
+const orchestratorIntegrationBlocks: EmailBlock[] = [
+  {
+    id: "e7f8a9b0-0017-4000-8000-000000000001",
+    type: "header",
+    content: {
+      type: "header",
+      title: "Your CRM Runs Itself Now",
+      showLogo: false,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#fafafa",
+      padding: "24px 32px 12px",
+      alignment: "left",
+      fontSize: "28px",
+      fontWeight: "700",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      letterSpacing: "-0.02em",
+    },
+  },
+  {
+    id: "e7f8a9b0-0017-4000-8000-000000000002",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0;font-size:14px;line-height:1.6;color:#a1a1aa;">Every call outcome, every text conversation, every status change — automatically synced to your CRM. Zero manual data entry. Zero missed updates.</p>',
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px 20px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "e7f8a9b0-0017-4000-8000-000000000003",
+    type: "divider",
+    content: {
+      type: "divider",
+      color: "#a855f7",
+      thickness: 3,
+      style: "solid",
+    },
+    styles: { padding: "0 32px" },
+  },
+  {
+    id: "e7f8a9b0-0017-4000-8000-000000000004",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "e7f8a9b0-0017-4000-8000-000000000005",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0 0 6px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#a855f7;text-transform:uppercase;">AUTO-STATUS UPDATES</p><p style="margin:0;font-size:13px;line-height:1.6;color:#d4d4d8;">Call outcomes automatically move leads through your pipeline. "Appointment Set", "Not Interested", "Call Back Later" — the CRM reflects reality in real time, not when someone remembers to update it.</p>',
+    },
+    styles: {
+      backgroundColor: "#18181b",
+      padding: "16px 20px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "e7f8a9b0-0017-4000-8000-000000000006",
+    type: "spacer",
+    content: { type: "spacer", height: 8 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "e7f8a9b0-0017-4000-8000-000000000007",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0 0 6px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#a855f7;text-transform:uppercase;">TRANSCRIPT WRITEBACK</p><p style="margin:0;font-size:13px;line-height:1.6;color:#d4d4d8;">Every voice conversation is transcribed and written to the lead\'s notes in your CRM. Full context for when you pick up the conversation — no asking "what did we discuss last time?"</p>',
+    },
+    styles: {
+      backgroundColor: "#18181b",
+      padding: "16px 20px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "e7f8a9b0-0017-4000-8000-000000000008",
+    type: "spacer",
+    content: { type: "spacer", height: 8 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "e7f8a9b0-0017-4000-8000-000000000009",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0 0 6px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#a855f7;text-transform:uppercase;">CUSTOM FIELD MAPPING</p><p style="margin:0;font-size:13px;line-height:1.6;color:#d4d4d8;">Call duration, disposition, next action date, quote interest level — all mapped to your CRM\'s custom fields automatically. Build reports and smart views without manual tagging.</p>',
+    },
+    styles: {
+      backgroundColor: "#18181b",
+      padding: "16px 20px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "e7f8a9b0-0017-4000-8000-000000000010",
+    type: "spacer",
+    content: { type: "spacer", height: 8 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "e7f8a9b0-0017-4000-8000-000000000011",
+    type: "text",
+    content: {
+      type: "text",
+      html: '<p style="margin:0 0 6px;font-size:10px;font-weight:600;letter-spacing:0.12em;color:#a855f7;text-transform:uppercase;">CONVERSATION HISTORY AWARE</p><p style="margin:0;font-size:13px;line-height:1.6;color:#d4d4d8;">The orchestrator knows what\'s already been said. Won\'t re-contact a lead that booked yesterday. Won\'t call someone the bot texted an hour ago. Intelligent cooldowns prevent over-contacting.</p>',
+    },
+    styles: {
+      backgroundColor: "#18181b",
+      padding: "16px 20px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+  {
+    id: "e7f8a9b0-0017-4000-8000-000000000012",
+    type: "spacer",
+    content: { type: "spacer", height: 20 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "e7f8a9b0-0017-4000-8000-000000000013",
+    type: "columns",
+    content: {
+      type: "columns",
+      columnCount: 3,
+      gap: 10,
+      columns: [
+        {
+          blocks: [
+            {
+              id: "e7f8a9b0-0017-4000-8000-000000000014",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0;font-size:28px;font-weight:700;color:#a855f7;line-height:1;">0</p><p style="margin:4px 0 0;font-size:10px;font-weight:600;letter-spacing:0.1em;color:#a1a1aa;text-transform:uppercase;">Manual Entries</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "16px",
+                borderRadius: "2px",
+                alignment: "center",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+        {
+          blocks: [
+            {
+              id: "e7f8a9b0-0017-4000-8000-000000000015",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0;font-size:28px;font-weight:700;color:#a855f7;line-height:1;">100%</p><p style="margin:4px 0 0;font-size:10px;font-weight:600;letter-spacing:0.1em;color:#a1a1aa;text-transform:uppercase;">Calls Logged</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "16px",
+                borderRadius: "2px",
+                alignment: "center",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+        {
+          blocks: [
+            {
+              id: "e7f8a9b0-0017-4000-8000-000000000016",
+              type: "text",
+              content: {
+                type: "text",
+                html: '<p style="margin:0;font-size:28px;font-weight:700;color:#a855f7;line-height:1;">< 5s</p><p style="margin:4px 0 0;font-size:10px;font-weight:600;letter-spacing:0.1em;color:#a1a1aa;text-transform:uppercase;">Sync Delay</p>',
+              },
+              styles: {
+                backgroundColor: "#18181b",
+                padding: "16px",
+                borderRadius: "2px",
+                alignment: "center",
+                fontFamily:
+                  "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+              },
+            },
+          ],
+        },
+      ],
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+    },
+  },
+  {
+    id: "e7f8a9b0-0017-4000-8000-000000000017",
+    type: "spacer",
+    content: { type: "spacer", height: 24 },
+    styles: { backgroundColor: "#09090b" },
+  },
+  {
+    id: "e7f8a9b0-0017-4000-8000-000000000018",
+    type: "button",
+    content: {
+      type: "button",
+      text: "Set Up Post-Call Actions",
+      url: "#",
+      buttonColor: "#a855f7",
+      textColor: "#ffffff",
+      variant: "solid",
+      fullWidth: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      padding: "0 32px",
+      borderRadius: "2px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      fontWeight: "600",
+      fontSize: "14px",
+    },
+  },
+  {
+    id: "e7f8a9b0-0017-4000-8000-000000000019",
+    type: "footer",
+    content: {
+      type: "footer",
+      text: "© 2026 Your Company · Channel Orchestrator Integrations",
+      showUnsubscribe: true,
+    },
+    styles: {
+      backgroundColor: "#09090b",
+      textColor: "#52525b",
+      padding: "16px 32px",
+      alignment: "center",
+      fontSize: "11px",
+      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+    },
+  },
+];
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Exported collection
 // ─────────────────────────────────────────────────────────────────────────────
 export const STARTER_TEMPLATES: StarterTemplate[] = [
@@ -1149,5 +2945,87 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
     category: "general",
     thumbnail: "",
     blocks: plainProfessionalBlocks,
+  },
+  // ── AI Product Templates ──────────────────────────────────────────────────
+  {
+    id: "starter-sms-bot-launch",
+    name: "AI SMS Bot Launch",
+    description:
+      "Dark brutalist announcement for your AI SMS Chat Bot. 30-second response stats, three-step workflow, and 24/7 availability highlight.",
+    category: "ai-product",
+    thumbnail: "",
+    blocks: smsBotLaunchBlocks,
+  },
+  {
+    id: "starter-sms-bot-roi",
+    name: "SMS Bot ROI Report",
+    description:
+      "Data-driven monthly performance report with KPI stat cards, lead source attribution table, and pipeline value calculation.",
+    category: "ai-product",
+    thumbnail: "",
+    blocks: smsBotRoiBlocks,
+  },
+  {
+    id: "starter-sms-bot-features",
+    name: "SMS Bot Feature Guide",
+    description:
+      "Comprehensive capability deep-dive: objection handling, calendar sync, compliance, lead targeting, and smart follow-ups.",
+    category: "ai-product",
+    thumbnail: "",
+    blocks: smsBotFeaturesBlocks,
+  },
+  {
+    id: "starter-voice-agent-launch",
+    name: "Voice Agent Launch",
+    description:
+      "Launch announcement for AI Voice Agent. Inbound coverage, missed appointment recovery, human handoff, and call features.",
+    category: "ai-product",
+    thumbnail: "",
+    blocks: voiceAgentLaunchBlocks,
+  },
+  {
+    id: "starter-voice-agent-use-cases",
+    name: "Voice Agent Use Cases",
+    description:
+      "Three real-world scenarios with oversized numbers: missed appointment recovery, after-hours inbound, and quoted lead follow-up.",
+    category: "ai-product",
+    thumbnail: "",
+    blocks: voiceAgentUseCasesBlocks,
+  },
+  {
+    id: "starter-voice-agent-roi",
+    name: "Voice Agent ROI Report",
+    description:
+      "Impact report with before/after metrics table, KPI stat cards, and recovered pipeline value quote.",
+    category: "ai-product",
+    thumbnail: "",
+    blocks: voiceAgentRoiBlocks,
+  },
+  {
+    id: "starter-orchestrator-launch",
+    name: "Orchestrator Launch",
+    description:
+      "Channel Orchestrator announcement with three-step routing flow, smart escalation, and time window features.",
+    category: "ai-product",
+    thumbnail: "",
+    blocks: orchestratorLaunchBlocks,
+  },
+  {
+    id: "starter-orchestrator-workflow",
+    name: "Orchestrator Workflow",
+    description:
+      "Step-by-step scenario timeline showing SMS-to-Voice escalation on a cold quoted lead, with outcome highlight.",
+    category: "ai-product",
+    thumbnail: "",
+    blocks: orchestratorWorkflowBlocks,
+  },
+  {
+    id: "starter-orchestrator-integrations",
+    name: "Orchestrator Integrations",
+    description:
+      "CRM automation showcase: auto-status updates, transcript writeback, custom field mapping, and conversation awareness.",
+    category: "ai-product",
+    thumbnail: "",
+    blocks: orchestratorIntegrationBlocks,
   },
 ];

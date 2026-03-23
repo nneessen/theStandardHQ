@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useChatBotAgent } from "@/features/chat-bot";
 import {
   useOrchestrationRuleset,
   usePatchRuleset,
@@ -42,6 +43,10 @@ import { TemplateSelector } from "./TemplateSelector";
 import { RuleTester } from "./RuleTester";
 
 export function RulesTab() {
+  const { data: agent } = useChatBotAgent(true);
+  const smsAvailable = !!agent?.botEnabled;
+  const voiceAvailable = !!agent?.voiceEnabled;
+
   const { data: ruleset, isLoading } = useOrchestrationRuleset();
   const patchRuleset = usePatchRuleset();
   const deleteRuleset = useDeleteRuleset();
@@ -112,7 +117,11 @@ export function RulesTab() {
             Rules control which channel (SMS or Voice) is used for each lead.
             Start from a template or build your own.
           </p>
-          <TemplateSelector hasExistingRules={false} />
+          <TemplateSelector
+            hasExistingRules={false}
+            smsAvailable={smsAvailable}
+            voiceAvailable={voiceAvailable}
+          />
         </div>
       </div>
     );
@@ -170,7 +179,11 @@ export function RulesTab() {
             </span>
           </div>
 
-          <TemplateSelector hasExistingRules={ruleset.rules.length > 0} />
+          <TemplateSelector
+            hasExistingRules={ruleset.rules.length > 0}
+            smsAvailable={smsAvailable}
+            voiceAvailable={voiceAvailable}
+          />
 
           <Button
             variant="destructive"

@@ -12,9 +12,9 @@ The standard-chat-bot backend API added a new `blockedLeadStatuses` field on age
 
 ## How It Differs from `allowedLeadStatuses`
 
-| Field | Scope | Purpose |
-|-------|-------|---------|
-| `allowedLeadStatuses` | Outbound only | Controls which statuses trigger proactive outreach (intro SMS, drip campaigns). Bot still replies to inbound from any status. |
+| Field                 | Scope              | Purpose                                                                                                                        |
+| --------------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `allowedLeadStatuses` | Outbound only      | Controls which statuses trigger proactive outreach (intro SMS, drip campaigns). Bot still replies to inbound from any status.  |
 | `blockedLeadStatuses` | Inbound + Outbound | Universal kill switch. Bot will NOT respond at all — no inbound replies, no outbound automation. Overrides all other settings. |
 
 These are intentionally separate arrays. A status can be in `allowedLeadStatuses` (eligible for outreach) but also in `blockedLeadStatuses` (blocked takes priority on the backend).
@@ -22,39 +22,44 @@ These are intentionally separate arrays. A status can be in `allowedLeadStatuses
 ## API Contracts
 
 ### Read
+
 ```
 GET /api/external/agents/:id
 → { "blockedLeadStatuses": ["Closed Won", "DNC", "Bad Number"] }
 ```
 
 ### Write
+
 ```
 PATCH /api/external/agents/:id
 Header: X-API-Key: <key>
 Body: { "blockedLeadStatuses": ["Closed Won", "DNC"] }
 ```
+
 Full array replacement (not a diff). Empty array `[]` clears all blocks.
 
 ### Available Statuses
+
 ```
 GET /api/external/agents/:id/lead-statuses
 → { "success": true, "data": { "statuses": [{ "id": "...", "label": "..." }] } }
 ```
+
 Same endpoint used by `allowedLeadStatuses` — reused via existing `useChatBotCloseLeadStatuses()` hook.
 
 ## Files Changed
 
-| File | Change |
-|------|--------|
+| File                                                   | Change                                                                                                                                           |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `src/features/voice-agent/lib/voice-agent-contract.ts` | Added `"blockedLeadStatuses"` to `BOT_CONFIG_ALLOWED_KEYS` — the edge function allowlist that gates which fields can be sent to the external API |
-| `src/features/chat-bot/hooks/useChatBot.ts` | Added `blockedLeadStatuses?: string[]` to `ChatBotAgent` interface and `useUpdateBotConfig` mutation input type |
-| `src/features/chat-bot/components/SetupTab.tsx` | Added blocked status state/handler/save, summary tile, and `BlockedLeadStatusSelector` section in Audience tab |
-| `src/features/chat-bot/components/AdminTab.tsx` | Added `blockedLeadStatuses` `EditableList` for admin panel visibility |
+| `src/features/chat-bot/hooks/useChatBot.ts`            | Added `blockedLeadStatuses?: string[]` to `ChatBotAgent` interface and `useUpdateBotConfig` mutation input type                                  |
+| `src/features/chat-bot/components/SetupTab.tsx`        | Added blocked status state/handler/save, summary tile, and `BlockedLeadStatusSelector` section in Audience tab                                   |
+| `src/features/chat-bot/components/AdminTab.tsx`        | Added `blockedLeadStatuses` `EditableList` for admin panel visibility                                                                            |
 
 ## File Created
 
-| File | Purpose |
-|------|---------|
+| File                                                             | Purpose                                                                                           |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `src/features/chat-bot/components/BlockedLeadStatusSelector.tsx` | Multi-select dropdown with search, removable chips, Close CRM disconnected state, and helper text |
 
 ## Data Flow

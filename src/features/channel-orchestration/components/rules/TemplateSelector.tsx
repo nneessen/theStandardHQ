@@ -41,9 +41,15 @@ function getTemplateDescription(template: OrchestrationTemplate): string {
 
 interface Props {
   hasExistingRules: boolean;
+  smsAvailable: boolean;
+  voiceAvailable: boolean;
 }
 
-export function TemplateSelector({ hasExistingRules }: Props) {
+export function TemplateSelector({
+  hasExistingRules,
+  smsAvailable,
+  voiceAvailable,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [mode, setMode] = useState<"replace" | "append">("replace");
@@ -216,6 +222,39 @@ export function TemplateSelector({ hasExistingRules }: Props) {
                       </p>
                     )}
                   </div>
+
+                  {/* Channel availability warning */}
+                  {preview &&
+                    (() => {
+                      const usesVoice =
+                        preview.rules.some((r) =>
+                          r.action.allowedChannels.includes("voice"),
+                        ) ||
+                        preview.fallbackAction.allowedChannels.includes(
+                          "voice",
+                        );
+                      const usesSms =
+                        preview.rules.some((r) =>
+                          r.action.allowedChannels.includes("sms"),
+                        ) ||
+                        preview.fallbackAction.allowedChannels.includes("sms");
+                      const warnings: string[] = [];
+                      if (usesVoice && !voiceAvailable)
+                        warnings.push("Voice Agent is not active");
+                      if (usesSms && !smsAvailable)
+                        warnings.push("SMS Bot is not active");
+                      if (warnings.length === 0) return null;
+                      return (
+                        <div className="flex items-start gap-1.5 text-[10px] text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 rounded px-2 py-1.5 mb-2">
+                          <AlertTriangle className="h-3 w-3 shrink-0 mt-0.5" />
+                          <span>
+                            This template references channels you haven't
+                            configured: {warnings.join(", ")}. Rules targeting
+                            inactive channels will have no effect.
+                          </span>
+                        </div>
+                      );
+                    })()}
 
                   {/* Mode + Apply */}
                   <div className="space-y-1.5 shrink-0">

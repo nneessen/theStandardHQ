@@ -242,6 +242,38 @@ export interface ChatBotVoiceSetupState {
   };
   entitlement?: ChatBotVoiceEntitlement | null;
   usage?: ChatBotVoiceUsage | null;
+  rules?: {
+    inbound: {
+      enabled: boolean;
+      afterHoursEnabled: boolean;
+      allowedLeadStatuses: string[];
+      transferNumber: string | null;
+      afterHoursStartTime?: string;
+      afterHoursEndTime?: string;
+      afterHoursTimezone?: string;
+    };
+    outbound: {
+      enabled: boolean;
+      mode: "disabled" | "status_based" | "custom_field_queue";
+      customFieldKey: string | null;
+      allowedLeadStatuses: string[];
+      allowedLeadSources: string[];
+    };
+  } | null;
+  guardrails?: {
+    maxCallDurationSeconds: number;
+    silenceHangupSeconds: number;
+    ringTimeoutSeconds: number;
+    maxDailyOutboundCalls: number;
+    maxAttemptsPerLead: number;
+    outboundCooldownHours: number;
+    voicemailEnabled: boolean;
+    humanHandoffEnabled: boolean;
+    quotedFollowupEnabled: boolean;
+    workspaceActive: boolean;
+    workspaceKillSwitchEnabled: boolean;
+    platformKillSwitchEnabled: boolean;
+  } | null;
 }
 
 export interface ChatBotRetellRuntime {
@@ -436,6 +468,8 @@ function normalizeVoiceSetupState(
     },
     entitlement: normalizeVoiceEntitlement(setupState.entitlement),
     usage: normalizeVoiceUsage(setupState.usage),
+    rules: setupState.rules ?? null,
+    guardrails: setupState.guardrails ?? null,
   };
 }
 
@@ -1375,6 +1409,56 @@ export function useProvisionTeamBot() {
     },
     onError: (error: Error) => {
       toast.error(error.message || "Failed to activate team bot.");
+    },
+  });
+}
+
+// ─── Voice Rules & Guardrails Mutations ─────────────────────────
+
+export function useUpdateVoiceInboundRules() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (rules: Record<string, unknown>) =>
+      chatBotApi<ChatBotVoiceSetupState>("update_voice_inbound_rules", rules),
+    onSuccess: () => {
+      toast.success("Inbound voice rules updated.");
+      invalidateVoiceSetupQueries(queryClient);
+      void queryClient.invalidateQueries({ queryKey: chatBotKeys.agent() });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to update inbound voice rules.");
+    },
+  });
+}
+
+export function useUpdateVoiceOutboundRules() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (rules: Record<string, unknown>) =>
+      chatBotApi<ChatBotVoiceSetupState>("update_voice_outbound_rules", rules),
+    onSuccess: () => {
+      toast.success("Outbound voice rules updated.");
+      invalidateVoiceSetupQueries(queryClient);
+      void queryClient.invalidateQueries({ queryKey: chatBotKeys.agent() });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to update outbound voice rules.");
+    },
+  });
+}
+
+export function useUpdateVoiceGuardrails() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (guardrails: Record<string, unknown>) =>
+      chatBotApi<ChatBotVoiceSetupState>("update_voice_guardrails", guardrails),
+    onSuccess: () => {
+      toast.success("Voice guardrails updated.");
+      invalidateVoiceSetupQueries(queryClient);
+      void queryClient.invalidateQueries({ queryKey: chatBotKeys.agent() });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to update voice guardrails.");
     },
   });
 }
