@@ -29,11 +29,38 @@ function mapSubscriptionStatus(stripeStatus: string): string {
     paused: "paused",
     past_due: "past_due",
     canceled: "cancelled",
-    incomplete: "past_due",
+    incomplete: "incomplete",
     incomplete_expired: "cancelled",
     unpaid: "past_due",
   };
   return statusMap[stripeStatus] || "active";
+}
+
+// Extract subscription ID from invoice, handling API version 2026-01-28.clover
+// where invoice.subscription is null and moved to parent.subscription_details.subscription
+function getInvoiceSubscriptionId(invoice: Stripe.Invoice): string | null {
+  // deno-lint-ignore no-explicit-any
+  const inv = invoice as any;
+  if (typeof inv.subscription === "string") return inv.subscription;
+  if (inv.subscription?.id) return inv.subscription.id;
+  if (inv.parent?.subscription_details?.subscription) {
+    return inv.parent.subscription_details.subscription;
+  }
+  return null;
+}
+
+// Extract subscription metadata from invoice, handling API version changes
+function getInvoiceSubscriptionMetadata(
+  invoice: Stripe.Invoice,
+): Record<string, string> | undefined {
+  // deno-lint-ignore no-explicit-any
+  const inv = invoice as any;
+  return (
+    inv.subscription_details?.metadata ||
+    inv.parent?.subscription_details?.metadata ||
+    inv.metadata ||
+    undefined
+  );
 }
 
 // Determine billing interval from Stripe price interval
@@ -1734,13 +1761,10 @@ serve(async (req) => {
           typeof invoice.customer === "string"
             ? invoice.customer
             : invoice.customer?.id;
-        const subscriptionId =
-          typeof invoice.subscription === "string"
-            ? invoice.subscription
-            : invoice.subscription?.id;
+        const subscriptionId = getInvoiceSubscriptionId(invoice);
 
         const userId = await resolveUserId(
-          invoice.subscription_details?.metadata || invoice.metadata,
+          getInvoiceSubscriptionMetadata(invoice),
           customerId,
         );
 
@@ -1870,13 +1894,10 @@ serve(async (req) => {
           typeof invoice.customer === "string"
             ? invoice.customer
             : invoice.customer?.id;
-        const subscriptionId =
-          typeof invoice.subscription === "string"
-            ? invoice.subscription
-            : invoice.subscription?.id;
+        const subscriptionId = getInvoiceSubscriptionId(invoice);
 
         const userId = await resolveUserId(
-          invoice.subscription_details?.metadata || invoice.metadata,
+          getInvoiceSubscriptionMetadata(invoice),
           customerId,
         );
 
