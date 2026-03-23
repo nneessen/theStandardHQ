@@ -1,49 +1,68 @@
-import { type ReactNode } from "react";
-import { Bot, Mic2 } from "lucide-react";
+import { useState } from "react";
+import { Bot, ChevronDown, Code2, Mic2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
+import {
   AGENT_FIELD_HINTS,
   LLM_FIELD_HINTS,
 } from "../../lib/retell-field-hints";
+import { MODEL_PRESETS } from "../../lib/prompt-wizard-presets";
 import type {
   RetellStructuredAgentForm,
   RetellStructuredLlmForm,
 } from "../../lib/retell-studio";
 import { FieldHint } from "./FieldHint";
+import { BuilderSection } from "./BuilderSection";
 
-function BuilderSection({
-  icon,
-  title,
-  description,
-  children,
-}: {
-  icon: ReactNode;
-  title: string;
-  description: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-      <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-          {icon}
-        </div>
-        <div>
-          <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-            {title}
-          </p>
-          <p className="mt-1 text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
-            {description}
-          </p>
-        </div>
-      </div>
-      <div className="mt-4">{children}</div>
-    </section>
-  );
-}
+const TEMPERATURE_OPTIONS = [
+  {
+    value: "0.3",
+    label: "Predictable",
+    description: "Consistent, safe responses",
+  },
+  {
+    value: "0.7",
+    label: "Balanced",
+    description: "Good mix of consistency and variety",
+  },
+  {
+    value: "1.0",
+    label: "Natural",
+    description: "Most human-sounding (recommended)",
+  },
+  {
+    value: "1.3",
+    label: "Creative",
+    description: "More varied but less predictable",
+  },
+] as const;
+
+const STT_OPTIONS = [
+  { value: "", label: "Default (recommended)" },
+  { value: "fast", label: "Fast — quicker responses, slightly less accurate" },
+  {
+    value: "accurate",
+    label: "Accurate — better recognition, slightly slower",
+  },
+] as const;
+
+const DENOISING_OPTIONS = [
+  { value: "", label: "Automatic (recommended)" },
+  {
+    value: "noise-cancellation",
+    label: "Noise cancellation — removes background noise",
+  },
+] as const;
 
 interface AdvancedViewProps {
   agentForm: RetellStructuredAgentForm;
@@ -60,6 +79,18 @@ interface AdvancedViewProps {
   llmLoading: boolean;
 }
 
+function msToSeconds(ms: string | number): string {
+  const num = typeof ms === "string" ? parseInt(ms, 10) : ms;
+  if (isNaN(num) || num === 0) return "";
+  return String(Math.round(num / 1000));
+}
+
+function secondsToMs(seconds: string): string {
+  const num = parseInt(seconds, 10);
+  if (isNaN(num)) return "";
+  return String(num * 1000);
+}
+
 export function AdvancedView({
   agentForm,
   onAgentFormChange,
@@ -68,77 +99,114 @@ export function AdvancedView({
   llmAvailable,
   llmLoading,
 }: AdvancedViewProps) {
+  const [devMode, setDevMode] = useState(false);
+
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
+      <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">
         <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-          Advanced options are optional
+          These settings are optional
         </p>
-        <p className="mt-2 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
-          Use these settings when you need deeper control over model behavior,
-          knowledge, connected actions, or extra call safeguards. Basic setup
-          can still be completed without changing anything here.
+        <p className="mt-1 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
+          Most agents work great with the defaults. Only adjust these if you
+          need to fine-tune how your agent thinks, listens, or handles calls.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+        {/* AI Model & Behavior */}
         <BuilderSection
           icon={<Bot className="h-4 w-4" />}
-          title="Knowledge, connected actions, and model"
-          description="Optional controls for knowledge sources, connected actions, and the underlying model."
+          title="AI model & behavior"
+          description="Choose how smart and creative your agent should be."
         >
           {!llmAvailable && !llmLoading ? (
             <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 text-[11px] leading-5 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
-              Advanced prompt controls are unavailable until this workspace is
-              using the managed voice model setup.
+              These controls become available when using the managed voice model
+              setup.
             </div>
           ) : (
             <div className="space-y-3">
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label htmlFor="retell-llm-model">Model</Label>
-                  <Input
-                    id="retell-llm-model"
-                    value={llmForm.model}
-                    onChange={(event) =>
-                      onLlmFormChange("model", event.target.value)
-                    }
-                    placeholder="gpt-4o-mini"
-                  />
-                  <FieldHint>{LLM_FIELD_HINTS.model}</FieldHint>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="retell-llm-temperature">
-                    Model temperature
+                {/* Model dropdown */}
+                <div className="space-y-1">
+                  <Label htmlFor="retell-llm-model" className="text-[11px]">
+                    AI model
                   </Label>
-                  <Input
-                    id="retell-llm-temperature"
-                    type="number"
-                    min={0}
-                    max={2}
-                    step="0.05"
-                    value={llmForm.modelTemperature}
-                    onChange={(event) =>
-                      onLlmFormChange("modelTemperature", event.target.value)
-                    }
-                  />
-                  <FieldHint>{LLM_FIELD_HINTS.modelTemperature}</FieldHint>
+                  <Select
+                    value={llmForm.model || "gpt-4o-mini"}
+                    onValueChange={(v) => onLlmFormChange("model", v)}
+                  >
+                    <SelectTrigger
+                      id="retell-llm-model"
+                      className="h-8 text-xs"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {MODEL_PRESETS.map((m) => (
+                        <SelectItem
+                          key={m.value}
+                          value={m.value}
+                          className="text-xs"
+                        >
+                          <div>
+                            <span className="font-medium">{m.label}</span>
+                            <span className="ml-1.5 text-zinc-500">
+                              — {m.description}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    Standard is faster. Enhanced is better with complex
+                    conversations.
+                  </p>
                 </div>
-              </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="retell-kb-ids">Knowledge sources</Label>
-                <Textarea
-                  id="retell-kb-ids"
-                  value={llmForm.knowledgeBaseIds}
-                  onChange={(event) =>
-                    onLlmFormChange("knowledgeBaseIds", event.target.value)
-                  }
-                  className="min-h-[110px] font-mono text-xs"
-                  placeholder={"kb_123\nkb_456"}
-                />
-                <FieldHint>{LLM_FIELD_HINTS.knowledgeBaseIds}</FieldHint>
+                {/* Temperature dropdown */}
+                <div className="space-y-1">
+                  <Label
+                    htmlFor="retell-llm-temperature"
+                    className="text-[11px]"
+                  >
+                    Response style
+                  </Label>
+                  <Select
+                    value={String(llmForm.modelTemperature || "1.0")}
+                    onValueChange={(v) =>
+                      onLlmFormChange("modelTemperature", v)
+                    }
+                  >
+                    <SelectTrigger
+                      id="retell-llm-temperature"
+                      className="h-8 text-xs"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TEMPERATURE_OPTIONS.map((t) => (
+                        <SelectItem
+                          key={t.value}
+                          value={t.value}
+                          className="text-xs"
+                        >
+                          <div>
+                            <span className="font-medium">{t.label}</span>
+                            <span className="ml-1.5 text-zinc-500">
+                              — {t.description}
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    "Natural" works best for most agents.
+                  </p>
+                </div>
               </div>
 
               <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
@@ -158,110 +226,215 @@ export function AdvancedView({
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="retell-general-tools">Connected actions</Label>
-                <Textarea
-                  id="retell-general-tools"
-                  value={llmForm.generalTools}
-                  onChange={(event) =>
-                    onLlmFormChange("generalTools", event.target.value)
-                  }
-                  className="min-h-[180px] font-mono text-xs"
-                  spellCheck={false}
-                  placeholder={'[\n  {\n    "name": "lookup_policy"\n  }\n]'}
-                />
-                <FieldHint>{LLM_FIELD_HINTS.generalTools}</FieldHint>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="retell-mcps">Advanced connections</Label>
-                <Textarea
-                  id="retell-mcps"
-                  value={llmForm.mcps}
-                  onChange={(event) =>
-                    onLlmFormChange("mcps", event.target.value)
-                  }
-                  className="min-h-[180px] font-mono text-xs"
-                  spellCheck={false}
-                  placeholder={'[\n  {\n    "name": "crm"\n  }\n]'}
-                />
-                <FieldHint>{LLM_FIELD_HINTS.mcps}</FieldHint>
+              {/* Developer options — collapsed by default */}
+              <div className="rounded-lg border border-zinc-200 dark:border-zinc-800">
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between px-3 py-2.5 text-left"
+                  onClick={() => setDevMode(!devMode)}
+                >
+                  <div className="flex items-center gap-2">
+                    <Code2 className="h-3.5 w-3.5 text-zinc-400" />
+                    <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+                      Developer options
+                    </span>
+                  </div>
+                  <ChevronDown
+                    className={cn(
+                      "h-3.5 w-3.5 text-zinc-400 transition-transform",
+                      devMode && "rotate-180",
+                    )}
+                  />
+                </button>
+                {devMode && (
+                  <div className="space-y-3 border-t border-zinc-200 px-3 py-3 dark:border-zinc-800">
+                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                      These are advanced integrations. Most users don't need to
+                      touch them.
+                    </p>
+                    <div className="space-y-1.5">
+                      <Label className="text-[11px]">Knowledge sources</Label>
+                      <Textarea
+                        value={llmForm.knowledgeBaseIds}
+                        onChange={(e) =>
+                          onLlmFormChange("knowledgeBaseIds", e.target.value)
+                        }
+                        className="min-h-[80px] font-mono text-xs"
+                        placeholder={"kb_123\nkb_456"}
+                      />
+                      <FieldHint>{LLM_FIELD_HINTS.knowledgeBaseIds}</FieldHint>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[11px]">
+                        Connected actions (JSON)
+                      </Label>
+                      <Textarea
+                        value={llmForm.generalTools}
+                        onChange={(e) =>
+                          onLlmFormChange("generalTools", e.target.value)
+                        }
+                        className="min-h-[100px] font-mono text-xs"
+                        spellCheck={false}
+                        placeholder={'[\n  { "name": "lookup_policy" }\n]'}
+                      />
+                      <FieldHint>{LLM_FIELD_HINTS.generalTools}</FieldHint>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[11px]">
+                        MCP connections (JSON)
+                      </Label>
+                      <Textarea
+                        value={llmForm.mcps}
+                        onChange={(e) =>
+                          onLlmFormChange("mcps", e.target.value)
+                        }
+                        className="min-h-[100px] font-mono text-xs"
+                        spellCheck={false}
+                        placeholder={'[\n  { "name": "crm" }\n]'}
+                      />
+                      <FieldHint>{LLM_FIELD_HINTS.mcps}</FieldHint>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
         </BuilderSection>
 
+        {/* Voice & Call Settings */}
         <BuilderSection
           icon={<Mic2 className="h-4 w-4" />}
-          title="Advanced voice and call behavior"
-          description="Optional tuning for speech recognition, noise handling, and call limits."
+          title="Voice recognition & call limits"
+          description="Fine-tune how the agent listens and how long calls can last."
         >
           <div className="space-y-3">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="retell-stt-mode">STT mode</Label>
-                <Input
-                  id="retell-stt-mode"
-                  value={agentForm.sttMode}
-                  onChange={(event) =>
-                    onAgentFormChange("sttMode", event.target.value)
-                  }
-                  placeholder="fast"
-                />
-                <FieldHint>{AGENT_FIELD_HINTS.sttMode}</FieldHint>
+              {/* STT mode dropdown */}
+              <div className="space-y-1">
+                <Label htmlFor="retell-stt-mode" className="text-[11px]">
+                  Speech recognition
+                </Label>
+                <Select
+                  value={agentForm.sttMode || ""}
+                  onValueChange={(v) => onAgentFormChange("sttMode", v)}
+                >
+                  <SelectTrigger id="retell-stt-mode" className="h-8 text-xs">
+                    <SelectValue placeholder="Default" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STT_OPTIONS.map((opt) => (
+                      <SelectItem
+                        key={opt.value}
+                        value={opt.value || "default"}
+                        className="text-xs"
+                      >
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="retell-denoising-mode">Denoising mode</Label>
-                <Input
-                  id="retell-denoising-mode"
-                  value={agentForm.denoisingMode}
-                  onChange={(event) =>
-                    onAgentFormChange("denoisingMode", event.target.value)
-                  }
-                  placeholder="auto"
-                />
-                <FieldHint>{AGENT_FIELD_HINTS.denoisingMode}</FieldHint>
+              {/* Denoising dropdown */}
+              <div className="space-y-1">
+                <Label htmlFor="retell-denoising-mode" className="text-[11px]">
+                  Background noise
+                </Label>
+                <Select
+                  value={agentForm.denoisingMode || ""}
+                  onValueChange={(v) => onAgentFormChange("denoisingMode", v)}
+                >
+                  <SelectTrigger
+                    id="retell-denoising-mode"
+                    className="h-8 text-xs"
+                  >
+                    <SelectValue placeholder="Automatic" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {DENOISING_OPTIONS.map((opt) => (
+                      <SelectItem
+                        key={opt.value}
+                        value={opt.value || "auto"}
+                        className="text-xs"
+                      >
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="retell-ring-duration">Ring duration (ms)</Label>
+              {/* Ring duration in seconds */}
+              <div className="space-y-1">
+                <Label htmlFor="retell-ring-duration" className="text-[11px]">
+                  Ring time (seconds)
+                </Label>
                 <Input
                   id="retell-ring-duration"
                   type="number"
-                  min={1000}
-                  max={600000}
-                  step="1000"
-                  value={agentForm.ringDurationMs}
+                  min={5}
+                  max={600}
+                  step="5"
+                  value={msToSeconds(agentForm.ringDurationMs)}
                   onChange={(event) =>
-                    onAgentFormChange("ringDurationMs", event.target.value)
+                    onAgentFormChange(
+                      "ringDurationMs",
+                      secondsToMs(event.target.value),
+                    )
                   }
+                  placeholder="15"
+                  className="h-8 text-xs"
                 />
-                <FieldHint>{AGENT_FIELD_HINTS.ringDurationMs}</FieldHint>
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  How long to ring before hanging up. 15 seconds is typical.
+                </p>
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="retell-max-call-duration">
-                  Max call duration (ms)
+              {/* Max call duration in seconds */}
+              <div className="space-y-1">
+                <Label
+                  htmlFor="retell-max-call-duration"
+                  className="text-[11px]"
+                >
+                  Max call length (minutes)
                 </Label>
                 <Input
                   id="retell-max-call-duration"
                   type="number"
-                  min={30000}
-                  max={28800000}
-                  step="1000"
-                  value={agentForm.maxCallDurationMs}
-                  onChange={(event) =>
-                    onAgentFormChange("maxCallDurationMs", event.target.value)
+                  min={1}
+                  max={480}
+                  step="1"
+                  value={
+                    agentForm.maxCallDurationMs
+                      ? String(
+                          Math.round(
+                            parseInt(String(agentForm.maxCallDurationMs), 10) /
+                              60000,
+                          ),
+                        )
+                      : ""
                   }
+                  onChange={(event) => {
+                    const mins = parseInt(event.target.value, 10);
+                    if (!isNaN(mins)) {
+                      onAgentFormChange(
+                        "maxCallDurationMs",
+                        String(mins * 60000),
+                      );
+                    }
+                  }}
+                  placeholder="30"
+                  className="h-8 text-xs"
                 />
-                <FieldHint>{AGENT_FIELD_HINTS.maxCallDurationMs}</FieldHint>
+                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  The longest a single call can last. 30 minutes is typical.
+                </p>
               </div>
             </div>
 
             <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
               <div className="pr-4">
-                <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
                   Allow keypad input
                 </p>
                 <p className="text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
@@ -278,11 +451,11 @@ export function AdvancedView({
 
             <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
               <div className="pr-4">
-                <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                  Normalize speech
+                <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+                  Speak numbers naturally
                 </p>
                 <p className="text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
-                  {AGENT_FIELD_HINTS.normalizeForSpeech}
+                  Converts "$150" to "one hundred fifty dollars" and similar.
                 </p>
               </div>
               <Switch
