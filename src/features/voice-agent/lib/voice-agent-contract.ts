@@ -318,3 +318,109 @@ export function parseUpdateConfigParams(params: Record<string, unknown>) {
   }
   return params;
 }
+
+// ─── Voice Clone Scripts ────────────────────────────────────────
+
+const SCRIPT_ENTRY_ALLOWED_KEYS = new Set([
+  "segmentIndex",
+  "category",
+  "title",
+  "scriptText",
+  "minDurationSeconds",
+  "targetDurationSeconds",
+  "optional",
+]);
+
+export interface VoiceCloneScriptEntry {
+  segmentIndex: number;
+  category: string;
+  title: string;
+  scriptText: string;
+  minDurationSeconds: number;
+  targetDurationSeconds: number;
+  optional: boolean;
+}
+
+export function parseVoiceCloneScripts(
+  scripts: unknown,
+): VoiceCloneScriptEntry[] {
+  if (!Array.isArray(scripts)) {
+    throw new Error("scripts must be an array");
+  }
+  if (scripts.length < 15 || scripts.length > 25) {
+    throw new Error(
+      `scripts must contain 15-25 entries, received ${scripts.length}`,
+    );
+  }
+
+  return scripts.map((entry: unknown, i: number) => {
+    if (!entry || typeof entry !== "object") {
+      throw new Error(`scripts[${i}] must be an object`);
+    }
+    const record = entry as Record<string, unknown>;
+
+    // Reject unknown keys
+    const invalidKeys = Object.keys(record).filter(
+      (k) => !SCRIPT_ENTRY_ALLOWED_KEYS.has(k),
+    );
+    if (invalidKeys.length > 0) {
+      throw new Error(
+        `scripts[${i}] contains unsupported fields: ${invalidKeys.join(", ")}`,
+      );
+    }
+
+    const segmentIndex = record.segmentIndex;
+    if (typeof segmentIndex !== "number" || segmentIndex !== i) {
+      throw new Error(
+        `scripts[${i}].segmentIndex must be ${i} (sequential, 0-indexed)`,
+      );
+    }
+
+    const category = record.category;
+    if (typeof category !== "string" || !category.trim()) {
+      throw new Error(`scripts[${i}].category is required`);
+    }
+
+    const title = record.title;
+    if (typeof title !== "string" || !title.trim()) {
+      throw new Error(`scripts[${i}].title is required`);
+    }
+
+    const scriptText = record.scriptText;
+    if (typeof scriptText !== "string" || !scriptText.trim()) {
+      throw new Error(`scripts[${i}].scriptText is required`);
+    }
+    if (scriptText.length > 10000) {
+      throw new Error(`scripts[${i}].scriptText exceeds 10000 character limit`);
+    }
+
+    const minDuration = record.minDurationSeconds;
+    if (typeof minDuration !== "number" || minDuration < 30) {
+      throw new Error(`scripts[${i}].minDurationSeconds must be >= 30`);
+    }
+
+    const targetDuration = record.targetDurationSeconds;
+    if (typeof targetDuration !== "number" || targetDuration < 30) {
+      throw new Error(`scripts[${i}].targetDurationSeconds must be >= 30`);
+    }
+    if (targetDuration < minDuration) {
+      throw new Error(
+        `scripts[${i}].targetDurationSeconds must be >= minDurationSeconds`,
+      );
+    }
+
+    if (typeof record.optional !== "boolean") {
+      throw new Error(`scripts[${i}].optional must be a boolean`);
+    }
+
+    return {
+      segmentIndex: i,
+      category: category.trim(),
+      title: title.trim(),
+      scriptText: scriptText.trim(),
+      minDurationSeconds: minDuration,
+      targetDurationSeconds: targetDuration,
+      optional: record.optional,
+    };
+  });
+}

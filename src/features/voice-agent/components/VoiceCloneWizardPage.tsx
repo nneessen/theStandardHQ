@@ -8,14 +8,16 @@ import {
   useVoiceCloneSession,
 } from "@/features/chat-bot";
 import { ConsentStep } from "./clone-wizard/ConsentStep";
+import { ScriptEditorStep } from "./clone-wizard/ScriptEditorStep";
 import { RecordingStep } from "./clone-wizard/RecordingStep";
 import { ProcessingStep } from "./clone-wizard/ProcessingStep";
 import { ResultStep } from "./clone-wizard/ResultStep";
 
-type WizardStep = "consent" | "recording" | "processing" | "result";
+type WizardStep = "consent" | "scripts" | "recording" | "processing" | "result";
 
 const STEP_LABELS: { key: WizardStep; label: string }[] = [
   { key: "consent", label: "Consent" },
+  { key: "scripts", label: "Scripts" },
   { key: "recording", label: "Record" },
   { key: "processing", label: "Process" },
   { key: "result", label: "Activate" },
@@ -51,7 +53,7 @@ export function VoiceCloneWizardPage() {
 
     switch (sessionDetail.status) {
       case "recording":
-        setStep("recording");
+        setStep("scripts");
         break;
       case "processing":
         setStep("processing");
@@ -73,6 +75,10 @@ export function VoiceCloneWizardPage() {
 
   const handleSessionStarted = useCallback((newCloneId: string) => {
     setCloneId(newCloneId);
+    setStep("scripts");
+  }, []);
+
+  const handleScriptsContinue = useCallback(() => {
     setStep("recording");
   }, []);
 
@@ -163,6 +169,10 @@ export function VoiceCloneWizardPage() {
               onSessionStarted={handleSessionStarted}
             />
           </div>
+        )}
+
+        {step === "scripts" && (
+          <ScriptEditorStep onContinue={handleScriptsContinue} />
         )}
 
         {step === "recording" && cloneId && (

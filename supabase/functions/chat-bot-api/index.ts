@@ -1894,6 +1894,27 @@ serve(async (req) => {
         return sendResult(res);
       }
 
+      case "update_voice_clone_scripts": {
+        const scripts = params.scripts;
+        if (!Array.isArray(scripts)) {
+          return jsonResponse({ error: "scripts array is required" }, 400);
+        }
+        const res = await callChatBotApi(
+          "PUT",
+          `/api/external/agents/${agentId}/voice/clone/scripts`,
+          { scripts },
+        );
+        return sendResult(res);
+      }
+
+      case "reset_voice_clone_scripts": {
+        const res = await callChatBotApi(
+          "DELETE",
+          `/api/external/agents/${agentId}/voice/clone/scripts`,
+        );
+        return sendResult(res);
+      }
+
       case "start_voice_clone": {
         const res = await callChatBotApi(
           "POST",

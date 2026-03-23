@@ -29,6 +29,12 @@ export interface VoiceCloneScriptsResponse {
   totalSegments: number;
   minimumSegments: number;
   minimumAudioMinutes: number;
+  isCustom: boolean;
+}
+
+export interface VoiceCloneScriptsUpdateResponse {
+  saved: boolean;
+  totalSegments: number;
 }
 
 export interface VoiceCloneStartResponse {
@@ -156,19 +162,62 @@ async function chatBotApiMultipart<T>(formData: FormData): Promise<T> {
 
 // ─── Queries ────────────────────────────────────────────────────
 
-/** Fetch the 25 recording scripts. Scripts are static — cached with Infinity staleTime. */
+/** Fetch recording scripts. Checks for per-agent custom scripts, falls back to defaults. */
 export function useVoiceCloneScripts(enabled = true) {
   return useQuery<VoiceCloneScriptsResponse, ChatBotApiError>({
     queryKey: chatBotKeys.voiceCloneScripts(),
     queryFn: () =>
       chatBotApi<VoiceCloneScriptsResponse>("get_voice_clone_scripts"),
     enabled,
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000,
     gcTime: 1000 * 60 * 60,
     retry: (failureCount, error) => {
       if (error instanceof ChatBotApiError && error.isTransportError)
         return false;
       return failureCount < 2;
+    },
+  });
+}
+
+/** Save custom recording scripts for this agent. */
+export function useUpdateVoiceCloneScripts() {
+  const queryClient = useQueryClient();
+  return useMutation<
+    VoiceCloneScriptsUpdateResponse,
+    ChatBotApiError,
+    VoiceCloneScript[]
+  >({
+    mutationFn: (scripts) =>
+      chatBotApi<VoiceCloneScriptsUpdateResponse>(
+        "update_voice_clone_scripts",
+        { scripts },
+      ),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: chatBotKeys.voiceCloneScripts(),
+      });
+      toast.success("Scripts saved");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to save scripts");
+    },
+  });
+}
+
+/** Reset scripts to the platform defaults (deletes custom scripts). */
+export function useResetVoiceCloneScripts() {
+  const queryClient = useQueryClient();
+  return useMutation<VoiceCloneScriptsResponse, ChatBotApiError>({
+    mutationFn: () =>
+      chatBotApi<VoiceCloneScriptsResponse>("reset_voice_clone_scripts"),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: chatBotKeys.voiceCloneScripts(),
+      });
+      toast.success("Scripts reset to defaults");
+    },
+    onError: (err) => {
+      toast.error(err.message || "Failed to reset scripts");
     },
   });
 }
