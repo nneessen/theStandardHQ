@@ -375,7 +375,7 @@ function unwrap(res: { ok: boolean; status: number; data: any }): {
     };
   }
   return {
-    payload: res.data?.data ?? res.data,
+    payload: res.data && "data" in res.data ? res.data.data : res.data,
     meta: res.data?.meta ?? null,
     status: safeStatus(res.status),
     errorMessage: null,
@@ -2416,7 +2416,17 @@ serve(async (req) => {
         if (errorMessage) {
           return jsonResponse({ error: errorMessage }, status);
         }
-        return jsonResponse({ sources: Array.isArray(payload) ? payload : [] });
+        const rawSources = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.sources)
+            ? payload.sources
+            : [];
+        // Normalize { value, configured } → { id, label } for frontend
+        const sources = rawSources.map((s: any) => ({
+          id: s.id ?? s.value ?? s.label ?? "",
+          label: s.label ?? s.value ?? s.id ?? "",
+        }));
+        return jsonResponse({ sources });
       }
 
       case "get_close_custom_fields": {
@@ -2428,7 +2438,18 @@ serve(async (req) => {
         if (errorMessage) {
           return jsonResponse({ error: errorMessage }, status);
         }
-        return jsonResponse({ fields: Array.isArray(payload) ? payload : [] });
+        const rawFields = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.fields)
+            ? payload.fields
+            : [];
+        // Normalize { id, label, key, type } → { key, name, type } for frontend
+        const fields = rawFields.map((f: any) => ({
+          key: f.key ?? f.id ?? "",
+          name: f.name ?? f.label ?? f.key ?? "",
+          type: f.type ?? "text",
+        }));
+        return jsonResponse({ fields });
       }
 
       case "get_close_smart_views": {
@@ -2440,9 +2461,141 @@ serve(async (req) => {
         if (errorMessage) {
           return jsonResponse({ error: errorMessage }, status);
         }
-        return jsonResponse({
-          smartViews: Array.isArray(payload) ? payload : [],
-        });
+        const smartViews = Array.isArray(payload)
+          ? payload
+          : Array.isArray(payload?.smartViews)
+            ? payload.smartViews
+            : [];
+        return jsonResponse({ smartViews });
+      }
+
+      // ──────────────────────────────────────────────
+      // VOICE RULES & GUARDRAILS
+      // ──────────────────────────────────────────────
+      case "update_voice_inbound_rules": {
+        const {
+          enabled,
+          afterHoursEnabled,
+          allowedLeadStatuses,
+          transferNumber,
+          afterHoursStartTime,
+          afterHoursEndTime,
+          afterHoursTimezone,
+        } = params;
+        const body: Record<string, unknown> = {};
+        if (enabled !== undefined) body.enabled = enabled;
+        if (afterHoursEnabled !== undefined)
+          body.afterHoursEnabled = afterHoursEnabled;
+        if (allowedLeadStatuses !== undefined)
+          body.allowedLeadStatuses = allowedLeadStatuses;
+        if (transferNumber !== undefined) body.transferNumber = transferNumber;
+        if (afterHoursStartTime !== undefined)
+          body.afterHoursStartTime = afterHoursStartTime;
+        if (afterHoursEndTime !== undefined)
+          body.afterHoursEndTime = afterHoursEndTime;
+        if (afterHoursTimezone !== undefined)
+          body.afterHoursTimezone = afterHoursTimezone;
+        const res = await callChatBotApi(
+          "PATCH",
+          `/api/external/agents/${agentId}/voice/rules/inbound`,
+          body,
+        );
+        return sendResult(res);
+      }
+
+      case "update_voice_outbound_rules": {
+        const {
+          enabled,
+          mode,
+          customFieldKey,
+          allowedLeadStatuses,
+          allowedLeadSources,
+        } = params;
+        const body: Record<string, unknown> = {};
+        if (enabled !== undefined) body.enabled = enabled;
+        if (mode !== undefined) body.mode = mode;
+        if (customFieldKey !== undefined) body.customFieldKey = customFieldKey;
+        if (allowedLeadStatuses !== undefined)
+          body.allowedLeadStatuses = allowedLeadStatuses;
+        if (allowedLeadSources !== undefined)
+          body.allowedLeadSources = allowedLeadSources;
+        const res = await callChatBotApi(
+          "PATCH",
+          `/api/external/agents/${agentId}/voice/rules/outbound`,
+          body,
+        );
+        return sendResult(res);
+      }
+
+      case "update_voice_guardrails": {
+        const guardrailKeys = [
+          "maxCallDurationSeconds",
+          "silenceHangupSeconds",
+          "ringTimeoutSeconds",
+          "maxDailyOutboundCalls",
+          "maxAttemptsPerLead",
+          "outboundCooldownHours",
+          "voicemailEnabled",
+          "humanHandoffEnabled",
+          "quotedFollowupEnabled",
+          "workspaceActive",
+          "workspaceKillSwitchEnabled",
+        ];
+        const body: Record<string, unknown> = {};
+        for (const key of guardrailKeys) {
+          if (params[key] !== undefined) body[key] = params[key];
+        }
+        const res = await callChatBotApi(
+          "PATCH",
+          `/api/external/agents/${agentId}/voice/guardrails`,
+          body,
+        );
+        return sendResult(res);
+      }
+
+      // ──────────────────────────────────────────────
+      // CLOSE CRM WRITE HELPERS
+      // ──────────────────────────────────────────────
+      case "create_close_custom_field": {
+        const { key, label, type } = params;
+        if (!key || typeof key !== "string") {
+          return jsonResponse({ error: "key is required" }, 400);
+        }
+        const body: Record<string, unknown> = { key };
+        if (label !== undefined) body.label = label;
+        if (type !== undefined) body.type = type;
+        const res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/close/custom-fields/create`,
+          body,
+        );
+        return sendResult(res);
+      }
+
+      case "create_close_smart_view": {
+        const { name, customFieldKey, customFieldValue, shared } = params;
+        if (!customFieldKey || typeof customFieldKey !== "string") {
+          return jsonResponse({ error: "customFieldKey is required" }, 400);
+        }
+        const body: Record<string, unknown> = { customFieldKey };
+        if (name !== undefined) body.name = name;
+        if (customFieldValue !== undefined)
+          body.customFieldValue = customFieldValue;
+        if (shared !== undefined) body.shared = shared;
+        const res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/close/smart-views/create`,
+          body,
+        );
+        return sendResult(res);
+      }
+
+      case "refresh_close_metadata": {
+        const res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/close/metadata/refresh`,
+        );
+        return sendResult(res);
       }
 
       default:

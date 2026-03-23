@@ -4,6 +4,10 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { chatBotApi, ChatBotApiError } from "@/features/chat-bot";
 import { toast } from "sonner";
+import {
+  getStarterTemplates,
+  getStarterTemplatePreview,
+} from "../data/starter-templates";
 import type {
   OrchestrationRuleset,
   OrchestrationTemplate,
@@ -23,6 +27,9 @@ import type {
   WritebackResult,
   TranscriptFormat,
   FallbackAction,
+  CloseCustomFieldWriteResult,
+  CloseSmartViewWriteResult,
+  CloseMetadataRefreshResult,
 } from "../types/orchestration.types";
 
 /** Cast a typed payload to the Record<string, unknown> that chatBotApi expects. */
@@ -82,18 +89,24 @@ export function useOrchestrationTemplates(enabled = true) {
   return useQuery<OrchestrationTemplate[], ChatBotApiError>({
     queryKey: orchestrationKeys.templates(),
     queryFn: async () => {
-      const result = await chatBotApi<{
-        templates: OrchestrationTemplate[];
-      }>("get_orchestration_templates");
-      return result.templates ?? [];
+      try {
+        const result = await chatBotApi<{
+          templates: OrchestrationTemplate[];
+        }>("get_orchestration_templates");
+        const remote = result.templates ?? [];
+        // Merge: remote templates first, then local starters not already present
+        const remoteIds = new Set(remote.map((t) => t.id));
+        const localOnly = getStarterTemplates().filter(
+          (t) => !remoteIds.has(t.id),
+        );
+        return [...remote, ...localOnly];
+      } catch {
+        // API unavailable — return local starter templates
+        return getStarterTemplates();
+      }
     },
     enabled,
     staleTime: 300_000, // templates rarely change
-    retry: (failureCount, error) => {
-      if (error instanceof ChatBotApiError && error.isTransportError)
-        return false;
-      return failureCount < 1;
-    },
   });
 }
 
@@ -103,11 +116,16 @@ export function useOrchestrationTemplatePreview(
 ) {
   return useQuery<OrchestrationTemplatePreview | null, ChatBotApiError>({
     queryKey: orchestrationKeys.templatePreview(key ?? ""),
-    queryFn: () =>
-      chatBotApi<OrchestrationTemplatePreview>(
+    queryFn: async () => {
+      // Check local templates first
+      const local = getStarterTemplatePreview(key!);
+      if (local) return local;
+      // Fall back to remote API
+      return chatBotApi<OrchestrationTemplatePreview>(
         "get_orchestration_template_preview",
         { templateKey: key },
-      ),
+      );
+    },
     enabled: enabled && !!key,
     staleTime: 300_000,
   });
@@ -410,11 +428,62 @@ export function useReorderRules() {
 export function useApplyTemplate() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: ApplyTemplatePayload) =>
-      chatBotApi<OrchestrationRuleset>(
+    mutationFn: async (payload: ApplyTemplatePayload) => {
+      // Check if this is a local starter template
+      const local = getStarterTemplatePreview(payload.templateKey);
+      if (local) {
+        const existingRuleset =
+          queryClient.getQueryData<OrchestrationRuleset | null>(
+            orchestrationKeys.ruleset(),
+          );
+        const existingRules =
+          payload.mode === "append" && existingRuleset
+            ? existingRuleset.rules
+            : [];
+        const now = new Date().toISOString();
+        // Build ruleset locally — no API call needed
+        const ruleset: OrchestrationRuleset = {
+          id: existingRuleset?.id ?? crypto.randomUUID(),
+          agentId: existingRuleset?.agentId ?? "",
+          name: existingRuleset?.name ?? local.name,
+          isActive: existingRuleset?.isActive ?? true,
+          rules: [...existingRules, ...local.rules],
+          fallbackAction:
+            payload.mode === "replace"
+              ? local.fallbackAction
+              : (existingRuleset?.fallbackAction ?? local.fallbackAction),
+          templateKey: local.id,
+          version: (existingRuleset?.version ?? 0) + 1,
+          createdAt: existingRuleset?.createdAt ?? now,
+          updatedAt: now,
+        };
+        // Try persisting to API; if unavailable, still return the local ruleset
+        try {
+          return await chatBotApi<OrchestrationRuleset>(
+            "update_orchestration_ruleset",
+            p({
+              name: ruleset.name,
+              isActive: ruleset.isActive,
+              rules: ruleset.rules.map((r) => ({
+                name: r.name,
+                enabled: r.enabled,
+                conditions: r.conditions,
+                action: r.action,
+              })),
+              fallbackAction: ruleset.fallbackAction,
+            } satisfies CreateOrUpdateRulesetPayload),
+          );
+        } catch {
+          // API unavailable — return the locally-built ruleset
+          return ruleset;
+        }
+      }
+      // Remote template — use the API
+      return chatBotApi<OrchestrationRuleset>(
         "apply_orchestration_template",
         p(payload),
-      ),
+      );
+    },
     onSuccess: (data) => {
       queryClient.setQueryData(orchestrationKeys.ruleset(), data);
       toast.success("Template applied");
@@ -467,5 +536,69 @@ export function useManualWriteback() {
       toast.success("Transcript written to Close");
     },
     onError: () => toast.error("Failed to write transcript to Close"),
+  });
+}
+
+// ─── Close CRM Write Helpers ────────────────────────────────────
+
+export function useCreateCloseCustomField() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { key: string; label?: string; type?: string }) =>
+      chatBotApi<CloseCustomFieldWriteResult>(
+        "create_close_custom_field",
+        payload,
+      ),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: orchestrationKeys.closeCustomFields(),
+      });
+      toast.success("Custom field created in Close");
+    },
+    onError: () => toast.error("Failed to create custom field"),
+  });
+}
+
+export function useCreateCloseSmartView() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: {
+      customFieldKey: string;
+      name?: string;
+      customFieldValue?: string;
+      shared?: boolean;
+    }) =>
+      chatBotApi<CloseSmartViewWriteResult>(
+        "create_close_smart_view",
+        p(payload),
+      ),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: orchestrationKeys.closeSmartViews(),
+      });
+      toast.success("Smart view created in Close");
+    },
+    onError: () => toast.error("Failed to create smart view"),
+  });
+}
+
+export function useRefreshCloseMetadata() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      chatBotApi<CloseMetadataRefreshResult>("refresh_close_metadata"),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: orchestrationKeys.closeLeadSources(),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: orchestrationKeys.closeCustomFields(),
+      });
+      void queryClient.invalidateQueries({
+        queryKey: orchestrationKeys.closeSmartViews(),
+      });
+      toast.success("Close CRM metadata refreshed");
+    },
+    onError: () => toast.error("Failed to refresh Close metadata"),
   });
 }

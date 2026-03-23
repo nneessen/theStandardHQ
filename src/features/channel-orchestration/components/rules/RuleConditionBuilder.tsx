@@ -64,10 +64,12 @@ interface Props {
 
 function CollapsibleSection({
   label,
+  description,
   active,
   children,
 }: {
   label: string;
+  description?: string;
   active: boolean;
   children: React.ReactNode;
 }) {
@@ -94,7 +96,14 @@ function CollapsibleSection({
           </Badge>
         )}
       </button>
-      {open && <div className="px-2 pb-2 space-y-1.5">{children}</div>}
+      {open && (
+        <div className="px-2 pb-2 space-y-1.5">
+          {description && (
+            <p className="text-[9px] text-zinc-400">{description}</p>
+          )}
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -164,6 +173,7 @@ export function RuleConditionBuilder({ conditions, onChange }: Props) {
       {/* Lead Statuses */}
       <CollapsibleSection
         label="Lead Statuses"
+        description="Only apply this rule when the lead is in one of these statuses. Leave empty to match all statuses."
         active={(conditions.leadStatuses?.length ?? 0) > 0}
       >
         <MultiSelect
@@ -181,6 +191,7 @@ export function RuleConditionBuilder({ conditions, onChange }: Props) {
       {/* Lead Sources */}
       <CollapsibleSection
         label="Lead Sources"
+        description="Only apply this rule for leads from specific sources (e.g., 'GOAT Realtime Veterans'). Leave empty to match all sources."
         active={(conditions.leadSources?.length ?? 0) > 0}
       >
         <MultiSelect
@@ -198,6 +209,7 @@ export function RuleConditionBuilder({ conditions, onChange }: Props) {
       {/* Conversation Statuses */}
       <CollapsibleSection
         label="Conversation Status"
+        description="Match based on where the conversation is in the pipeline — e.g., 'scheduling' means the lead is actively booking."
         active={(conditions.conversationStatuses?.length ?? 0) > 0}
       >
         <MultiSelect
@@ -216,7 +228,11 @@ export function RuleConditionBuilder({ conditions, onChange }: Props) {
       </CollapsibleSection>
 
       {/* Time Window */}
-      <CollapsibleSection label="Time Window" active={!!conditions.timeWindow}>
+      <CollapsibleSection
+        label="Time Window"
+        description="Restrict this rule to specific hours and days. For example, Mon-Fri 9am-5pm ET for business hours only."
+        active={!!conditions.timeWindow}
+      >
         <TimeWindowEditor
           timeWindow={conditions.timeWindow ?? null}
           onChange={(timeWindow) => update({ timeWindow })}
@@ -226,6 +242,7 @@ export function RuleConditionBuilder({ conditions, onChange }: Props) {
       {/* Custom Field Conditions */}
       <CollapsibleSection
         label="Custom Fields"
+        description="Match leads based on custom CRM fields. Use this for advanced targeting beyond status and source."
         active={(conditions.customFieldConditions?.length ?? 0) > 0}
       >
         <CustomFieldConditionsEditor
@@ -241,6 +258,7 @@ export function RuleConditionBuilder({ conditions, onChange }: Props) {
       {/* Channel History */}
       <CollapsibleSection
         label="Channel History"
+        description="Match based on previous outreach attempts — e.g., 'after 2 failed SMS attempts' or 'if last voice call was no-answer'."
         active={!!conditions.channelHistory}
       >
         <ChannelHistoryEditor

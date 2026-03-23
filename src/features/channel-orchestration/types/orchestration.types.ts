@@ -261,6 +261,61 @@ export interface CloseSmartView {
   name: string;
 }
 
+// ─── Voice Rules & Guardrails ─────────────────────────────────
+
+export type OutboundMode = "disabled" | "status_based" | "custom_field_queue";
+
+export interface VoiceInboundRules {
+  enabled: boolean;
+  afterHoursEnabled: boolean;
+  allowedLeadStatuses: string[];
+  transferNumber: string | null;
+  afterHoursStartTime?: string;
+  afterHoursEndTime?: string;
+  afterHoursTimezone?: string;
+}
+
+export interface VoiceOutboundRules {
+  enabled: boolean;
+  mode: OutboundMode;
+  customFieldKey: string | null;
+  allowedLeadStatuses: string[];
+  allowedLeadSources: string[];
+}
+
+export interface VoiceGuardrails {
+  maxCallDurationSeconds: number;
+  silenceHangupSeconds: number;
+  ringTimeoutSeconds: number;
+  maxDailyOutboundCalls: number;
+  maxAttemptsPerLead: number;
+  outboundCooldownHours: number;
+  voicemailEnabled: boolean;
+  humanHandoffEnabled: boolean;
+  quotedFollowupEnabled: boolean;
+  workspaceActive: boolean;
+  workspaceKillSwitchEnabled: boolean;
+  platformKillSwitchEnabled: boolean;
+}
+
+// ─── Close CRM Write Responses ────────────────────────────────
+
+export interface CloseCustomFieldWriteResult {
+  field: CloseCustomField;
+  created: boolean;
+}
+
+export interface CloseSmartViewWriteResult {
+  smartView: CloseSmartView;
+  created: boolean;
+}
+
+export interface CloseMetadataRefreshResult {
+  statuses: { id: string; label: string }[];
+  fields: CloseCustomField[];
+  smartViews: CloseSmartView[];
+}
+
 // ─── Mutation Payloads ─────────────────────────────────────────
 
 export interface CreateRulePayload {

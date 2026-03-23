@@ -60,6 +60,10 @@ export function RuleEditor({ rule, onSave, onCancel, saving }: Props) {
           placeholder="e.g., SMS for new leads"
           autoFocus
         />
+        <p className="text-[9px] text-zinc-400 mt-0.5">
+          Give this rule a descriptive name, e.g. &quot;SMS only on
+          weekends&quot; or &quot;Voice priority for veteran leads&quot;
+        </p>
       </div>
 
       {/* Conditions */}

@@ -37,6 +37,10 @@ export function RuleActionBuilder({ action, onChange }: Props) {
     if (action.preferredChannel && !next.includes(action.preferredChannel)) {
       patch.preferredChannel = next[0];
     }
+    // Clear escalation when only one channel (nothing to escalate to)
+    if (next.length === 1) {
+      patch.escalateAfter = undefined;
+    }
     update(patch);
   };
 
@@ -45,6 +49,10 @@ export function RuleActionBuilder({ action, onChange }: Props) {
       {/* Allowed Channels */}
       <div>
         <Label className="text-[10px] text-zinc-500">Allowed Channels</Label>
+        <p className="text-[9px] text-zinc-400 mb-0.5">
+          Which channels can be used when this rule matches. At least one
+          required.
+        </p>
         <div className="flex gap-2 mt-0.5">
           {(["sms", "voice"] as const).map((ch) => (
             <button
@@ -68,6 +76,9 @@ export function RuleActionBuilder({ action, onChange }: Props) {
       {action.allowedChannels.length > 1 && (
         <div>
           <Label className="text-[10px] text-zinc-500">Preferred Channel</Label>
+          <p className="text-[9px] text-zinc-400 mb-0.5">
+            When both channels are allowed, which one should be tried first.
+          </p>
           <div className="flex gap-2 mt-0.5">
             {action.allowedChannels.map((ch) => (
               <button
@@ -89,10 +100,15 @@ export function RuleActionBuilder({ action, onChange }: Props) {
       )}
 
       {/* Cooldown */}
-      <div className="flex items-center gap-2">
-        <Label className="text-[10px] text-zinc-500 w-24 shrink-0">
-          Cooldown (min)
-        </Label>
+      <div>
+        <div className="flex items-center gap-2">
+          <Label className="text-[10px] text-zinc-500 w-24 shrink-0">
+            Cooldown (min)
+          </Label>
+          <span className="text-[9px] text-zinc-400">
+            Minimum wait between outreach attempts. Leave empty for no cooldown.
+          </span>
+        </div>
         <Input
           type="number"
           min={0}
@@ -109,34 +125,40 @@ export function RuleActionBuilder({ action, onChange }: Props) {
         <span className="text-[9px] text-zinc-400">0–10080 (7 days)</span>
       </div>
 
-      {/* Escalation */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <Label className="text-[10px] text-zinc-500">Escalation</Label>
-          <Switch
-            checked={!!action.escalateAfter}
-            onCheckedChange={(checked) =>
-              update({
-                escalateAfter: checked
-                  ? {
-                      channel: action.allowedChannels[0] ?? "sms",
-                      attempts: 2,
-                      escalateTo:
-                        action.allowedChannels[0] === "sms" ? "voice" : "sms",
-                    }
-                  : undefined,
-              })
-            }
-            className="h-4 w-7"
-          />
+      {/* Escalation — only when both channels are allowed */}
+      {action.allowedChannels.length > 1 && (
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Label className="text-[10px] text-zinc-500">Escalation</Label>
+            <Switch
+              checked={!!action.escalateAfter}
+              onCheckedChange={(checked) =>
+                update({
+                  escalateAfter: checked
+                    ? {
+                        channel: action.allowedChannels[0] ?? "sms",
+                        attempts: 2,
+                        escalateTo:
+                          action.allowedChannels[0] === "sms" ? "voice" : "sms",
+                      }
+                    : undefined,
+                })
+              }
+              className="h-4 w-7"
+            />
+          </div>
+          <p className="text-[9px] text-zinc-400 mb-1">
+            Automatically switch to another channel after repeated failures.
+            E.g., after 2 failed SMS → try Voice.
+          </p>
+          {action.escalateAfter && (
+            <EscalationEditor
+              escalation={action.escalateAfter}
+              onChange={(escalateAfter) => update({ escalateAfter })}
+            />
+          )}
         </div>
-        {action.escalateAfter && (
-          <EscalationEditor
-            escalation={action.escalateAfter}
-            onChange={(escalateAfter) => update({ escalateAfter })}
-          />
-        )}
-      </div>
+      )}
     </div>
   );
 }

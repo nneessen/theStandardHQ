@@ -26,22 +26,45 @@ interface Props {
 function conditionSummary(rule: OrchestrationRule): string[] {
   const tags: string[] = [];
   const c = rule.conditions;
-  if (c.leadStatuses?.length)
+  if (c.leadStatuses?.length) {
     tags.push(
-      `${c.leadStatuses.length} status${c.leadStatuses.length > 1 ? "es" : ""}`,
+      c.leadStatuses.length <= 2
+        ? c.leadStatuses.join(", ")
+        : `${c.leadStatuses.length} statuses`,
     );
-  if (c.leadSources?.length)
+  }
+  if (c.leadSources?.length) {
     tags.push(
-      `${c.leadSources.length} source${c.leadSources.length > 1 ? "s" : ""}`,
+      c.leadSources.length <= 2
+        ? c.leadSources.join(", ")
+        : `${c.leadSources.length} sources`,
     );
-  if (c.conversationStatuses?.length)
-    tags.push(`${c.conversationStatuses.length} conv status`);
-  if (c.timeWindow) tags.push("time window");
-  if (c.customFieldConditions?.length)
-    tags.push(
-      `${c.customFieldConditions.length} field${c.customFieldConditions.length > 1 ? "s" : ""}`,
-    );
-  if (c.channelHistory) tags.push("history");
+  }
+  if (c.conversationStatuses?.length) {
+    tags.push(c.conversationStatuses.join(", "));
+  }
+  if (c.timeWindow) {
+    const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+    const days = c.timeWindow.days.map((d) => dayNames[d]).join("");
+    tags.push(`${c.timeWindow.startTime}–${c.timeWindow.endTime} ${days}`);
+  }
+  if (c.customFieldConditions?.length) {
+    tags.push(`${c.customFieldConditions.length} custom field(s)`);
+  }
+  if (c.channelHistory) {
+    const parts: string[] = [];
+    if (c.channelHistory.smsAttempts)
+      parts.push(
+        `SMS${c.channelHistory.smsAttempts.operator}${c.channelHistory.smsAttempts.value}`,
+      );
+    if (c.channelHistory.voiceAttempts)
+      parts.push(
+        `Voice${c.channelHistory.voiceAttempts.operator}${c.channelHistory.voiceAttempts.value}`,
+      );
+    if (c.channelHistory.lastVoiceOutcome?.length)
+      parts.push(c.channelHistory.lastVoiceOutcome.join("/"));
+    tags.push(parts.join(", ") || "history");
+  }
   return tags;
 }
 

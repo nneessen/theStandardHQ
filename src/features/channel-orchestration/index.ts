@@ -26,6 +26,9 @@ export {
   useEvaluateOrchestration,
   useUpdatePostCallConfig,
   useManualWriteback,
+  useCreateCloseCustomField,
+  useCreateCloseSmartView,
+  useRefreshCloseMetadata,
 } from "./hooks/useOrchestration";
 
 export type {
@@ -62,6 +65,13 @@ export type {
   UpdateRulePayload,
   CreateOrUpdateRulesetPayload,
   ApplyTemplatePayload,
+  OutboundMode,
+  VoiceInboundRules,
+  VoiceOutboundRules,
+  VoiceGuardrails,
+  CloseCustomFieldWriteResult,
+  CloseSmartViewWriteResult,
+  CloseMetadataRefreshResult,
 } from "./types/orchestration.types";
 
 export {

@@ -15,8 +15,9 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Plus, Power, Loader2, Trash2 } from "lucide-react";
+import { Plus, Power, Loader2, Trash2, Network } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -119,44 +120,76 @@ export function RulesTab() {
 
   return (
     <div className="space-y-2">
-      {/* Top Bar */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {/* Master Toggle */}
-        <div className="flex items-center gap-1.5">
-          <Switch
-            checked={ruleset.isActive}
-            onCheckedChange={(isActive) => patchRuleset.mutate({ isActive })}
-            className="h-4 w-7"
-          />
-          <span
-            className={cn(
-              "text-[10px] font-medium",
-              ruleset.isActive
-                ? "text-emerald-600 dark:text-emerald-400"
-                : "text-zinc-400",
-            )}
+      {/* Ruleset Identity */}
+      <div className="border border-zinc-200 dark:border-zinc-700 rounded-md p-2 bg-white dark:bg-zinc-900">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Network className="h-4 w-4 text-zinc-400 shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-zinc-800 dark:text-zinc-200 truncate">
+                {ruleset.name}
+              </span>
+              <Badge
+                variant="secondary"
+                className="h-4 px-1 text-[8px] shrink-0"
+              >
+                {ruleset.rules.length} rule
+                {ruleset.rules.length !== 1 ? "s" : ""}
+              </Badge>
+              {ruleset.templateKey && (
+                <Badge
+                  variant="outline"
+                  className="h-4 px-1 text-[8px] shrink-0"
+                >
+                  {ruleset.templateKey}
+                </Badge>
+              )}
+            </div>
+            <div className="text-[9px] text-zinc-400 mt-0.5">
+              v{ruleset.version} · Updated{" "}
+              {new Date(ruleset.updatedAt).toLocaleDateString()}
+            </div>
+          </div>
+
+          {/* Master Toggle */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Switch
+              checked={ruleset.isActive}
+              onCheckedChange={(isActive) => patchRuleset.mutate({ isActive })}
+              className="h-4 w-7"
+            />
+            <span
+              className={cn(
+                "text-[10px] font-medium",
+                ruleset.isActive
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-zinc-400",
+              )}
+            >
+              {ruleset.isActive ? "Active" : "Inactive"}
+            </span>
+          </div>
+
+          <TemplateSelector hasExistingRules={ruleset.rules.length > 0} />
+
+          <Button
+            variant="destructive"
+            size="sm"
+            className="h-7 text-[10px]"
+            onClick={() => deleteRuleset.mutate()}
+            disabled={deleteRuleset.isPending}
           >
-            {ruleset.isActive ? "Active" : "Inactive"}
-          </span>
+            <Trash2 className="h-3 w-3 mr-1" />
+            Delete
+          </Button>
         </div>
-
-        <div className="flex-1" />
-
-        <TemplateSelector hasExistingRules={ruleset.rules.length > 0} />
-
-        <Button
-          variant="destructive"
-          size="sm"
-          className="h-7 text-[10px]"
-          onClick={() => deleteRuleset.mutate()}
-          disabled={deleteRuleset.isPending}
-        >
-          <Trash2 className="h-3 w-3 mr-1" />
-          Delete Ruleset
-        </Button>
       </div>
 
       {/* Rules List */}
+      <p className="text-[9px] text-zinc-400">
+        Rules are evaluated top-to-bottom. The first rule that matches wins.
+        Drag to reorder.
+      </p>
       {ruleset.rules.length > 0 ? (
         <DndContext
           sensors={sensors}
@@ -222,7 +255,10 @@ export function RulesTab() {
       />
 
       {/* Rule Tester */}
-      <RuleTester />
+      <RuleTester
+        rules={ruleset.rules}
+        fallbackAction={ruleset.fallbackAction}
+      />
     </div>
   );
 }
@@ -254,12 +290,15 @@ function FallbackEditor({
 
   return (
     <div className="border border-zinc-200 dark:border-zinc-700 rounded-md p-2 bg-zinc-50 dark:bg-zinc-900/50">
-      <div className="flex items-center gap-2 mb-1.5">
+      <div className="flex items-center gap-2 mb-0.5">
         <Label className="text-[10px] font-medium text-zinc-500">
           Fallback Action
         </Label>
         <span className="text-[9px] text-zinc-400">(when no rule matches)</span>
       </div>
+      <p className="text-[9px] text-zinc-400 mb-1.5">
+        When no rule matches (e.g., deep night hours), these defaults apply.
+      </p>
       <div className="flex items-center gap-3">
         <div className="flex gap-1">
           {(["sms", "voice"] as const).map((ch) => (

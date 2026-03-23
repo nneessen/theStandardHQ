@@ -367,7 +367,7 @@ export default function Sidebar({
         },
         {
           icon: Network,
-          label: "Channel Rules",
+          label: "Orchestrator",
           href: "/channel-orchestration",
           public: true,
         },
