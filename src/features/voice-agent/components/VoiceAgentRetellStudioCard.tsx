@@ -1,24 +1,10 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
-  Bot,
   ChevronDown,
-  Library,
   Loader2,
-  Mic2,
-  Search,
   Sparkles,
   UploadCloud,
-  Volume2,
-  VolumeX,
-  WandSparkles,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,9 +13,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import type {
   ChatBotRetellConnection,
@@ -63,10 +46,16 @@ import {
   validateStructuredRetellLlmForm,
 } from "../lib/retell-studio";
 import { isVoiceAgentProvisioningPending } from "../lib/voice-agent-contract";
+import { VoiceGreetingView } from "./studio/VoiceGreetingView";
+import { InstructionsView } from "./studio/InstructionsView";
+import { CallBehaviorSection } from "./studio/CallBehaviorSection";
+import { AdvancedView } from "./studio/AdvancedView";
+import { LaunchView } from "./studio/LaunchView";
 
 export type VoiceAgentRetellStudioView =
   | "voice"
   | "instructions"
+  | "call-flow"
   | "advanced"
   | "launch"
   | "admin";
@@ -103,6 +92,13 @@ function getViewCopy(view: VoiceAgentRetellStudioView) {
         title: "Prompt & Instructions",
         description:
           "Write the operating instructions in plain language so the agent knows how to guide the conversation.",
+      };
+    case "call-flow":
+      return {
+        eyebrow: "Step 3",
+        title: "Call Behavior",
+        description:
+          "Fine-tune how the agent handles silence, filler words, background ambiance, and voicemail.",
       };
     case "advanced":
       return {
@@ -141,76 +137,6 @@ function ValidationList({ errors }: { errors: string[] }) {
           <li key={error}>{error}</li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-function BuilderSection({
-  icon,
-  title,
-  description,
-  children,
-}: {
-  icon: ReactNode;
-  title: string;
-  description: string;
-  children: ReactNode;
-}) {
-  return (
-    <section className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
-      <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
-          {icon}
-        </div>
-        <div>
-          <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-            {title}
-          </p>
-          <p className="mt-1 text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
-            {description}
-          </p>
-        </div>
-      </div>
-      <div className="mt-4">{children}</div>
-    </section>
-  );
-}
-
-function StepChecklistItem({
-  label,
-  complete,
-  detail,
-}: {
-  label: string;
-  complete: boolean;
-  detail: string;
-}) {
-  return (
-    <div
-      className={cn(
-        "rounded-lg border px-3 py-3",
-        complete
-          ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900/40 dark:bg-emerald-950/20"
-          : "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950/40",
-      )}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-          {label}
-        </p>
-        <Badge
-          className={
-            complete
-              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-              : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-          }
-        >
-          {complete ? "Ready" : "Needs attention"}
-        </Badge>
-      </div>
-      <p className="mt-2 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
-        {detail}
-      </p>
     </div>
   );
 }
@@ -284,7 +210,6 @@ export function VoiceAgentRetellStudioCard({
 
   const handlePreviewVoice = useCallback(
     (voiceId: string, previewUrl: string) => {
-      // If already playing this voice, stop it
       if (playingVoiceId === voiceId && audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
@@ -292,7 +217,6 @@ export function VoiceAgentRetellStudioCard({
         return;
       }
 
-      // Stop any currently playing audio
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
@@ -360,6 +284,26 @@ export function VoiceAgentRetellStudioCard({
   const openingLineReady = llmForm.beginMessage.trim().length > 0;
   const instructionsReady = llmForm.generalPrompt.trim().length > 0;
   const voiceReady = selectedVoiceId.length > 0;
+
+  const handleAgentFormChange = useCallback(
+    <K extends keyof RetellStructuredAgentForm>(
+      key: K,
+      value: RetellStructuredAgentForm[K],
+    ) => {
+      updateFormField(setAgentForm, key, value);
+    },
+    [],
+  );
+
+  const handleLlmFormChange = useCallback(
+    <K extends keyof RetellStructuredLlmForm>(
+      key: K,
+      value: RetellStructuredLlmForm[K],
+    ) => {
+      updateFormField(setLlmForm, key, value);
+    },
+    [],
+  );
 
   const handleSaveBuilder = async () => {
     const nextAgentErrors = validateStructuredRetellAgentForm(agentForm);
@@ -433,6 +377,25 @@ export function VoiceAgentRetellStudioCard({
     );
   };
 
+  const handleVoiceProviderChange = useCallback(
+    (newProvider: (typeof RETELL_VOICE_PROVIDERS)[number]) => {
+      setVoiceProvider(newProvider);
+      setSearchResults([]);
+      if (searchQuery.trim()) {
+        searchRetellVoices.mutate(
+          {
+            searchQuery: searchQuery.trim(),
+            voiceProvider: newProvider,
+          },
+          {
+            onSuccess: (result) => setSearchResults(result.voices ?? []),
+          },
+        );
+      }
+    },
+    [searchQuery, searchRetellVoices],
+  );
+
   const handleSaveAgentJson = () => {
     try {
       const patch = parseRetellJson(agentJson);
@@ -480,245 +443,23 @@ export function VoiceAgentRetellStudioCard({
         </p>
       </div>
       <p className="mt-2 text-[11px] leading-5 text-amber-800 dark:text-amber-200">
-        The workspace is connected, but The Standard HQ could not load the
-        current voice draft right now. This is likely a backend sync issue, not
+        The workspace is connected, but the system could not load the current
+        voice draft right now. This is likely a backend sync issue, not
         something that needs to be fixed from this screen.
       </p>
     </div>
   );
 
+  // Admin-only advanced structured content (used in admin collapsible)
   const advancedStructuredContent = (
-    <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-      <BuilderSection
-        icon={<Bot className="h-4 w-4" />}
-        title="Knowledge, connected actions, and model"
-        description="Optional controls for knowledge sources, connected actions, and the underlying model."
-      >
-        {!llm && !llmLoading ? (
-          <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 text-[11px] leading-5 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
-            Advanced prompt controls are unavailable until this workspace is
-            using the Standard HQ voice model setup.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-              <div className="space-y-1.5">
-                <Label htmlFor="retell-llm-model">Model</Label>
-                <Input
-                  id="retell-llm-model"
-                  value={llmForm.model}
-                  onChange={(event) =>
-                    updateFormField(setLlmForm, "model", event.target.value)
-                  }
-                  placeholder="gpt-4o-mini"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="retell-llm-temperature">
-                  Model temperature
-                </Label>
-                <Input
-                  id="retell-llm-temperature"
-                  type="number"
-                  min={0}
-                  max={2}
-                  step="0.05"
-                  value={llmForm.modelTemperature}
-                  onChange={(event) =>
-                    updateFormField(
-                      setLlmForm,
-                      "modelTemperature",
-                      event.target.value,
-                    )
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="retell-kb-ids">Knowledge sources</Label>
-              <Textarea
-                id="retell-kb-ids"
-                value={llmForm.knowledgeBaseIds}
-                onChange={(event) =>
-                  updateFormField(
-                    setLlmForm,
-                    "knowledgeBaseIds",
-                    event.target.value,
-                  )
-                }
-                className="min-h-[110px] font-mono text-xs"
-                placeholder={"kb_123\nkb_456"}
-              />
-            </div>
-
-            <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
-              <div className="pr-4">
-                <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                  Strict connected actions
-                </p>
-                <p className="text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
-                  Enforce stricter function-call payloads.
-                </p>
-              </div>
-              <Switch
-                checked={llmForm.toolCallStrictMode}
-                onCheckedChange={(checked) =>
-                  updateFormField(setLlmForm, "toolCallStrictMode", checked)
-                }
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="retell-general-tools">Connected actions</Label>
-              <Textarea
-                id="retell-general-tools"
-                value={llmForm.generalTools}
-                onChange={(event) =>
-                  updateFormField(
-                    setLlmForm,
-                    "generalTools",
-                    event.target.value,
-                  )
-                }
-                className="min-h-[180px] font-mono text-xs"
-                spellCheck={false}
-                placeholder={'[\n  {\n    "name": "lookup_policy"\n  }\n]'}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="retell-mcps">Advanced connections</Label>
-              <Textarea
-                id="retell-mcps"
-                value={llmForm.mcps}
-                onChange={(event) =>
-                  updateFormField(setLlmForm, "mcps", event.target.value)
-                }
-                className="min-h-[180px] font-mono text-xs"
-                spellCheck={false}
-                placeholder={'[\n  {\n    "name": "crm"\n  }\n]'}
-              />
-            </div>
-          </div>
-        )}
-      </BuilderSection>
-
-      <BuilderSection
-        icon={<Mic2 className="h-4 w-4" />}
-        title="Advanced voice behavior"
-        description="Optional tuning for STT mode, denoising, voicemail timing, and call duration settings."
-      >
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <div className="space-y-1.5">
-            <Label htmlFor="retell-stt-mode">STT mode</Label>
-            <Input
-              id="retell-stt-mode"
-              value={agentForm.sttMode}
-              onChange={(event) =>
-                updateFormField(setAgentForm, "sttMode", event.target.value)
-              }
-              placeholder="fast"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="retell-denoising-mode">Denoising mode</Label>
-            <Input
-              id="retell-denoising-mode"
-              value={agentForm.denoisingMode}
-              onChange={(event) =>
-                updateFormField(
-                  setAgentForm,
-                  "denoisingMode",
-                  event.target.value,
-                )
-              }
-              placeholder="auto"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="retell-ring-duration">Ring duration (ms)</Label>
-            <Input
-              id="retell-ring-duration"
-              type="number"
-              min={1000}
-              max={600000}
-              step="1000"
-              value={agentForm.ringDurationMs}
-              onChange={(event) =>
-                updateFormField(
-                  setAgentForm,
-                  "ringDurationMs",
-                  event.target.value,
-                )
-              }
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="retell-max-call-duration">
-              Max call duration (ms)
-            </Label>
-            <Input
-              id="retell-max-call-duration"
-              type="number"
-              min={30000}
-              max={28800000}
-              step="1000"
-              value={agentForm.maxCallDurationMs}
-              onChange={(event) =>
-                updateFormField(
-                  setAgentForm,
-                  "maxCallDurationMs",
-                  event.target.value,
-                )
-              }
-            />
-          </div>
-
-          <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
-            <div className="pr-4">
-              <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                Allow keypad input
-              </p>
-              <p className="text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
-                Let callers use DTMF input during the call.
-              </p>
-            </div>
-            <Switch
-              checked={agentForm.allowUserDtmf}
-              onCheckedChange={(checked) =>
-                updateFormField(setAgentForm, "allowUserDtmf", checked)
-              }
-            />
-          </div>
-
-          <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
-            <div className="pr-4">
-              <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                Voicemail detection
-              </p>
-              <p className="text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
-                Turn voicemail-specific behavior on or off.
-              </p>
-            </div>
-            <Switch
-              checked={agentForm.enableVoicemailDetection}
-              onCheckedChange={(checked) =>
-                updateFormField(
-                  setAgentForm,
-                  "enableVoicemailDetection",
-                  checked,
-                )
-              }
-            />
-          </div>
-        </div>
-      </BuilderSection>
-    </div>
+    <AdvancedView
+      agentForm={agentForm}
+      onAgentFormChange={handleAgentFormChange}
+      llmForm={llmForm}
+      onLlmFormChange={handleLlmFormChange}
+      llmAvailable={!!llm}
+      llmLoading={llmLoading}
+    />
   );
 
   return (
@@ -767,7 +508,7 @@ export function VoiceAgentRetellStudioCard({
               ? "Publishing unlocks after your voice agent is ready"
               : "Your voice agent is not ready yet",
           voiceAgentProvisioning
-            ? "The Standard HQ is still finishing the managed workspace and loading the live draft. This step unlocks automatically as soon as the draft is available."
+            ? "The system is still finishing the managed workspace and loading the live draft. This step unlocks automatically as soon as the draft is available."
             : view === "launch"
               ? "Use the launch tab to review readiness, but publishing only becomes available after the voice agent has been created and loaded here."
               : "Create the voice agent first. Once it exists, this step will load the live draft so you can configure it here.",
@@ -780,6 +521,7 @@ export function VoiceAgentRetellStudioCard({
         renderUnavailableRuntime()
       ) : (
         <div className="mt-4 space-y-4">
+          {/* Save / Reset / Publish bar */}
           <div className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100">
@@ -848,605 +590,72 @@ export function VoiceAgentRetellStudioCard({
           <ValidationList errors={agentFormErrors} />
           <ValidationList errors={llmFormErrors} />
 
+          {/* ═══ View delegates ═══ */}
+
           {view === "voice" && (
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-              <div className="space-y-4">
-                <BuilderSection
-                  icon={<Bot className="h-4 w-4" />}
-                  title="Identity & opening line"
-                  description="Give the agent a recognizable name, choose its language, and decide how it should greet callers."
-                >
-                  <div className="space-y-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="voice-agent-name">Agent name</Label>
-                      <Input
-                        id="voice-agent-name"
-                        value={agentForm.agentName}
-                        onChange={(event) =>
-                          updateFormField(
-                            setAgentForm,
-                            "agentName",
-                            event.target.value,
-                          )
-                        }
-                        placeholder="The Standard HQ Assistant"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-[0.8fr_1.2fr]">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="retell-language">Language</Label>
-                        <Input
-                          id="retell-language"
-                          value={agentForm.language}
-                          onChange={(event) =>
-                            updateFormField(
-                              setAgentForm,
-                              "language",
-                              event.target.value,
-                            )
-                          }
-                          placeholder="en-US"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label htmlFor="retell-begin-message">
-                          Opening line
-                        </Label>
-                        <Textarea
-                          id="retell-begin-message"
-                          value={llmForm.beginMessage}
-                          onChange={(event) =>
-                            updateFormField(
-                              setLlmForm,
-                              "beginMessage",
-                              event.target.value,
-                            )
-                          }
-                          disabled={!llm && !llmLoading}
-                          className="min-h-[96px] text-xs"
-                          placeholder="Hi, this is your AI Voice Agent from The Standard HQ..."
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </BuilderSection>
-
-                <BuilderSection
-                  icon={<Mic2 className="h-4 w-4" />}
-                  title="Voice & tone"
-                  description="Choose the actual voice, then tune how fast and how dynamically it should respond."
-                >
-                  <div className="space-y-4">
-                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                            Current draft voice
-                          </p>
-                          <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
-                            {selectedVoice
-                              ? `${selectedVoice.voice_name} • ${selectedVoice.provider}`
-                              : selectedVoiceId || "No voice selected yet"}
-                          </p>
-                        </div>
-                        {selectedVoice && (
-                          <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                            Selected
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="retell-voice-speed">
-                          Speaking pace
-                        </Label>
-                        <Input
-                          id="retell-voice-speed"
-                          type="number"
-                          min={0.25}
-                          max={4}
-                          step="0.05"
-                          value={agentForm.voiceSpeed}
-                          onChange={(event) =>
-                            updateFormField(
-                              setAgentForm,
-                              "voiceSpeed",
-                              event.target.value,
-                            )
-                          }
-                          placeholder="1.0"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label htmlFor="retell-voice-temperature">
-                          Voice energy
-                        </Label>
-                        <Input
-                          id="retell-voice-temperature"
-                          type="number"
-                          min={0}
-                          max={2}
-                          step="0.05"
-                          value={agentForm.voiceTemperature}
-                          onChange={(event) =>
-                            updateFormField(
-                              setAgentForm,
-                              "voiceTemperature",
-                              event.target.value,
-                            )
-                          }
-                          placeholder="1.0"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label htmlFor="retell-responsiveness">
-                          How quickly it should respond
-                        </Label>
-                        <Input
-                          id="retell-responsiveness"
-                          type="number"
-                          min={0}
-                          max={1}
-                          step="0.05"
-                          value={agentForm.responsiveness}
-                          onChange={(event) =>
-                            updateFormField(
-                              setAgentForm,
-                              "responsiveness",
-                              event.target.value,
-                            )
-                          }
-                          placeholder="0.5"
-                        />
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label htmlFor="retell-interruption-sensitivity">
-                          How easily it should yield
-                        </Label>
-                        <Input
-                          id="retell-interruption-sensitivity"
-                          type="number"
-                          min={0}
-                          max={1}
-                          step="0.05"
-                          value={agentForm.interruptionSensitivity}
-                          onChange={(event) =>
-                            updateFormField(
-                              setAgentForm,
-                              "interruptionSensitivity",
-                              event.target.value,
-                            )
-                          }
-                          placeholder="0.5"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </BuilderSection>
-              </div>
-
-              <BuilderSection
-                icon={<Library className="h-4 w-4" />}
-                title="Voice library"
-                description="Search a provider catalog, import a voice into your workspace, and choose which one this agent should use."
-              >
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 gap-3 md:grid-cols-[0.9fr_1.1fr]">
-                    <div className="space-y-3">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="voice-search-provider">Provider</Label>
-                        <select
-                          id="voice-search-provider"
-                          value={voiceProvider}
-                          onChange={(event) => {
-                            const newProvider = event.target
-                              .value as (typeof RETELL_VOICE_PROVIDERS)[number];
-                            setVoiceProvider(newProvider);
-                            setSearchResults([]);
-                            if (searchQuery.trim()) {
-                              searchRetellVoices.mutate(
-                                {
-                                  searchQuery: searchQuery.trim(),
-                                  voiceProvider: newProvider,
-                                },
-                                {
-                                  onSuccess: (result) =>
-                                    setSearchResults(result.voices ?? []),
-                                },
-                              );
-                            }
-                          }}
-                          className="flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900"
-                        >
-                          {RETELL_VOICE_PROVIDERS.map((provider) => (
-                            <option key={provider} value={provider}>
-                              {provider}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <Label htmlFor="voice-search-query">
-                          Search voices
-                        </Label>
-                        <Input
-                          id="voice-search-query"
-                          value={searchQuery}
-                          onChange={(event) =>
-                            setSearchQuery(event.target.value)
-                          }
-                          placeholder="warm, clear female, insurance..."
-                        />
-                      </div>
-
-                      <Button
-                        onClick={handleSearchVoices}
-                        disabled={
-                          searchRetellVoices.isPending || !searchQuery.trim()
-                        }
-                        className="w-full"
-                      >
-                        {searchRetellVoices.isPending ? (
-                          <>
-                            <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                            Searching
-                          </>
-                        ) : (
-                          <>
-                            <Search className="mr-2 h-3.5 w-3.5" />
-                            Search Provider Voices
-                          </>
-                        )}
-                      </Button>
-                    </div>
-
-                    <div className="space-y-2">
-                      {searchResults.length === 0 ? (
-                        <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
-                          Search results will appear here.
-                        </div>
-                      ) : (
-                        searchResults.slice(0, 3).map((result) => (
-                          <div
-                            key={`${result.provider_voice_id}-${result.public_user_id ?? "public"}`}
-                            className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/40"
-                          >
-                            <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                              {result.name ?? "Unnamed voice"}
-                            </p>
-                            <p className="mt-1 text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
-                              {result.description ?? "No description provided."}
-                            </p>
-                            <Button
-                              size="sm"
-                              className="mt-3"
-                              onClick={() => handleAddVoice(result)}
-                              disabled={
-                                addRetellVoice.isPending ||
-                                !result.provider_voice_id ||
-                                !result.name
-                              }
-                            >
-                              {addRetellVoice.isPending
-                                ? "Adding..."
-                                : "Import Voice"}
-                            </Button>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    {voicesLoading ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
-                      </div>
-                    ) : filteredVoices.length === 0 ? (
-                      <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 text-[11px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
-                        {voices.length === 0
-                          ? "No imported voices yet. Search above to bring one into your workspace."
-                          : `No imported voices from ${voiceProvider}. Search above or switch providers.`}
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 gap-2">
-                        {filteredVoices.map((voice) => {
-                          const isSelected = voice.voice_id === selectedVoiceId;
-
-                          return (
-                            <div
-                              key={voice.voice_id}
-                              className={cn(
-                                "rounded-lg border px-3 py-3",
-                                isSelected
-                                  ? "border-sky-300 bg-sky-50 dark:border-sky-800 dark:bg-sky-950/20"
-                                  : "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950/40",
-                              )}
-                            >
-                              <div className="flex items-start justify-between gap-3">
-                                <div>
-                                  <div className="flex items-center gap-2">
-                                    <WandSparkles className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-                                    <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                                      {voice.voice_name}
-                                    </p>
-                                  </div>
-                                  <div className="mt-2 flex flex-wrap gap-2">
-                                    <Badge className="bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                                      {voice.provider}
-                                    </Badge>
-                                    {voice.gender && (
-                                      <Badge className="bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
-                                        {voice.gender}
-                                      </Badge>
-                                    )}
-                                    {isSelected && (
-                                      <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                                        Selected
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                  {voice.preview_audio_url && (
-                                    <Button
-                                      size="sm"
-                                      variant="ghost"
-                                      className="h-8 w-8 p-0"
-                                      onClick={() =>
-                                        handlePreviewVoice(
-                                          voice.voice_id,
-                                          voice.preview_audio_url!,
-                                        )
-                                      }
-                                    >
-                                      {playingVoiceId === voice.voice_id ? (
-                                        <VolumeX className="h-3.5 w-3.5" />
-                                      ) : (
-                                        <Volume2 className="h-3.5 w-3.5" />
-                                      )}
-                                    </Button>
-                                  )}
-                                  <Button
-                                    size="sm"
-                                    variant={
-                                      isSelected ? "secondary" : "outline"
-                                    }
-                                    onClick={() =>
-                                      updateFormField(
-                                        setAgentForm,
-                                        "voiceId",
-                                        voice.voice_id,
-                                      )
-                                    }
-                                  >
-                                    {isSelected ? "Selected" : "Use Voice"}
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </BuilderSection>
-            </div>
+            <VoiceGreetingView
+              agentForm={agentForm}
+              onAgentFormChange={handleAgentFormChange}
+              beginMessage={llmForm.beginMessage}
+              onBeginMessageChange={(value) =>
+                handleLlmFormChange("beginMessage", value)
+              }
+              llmAvailable={!!llm}
+              llmLoading={llmLoading}
+              voices={voices}
+              voicesLoading={voicesLoading}
+              selectedVoiceId={selectedVoiceId}
+              selectedVoice={selectedVoice}
+              voiceProvider={voiceProvider}
+              onVoiceProviderChange={handleVoiceProviderChange}
+              searchQuery={searchQuery}
+              onSearchQueryChange={setSearchQuery}
+              searchResults={searchResults}
+              onSearch={handleSearchVoices}
+              searchPending={searchRetellVoices.isPending}
+              onAddVoice={handleAddVoice}
+              addVoicePending={addRetellVoice.isPending}
+              playingVoiceId={playingVoiceId}
+              onPreviewVoice={handlePreviewVoice}
+              filteredVoices={filteredVoices}
+            />
           )}
 
           {view === "instructions" && (
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.08fr_0.92fr]">
-              <BuilderSection
-                icon={<Sparkles className="h-4 w-4" />}
-                title="What should this agent do?"
-                description="Describe the role clearly in plain language, including what it should say, what it should collect, and when it should transfer the caller."
-              >
-                {!llm && !llmLoading ? (
-                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 text-[11px] leading-5 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
-                    Prompt editing becomes available when this workspace is
-                    using the Standard HQ voice model setup.
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="retell-general-prompt">
-                        Voice agent instructions
-                      </Label>
-                      <Textarea
-                        id="retell-general-prompt"
-                        value={llmForm.generalPrompt}
-                        onChange={(event) =>
-                          updateFormField(
-                            setLlmForm,
-                            "generalPrompt",
-                            event.target.value,
-                          )
-                        }
-                        className="min-h-[260px] text-xs"
-                        placeholder="Explain who the agent is, what calls it should handle, when it should transfer to a person, and how it should speak."
-                      />
-                    </div>
+            <InstructionsView
+              generalPrompt={llmForm.generalPrompt}
+              onGeneralPromptChange={(value) =>
+                handleLlmFormChange("generalPrompt", value)
+              }
+              boostedKeywords={agentForm.boostedKeywords}
+              onBoostedKeywordsChange={(value) =>
+                handleAgentFormChange("boostedKeywords", value)
+              }
+              llmAvailable={!!llm}
+              llmLoading={llmLoading}
+            />
+          )}
 
-                    <div className="space-y-1.5">
-                      <Label htmlFor="retell-boosted-keywords">
-                        Important names, products, or phrases
-                      </Label>
-                      <Textarea
-                        id="retell-boosted-keywords"
-                        value={agentForm.boostedKeywords}
-                        onChange={(event) =>
-                          updateFormField(
-                            setAgentForm,
-                            "boostedKeywords",
-                            event.target.value,
-                          )
-                        }
-                        className="min-h-[120px] text-xs"
-                        placeholder={
-                          "The Standard HQ\nMedicare\nquoted follow-up"
-                        }
-                      />
-                    </div>
-                  </div>
-                )}
-              </BuilderSection>
-
-              <div className="space-y-4">
-                <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
-                  <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                    Write this like operator guidance
-                  </p>
-                  <p className="mt-2 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
-                    Focus on the customer experience: how the agent should greet
-                    people, qualify them, handle objections, and know when to
-                    hand the conversation to a person.
-                  </p>
-                </div>
-
-                <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
-                  <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                    Basic setup comes first
-                  </p>
-                  <p className="mt-2 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
-                    Finish the main customer experience first, then use the
-                    Advanced step for model settings, knowledge, connected
-                    actions, and extra guardrails if you need them.
-                  </p>
-                </div>
-              </div>
-            </div>
+          {view === "call-flow" && (
+            <CallBehaviorSection
+              agentForm={agentForm}
+              onAgentFormChange={handleAgentFormChange}
+            />
           )}
 
           {view === "launch" && (
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-              <BuilderSection
-                icon={<UploadCloud className="h-4 w-4" />}
-                title="Review your draft"
-                description="Make sure the most important launch items are ready before you publish the agent live."
-              >
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <StepChecklistItem
-                    label="Voice selected"
-                    complete={voiceReady}
-                    detail={
-                      voiceReady
-                        ? selectedVoice?.voice_name || selectedVoiceId
-                        : "Choose a voice in Step 1 before publishing."
-                    }
-                  />
-                  <StepChecklistItem
-                    label="Opening line"
-                    complete={openingLineReady}
-                    detail={
-                      openingLineReady
-                        ? "The agent has an opening greeting saved in the draft."
-                        : "Add the first thing the agent should say in Step 1."
-                    }
-                  />
-                  <StepChecklistItem
-                    label="Instructions written"
-                    complete={instructionsReady}
-                    detail={
-                      instructionsReady
-                        ? "The draft includes the operating instructions for the call."
-                        : "Add the prompt and behavior guidance in Step 2."
-                    }
-                  />
-                  <StepChecklistItem
-                    label="Current live state"
-                    complete={runtime?.agent?.is_published === true}
-                    detail={
-                      runtime?.agent?.is_published === true
-                        ? "A published version is already live."
-                        : "This workspace still needs a published draft to go live."
-                    }
-                  />
-                </div>
-              </BuilderSection>
-
-              <div className="space-y-4">
-                <BuilderSection
-                  icon={<Mic2 className="h-4 w-4" />}
-                  title="Current draft snapshot"
-                  description="A quick read of the draft you are about to publish."
-                >
-                  <div className="space-y-3">
-                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">
-                      <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                        Voice
-                      </p>
-                      <p className="mt-1 text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                        {selectedVoice
-                          ? `${selectedVoice.voice_name} • ${selectedVoice.provider}`
-                          : selectedVoiceId || "No voice selected"}
-                      </p>
-                    </div>
-
-                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">
-                      <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                        Opening line
-                      </p>
-                      <p className="mt-1 text-[12px] leading-6 text-zinc-900 dark:text-zinc-100">
-                        {openingLineReady
-                          ? llmForm.beginMessage
-                          : "No opening line saved yet."}
-                      </p>
-                    </div>
-
-                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">
-                      <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                        Prompt status
-                      </p>
-                      <p className="mt-1 text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                        {instructionsReady
-                          ? "Instructions are saved in the draft."
-                          : "Instructions still need to be added."}
-                      </p>
-                    </div>
-                  </div>
-                </BuilderSection>
-
-                <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
-                  <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                    Publish flow
-                  </p>
-                  <p className="mt-2 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
-                    Save the draft first if you changed voice, greeting, or
-                    instructions. Once the draft is saved, publish it to make
-                    the latest version live.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <LaunchView
+              voiceReady={voiceReady}
+              openingLineReady={openingLineReady}
+              instructionsReady={instructionsReady}
+              isPublished={runtime?.agent?.is_published === true}
+              selectedVoiceId={selectedVoiceId}
+              selectedVoice={selectedVoice}
+              llmForm={llmForm}
+            />
           )}
 
-          {view === "advanced" && (
-            <div className="space-y-4">
-              <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
-                <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                  Advanced options are optional
-                </p>
-                <p className="mt-2 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
-                  Use these settings when you need deeper control over model
-                  behavior, knowledge, connected actions, or extra call
-                  safeguards. Basic setup can still be completed without
-                  changing anything here.
-                </p>
-              </div>
-
-              {advancedStructuredContent}
-            </div>
-          )}
+          {view === "advanced" && advancedStructuredContent}
 
           {view === "admin" && (
             <div className="space-y-4">

@@ -1,4 +1,5 @@
 import { type ElementType, type ReactNode, useMemo, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import {
   Activity,
   AlertTriangle,
@@ -474,6 +475,7 @@ function CreateVoiceAgentCard({
 }
 
 export function VoiceAgentPage() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<VoiceTabId>("overview");
   const [activeSetupTab, setActiveSetupTab] =
     useState<VoiceSetupTabId>("voice");
@@ -574,9 +576,11 @@ export function VoiceAgentPage() {
     voiceSetupState?.agent?.published === true ||
     retellRuntime?.agent?.is_published === true;
 
+  const externalAgentId = voiceSetupState?.agent?.id ?? agent?.id ?? null;
+
   const shouldLoadCloneStatus =
-    activeTab === "setup" &&
-    activeSetupTab === "voice" &&
+    (activeTab === "overview" ||
+      (activeTab === "setup" && activeSetupTab === "voice")) &&
     voiceAgentCreated &&
     voiceAccessActive;
   const { data: voiceCloneStatus, isLoading: cloneStatusLoading } =
@@ -1025,6 +1029,13 @@ export function VoiceAgentPage() {
             voiceSnapshot={voiceSnapshot}
             trialIncludedMinutes={VOICE_LAUNCH_INCLUDED_MINUTES_TRIAL}
             includedMinutes={VOICE_LAUNCH_INCLUDED_MINUTES}
+            voiceCloneStatus={voiceCloneStatus}
+            cloneStatusLoading={cloneStatusLoading}
+            voiceAgentCreated={voiceAgentCreated}
+            externalAgentId={externalAgentId}
+            onNavigateToVoiceClone={() => {
+              void navigate({ to: "/voice-agent/clone" });
+            }}
           />
         )}
 
@@ -1269,6 +1280,7 @@ export function VoiceAgentPage() {
                         <VoiceCloneStatusCard
                           cloneStatus={voiceCloneStatus}
                           isLoading={cloneStatusLoading}
+                          agentId={externalAgentId}
                         />
                       </div>
                     )}
@@ -1295,7 +1307,20 @@ export function VoiceAgentPage() {
                 </div>
 
                 {activeSetupTab === "call-flow" && (
-                  <VoiceAgentRuntimeCard agent={agent} />
+                  <div className="space-y-3">
+                    <VoiceAgentRuntimeCard agent={agent} />
+                    <VoiceAgentRetellStudioCard
+                      connection={agent?.connections?.retell}
+                      runtime={retellRuntime}
+                      llm={retellLlm}
+                      voices={retellVoices}
+                      runtimeLoading={retellRuntimeLoading}
+                      llmLoading={retellLlmLoading}
+                      voicesLoading={retellVoicesLoading}
+                      provisioningState={voiceAgentProvisioningStatus}
+                      view="call-flow"
+                    />
+                  </div>
                 )}
               </>
             )}

@@ -21,6 +21,15 @@ export interface RetellStructuredAgentForm {
   enableVoicemailDetection: boolean;
   voicemailDetectionTimeoutMs: string;
   voicemailOption: string;
+  enableBackchannel: boolean;
+  backchannelFrequency: string;
+  enableDynamicResponsiveness: boolean;
+  enableDynamicVoiceSpeed: boolean;
+  ambientSound: string;
+  ambientSoundVolume: string;
+  reminderTriggerMs: string;
+  reminderMaxCount: string;
+  normalizeForSpeech: boolean;
   webhookUrl: string;
   webhookEvents: string;
   webhookTimeoutMs: string;
@@ -219,6 +228,17 @@ export function buildStructuredRetellAgentForm(
       agent?.voicemail_detection_timeout_ms,
     ),
     voicemailOption: asString(agent?.voicemail_option),
+    enableBackchannel: asBoolean(agent?.enable_backchannel),
+    backchannelFrequency: asNumberString(agent?.backchannel_frequency),
+    enableDynamicResponsiveness: asBoolean(
+      agent?.enable_dynamic_responsiveness,
+    ),
+    enableDynamicVoiceSpeed: asBoolean(agent?.enable_dynamic_voice_speed),
+    ambientSound: asString(agent?.ambient_sound),
+    ambientSoundVolume: asNumberString(agent?.ambient_sound_volume),
+    reminderTriggerMs: asNumberString(agent?.reminder_trigger_ms),
+    reminderMaxCount: asNumberString(agent?.reminder_max_count),
+    normalizeForSpeech: asBoolean(agent?.normalize_for_speech),
     webhookUrl: asString(agent?.webhook_url),
     webhookEvents: asStringArrayText(agent?.webhook_events),
     webhookTimeoutMs: asNumberString(agent?.webhook_timeout_ms),
@@ -317,6 +337,30 @@ export function serializeStructuredRetellAgentForm(
       },
     ),
     voicemail_option: form.voicemailOption.trim() || null,
+    enable_backchannel: form.enableBackchannel,
+    backchannel_frequency: parseFloatValue(
+      form.backchannelFrequency,
+      "Backchannel frequency",
+      { min: 0, max: 1 },
+    ),
+    enable_dynamic_responsiveness: form.enableDynamicResponsiveness,
+    enable_dynamic_voice_speed: form.enableDynamicVoiceSpeed,
+    ambient_sound: form.ambientSound.trim() || null,
+    ambient_sound_volume: parseFloatValue(
+      form.ambientSoundVolume,
+      "Ambient sound volume",
+      { min: 0, max: 2 },
+    ),
+    reminder_trigger_ms: parseInteger(
+      form.reminderTriggerMs,
+      "Silence reminder delay",
+      { min: 1_000, max: 120_000 },
+    ),
+    reminder_max_count: parseInteger(form.reminderMaxCount, "Max reminders", {
+      min: 0,
+      max: 10,
+    }),
+    normalize_for_speech: form.normalizeForSpeech,
     webhook_url: form.webhookUrl.trim() || null,
     webhook_events: parseList(form.webhookEvents),
     webhook_timeout_ms: parseInteger(form.webhookTimeoutMs, "Webhook timeout", {
@@ -442,6 +486,30 @@ export function validateStructuredRetellAgentForm(
         max: 120_000,
       },
     );
+  });
+  collectValidationError(errors, () => {
+    parseFloatValue(form.backchannelFrequency, "Backchannel frequency", {
+      min: 0,
+      max: 1,
+    });
+  });
+  collectValidationError(errors, () => {
+    parseFloatValue(form.ambientSoundVolume, "Ambient sound volume", {
+      min: 0,
+      max: 2,
+    });
+  });
+  collectValidationError(errors, () => {
+    parseInteger(form.reminderTriggerMs, "Silence reminder delay", {
+      min: 1_000,
+      max: 120_000,
+    });
+  });
+  collectValidationError(errors, () => {
+    parseInteger(form.reminderMaxCount, "Max reminders", {
+      min: 0,
+      max: 10,
+    });
   });
   collectValidationError(errors, () => {
     parseInteger(form.webhookTimeoutMs, "Webhook timeout", {
