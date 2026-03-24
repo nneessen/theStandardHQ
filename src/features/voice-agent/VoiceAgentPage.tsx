@@ -1339,6 +1339,7 @@ export function VoiceAgentPage() {
                     voicesLoading={retellVoicesLoading}
                     provisioningState={voiceAgentProvisioningStatus}
                     activeCloneVoiceId={voiceCloneStatus?.activeVoiceId}
+                    agentPublished={voiceAgentPublished}
                     view={
                       activeSetupTab === "voice"
                         ? "voice"
