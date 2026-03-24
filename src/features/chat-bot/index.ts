@@ -54,6 +54,7 @@ export {
   useActivateVoiceClone,
   useDeactivateVoiceClone,
   useDeleteVoiceCloneSegment,
+  useCancelVoiceClone,
   useUpdateVoiceCloneScripts,
   useResetVoiceCloneScripts,
   type VoiceCloneScript,

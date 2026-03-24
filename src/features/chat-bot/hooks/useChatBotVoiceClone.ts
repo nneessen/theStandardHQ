@@ -428,3 +428,21 @@ export function useDeleteVoiceCloneSegment() {
     },
   });
 }
+
+/** Cancel / abandon an in-progress voice clone session. */
+export function useCancelVoiceClone() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (cloneId: string) =>
+      chatBotApi<{ cancelled: boolean }>("cancel_voice_clone", {
+        clone_id: cloneId,
+      }),
+    onSuccess: () => {
+      toast.success("Voice clone session cancelled.");
+      invalidateVoiceAgentQueries(queryClient);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to cancel voice clone.");
+    },
+  });
+}

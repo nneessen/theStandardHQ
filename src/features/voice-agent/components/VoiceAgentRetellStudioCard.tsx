@@ -70,6 +70,7 @@ interface VoiceAgentRetellStudioCardProps {
   voicesLoading: boolean;
   provisioningState?: string | null;
   view?: VoiceAgentRetellStudioView;
+  activeCloneVoiceId?: string | null;
 }
 
 function getErrorMessage(error: unknown) {
@@ -159,6 +160,7 @@ export function VoiceAgentRetellStudioCard({
   voicesLoading,
   provisioningState,
   view = "voice",
+  activeCloneVoiceId,
 }: VoiceAgentRetellStudioCardProps) {
   const updateRetellAgentDraft = useUpdateRetellAgentDraft();
   const publishRetellAgentDraft = usePublishRetellAgentDraft();
@@ -618,6 +620,7 @@ export function VoiceAgentRetellStudioCard({
               playingVoiceId={playingVoiceId}
               onPreviewVoice={handlePreviewVoice}
               filteredVoices={filteredVoices}
+              activeCloneVoiceId={activeCloneVoiceId}
             />
           )}
 

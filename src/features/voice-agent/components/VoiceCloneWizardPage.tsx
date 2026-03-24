@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   useChatBotVoiceCloneStatus,
   useVoiceCloneSession,
+  useCancelVoiceClone,
 } from "@/features/chat-bot";
 import { ConsentStep } from "./clone-wizard/ConsentStep";
 import { ScriptEditorStep } from "./clone-wizard/ScriptEditorStep";
@@ -23,11 +24,50 @@ const STEP_LABELS: { key: WizardStep; label: string }[] = [
   { key: "result", label: "Activate" },
 ];
 
+const CLONE_SESSION_KEY = "voice_clone_session";
+
+function saveCloneSession(cloneId: string) {
+  try {
+    localStorage.setItem(
+      CLONE_SESSION_KEY,
+      JSON.stringify({ cloneId, startedAt: Date.now() }),
+    );
+  } catch {
+    // localStorage unavailable — non-critical
+  }
+}
+
+function loadCloneSession(): string | null {
+  try {
+    const raw = localStorage.getItem(CLONE_SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { cloneId: string; startedAt: number };
+    // Expire after 7 days
+    if (Date.now() - parsed.startedAt > 7 * 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(CLONE_SESSION_KEY);
+      return null;
+    }
+    return parsed.cloneId;
+  } catch {
+    return null;
+  }
+}
+
+function clearCloneSession() {
+  try {
+    localStorage.removeItem(CLONE_SESSION_KEY);
+  } catch {
+    // noop
+  }
+}
+
 export function VoiceCloneWizardPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<WizardStep>("consent");
   const [cloneId, setCloneId] = useState<string | null>(null);
   const [resultStatus, setResultStatus] = useState<"ready" | "failed">("ready");
+
+  const cancelMutation = useCancelVoiceClone();
 
   // Fetch clone status to detect in-progress session
   const { data: cloneStatus, isLoading: statusLoading } =
@@ -37,11 +77,19 @@ export function VoiceCloneWizardPage() {
   const { data: sessionDetail } = useVoiceCloneSession(cloneId);
 
   // Resume logic: detect in-progress session on mount
+  // Priority: backend inProgressCloneId > localStorage fallback
   useEffect(() => {
     if (!cloneStatus || cloneId) return;
 
     if (cloneStatus.inProgressCloneId) {
       setCloneId(cloneStatus.inProgressCloneId);
+      saveCloneSession(cloneStatus.inProgressCloneId);
+    } else {
+      // Fallback: recover from localStorage if backend lost track
+      const savedId = loadCloneSession();
+      if (savedId) {
+        setCloneId(savedId);
+      }
     }
   }, [cloneStatus, cloneId]);
 
@@ -68,6 +116,7 @@ export function VoiceCloneWizardPage() {
         break;
       case "active":
         // Already active — go back to voice agent page
+        clearCloneSession();
         void navigate({ to: "/voice-agent" });
         break;
     }
@@ -75,6 +124,7 @@ export function VoiceCloneWizardPage() {
 
   const handleSessionStarted = useCallback((newCloneId: string) => {
     setCloneId(newCloneId);
+    saveCloneSession(newCloneId);
     setStep("scripts");
   }, []);
 
@@ -92,15 +142,34 @@ export function VoiceCloneWizardPage() {
   }, []);
 
   const handleActivated = useCallback(() => {
+    clearCloneSession();
     void navigate({ to: "/voice-agent" });
   }, [navigate]);
 
   const handleRetry = useCallback(() => {
+    clearCloneSession();
     setCloneId(null);
     setStep("consent");
   }, []);
 
+  const handleCancelClone = useCallback(() => {
+    if (!cloneId) return;
+    if (
+      !window.confirm(
+        "Cancel this voice clone session? Your recordings will be lost.",
+      )
+    )
+      return;
+    cancelMutation.mutate(cloneId, {
+      onSuccess: () => {
+        clearCloneSession();
+        void navigate({ to: "/voice-agent" });
+      },
+    });
+  }, [cloneId, cancelMutation, navigate]);
+
   const currentStepIndex = STEP_LABELS.findIndex((s) => s.key === step);
+  const showCancelButton = cloneId && step !== "consent" && step !== "result";
 
   if (statusLoading) {
     return (
@@ -125,6 +194,25 @@ export function VoiceCloneWizardPage() {
         <h1 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100">
           Voice Clone Recording
         </h1>
+
+        {/* Cancel clone button */}
+        {showCancelButton && (
+          <button
+            type="button"
+            onClick={handleCancelClone}
+            disabled={cancelMutation.isPending}
+            className="ml-2 text-[10px] text-zinc-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 transition-colors"
+          >
+            {cancelMutation.isPending ? (
+              "Canceling..."
+            ) : (
+              <span className="flex items-center gap-0.5">
+                <X className="h-3 w-3" />
+                Cancel Clone
+              </span>
+            )}
+          </button>
+        )}
 
         {/* Step indicator */}
         <div className="ml-auto flex items-center gap-1.5">

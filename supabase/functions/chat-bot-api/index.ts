@@ -2063,6 +2063,18 @@ serve(async (req) => {
         return sendResult(res);
       }
 
+      case "cancel_voice_clone": {
+        const cloneId = params.clone_id;
+        if (!cloneId) {
+          return jsonResponse({ error: "clone_id is required" }, 400);
+        }
+        const res = await callChatBotApi(
+          "DELETE",
+          `/api/external/agents/${agentId}/voice/clone/${cloneId}`,
+        );
+        return sendResult(res);
+      }
+
       case "delete_voice_clone_segment": {
         const cloneId = params.clone_id;
         const segmentIndex = params.segment_index;

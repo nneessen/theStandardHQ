@@ -2,6 +2,7 @@ import {
   Bot,
   Library,
   Loader2,
+  Mic,
   Mic2,
   Search,
   Volume2,
@@ -55,6 +56,7 @@ interface VoiceGreetingViewProps {
   playingVoiceId: string | null;
   onPreviewVoice: (voiceId: string, previewUrl: string) => void;
   filteredVoices: ChatBotRetellVoice[];
+  activeCloneVoiceId?: string | null;
 }
 
 export function VoiceGreetingView({
@@ -80,6 +82,7 @@ export function VoiceGreetingView({
   playingVoiceId,
   onPreviewVoice,
   filteredVoices,
+  activeCloneVoiceId,
 }: VoiceGreetingViewProps) {
   return (
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.05fr_0.95fr]">
@@ -417,6 +420,9 @@ export function VoiceGreetingView({
               <div className="max-h-[240px] overflow-y-auto overscroll-contain space-y-1.5 rounded-lg border border-zinc-200 p-2 dark:border-zinc-800">
                 {filteredVoices.map((voice, idx) => {
                   const isSelected = voice.voice_id === selectedVoiceId;
+                  const isClone =
+                    !!activeCloneVoiceId &&
+                    voice.voice_id === activeCloneVoiceId;
                   return (
                     <div
                       key={`${voice.voice_id}-${idx}`}
@@ -424,15 +430,28 @@ export function VoiceGreetingView({
                         "flex items-center justify-between gap-2 rounded-lg border px-3 py-2",
                         isSelected
                           ? "border-sky-300 bg-sky-50 dark:border-sky-800 dark:bg-sky-950/20"
-                          : "border-zinc-100 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-950/30",
+                          : isClone
+                            ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-900/50 dark:bg-emerald-950/20"
+                            : "border-zinc-100 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-950/30",
                       )}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <WandSparkles className="h-3 w-3 text-zinc-400 flex-shrink-0" />
+                        {isClone ? (
+                          <Mic className="h-3 w-3 text-emerald-500 flex-shrink-0" />
+                        ) : (
+                          <WandSparkles className="h-3 w-3 text-zinc-400 flex-shrink-0" />
+                        )}
                         <div className="min-w-0">
-                          <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">
-                            {voice.voice_name}
-                          </p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                              {voice.voice_name}
+                            </p>
+                            {isClone && (
+                              <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 text-[8px] px-1 py-0 leading-tight">
+                                Cloned
+                              </Badge>
+                            )}
+                          </div>
                           <div className="flex gap-1.5 mt-0.5">
                             <span className="text-[9px] text-zinc-500 dark:text-zinc-400">
                               {voice.provider}
