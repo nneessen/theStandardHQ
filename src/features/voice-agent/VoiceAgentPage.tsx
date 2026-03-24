@@ -600,14 +600,17 @@ export function VoiceAgentPage() {
       voiceAddon?.status === "active";
   // "published" and "is_published" both mean "draft matches live version" —
   // they go false after any draft edit, even if the agent is live and taking calls.
-  // Use multiple signals: phone number, connection status, or retell agent ID.
+  // retellRuntime is only loaded on setup/admin tabs, so also use voiceSetupState
+  // and retellConnected which are available on ALL tabs (including overview).
   const voiceAgentPublished =
     voiceSetupState?.agent?.published === true ||
     retellRuntime?.agent?.is_published === true ||
     isFilledString(retellRuntime?.connection?.fromNumber) ||
     isFilledString(retellRuntime?.connection?.closePhoneNumber) ||
-    // If we have a retell runtime with a connected retellAgentId, agent is provisioned and live
-    isFilledString(retellRuntime?.connection?.retellAgentId);
+    isFilledString(retellRuntime?.connection?.retellAgentId) ||
+    // retellConnected comes from voiceSetupState — available on overview tab too.
+    // If retell is connected AND the agent exists, it has been published.
+    (retellConnected && voiceAgentCreated);
 
   const externalAgentId = voiceSetupState?.agent?.id ?? agent?.id ?? null;
 
