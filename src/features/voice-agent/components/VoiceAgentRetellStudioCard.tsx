@@ -290,13 +290,8 @@ export function VoiceAgentRetellStudioCard({
   const inPublishGrace =
     publishSucceededAtRef.current > 0 &&
     Date.now() - publishSucceededAtRef.current < PUBLISH_GRACE_MS;
-  // agentPublished = "has been published at least once" (from setup-state OR runtime)
-  // is_published = "current draft matches live version" (Retell-specific, goes false after any draft change)
+  // agentPublished = "has been published at least once" (from page-level multi-signal check)
   const isLive = agentPublished || runtime?.agent?.is_published === true;
-  const hasUnpublishedDraftChanges =
-    !inPublishGrace && isLive && runtime?.agent?.is_published === false;
-  const neverPublished =
-    !inPublishGrace && !isLive && runtime?.agent?.is_published === false;
   const selectedVoiceId = agentForm.voiceId.trim();
   const selectedVoice = voices.find(
     (voice) => voice.voice_id === selectedVoiceId,
@@ -508,26 +503,19 @@ export function VoiceAgentRetellStudioCard({
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
-          {neverPublished ? (
+          {isLive ? (
+            <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+              {inPublishGrace
+                ? "Live \u00b7 Just published"
+                : typeof runtime?.agent?.last_modification_timestamp ===
+                    "number"
+                  ? `Live \u00b7 ${formatRelativeTime(runtime.agent.last_modification_timestamp)}`
+                  : "Live"}
+            </Badge>
+          ) : runtime?.agent?.is_published === false ? (
             <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
               Draft needs publishing
             </Badge>
-          ) : isLive ? (
-            <>
-              <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                {inPublishGrace
-                  ? "Live \u00b7 Just published"
-                  : typeof runtime?.agent?.last_modification_timestamp ===
-                      "number"
-                    ? `Live \u00b7 ${formatRelativeTime(runtime.agent.last_modification_timestamp)}`
-                    : "Live"}
-              </Badge>
-              {hasUnpublishedDraftChanges && (
-                <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
-                  Unpublished changes
-                </Badge>
-              )}
-            </>
           ) : null}
           {hasUnsavedChanges && (
             <Badge className="bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300">
