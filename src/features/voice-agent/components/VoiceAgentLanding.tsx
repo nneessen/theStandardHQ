@@ -72,6 +72,7 @@ export function VoiceAgentLanding({
 }: VoiceAgentLandingProps) {
   const progressPercent =
     setupSteps.length > 0 ? (completedSteps / setupSteps.length) * 100 : 0;
+  const setupComplete = completedSteps >= setupSteps.length;
 
   return (
     <div className="space-y-3">
@@ -201,26 +202,42 @@ export function VoiceAgentLanding({
             className="mt-3 h-2 bg-zinc-100 dark:bg-zinc-800 [&>div]:bg-emerald-500"
           />
 
-          <div className="mt-4 rounded-lg border border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/40">
-            <div className="flex items-center gap-1.5">
-              <ArrowRight className="h-3 w-3 text-emerald-500" />
-              <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
-                {nextStepTitle}
+          {setupComplete ? (
+            <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50/50 p-3 dark:border-emerald-900/40 dark:bg-emerald-950/20">
+              <div className="flex items-center gap-1.5">
+                <Check className="h-3 w-3 text-emerald-500" />
+                <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                  Setup complete
+                </p>
+              </div>
+              <p className="mt-1 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
+                Your voice agent is live and taking calls.
               </p>
             </div>
-            <p className="mt-1 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
-              {nextStepDescription}
-            </p>
-          </div>
+          ) : (
+            <>
+              <div className="mt-4 rounded-lg border border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/40">
+                <div className="flex items-center gap-1.5">
+                  <ArrowRight className="h-3 w-3 text-emerald-500" />
+                  <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+                    {nextStepTitle}
+                  </p>
+                </div>
+                <p className="mt-1 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
+                  {nextStepDescription}
+                </p>
+              </div>
 
-          {canOpenSetup && (
-            <Button
-              size="sm"
-              className="mt-3 h-8 w-full"
-              onClick={onNavigateToSetup}
-            >
-              Continue to Setup
-            </Button>
+              {canOpenSetup && (
+                <Button
+                  size="sm"
+                  className="mt-3 h-8 w-full"
+                  onClick={onNavigateToSetup}
+                >
+                  Continue to Setup
+                </Button>
+              )}
+            </>
           )}
         </div>
       </div>
