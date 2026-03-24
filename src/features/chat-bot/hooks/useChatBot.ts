@@ -1227,15 +1227,73 @@ export function usePublishRetellAgentDraft() {
   return useMutation({
     mutationFn: () =>
       chatBotApi<{ published: boolean }>("publish_retell_agent"),
-    onSuccess: () => {
-      toast.success("Voice draft published.");
-      void queryClient.invalidateQueries({
+    onMutate: async () => {
+      // Cancel in-flight fetches so they don't overwrite our optimistic update
+      await queryClient.cancelQueries({
         queryKey: chatBotKeys.retellRuntime(),
       });
-      void queryClient.invalidateQueries({ queryKey: chatBotKeys.retellLlm() });
-      invalidateVoiceSetupQueries(queryClient);
+      await queryClient.cancelQueries({
+        queryKey: chatBotKeys.voiceSetupState(),
+      });
+
+      // Snapshot for rollback
+      const prevRuntime = queryClient.getQueryData<ChatBotRetellRuntime | null>(
+        chatBotKeys.retellRuntime(),
+      );
+      const prevSetupState =
+        queryClient.getQueryData<ChatBotVoiceSetupState | null>(
+          chatBotKeys.voiceSetupState(),
+        );
+
+      // Optimistically mark as published in both caches
+      if (prevRuntime) {
+        queryClient.setQueryData<ChatBotRetellRuntime>(
+          chatBotKeys.retellRuntime(),
+          {
+            ...prevRuntime,
+            agent: { ...prevRuntime.agent, is_published: true },
+          },
+        );
+      }
+      if (prevSetupState) {
+        queryClient.setQueryData<ChatBotVoiceSetupState>(
+          chatBotKeys.voiceSetupState(),
+          {
+            ...prevSetupState,
+            agent: { ...prevSetupState.agent, published: true },
+          },
+        );
+      }
+
+      return { prevRuntime, prevSetupState };
     },
-    onError: (error: Error) => {
+    onSuccess: () => {
+      toast.success("Voice draft published.");
+      // Delay server re-fetch to let Retell API propagate the published state
+      setTimeout(() => {
+        void queryClient.invalidateQueries({
+          queryKey: chatBotKeys.retellRuntime(),
+        });
+        void queryClient.invalidateQueries({
+          queryKey: chatBotKeys.retellLlm(),
+        });
+        invalidateVoiceSetupQueries(queryClient);
+      }, 2_000);
+    },
+    onError: (error: Error, _vars, context) => {
+      // Rollback optimistic updates on failure
+      if (context?.prevRuntime !== undefined) {
+        queryClient.setQueryData(
+          chatBotKeys.retellRuntime(),
+          context.prevRuntime,
+        );
+      }
+      if (context?.prevSetupState !== undefined) {
+        queryClient.setQueryData(
+          chatBotKeys.voiceSetupState(),
+          context.prevSetupState,
+        );
+      }
       toast.error(error.message || "Failed to publish the voice draft.");
     },
   });
