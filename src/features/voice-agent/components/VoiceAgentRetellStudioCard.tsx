@@ -164,6 +164,7 @@ export function VoiceAgentRetellStudioCard({
 }: VoiceAgentRetellStudioCardProps) {
   const updateRetellAgentDraft = useUpdateRetellAgentDraft();
   const publishRetellAgentDraft = usePublishRetellAgentDraft();
+  const publishSucceededAtRef = useRef<number>(0);
   const updateRetellLlm = useUpdateRetellLlm();
   const searchRetellVoices = useSearchRetellVoices();
   const addRetellVoice = useAddRetellVoice();
@@ -271,7 +272,12 @@ export function VoiceAgentRetellStudioCard({
       : hasStructuredUnsavedChanges;
   const isBuilderSaving =
     updateRetellAgentDraft.isPending || updateRetellLlm.isPending;
-  const draftPendingPublish = runtime?.agent?.is_published === false;
+  const PUBLISH_GRACE_MS = 120_000;
+  const inPublishGrace =
+    publishSucceededAtRef.current > 0 &&
+    Date.now() - publishSucceededAtRef.current < PUBLISH_GRACE_MS;
+  const draftPendingPublish =
+    !inPublishGrace && runtime?.agent?.is_published === false;
   const selectedVoiceId = agentForm.voiceId.trim();
   const selectedVoice = voices.find(
     (voice) => voice.voice_id === selectedVoiceId,
@@ -567,7 +573,13 @@ export function VoiceAgentRetellStudioCard({
                 <Button
                   size="sm"
                   variant="secondary"
-                  onClick={() => publishRetellAgentDraft.mutate()}
+                  onClick={() =>
+                    publishRetellAgentDraft.mutate(undefined, {
+                      onSuccess: () => {
+                        publishSucceededAtRef.current = Date.now();
+                      },
+                    })
+                  }
                   disabled={
                     publishRetellAgentDraft.isPending ||
                     hasStructuredUnsavedChanges

@@ -1269,14 +1269,30 @@ export function usePublishRetellAgentDraft() {
     },
     onSuccess: () => {
       toast.success("Voice draft published.");
-      // Only invalidate retellLlm — do NOT invalidate retellRuntime or
-      // voiceSetupState here.  The optimistic update already set
-      // is_published / published = true in both caches.  Retell's API has
-      // a propagation delay, so an immediate (or short-delayed) re-fetch
-      // returns stale is_published=false and overwrites our optimistic data,
-      // flipping the badge back to "Draft needs publishing".  The natural
-      // staleTime (30 s for runtime, 15 s for setupState) will background-
-      // refresh once Retell has had time to propagate.
+
+      // Re-apply optimistic data to reset dataUpdatedAt (staleTime clock).
+      // onMutate set it at mutation-start; resetting here pushes the first
+      // background refetch out by another full staleTime window, giving
+      // Retell more time to propagate the is_published change.
+      const rt = queryClient.getQueryData<ChatBotRetellRuntime>(
+        chatBotKeys.retellRuntime(),
+      );
+      if (rt) {
+        queryClient.setQueryData<ChatBotRetellRuntime>(
+          chatBotKeys.retellRuntime(),
+          { ...rt, agent: { ...rt.agent, is_published: true } },
+        );
+      }
+      const ss = queryClient.getQueryData<ChatBotVoiceSetupState>(
+        chatBotKeys.voiceSetupState(),
+      );
+      if (ss) {
+        queryClient.setQueryData<ChatBotVoiceSetupState>(
+          chatBotKeys.voiceSetupState(),
+          { ...ss, agent: { ...ss.agent, published: true } },
+        );
+      }
+
       void queryClient.invalidateQueries({
         queryKey: chatBotKeys.retellLlm(),
       });
