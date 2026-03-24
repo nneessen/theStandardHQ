@@ -1,5 +1,7 @@
-import { Loader2, Mic } from "lucide-react";
+import { useState } from "react";
+import { Loader2, Mic, Trash2 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { ChatBotVoiceCloneStatus } from "@/features/chat-bot";
@@ -7,6 +9,7 @@ import {
   useDeactivateVoiceClone,
   useActivateVoiceClone,
   useCancelVoiceClone,
+  chatBotKeys,
 } from "@/features/chat-bot";
 
 const CLONE_SESSION_KEY = "voice_clone_session";
@@ -46,9 +49,11 @@ export function VoiceCloneStatusCard({
   isLoading,
 }: VoiceCloneStatusCardProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const deactivateMutation = useDeactivateVoiceClone();
   const activateMutation = useActivateVoiceClone();
   const cancelMutation = useCancelVoiceClone();
+  const [forceDismissed, setForceDismissed] = useState(false);
 
   // Show a compact loading skeleton while first fetch is in-flight
   if (isLoading && !cloneStatus) {
@@ -116,17 +121,24 @@ export function VoiceCloneStatusCard({
     cloneStatus.totalSegments > 0 &&
     cloneStatus.completedSegments >= cloneStatus.totalSegments;
 
-  if (allSegmentsRecorded) {
+  if (allSegmentsRecorded && !forceDismissed) {
     const handleDiscard = () => {
       if (
         !window.confirm(
-          "Discard this voice clone? Your recordings will be lost.",
+          "Delete this voice clone? Your recordings will be permanently lost.",
         )
       )
         return;
       cancelMutation.mutate(cloneStatus.inProgressCloneId!, {
-        onSuccess: () => clearSavedCloneSession(),
-        onError: () => clearSavedCloneSession(),
+        onSuccess: () => {
+          clearSavedCloneSession();
+          setForceDismissed(true);
+        },
+        onError: () => {
+          clearSavedCloneSession();
+          queryClient.setQueryData(chatBotKeys.voiceCloneStatus(), null);
+          setForceDismissed(true);
+        },
       });
     };
 
@@ -164,14 +176,16 @@ export function VoiceCloneStatusCard({
             >
               Details
             </Button>
-            <button
-              type="button"
+            <Button
+              variant="destructive"
+              size="sm"
+              className="h-6 text-[10px] px-2.5 gap-1"
               onClick={handleDiscard}
               disabled={cancelMutation.isPending}
-              className="text-[10px] text-zinc-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 transition-colors"
             >
-              {cancelMutation.isPending ? "..." : "Discard"}
-            </button>
+              <Trash2 className="h-3 w-3" />
+              {cancelMutation.isPending ? "..." : "Delete"}
+            </Button>
           </div>
         </div>
         {activateMutation.isError && (
@@ -184,7 +198,7 @@ export function VoiceCloneStatusCard({
   }
 
   // Recording in progress (segments still incomplete)
-  if (cloneStatus?.inProgressCloneId) {
+  if (cloneStatus?.inProgressCloneId && !forceDismissed) {
     const pct =
       cloneStatus.totalSegments > 0
         ? Math.round(
@@ -192,16 +206,28 @@ export function VoiceCloneStatusCard({
           )
         : 0;
 
-    const handleCancel = () => {
+    const forceRemoveFromUI = () => {
+      clearSavedCloneSession();
+      queryClient.setQueryData(chatBotKeys.voiceCloneStatus(), null);
+      setForceDismissed(true);
+    };
+
+    const handleDelete = () => {
       if (
         !window.confirm(
-          "Cancel this voice clone? Your recordings will be lost.",
+          "Delete this voice clone? Your recordings will be permanently lost.",
         )
       )
         return;
       cancelMutation.mutate(cloneStatus.inProgressCloneId!, {
-        onSuccess: () => clearSavedCloneSession(),
-        onError: () => clearSavedCloneSession(),
+        onSuccess: () => {
+          clearSavedCloneSession();
+          setForceDismissed(true);
+        },
+        onError: () => {
+          // API failed — force-remove from UI anyway
+          forceRemoveFromUI();
+        },
       });
     };
 
@@ -232,18 +258,20 @@ export function VoiceCloneStatusCard({
             Your progress is saved.
           </p>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleCancel}
+            <Button
+              variant="destructive"
+              size="sm"
+              className="h-7 text-[11px] px-3 gap-1.5"
+              onClick={handleDelete}
               disabled={cancelMutation.isPending}
-              className="text-[10px] text-zinc-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 transition-colors"
             >
-              {cancelMutation.isPending ? "Canceling..." : "Cancel"}
-            </button>
+              <Trash2 className="h-3 w-3" />
+              {cancelMutation.isPending ? "Deleting..." : "Delete Clone"}
+            </Button>
             <Button
               variant="outline"
               size="sm"
-              className="h-6 text-[10px] px-2.5 border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-950/30"
+              className="h-7 text-[11px] px-2.5 border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-950/30"
               onClick={() => navigate({ to: "/voice-agent/clone" })}
             >
               Continue Recording
@@ -256,21 +284,23 @@ export function VoiceCloneStatusCard({
 
   // Recovery: localStorage has a saved clone session the backend lost track of
   const savedCloneId = loadSavedCloneId();
-  if (savedCloneId && !cloneStatus?.hasActiveClone) {
+  if (savedCloneId && !cloneStatus?.hasActiveClone && !forceDismissed) {
     const handleDiscardSession = () => {
       if (
         !window.confirm(
-          "Discard this voice clone session? Any recordings will be lost.",
+          "Delete this voice clone session? Any recordings will be permanently lost.",
         )
       )
         return;
-      // Try to cancel on backend, then clear localStorage regardless
       cancelMutation.mutate(savedCloneId, {
-        onSuccess: () => clearSavedCloneSession(),
-        onError: () => {
-          // Even if backend cancel fails (session already gone), clear local state
+        onSuccess: () => {
           clearSavedCloneSession();
-          window.location.reload();
+          setForceDismissed(true);
+        },
+        onError: () => {
+          clearSavedCloneSession();
+          queryClient.setQueryData(chatBotKeys.voiceCloneStatus(), null);
+          setForceDismissed(true);
         },
       });
     };
@@ -291,14 +321,16 @@ export function VoiceCloneStatusCard({
             A previous clone session was found.
           </p>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
+            <Button
+              variant="destructive"
+              size="sm"
+              className="h-6 text-[10px] px-2.5 gap-1"
               onClick={handleDiscardSession}
               disabled={cancelMutation.isPending}
-              className="text-[10px] text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 transition-colors"
             >
-              {cancelMutation.isPending ? "Discarding..." : "Discard"}
-            </button>
+              <Trash2 className="h-3 w-3" />
+              {cancelMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
             <Button
               variant="outline"
               size="sm"
