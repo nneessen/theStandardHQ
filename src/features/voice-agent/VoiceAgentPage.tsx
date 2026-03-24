@@ -598,9 +598,13 @@ export function VoiceAgentPage() {
     ? voiceSetupState.readiness?.entitlementActive === true
     : isVoiceAccessActive(voiceEntitlement?.status ?? voiceSnapshot?.status) ||
       voiceAddon?.status === "active";
+  // "published" and "is_published" both mean "draft matches live version" —
+  // they go false after any draft edit, even if the agent is live and taking calls.
+  // Use phone number assignment as definitive proof the agent went live at least once.
   const voiceAgentPublished =
     voiceSetupState?.agent?.published === true ||
-    retellRuntime?.agent?.is_published === true;
+    retellRuntime?.agent?.is_published === true ||
+    isFilledString(retellRuntime?.connection?.fromNumber);
 
   const externalAgentId = voiceSetupState?.agent?.id ?? agent?.id ?? null;
 
