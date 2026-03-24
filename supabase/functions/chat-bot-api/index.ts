@@ -1295,6 +1295,7 @@ serve(async (req) => {
           createdAt: agentData.createdAt,
           autoOutreachLeadSources: agentData.autoOutreachLeadSources || [],
           allowedLeadStatuses: agentData.allowedLeadStatuses || [],
+          blockedLeadStatuses: agentData.blockedLeadStatuses || [],
           calendlyEventTypeSlug: agentData.calendlyEventTypeSlug || null,
           leadSourceEventTypeMappings:
             agentData.leadSourceEventTypeMappings || [],
