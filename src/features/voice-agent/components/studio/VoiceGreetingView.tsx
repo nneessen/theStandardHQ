@@ -109,8 +109,8 @@ export function VoiceGreetingView({
             <div className="space-y-1.5">
               <Label htmlFor="retell-begin-message">Opening greeting</Label>
               <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                This is the very first thing the agent says when a call connects
-                — before any conversation happens. It's used on every call.
+                The first thing the agent says when any call connects — both
+                inbound and outbound. Use the examples below as a guide.
               </p>
               <Textarea
                 id="retell-begin-message"

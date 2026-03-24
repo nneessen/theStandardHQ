@@ -2,6 +2,7 @@
 // Barrel export for chat-bot feature module
 
 export { ChatBotPage } from "./ChatBotPage";
+export { BlockedLeadStatusSelector } from "./components/BlockedLeadStatusSelector";
 export { ConnectionCard } from "./components/ConnectionCard";
 export {
   chatBotApi,

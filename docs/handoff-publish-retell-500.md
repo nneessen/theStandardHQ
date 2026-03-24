@@ -1,63 +1,38 @@
-# Handoff: Publish Retell Agent — 500 "Unexpected end of JSON input"
+# Retell Publish Endpoint — RESOLVED
 
-## Problem
+## Status: Fixed (2026-03-24)
 
-`POST /api/external/agents/{agentId}/retell/agent/publish` returns HTTP 500 with:
+## What was broken
 
+`POST /api/external/agents/{agentId}/retell/agent/publish` returned HTTP 500:
 ```json
 {"success":false,"error":{"code":"INTERNAL","message":"Unexpected end of JSON input"}}
 ```
 
-This affects ALL agents — not specific to one agent or config. Tested with both agent IDs:
-- `126bb5c9-e546-49e2-8fdc-1a5cfba2c1f1`
-- `bd531bdd-34cb-451f-aefd-b24984b923ca`
+**Root cause:** Retell's publish API returns `Content-Type: application/json` with an **empty body** on success. The backend called `response.json()` which threw `SyntaxError: Unexpected end of JSON input`.
 
-## Reproduction
+## How it was fixed
 
-```bash
-curl -s -X POST \
-  -H "X-API-Key: $CHAT_BOT_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{}' \
-  "https://api-production-de66.up.railway.app/api/external/agents/126bb5c9-e546-49e2-8fdc-1a5cfba2c1f1/retell/agent/publish"
+The backend now uses the Retell SDK's native `client.agent.publish()` method and catches the SDK's `SyntaxError` on empty body, treating it as success.
+
+## Current endpoint contract
+
+```
+POST /api/external/agents/{agentId}/retell/agent/publish
+Headers: X-API-Key: {EXTERNAL_API_KEY}, Content-Type: application/json
+Body: {}
+
+Success (200): { "success": true, "data": { "published": true } }
+Error (404):   { "success": false, "error": { "code": "NOT_FOUND", "message": "..." } }
+Error (500):   { "success": false, "error": { "code": "INTERNAL", "message": "..." } }
 ```
 
-Returns 500 regardless of body content (empty `{}`, no body, or body with fields).
+## Frontend handling
 
-## Likely Root Cause
+The frontend (`usePublishRetellAgentDraft` in `useChatBot.ts`) does NOT inspect the response body. It uses optimistic cache updates:
 
-The `"Unexpected end of JSON input"` error is a `JSON.parse()` failure. The publish handler likely:
+1. `onMutate`: Sets `is_published = true` in `retellRuntime` and `voiceSetupState` caches
+2. `onSuccess`: Re-applies optimistic data to reset `dataUpdatedAt` timestamps, giving Retell ~180s total to propagate
+3. 120-second grace period in `VoiceAgentRetellStudioCard.tsx` prevents badge flipping during Retell's async propagation
 
-1. Calls Retell's API to update/publish the agent
-2. Gets back an empty response, non-JSON response, or connection error
-3. Tries to `JSON.parse(responseBody)` without checking if the body is valid JSON first
-
-Possible triggers:
-- Retell API changed their response format for the publish/update endpoint
-- Retell API is returning an empty 204 response that the handler doesn't expect
-- Retell API credentials expired or were rotated
-- A network/timeout issue causes an empty response
-
-## What to Fix
-
-1. Find the publish handler (likely in a Retell service/controller file)
-2. Add safe JSON parsing: wrap `JSON.parse()` in a try-catch, or use `.json()` with a fallback
-3. Log the raw response status + body BEFORE parsing so you can see what Retell actually returned
-4. Check if the Retell API key (`RETELL_API_KEY` env var) is still valid — try a simple GET call to Retell's agent endpoint
-
-## Quick Diagnostic
-
-Add temporary logging to the publish handler:
-
-```typescript
-const response = await fetch(retellUrl, options);
-const rawText = await response.text();
-console.log(`[publish] Retell response: status=${response.status}, body=${rawText}`);
-const data = rawText ? JSON.parse(rawText) : {};
-```
-
-This will tell you exactly what Retell is returning.
-
-## Impact
-
-Users cannot publish voice agent drafts. All config changes (voice, prompt, settings) are stuck as unpublished drafts.
+No frontend code changes were needed for the backend fix.

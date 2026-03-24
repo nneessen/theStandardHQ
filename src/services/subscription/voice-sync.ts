@@ -246,6 +246,7 @@ export function buildVoiceEntitlementPayload(input: {
       source: "commissionTracker",
       stripeEventId: input.eventId,
       tierId: input.tier.id,
+      phoneNumberIncluded: true,
       ...(input.metadata ?? {}),
     },
   };

@@ -8,6 +8,7 @@ import {
   Globe,
   ListChecks,
   Loader2,
+  Phone,
   PlugZap,
   Power,
   RefreshCw,
@@ -49,6 +50,7 @@ import {
   useChatBotCloseLeadStatuses,
   useChatBotCloseStatus,
   useChatBotGoogleStatus,
+  useChatBotPhoneNumbers,
   useConnectClose,
   useDisconnectCalendly,
   useDisconnectClose,
@@ -131,6 +133,8 @@ export function SetupTab() {
   const closeConnected = closeConnectionState === "connected";
   const { data: closeLeadStatuses, isLoading: closeLeadStatusesLoading } =
     useChatBotCloseLeadStatuses(closeConnected);
+  const { data: phoneNumbers, isLoading: phoneNumbersLoading } =
+    useChatBotPhoneNumbers(closeConnected);
   const {
     data: calendlyStatus,
     error: calendlyStatusError,
@@ -530,6 +534,73 @@ export function SetupTab() {
                   </SelectContent>
                 </Select>
               </SectionCard>
+
+              {closeConnected ? (
+                <SectionCard
+                  icon={<Phone className="h-4 w-4" />}
+                  title="Primary Phone Number"
+                  description="Default outbound number for new leads. Used when no state mapping matches."
+                >
+                  {phoneNumbersLoading ? (
+                    <div className="flex items-center gap-2 text-[10px] text-zinc-500">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Loading phone numbers...
+                    </div>
+                  ) : phoneNumbers && phoneNumbers.length > 0 ? (
+                    <Select
+                      value={agent?.primaryPhone || "__none__"}
+                      onValueChange={(value) =>
+                        updateConfig.mutate({
+                          primaryPhone: value === "__none__" ? null : value,
+                        })
+                      }
+                      disabled={updateConfig.isPending}
+                    >
+                      <SelectTrigger className="h-9 text-[11px]">
+                        <SelectValue placeholder="No primary phone" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__" className="text-[11px]">
+                          None (use round-robin / Close default)
+                        </SelectItem>
+                        {phoneNumbers.map((pn) => (
+                          <SelectItem
+                            key={pn.id}
+                            value={pn.phone}
+                            className="text-[11px]"
+                          >
+                            {pn.phone}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                        No phone numbers found in your Close account.
+                      </p>
+                      {agent?.primaryPhone ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+                            Current: {agent.primaryPhone}
+                          </span>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-[10px] text-red-500 hover:text-red-700"
+                            disabled={updateConfig.isPending}
+                            onClick={() =>
+                              updateConfig.mutate({ primaryPhone: null })
+                            }
+                          >
+                            Clear
+                          </Button>
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
+                </SectionCard>
+              ) : null}
 
               {agent ? (
                 <SectionCard

@@ -31,7 +31,9 @@ const ALLOWED_ORIGINS = [
   "https://www.thestandardhq.com",
   "https://thestandardhq.com",
   "http://localhost:3000",
+  "http://localhost:3001",
   "http://127.0.0.1:3000",
+  "http://127.0.0.1:3001",
 ];
 
 function buildCorsHeaders(req?: Request) {
@@ -50,6 +52,8 @@ function buildCorsHeaders(req?: Request) {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Headers":
       "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Max-Age": "86400",
   };
 }
 
@@ -1332,6 +1336,7 @@ serve(async (req) => {
           voiceHumanHandoffEnabled: agentData.voiceHumanHandoffEnabled ?? true,
           voiceQuotedFollowupEnabled:
             agentData.voiceQuotedFollowupEnabled ?? false,
+          primaryPhone: agentData.primaryPhone ?? null,
           connections: {
             close: closeConn
               ? { connected: true, orgName: closeConn.orgId || undefined }
@@ -1557,6 +1562,20 @@ serve(async (req) => {
         }
         return jsonResponse({
           statuses: Array.isArray(payload?.statuses) ? payload.statuses : [],
+        });
+      }
+
+      case "get_phone_numbers": {
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/phone-numbers`,
+        );
+        const { payload, status, errorMessage } = unwrap(res);
+        if (errorMessage) {
+          return jsonResponse({ error: errorMessage }, status);
+        }
+        return jsonResponse({
+          phoneNumbers: Array.isArray(payload) ? payload : [],
         });
       }
 

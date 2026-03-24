@@ -1,14 +1,24 @@
-import { type ElementType, type ReactNode, useMemo, useState } from "react";
+import {
+  type ElementType,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   Activity,
   AlertTriangle,
+  Check,
   Construction,
   CreditCard,
   Loader2,
   Lock,
   PhoneCall,
   Settings2,
+  ShieldBan,
   ShieldCheck,
   Sparkles,
   Wrench,
@@ -19,8 +29,10 @@ import { cn } from "@/lib/utils";
 import { CloseCrmLogo } from "@/components/logos/CloseCrmLogo";
 import { useImo } from "@/contexts/ImoContext";
 import {
+  BlockedLeadStatusSelector,
   ChatBotApiError,
   useChatBotAgent,
+  useChatBotCloseLeadStatuses,
   useCreateVoiceAgent,
   useStartVoiceTrial,
   useChatBotVoiceSetupState,
@@ -32,6 +44,7 @@ import {
   useChatBotVoiceEntitlement,
   useChatBotVoiceUsage,
   useChatBotVoiceCloneStatus,
+  useUpdateBotConfig,
 } from "@/features/chat-bot";
 import { ConnectionCard } from "@/features/chat-bot";
 import { useUserActiveAddons } from "@/hooks/subscription";
@@ -476,9 +489,22 @@ function CreateVoiceAgentCard({
 
 export function VoiceAgentPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<VoiceTabId>("overview");
   const [activeSetupTab, setActiveSetupTab] =
     useState<VoiceSetupTabId>("voice");
+
+  // ── Checkout success detection ──
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("checkout") === "success") {
+      toast.success(
+        "Voice addon activated! Create your voice agent to get started.",
+      );
+      window.history.replaceState({}, "", window.location.pathname);
+      void queryClient.invalidateQueries({ queryKey: ["subscription"] });
+    }
+  }, [queryClient]);
   const { isSuperAdmin } = useImo();
   const { activeAddons, isLoading: addonsLoading } = useUserActiveAddons();
   const voiceAddon = activeAddons.find(
@@ -585,6 +611,24 @@ export function VoiceAgentPage() {
     voiceAccessActive;
   const { data: voiceCloneStatus, isLoading: cloneStatusLoading } =
     useChatBotVoiceCloneStatus(shouldLoadCloneStatus);
+
+  // ── Blocked lead statuses (contact control) ──
+  const shouldLoadCloseStatuses =
+    (activeTab === "setup" && activeSetupTab === "call-flow") ||
+    activeTab === "admin";
+  const { data: closeLeadStatuses, isLoading: closeLeadStatusesLoading } =
+    useChatBotCloseLeadStatuses(shouldLoadCloseStatuses && closeConnected);
+  const updateBotConfig = useUpdateBotConfig();
+  const [blockedStatuses, setBlockedStatuses] = useState<string[] | null>(null);
+  const [blockedDirty, setBlockedDirty] = useState(false);
+  const displayedBlockedStatuses =
+    blockedStatuses ?? agent?.blockedLeadStatuses ?? [];
+  const handleSaveBlockedStatuses = () => {
+    updateBotConfig.mutate(
+      { blockedLeadStatuses: displayedBlockedStatuses },
+      { onSuccess: () => setBlockedDirty(false) },
+    );
+  };
 
   // ── nextAction.key: trust setup-state, fallback only when absent ──
   const setupStateNextActionKey = normalizeNextActionKey(
@@ -1310,6 +1354,55 @@ export function VoiceAgentPage() {
                 {activeSetupTab === "call-flow" && (
                   <div className="space-y-3">
                     <VoiceAgentRuntimeCard agent={agent} />
+
+                    {/* Blocked Lead Statuses — who the voice agent should NOT call */}
+                    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                      <div className="flex items-start gap-3">
+                        <ShieldBan className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
+                        <div className="flex-1 space-y-1">
+                          <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                            Blocked Lead Statuses
+                          </p>
+                          <p className="text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
+                            The voice agent will not place or answer calls for
+                            leads with any of these statuses. This applies to
+                            both inbound and outbound calls.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3">
+                        <BlockedLeadStatusSelector
+                          options={closeLeadStatuses}
+                          selected={displayedBlockedStatuses}
+                          onChange={(statuses) => {
+                            setBlockedStatuses(statuses);
+                            setBlockedDirty(true);
+                          }}
+                          disabled={updateBotConfig.isPending}
+                          closeConnected={closeConnected}
+                          isLoadingStatuses={closeLeadStatusesLoading}
+                        />
+                        {blockedDirty && (
+                          <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                            <Button
+                              size="sm"
+                              className="h-7 text-[10px]"
+                              disabled={updateBotConfig.isPending}
+                              onClick={handleSaveBlockedStatuses}
+                            >
+                              {updateBotConfig.isPending ? (
+                                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                              ) : (
+                                <Check className="mr-1 h-3 w-3" />
+                              )}
+                              Save Changes
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
                     <VoiceAgentRetellStudioCard
                       connection={agent?.connections?.retell}
                       runtime={retellRuntime}

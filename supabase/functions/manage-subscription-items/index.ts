@@ -421,8 +421,12 @@ serve(async (req) => {
 
           const SITE_URL =
             Deno.env.get("SITE_URL") || "https://app.commissiontracker.io";
-          const successUrl = `${SITE_URL}/tools/chat-bot?checkout=success&addon_id=${addonId}&tier_id=${resolvedTierId}`;
-          const cancelUrl = `${SITE_URL}/tools/chat-bot?checkout=cancelled`;
+          const addonPath =
+            addon.name === PREMIUM_VOICE_ADDON_NAME
+              ? "/voice-agent"
+              : "/tools/chat-bot";
+          const successUrl = `${SITE_URL}${addonPath}?checkout=success&addon_id=${addonId}&tier_id=${resolvedTierId}`;
+          const cancelUrl = `${SITE_URL}${addonPath}?checkout=cancelled`;
 
           // deno-lint-ignore no-explicit-any
           const sessionParams: any = {

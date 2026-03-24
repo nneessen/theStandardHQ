@@ -78,6 +78,17 @@ function getErrorMessage(error: unknown) {
   return "Invalid JSON";
 }
 
+function formatRelativeTime(epochMs: number): string {
+  const diffMs = Date.now() - epochMs;
+  const mins = Math.floor(diffMs / 60_000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
+}
+
 function getViewCopy(view: VoiceAgentRetellStudioView) {
   switch (view) {
     case "voice":
@@ -496,7 +507,12 @@ export function VoiceAgentRetellStudioCard({
           ) : (
             runtime?.agent?.is_published === true && (
               <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                Live
+                {inPublishGrace
+                  ? "Live \u00b7 Just published"
+                  : typeof runtime.agent.last_modification_timestamp ===
+                      "number"
+                    ? `Live \u00b7 ${formatRelativeTime(runtime.agent.last_modification_timestamp)}`
+                    : "Live"}
               </Badge>
             )
           )}
@@ -667,6 +683,12 @@ export function VoiceAgentRetellStudioCard({
               selectedVoiceId={selectedVoiceId}
               selectedVoice={selectedVoice}
               llmForm={llmForm}
+              lastModifiedAt={
+                typeof runtime?.agent?.last_modification_timestamp === "number"
+                  ? runtime.agent.last_modification_timestamp
+                  : null
+              }
+              justPublished={inPublishGrace}
             />
           )}
 

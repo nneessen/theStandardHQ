@@ -52,6 +52,18 @@ interface LaunchViewProps {
   selectedVoiceId: string;
   selectedVoice: ChatBotRetellVoice | undefined;
   llmForm: RetellStructuredLlmForm;
+  lastModifiedAt?: number | null;
+  justPublished?: boolean;
+}
+
+function formatPublishTime(epochMs: number): string {
+  const diffMs = Date.now() - epochMs;
+  const mins = Math.floor(diffMs / 60_000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return new Date(epochMs).toLocaleDateString();
 }
 
 export function LaunchView({
@@ -62,6 +74,8 @@ export function LaunchView({
   selectedVoiceId,
   selectedVoice,
   llmForm,
+  lastModifiedAt,
+  justPublished,
 }: LaunchViewProps) {
   return (
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.05fr_0.95fr]">
@@ -103,7 +117,11 @@ export function LaunchView({
             complete={isPublished}
             detail={
               isPublished
-                ? "A published version is already live."
+                ? justPublished
+                  ? "Just published \u2014 your latest draft is now live."
+                  : lastModifiedAt
+                    ? `Published ${formatPublishTime(lastModifiedAt)}. Your live agent is running this version.`
+                    : "A published version is already live."
                 : "This workspace still needs a published draft to go live."
             }
           />

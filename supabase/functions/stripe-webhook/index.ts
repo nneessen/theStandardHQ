@@ -1142,6 +1142,26 @@ serve(async (req) => {
                 );
               }
             }
+
+            if (addonDefinition?.name === PREMIUM_VOICE_ADDON_NAME) {
+              try {
+                await syncPremiumVoiceAddon(supabase, {
+                  userId,
+                  eventId: event.id,
+                  stripeStatus: "active",
+                  externalCustomerId: customerId || null,
+                  externalSubscriptionId: stripeSubId,
+                });
+                console.log(
+                  `[stripe-webhook] Voice entitlement synced from checkout for user ${userId}`,
+                );
+              } catch (voiceSyncErr) {
+                console.error(
+                  "[stripe-webhook] Failed to sync voice entitlement from checkout:",
+                  voiceSyncErr,
+                );
+              }
+            }
           }
 
           // Admin notification for addon purchase

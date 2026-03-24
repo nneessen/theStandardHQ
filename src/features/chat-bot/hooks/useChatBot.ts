@@ -43,6 +43,7 @@ export const chatBotKeys = {
     [...chatBotKeys.all, "voice-clone-session", cloneId] as const,
   closeStatus: () => [...chatBotKeys.all, "close-status"] as const,
   closeLeadStatuses: () => [...chatBotKeys.all, "close-lead-statuses"] as const,
+  closePhoneNumbers: () => [...chatBotKeys.all, "close-phone-numbers"] as const,
   calendlyStatus: () => [...chatBotKeys.all, "calendly-status"] as const,
   calendlyEventTypes: () =>
     [...chatBotKeys.all, "calendly-event-types"] as const,
@@ -96,6 +97,7 @@ export interface ChatBotAgent {
   voiceVoicemailEnabled?: boolean;
   voiceHumanHandoffEnabled?: boolean;
   voiceQuotedFollowupEnabled?: boolean;
+  primaryPhone?: string | null;
   connections?: {
     close?: { connected: boolean; orgName?: string };
     calendly?: { connected: boolean; eventType?: string };
@@ -130,6 +132,11 @@ export interface CalendlyEventType {
 export interface ChatBotCloseLeadStatus {
   id: string;
   label: string;
+}
+
+export interface ChatBotPhoneNumber {
+  id: string;
+  phone: string;
 }
 
 export interface ChatBotConversation {
@@ -1004,6 +1011,30 @@ export function useChatBotCloseLeadStatuses(enabled = true) {
   });
 }
 
+export function useChatBotPhoneNumbers(enabled = true) {
+  return useQuery<ChatBotPhoneNumber[], ChatBotApiError>({
+    queryKey: chatBotKeys.closePhoneNumbers(),
+    queryFn: async () => {
+      const result = await chatBotApi<{
+        phoneNumbers: ChatBotPhoneNumber[];
+      }>("get_phone_numbers");
+      return result.phoneNumbers ?? [];
+    },
+    enabled,
+    staleTime: 120_000,
+    retry: (failureCount, error) => {
+      // Endpoint may not exist yet on backend — treat 404 as empty
+      if (error instanceof ChatBotApiError && error.isNotProvisioned) {
+        return false;
+      }
+      if (error instanceof ChatBotApiError && error.isTransportError) {
+        return false;
+      }
+      return failureCount < 1;
+    },
+  });
+}
+
 export function useChatBotCalendlyStatus(enabled = true) {
   return useQuery<
     {
@@ -1492,6 +1523,7 @@ export function useUpdateBotConfig() {
       voiceVoicemailEnabled?: boolean;
       voiceHumanHandoffEnabled?: boolean;
       voiceQuotedFollowupEnabled?: boolean;
+      primaryPhone?: string | null;
     }) => chatBotApi<{ success: boolean }>("update_config", config),
     onMutate: async (config) => {
       await queryClient.cancelQueries({ queryKey: chatBotKeys.agent() });

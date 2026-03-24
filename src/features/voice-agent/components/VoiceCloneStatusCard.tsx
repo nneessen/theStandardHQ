@@ -27,6 +27,14 @@ function loadSavedCloneId(): string | null {
   }
 }
 
+function clearSavedCloneSession() {
+  try {
+    localStorage.removeItem(CLONE_SESSION_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 interface VoiceCloneStatusCardProps {
   cloneStatus: ChatBotVoiceCloneStatus | null | undefined;
   isLoading: boolean;
@@ -62,6 +70,18 @@ export function VoiceCloneStatusCard({
 
   // Active clone
   if (cloneStatus?.hasActiveClone) {
+    const handleRemoveClone = () => {
+      if (
+        !window.confirm(
+          "Remove your cloned voice? This will revert to the default voice and delete the clone. This cannot be undone.",
+        )
+      )
+        return;
+      deactivateMutation.mutate(undefined, {
+        onSuccess: () => clearSavedCloneSession(),
+      });
+    };
+
     return (
       <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex items-center gap-2">
@@ -79,11 +99,11 @@ export function VoiceCloneStatusCard({
           </p>
           <button
             type="button"
-            onClick={() => deactivateMutation.mutate()}
+            onClick={handleRemoveClone}
             disabled={deactivateMutation.isPending}
-            className="text-[10px] text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 transition-colors"
+            className="text-[10px] text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 transition-colors"
           >
-            {deactivateMutation.isPending ? "Reverting..." : "Deactivate"}
+            {deactivateMutation.isPending ? "Removing..." : "Remove Clone"}
           </button>
         </div>
       </div>
@@ -104,7 +124,10 @@ export function VoiceCloneStatusCard({
         )
       )
         return;
-      cancelMutation.mutate(cloneStatus.inProgressCloneId!);
+      cancelMutation.mutate(cloneStatus.inProgressCloneId!, {
+        onSuccess: () => clearSavedCloneSession(),
+        onError: () => clearSavedCloneSession(),
+      });
     };
 
     return (
@@ -176,7 +199,10 @@ export function VoiceCloneStatusCard({
         )
       )
         return;
-      cancelMutation.mutate(cloneStatus.inProgressCloneId!);
+      cancelMutation.mutate(cloneStatus.inProgressCloneId!, {
+        onSuccess: () => clearSavedCloneSession(),
+        onError: () => clearSavedCloneSession(),
+      });
     };
 
     return (
@@ -231,6 +257,24 @@ export function VoiceCloneStatusCard({
   // Recovery: localStorage has a saved clone session the backend lost track of
   const savedCloneId = loadSavedCloneId();
   if (savedCloneId && !cloneStatus?.hasActiveClone) {
+    const handleDiscardSession = () => {
+      if (
+        !window.confirm(
+          "Discard this voice clone session? Any recordings will be lost.",
+        )
+      )
+        return;
+      // Try to cancel on backend, then clear localStorage regardless
+      cancelMutation.mutate(savedCloneId, {
+        onSuccess: () => clearSavedCloneSession(),
+        onError: () => {
+          // Even if backend cancel fails (session already gone), clear local state
+          clearSavedCloneSession();
+          window.location.reload();
+        },
+      });
+    };
+
     return (
       <div className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
         <div className="flex items-center gap-2">
@@ -244,16 +288,26 @@ export function VoiceCloneStatusCard({
         </div>
         <div className="mt-1.5 flex items-center justify-between">
           <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-            A previous clone session was found. Resume to check its status.
+            A previous clone session was found.
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-6 text-[10px] px-2.5"
-            onClick={() => navigate({ to: "/voice-agent/clone" })}
-          >
-            Resume
-          </Button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleDiscardSession}
+              disabled={cancelMutation.isPending}
+              className="text-[10px] text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 transition-colors"
+            >
+              {cancelMutation.isPending ? "Discarding..." : "Discard"}
+            </button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-6 text-[10px] px-2.5"
+              onClick={() => navigate({ to: "/voice-agent/clone" })}
+            >
+              Resume
+            </Button>
+          </div>
         </div>
       </div>
     );
