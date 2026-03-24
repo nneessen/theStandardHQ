@@ -2088,10 +2088,18 @@ serve(async (req) => {
         if (!cloneId) {
           return jsonResponse({ error: "clone_id is required" }, 400);
         }
-        const res = await callChatBotApi(
-          "DELETE",
-          `/api/external/agents/${agentId}/voice/clone/${cloneId}`,
+        // Try POST /cancel first (matches backend POST pattern for all clone ops).
+        // Fall back to DELETE if POST 404s (legacy compat).
+        let res = await callChatBotApi(
+          "POST",
+          `/api/external/agents/${agentId}/voice/clone/${cloneId}/cancel`,
         );
+        if (!res.ok && res.status === 404) {
+          res = await callChatBotApi(
+            "DELETE",
+            `/api/external/agents/${agentId}/voice/clone/${cloneId}`,
+          );
+        }
         return sendResult(res);
       }
 

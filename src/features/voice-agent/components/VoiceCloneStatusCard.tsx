@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Loader2, Mic, Trash2 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -13,6 +13,7 @@ import {
 } from "@/features/chat-bot";
 
 const CLONE_SESSION_KEY = "voice_clone_session";
+const CLONE_DISMISSED_KEY = "voice_clone_dismissed";
 
 function loadSavedCloneId(): string | null {
   try {
@@ -27,6 +28,34 @@ function loadSavedCloneId(): string | null {
     return parsed.cloneId;
   } catch {
     return null;
+  }
+}
+
+function isCloneDismissed(cloneId: string | null | undefined): boolean {
+  if (!cloneId) return false;
+  try {
+    const raw = localStorage.getItem(CLONE_DISMISSED_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as { cloneId: string; dismissedAt: number };
+    // Expire after 30 days — if the same clone reappears after 30 days, show it again
+    if (Date.now() - parsed.dismissedAt > 30 * 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(CLONE_DISMISSED_KEY);
+      return false;
+    }
+    return parsed.cloneId === cloneId;
+  } catch {
+    return false;
+  }
+}
+
+function persistCloneDismissal(cloneId: string) {
+  try {
+    localStorage.setItem(
+      CLONE_DISMISSED_KEY,
+      JSON.stringify({ cloneId, dismissedAt: Date.now() }),
+    );
+  } catch {
+    // ignore
   }
 }
 
@@ -54,6 +83,21 @@ export function VoiceCloneStatusCard({
   const activateMutation = useActivateVoiceClone();
   const cancelMutation = useCancelVoiceClone();
   const [forceDismissed, setForceDismissed] = useState(false);
+
+  // Check localStorage dismissal for the current clone ID.
+  // This runs on every render so it catches the clone ID once it loads.
+  const cloneId = cloneStatus?.inProgressCloneId;
+  const isDismissed = forceDismissed || isCloneDismissed(cloneId);
+
+  const dismissCloneById = useCallback(
+    (id: string) => {
+      clearSavedCloneSession();
+      persistCloneDismissal(id);
+      queryClient.setQueryData(chatBotKeys.voiceCloneStatus(), null);
+      setForceDismissed(true);
+    },
+    [queryClient],
+  );
 
   // Show a compact loading skeleton while first fetch is in-flight
   if (isLoading && !cloneStatus) {
@@ -121,7 +165,7 @@ export function VoiceCloneStatusCard({
     cloneStatus.totalSegments > 0 &&
     cloneStatus.completedSegments >= cloneStatus.totalSegments;
 
-  if (allSegmentsRecorded && !forceDismissed) {
+  if (allSegmentsRecorded && !isDismissed) {
     const handleDiscard = () => {
       if (
         !window.confirm(
@@ -129,16 +173,10 @@ export function VoiceCloneStatusCard({
         )
       )
         return;
-      cancelMutation.mutate(cloneStatus.inProgressCloneId!, {
-        onSuccess: () => {
-          clearSavedCloneSession();
-          setForceDismissed(true);
-        },
-        onError: () => {
-          clearSavedCloneSession();
-          queryClient.setQueryData(chatBotKeys.voiceCloneStatus(), null);
-          setForceDismissed(true);
-        },
+      const id = cloneStatus.inProgressCloneId!;
+      cancelMutation.mutate(id, {
+        onSuccess: () => dismissCloneById(id),
+        onError: () => dismissCloneById(id),
       });
     };
 
@@ -198,19 +236,13 @@ export function VoiceCloneStatusCard({
   }
 
   // Recording in progress (segments still incomplete)
-  if (cloneStatus?.inProgressCloneId && !forceDismissed) {
+  if (cloneStatus?.inProgressCloneId && !isDismissed) {
     const pct =
       cloneStatus.totalSegments > 0
         ? Math.round(
             (cloneStatus.completedSegments / cloneStatus.totalSegments) * 100,
           )
         : 0;
-
-    const forceRemoveFromUI = () => {
-      clearSavedCloneSession();
-      queryClient.setQueryData(chatBotKeys.voiceCloneStatus(), null);
-      setForceDismissed(true);
-    };
 
     const handleDelete = () => {
       if (
@@ -219,15 +251,11 @@ export function VoiceCloneStatusCard({
         )
       )
         return;
-      cancelMutation.mutate(cloneStatus.inProgressCloneId!, {
-        onSuccess: () => {
-          clearSavedCloneSession();
-          setForceDismissed(true);
-        },
-        onError: () => {
-          // API failed — force-remove from UI anyway
-          forceRemoveFromUI();
-        },
+      const id = cloneStatus.inProgressCloneId!;
+      // Try API cancel, but dismiss the card regardless of outcome
+      cancelMutation.mutate(id, {
+        onSuccess: () => dismissCloneById(id),
+        onError: () => dismissCloneById(id),
       });
     };
 
@@ -284,7 +312,7 @@ export function VoiceCloneStatusCard({
 
   // Recovery: localStorage has a saved clone session the backend lost track of
   const savedCloneId = loadSavedCloneId();
-  if (savedCloneId && !cloneStatus?.hasActiveClone && !forceDismissed) {
+  if (savedCloneId && !cloneStatus?.hasActiveClone && !isDismissed) {
     const handleDiscardSession = () => {
       if (
         !window.confirm(
@@ -293,15 +321,8 @@ export function VoiceCloneStatusCard({
       )
         return;
       cancelMutation.mutate(savedCloneId, {
-        onSuccess: () => {
-          clearSavedCloneSession();
-          setForceDismissed(true);
-        },
-        onError: () => {
-          clearSavedCloneSession();
-          queryClient.setQueryData(chatBotKeys.voiceCloneStatus(), null);
-          setForceDismissed(true);
-        },
+        onSuccess: () => dismissCloneById(savedCloneId),
+        onError: () => dismissCloneById(savedCloneId),
       });
     };
 
