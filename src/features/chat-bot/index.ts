@@ -29,7 +29,6 @@ export {
   useDisconnectRetellConnection,
   useUpdateRetellAgentDraft,
   usePublishRetellAgentDraft,
-  useSyncPhoneNumbersToLatest,
   useUpdateRetellLlm,
   useSearchRetellVoices,
   useAddRetellVoice,
