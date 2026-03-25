@@ -2,7 +2,6 @@ import { Mic2, UploadCloud } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { ChatBotRetellVoice } from "@/features/chat-bot";
-import type { RetellStructuredLlmForm } from "../../lib/retell-studio";
 import { BuilderSection } from "./BuilderSection";
 
 function StepChecklistItem({
@@ -51,7 +50,7 @@ interface LaunchViewProps {
   isPublished: boolean;
   selectedVoiceId: string;
   selectedVoice: ChatBotRetellVoice | undefined;
-  llmForm: RetellStructuredLlmForm;
+  workflowGreetings: Record<string, string>;
   lastModifiedAt?: number | null;
   justPublished?: boolean;
 }
@@ -73,7 +72,7 @@ export function LaunchView({
   isPublished,
   selectedVoiceId,
   selectedVoice,
-  llmForm,
+  workflowGreetings,
   lastModifiedAt,
   justPublished,
 }: LaunchViewProps) {
@@ -99,8 +98,8 @@ export function LaunchView({
             complete={openingLineReady}
             detail={
               openingLineReady
-                ? "The agent has an opening greeting saved in the draft."
-                : "Add the first thing the agent should say in Step 1."
+                ? "Per-workflow greetings are configured."
+                : "Add greetings for each call type in Step 1."
             }
           />
           <StepChecklistItem
@@ -152,8 +151,8 @@ export function LaunchView({
               </p>
               <p className="mt-1 text-[12px] leading-6 text-zinc-900 dark:text-zinc-100">
                 {openingLineReady
-                  ? llmForm.beginMessage
-                  : "No opening line saved yet."}
+                  ? `${Object.values(workflowGreetings).filter((g) => g.trim()).length}/5 workflow greetings configured`
+                  : "No greetings saved yet."}
               </p>
             </div>
 

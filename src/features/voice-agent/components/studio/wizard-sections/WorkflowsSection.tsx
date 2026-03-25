@@ -1,11 +1,17 @@
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { WORKFLOW_PRESETS } from "../../../lib/prompt-wizard-presets";
+import {
+  DEFAULT_WORKFLOW_GREETINGS,
+  WORKFLOW_PRESETS,
+} from "../../../lib/prompt-wizard-presets";
 import type { PromptWizardFormData } from "../../../lib/prompt-wizard-types";
 
 interface WorkflowsSectionProps {
-  data: Pick<PromptWizardFormData, "enabledWorkflows" | "workflowGuidance">;
+  data: Pick<
+    PromptWizardFormData,
+    "enabledWorkflows" | "workflowGuidance" | "workflowGreetings"
+  >;
   onChange: (patch: Partial<PromptWizardFormData>) => void;
 }
 
@@ -16,12 +22,26 @@ export function WorkflowsSection({ data, onChange }: WorkflowsSectionProps) {
       : data.enabledWorkflows.filter((k) => k !== key);
 
     const nextGuidance = { ...data.workflowGuidance };
-    if (enabled && !nextGuidance[key]) {
+    const nextGreetings = { ...data.workflowGreetings };
+    if (enabled) {
       const preset = WORKFLOW_PRESETS.find((p) => p.key === key);
-      if (preset) nextGuidance[key] = preset.defaultGuidance;
+      if (preset) {
+        if (!nextGuidance[key]) nextGuidance[key] = preset.defaultGuidance;
+        if (!nextGreetings[key]) nextGreetings[key] = preset.defaultGreeting;
+      }
     }
 
-    onChange({ enabledWorkflows: next, workflowGuidance: nextGuidance });
+    onChange({
+      enabledWorkflows: next,
+      workflowGuidance: nextGuidance,
+      workflowGreetings: nextGreetings,
+    });
+  };
+
+  const updateGreeting = (key: string, value: string) => {
+    onChange({
+      workflowGreetings: { ...data.workflowGreetings, [key]: value },
+    });
   };
 
   const updateGuidance = (key: string, value: string) => {
@@ -61,13 +81,33 @@ export function WorkflowsSection({ data, onChange }: WorkflowsSectionProps) {
                 />
               </div>
               {enabled && (
-                <div className="mt-2">
-                  <Textarea
-                    value={data.workflowGuidance[preset.key] ?? ""}
-                    onChange={(e) => updateGuidance(preset.key, e.target.value)}
-                    placeholder="Describe how the agent should handle this scenario..."
-                    className="min-h-[60px] text-xs"
-                  />
+                <div className="mt-2 space-y-2">
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-zinc-500">
+                      Opening greeting
+                    </Label>
+                    <Textarea
+                      value={data.workflowGreetings?.[preset.key] ?? ""}
+                      onChange={(e) =>
+                        updateGreeting(preset.key, e.target.value)
+                      }
+                      placeholder={DEFAULT_WORKFLOW_GREETINGS[preset.key]}
+                      className="min-h-[50px] text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] text-zinc-500">
+                      Guidance
+                    </Label>
+                    <Textarea
+                      value={data.workflowGuidance[preset.key] ?? ""}
+                      onChange={(e) =>
+                        updateGuidance(preset.key, e.target.value)
+                      }
+                      placeholder="Describe how the agent should handle this scenario..."
+                      className="min-h-[60px] text-xs"
+                    />
+                  </div>
                 </div>
               )}
             </div>

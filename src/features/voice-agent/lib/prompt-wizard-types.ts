@@ -35,6 +35,7 @@ export interface PromptWizardFormData {
   // Section 8: Workflow Openings
   enabledWorkflows: string[];
   workflowGuidance: Record<string, string>;
+  workflowGreetings: Record<string, string>;
 }
 
 export const EMPTY_WIZARD_FORM: PromptWizardFormData = {
@@ -82,6 +83,7 @@ export const EMPTY_WIZARD_FORM: PromptWizardFormData = {
   transferCustom: "",
   enabledWorkflows: [],
   workflowGuidance: {},
+  workflowGreetings: {},
 };
 
 const WIZARD_STORAGE_KEY = "voice-prompt-wizard-v1";
@@ -90,7 +92,10 @@ export function loadWizardData(): PromptWizardFormData | null {
   try {
     const raw = localStorage.getItem(WIZARD_STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as PromptWizardFormData;
+    const parsed = JSON.parse(raw) as PromptWizardFormData;
+    // Backfill fields added after v1
+    if (!parsed.workflowGreetings) parsed.workflowGreetings = {};
+    return parsed;
   } catch {
     return null;
   }

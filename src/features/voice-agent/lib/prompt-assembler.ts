@@ -48,11 +48,16 @@ function buildIdentitySection(data: PromptWizardFormData): string {
 function buildDynamicVariablesSection(): string {
   return `## Dynamic Variables
 You may receive these runtime variables — use them when available:
-- {{workflow_type}} — the type of call (missed_appointment, reschedule, after_hours_inbound, quoted_followup)
+- {{workflow_type}} — the type of call (missed_appointment, reschedule, after_hours_inbound, quoted_followup, general_inbound)
 - {{workflow_goal}} — what this call should accomplish
 - {{workflow_opening_guidance}} — suggested opening approach
 - {{workflow_handoff_rule}} — when to hand off
 - {{workflow_context}} — additional context about the call
+- {{greeting_general_inbound}} — opening greeting for general inbound calls
+- {{greeting_after_hours_inbound}} — opening greeting for after-hours inbound calls
+- {{greeting_missed_appointment}} — opening greeting for missed appointment outreach
+- {{greeting_reschedule}} — opening greeting for reschedule calls
+- {{greeting_quoted_followup}} — opening greeting for quoted follow-up calls
 - {{appointment_window_local}} — the appointment time in the caller's timezone
 - {{lead_name}} — the lead's name from CRM
 - {{known_lead_name}} — confirmed name if recognized
@@ -213,7 +218,7 @@ function buildTaskSection(data: PromptWizardFormData): string {
 
   return `## Task
 1. Determine the workflow from {{workflow_type}} if available.
-2. Open the call yourself using the appropriate greeting for the scenario.
+2. Start the call using the greeting variable that matches {{workflow_type}}. For example, if workflow_type is "missed_appointment", speak {{greeting_missed_appointment}} as your opening. If workflow_type is "general_inbound", speak {{greeting_general_inbound}}. If no matching greeting is set, use a warm generic greeting.
 3. Ask one short question, then wait for the caller to respond.
 4. Stay focused on {{workflow_goal}} when available, but follow the caller's lead if they want to discuss something else.
 5. If the conversation naturally moves toward insurance questions, engage — use your insurance knowledge to educate and build trust.
@@ -252,10 +257,12 @@ function buildWorkflowSection(data: PromptWizardFormData): string | null {
     const preset = lookupPreset(WORKFLOW_PRESETS, key);
     if (!preset) continue;
 
+    const greeting =
+      data.workflowGreetings?.[key]?.trim() || preset.defaultGreeting;
     const guidance =
       data.workflowGuidance[key]?.trim() || preset.defaultGuidance;
 
-    subsections.push(`### ${key}\n${guidance}`);
+    subsections.push(`### ${key}\n**Opening:** "${greeting}"\n${guidance}`);
   }
 
   if (subsections.length === 0) return null;

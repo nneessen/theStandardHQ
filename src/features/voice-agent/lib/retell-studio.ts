@@ -582,3 +582,58 @@ export function mergeStructuredRetellLlmForm(
     ...serializeStructuredRetellLlmForm(form),
   };
 }
+
+import { GREETING_VAR_PREFIX } from "./prompt-wizard-presets";
+
+export function extractGreetingsFromDynamicVariables(
+  dynamicVarsJson: string,
+): Record<string, string> {
+  const trimmed = dynamicVarsJson.trim();
+  if (!trimmed) return {};
+  try {
+    const parsed = JSON.parse(trimmed) as Record<string, unknown>;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
+      return {};
+    const result: Record<string, string> = {};
+    for (const [key, value] of Object.entries(parsed)) {
+      if (key.startsWith(GREETING_VAR_PREFIX) && typeof value === "string") {
+        const workflowKey = key.slice(GREETING_VAR_PREFIX.length);
+        result[workflowKey] = value;
+      }
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}
+
+export function mergeGreetingsIntoDynamicVariables(
+  dynamicVarsJson: string,
+  greetings: Record<string, string>,
+): string {
+  let existing: Record<string, unknown> = {};
+  const trimmed = dynamicVarsJson.trim();
+  if (trimmed) {
+    try {
+      const parsed = JSON.parse(trimmed) as Record<string, unknown>;
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        existing = parsed;
+      }
+    } catch {
+      // keep existing empty
+    }
+  }
+  // Remove old greeting keys
+  for (const key of Object.keys(existing)) {
+    if (key.startsWith(GREETING_VAR_PREFIX)) {
+      delete existing[key];
+    }
+  }
+  // Add new greeting keys
+  for (const [workflowKey, value] of Object.entries(greetings)) {
+    if (value.trim()) {
+      existing[`${GREETING_VAR_PREFIX}${workflowKey}`] = value;
+    }
+  }
+  return JSON.stringify(existing, null, 2);
+}

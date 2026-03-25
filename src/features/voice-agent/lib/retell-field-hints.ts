@@ -63,7 +63,8 @@ export const AGENT_FIELD_HINTS: Record<string, string> = {
 export const LLM_FIELD_HINTS: Record<string, string> = {
   generalPrompt:
     "Write this like you're training a new employee. Tell the agent who it is, what questions to ask, how to handle pushback, and when to transfer to a person.",
-  beginMessage: "The first thing the agent says when a call connects.",
+  beginMessage:
+    "Legacy single greeting — now managed via per-workflow greetings stored in dynamic variables.",
   boostedKeywords:
     "Help the voice recognition system hear industry terms correctly. Add one per line: product names, carrier names, your agency name, and common phrases.",
   model:

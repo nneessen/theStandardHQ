@@ -40,11 +40,14 @@ import {
   buildStructuredRetellLlmForm,
   diffStructuredRetellAgentForm,
   diffStructuredRetellLlmForm,
+  extractGreetingsFromDynamicVariables,
+  mergeGreetingsIntoDynamicVariables,
   type RetellStructuredAgentForm,
   type RetellStructuredLlmForm,
   validateStructuredRetellAgentForm,
   validateStructuredRetellLlmForm,
 } from "../lib/retell-studio";
+import { DEFAULT_WORKFLOW_GREETINGS } from "../lib/prompt-wizard-presets";
 import { isVoiceAgentProvisioningPending } from "../lib/voice-agent-contract";
 import { VoiceGreetingView } from "./studio/VoiceGreetingView";
 import { InstructionsView } from "./studio/InstructionsView";
@@ -208,6 +211,30 @@ export function VoiceAgentRetellStudioCard({
   const [agentForm, setAgentForm] =
     useState<RetellStructuredAgentForm>(savedAgentForm);
   const [llmForm, setLlmForm] = useState<RetellStructuredLlmForm>(savedLlmForm);
+
+  // Per-workflow greetings (extracted from defaultDynamicVariables)
+  const savedGreetings = useMemo(() => {
+    const extracted = extractGreetingsFromDynamicVariables(
+      savedLlmForm.defaultDynamicVariables,
+    );
+    // Migration: if no greeting_* keys exist but old beginMessage is set,
+    // pre-populate inbound greetings with old value, outbound with defaults
+    if (
+      Object.keys(extracted).length === 0 &&
+      savedLlmForm.beginMessage.trim()
+    ) {
+      return {
+        general_inbound: savedLlmForm.beginMessage,
+        after_hours_inbound: savedLlmForm.beginMessage,
+        missed_appointment: DEFAULT_WORKFLOW_GREETINGS.missed_appointment ?? "",
+        reschedule: DEFAULT_WORKFLOW_GREETINGS.reschedule ?? "",
+        quoted_followup: DEFAULT_WORKFLOW_GREETINGS.quoted_followup ?? "",
+      };
+    }
+    return extracted;
+  }, [savedLlmForm.defaultDynamicVariables, savedLlmForm.beginMessage]);
+  const [workflowGreetings, setWorkflowGreetings] =
+    useState<Record<string, string>>(savedGreetings);
   const [agentFormErrors, setAgentFormErrors] = useState<string[]>([]);
   const [llmFormErrors, setLlmFormErrors] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -259,7 +286,8 @@ export function VoiceAgentRetellStudioCard({
   useEffect(() => {
     setLlmForm(savedLlmForm);
     setLlmFormErrors([]);
-  }, [savedLlmForm]);
+    setWorkflowGreetings(savedGreetings);
+  }, [savedLlmForm, savedGreetings]);
 
   useEffect(() => {
     setAgentJson(savedAgentJson);
@@ -275,10 +303,12 @@ export function VoiceAgentRetellStudioCard({
     JSON.stringify(agentForm) !== JSON.stringify(savedAgentForm);
   const structuredLlmDirty =
     JSON.stringify(llmForm) !== JSON.stringify(savedLlmForm);
+  const greetingsDirty =
+    JSON.stringify(workflowGreetings) !== JSON.stringify(savedGreetings);
   const agentJsonDirty = agentJson.trim() !== savedAgentJson.trim();
   const llmJsonDirty = llmJson.trim() !== savedLlmJson.trim();
   const hasStructuredUnsavedChanges =
-    structuredAgentDirty || structuredLlmDirty;
+    structuredAgentDirty || structuredLlmDirty || greetingsDirty;
   const hasAdminJsonChanges = agentJsonDirty || llmJsonDirty;
   const hasUnsavedChanges =
     view === "admin"
@@ -303,7 +333,9 @@ export function VoiceAgentRetellStudioCard({
   const voiceAgentProvisioning =
     isVoiceAgentProvisioningPending(provisioningState);
 
-  const openingLineReady = llmForm.beginMessage.trim().length > 0;
+  const openingLineReady = Object.values(workflowGreetings).some(
+    (g) => g.trim().length > 0,
+  );
   const instructionsReady = llmForm.generalPrompt.trim().length > 0;
   const voiceReady = selectedVoiceId.length > 0;
 
@@ -347,8 +379,16 @@ export function VoiceAgentRetellStudioCard({
       }
     }
 
-    if (llm && structuredLlmDirty) {
-      const patch = diffStructuredRetellLlmForm(llmForm, savedLlmForm);
+    if (llm && (structuredLlmDirty || greetingsDirty)) {
+      const effectiveLlmForm: RetellStructuredLlmForm = {
+        ...llmForm,
+        beginMessage: "",
+        defaultDynamicVariables: mergeGreetingsIntoDynamicVariables(
+          llmForm.defaultDynamicVariables,
+          workflowGreetings,
+        ),
+      };
+      const patch = diffStructuredRetellLlmForm(effectiveLlmForm, savedLlmForm);
       if (Object.keys(patch).length > 0) {
         tasks.push(updateRetellLlm.mutateAsync(patch));
       }
@@ -441,6 +481,7 @@ export function VoiceAgentRetellStudioCard({
   const handleResetBuilder = () => {
     setAgentForm(savedAgentForm);
     setLlmForm(savedLlmForm);
+    setWorkflowGreetings(savedGreetings);
     setAgentFormErrors([]);
     setLlmFormErrors([]);
   };
@@ -627,9 +668,9 @@ export function VoiceAgentRetellStudioCard({
             <VoiceGreetingView
               agentForm={agentForm}
               onAgentFormChange={handleAgentFormChange}
-              beginMessage={llmForm.beginMessage}
-              onBeginMessageChange={(value) =>
-                handleLlmFormChange("beginMessage", value)
+              workflowGreetings={workflowGreetings}
+              onWorkflowGreetingChange={(key, value) =>
+                setWorkflowGreetings((prev) => ({ ...prev, [key]: value }))
               }
               llmAvailable={!!llm}
               llmLoading={llmLoading}
@@ -683,7 +724,7 @@ export function VoiceAgentRetellStudioCard({
               isPublished={isLive}
               selectedVoiceId={selectedVoiceId}
               selectedVoice={selectedVoice}
-              llmForm={llmForm}
+              workflowGreetings={workflowGreetings}
               lastModifiedAt={
                 typeof runtime?.agent?.last_modification_timestamp === "number"
                   ? runtime.agent.last_modification_timestamp

@@ -23,6 +23,11 @@ import type {
 } from "@/features/chat-bot";
 import { RETELL_VOICE_PROVIDERS } from "../../lib/retell-config";
 import { AGENT_FIELD_HINTS } from "../../lib/retell-field-hints";
+import {
+  DEFAULT_WORKFLOW_GREETINGS,
+  WORKFLOW_CATEGORIES,
+  WORKFLOW_PRESETS,
+} from "../../lib/prompt-wizard-presets";
 import type { RetellStructuredAgentForm } from "../../lib/retell-studio";
 import { FieldHint } from "./FieldHint";
 import { BuilderSection } from "./BuilderSection";
@@ -33,8 +38,8 @@ interface VoiceGreetingViewProps {
     key: K,
     value: RetellStructuredAgentForm[K],
   ) => void;
-  beginMessage: string;
-  onBeginMessageChange: (value: string) => void;
+  workflowGreetings: Record<string, string>;
+  onWorkflowGreetingChange: (workflowKey: string, value: string) => void;
   llmAvailable: boolean;
   llmLoading: boolean;
   // Voice library
@@ -62,8 +67,8 @@ interface VoiceGreetingViewProps {
 export function VoiceGreetingView({
   agentForm,
   onAgentFormChange,
-  beginMessage,
-  onBeginMessageChange,
+  workflowGreetings,
+  onWorkflowGreetingChange,
   llmAvailable,
   llmLoading,
   voices,
@@ -89,8 +94,8 @@ export function VoiceGreetingView({
       <div className="space-y-4">
         <BuilderSection
           icon={<Bot className="h-4 w-4" />}
-          title="Name & opening greeting"
-          description="Set up the agent's display name and the first thing it says when a call connects."
+          title="Name & greetings"
+          description="Set the agent's display name and per-workflow opening greetings."
         >
           <div className="space-y-3">
             <div className="space-y-1.5">
@@ -106,36 +111,64 @@ export function VoiceGreetingView({
               <FieldHint>{AGENT_FIELD_HINTS.agentName}</FieldHint>
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="retell-begin-message">Opening greeting</Label>
+            <div className="space-y-2.5">
               <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                The first thing the agent says when any call connects — both
-                inbound and outbound. Use the examples below as a guide.
+                The first thing the agent says, based on the call type. Use{" "}
+                <code className="text-[9px]">{"{{agent_name}}"}</code>,{" "}
+                <code className="text-[9px]">{"{{company_name}}"}</code>, and{" "}
+                <code className="text-[9px]">{"{{lead_name}}"}</code> as
+                placeholders.
               </p>
-              <Textarea
-                id="retell-begin-message"
-                value={beginMessage}
-                onChange={(event) => onBeginMessageChange(event.target.value)}
-                disabled={!llmAvailable && !llmLoading}
-                className="min-h-[80px] text-xs"
-                placeholder="Hi, thanks for calling [Your Agency]. This is [Name], how can I help you today?"
-              />
-              <div className="rounded-lg border border-zinc-100 bg-zinc-50/50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/30">
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                  <span className="font-medium text-zinc-600 dark:text-zinc-300">
-                    Inbound example:
-                  </span>{" "}
-                  "Hi, thanks for calling ABC Insurance. This is Sarah, how can
-                  I help?"
-                </p>
-                <p className="mt-1 text-[10px] text-zinc-500 dark:text-zinc-400">
-                  <span className="font-medium text-zinc-600 dark:text-zinc-300">
-                    Outbound example:
-                  </span>{" "}
-                  "Hi John, this is Sarah from ABC Insurance. I'm calling about
-                  the quote we sent over — do you have a quick minute?"
-                </p>
-              </div>
+
+              {(
+                [
+                  {
+                    label: "Inbound",
+                    keys: WORKFLOW_CATEGORIES.inbound,
+                    pt: false,
+                  },
+                  {
+                    label: "Outbound",
+                    keys: WORKFLOW_CATEGORIES.outbound,
+                    pt: true,
+                  },
+                ] as const
+              ).map((group) => (
+                <div key={group.label} className="space-y-2">
+                  <p
+                    className={cn(
+                      "text-[10px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500",
+                      group.pt && "pt-1",
+                    )}
+                  >
+                    {group.label}
+                  </p>
+                  {group.keys.map((key) => {
+                    const preset = WORKFLOW_PRESETS.find((p) => p.key === key);
+                    if (!preset) return null;
+                    return (
+                      <div key={key} className="space-y-1">
+                        <Label
+                          htmlFor={`greeting-${key}`}
+                          className="text-[11px]"
+                        >
+                          {preset.label}
+                        </Label>
+                        <Textarea
+                          id={`greeting-${key}`}
+                          value={workflowGreetings[key] ?? ""}
+                          onChange={(e) =>
+                            onWorkflowGreetingChange(key, e.target.value)
+                          }
+                          disabled={!llmAvailable && !llmLoading}
+                          className="min-h-[60px] text-xs"
+                          placeholder={DEFAULT_WORKFLOW_GREETINGS[key]}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
             </div>
           </div>
         </BuilderSection>

@@ -154,32 +154,52 @@ export const WORKFLOW_PRESETS = [
     label: "Missed Appointment",
     defaultGuidance:
       "Open with empathy, not guilt. Mention the missed appointment only if appointment_window_local is available. Ask if they want help finding a better time.",
+    defaultGreeting:
+      "Hi {{lead_name}}, this is {{agent_name}} from {{company_name}}. I was reaching out because it looks like we missed connecting earlier — do you have a minute?",
   },
   {
     key: "reschedule",
     label: "Reschedule",
     defaultGuidance:
       "Focus on moving the appointment. Reference appointment_window_local briefly if available. Do not say the calendar has already been updated.",
+    defaultGreeting:
+      "Hi {{lead_name}}, this is {{agent_name}} from {{company_name}}. I'm calling about your upcoming appointment — I wanted to check if the time still works for you.",
   },
   {
     key: "after_hours_inbound",
     label: "After-Hours Inbound",
     defaultGuidance:
       "Act like a friendly after-hours receptionist. Greet by name if known. Ask what they need — be open to any topic. Help with scheduling, callbacks, general questions, or transfers.",
+    defaultGreeting:
+      "Hi, thanks for calling {{company_name}}. This is {{agent_name}} — we're currently closed but I'd be happy to help you or take a message.",
   },
   {
     key: "quoted_followup",
     label: "Quoted Follow-Up",
     defaultGuidance:
       "Keep it conversational, not transactional. Ask if they had any questions about what was discussed. If they ask about pricing, use the pricing bridge. Offer to schedule a follow-up.",
+    defaultGreeting:
+      "Hi {{lead_name}}, this is {{agent_name}} from {{company_name}}. I wanted to follow up on the information we sent over — do you have any questions?",
   },
   {
     key: "general_inbound",
     label: "General Inbound (no specific scenario)",
     defaultGuidance:
       "Greet warmly as the agency's assistant. Ask how you can help today. Be open to any topic — scheduling, questions, or transfers.",
+    defaultGreeting:
+      "Hi, thanks for calling {{company_name}}. This is {{agent_name}}, how can I help you today?",
   },
 ] as const;
+
+export const GREETING_VAR_PREFIX = "greeting_";
+
+export const DEFAULT_WORKFLOW_GREETINGS: Record<string, string> =
+  Object.fromEntries(WORKFLOW_PRESETS.map((p) => [p.key, p.defaultGreeting]));
+
+export const WORKFLOW_CATEGORIES = {
+  inbound: ["general_inbound", "after_hours_inbound"],
+  outbound: ["missed_appointment", "reschedule", "quoted_followup"],
+} as const;
 
 export const TIMEZONE_PRESETS = [
   { value: "America/New_York", label: "Eastern (ET)" },
