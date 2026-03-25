@@ -24,6 +24,7 @@ import {
   useAddRetellVoice,
   usePublishRetellAgentDraft,
   useSearchRetellVoices,
+  useSyncPhoneNumbersToLatest,
   useUpdateRetellAgentDraft,
   useUpdateRetellLlm,
 } from "@/features/chat-bot";
@@ -178,6 +179,7 @@ export function VoiceAgentRetellStudioCard({
 }: VoiceAgentRetellStudioCardProps) {
   const updateRetellAgentDraft = useUpdateRetellAgentDraft();
   const publishRetellAgentDraft = usePublishRetellAgentDraft();
+  const syncPhoneNumbers = useSyncPhoneNumbersToLatest();
   const publishSucceededAtRef = useRef<number>(0);
   const updateRetellLlm = useUpdateRetellLlm();
   const searchRetellVoices = useSearchRetellVoices();
@@ -594,6 +596,17 @@ export function VoiceAgentRetellStudioCard({
                     publishRetellAgentDraft.mutate(undefined, {
                       onSuccess: () => {
                         publishSucceededAtRef.current = Date.now();
+                        // Sync all phone numbers to use the latest published version
+                        const retellAgentId = connection?.retellAgentId;
+                        if (retellAgentId) {
+                          syncPhoneNumbers.mutate(retellAgentId, {
+                            onError: (err) =>
+                              console.warn(
+                                "[publish] phone number version sync failed:",
+                                err,
+                              ),
+                          });
+                        }
                       },
                     })
                   }

@@ -1400,6 +1400,62 @@ export function usePublishRetellAgentDraft() {
   });
 }
 
+export function useUpdatePhoneNumber() {
+  return useMutation({
+    mutationFn: (params: {
+      phoneNumber: string;
+      inbound_agent_id?: string;
+      outbound_agent_id?: string;
+      inbound_agent_version?: number | null;
+      outbound_agent_version?: number | null;
+    }) => chatBotApi<Record<string, unknown>>("update_phone_number", params),
+  });
+}
+
+/**
+ * After publishing a new agent version, sync all phone numbers to use the
+ * latest version (inbound + outbound). Fetches the phone list, then fires
+ * PATCH for each number with the agent ID + null version.
+ *
+ * Retell has no persistent "always latest" mode — null version resolves to
+ * the current latest at call time and gets pinned. So this must run after
+ * every publish to re-bind phone numbers to the new version.
+ */
+export function useSyncPhoneNumbersToLatest() {
+  const updatePhoneNumber = useUpdatePhoneNumber();
+
+  return useMutation({
+    mutationFn: async (retellAgentId: string) => {
+      const { phoneNumbers } = await chatBotApi<{
+        phoneNumbers: ChatBotPhoneNumber[];
+      }>("get_phone_numbers");
+
+      if (!phoneNumbers?.length) return { synced: 0 };
+
+      const results = await Promise.allSettled(
+        phoneNumbers.map((pn) =>
+          updatePhoneNumber.mutateAsync({
+            phoneNumber: pn.phone,
+            inbound_agent_id: retellAgentId,
+            outbound_agent_id: retellAgentId,
+            inbound_agent_version: null,
+            outbound_agent_version: null,
+          }),
+        ),
+      );
+
+      const failed = results.filter((r) => r.status === "rejected").length;
+      if (failed > 0) {
+        console.warn(
+          `[syncPhoneNumbers] ${failed}/${phoneNumbers.length} phone number version updates failed`,
+        );
+      }
+
+      return { synced: phoneNumbers.length - failed, failed };
+    },
+  });
+}
+
 export function useUpdateRetellLlm() {
   const queryClient = useQueryClient();
   return useMutation({

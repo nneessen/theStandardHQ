@@ -13,6 +13,7 @@ import {
   parseRetellLlmUpdateParams,
   parseRetellSearchParams,
   parseUpdateConfigParams,
+  parseUpdatePhoneNumberParams,
 } from "../../../src/features/voice-agent/lib/voice-agent-contract.ts";
 import { createStandardChatBotVoiceClient } from "../_shared/standard-chat-bot-voice.ts";
 import {
@@ -1577,6 +1578,17 @@ serve(async (req) => {
         return jsonResponse({
           phoneNumbers: Array.isArray(payload) ? payload : [],
         });
+      }
+
+      case "update_phone_number": {
+        const parsedParams = parseUpdatePhoneNumberParams(params);
+        const { phoneNumber, ...body } = parsedParams;
+        const res = await callChatBotApi(
+          "PATCH",
+          `/api/external/agents/${agentId}/phone-numbers/${encodeURIComponent(phoneNumber)}`,
+          body,
+        );
+        return sendResult(res);
       }
 
       // ──────────────────────────────────────────────
