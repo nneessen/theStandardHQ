@@ -83,32 +83,24 @@ Note: The specific `CHAT_BOT_API_URL or CHAT_BOT_API_KEY not configured` case IS
 
 **Fix:** Replace line 2968 with `{ error: "Internal server error" }` — omit the `message` field in production.
 
-### 1.5 Inbound Rules Dual-System Split — 5 of 7 Fields Go to Wrong Endpoint
+### ~~1.5 Inbound Rules Dual-System Split~~ — DOWNGRADED (Not a real bug)
 
-**Files:**
-- `src/features/voice-agent/components/VoiceAgentRuntimeCard.tsx` (lines 181-197)
-- `src/features/voice-agent/components/VoiceCallRulesCard.tsx` (lines 162-166)
-- `supabase/functions/chat-bot-api/index.ts` (lines 2820-2848)
+**Status:** Downgraded after investigating `standard-chat-bot` backend.
 
-**Severity:** Blocking (per handoff)
+Both `PATCH /agents/:id` (general config via `update_config`) and `PATCH /agents/:id/voice/rules/inbound` (rules endpoint via `update_voice_inbound_rules`) write to the **exact same DB columns** in a single `agents` table. The inbound webhook reads from those same columns. There is no separate rules subdocument or collection.
 
-Inbound voice settings are split across **two different API endpoints** that serve different backend subsystems:
+**Field mapping (both endpoints → same columns):**
+| Config field (update_config) | Rules field (update_voice_inbound_rules) | DB column |
+|---|---|---|
+| `voiceEnabled` | `enabled` | `voiceEnabled` |
+| `afterHoursInboundEnabled` | `afterHoursEnabled` | `afterHoursInboundEnabled` |
+| `afterHoursStartTime` | `afterHoursStartTime` | `afterHoursStartTime` |
+| `afterHoursEndTime` | `afterHoursEndTime` | `afterHoursEndTime` |
+| `afterHoursTimezone` | `afterHoursTimezone` | `afterHoursTimezone` |
+| `voiceTransferNumber` | `transferNumber` | `voiceTransferNumber` |
+| (not in BOT_CONFIG_ALLOWED_KEYS) | `allowedLeadStatuses` | `voiceInboundAllowedStatuses` |
 
-| Field | UI Component | Saves Via | Correct Endpoint? |
-|---|---|---|---|
-| `enabled` (master toggle) | RuntimeCard (`voiceEnabled`) | `update_config` → agent PATCH | **NO** — should go to `rules/inbound` |
-| `afterHoursEnabled` | RuntimeCard (`afterHoursInboundEnabled`) | `update_config` → agent PATCH | **NO** — should go to `rules/inbound` |
-| `allowedLeadStatuses` | CallRulesCard | `update_voice_inbound_rules` → rules PATCH | YES |
-| `transferNumber` | RuntimeCard (`voiceTransferNumber`) | `update_config` → agent PATCH | **NO** — should go to `rules/inbound` |
-| `afterHoursStartTime` | RuntimeCard | `update_config` → agent PATCH | **NO** — should go to `rules/inbound` |
-| `afterHoursEndTime` | RuntimeCard | `update_config` → agent PATCH | **NO** — should go to `rules/inbound` |
-| `afterHoursTimezone` | RuntimeCard | `update_config` → agent PATCH | **NO** — should go to `rules/inbound` |
-
-The backend's inbound call webhook (`standard-chat-bot`) reads from the **rules subsystem** to determine if inbound calls are enabled, what the after-hours window is, and what lead statuses are allowed. If these values only exist on the agent config object (not the rules subsystem), inbound calls will be silently rejected.
-
-Additionally, field names don't match: the config uses `afterHoursInboundEnabled` but the rules endpoint expects `afterHoursEnabled`; config uses `voiceTransferNumber` but rules expects `transferNumber`.
-
-**Fix:** Consolidate all 7 inbound rule fields into `VoiceCallRulesCard` → `update_voice_inbound_rules`, with field name mapping. Remove duplicated fields from `VoiceAgentRuntimeCard` (or make them read-only summaries).
+The current split (RuntimeCard saves most fields via `update_config`, CallRulesCard saves `allowedLeadStatuses` via `update_voice_inbound_rules`) is functionally correct. However, `allowedLeadStatuses` for inbound can ONLY be set via the rules endpoint since `voiceInboundAllowedStatuses` is not in `BOT_CONFIG_ALLOWED_KEYS`. This is fine — `VoiceCallRulesCard` handles it.
 
 ### 1.6 `general_inbound` Workflow Preset Key Never Matches Runtime Value
 
@@ -563,8 +555,7 @@ The AI bot ecosystem demonstrates strong security fundamentals:
 2. **Add `{{lead_state}}`, `{{greeting}}`, `{{persona}}` to prompt assembler** — backend passes them but prompt doesn't document them
 3. **Add timeout to `chat-bot-provision`** — external API calls can hang indefinitely, blocking Stripe webhooks
 4. **Remove `message` field from global error catch** (line 2968) — prevents internal error leakage to clients
-5. **Fix inbound rules dual-system split** — consolidate all 7 inbound fields into `update_voice_inbound_rules` endpoint, not `update_config`. Currently 5 of 7 fields go to the wrong backend subsystem.
-6. **Rename `general_inbound` workflow preset to `default`** — the current key never matches any runtime `workflow_type` value, making the workflow guidance dead code
+5. **Rename `general_inbound` workflow preset to `default`** — the current key never matches any runtime `workflow_type` value, making the workflow guidance dead code
 
 **Should fix (not blocking):**
 - Unify CORS across edge functions (especially `manage-subscription-items` wildcard)
