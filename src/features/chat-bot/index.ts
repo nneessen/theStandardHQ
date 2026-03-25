@@ -37,6 +37,10 @@ export {
   useUpdateVoiceOutboundRules,
   useUpdateVoiceGuardrails,
   useIsOnExemptTeam,
+  useVoicePhoneNumbers,
+  usePurchasePhoneNumber,
+  useReleasePhoneNumber,
+  useUpdateVoicePhoneNumber,
   type ChatBotAgent,
   type ChatBotCreateVoiceAgentResponse,
   type ChatBotCloseLeadStatus,
@@ -72,3 +76,9 @@ export {
   type VoiceCloneSessionSegment,
   type VoiceCloneSegmentUploadResponse,
 } from "./hooks/useChatBotVoiceClone";
+
+export type {
+  VoicePhoneNumber,
+  PurchasePhoneNumberParams,
+  UpdatePhoneNumberParams,
+} from "../voice-agent/types/voice-phone-number.types";

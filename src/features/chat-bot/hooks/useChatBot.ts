@@ -13,6 +13,7 @@ import type { AgentMonitoringResponse } from "@/types/chat-bot-monitoring";
 
 import { useAuth } from "@/contexts/AuthContext";
 import type { ResponseSchedule } from "../lib/response-schedule";
+import type { VoicePhoneNumber } from "../../voice-agent/types/voice-phone-number.types";
 
 // ─── Query Key Factory ──────────────────────────────────────────
 
@@ -54,6 +55,7 @@ export const chatBotKeys = {
   monitoring: () => [...chatBotKeys.all, "monitoring"] as const,
   teamAccess: (userId?: string) =>
     [...chatBotKeys.all, "team-access", userId ?? "anonymous"] as const,
+  voicePhoneNumbers: () => [...chatBotKeys.all, "voice-phone-numbers"] as const,
 };
 
 // ─── Types ──────────────────────────────────────────────────────
@@ -1716,5 +1718,121 @@ export function useAgentMonitoring(enabled = true) {
     },
     staleTime: 15_000,
     retry: 1,
+  });
+}
+
+// ─── Voice Phone Numbers ────────────────────────────────────────
+
+export function useVoicePhoneNumbers(enabled = true) {
+  return useQuery<VoicePhoneNumber[], ChatBotApiError>({
+    queryKey: chatBotKeys.voicePhoneNumbers(),
+    queryFn: async () => {
+      const result = await chatBotApi<{
+        phoneNumbers: VoicePhoneNumber[];
+      }>("list_voice_phone_numbers");
+      return result.phoneNumbers ?? [];
+    },
+    enabled,
+    staleTime: 30_000,
+    retry: (failureCount, error) => {
+      if (error instanceof ChatBotApiError && error.isTransportError)
+        return false;
+      return failureCount < 1;
+    },
+  });
+}
+
+export function usePurchasePhoneNumber() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      tollFree: boolean;
+      areaCode?: number;
+      nickname?: string;
+    }) => {
+      const { data, error } = await supabase.functions.invoke(
+        "manage-subscription-items",
+        {
+          body: {
+            action: "purchase_phone_number",
+            tollFree: params.tollFree,
+            areaCode: params.areaCode,
+            nickname: params.nickname,
+          },
+        },
+      );
+      if (error)
+        throw new Error(error.message || "Failed to purchase phone number");
+      if (data?.error) throw new Error(data.error);
+      return data as { success: boolean; phoneNumber: VoicePhoneNumber };
+    },
+    onSuccess: () => {
+      toast.success("Phone number purchased.");
+      void queryClient.invalidateQueries({
+        queryKey: chatBotKeys.voicePhoneNumbers(),
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to purchase phone number.");
+    },
+  });
+}
+
+export function useReleasePhoneNumber() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      phoneNumberId: string;
+      externalSubscriptionItemId: string | null;
+    }) => {
+      const { data, error } = await supabase.functions.invoke(
+        "manage-subscription-items",
+        {
+          body: {
+            action: "release_phone_number",
+            phoneNumberId: params.phoneNumberId,
+            externalSubscriptionItemId: params.externalSubscriptionItemId,
+          },
+        },
+      );
+      if (error)
+        throw new Error(error.message || "Failed to release phone number");
+      if (data?.error) throw new Error(data.error);
+      return data as { success: boolean; released: boolean };
+    },
+    onSuccess: () => {
+      toast.success("Phone number released.");
+      void queryClient.invalidateQueries({
+        queryKey: chatBotKeys.voicePhoneNumbers(),
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to release phone number.");
+    },
+  });
+}
+
+export function useUpdateVoicePhoneNumber() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: {
+      phoneNumberId: string;
+      nickname?: string;
+      isPrimary?: boolean;
+    }) => {
+      const { phoneNumberId, ...patch } = params;
+      return chatBotApi<VoicePhoneNumber>("update_voice_phone_number", {
+        phoneNumberId,
+        ...patch,
+      });
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: chatBotKeys.voicePhoneNumbers(),
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to update phone number.");
+    },
   });
 }

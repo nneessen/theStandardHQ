@@ -9,6 +9,7 @@ import {
   PREMIUM_VOICE_COMING_SOON_MESSAGE,
   PREMIUM_VOICE_SELF_SERVE_ENABLED,
 } from "../../../src/lib/subscription/voice-addon.ts";
+import { createStandardChatBotVoiceClient } from "../_shared/standard-chat-bot-voice.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,6 +19,10 @@ const corsHeaders = {
 
 // Hardcoded seat pack price — never trust the client for pricing
 const SEAT_PACK_PRICE_ID = "price_1T1tU4RYi2kelWQkYkNFnthp";
+
+// Phone number prices — never trust the client for pricing
+const PHONE_NUMBER_LOCAL_PRICE_ID = "price_1TEz08RYi2kelWQk23xthgrR";
+const PHONE_NUMBER_TOLLFREE_PRICE_ID = "price_1TEz08RYi2kelWQk4fGiLUe4";
 
 // Tier config shape stored in subscription_addons.tier_config JSON
 interface AddonTier {
@@ -835,10 +840,209 @@ serve(async (req) => {
         return jsonResponse({ success: true });
       }
 
+      // ──────────────────────────────────────────────
+      // PURCHASE PHONE NUMBER
+      // ──────────────────────────────────────────────
+      case "purchase_phone_number": {
+        const { tollFree, areaCode, nickname } = body;
+
+        if (!stripeSubId) {
+          return jsonResponse(
+            { error: "Active subscription required to purchase phone numbers" },
+            400,
+          );
+        }
+
+        // Look up external agent ID
+        const { data: agentRow, error: agentErr } = await supabase
+          .from("chat_bot_agents")
+          .select("external_agent_id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (agentErr || !agentRow?.external_agent_id) {
+          return jsonResponse(
+            {
+              error:
+                "Voice agent must be provisioned before purchasing phone numbers",
+            },
+            409,
+          );
+        }
+
+        const agentId = agentRow.external_agent_id;
+        const priceId = tollFree
+          ? PHONE_NUMBER_TOLLFREE_PRICE_ID
+          : PHONE_NUMBER_LOCAL_PRICE_ID;
+        const idempotencyKey = `purchase-${user.id}-${Date.now()}`;
+
+        // 1. Create Stripe subscription item (use subscriptionItems.create for
+        //    explicit new item — subscriptions.update would merge same-price items)
+        let newItemId: string;
+        try {
+          const newItem = await getStripe().subscriptionItems.create({
+            subscription: stripeSubId,
+            price: priceId,
+            quantity: 1,
+            proration_behavior: "create_prorations",
+          });
+
+          newItemId = newItem.id;
+        } catch (stripeErr) {
+          console.error(
+            "[manage-subscription-items] Stripe phone number item creation failed:",
+            stripeErr,
+          );
+          return jsonResponse(
+            { error: "Failed to create billing item for phone number" },
+            500,
+          );
+        }
+
+        // 2. Call standard-chat-bot to purchase from Retell
+        try {
+          const voiceClient = createStandardChatBotVoiceClient();
+          const result = await voiceClient.purchasePhoneNumber(
+            agentId,
+            {
+              tollFree: !!tollFree,
+              areaCode: areaCode || undefined,
+              nickname: nickname || undefined,
+              externalSubscriptionItemId: newItemId,
+            },
+            idempotencyKey,
+          );
+
+          if (!result.ok) {
+            // Rollback: remove the Stripe item since backend purchase failed
+            console.error(
+              `[manage-subscription-items] Backend phone purchase failed (${result.status}): ${result.error}. Rolling back Stripe item ${newItemId}`,
+            );
+            try {
+              await getStripe().subscriptionItems.del(newItemId, {
+                proration_behavior: "none",
+              });
+              console.log(
+                `[manage-subscription-items] Rolled back Stripe item ${newItemId}`,
+              );
+            } catch (rollbackErr) {
+              console.error(
+                "[manage-subscription-items] CRITICAL: Stripe rollback also failed:",
+                rollbackErr,
+              );
+            }
+            return jsonResponse(
+              { error: result.error || "Failed to purchase phone number" },
+              result.status || 500,
+            );
+          }
+
+          console.log(
+            `[manage-subscription-items] Phone number purchased: user=${user.id}, item=${newItemId}, number=${result.data?.phoneNumber}`,
+          );
+
+          return jsonResponse({
+            success: true,
+            phoneNumber: result.data,
+          });
+        } catch (apiErr) {
+          // Network/timeout error — rollback Stripe item
+          console.error(
+            "[manage-subscription-items] Backend phone purchase network error:",
+            apiErr,
+          );
+          try {
+            await getStripe().subscriptions.update(stripeSubId, {
+              items: [{ id: newItemId, deleted: true }],
+              proration_behavior: "none",
+            });
+          } catch (rollbackErr) {
+            console.error(
+              "[manage-subscription-items] CRITICAL: Stripe rollback also failed:",
+              rollbackErr,
+            );
+          }
+          return jsonResponse(
+            { error: "Phone number purchase failed — billing was not charged" },
+            500,
+          );
+        }
+      }
+
+      // ──────────────────────────────────────────────
+      // RELEASE PHONE NUMBER
+      // ──────────────────────────────────────────────
+      case "release_phone_number": {
+        const { phoneNumberId, externalSubscriptionItemId } = body;
+
+        if (!phoneNumberId) {
+          return jsonResponse({ error: "phoneNumberId is required" }, 400);
+        }
+
+        // Look up external agent ID
+        const { data: releaseAgentRow, error: releaseAgentErr } = await supabase
+          .from("chat_bot_agents")
+          .select("external_agent_id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (releaseAgentErr || !releaseAgentRow?.external_agent_id) {
+          return jsonResponse({ error: "Voice agent not found" }, 404);
+        }
+
+        const releaseAgentId = releaseAgentRow.external_agent_id;
+        const releaseIdempotencyKey = `release-${phoneNumberId}-${Date.now()}`;
+
+        // 1. Release from backend (Retell) first — this is the non-reversible action
+        const voiceClient = createStandardChatBotVoiceClient();
+        const releaseResult = await voiceClient.releasePhoneNumber(
+          releaseAgentId,
+          phoneNumberId,
+          releaseIdempotencyKey,
+        );
+
+        if (!releaseResult.ok && releaseResult.status !== 404) {
+          console.error(
+            `[manage-subscription-items] Backend phone release failed (${releaseResult.status}): ${releaseResult.error}`,
+          );
+          return jsonResponse(
+            { error: releaseResult.error || "Failed to release phone number" },
+            releaseResult.status || 500,
+          );
+        }
+
+        // 2. Cancel Stripe subscription item (non-blocking — number is already released)
+        if (externalSubscriptionItemId && stripeSubId) {
+          try {
+            await getStripe().subscriptionItems.del(
+              externalSubscriptionItemId,
+              {
+                proration_behavior: "create_prorations",
+              },
+            );
+            console.log(
+              `[manage-subscription-items] Stripe item cancelled: ${externalSubscriptionItemId}`,
+            );
+          } catch (stripeErr) {
+            // Log but don't fail — the number is already released from provider
+            console.error(
+              `[manage-subscription-items] WARNING: Stripe item cancel failed for ${externalSubscriptionItemId}:`,
+              stripeErr,
+            );
+          }
+        }
+
+        console.log(
+          `[manage-subscription-items] Phone number released: user=${user.id}, phoneNumberId=${phoneNumberId}`,
+        );
+
+        return jsonResponse({ success: true, released: true });
+      }
+
       default:
         return jsonResponse(
           {
-            error: `Unknown action: ${action}. Valid actions: add_addon, remove_addon, add_seat_pack, remove_seat_pack`,
+            error: `Unknown action: ${action}. Valid actions: add_addon, remove_addon, add_seat_pack, remove_seat_pack, purchase_phone_number, release_phone_number`,
           },
           400,
         );

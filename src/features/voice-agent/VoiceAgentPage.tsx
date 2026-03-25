@@ -62,6 +62,7 @@ import { VoiceAgentRuntimeCard } from "./components/VoiceAgentRuntimeCard";
 import { VoiceAgentStatusCard } from "./components/VoiceAgentStatusCard";
 import { VoiceAgentUsageCard } from "./components/VoiceAgentUsageCard";
 import { VoiceCallRulesCard } from "./components/VoiceCallRulesCard";
+import { VoicePhoneNumbersCard } from "./components/VoicePhoneNumbersCard";
 import { VoiceGuardrailsCard } from "./components/VoiceGuardrailsCard";
 import {
   isVoiceAgentProvisioned,
@@ -1375,6 +1376,10 @@ export function VoiceAgentPage() {
 
                 {activeSetupTab === "call-flow" && (
                   <div className="space-y-3">
+                    <VoicePhoneNumbersCard
+                      voiceAgentCreated={voiceAgentCreated}
+                      voiceAccessActive={voiceAccessActive}
+                    />
                     <VoiceAgentRuntimeCard agent={agent} />
 
                     {/* Blocked Lead Statuses — who the voice agent should NOT call */}

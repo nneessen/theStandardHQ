@@ -26,3 +26,8 @@ export function getTierUsageAmount(tier: VoiceAddonUsageTier) {
 export function getTierUsageUnit(addonName: string | null | undefined) {
   return isPremiumVoiceAddon(addonName) ? "minutes" : "runs";
 }
+
+// Phone number billing
+export const VOICE_PHONE_MAX_PER_AGENT = 20;
+export const VOICE_PHONE_LOCAL_PRICE_CENTS = 199; // $1.99/mo
+export const VOICE_PHONE_TOLLFREE_PRICE_CENTS = 399; // $3.99/mo

@@ -1580,6 +1580,58 @@ serve(async (req) => {
       }
 
       // ──────────────────────────────────────────────
+      // VOICE PHONE NUMBERS (Retell-managed)
+      // ──────────────────────────────────────────────
+
+      case "list_voice_phone_numbers": {
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/voice/phone-numbers`,
+        );
+        const {
+          payload,
+          status: listStatus,
+          errorMessage: listErr,
+        } = unwrap(res);
+        if (listErr) {
+          return jsonResponse({ error: listErr }, listStatus);
+        }
+        return jsonResponse({
+          phoneNumbers: Array.isArray(payload) ? payload : [],
+        });
+      }
+
+      case "get_voice_phone_number": {
+        const { phoneNumberId: getPhoneId } = params;
+        if (!getPhoneId) {
+          return jsonResponse({ error: "phoneNumberId is required" }, 400);
+        }
+        const res = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/voice/phone-numbers/${getPhoneId}`,
+        );
+        return sendResult(res);
+      }
+
+      case "update_voice_phone_number": {
+        const { phoneNumberId: updatePhoneId, ...updateFields } = params;
+        if (!updatePhoneId) {
+          return jsonResponse({ error: "phoneNumberId is required" }, 400);
+        }
+        const patchBody: Record<string, unknown> = {};
+        if (updateFields.nickname !== undefined)
+          patchBody.nickname = updateFields.nickname;
+        if (updateFields.isPrimary !== undefined)
+          patchBody.isPrimary = updateFields.isPrimary;
+        const res = await callChatBotApi(
+          "PATCH",
+          `/api/external/agents/${agentId}/voice/phone-numbers/${updatePhoneId}`,
+          patchBody,
+        );
+        return sendResult(res);
+      }
+
+      // ──────────────────────────────────────────────
       // CALENDLY CONNECTION
       // ──────────────────────────────────────────────
       case "get_calendly_auth_url": {

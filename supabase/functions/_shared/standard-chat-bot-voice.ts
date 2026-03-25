@@ -17,6 +17,30 @@ export interface VoiceUsageSnapshot {
   answeredCalls: number;
 }
 
+export interface VoicePhoneNumberData {
+  id: string;
+  agentId: string;
+  phoneNumber: string;
+  areaCode: number | null;
+  countryCode: string;
+  tollFree: boolean;
+  numberProvider: string;
+  nickname: string | null;
+  isPrimary: boolean;
+  status: string;
+  externalSubscriptionItemId: string | null;
+  purchasedAt: string;
+  releasedAt: string | null;
+}
+
+export interface PurchasePhoneNumberBody {
+  areaCode?: number;
+  countryCode?: "US" | "CA";
+  tollFree?: boolean;
+  nickname?: string;
+  externalSubscriptionItemId?: string;
+}
+
 export interface StandardChatBotVoiceClient {
   getVoiceEntitlement(
     agentId: string,
@@ -34,6 +58,21 @@ export interface StandardChatBotVoiceClient {
   getVoiceUsage(
     agentId: string,
   ): Promise<VoiceClientResponse<VoiceUsageSnapshot>>;
+
+  // Phone number management
+  purchasePhoneNumber(
+    agentId: string,
+    body: PurchasePhoneNumberBody,
+    idempotencyKey: string,
+  ): Promise<VoiceClientResponse<VoicePhoneNumberData>>;
+  listPhoneNumbers(
+    agentId: string,
+  ): Promise<VoiceClientResponse<VoicePhoneNumberData[]>>;
+  releasePhoneNumber(
+    agentId: string,
+    phoneNumberId: string,
+    idempotencyKey: string,
+  ): Promise<VoiceClientResponse<{ released: boolean }>>;
 }
 
 function getErrorMessage(body: unknown, fallback: string) {
@@ -208,6 +247,28 @@ export function createStandardChatBotVoiceClient(
       return request<VoiceUsageSnapshot>(
         "GET",
         `/agents/${agentId}/voice-usage`,
+      );
+    },
+
+    // Phone number management
+    purchasePhoneNumber(agentId, body, idempotencyKey) {
+      return request<VoicePhoneNumberData>(
+        "POST",
+        `/agents/${agentId}/voice/phone-numbers`,
+        { body, idempotencyKey },
+      );
+    },
+    listPhoneNumbers(agentId) {
+      return request<VoicePhoneNumberData[]>(
+        "GET",
+        `/agents/${agentId}/voice/phone-numbers`,
+      );
+    },
+    releasePhoneNumber(agentId, phoneNumberId, idempotencyKey) {
+      return request<{ released: boolean }>(
+        "DELETE",
+        `/agents/${agentId}/voice/phone-numbers/${phoneNumberId}`,
+        { idempotencyKey },
       );
     },
   };
