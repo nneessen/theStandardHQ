@@ -28,6 +28,7 @@ type VoiceRuntimeForm = {
   afterHoursEndTime: string;
   afterHoursTimezone: string;
   voiceTransferNumber: string;
+  primaryPhone: string;
   voiceMaxCallDurationSeconds: string;
   voiceVoicemailEnabled: boolean;
   voiceHumanHandoffEnabled: boolean;
@@ -64,6 +65,7 @@ function buildFormState(
     afterHoursEndTime: agent?.afterHoursEndTime ?? "08:00",
     afterHoursTimezone: agent?.afterHoursTimezone ?? "America/New_York",
     voiceTransferNumber: agent?.voiceTransferNumber ?? "",
+    primaryPhone: agent?.primaryPhone ?? "",
     voiceMaxCallDurationSeconds: String(
       agent?.voiceMaxCallDurationSeconds ?? 300,
     ),
@@ -155,6 +157,11 @@ export function VoiceAgentRuntimeCard({ agent }: VoiceAgentRuntimeCardProps) {
       errors.push("Transfer number must be a valid phone number.");
     }
 
+    const callbackNumber = form.primaryPhone.trim();
+    if (callbackNumber && !isValidPhoneNumber(callbackNumber)) {
+      errors.push("Callback number must be a valid phone number.");
+    }
+
     const maxDuration = Number.parseInt(form.voiceMaxCallDurationSeconds, 10);
     if (
       !Number.isInteger(maxDuration) ||
@@ -169,6 +176,7 @@ export function VoiceAgentRuntimeCard({ agent }: VoiceAgentRuntimeCardProps) {
     form.afterHoursTimezone,
     form.voiceMaxCallDurationSeconds,
     form.voiceTransferNumber,
+    form.primaryPhone,
   ]);
 
   const updateField = <K extends keyof VoiceRuntimeForm>(
@@ -189,6 +197,7 @@ export function VoiceAgentRuntimeCard({ agent }: VoiceAgentRuntimeCardProps) {
       afterHoursEndTime: form.afterHoursEndTime || null,
       afterHoursTimezone: form.afterHoursTimezone || null,
       voiceTransferNumber: form.voiceTransferNumber || null,
+      primaryPhone: form.primaryPhone || null,
       voiceMaxCallDurationSeconds:
         Number.parseInt(form.voiceMaxCallDurationSeconds, 10) || 300,
       voiceVoicemailEnabled: form.voiceVoicemailEnabled,
@@ -389,6 +398,22 @@ export function VoiceAgentRuntimeCard({ agent }: VoiceAgentRuntimeCardProps) {
                 />
                 <p className="text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
                   Use the direct number your team wants live callers sent to.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="voice-callback-number">Callback number</Label>
+                <Input
+                  id="voice-callback-number"
+                  value={form.primaryPhone}
+                  onChange={(event) =>
+                    updateField("primaryPhone", event.target.value)
+                  }
+                  className="font-mono text-xs"
+                  placeholder="+15551234567"
+                />
+                <p className="text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
+                  The number the AI tells leads to expect your call from.
                 </p>
               </div>
 
