@@ -18,28 +18,32 @@ Assume the application uses:
 
 - TypeScript (strict)
 - React 19+
-- Vite
-- TanStack Query
-- TanStack Router
+- Vite 6
+- TanStack Query v5
+- TanStack Router v1
 - Feature directories:
   - `src/features/chat-bot/` — SMS bot hooks, components, services
   - `src/features/voice-agent/` — Voice agent setup, Retell studio, clone wizard
   - `src/features/channel-orchestration/` — Multi-channel routing rules
 - Key hook files: `useChatBot.ts`, `useChatBotVoiceClone.ts`, `useOrchestration.ts`, `useAudioRecorder.ts`
-- Contract validation library: `src/features/voice-agent/lib/voice-agent-contract.ts`
-- Query key factories: `chatBotKeys` (root: `["chat-bot"]`), `orchestrationKeys`
+- Contract validation library: `src/features/voice-agent/lib/voice-agent-contract.ts` (`BOT_CONFIG_ALLOWED_KEYS`, `E164_PHONE_PATTERN`, parser functions)
+- Retell config allowlists: `src/features/voice-agent/lib/retell-config.ts` (`RETELL_AGENT_EDITABLE_KEYS`, `RETELL_LLM_EDITABLE_KEYS`, `RETELL_VOICE_PROVIDERS`)
+- Query key factories:
+  - `chatBotKeys` (root: `["chat-bot"]`) — keys: `all`, `agent`, `voiceSetupState`, `retellRuntime`, `retellVoices`, `retellLlm`, `conversations`, `messages`, `appointments`, `usage`, `voiceEntitlement`, `voiceUsage`, `voiceCloneStatus`, `voiceCloneScripts`, `voiceCloneSession`, `closeStatus`, `closeLeadStatuses`, `closePhoneNumbers`, `calendlyStatus`, `calendlyEventTypes`, `calendarHealth`, `googleStatus`, `monitoring`, `teamAccess`
+  - `orchestrationKeys` — keys: `all`, `ruleset`, `templates`, `templatePreview`, `postCallConfig`, `voiceSessions`, `voiceSession`, `closeLeadSources`, `closeCustomFields`, `closeSmartViews`
 
 ### Backend / Data
 
-- Supabase (PostgreSQL) for agent records, team overrides, conversation reviews, analytics attribution
+- Supabase (PostgreSQL) for agent records, team overrides, analytics attribution
 - Edge functions as authenticated proxy layer to external `standard-chat-bot` service
 - Key edge functions:
-  - `chat-bot-api` — Primary proxy (~90 action cases), routes all bot/voice/orchestration operations
+  - `chat-bot-api` — Primary proxy (~80+ action cases), routes all bot/voice/orchestration operations
   - `bot-collective-analytics` — Aggregate metrics (public, no JWT)
-  - `chat-bot-provision` — Service-role-only agent provisioning (Stripe webhook consumer)
-  - `send-sms` — Twilio SMS delivery gateway
+  - `chat-bot-provision` — Service-role-only agent provisioning (Stripe webhook consumer), 4 actions: `provision`, `deprovision`, `update_tier`, `set_billing_exempt`
+  - `manage-subscription-items` — Stripe subscription line item management (user JWT)
+  - `send-sms` — Twilio SMS delivery gateway (dual auth: service-role OR user JWT)
 - Shared library: `supabase/functions/_shared/standard-chat-bot-voice.ts` (voice entitlement client)
-- Key tables: `chat_bot_agents`, `chat_bot_team_overrides`, `chat_bot_conversation_reviews`, `bot_policy_attributions`
+- Key tables: `chat_bot_agents`, `chat_bot_team_overrides`, `bot_policy_attributions`, `user_subscription_addons`
 - Generated types via `src/types/database.types.ts`
 
 ### External Services (NOT owned by this codebase)
@@ -57,8 +61,8 @@ Assume the application uses:
 - Zero-trust client
 - Edge function auth: JWT Bearer tokens for user-facing calls, `service_role` key comparison for internal calls (`chat-bot-provision`)
 - External API auth: `X-API-Key` header to standard-chat-bot (timing-safe comparison on server side)
-- CORS whitelist: `app.thestandardhq.com`, `www.thestandardhq.com`, `thestandardhq.com`, `localhost:3000`, `127.0.0.1:3000`
-- Supabase RLS on `chat_bot_agents` (user_id isolation), `chat_bot_team_overrides`, `chat_bot_conversation_reviews`
+- CORS whitelist: `app.thestandardhq.com`, `www.thestandardhq.com`, `thestandardhq.com`, `localhost:3000`, `localhost:3001`, `127.0.0.1:3000`, `127.0.0.1:3001`
+- Supabase RLS on `chat_bot_agents` (user_id isolation), `chat_bot_team_overrides`
 - Input validation: `voice-agent-contract.ts` allowlists prevent injection of privileged fields
 - Billing enforcement: tier-based lead limits, voice minute limits, billing exemptions via team overrides
 - No frontend-only access control — all authorization enforced at edge function or database layer
@@ -71,7 +75,7 @@ For every file, change set, or feature:
 
 1. **Verify correctness**
    - Proxy action routing and response envelope unwrapping (`data` field extraction)
-   - Error classification (`isNotProvisioned`, `isTransportError`, `isRetryable`)
+   - Error classification (`isNotProvisioned`, `isServiceError`, `isTransportError`)
    - Voice clone lifecycle state transitions
    - Orchestration rule evaluation ordering
 2. **Verify security**
@@ -182,7 +186,9 @@ User JWT
 ### Agent Isolation
 
 - `ensureAgentContext` queries `chat_bot_agents WHERE user_id = $userId`. If any code path allows a different user's agent to be returned, it is a **blocking issue**.
-- Auto-provisioning (`allowAutoProvision = true`) must only occur on specific actions (e.g., `connect_close`, `create_voice_agent`). New actions that enable auto-provisioning must be justified.
+- Auto-provisioning (`allowAutoProvision = true`) is enabled for **exactly two actions**: `connect_close` and `create_voice_agent`. New actions that enable auto-provisioning must be justified.
+- The `get_voice_setup_state` action runs **before** agent lookup with `allowAutoProvision = false`, allowing voice-only users to check setup state without triggering auto-provisioning.
+- `admin_list_agents` is a super-admin-only action — verify it enforces admin role checks.
 
 ### Response Handling
 
@@ -190,8 +196,72 @@ User JWT
 - Edge function `unwrap()` must correctly extract the inner `data` field
 - 404 from standard-chat-bot for a known `external_agent_id` should trigger local status update to `"failed"` for re-provisioning
 - `notProvisioned: true` is returned as HTTP 200 to avoid browser network-panel noise — verify this convention is maintained
+- 5xx from standard-chat-bot is converted to 400 by `safeStatus()` (Supabase treats 5xx from edge functions as crashes/502)
 
 If any proxy call could return another user's data or bypass billing, it is a **blocking issue**.
+
+---
+
+## Complete `chat-bot-api` Action Inventory
+
+All actions routed through the switch-case in `chat-bot-api/index.ts`:
+
+**Agent & Config:**
+`get_agent`, `get_status`, `update_config`, `create_voice_agent`
+
+**Retell Voice Connection:**
+`save_retell_connection`, `disconnect_retell_connection`, `get_retell_runtime`, `get_retell_voices`, `search_retell_voices`, `add_retell_voice`, `update_retell_agent`, `publish_retell_agent`, `get_retell_llm`, `update_retell_llm`
+
+**Close CRM:**
+`connect_close`, `disconnect_close`, `get_close_status`, `get_close_lead_statuses`, `get_phone_numbers`, `get_close_lead_sources`, `get_close_custom_fields`, `get_close_smart_views`, `create_close_custom_field`, `create_close_smart_view`, `refresh_close_metadata`
+
+**Calendly:**
+`get_calendly_auth_url`, `disconnect_calendly`, `get_calendly_status`, `get_calendly_event_types`
+
+**Google Calendar:**
+`get_google_auth_url`, `get_google_status`, `disconnect_google`
+
+**Configuration:**
+`update_business_hours`, `get_calendar_health`
+
+**Conversations & Messages:**
+`get_conversations`, `get_messages`, `get_appointments`
+
+**Usage & Billing:**
+`get_usage`, `get_voice_entitlement`, `get_voice_usage`
+
+**Voice Clone (12 actions):**
+`get_voice_clone_status`, `get_voice_clone_scripts`, `update_voice_clone_scripts`, `reset_voice_clone_scripts`, `start_voice_clone`, `upload_voice_clone_segment`, `get_voice_clone_session`, `submit_voice_clone`, `activate_voice_clone`, `deactivate_voice_clone`, `cancel_voice_clone`, `delete_voice_clone_segment`
+
+**Analytics & Attribution:**
+`get_analytics`, `get_attributions`, `check_attribution`, `link_attribution`, `unlink_attribution`
+
+**Monitoring:**
+`get_monitoring`, `get_system_health`
+
+**Orchestration Rules:**
+`get_orchestration_ruleset`, `update_orchestration_ruleset`, `patch_orchestration_ruleset`, `delete_orchestration_ruleset`, `create_orchestration_rule`, `update_orchestration_rule`, `delete_orchestration_rule`, `toggle_orchestration_rule`, `reorder_orchestration_rules`
+
+**Orchestration Templates:**
+`get_orchestration_templates`, `get_orchestration_template_preview`, `apply_orchestration_template`
+
+**Orchestration Evaluation:**
+`evaluate_orchestration`
+
+**Post-Call Config:**
+`get_post_call_config`, `update_post_call_config`
+
+**Voice Sessions:**
+`get_voice_sessions`, `get_voice_session`, `manual_voice_writeback`
+
+**Voice Rules & Guardrails:**
+`update_voice_inbound_rules`, `update_voice_outbound_rules`, `update_voice_guardrails`
+
+**Pre-Agent Actions (run before agent lookup):**
+`get_voice_setup_state`
+
+**Admin Actions (super-admin only):**
+`admin_list_agents`
 
 ---
 
@@ -200,8 +270,20 @@ If any proxy call could return another user's data or bypass billing, it is a **
 ### Request Contracts
 
 - All action parameters must pass through `voice-agent-contract.ts` validation functions before being forwarded
-- `BOT_CONFIG_ALLOWED_KEYS` defines the complete allowlist for `update_config`. Any key not in this set must be rejected.
-- `RETELL_AGENT_EDITABLE_KEYS` and `RETELL_LLM_EDITABLE_KEYS` define Retell patch allowlists
+- `BOT_CONFIG_ALLOWED_KEYS` defines the complete allowlist for `update_config`. Any key not in this set must be rejected. Current allowlist (35 keys):
+  ```
+  name, botEnabled, timezone, autoOutreachLeadSources, allowedLeadStatuses,
+  blockedLeadStatuses, calendlyEventTypeSlug, leadSourceEventTypeMappings,
+  companyName, jobTitle, bio, yearsOfExperience, residentState,
+  nonResidentStates, specialties, website, location, remindersEnabled,
+  responseSchedule, dailyMessageLimit, maxMessagesPerConversation,
+  voiceEnabled, voiceFollowUpEnabled, afterHoursInboundEnabled,
+  afterHoursStartTime, afterHoursEndTime, afterHoursTimezone,
+  voiceProvider, voiceId, voiceFallbackVoiceId, voiceTransferNumber,
+  voiceMaxCallDurationSeconds, voiceVoicemailEnabled, voiceHumanHandoffEnabled,
+  voiceQuotedFollowupEnabled, primaryPhone
+  ```
+- `RETELL_AGENT_EDITABLE_KEYS` and `RETELL_LLM_EDITABLE_KEYS` define Retell patch allowlists (in `retell-config.ts`)
 - Phone numbers must match `E164_PHONE_PATTERN` (`/^\+[1-9]\d{7,14}$/`)
 - New action cases in the switch-case router must document which standard-chat-bot endpoint they map to
 
@@ -210,16 +292,17 @@ If any proxy call could return another user's data or bypass billing, it is a **
 - Verify that the edge function correctly unwraps the response envelope (`res.data.data` vs `res.data`)
 - Verify that error messages from standard-chat-bot are surfaced to the frontend (not silently swallowed)
 - Verify that `notProvisioned: true` flag is correctly set for 404 responses
-- Verify `ChatBotApiError` class properties: `isNotProvisioned`, `isTransportError`, `isRetryable` are correctly set based on response status codes
+- Verify `ChatBotApiError` class properties: `isNotProvisioned`, `isServiceError`, `isTransportError` are correctly set based on response status codes
 
 ### Timeout & Resilience
 
 - All `callChatBotApi` calls must use `AbortController` with configurable timeout
   - Default: 15s for JSON requests
   - Extended: 60s for multipart uploads (audio segments)
-- `createStandardChatBotVoiceClient` calls use 10s timeout
+- `createStandardChatBotVoiceClient` calls use 10s timeout (configurable via `STANDARD_CHAT_BOT_TIMEOUT_MS` env)
 - Failures must be classified:
   - Transport error (network failure) — may retry with backoff
+  - Service error (5xx, service unavailable) — surface as `isServiceError`, may retry
   - Business error (validation, not found) — do not retry
   - Auth error (401/403) — do not retry, surface to user
 
@@ -236,8 +319,8 @@ If any proxy call could return another user's data or bypass billing, it is a **
 ```
 
 - **Business rules:**
-  - Max 3 lifetime clone attempts per agent
-  - 25 guided scripts, minimum 20 segments + 60 minutes total audio to submit
+  - Remaining clone attempts tracked server-side via `remainingAttempts` field (configurable per cycle, default limit 999)
+  - 15–25 scripts (25 defaults provided, minimum 15 required), minimum 20 segments, minimum 20 minutes total audio (server-enforced via `VOICE_CLONE_MIN_DURATION_SECONDS = 1200`; UI fallback displays 60 minutes if server value unavailable)
   - Max 10 minutes per segment, max 50 MB per segment
   - Allowed formats: webm, ogg, mpeg, mp3, mp4, m4a, wav
   - 1 concurrent session per agent
@@ -251,17 +334,17 @@ If any proxy call could return another user's data or bypass billing, it is a **
 
 ### Retell Configuration
 
-- Retell agent updates go through `parseRetellAgentUpdateParams` which enforces `RETELL_AGENT_EDITABLE_KEYS`
-- Retell LLM updates go through `parseRetellLlmUpdateParams` which enforces `RETELL_LLM_EDITABLE_KEYS`
+- Retell agent updates go through `parseRetellAgentUpdateParams` which enforces `RETELL_AGENT_EDITABLE_KEYS` (defined in `src/features/voice-agent/lib/retell-config.ts`)
+- Retell LLM updates go through `parseRetellLlmUpdateParams` which enforces `RETELL_LLM_EDITABLE_KEYS` (defined in `src/features/voice-agent/lib/retell-config.ts`)
 - Voice search uses `parseRetellSearchParams`
-- New voice addition uses `parseAddRetellVoiceParams` with provider validation against `RETELL_VOICE_PROVIDERS`
+- New voice addition uses `parseAddRetellVoiceParams` with provider validation against `RETELL_VOICE_PROVIDERS` (`elevenlabs`, `cartesia`, `minimax`, `fish_audio`)
 - If any Retell patch bypasses these validators, it is a **blocking issue**
 
 ### Cross-Service Consistency
 
 - Voice clone state exists in standard-chat-bot AND is reflected locally in React Query cache
 - After activation/deactivation, both `voiceCloneStatus` and `voiceCloneSession` cache keys must be invalidated
-- `invalidateVoiceAgentQueries()` utility must be called after voice config changes to keep Retell runtime, voices, and LLM caches consistent
+- `invalidateVoiceAgentQueries()` utility must be called after voice config changes. It invalidates (in order): `voiceSetupState` (cancel + invalidate), `agent`, `voiceEntitlement`, `voiceUsage`, `retellRuntime`, `retellVoices`, `retellLlm`, plus calls `invalidateVoiceSetupQueries()`
 
 ---
 
@@ -278,15 +361,24 @@ If any proxy call could return another user's data or bypass billing, it is a **
 
 ### Rule Mutations
 
-- CRUD: `create_orchestration_rule`, `update_orchestration_rule`, `delete_orchestration_rule`, `toggle_orchestration_rule`, `reorder_orchestration_rules`
-- Templates: `apply_orchestration_template` with `mode: "replace" | "append"` — verify `"replace"` does not silently delete custom rules without confirmation
+- Full ruleset CRUD: `get_orchestration_ruleset`, `update_orchestration_ruleset`, `patch_orchestration_ruleset`, `delete_orchestration_ruleset`
+- Individual rule CRUD: `create_orchestration_rule`, `update_orchestration_rule`, `delete_orchestration_rule`, `toggle_orchestration_rule`, `reorder_orchestration_rules`
+- Templates: `get_orchestration_templates`, `get_orchestration_template_preview`, `apply_orchestration_template` with `mode: "replace" | "append"` — verify `"replace"` does not silently delete custom rules without confirmation
 - `OrchestrationRuleset.version` is incremented on each mutation — verify optimistic concurrency
 
 ### Post-Call Configuration
 
 - Status mapping, custom field mapping, transcript writeback — all stored via `update_post_call_config`
+- Read via `get_post_call_config`
 - Writeback events are enumerated constants — verify new events are added to the constant, not hardcoded
 - Transcript formats: `full_transcript`, `summary_only`, `summary_with_highlights`
+
+### Voice Rules & Guardrails
+
+- `update_voice_inbound_rules` — configures inbound call routing (enabled, afterHoursEnabled, allowedLeadStatuses, transferNumber, afterHours time/timezone)
+- `update_voice_outbound_rules` — configures outbound call settings (enabled, mode, customFieldKey, allowedLeadStatuses, allowedLeadSources)
+- `update_voice_guardrails` — configures safety guardrails
+- Close metadata helpers: `get_close_lead_sources`, `get_close_custom_fields`, `get_close_smart_views`, `create_close_custom_field`, `create_close_smart_view`, `refresh_close_metadata`
 
 ### Voice Sessions
 
@@ -316,7 +408,7 @@ If any proxy call could return another user's data or bypass billing, it is a **
   - Never poll unconditionally (causes load on external APIs and cost on standard-chat-bot)
 
 - Error handling must:
-  - Distinguish `ChatBotApiError.isTransportError` (network failure) from business errors
+  - Distinguish `ChatBotApiError.isTransportError` (network failure) from `ChatBotApiError.isServiceError` (service unavailable) from business errors
   - Use `retry` function callbacks, not `retry: N` constants, for conditional retry logic
   - Show `toast.error()` with the error message from the API, not generic messages
 
@@ -334,7 +426,7 @@ If any proxy call could return another user's data or bypass billing, it is a **
 
 ## Database & Migration Review Rules
 
-For any schema change to `chat_bot_agents`, `chat_bot_team_overrides`, `chat_bot_conversation_reviews`, `bot_policy_attributions`, or `user_subscription_addons`:
+For any schema change to `chat_bot_agents`, `chat_bot_team_overrides`, `bot_policy_attributions`, or `user_subscription_addons`:
 
 - Is the migration applied via `./scripts/migrations/run-migration.sh`? (NEVER direct psql)
 - Does it break RLS policies on `chat_bot_agents` (`user_id` isolation)?
@@ -342,6 +434,7 @@ For any schema change to `chat_bot_agents`, `chat_bot_team_overrides`, `chat_bot
 - Does it change `provisioning_status` values? (affects `ensureAgentContext` logic)
 - Does it affect `billing_exempt` flag propagation?
 - Are `tier_id` foreign keys correct?
+- Does it affect `user_subscription_addons` voice sync columns (`voice_sync_status`, `voice_entitlement_snapshot`, `voice_last_synced_at`, `voice_last_sync_attempt_at`, `voice_last_sync_event_id`, `voice_last_sync_error`, `voice_last_sync_http_status`)?
 - Is the migration:
   - Reversible?
   - Safe for existing production data?
@@ -349,6 +442,7 @@ For any schema change to `chat_bot_agents`, `chat_bot_team_overrides`, `chat_bot
 - Are indexes present for expected access paths?
 
 After migration:
+
 1. Regenerate `database.types.ts`
 2. Fix type errors
 3. Run `npm run build`
@@ -366,7 +460,7 @@ For every meaningful change, explicitly analyze these attack vectors:
 3. **Cross-tenant voice data:** User A requests voice clone session or recording URL belonging to User B. Verify clone_id lookup includes agent ownership check.
 4. **Service-role key exfiltration:** Edge function accidentally logs or returns `SUPABASE_SERVICE_ROLE_KEY`. Verify it is never included in response bodies or structured logs.
 5. **External API key leakage:** `X-API-Key` or Close API key appears in frontend error messages or console logs.
-6. **Provisioning abuse:** Automated agent creation without subscription. Verify auto-provisioning is gated to specific actions only.
+6. **Provisioning abuse:** Automated agent creation without subscription. Verify auto-provisioning is gated to exactly `connect_close` and `create_voice_agent` actions only.
 7. **Voice minute theft:** User bypasses entitlement check to make calls beyond allotted minutes. Verify entitlement is checked before voice operations.
 8. **CORS bypass:** Request from unauthorized origin gets full API access. Verify CORS whitelist is enforced and does not use wildcards.
 9. **Multipart injection:** Malformed FormData with extra fields or oversized audio. Verify the edge function only reads expected form fields.
@@ -386,7 +480,7 @@ For any modified logic:
   - Changed authorization boundaries
   - Changed data shapes
 - Domain-specific regressions:
-  - If `ensureAgentContext` auto-provisioning behavior changes, document which actions now trigger/skip provisioning
+  - If `ensureAgentContext` auto-provisioning behavior changes, document which actions now trigger/skip provisioning (current: only `connect_close` and `create_voice_agent`)
   - If response envelope unwrapping changes, verify all frontend hooks still extract data correctly
   - If `BOT_CONFIG_ALLOWED_KEYS` changes, document which new fields are exposed and whether they are safe
   - If polling intervals change, assess impact on external API rate limits
@@ -422,6 +516,7 @@ Verify that tests exist (or are proposed) for:
 ### Unit
 
 - `voice-agent-contract.ts` validators (field allowlists, phone number patterns, unknown key rejection)
+- `retell-config.ts` allowlists (`RETELL_AGENT_EDITABLE_KEYS`, `RETELL_LLM_EDITABLE_KEYS`)
 - `connection-state.ts` logic
 - `response-schedule.ts` business hours logic
 - `voice-agent-helpers.ts` utility functions
@@ -430,7 +525,7 @@ Verify that tests exist (or are proposed) for:
 ### Integration
 
 - Edge function action routing (each action case should have coverage)
-- `callChatBotApi()` / `callChatBotApiMultipart()` error classification (transport vs business vs auth)
+- `callChatBotApi()` / `callChatBotApiMultipart()` error classification (transport vs service vs business vs auth)
 - Response envelope unwrapping correctness
 
 ### Security
@@ -439,17 +534,18 @@ Verify that tests exist (or are proposed) for:
 - `ensureAgentContext` returns 404 for wrong user
 - Service-role gate in `chat-bot-provision` rejects user JWTs
 - CORS blocks unauthorized origins
+- Auto-provisioning only fires for `connect_close` and `create_voice_agent`
 
 ### Edge Cases
 
 - Agent not provisioned (first-time user)
 - External API timeout / unreachable
-- Voice clone session in each state (recording, processing, ready, failed, archived)
+- Voice clone session in each state (recording, processing, ready, failed, active, archived)
 - Empty audio blob upload
 - Concurrent mutations (two tabs updating agent config)
 - Billing exempt + non-exempt team member on same team
 - Orchestration with no rules (fallback-only)
-- Voice clone at attempt limit (3/3 used)
+- Voice clone at attempt limit (0 remaining)
 
 Missing security or contract validation tests is a **blocking issue**.
 
@@ -518,6 +614,7 @@ Always respond using **exactly** the structure below:
 - Fallback evaluation
 - Post-call config integrity
 - Template application safety
+- Voice rules & guardrails
 
 ### 10. Billing & Entitlement Review
 
@@ -550,6 +647,7 @@ If any of the following are not provided:
 
 - Relevant `chat_bot_agents` schema and RLS policies
 - `voice-agent-contract.ts` allowlist definitions
+- `retell-config.ts` allowlist definitions
 - External API contract docs (e.g., `docs/external-api-reference.md`)
 - Edge function diff for proxy changes
 - Voice entitlement/billing configuration
