@@ -4,6 +4,8 @@
 export { ChatBotPage } from "./ChatBotPage";
 export { BlockedLeadStatusSelector } from "./components/BlockedLeadStatusSelector";
 export { ConnectionCard } from "./components/ConnectionCard";
+export { LeadStatusSelector } from "./components/LeadStatusSelector";
+export { LeadSourceSelector } from "./components/LeadSourceSelector";
 export {
   chatBotApi,
   chatBotKeys,
@@ -14,6 +16,8 @@ export {
   useChatBotVoiceUsage,
   useChatBotVoiceCloneStatus,
   useChatBotCloseLeadStatuses,
+  useChatBotCloseLeadSources,
+  useChatBotCloseCustomFields,
   useStartVoiceTrial,
   useCreateVoiceAgent,
   useConnectClose,
@@ -36,6 +40,8 @@ export {
   type ChatBotAgent,
   type ChatBotCreateVoiceAgentResponse,
   type ChatBotCloseLeadStatus,
+  type ChatBotCloseLeadSource,
+  type ChatBotCloseCustomField,
   type ChatBotRetellConnection,
   type ChatBotRetellRuntime,
   type ChatBotRetellVoice,

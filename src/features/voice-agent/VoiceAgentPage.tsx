@@ -61,6 +61,8 @@ import { VoiceAgentRetellStudioCard } from "./components/VoiceAgentRetellStudioC
 import { VoiceAgentRuntimeCard } from "./components/VoiceAgentRuntimeCard";
 import { VoiceAgentStatusCard } from "./components/VoiceAgentStatusCard";
 import { VoiceAgentUsageCard } from "./components/VoiceAgentUsageCard";
+import { VoiceCallRulesCard } from "./components/VoiceCallRulesCard";
+import { VoiceGuardrailsCard } from "./components/VoiceGuardrailsCard";
 import {
   isVoiceAgentProvisioned,
   isVoiceAgentProvisioningPending,
@@ -1413,6 +1415,15 @@ export function VoiceAgentPage() {
                         )}
                       </div>
                     </div>
+
+                    <VoiceCallRulesCard
+                      voiceSetupState={voiceSetupState}
+                      closeLeadStatuses={closeLeadStatuses}
+                      closeConnected={closeConnected}
+                      closeLeadStatusesLoading={closeLeadStatusesLoading}
+                    />
+
+                    <VoiceGuardrailsCard voiceSetupState={voiceSetupState} />
 
                     <VoiceAgentRetellStudioCard
                       connection={agent?.connections?.retell}

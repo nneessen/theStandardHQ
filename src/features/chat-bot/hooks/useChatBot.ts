@@ -44,6 +44,8 @@ export const chatBotKeys = {
   closeStatus: () => [...chatBotKeys.all, "close-status"] as const,
   closeLeadStatuses: () => [...chatBotKeys.all, "close-lead-statuses"] as const,
   closePhoneNumbers: () => [...chatBotKeys.all, "close-phone-numbers"] as const,
+  closeLeadSources: () => [...chatBotKeys.all, "close-lead-sources"] as const,
+  closeCustomFields: () => [...chatBotKeys.all, "close-custom-fields"] as const,
   calendlyStatus: () => [...chatBotKeys.all, "calendly-status"] as const,
   calendlyEventTypes: () =>
     [...chatBotKeys.all, "calendly-event-types"] as const,
@@ -999,6 +1001,57 @@ export function useChatBotCloseLeadStatuses(enabled = true) {
         statuses: ChatBotCloseLeadStatus[];
       }>("get_close_lead_statuses");
       return result.statuses ?? [];
+    },
+    enabled,
+    staleTime: 60_000,
+    retry: (failureCount, error) => {
+      if (error instanceof ChatBotApiError && error.isTransportError) {
+        return false;
+      }
+      return failureCount < 1;
+    },
+  });
+}
+
+export interface ChatBotCloseLeadSource {
+  id: string;
+  label: string;
+}
+
+export function useChatBotCloseLeadSources(enabled = true) {
+  return useQuery<ChatBotCloseLeadSource[], ChatBotApiError>({
+    queryKey: chatBotKeys.closeLeadSources(),
+    queryFn: async () => {
+      const result = await chatBotApi<{
+        sources: ChatBotCloseLeadSource[];
+      }>("get_close_lead_sources");
+      return result.sources ?? [];
+    },
+    enabled,
+    staleTime: 60_000,
+    retry: (failureCount, error) => {
+      if (error instanceof ChatBotApiError && error.isTransportError) {
+        return false;
+      }
+      return failureCount < 1;
+    },
+  });
+}
+
+export interface ChatBotCloseCustomField {
+  key: string;
+  name: string;
+  type: string;
+}
+
+export function useChatBotCloseCustomFields(enabled = true) {
+  return useQuery<ChatBotCloseCustomField[], ChatBotApiError>({
+    queryKey: chatBotKeys.closeCustomFields(),
+    queryFn: async () => {
+      const result = await chatBotApi<{
+        fields: ChatBotCloseCustomField[];
+      }>("get_close_custom_fields");
+      return result.fields ?? [];
     },
     enabled,
     staleTime: 60_000,
