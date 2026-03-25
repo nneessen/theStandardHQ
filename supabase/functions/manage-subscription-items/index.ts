@@ -853,6 +853,18 @@ serve(async (req) => {
           );
         }
 
+        // Validate area code if provided
+        if (
+          areaCode !== undefined &&
+          areaCode !== null &&
+          (typeof areaCode !== "number" || areaCode < 100 || areaCode > 999)
+        ) {
+          return jsonResponse(
+            { error: "Area code must be a 3-digit number (100-999)" },
+            400,
+          );
+        }
+
         // Look up external agent ID
         const { data: agentRow, error: agentErr } = await supabase
           .from("chat_bot_agents")
@@ -868,6 +880,32 @@ serve(async (req) => {
             },
             409,
           );
+        }
+
+        // Verify user has active voice addon (defense in depth — backend also checks)
+        const { data: voiceAddon } = await supabase
+          .from("subscription_addons")
+          .select("id")
+          .eq("name", PREMIUM_VOICE_ADDON_NAME)
+          .maybeSingle();
+
+        if (voiceAddon?.id) {
+          const { data: userVoiceAddon } = await supabase
+            .from("user_subscription_addons")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("addon_id", voiceAddon.id)
+            .in("status", ["active", "trialing", "manual_grant"])
+            .maybeSingle();
+
+          if (!userVoiceAddon) {
+            return jsonResponse(
+              {
+                error: "Active voice addon required to purchase phone numbers",
+              },
+              403,
+            );
+          }
         }
 
         const agentId = agentRow.external_agent_id;
@@ -952,8 +990,7 @@ serve(async (req) => {
             apiErr,
           );
           try {
-            await getStripe().subscriptions.update(stripeSubId, {
-              items: [{ id: newItemId, deleted: true }],
+            await getStripe().subscriptionItems.del(newItemId, {
               proration_behavior: "none",
             });
           } catch (rollbackErr) {
@@ -1014,15 +1051,23 @@ serve(async (req) => {
         // 2. Cancel Stripe subscription item (non-blocking — number is already released)
         if (externalSubscriptionItemId && stripeSubId) {
           try {
-            await getStripe().subscriptionItems.del(
+            // Verify the subscription item belongs to this user's subscription
+            const siItem = await getStripe().subscriptionItems.retrieve(
               externalSubscriptionItemId,
-              {
-                proration_behavior: "create_prorations",
-              },
             );
-            console.log(
-              `[manage-subscription-items] Stripe item cancelled: ${externalSubscriptionItemId}`,
-            );
+            if (siItem.subscription !== stripeSubId) {
+              console.error(
+                `[manage-subscription-items] SECURITY: user=${user.id} tried to delete subscription item ${externalSubscriptionItemId} belonging to sub ${siItem.subscription}, expected ${stripeSubId}`,
+              );
+            } else {
+              await getStripe().subscriptionItems.del(
+                externalSubscriptionItemId,
+                { proration_behavior: "create_prorations" },
+              );
+              console.log(
+                `[manage-subscription-items] Stripe item cancelled: ${externalSubscriptionItemId}`,
+              );
+            }
           } catch (stripeErr) {
             // Log but don't fail — the number is already released from provider
             console.error(

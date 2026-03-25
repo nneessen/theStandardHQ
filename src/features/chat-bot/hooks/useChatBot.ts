@@ -1742,6 +1742,30 @@ export function useVoicePhoneNumbers(enabled = true) {
   });
 }
 
+async function invokeManageSubscriptionItems(
+  body: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const { data, error } = await supabase.functions.invoke(
+    "manage-subscription-items",
+    { body },
+  );
+  if (error) {
+    // FunctionsHttpError wraps the response — extract the body for the real message
+    let msg = "Request failed";
+    try {
+      const ctx =
+        "context" in error ? await (error.context as Response).json() : null;
+      if (ctx?.error) msg = ctx.error;
+      else if (error.message) msg = error.message;
+    } catch {
+      if (error.message) msg = error.message;
+    }
+    throw new Error(msg);
+  }
+  if (data?.error) throw new Error(data.error as string);
+  return data;
+}
+
 export function usePurchasePhoneNumber() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -1750,21 +1774,16 @@ export function usePurchasePhoneNumber() {
       areaCode?: number;
       nickname?: string;
     }) => {
-      const { data, error } = await supabase.functions.invoke(
-        "manage-subscription-items",
-        {
-          body: {
-            action: "purchase_phone_number",
-            tollFree: params.tollFree,
-            areaCode: params.areaCode,
-            nickname: params.nickname,
-          },
-        },
-      );
-      if (error)
-        throw new Error(error.message || "Failed to purchase phone number");
-      if (data?.error) throw new Error(data.error);
-      return data as { success: boolean; phoneNumber: VoicePhoneNumber };
+      const data = await invokeManageSubscriptionItems({
+        action: "purchase_phone_number",
+        tollFree: params.tollFree,
+        areaCode: params.areaCode,
+        nickname: params.nickname,
+      });
+      return data as unknown as {
+        success: boolean;
+        phoneNumber: VoicePhoneNumber;
+      };
     },
     onSuccess: () => {
       toast.success("Phone number purchased.");
@@ -1785,20 +1804,12 @@ export function useReleasePhoneNumber() {
       phoneNumberId: string;
       externalSubscriptionItemId: string | null;
     }) => {
-      const { data, error } = await supabase.functions.invoke(
-        "manage-subscription-items",
-        {
-          body: {
-            action: "release_phone_number",
-            phoneNumberId: params.phoneNumberId,
-            externalSubscriptionItemId: params.externalSubscriptionItemId,
-          },
-        },
-      );
-      if (error)
-        throw new Error(error.message || "Failed to release phone number");
-      if (data?.error) throw new Error(data.error);
-      return data as { success: boolean; released: boolean };
+      const data = await invokeManageSubscriptionItems({
+        action: "release_phone_number",
+        phoneNumberId: params.phoneNumberId,
+        externalSubscriptionItemId: params.externalSubscriptionItemId,
+      });
+      return data as unknown as { success: boolean; released: boolean };
     },
     onSuccess: () => {
       toast.success("Phone number released.");

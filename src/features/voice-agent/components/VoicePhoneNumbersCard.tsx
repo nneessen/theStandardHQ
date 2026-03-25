@@ -287,8 +287,8 @@ export function VoicePhoneNumbersCard({
         </div>
       ) : (
         <p className="mt-3 text-[11px] text-zinc-400">
-          No phone numbers yet. Purchase one to enable inbound and outbound
-          voice calls.
+          No managed phone numbers yet. Purchase a dedicated number for your
+          voice agent.
         </p>
       )}
 
