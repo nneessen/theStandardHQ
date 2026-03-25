@@ -309,8 +309,13 @@ export function useDeleteRuleset() {
 export function useCreateRule() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: CreateRulePayload) =>
-      chatBotApi<OrchestrationRuleset>("create_orchestration_rule", p(payload)),
+    mutationFn: (payload: CreateRulePayload) => {
+      const { action: ruleAction, ...rest } = payload;
+      return chatBotApi<OrchestrationRuleset>(
+        "create_orchestration_rule",
+        p({ ...rest, ruleAction }),
+      );
+    },
     onSuccess: (data) => {
       queryClient.setQueryData(orchestrationKeys.ruleset(), data);
       toast.success("Rule added");

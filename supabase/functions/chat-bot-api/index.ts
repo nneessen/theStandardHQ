@@ -2534,7 +2534,7 @@ serve(async (req) => {
       // CHANNEL ORCHESTRATION — INDIVIDUAL RULES
       // ──────────────────────────────────────────────
       case "create_orchestration_rule": {
-        const { name, enabled, conditions, action: ruleAction } = params;
+        const { name, enabled, conditions, ruleAction } = params;
         const res = await callChatBotApi(
           "POST",
           `/api/external/agents/${agentId}/orchestration/rules`,
