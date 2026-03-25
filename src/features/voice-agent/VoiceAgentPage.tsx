@@ -527,9 +527,12 @@ export function VoiceAgentPage() {
     voiceAddon?.voice_entitlement_snapshot,
   );
 
-  // Agent query is only needed for the full editor (setup/stats/admin tabs).
+  // Agent query is needed for the editor tabs and the overview toggle.
   const shouldLoadAgent =
-    activeTab === "setup" || activeTab === "stats" || activeTab === "admin";
+    activeTab === "overview" ||
+    activeTab === "setup" ||
+    activeTab === "stats" ||
+    activeTab === "admin";
   const { data: agent, error: agentError } = useChatBotAgent(shouldLoadAgent);
 
   const {
@@ -1092,6 +1095,12 @@ export function VoiceAgentPage() {
             onNavigateToVoiceClone={() => {
               void navigate({ to: "/voice-agent/clone" });
             }}
+            agent={agent}
+            onToggleVoice={() => {
+              if (!agent) return;
+              updateBotConfig.mutate({ voiceEnabled: !agent.voiceEnabled });
+            }}
+            voiceTogglePending={updateBotConfig.isPending}
           />
         )}
 

@@ -15,10 +15,13 @@ import {
   Voicemail,
   RefreshCw,
   Bot,
+  Power,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CloseCrmLogo } from "@/components/logos/CloseCrmLogo";
 import type { ChatBotVoiceCloneStatus } from "@/features/chat-bot";
+import type { ChatBotAgent } from "@/features/chat-bot";
 import type { VoiceAgentSetupStep } from "./VoiceAgentLanding";
 import { VoiceCloneStatusCard } from "./VoiceCloneStatusCard";
 
@@ -56,6 +59,9 @@ interface VoiceAgentOverviewTabProps {
   voiceAgentCreated?: boolean;
   externalAgentId?: string | null;
   onNavigateToVoiceClone?: () => void;
+  agent?: ChatBotAgent | null;
+  onToggleVoice?: () => void;
+  voiceTogglePending?: boolean;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────
@@ -129,6 +135,9 @@ export function VoiceAgentOverviewTab({
   cloneStatusLoading = false,
   voiceAgentCreated = false,
   externalAgentId,
+  agent,
+  onToggleVoice,
+  voiceTogglePending = false,
 }: VoiceAgentOverviewTabProps) {
   const usage =
     voiceEntitlement?.usage ??
@@ -297,6 +306,82 @@ export function VoiceAgentOverviewTab({
           </div>
         </div>
       </div>
+
+      {/* ══════ Voice Agent Status Toggle ══════ */}
+      {voiceAccessActive &&
+        isSetupDone &&
+        voiceAgentPublished &&
+        agent &&
+        onToggleVoice &&
+        (agent.voiceEnabled ? (
+          <div className="rounded-xl border-2 border-emerald-400 bg-gradient-to-r from-emerald-50 to-green-50 p-4 dark:border-emerald-600 dark:from-emerald-950/40 dark:to-green-950/30">
+            <div className="flex items-center gap-4">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500 shadow-md shadow-emerald-400/30">
+                <Power className="h-5 w-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[13px] font-bold text-emerald-900 dark:text-emerald-100">
+                  Voice Agent is live
+                </p>
+                <p className="mt-0.5 text-[11px] text-emerald-700 dark:text-emerald-300">
+                  Your voice agent is active — handling inbound calls and
+                  automated outbound follow-ups.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 flex-shrink-0 border-red-300 px-3 text-[11px] text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/30"
+                disabled={voiceTogglePending}
+                onClick={onToggleVoice}
+              >
+                {voiceTogglePending ? (
+                  <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
+                ) : (
+                  <Power className="mr-1.5 h-3 w-3" />
+                )}
+                Deactivate
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            disabled={voiceTogglePending}
+            onClick={onToggleVoice}
+            className="group relative w-full overflow-hidden rounded-xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 p-5 text-left transition-all hover:border-amber-500 hover:shadow-lg hover:shadow-amber-200/40 disabled:opacity-70 dark:border-amber-500 dark:from-amber-950/50 dark:via-yellow-950/40 dark:to-orange-950/40 dark:hover:shadow-amber-900/30"
+          >
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.15),transparent_60%)]" />
+            <div className="absolute right-0 top-0 h-40 w-40 rounded-bl-full bg-gradient-to-bl from-amber-200/30 to-transparent dark:from-amber-700/20" />
+            <div className="relative flex items-center gap-5">
+              <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-xl shadow-amber-400/30 transition-transform group-hover:scale-105 dark:from-amber-500 dark:to-orange-600 dark:shadow-amber-600/30">
+                {voiceTogglePending ? (
+                  <Loader2 className="h-7 w-7 animate-spin text-white" />
+                ) : (
+                  <Power className="h-7 w-7 text-white" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-base font-bold text-amber-900 dark:text-amber-100">
+                  Voice Agent is paused
+                </p>
+                <p className="mt-1 text-[12px] leading-relaxed text-amber-700 dark:text-amber-300">
+                  Your voice agent is published but not active. Click here to
+                  re-activate inbound call handling and automated outbound
+                  follow-ups.
+                </p>
+              </div>
+              <div className="flex flex-shrink-0 flex-col items-center gap-1.5">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500 shadow-lg shadow-emerald-500/30 transition-all group-hover:scale-110 group-hover:bg-emerald-600 group-hover:shadow-emerald-500/50">
+                  <Power className="h-8 w-8 text-white" />
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                  Activate
+                </span>
+              </div>
+            </div>
+          </button>
+        ))}
 
       {/* ══════ Feature Highlights Grid ══════ */}
       <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
