@@ -16,10 +16,10 @@ function StepChecklistItem({
   return (
     <div
       className={cn(
-        "rounded-lg border px-3 py-3 shadow-sm",
+        "rounded-lg border px-3 py-3",
         complete
-          ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900/40 dark:bg-emerald-950/20"
-          : "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-800/40",
+          ? "border-emerald-300 bg-emerald-50 dark:border-emerald-800/40 dark:bg-emerald-950/20"
+          : "border-border/60 bg-muted/30",
       )}
     >
       <div className="flex items-center justify-between gap-3">
@@ -135,8 +135,8 @@ export function LaunchView({
           description="A quick read of the draft you are about to publish."
         >
           <div className="space-y-2">
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-800/40">
-              <p className="text-[9px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+            <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                 Voice
               </p>
               <p className="mt-1 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
@@ -146,8 +146,8 @@ export function LaunchView({
               </p>
             </div>
 
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-800/40">
-              <p className="text-[9px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+            <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                 Opening line
               </p>
               <p className="mt-1 text-[11px] text-zinc-900 dark:text-zinc-100">
@@ -157,8 +157,8 @@ export function LaunchView({
               </p>
             </div>
 
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-800/40">
-              <p className="text-[9px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+            <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                 Prompt status
               </p>
               <p className="mt-1 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
@@ -170,11 +170,9 @@ export function LaunchView({
           </div>
         </BuilderSection>
 
-        <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-800/40">
-          <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
-            Publish flow
-          </p>
-          <p className="mt-1.5 text-[10px] leading-4 text-zinc-600 dark:text-zinc-400">
+        <div className="rounded-xl border border-border/60 bg-muted/30 px-4 py-3">
+          <p className="text-[11px] font-bold text-foreground">Publish flow</p>
+          <p className="mt-1.5 text-[10px] leading-4 text-muted-foreground">
             Publishing makes your latest saved draft the live version that
             callers hear. If you changed anything in Steps 1–4, make sure you
             saved the draft first. You can publish as many times as you want —

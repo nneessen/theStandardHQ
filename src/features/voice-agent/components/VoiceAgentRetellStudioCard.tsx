@@ -493,29 +493,31 @@ export function VoiceAgentRetellStudioCard({
   };
 
   const renderConnectionGate = (title: string, description: string) => (
-    <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
-      <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-        {title}
-      </p>
-      <p className="mt-2 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
-        {description}
-      </p>
+    <div className="p-4">
+      <div className="rounded-lg border border-border/60 bg-muted/30 px-4 py-4">
+        <p className="text-sm font-bold text-foreground">{title}</p>
+        <p className="mt-1.5 text-[11px] leading-5 text-muted-foreground">
+          {description}
+        </p>
+      </div>
     </div>
   );
 
   const renderUnavailableRuntime = () => (
-    <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-4 dark:border-amber-950/60 dark:bg-amber-950/20">
-      <div className="flex items-center gap-2">
-        <AlertTriangle className="h-4 w-4 text-amber-700 dark:text-amber-300" />
-        <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">
-          Live voice data is temporarily unavailable
+    <div className="p-4">
+      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/40 dark:bg-amber-950/20">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          <p className="text-[12px] font-bold text-amber-900 dark:text-amber-100">
+            Live voice data is temporarily unavailable
+          </p>
+        </div>
+        <p className="mt-1.5 text-[11px] leading-5 text-amber-700 dark:text-amber-300">
+          The workspace is connected, but the system could not load the current
+          voice draft right now. This is likely a backend sync issue, not
+          something that needs to be fixed from this screen.
         </p>
       </div>
-      <p className="mt-2 text-[11px] leading-5 text-amber-800 dark:text-amber-200">
-        The workspace is connected, but the system could not load the current
-        voice draft right now. This is likely a backend sync issue, not
-        something that needs to be fixed from this screen.
-      </p>
     </div>
   );
 
@@ -532,45 +534,82 @@ export function VoiceAgentRetellStudioCard({
   );
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="flex h-5 w-5 items-center justify-center rounded bg-zinc-900 dark:bg-zinc-100">
-              <Sparkles className="h-3 w-3 text-white dark:text-zinc-900" />
-            </div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-              {viewCopy.eyebrow}
-            </p>
-          </div>
-          <p className="mt-1.5 text-base font-bold text-zinc-900 dark:text-zinc-100">
-            {viewCopy.title}
-          </p>
-          <p className="mt-0.5 max-w-2xl text-[11px] leading-4 text-zinc-500 dark:text-zinc-400">
-            {viewCopy.description}
-          </p>
+    <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+      {/* ── Dark header bar — matches overview hero ── */}
+      <div className="relative overflow-hidden bg-foreground px-4 py-3">
+        {/* Grid pattern */}
+        <div className="absolute inset-0 opacity-[0.04]">
+          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern
+                id="studio-grid"
+                width="32"
+                height="32"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M 32 0 L 0 0 0 32"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="0.5"
+                />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#studio-grid)" />
+          </svg>
         </div>
+        {/* Glow orb */}
+        <div
+          className="absolute top-1/2 -left-16 w-48 h-48 -translate-y-1/2 rounded-full blur-3xl"
+          style={{ backgroundColor: "rgba(99,102,241,0.12)" }}
+        />
+        <div className="relative flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <div
+              className="flex h-8 w-8 items-center justify-center rounded-lg flex-shrink-0"
+              style={{ backgroundColor: "rgba(99,102,241,0.2)" }}
+            >
+              <Sparkles className="h-4 w-4" style={{ color: "#6366f1" }} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <p
+                  className="text-[13px] font-bold text-white dark:text-black tracking-tight"
+                  style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                >
+                  {viewCopy.title}
+                </p>
+                <span className="text-[9px] font-medium uppercase tracking-widest text-white/40 dark:text-black/30">
+                  {viewCopy.eyebrow}
+                </span>
+              </div>
+              <p className="text-[10px] leading-4 text-white/50 dark:text-black/40 max-w-xl">
+                {viewCopy.description}
+              </p>
+            </div>
+          </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 flex-shrink-0">
-          {isLive ? (
-            <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 text-[9px]">
-              {inPublishGrace
-                ? "Live \u00b7 Just published"
-                : typeof runtime?.agent?.last_modification_timestamp ===
-                    "number"
-                  ? `Live \u00b7 ${formatRelativeTime(runtime.agent.last_modification_timestamp)}`
-                  : "Live"}
-            </Badge>
-          ) : runtime?.agent?.is_published === false ? (
-            <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 text-[9px]">
-              Draft needs publishing
-            </Badge>
-          ) : null}
-          {hasUnsavedChanges && (
-            <Badge className="bg-foreground text-background text-[9px]">
-              Unsaved changes
-            </Badge>
-          )}
+          <div className="flex flex-wrap items-center gap-1.5 flex-shrink-0">
+            {isLive ? (
+              <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px]">
+                {inPublishGrace
+                  ? "Live \u00b7 Just published"
+                  : typeof runtime?.agent?.last_modification_timestamp ===
+                      "number"
+                    ? `Live \u00b7 ${formatRelativeTime(runtime.agent.last_modification_timestamp)}`
+                    : "Live"}
+              </Badge>
+            ) : runtime?.agent?.is_published === false ? (
+              <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px]">
+                Draft needs publishing
+              </Badge>
+            ) : null}
+            {hasUnsavedChanges && (
+              <Badge className="bg-white/10 text-white border border-white/20 dark:bg-black/10 dark:text-black dark:border-black/20 text-[9px]">
+                Unsaved changes
+              </Badge>
+            )}
+          </div>
         </div>
       </div>
 
@@ -588,24 +627,24 @@ export function VoiceAgentRetellStudioCard({
               : "Create the voice agent first. Once it exists, this step will load the live draft so you can configure it here.",
         )
       ) : runtimeLoading ? (
-        <div className="mt-4 flex items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-12 dark:border-zinc-800 dark:bg-zinc-950/40">
-          <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <div className="flex items-center justify-center px-4 py-12">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : !runtime ? (
         renderUnavailableRuntime()
       ) : (
-        <div className="mt-4 space-y-4">
+        <div className="p-4 space-y-4">
           {/* Save / Reset / Publish bar */}
-          <div className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-800/40 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-muted/40 px-4 py-3 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0">
-              <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <p className="text-[12px] font-semibold text-foreground">
                 {view === "launch"
                   ? "Save anything pending, then publish the current draft"
                   : view === "advanced" || view === "admin"
                     ? "Save advanced changes carefully"
                     : "Save your changes to the current draft"}
               </p>
-              <p className="mt-0.5 text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">
+              <p className="mt-0.5 text-[10px] leading-4 text-muted-foreground">
                 {view === "launch"
                   ? "Publishing makes the latest saved draft live. If you changed voice, greeting, or instructions, save the draft first."
                   : "Draft changes stay editable until you publish them live."}
