@@ -17,6 +17,7 @@ import type {
   OpportunitySummaryConfig,
   CallAnalyticsConfig,
   CustomFieldBreakdownConfig,
+  VmRateSmartViewConfig,
 } from "../types/close-kpi.types";
 
 // ─── Widget Registry ───────────────────────────────────────────────
@@ -187,6 +188,24 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetRegistryEntry> = {
       aggregation: "count",
       sortOrder: "count_desc",
     } satisfies CustomFieldBreakdownConfig,
+  },
+  vm_rate_smart_view: {
+    type: "vm_rate_smart_view",
+    label: "VM Rate by Smart View",
+    description:
+      "First-call voicemail rate per smart view — detect bad lead batches early",
+    category: "calls",
+    icon: "PhoneOff",
+    defaultSize: "medium",
+    allowedSizes: ["medium", "large"],
+    colSpan: { small: 1, medium: 1, large: 2 },
+    defaultConfig: {
+      ...DEFAULT_BASE,
+      smartViewIds: [],
+      vmThreshold: 40,
+      firstCallOnly: true,
+      dateRange: "this_week",
+    } satisfies VmRateSmartViewConfig,
   },
 };
 

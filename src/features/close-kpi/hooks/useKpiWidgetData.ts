@@ -25,6 +25,8 @@ import type {
   OpportunitySummaryResult,
   LifecycleTrackerConfig,
   LifecycleTrackerResult,
+  VmRateSmartViewConfig,
+  VmRateSmartViewResult,
   GlobalDashboardConfig,
 } from "../types/close-kpi.types";
 
@@ -85,6 +87,8 @@ async function fetchWidgetData(
       return fetchOpportunitySummary(config as OpportunitySummaryConfig);
     case "lifecycle_tracker":
       return fetchLifecycleTracker(config as LifecycleTrackerConfig);
+    case "vm_rate_smart_view":
+      return fetchVmRateSmartView(config as VmRateSmartViewConfig);
     case "activity_timeline":
     case "smart_view_monitor":
     case "cross_reference":
@@ -455,4 +459,30 @@ async function fetchLifecycleTracker(
   });
 
   return { transitions: res.transitions };
+}
+
+// ─── VM Rate by Smart View Fetcher ──────────────────────────────────
+
+async function fetchVmRateSmartView(
+  config: VmRateSmartViewConfig,
+): Promise<VmRateSmartViewResult> {
+  const { from, to } = getDateRangeBounds(
+    config.dateRange,
+    config.customFrom,
+    config.customTo,
+  );
+
+  if (!config.smartViewIds || config.smartViewIds.length === 0) {
+    return {
+      rows: [],
+      overall: { totalFirstCalls: 0, vmCount: 0, vmRate: 0 },
+    };
+  }
+
+  return closeKpiService.getVmRateBySmartView({
+    from,
+    to,
+    smartViewIds: config.smartViewIds,
+    firstCallOnly: config.firstCallOnly,
+  });
 }

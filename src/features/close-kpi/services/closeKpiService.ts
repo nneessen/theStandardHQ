@@ -126,6 +126,23 @@ export interface StatusChangesResponse {
   totalChanges: number;
 }
 
+export interface VmRateSmartViewResponse {
+  rows: {
+    smartViewId: string;
+    smartViewName: string;
+    totalFirstCalls: number;
+    vmCount: number;
+    answeredCount: number;
+    otherCount: number;
+    vmRate: number;
+  }[];
+  overall: {
+    totalFirstCalls: number;
+    vmCount: number;
+    vmRate: number;
+  };
+}
+
 // ─── Service Methods ───────────────────────────────────────────────
 
 export const closeKpiService = {
@@ -177,4 +194,13 @@ export const closeKpiService = {
     fromStatus?: string;
     toStatus?: string;
   }) => closeKpiApi<StatusChangesResponse>("get_lead_status_changes", params),
+
+  /** Fetch VM rate by smart view — cross-references calls with smart view leads */
+  getVmRateBySmartView: (params: {
+    from?: string;
+    to?: string;
+    smartViewIds: string[];
+    firstCallOnly?: boolean;
+  }) =>
+    closeKpiApi<VmRateSmartViewResponse>("get_vm_rate_by_smart_view", params),
 };

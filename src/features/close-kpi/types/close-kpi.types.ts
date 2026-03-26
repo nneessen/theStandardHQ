@@ -12,7 +12,8 @@ export type WidgetType =
   | "cross_reference"
   | "opportunity_summary"
   | "call_analytics"
-  | "custom_field_breakdown";
+  | "custom_field_breakdown"
+  | "vm_rate_smart_view";
 
 export type WidgetSize = "small" | "medium" | "large";
 
@@ -221,6 +222,14 @@ export interface CustomFieldBreakdownConfig extends BaseWidgetConfig {
   sortOrder?: "count_desc" | "count_asc" | "alpha";
 }
 
+export interface VmRateSmartViewConfig extends BaseWidgetConfig {
+  smartViewIds: string[];
+  /** VM rate threshold (0-100) — rows above this show warning */
+  vmThreshold: number;
+  /** Only count outbound first-call attempts (default true) */
+  firstCallOnly: boolean;
+}
+
 export type WidgetConfig =
   | StatCardConfig
   | StatusDistributionConfig
@@ -230,7 +239,8 @@ export type WidgetConfig =
   | CrossReferenceConfig
   | OpportunitySummaryConfig
   | CallAnalyticsConfig
-  | CustomFieldBreakdownConfig;
+  | CustomFieldBreakdownConfig
+  | VmRateSmartViewConfig;
 
 // ─── Database Row Types ────────────────────────────────────────────
 
@@ -372,6 +382,23 @@ export interface CustomFieldBreakdownResult {
   fieldLabel: string;
 }
 
+export interface VmRateSmartViewResult {
+  rows: {
+    smartViewId: string;
+    smartViewName: string;
+    totalFirstCalls: number;
+    vmCount: number;
+    answeredCount: number;
+    otherCount: number;
+    vmRate: number; // 0-100
+  }[];
+  overall: {
+    totalFirstCalls: number;
+    vmCount: number;
+    vmRate: number;
+  };
+}
+
 export type WidgetResult =
   | StatCardResult
   | StatusDistributionResult
@@ -381,7 +408,8 @@ export type WidgetResult =
   | CrossReferenceResult
   | OpportunitySummaryResult
   | CallAnalyticsResult
-  | CustomFieldBreakdownResult;
+  | CustomFieldBreakdownResult
+  | VmRateSmartViewResult;
 
 // ─── Close API Data Types ──────────────────────────────────────────
 

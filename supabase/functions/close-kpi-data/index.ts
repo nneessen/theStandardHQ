@@ -495,6 +495,178 @@ async function handleGetLeadStatusChanges(apiKey: string, params: Params) {
   };
 }
 
+// ─── VM Rate by Smart View Handler ────────────────────────────────
+
+async function handleGetVmRateBySmartView(apiKey: string, params: Params) {
+  const { from, to, smartViewIds, firstCallOnly } = params;
+  const useFirstCallOnly = firstCallOnly !== false; // default true
+
+  if (
+    !smartViewIds ||
+    !Array.isArray(smartViewIds) ||
+    smartViewIds.length === 0
+  ) {
+    return { rows: [], overall: { totalFirstCalls: 0, vmCount: 0, vmRate: 0 } };
+  }
+
+  // Step 1: Fetch all outbound calls in the date range (paginate up to 3000)
+  // deno-lint-ignore no-explicit-any
+  const allCalls: any[] = [];
+  let hasMore = true;
+  let skip = 0;
+  const callQs = [`_limit=200`];
+  if (from) callQs.push(`date_created__gte=${from}`);
+  if (to) callQs.push(`date_created__lte=${to}T23:59:59`);
+  callQs.push(`direction=outbound`);
+
+  while (hasMore && skip < 3000) {
+    const pageQs = [...callQs, `_skip=${skip}`];
+    const res = (await closeGet(
+      apiKey,
+      `/activity/call/?${pageQs.join("&")}`,
+    )) as ApiResult;
+    const items = res.data ?? [];
+    allCalls.push(...items);
+    hasMore = res.has_more === true;
+    skip += 200;
+  }
+
+  // Step 2: If firstCallOnly, group by lead_id and keep only the earliest call
+  // deno-lint-ignore no-explicit-any
+  let callsToAnalyze: any[];
+  if (useFirstCallOnly) {
+    // deno-lint-ignore no-explicit-any
+    const byLead: Record<string, any> = {};
+    for (const call of allCalls) {
+      const lid = call.lead_id;
+      if (!lid) continue;
+      if (
+        !byLead[lid] ||
+        new Date(call.date_created) < new Date(byLead[lid].date_created)
+      ) {
+        byLead[lid] = call;
+      }
+    }
+    callsToAnalyze = Object.values(byLead);
+  } else {
+    callsToAnalyze = allCalls;
+  }
+
+  // Build a map of lead_id → call for quick lookup
+  const callsByLeadId: Record<string, typeof callsToAnalyze> = {};
+  for (const call of callsToAnalyze) {
+    const lid = call.lead_id;
+    if (!lid) continue;
+    if (!callsByLeadId[lid]) callsByLeadId[lid] = [];
+    callsByLeadId[lid].push(call);
+  }
+
+  // Step 3: For each smart view, fetch its leads and cross-reference
+  // deno-lint-ignore no-explicit-any
+  const svMeta = (await closeGet(
+    apiKey,
+    `/saved_search/?_limit=50`,
+  )) as ApiResult;
+  const svMap: Record<string, string> = {};
+  for (const sv of svMeta.data ?? []) {
+    svMap[sv.id] = sv.name;
+  }
+
+  // deno-lint-ignore no-explicit-any
+  const rows: any[] = [];
+  let overallTotal = 0;
+  let overallVm = 0;
+
+  // Process smart views in batches of 3 to limit concurrency
+  for (let i = 0; i < smartViewIds.length; i += 3) {
+    const batch = smartViewIds.slice(i, i + 3);
+    const batchResults = await Promise.all(
+      batch.map(async (svId: string) => {
+        // Fetch lead IDs in this smart view (paginate up to 2000)
+        const leadIds = new Set<string>();
+        let svHasMore = true;
+        let svSkip = 0;
+
+        while (svHasMore && svSkip < 2000) {
+          const svQs = [
+            `_limit=200`,
+            `_skip=${svSkip}`,
+            `_fields=id`,
+            `saved_search_id=${svId}`,
+          ];
+          const res = (await closeGet(
+            apiKey,
+            `/lead/?${svQs.join("&")}`,
+          )) as ApiResult;
+          for (const lead of res.data ?? []) {
+            leadIds.add(lead.id);
+          }
+          svHasMore = res.has_more === true;
+          svSkip += 200;
+        }
+
+        // Cross-reference: find calls whose lead_id is in this smart view
+        let totalFirstCalls = 0;
+        let vmCount = 0;
+        let answeredCount = 0;
+        let otherCount = 0;
+
+        for (const leadId of leadIds) {
+          const calls = callsByLeadId[leadId];
+          if (!calls) continue;
+          for (const call of calls) {
+            totalFirstCalls++;
+            const disp = call.disposition ?? "";
+            if (["vm-left", "vm-answer", "no-answer"].includes(disp)) {
+              vmCount++;
+            } else if (disp === "answered") {
+              answeredCount++;
+            } else {
+              otherCount++;
+            }
+          }
+        }
+
+        const vmRate =
+          totalFirstCalls > 0
+            ? Math.round((vmCount / totalFirstCalls) * 1000) / 10
+            : 0;
+
+        return {
+          smartViewId: svId,
+          smartViewName: svMap[svId] ?? svId,
+          totalFirstCalls,
+          vmCount,
+          answeredCount,
+          otherCount,
+          vmRate,
+        };
+      }),
+    );
+
+    for (const row of batchResults) {
+      rows.push(row);
+      overallTotal += row.totalFirstCalls;
+      overallVm += row.vmCount;
+    }
+  }
+
+  // Sort by VM rate descending (worst offenders first)
+  rows.sort((a, b) => b.vmRate - a.vmRate);
+
+  return {
+    rows,
+    overall: {
+      totalFirstCalls: overallTotal,
+      vmCount: overallVm,
+      vmRate:
+        overallTotal > 0
+          ? Math.round((overallVm / overallTotal) * 1000) / 10
+          : 0,
+    },
+  };
+}
+
 // ─── Main Handler ──────────────────────────────────────────────────
 
 serve(async (req) => {
@@ -590,6 +762,9 @@ serve(async (req) => {
         break;
       case "get_lead_status_changes":
         result = await handleGetLeadStatusChanges(apiKey, params);
+        break;
+      case "get_vm_rate_by_smart_view":
+        result = await handleGetVmRateBySmartView(apiKey, params);
         break;
       default:
         return jsonResponse({ error: `Unknown action: ${action}` }, 400, req);

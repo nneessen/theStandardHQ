@@ -20,6 +20,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { WidgetWrapper } from "./WidgetWrapper";
 import { StatCardWidget } from "./widgets/StatCardWidget";
 import { StatusDistributionWidget } from "./widgets/StatusDistributionWidget";
+import { VmRateSmartViewWidget } from "./widgets/VmRateSmartViewWidget";
 import { StatCardConfig } from "./config-forms/StatCardConfig";
 import { StatusDistributionConfig } from "./config-forms/StatusDistributionConfig";
 import { SmartViewMonitorConfig } from "./config-forms/SmartViewMonitorConfig";
@@ -29,6 +30,7 @@ import { CrossReferenceConfig } from "./config-forms/CrossReferenceConfig";
 import { OpportunitySummaryConfig } from "./config-forms/OpportunitySummaryConfig";
 import { CallAnalyticsConfig } from "./config-forms/CallAnalyticsConfig";
 import { CustomFieldBreakdownConfig } from "./config-forms/CustomFieldBreakdownConfig";
+import { VmRateSmartViewConfig } from "./config-forms/VmRateSmartViewConfig";
 import { useKpiWidgetData } from "../hooks/useKpiWidgetData";
 import { useUpdateWidget } from "../hooks/useCloseKpiDashboard";
 import type {
@@ -46,6 +48,8 @@ import type {
   OpportunitySummaryConfig as OppConfigType,
   CallAnalyticsConfig as CallConfigType,
   CustomFieldBreakdownConfig as CFConfigType,
+  VmRateSmartViewConfig as VmRateConfigType,
+  VmRateSmartViewResult,
 } from "../types/close-kpi.types";
 
 interface WidgetGridProps {
@@ -249,6 +253,13 @@ const WidgetConfigForm: React.FC<{
           onChange={onChange}
         />
       );
+    case "vm_rate_smart_view":
+      return (
+        <VmRateSmartViewConfig
+          config={config as VmRateConfigType}
+          onChange={onChange}
+        />
+      );
     default:
       return (
         <p className="text-[10px] text-muted-foreground">
@@ -410,6 +421,16 @@ const WidgetContent: React.FC<{
             Median: {t.medianDays}d · {t.sampleSize} leads
           </p>
         </div>
+      );
+    }
+    case "vm_rate_smart_view": {
+      const vmData = data as VmRateSmartViewResult;
+      const vmConfig = widget.config as VmRateConfigType;
+      return (
+        <VmRateSmartViewWidget
+          data={vmData}
+          vmThreshold={vmConfig.vmThreshold ?? 40}
+        />
       );
     }
     case "smart_view_monitor":
