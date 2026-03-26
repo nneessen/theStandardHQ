@@ -216,6 +216,13 @@ export const FEATURE_REGISTRY: Record<string, FeatureDefinition> = {
       "Financial statement processing, transaction categorization, and workbook export",
     category: "tools",
   },
+  close_kpi: {
+    key: "close_kpi",
+    displayName: "CRM KPI Dashboard",
+    description:
+      "Close CRM analytics — lead pipeline, call metrics, opportunity funnel, lifecycle velocity, and configurable KPI widgets",
+    category: "analytics",
+  },
 } as const;
 
 // ============================================

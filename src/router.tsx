@@ -72,6 +72,11 @@ import { CampaignEditorPage } from "./features/marketing/components/campaigns/Ca
 const BusinessToolsPage = lazy(
   () => import("./features/business-tools/BusinessToolsPage"),
 );
+const CloseKpiPage = lazy(() =>
+  import("./features/close-kpi/CloseKpiPage").then((m) => ({
+    default: m.CloseKpiPage,
+  })),
+);
 
 // Lazy-loaded underwriting pages
 const UnderwritingWizardPage = lazy(
@@ -583,6 +588,17 @@ const channelOrchestrationRoute = createRoute({
   ),
 });
 
+// Close KPI Dashboard - Close CRM analytics, page handles connection gating
+const closeKpiRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "close-kpi",
+  component: () => (
+    <RouteGuard noRecruits noStaffRoles>
+      <CloseKpiPage />
+    </RouteGuard>
+  ),
+});
+
 // Business Tools route - Financial statement processing, page handles upsell internally
 const businessToolsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -997,6 +1013,7 @@ const routeTree = rootRoute.addChildren([
   voiceCloneRoute,
   voiceAgentRoute,
   channelOrchestrationRoute,
+  closeKpiRoute,
   businessToolsRoute,
   publicJoinAltRoute, // Catch-all for /join-* pattern - must be last
 ]);

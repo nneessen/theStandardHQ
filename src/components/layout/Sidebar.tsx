@@ -371,6 +371,13 @@ export default function Sidebar({
           href: "/channel-orchestration",
           public: true,
         },
+        // CRM KPIs — Close CRM analytics dashboard
+        {
+          icon: BarChart3,
+          label: "CRM KPIs",
+          href: "/close-kpi",
+          public: true,
+        },
         // Business Tools — page handles upsell internally
         {
           icon: Briefcase,

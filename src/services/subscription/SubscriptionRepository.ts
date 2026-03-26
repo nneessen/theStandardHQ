@@ -53,6 +53,8 @@ export interface SubscriptionFeatures {
   custom_branding: boolean;
   // Tools features
   business_tools: boolean;
+  // CRM KPI Dashboard
+  close_kpi: boolean;
 }
 
 // Entity types

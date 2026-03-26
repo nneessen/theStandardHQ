@@ -91,6 +91,8 @@ export const FEATURE_DISPLAY_NAMES: Record<FeatureKey, string> = {
   custom_branding: "Custom Branding",
   // Tools features
   business_tools: "Business Tools",
+  // CRM KPI Dashboard
+  close_kpi: "CRM KPI Dashboard",
 };
 
 export interface UseFeatureAccessResult {
