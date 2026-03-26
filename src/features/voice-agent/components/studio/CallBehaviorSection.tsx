@@ -22,7 +22,7 @@ function ToggleRow({
   onCheckedChange: (checked: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
+    <div className="flex items-center justify-between rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
       <div className="pr-4">
         <p className="text-[11px] font-semibold text-foreground">{title}</p>
         <p className="text-[10px] leading-4 text-muted-foreground">

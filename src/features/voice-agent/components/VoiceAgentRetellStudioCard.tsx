@@ -494,7 +494,7 @@ export function VoiceAgentRetellStudioCard({
 
   const renderConnectionGate = (title: string, description: string) => (
     <div className="p-4">
-      <div className="rounded-lg border border-border/60 bg-muted/30 px-4 py-4">
+      <div className="rounded-lg border border-border/50 bg-muted/50 px-4 py-4">
         <p className="text-sm font-bold text-foreground">{title}</p>
         <p className="mt-1.5 text-[11px] leading-5 text-muted-foreground">
           {description}
@@ -635,7 +635,7 @@ export function VoiceAgentRetellStudioCard({
       ) : (
         <div className="p-4 space-y-4">
           {/* Save / Reset / Publish bar */}
-          <div className="flex flex-col gap-3 rounded-lg border border-border/60 bg-muted/40 px-4 py-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-3 rounded-lg border border-border/50 bg-muted/50 px-4 py-3 md:flex-row md:items-center md:justify-between">
             <div className="min-w-0">
               <p className="text-[12px] font-semibold text-foreground">
                 {view === "launch"

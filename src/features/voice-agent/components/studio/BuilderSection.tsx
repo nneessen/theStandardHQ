@@ -52,8 +52,8 @@ export function BuilderSection({
           </div>
         </div>
       </div>
-      {/* ── Content ── */}
-      <div className="p-4">{children}</div>
+      {/* ── Content — muted bg so inner white cards contrast ── */}
+      <div className="bg-muted/50 p-4">{children}</div>
     </section>
   );
 }

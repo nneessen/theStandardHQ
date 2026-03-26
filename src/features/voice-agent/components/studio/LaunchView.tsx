@@ -19,7 +19,7 @@ function StepChecklistItem({
         "rounded-lg border px-3 py-3",
         complete
           ? "border-emerald-300 bg-emerald-50 dark:border-emerald-800/40 dark:bg-emerald-950/20"
-          : "border-border/60 bg-muted/30",
+          : "border-border/50 bg-card shadow-sm",
       )}
     >
       <div className="flex items-center justify-between gap-3">
@@ -135,7 +135,7 @@ export function LaunchView({
           description="A quick read of the draft you are about to publish."
         >
           <div className="space-y-2">
-            <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
+            <div className="rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
               <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                 Voice
               </p>
@@ -146,7 +146,7 @@ export function LaunchView({
               </p>
             </div>
 
-            <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
+            <div className="rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
               <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                 Opening line
               </p>
@@ -157,7 +157,7 @@ export function LaunchView({
               </p>
             </div>
 
-            <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
+            <div className="rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
               <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                 Prompt status
               </p>
@@ -170,7 +170,7 @@ export function LaunchView({
           </div>
         </BuilderSection>
 
-        <div className="rounded-xl border border-border/60 bg-muted/30 px-4 py-3">
+        <div className="rounded-xl border border-border/50 bg-card px-4 py-3 shadow-sm">
           <p className="text-[11px] font-bold text-foreground">Publish flow</p>
           <p className="mt-1.5 text-[10px] leading-4 text-muted-foreground">
             Publishing makes your latest saved draft the live version that

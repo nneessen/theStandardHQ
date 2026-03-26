@@ -103,7 +103,7 @@ export function AdvancedView({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-border/60 bg-muted/30 px-4 py-3">
+      <div className="rounded-xl border border-border/50 bg-card px-4 py-3 shadow-sm">
         <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
           These settings are optional
         </p>
@@ -209,7 +209,7 @@ export function AdvancedView({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
+              <div className="flex items-center justify-between rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
                 <div className="pr-4">
                   <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
                     Strict connected actions
@@ -432,7 +432,7 @@ export function AdvancedView({
               </div>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
+            <div className="flex items-center justify-between rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
               <div className="pr-4">
                 <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
                   Allow keypad input
@@ -449,7 +449,7 @@ export function AdvancedView({
               />
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
+            <div className="flex items-center justify-between rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
               <div className="pr-4">
                 <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
                   Speak numbers naturally

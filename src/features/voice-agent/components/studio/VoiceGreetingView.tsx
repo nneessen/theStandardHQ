@@ -87,7 +87,7 @@ function SliderField({
   highLabel: string;
 }) {
   return (
-    <div className="space-y-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
+    <div className="space-y-2 rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
       <div className="flex items-center justify-between">
         <Label className="text-[11px] font-semibold">{label}</Label>
         <span className="rounded-md bg-foreground px-1.5 py-0.5 text-[10px] font-mono font-bold text-background">
@@ -165,7 +165,7 @@ export function VoiceGreetingView({
             </div>
 
             <div className="space-y-3">
-              <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-[10px] text-muted-foreground">
+              <div className="rounded-lg border border-border/50 bg-card px-3 py-2 text-[10px] text-muted-foreground shadow-sm">
                 The first thing the agent says, based on the call type. Use{" "}
                 <code className="rounded bg-muted px-1 text-[9px] font-mono">
                   {"{{agent_name}}"}
@@ -332,7 +332,7 @@ export function VoiceGreetingView({
               <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                 Auto-adapt
               </p>
-              <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
+              <div className="flex items-center justify-between rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
                 <div className="pr-4">
                   <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
                     Auto-adapt speaking speed
@@ -349,7 +349,7 @@ export function VoiceGreetingView({
                 />
               </div>
 
-              <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/30 px-3 py-2.5">
+              <div className="flex items-center justify-between rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
                 <div className="pr-4">
                   <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
                     Auto-adapt response timing
@@ -378,7 +378,7 @@ export function VoiceGreetingView({
       >
         <div className="space-y-4 overflow-hidden">
           {/* ── Search & Import ── */}
-          <div className="overflow-hidden rounded-lg border border-border/60 bg-muted/20">
+          <div className="overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm">
             <div className="flex items-center gap-2 border-b border-zinc-100 px-3 py-2 dark:border-zinc-800">
               <Search className="h-3 w-3 text-zinc-400" />
               <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
