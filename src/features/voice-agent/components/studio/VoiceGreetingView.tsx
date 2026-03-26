@@ -58,10 +58,56 @@ interface VoiceGreetingViewProps {
   searchPending: boolean;
   onAddVoice: (result: ChatBotRetellVoiceSearchHit) => void;
   addVoicePending: boolean;
+  addingVoiceId: string | null;
   playingVoiceId: string | null;
   onPreviewVoice: (voiceId: string, previewUrl: string) => void;
   filteredVoices: ChatBotRetellVoice[];
   activeCloneVoiceId?: string | null;
+}
+
+function SliderField({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+  lowLabel,
+  midLabel,
+  highLabel,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (v: string) => void;
+  lowLabel: string;
+  midLabel: string;
+  highLabel: string;
+}) {
+  return (
+    <div className="space-y-2 rounded-lg bg-zinc-50 px-3 py-2.5 dark:bg-zinc-800/40">
+      <div className="flex items-center justify-between">
+        <Label className="text-[11px]">{label}</Label>
+        <span className="rounded bg-zinc-200 px-1.5 py-0.5 text-[10px] font-mono font-medium text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
+          {value.toFixed(1)}
+        </span>
+      </div>
+      <Slider
+        min={min}
+        max={max}
+        step={step}
+        value={[value]}
+        onValueChange={([v]) => onChange(v.toFixed(2))}
+      />
+      <div className="flex justify-between text-[9px] text-zinc-400 dark:text-zinc-500">
+        <span>{lowLabel}</span>
+        <span>{midLabel}</span>
+        <span>{highLabel}</span>
+      </div>
+    </div>
+  );
 }
 
 export function VoiceGreetingView({
@@ -84,6 +130,7 @@ export function VoiceGreetingView({
   searchPending,
   onAddVoice,
   addVoicePending,
+  addingVoiceId,
   playingVoiceId,
   onPreviewVoice,
   filteredVoices,
@@ -92,6 +139,7 @@ export function VoiceGreetingView({
   return (
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1.05fr_0.95fr]">
       <div className="space-y-4">
+        {/* ── Name & Greetings ── */}
         <BuilderSection
           icon={<Bot className="h-4 w-4" />}
           title="Name & greetings"
@@ -112,12 +160,20 @@ export function VoiceGreetingView({
             </div>
 
             <div className="space-y-2.5">
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="rounded-md bg-zinc-50 px-2.5 py-1.5 text-[10px] text-zinc-500 dark:bg-zinc-800/40 dark:text-zinc-400">
                 The first thing the agent says, based on the call type. Use{" "}
-                <code className="text-[9px]">{"{{agent_name}}"}</code>,{" "}
-                <code className="text-[9px]">{"{{company_name}}"}</code>, and{" "}
-                <code className="text-[9px]">{"{{lead_name}}"}</code> as
-                placeholders.
+                <code className="rounded bg-zinc-200 px-1 text-[9px] dark:bg-zinc-700">
+                  {"{{agent_name}}"}
+                </code>
+                ,{" "}
+                <code className="rounded bg-zinc-200 px-1 text-[9px] dark:bg-zinc-700">
+                  {"{{company_name}}"}
+                </code>
+                , and{" "}
+                <code className="rounded bg-zinc-200 px-1 text-[9px] dark:bg-zinc-700">
+                  {"{{lead_name}}"}
+                </code>{" "}
+                as placeholders.
               </p>
 
               {(
@@ -137,8 +193,9 @@ export function VoiceGreetingView({
                 <div key={group.label} className="space-y-2">
                   <p
                     className={cn(
-                      "text-[10px] font-medium uppercase tracking-wide text-zinc-400 dark:text-zinc-500",
-                      group.pt && "pt-1",
+                      "text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500",
+                      group.pt &&
+                        "pt-2 border-t border-zinc-100 dark:border-zinc-800",
                     )}
                   >
                     {group.label}
@@ -173,142 +230,90 @@ export function VoiceGreetingView({
           </div>
         </BuilderSection>
 
+        {/* ── Voice & Tone ── */}
         <BuilderSection
           icon={<Mic2 className="h-4 w-4" />}
           title="Voice & tone"
           description="Choose the actual voice, then tune how fast and how dynamically it should respond."
         >
           <div className="space-y-4">
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
-                    Current draft voice
-                  </p>
-                  <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
-                    {selectedVoice
-                      ? `${selectedVoice.voice_name} • ${selectedVoice.provider}`
-                      : selectedVoiceId || "No voice selected yet"}
-                  </p>
-                </div>
-                {selectedVoice && (
-                  <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-                    Selected
-                  </Badge>
-                )}
+            {/* Current draft voice indicator */}
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-800/40">
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+                  Current draft voice
+                </p>
+                <p className="mt-0.5 text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+                  {selectedVoice
+                    ? `${selectedVoice.voice_name} · ${selectedVoice.provider}`
+                    : selectedVoiceId || "No voice selected yet"}
+                </p>
               </div>
+              {selectedVoice && (
+                <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 flex-shrink-0">
+                  Selected
+                </Badge>
+              )}
             </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {/* Speaking pace slider */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-[11px]">Speaking pace</Label>
-                  <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
-                    {Number(agentForm.voiceSpeed || 1).toFixed(1)}x
-                  </span>
-                </div>
-                <Slider
-                  min={0.5}
-                  max={1.5}
-                  step={0.05}
-                  value={[Number(agentForm.voiceSpeed || 1)]}
-                  onValueChange={([v]) =>
-                    onAgentFormChange("voiceSpeed", v.toFixed(2))
-                  }
-                />
-                <div className="flex justify-between text-[9px] text-zinc-400">
-                  <span>Slower</span>
-                  <span className="text-emerald-500">1.0 = normal</span>
-                  <span>Faster</span>
-                </div>
-              </div>
-
-              {/* Voice energy slider */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-[11px]">Voice energy</Label>
-                  <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
-                    {Number(agentForm.voiceTemperature || 1).toFixed(1)}
-                  </span>
-                </div>
-                <Slider
-                  min={0}
-                  max={2}
-                  step={0.1}
-                  value={[Number(agentForm.voiceTemperature || 1)]}
-                  onValueChange={([v]) =>
-                    onAgentFormChange("voiceTemperature", v.toFixed(1))
-                  }
-                />
-                <div className="flex justify-between text-[9px] text-zinc-400">
-                  <span>Calm</span>
-                  <span className="text-emerald-500">1.0 = natural</span>
-                  <span>Expressive</span>
-                </div>
-              </div>
-
-              {/* Response speed slider */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-[11px]">Response speed</Label>
-                  <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
-                    {Number(agentForm.responsiveness || 0.5).toFixed(1)}
-                  </span>
-                </div>
-                <Slider
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  value={[Number(agentForm.responsiveness || 0.5)]}
-                  onValueChange={([v]) =>
-                    onAgentFormChange("responsiveness", v.toFixed(2))
-                  }
-                />
-                <div className="flex justify-between text-[9px] text-zinc-400">
-                  <span>Patient</span>
-                  <span className="text-emerald-500">0.5 = balanced</span>
-                  <span>Snappy</span>
-                </div>
-              </div>
-
-              {/* Interruption sensitivity slider */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-[11px]">
-                    Interruption sensitivity
-                  </Label>
-                  <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
-                    {Number(agentForm.interruptionSensitivity || 0.5).toFixed(
-                      1,
-                    )}
-                  </span>
-                </div>
-                <Slider
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  value={[Number(agentForm.interruptionSensitivity || 0.5)]}
-                  onValueChange={([v]) =>
-                    onAgentFormChange("interruptionSensitivity", v.toFixed(2))
-                  }
-                />
-                <div className="flex justify-between text-[9px] text-zinc-400">
-                  <span>Persistent</span>
-                  <span className="text-emerald-500">0.5 = balanced</span>
-                  <span>Yields easily</span>
-                </div>
-              </div>
+            {/* Sliders in 2-col grid */}
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <SliderField
+                label="Speaking pace"
+                value={Number(agentForm.voiceSpeed || 1)}
+                min={0.5}
+                max={1.5}
+                step={0.05}
+                onChange={(v) => onAgentFormChange("voiceSpeed", v)}
+                lowLabel="Slower"
+                midLabel="1.0 = normal"
+                highLabel="Faster"
+              />
+              <SliderField
+                label="Voice energy"
+                value={Number(agentForm.voiceTemperature || 1)}
+                min={0}
+                max={2}
+                step={0.1}
+                onChange={(v) => onAgentFormChange("voiceTemperature", v)}
+                lowLabel="Calm"
+                midLabel="1.0 = natural"
+                highLabel="Expressive"
+              />
+              <SliderField
+                label="Response speed"
+                value={Number(agentForm.responsiveness || 0.5)}
+                min={0}
+                max={1}
+                step={0.05}
+                onChange={(v) => onAgentFormChange("responsiveness", v)}
+                lowLabel="Patient"
+                midLabel="0.5 = balanced"
+                highLabel="Snappy"
+              />
+              <SliderField
+                label="Interruption sensitivity"
+                value={Number(agentForm.interruptionSensitivity || 0.5)}
+                min={0}
+                max={1}
+                step={0.05}
+                onChange={(v) =>
+                  onAgentFormChange("interruptionSensitivity", v)
+                }
+                lowLabel="Persistent"
+                midLabel="0.5 = balanced"
+                highLabel="Yields easily"
+              />
             </div>
 
             {/* Auto-adapt toggles */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
+              <div className="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-800/40">
                 <div className="pr-4">
-                  <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                  <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
                     Auto-adapt speaking speed
                   </p>
-                  <p className="text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">
                     {AGENT_FIELD_HINTS.enableDynamicVoiceSpeed}
                   </p>
                 </div>
@@ -320,12 +325,12 @@ export function VoiceGreetingView({
                 />
               </div>
 
-              <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
+              <div className="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-800/40">
                 <div className="pr-4">
-                  <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                  <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
                     Auto-adapt response timing
                   </p>
-                  <p className="text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">
                     {AGENT_FIELD_HINTS.enableDynamicResponsiveness}
                   </p>
                 </div>
@@ -341,72 +346,85 @@ export function VoiceGreetingView({
         </BuilderSection>
       </div>
 
+      {/* ── Voice Library ── */}
       <BuilderSection
         icon={<Library className="h-4 w-4" />}
         title="Voice library"
         description="Pick a voice for your agent, or search to import new ones."
       >
-        <div className="space-y-3">
-          {/* Search bar — compact horizontal layout */}
-          <div className="flex items-end gap-2">
-            <div className="space-y-1 flex-shrink-0">
-              <Label htmlFor="voice-search-provider" className="text-[10px]">
-                Provider
-              </Label>
-              <select
-                id="voice-search-provider"
-                value={voiceProvider}
-                onChange={(event) =>
-                  onVoiceProviderChange(
-                    event.target
-                      .value as (typeof RETELL_VOICE_PROVIDERS)[number],
-                  )
-                }
-                className="flex h-8 rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs dark:border-zinc-800 dark:bg-zinc-900"
-              >
-                {RETELL_VOICE_PROVIDERS.map((provider) => (
-                  <option key={provider} value={provider}>
-                    {provider}
-                  </option>
-                ))}
-              </select>
+        <div className="space-y-4">
+          {/* Search bar — stacked on mobile, inline on sm+ */}
+          <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-800/40">
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+              Search & import
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
+              <div className="space-y-1 sm:w-[130px] flex-shrink-0">
+                <Label htmlFor="voice-search-provider" className="text-[10px]">
+                  Provider
+                </Label>
+                <select
+                  id="voice-search-provider"
+                  value={voiceProvider}
+                  onChange={(event) =>
+                    onVoiceProviderChange(
+                      event.target
+                        .value as (typeof RETELL_VOICE_PROVIDERS)[number],
+                    )
+                  }
+                  className="flex h-8 w-full rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+                >
+                  {RETELL_VOICE_PROVIDERS.map((provider) => (
+                    <option key={provider} value={provider}>
+                      {provider}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1 min-w-0 flex-1">
+                <Label htmlFor="voice-search-query" className="text-[10px]">
+                  Search voices
+                </Label>
+                <div className="flex gap-1.5">
+                  <Input
+                    id="voice-search-query"
+                    value={searchQuery}
+                    onChange={(event) =>
+                      onSearchQueryChange(event.target.value)
+                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && searchQuery.trim()) onSearch();
+                    }}
+                    placeholder="warm, clear female, insurance..."
+                    className="h-8 text-xs min-w-0"
+                  />
+                  <Button
+                    onClick={onSearch}
+                    disabled={searchPending || !searchQuery.trim()}
+                    size="sm"
+                    className="h-8 w-8 p-0 flex-shrink-0"
+                  >
+                    {searchPending ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Search className="h-3.5 w-3.5" />
+                    )}
+                  </Button>
+                </div>
+              </div>
             </div>
-            <div className="space-y-1 flex-1">
-              <Label htmlFor="voice-search-query" className="text-[10px]">
-                Search voices
-              </Label>
-              <Input
-                id="voice-search-query"
-                value={searchQuery}
-                onChange={(event) => onSearchQueryChange(event.target.value)}
-                placeholder="warm, clear female, insurance..."
-                className="h-8 text-xs"
-              />
-            </div>
-            <Button
-              onClick={onSearch}
-              disabled={searchPending || !searchQuery.trim()}
-              size="sm"
-              className="h-8 flex-shrink-0"
-            >
-              {searchPending ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Search className="h-3.5 w-3.5" />
-              )}
-            </Button>
           </div>
 
-          {/* Search results — compact */}
+          {/* Search results */}
           {searchResults.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
                 Search results
               </p>
-              {searchResults.slice(0, 3).map((result) => (
+              {searchResults.slice(0, 5).map((result) => (
                 <div
                   key={`${result.provider_voice_id}-${result.public_user_id ?? "public"}`}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-zinc-200 px-3 py-2 dark:border-zinc-800"
+                  className="flex items-center justify-between gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-800/40"
                 >
                   <div className="min-w-0">
                     <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">
@@ -427,30 +445,32 @@ export function VoiceGreetingView({
                       !result.name
                     }
                   >
-                    {addVoicePending ? "Adding..." : "Import"}
+                    {addingVoiceId === result.provider_voice_id
+                      ? "Adding..."
+                      : "Import"}
                   </Button>
                 </div>
               ))}
             </div>
           )}
 
-          {/* Imported voices — compact rows */}
+          {/* Imported voices list */}
           <div>
-            <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-1.5">
+            <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
               Your voices
             </p>
             {voicesLoading ? (
-              <div className="flex items-center justify-center py-4">
+              <div className="flex items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 py-6 dark:border-zinc-800 dark:bg-zinc-800/40">
                 <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
               </div>
             ) : filteredVoices.length === 0 ? (
-              <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-[11px] text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
+              <div className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-3 py-4 text-center text-[11px] text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/40 dark:text-zinc-400">
                 {voices.length === 0
                   ? "No imported voices yet. Search above to add one."
                   : `No voices from ${voiceProvider}. Try a different provider.`}
               </div>
             ) : (
-              <div className="max-h-[240px] overflow-y-auto overscroll-contain space-y-1.5 rounded-lg border border-zinc-200 p-2 dark:border-zinc-800">
+              <div className="max-h-[280px] overflow-y-auto overscroll-contain space-y-1.5 rounded-lg border border-zinc-200 bg-zinc-50/50 p-2 dark:border-zinc-800 dark:bg-zinc-800/20">
                 {filteredVoices.map((voice, idx) => {
                   const isSelected = voice.voice_id === selectedVoiceId;
                   const isClone =
@@ -460,12 +480,12 @@ export function VoiceGreetingView({
                     <div
                       key={`${voice.voice_id}-${idx}`}
                       className={cn(
-                        "flex items-center justify-between gap-2 rounded-lg border px-3 py-2",
+                        "flex items-center justify-between gap-2 rounded-lg border px-3 py-2 transition-colors",
                         isSelected
-                          ? "border-sky-300 bg-sky-50 dark:border-sky-800 dark:bg-sky-950/20"
+                          ? "border-foreground/20 bg-foreground/5 dark:border-foreground/20 dark:bg-foreground/5"
                           : isClone
                             ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-900/50 dark:bg-emerald-950/20"
-                            : "border-zinc-100 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-950/30",
+                            : "border-zinc-100 bg-white hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800/60",
                       )}
                     >
                       <div className="flex items-center gap-2 min-w-0">
@@ -519,8 +539,11 @@ export function VoiceGreetingView({
                         )}
                         <Button
                           size="sm"
-                          variant={isSelected ? "secondary" : "outline"}
-                          className="h-7 text-[10px]"
+                          variant={isSelected ? "default" : "outline"}
+                          className={cn(
+                            "h-7 text-[10px]",
+                            isSelected && "pointer-events-none",
+                          )}
                           onClick={() =>
                             onAgentFormChange("voiceId", voice.voice_id)
                           }

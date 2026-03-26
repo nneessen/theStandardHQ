@@ -244,6 +244,7 @@ export function VoiceAgentRetellStudioCard({
     ChatBotRetellVoiceSearchHit[]
   >([]);
   const [playingVoiceId, setPlayingVoiceId] = useState<string | null>(null);
+  const [addingVoiceId, setAddingVoiceId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [jsonOpen, setJsonOpen] = useState(false);
@@ -424,6 +425,7 @@ export function VoiceAgentRetellStudioCard({
   const handleAddVoice = (result: ChatBotRetellVoiceSearchHit) => {
     if (!result.provider_voice_id || !result.name) return;
 
+    setAddingVoiceId(result.provider_voice_id);
     addRetellVoice.mutate(
       {
         providerVoiceId: result.provider_voice_id,
@@ -434,6 +436,10 @@ export function VoiceAgentRetellStudioCard({
       {
         onSuccess: (voice) => {
           updateFormField(setAgentForm, "voiceId", voice.voiceId);
+          setAddingVoiceId(null);
+        },
+        onError: () => {
+          setAddingVoiceId(null);
         },
       },
     );
@@ -526,26 +532,28 @@ export function VoiceAgentRetellStudioCard({
   );
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+            <div className="flex h-5 w-5 items-center justify-center rounded bg-zinc-900 dark:bg-zinc-100">
+              <Sparkles className="h-3 w-3 text-white dark:text-zinc-900" />
+            </div>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
               {viewCopy.eyebrow}
             </p>
           </div>
-          <p className="mt-1 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <p className="mt-1.5 text-base font-bold text-zinc-900 dark:text-zinc-100">
             {viewCopy.title}
           </p>
-          <p className="mt-1 max-w-2xl text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
+          <p className="mt-0.5 max-w-2xl text-[11px] leading-4 text-zinc-500 dark:text-zinc-400">
             {viewCopy.description}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5 flex-shrink-0">
           {isLive ? (
-            <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+            <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 text-[9px]">
               {inPublishGrace
                 ? "Live \u00b7 Just published"
                 : typeof runtime?.agent?.last_modification_timestamp ===
@@ -554,12 +562,12 @@ export function VoiceAgentRetellStudioCard({
                   : "Live"}
             </Badge>
           ) : runtime?.agent?.is_published === false ? (
-            <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+            <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 text-[9px]">
               Draft needs publishing
             </Badge>
           ) : null}
           {hasUnsavedChanges && (
-            <Badge className="bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-300">
+            <Badge className="bg-foreground text-background text-[9px]">
               Unsaved changes
             </Badge>
           )}
@@ -588,16 +596,16 @@ export function VoiceAgentRetellStudioCard({
       ) : (
         <div className="mt-4 space-y-4">
           {/* Save / Reset / Publish bar */}
-          <div className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <div className="flex flex-col gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-800/40 md:flex-row md:items-center md:justify-between">
+            <div className="min-w-0">
+              <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
                 {view === "launch"
                   ? "Save anything pending, then publish the current draft"
                   : view === "advanced" || view === "admin"
                     ? "Save advanced changes carefully"
                     : "Save your changes to the current draft"}
               </p>
-              <p className="mt-1 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
+              <p className="mt-0.5 text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">
                 {view === "launch"
                   ? "Publishing makes the latest saved draft live. If you changed voice, greeting, or instructions, save the draft first."
                   : "Draft changes stay editable until you publish them live."}
@@ -687,6 +695,7 @@ export function VoiceAgentRetellStudioCard({
               searchPending={searchRetellVoices.isPending}
               onAddVoice={handleAddVoice}
               addVoicePending={addRetellVoice.isPending}
+              addingVoiceId={addingVoiceId}
               playingVoiceId={playingVoiceId}
               onPreviewVoice={handlePreviewVoice}
               filteredVoices={filteredVoices}

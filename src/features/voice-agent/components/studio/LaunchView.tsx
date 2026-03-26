@@ -16,27 +16,28 @@ function StepChecklistItem({
   return (
     <div
       className={cn(
-        "rounded-lg border px-3 py-3",
+        "rounded-lg border px-3 py-3 shadow-sm",
         complete
           ? "border-emerald-200 bg-emerald-50 dark:border-emerald-900/40 dark:bg-emerald-950/20"
-          : "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950/40",
+          : "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-800/40",
       )}
     >
       <div className="flex items-center justify-between gap-3">
-        <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
           {label}
         </p>
         <Badge
-          className={
+          className={cn(
+            "text-[9px] flex-shrink-0",
             complete
               ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-              : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
-          }
+              : "bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300",
+          )}
         >
           {complete ? "Ready" : "Needs attention"}
         </Badge>
       </div>
-      <p className="mt-2 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
+      <p className="mt-1.5 text-[10px] leading-4 text-zinc-600 dark:text-zinc-400">
         {detail}
       </p>
     </div>
@@ -133,34 +134,34 @@ export function LaunchView({
           title="Current draft snapshot"
           description="A quick read of the draft you are about to publish."
         >
-          <div className="space-y-3">
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">
-              <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          <div className="space-y-2">
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-800/40">
+              <p className="text-[9px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
                 Voice
               </p>
-              <p className="mt-1 text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <p className="mt-1 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
                 {selectedVoice
-                  ? `${selectedVoice.voice_name} • ${selectedVoice.provider}`
+                  ? `${selectedVoice.voice_name} · ${selectedVoice.provider}`
                   : selectedVoiceId || "No voice selected"}
               </p>
             </div>
 
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">
-              <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-800/40">
+              <p className="text-[9px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
                 Opening line
               </p>
-              <p className="mt-1 text-[12px] leading-6 text-zinc-900 dark:text-zinc-100">
+              <p className="mt-1 text-[11px] text-zinc-900 dark:text-zinc-100">
                 {openingLineReady
                   ? `${Object.values(workflowGreetings).filter((g) => g.trim()).length}/5 workflow greetings configured`
                   : "No greetings saved yet."}
               </p>
             </div>
 
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">
-              <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 shadow-sm dark:border-zinc-800 dark:bg-zinc-800/40">
+              <p className="text-[9px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
                 Prompt status
               </p>
-              <p className="mt-1 text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <p className="mt-1 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
                 {instructionsReady
                   ? "Instructions are saved in the draft."
                   : "Instructions still need to be added."}
@@ -169,11 +170,11 @@ export function LaunchView({
           </div>
         </BuilderSection>
 
-        <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
-          <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-800/40">
+          <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
             Publish flow
           </p>
-          <p className="mt-2 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
+          <p className="mt-1.5 text-[10px] leading-4 text-zinc-600 dark:text-zinc-400">
             Publishing makes your latest saved draft the live version that
             callers hear. If you changed anything in Steps 1–4, make sure you
             saved the draft first. You can publish as many times as you want —

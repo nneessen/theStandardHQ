@@ -22,12 +22,12 @@ function ToggleRow({
   onCheckedChange: (checked: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
+    <div className="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-800/40">
       <div className="pr-4">
-        <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
           {title}
         </p>
-        <p className="text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
+        <p className="text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">
           {description}
         </p>
       </div>
@@ -95,7 +95,7 @@ export function CallBehaviorSection({
               onChange={(event) =>
                 onAgentFormChange("ambientSound", event.target.value)
               }
-              className="flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-800 dark:bg-zinc-900"
+              className="flex h-9 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-xs dark:border-zinc-800 dark:bg-zinc-900"
             >
               {AMBIENT_SOUND_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>

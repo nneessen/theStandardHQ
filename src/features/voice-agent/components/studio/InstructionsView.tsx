@@ -42,7 +42,7 @@ export function InstructionsView({
 
   if (!llmAvailable && !llmLoading) {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 text-[11px] leading-5 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
+      <div className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-3 py-4 text-center text-[11px] leading-5 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/40 dark:text-zinc-400">
         Prompt editing becomes available when this workspace is using the
         managed voice model setup.
       </div>
@@ -52,13 +52,13 @@ export function InstructionsView({
   return (
     <div className="space-y-4">
       {/* Mode toggle */}
-      <div className="flex items-center gap-1 rounded-lg border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-800 dark:bg-zinc-900/40 w-fit">
+      <div className="flex items-center gap-0.5 rounded-lg border border-zinc-200 bg-zinc-100 p-0.5 dark:border-zinc-800 dark:bg-zinc-800/60 w-fit">
         <button
           type="button"
           onClick={() => setMode("guided")}
-          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] font-medium transition-colors ${
+          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] font-medium transition-all ${
             mode === "guided"
-              ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-100"
+              ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-zinc-100"
               : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
           }`}
         >
@@ -68,9 +68,9 @@ export function InstructionsView({
         <button
           type="button"
           onClick={() => setMode("advanced")}
-          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] font-medium transition-colors ${
+          className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] font-medium transition-all ${
             mode === "advanced"
-              ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-800 dark:text-zinc-100"
+              ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-zinc-100"
               : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
           }`}
         >

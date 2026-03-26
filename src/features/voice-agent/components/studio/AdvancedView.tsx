@@ -103,11 +103,11 @@ export function AdvancedView({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">
-        <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+      <div className="rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 shadow-sm dark:border-zinc-800 dark:bg-zinc-800/40">
+        <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
           These settings are optional
         </p>
-        <p className="mt-1 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 text-[10px] leading-4 text-zinc-600 dark:text-zinc-400">
           Most agents work great with the defaults. Only adjust these if you
           need to fine-tune how your agent thinks, listens, or handles calls.
         </p>
@@ -209,12 +209,12 @@ export function AdvancedView({
                 </div>
               </div>
 
-              <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
+              <div className="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-800/40">
                 <div className="pr-4">
-                  <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                  <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
                     Strict connected actions
                   </p>
-                  <p className="text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">
                     {LLM_FIELD_HINTS.toolCallStrictMode}
                   </p>
                 </div>
@@ -432,12 +432,12 @@ export function AdvancedView({
               </div>
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
+            <div className="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-800/40">
               <div className="pr-4">
                 <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
                   Allow keypad input
                 </p>
-                <p className="text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">
                   {AGENT_FIELD_HINTS.allowUserDtmf}
                 </p>
               </div>
@@ -449,12 +449,12 @@ export function AdvancedView({
               />
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
+            <div className="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-800/40">
               <div className="pr-4">
                 <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
                   Speak numbers naturally
                 </p>
-                <p className="text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">
                   Converts "$150" to "one hundred fifty dollars" and similar.
                 </p>
               </div>

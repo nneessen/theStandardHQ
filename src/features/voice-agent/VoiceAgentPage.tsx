@@ -387,18 +387,16 @@ function SetupStepButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-xl border px-4 py-3 text-left transition ${
+      className={`rounded-xl border px-3 py-2.5 text-left transition-all shadow-sm ${
         active
-          ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
-          : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+          ? "border-foreground bg-foreground text-background shadow-md"
+          : "border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
       }`}
     >
-      <p className="text-[12px] font-semibold">{label}</p>
+      <p className="text-[11px] font-bold">{label}</p>
       <p
-        className={`mt-1 text-[10px] leading-5 ${
-          active
-            ? "text-zinc-300 dark:text-zinc-700"
-            : "text-zinc-500 dark:text-zinc-400"
+        className={`mt-0.5 text-[9px] leading-4 ${
+          active ? "text-background/60" : "text-zinc-500 dark:text-zinc-400"
         }`}
       >
         {description}
