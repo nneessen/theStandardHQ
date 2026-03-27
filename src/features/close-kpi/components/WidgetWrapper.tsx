@@ -63,10 +63,10 @@ export const WidgetWrapper: React.FC<WidgetWrapperProps> = ({
   const colSpan = getWidgetColSpan(widget.widget_type, widget.size);
   const heightClass =
     widget.size === "small"
-      ? "min-h-[6rem]"
+      ? "h-[6rem]"
       : widget.size === "medium"
-        ? "min-h-[12rem]"
-        : "min-h-[16rem]";
+        ? "h-[12rem]"
+        : "h-[16rem]";
 
   const handleApply = () => {
     onApplyConfig?.();
@@ -143,7 +143,7 @@ export const WidgetWrapper: React.FC<WidgetWrapperProps> = ({
       </Collapsible>
 
       {/* Content */}
-      <div className={`p-2 ${heightClass}`}>
+      <div className={`overflow-y-auto p-2 ${heightClass}`}>
         {isLoading && !data ? (
           <WidgetSkeleton size={widget.size} />
         ) : error ? (
