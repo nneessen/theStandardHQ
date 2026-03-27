@@ -437,28 +437,38 @@ async function handleGetLeadStatusChanges(apiKey: string, params: Params) {
     byLead[c.lead_id].push(c);
   }
 
+  // Count ALL matching transitions (not just ones with duration)
+  let transitionCount = 0;
   const transitionDays: number[] = [];
+
   for (const leadChanges of Object.values(byLead)) {
     leadChanges.sort(
       (a, b) =>
         new Date(a.date_created).getTime() - new Date(b.date_created).getTime(),
     );
 
-    let fromTime: number | null = null;
+    // Track when the lead entered fromStatus (via a previous change)
+    let enteredFromAt: number | null = null;
+
     for (const c of leadChanges) {
-      if (fromStatus && c.new_status_label === fromStatus) {
-        fromTime = new Date(c.date_created).getTime();
+      // Lead moved INTO fromStatus — record entry time
+      if (c.new_status_label === fromStatus) {
+        enteredFromAt = new Date(c.date_created).getTime();
       }
-      if (
-        fromTime &&
-        (!toStatus || c.new_status_label === toStatus) &&
-        c.new_status_label !== fromStatus
-      ) {
-        const days =
-          (new Date(c.date_created).getTime() - fromTime) /
-          (1000 * 60 * 60 * 24);
-        transitionDays.push(days);
-        break;
+
+      // Lead moved OUT OF fromStatus — this is a transition we want to measure
+      if (c.old_status_label === fromStatus) {
+        if (!toStatus || c.new_status_label === toStatus) {
+          transitionCount++;
+          const exitTime = new Date(c.date_created).getTime();
+          if (enteredFromAt) {
+            // We know when they entered and left — compute duration
+            const days = (exitTime - enteredFromAt) / (1000 * 60 * 60 * 24);
+            transitionDays.push(days);
+          }
+          // Found the transition for this lead, move on
+          break;
+        }
       }
     }
   }
@@ -491,7 +501,8 @@ async function handleGetLeadStatusChanges(apiKey: string, params: Params) {
           transitionDays.length > 0
             ? Math.round(transitionDays[transitionDays.length - 1] * 10) / 10
             : 0,
-        sampleSize: transitionDays.length,
+        sampleSize: transitionCount,
+        durationSampleSize: transitionDays.length,
       },
     ],
     totalChanges: allData.length,
