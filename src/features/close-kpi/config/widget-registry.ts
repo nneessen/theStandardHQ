@@ -752,9 +752,41 @@ export function getMetricDefinition(key: Metric): MetricDefinition | undefined {
   return METRIC_CATALOG.find((m) => m.key === key);
 }
 
-/** Get metrics that can be used in a stat card (single-value metrics) */
+/** Metrics that fetchStatCard actually handles — others return 0 */
+const IMPLEMENTED_STAT_METRICS = new Set([
+  // Lead metrics
+  "lead_count",
+  "leads_created",
+  // Call metrics
+  "calls_total",
+  "calls_inbound",
+  "calls_outbound",
+  "calls_answered",
+  "calls_voicemail",
+  "calls_missed",
+  "call_duration_total",
+  "call_duration_avg",
+  "call_connect_rate",
+  // Email/SMS
+  "emails_sent",
+  "emails_received",
+  "emails_total",
+  "sms_sent",
+  "sms_received",
+  "sms_total",
+  // Opportunity metrics
+  "pipeline_value",
+  "pipeline_count",
+  "win_rate",
+  "avg_deal_size",
+  "sales_velocity",
+  "avg_time_to_close",
+  "deals_won",
+  "deals_lost",
+  "deals_won_value",
+]);
+
+/** Get metrics that can be used in a stat card (only implemented ones) */
 export function getStatCardMetrics(): MetricDefinition[] {
-  return METRIC_CATALOG.filter(
-    (m) => !m.groupByField || m.aggregationType === "computed",
-  );
+  return METRIC_CATALOG.filter((m) => IMPLEMENTED_STAT_METRICS.has(m.key));
 }

@@ -353,6 +353,10 @@ export interface CrossReferenceResult {
 export interface OpportunitySummaryResult {
   totalValue: number;
   dealCount: number;
+  activeCount: number;
+  wonCount: number;
+  wonValue: number;
+  lostCount: number;
   winRate: number;
   avgDealSize: number;
   salesVelocity?: number;
@@ -368,9 +372,12 @@ export interface CallAnalyticsResult {
   answered: number;
   voicemail: number;
   missed: number;
+  inbound: number;
+  outbound: number;
   connectRate: number;
   totalDurationMin: number;
   avgDurationMin: number;
+  isTruncated?: boolean;
   byDisposition?: { disposition: string; count: number }[];
   byDirection?: { direction: string; count: number }[];
   overTime?: { date: string; count: number; durationMin: number }[];

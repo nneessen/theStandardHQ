@@ -67,12 +67,12 @@ async function fetchWidgetData(
   widget: CloseKpiWidget,
   globalConfig?: GlobalDashboardConfig,
 ): Promise<WidgetResult> {
-  // Bug 11 fix: apply global date range unless widget has an explicit custom range
+  // Use global date range ONLY when widget has no explicit date range set.
+  // Never override a widget's chosen date range — the user set it deliberately.
   const widgetDateRange = widget.config.dateRange;
-  const isDefaultRange = !widgetDateRange || widgetDateRange === "this_month";
-  const effectiveDateRange = isDefaultRange
-    ? (globalConfig?.dateRange ?? widgetDateRange ?? "this_month")
-    : widgetDateRange;
+  const effectiveDateRange = widgetDateRange
+    ? widgetDateRange
+    : (globalConfig?.dateRange ?? "this_month");
 
   const config = { ...widget.config, dateRange: effectiveDateRange };
 
@@ -377,6 +377,8 @@ async function fetchCallAnalytics(
       answered: 0,
       voicemail: 0,
       missed: 0,
+      inbound: 0,
+      outbound: 0,
       connectRate: 0,
       totalDurationMin: 0,
       avgDurationMin: 0,
@@ -388,9 +390,12 @@ async function fetchCallAnalytics(
     answered: call.answered,
     voicemail: call.voicemail,
     missed: call.missed,
+    inbound: call.inbound,
+    outbound: call.outbound,
     connectRate: call.connectRate,
     totalDurationMin: call.totalDurationMin,
     avgDurationMin: call.avgDurationMin,
+    isTruncated: call.isTruncated,
     byDisposition: Object.entries(call.byDisposition).map(
       ([disposition, count]) => ({
         disposition,
@@ -424,9 +429,13 @@ async function fetchOpportunitySummary(
   return {
     totalValue: res.totalValue,
     dealCount: res.total,
+    activeCount: res.activeCount,
+    wonCount: res.wonCount,
+    wonValue: res.wonValue,
+    lostCount: res.lostCount,
     winRate: res.winRate,
     avgDealSize: res.avgDealSize,
-    stalledCount: 0, // Would need separate stalled query
+    stalledCount: 0,
     avgTimeToClose: res.avgTimeToCloseDays,
     salesVelocity:
       res.avgTimeToCloseDays > 0

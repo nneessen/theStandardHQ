@@ -39,6 +39,8 @@ import type {
   WidgetConfig,
   StatCardResult,
   StatusDistributionResult,
+  OpportunitySummaryResult,
+  CallAnalyticsResult,
   StatCardConfig as StatCardConfigType,
   StatusDistributionConfig as StatusDistConfigType,
   SmartViewMonitorConfig as SmartViewConfigType,
@@ -285,55 +287,53 @@ const WidgetContent: React.FC<{
         <StatusDistributionWidget data={data as StatusDistributionResult} />
       );
     case "call_analytics": {
-      const callData = data as Record<string, unknown>;
+      const callData = data as CallAnalyticsResult;
       const metric = (widget.config as unknown as Record<string, unknown>)
         .metric as string;
       let val = 0;
       let lbl = "Calls";
       let unit = "";
-      if (callData) {
-        switch (metric) {
-          case "calls_total":
-            val = Number(callData.total ?? 0);
-            break;
-          case "calls_inbound":
-            val = Number(callData.inbound ?? 0);
-            lbl = "Inbound";
-            break;
-          case "calls_outbound":
-            val = Number(callData.outbound ?? 0);
-            lbl = "Outbound";
-            break;
-          case "calls_answered":
-            val = Number(callData.answered ?? 0);
-            lbl = "Answered";
-            break;
-          case "calls_voicemail":
-            val = Number(callData.voicemail ?? 0);
-            lbl = "Voicemail";
-            break;
-          case "calls_missed":
-            val = Number(callData.missed ?? 0);
-            lbl = "Missed";
-            break;
-          case "call_connect_rate":
-            val = Number(callData.connectRate ?? 0);
-            lbl = "Connect Rate";
-            unit = "%";
-            break;
-          case "call_duration_total":
-            val = Number(callData.totalDurationMin ?? 0);
-            lbl = "Total Minutes";
-            unit = " min";
-            break;
-          case "call_duration_avg":
-            val = Number(callData.avgDurationMin ?? 0);
-            lbl = "Avg Duration";
-            unit = " min";
-            break;
-          default:
-            val = Number(callData.total ?? 0);
-        }
+      switch (metric) {
+        case "calls_total":
+          val = callData.total ?? 0;
+          break;
+        case "calls_inbound":
+          val = callData.inbound ?? 0;
+          lbl = "Inbound";
+          break;
+        case "calls_outbound":
+          val = callData.outbound ?? 0;
+          lbl = "Outbound";
+          break;
+        case "calls_answered":
+          val = callData.answered ?? 0;
+          lbl = "Answered";
+          break;
+        case "calls_voicemail":
+          val = callData.voicemail ?? 0;
+          lbl = "Voicemail";
+          break;
+        case "calls_missed":
+          val = callData.missed ?? 0;
+          lbl = "Missed";
+          break;
+        case "call_connect_rate":
+          val = callData.connectRate ?? 0;
+          lbl = "Connect Rate";
+          unit = "%";
+          break;
+        case "call_duration_total":
+          val = callData.totalDurationMin ?? 0;
+          lbl = "Total Minutes";
+          unit = " min";
+          break;
+        case "call_duration_avg":
+          val = callData.avgDurationMin ?? 0;
+          lbl = "Avg Duration";
+          unit = " min";
+          break;
+        default:
+          val = callData.total ?? 0;
       }
       return (
         <StatCardWidget
@@ -342,53 +342,56 @@ const WidgetContent: React.FC<{
       );
     }
     case "opportunity_summary": {
-      const oppData = data as Record<string, unknown>;
+      const oppData = data as OpportunitySummaryResult;
       const oppMetric = (widget.config as unknown as Record<string, unknown>)
         .metric as string;
       let oppVal = 0;
       let oppLbl = "Pipeline";
       let oppUnit = "";
-      if (oppData) {
-        switch (oppMetric) {
-          case "pipeline_value":
-            oppVal = Number(oppData.totalValue ?? 0);
-            oppLbl = "Pipeline Value";
-            oppUnit = "$";
-            break;
-          case "pipeline_count":
-            oppVal = Number(oppData.activeCount ?? 0);
-            oppLbl = "Active Opps";
-            break;
-          case "win_rate":
-            oppVal = Number(oppData.winRate ?? 0);
-            oppLbl = "Win Rate";
-            oppUnit = "%";
-            break;
-          case "avg_deal_size":
-            oppVal = Number(oppData.avgDealSize ?? 0);
-            oppLbl = "Avg Deal";
-            oppUnit = "$";
-            break;
-          case "deals_won":
-            oppVal = Number(oppData.wonCount ?? 0);
-            oppLbl = "Deals Won";
-            break;
-          case "deals_lost":
-            oppVal = Number(oppData.lostCount ?? 0);
-            oppLbl = "Deals Lost";
-            break;
-          case "deals_won_value":
-            oppVal = Number(oppData.wonValue ?? 0);
-            oppLbl = "Revenue Won";
-            oppUnit = "$";
-            break;
-          case "avg_time_to_close":
-            oppVal = Number(oppData.avgTimeToCloseDays ?? 0);
-            oppLbl = "Avg Days to Close";
-            break;
-          default:
-            oppVal = Number(oppData.total ?? 0);
-        }
+      switch (oppMetric) {
+        case "pipeline_value":
+          oppVal = oppData.totalValue ?? 0;
+          oppLbl = "Pipeline Value";
+          oppUnit = "$";
+          break;
+        case "pipeline_count":
+          oppVal = oppData.activeCount ?? 0;
+          oppLbl = "Active Opps";
+          break;
+        case "win_rate":
+          oppVal = oppData.winRate ?? 0;
+          oppLbl = "Win Rate";
+          oppUnit = "%";
+          break;
+        case "avg_deal_size":
+          oppVal = oppData.avgDealSize ?? 0;
+          oppLbl = "Avg Deal";
+          oppUnit = "$";
+          break;
+        case "deals_won":
+          oppVal = oppData.wonCount ?? 0;
+          oppLbl = "Deals Won";
+          break;
+        case "deals_lost":
+          oppVal = oppData.lostCount ?? 0;
+          oppLbl = "Deals Lost";
+          break;
+        case "deals_won_value":
+          oppVal = oppData.wonValue ?? 0;
+          oppLbl = "Revenue Won";
+          oppUnit = "$";
+          break;
+        case "avg_time_to_close":
+          oppVal = oppData.avgTimeToClose ?? 0;
+          oppLbl = "Avg Days to Close";
+          break;
+        case "sales_velocity":
+          oppVal = oppData.salesVelocity ?? 0;
+          oppLbl = "Sales Velocity";
+          oppUnit = "$";
+          break;
+        default:
+          oppVal = oppData.dealCount ?? 0;
       }
       return (
         <StatCardWidget

@@ -94,7 +94,7 @@ export interface ActivitiesResponse {
     totalDurationMin: number;
     avgDurationMin: number;
     byDisposition: Record<string, number>;
-    totalFromApi: number;
+    isTruncated?: boolean;
   };
   email?: { total: number };
   sms?: { total: number };

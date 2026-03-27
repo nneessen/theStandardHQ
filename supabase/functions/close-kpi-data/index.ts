@@ -119,7 +119,7 @@ async function handleGetMetadata(apiKey: string) {
 }
 
 async function handleGetLeadCounts(apiKey: string, params: Params) {
-  const { from, to } = params;
+  const { from, to, smartViewId } = params;
 
   // Get statuses + total lead count in parallel (2 API calls, not 34)
   const dateQuery = [];
@@ -129,12 +129,13 @@ async function handleGetLeadCounts(apiKey: string, params: Params) {
     dateQuery.length > 0
       ? `&query=${encodeURIComponent(dateQuery.join(" "))}`
       : "";
+  const svParam = smartViewId ? `&saved_search_id=${smartViewId}` : "";
 
   const [statusRes, totalRes] = await Promise.all([
     closeGet(apiKey, "/status/lead/") as Promise<ApiResult>,
     closeGet(
       apiKey,
-      `/lead/?_limit=1&_fields=id${queryParam}`,
+      `/lead/?_limit=1&_fields=id${queryParam}${svParam}`,
     ) as Promise<ApiResult>,
   ]);
 
@@ -151,7 +152,7 @@ async function handleGetLeadCounts(apiKey: string, params: Params) {
     while (hasMore && skip < 5000) {
       const res = (await closeGet(
         apiKey,
-        `/lead/?_limit=200&_skip=${skip}&_fields=status_id${queryParam}`,
+        `/lead/?_limit=200&_skip=${skip}&_fields=status_id${queryParam}${svParam}`,
       )) as ApiResult;
       const leads = (res.data ?? []) as { status_id: string }[];
       for (const lead of leads) {
@@ -181,7 +182,8 @@ async function handleGetLeadCounts(apiKey: string, params: Params) {
     const results = await Promise.all(
       batch.map(async (status) => {
         const qs = [`_limit=1`, `status_id=${status.id}`, `_fields=id`];
-        if (queryParam) qs.push(queryParam.substring(1)); // remove leading &
+        if (queryParam) qs.push(queryParam.substring(1));
+        if (svParam) qs.push(svParam.substring(1));
         const res = (await closeGet(
           apiKey,
           `/lead/?${qs.join("&")}`,
@@ -200,7 +202,7 @@ async function handleGetLeadCounts(apiKey: string, params: Params) {
 }
 
 async function handleSearchLeads(apiKey: string, params: Params) {
-  const { from, to, statusId, limit } = params;
+  const { from, to, statusId, smartViewId, limit } = params;
 
   const qs = [
     `_limit=${limit ?? 1}`,
@@ -208,6 +210,7 @@ async function handleSearchLeads(apiKey: string, params: Params) {
   ];
 
   if (statusId) qs.push(`status_id=${statusId}`);
+  if (smartViewId) qs.push(`saved_search_id=${smartViewId}`);
 
   // Build date query
   const dateQuery = [];
