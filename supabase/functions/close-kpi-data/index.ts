@@ -152,7 +152,7 @@ async function handleGetLeadCounts(apiKey: string, params: Params) {
     while (hasMore && skip < 5000) {
       const res = (await closeGet(
         apiKey,
-        `/lead/?_limit=200&_skip=${skip}&_fields=status_id${queryParam}${svParam}`,
+        `/lead/?_limit=100&_skip=${skip}&_fields=status_id${queryParam}${svParam}`,
       )) as ApiResult;
       const leads = (res.data ?? []) as { status_id: string }[];
       for (const lead of leads) {
@@ -160,7 +160,7 @@ async function handleGetLeadCounts(apiKey: string, params: Params) {
         statusCounts[sid] = (statusCounts[sid] ?? 0) + 1;
       }
       hasMore = res.has_more === true;
-      skip += 200;
+      skip += 100;
     }
 
     const byStatus = statuses.map((s) => ({
@@ -232,7 +232,7 @@ async function handleGetActivities(apiKey: string, params: Params) {
 
   await Promise.all(
     activityTypes.map(async (type: string) => {
-      const qs = [`_limit=200`];
+      const qs = [`_limit=100`];
       if (from) qs.push(`date_created__gte=${from}`);
       if (to) qs.push(`date_created__lte=${to}T23:59:59`);
 
@@ -252,7 +252,7 @@ async function handleGetActivities(apiKey: string, params: Params) {
         const items = res.data ?? [];
         allData.push(...items);
         hasMore = res.has_more === true;
-        skip += 200;
+        skip += 100;
       }
 
       results[type] = {
@@ -320,7 +320,7 @@ async function handleGetActivities(apiKey: string, params: Params) {
 async function handleGetOpportunities(apiKey: string, params: Params) {
   const { from, to, statusType } = params;
 
-  const qs = [`_limit=200`];
+  const qs = [`_limit=100`];
   if (from) qs.push(`date_created__gte=${from}`);
   if (to) qs.push(`date_created__lte=${to}T23:59:59`);
   if (statusType) qs.push(`status_type=${statusType}`);
@@ -407,7 +407,7 @@ async function handleGetOpportunities(apiKey: string, params: Params) {
 async function handleGetLeadStatusChanges(apiKey: string, params: Params) {
   const { from, to, fromStatus, toStatus } = params;
 
-  const qs = [`_limit=200`];
+  const qs = [`_limit=100`];
   if (from) qs.push(`date_created__gte=${from}`);
   if (to) qs.push(`date_created__lte=${to}T23:59:59`);
 
@@ -426,7 +426,7 @@ async function handleGetLeadStatusChanges(apiKey: string, params: Params) {
     const items = res.data ?? [];
     allData.push(...items);
     hasMore = res.has_more === true;
-    skip += 200;
+    skip += 100;
   }
 
   // Group by lead_id to compute transition times
@@ -517,7 +517,7 @@ async function handleGetVmRateBySmartView(apiKey: string, params: Params) {
   const allCalls: any[] = [];
   let hasMore = true;
   let skip = 0;
-  const callQs = [`_limit=200`];
+  const callQs = [`_limit=100`];
   if (from) callQs.push(`date_created__gte=${from}`);
   if (to) callQs.push(`date_created__lte=${to}T23:59:59`);
   callQs.push(`direction=outbound`);
@@ -531,7 +531,7 @@ async function handleGetVmRateBySmartView(apiKey: string, params: Params) {
     const items = res.data ?? [];
     allCalls.push(...items);
     hasMore = res.has_more === true;
-    skip += 200;
+    skip += 100;
   }
 
   // Step 2: If firstCallOnly, group by lead_id and keep only the earliest call
@@ -592,7 +592,7 @@ async function handleGetVmRateBySmartView(apiKey: string, params: Params) {
 
         while (svHasMore && svSkip < 2000) {
           const svQs = [
-            `_limit=200`,
+            `_limit=100`,
             `_skip=${svSkip}`,
             `_fields=id`,
             `saved_search_id=${svId}`,
@@ -605,7 +605,7 @@ async function handleGetVmRateBySmartView(apiKey: string, params: Params) {
             leadIds.add(lead.id);
           }
           svHasMore = res.has_more === true;
-          svSkip += 200;
+          svSkip += 100;
         }
 
         // Cross-reference: find calls whose lead_id is in this smart view
@@ -719,30 +719,38 @@ serve(async (req) => {
       return jsonResponse({ error: "Unauthorized" }, 401, req);
     }
 
-    // ── Get Close API key via RPC ──
-    const { data: encryptedKey, error: rpcError } = await dataClient.rpc(
-      "get_close_api_key",
-      { p_user_id: user.id },
-    );
+    // ── Get Close API key ──
+    // In local dev, set CLOSE_API_KEY in .env to bypass the encrypted
+    // key lookup (local auth user IDs won't match production close_config).
+    const envApiKey = Deno.env.get("CLOSE_API_KEY");
+    let apiKey: string;
 
-    if (rpcError || !encryptedKey) {
-      console.error("[close-kpi-data] get_close_api_key RPC failed:", {
-        userId: user.id,
-        rpcError: rpcError?.message ?? rpcError,
-        hasKey: !!encryptedKey,
-      });
-      return jsonResponse(
-        {
-          error:
-            "Close CRM not connected. Please connect your Close account first.",
-          code: "CLOSE_NOT_CONNECTED",
-        },
-        400,
-        req,
+    if (envApiKey) {
+      apiKey = envApiKey;
+    } else {
+      const { data: encryptedKey, error: rpcError } = await dataClient.rpc(
+        "get_close_api_key",
+        { p_user_id: user.id },
       );
-    }
 
-    const apiKey = await decrypt(encryptedKey);
+      if (rpcError || !encryptedKey) {
+        console.error("[close-kpi-data] get_close_api_key failed:", {
+          userId: user.id,
+          rpcError: rpcError?.message ?? rpcError,
+        });
+        return jsonResponse(
+          {
+            error:
+              "Close CRM not connected. Please connect your Close account first.",
+            code: "CLOSE_NOT_CONNECTED",
+          },
+          400,
+          req,
+        );
+      }
+
+      apiKey = await decrypt(encryptedKey);
+    }
 
     // ── Dispatch action ──
     let result: unknown;
