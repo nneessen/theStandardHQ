@@ -786,6 +786,29 @@ export function useChatBotMessages(
   });
 }
 
+interface SyncToCloseResult {
+  synced: number;
+  failed: number;
+  total: number;
+  alreadyInClose: number;
+  closeLeadId?: string;
+  skipped?: boolean;
+  reason?: string;
+}
+
+export function useSyncMessagesToClose(conversationId: string | null) {
+  return useMutation<SyncToCloseResult, Error>({
+    mutationFn: () =>
+      chatBotApi<SyncToCloseResult>("sync_messages_to_close", {
+        conversationId,
+      }),
+    onError: (err) => {
+      // Silent — sync is best-effort, don't block the conversation view
+      console.warn("[sync_messages_to_close]", err.message);
+    },
+  });
+}
+
 export function useChatBotAppointments(page: number, limit: number) {
   return useQuery<PaginatedResponse<ChatBotAppointment>, Error>({
     queryKey: chatBotKeys.appointments({ page, limit }),

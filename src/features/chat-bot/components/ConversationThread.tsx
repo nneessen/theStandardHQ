@@ -1,7 +1,7 @@
 // src/features/chat-bot/components/ConversationThread.tsx
 // Message thread dialog for a single conversation
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   MessageSquare,
   ChevronLeft,
@@ -9,6 +9,7 @@ import {
   Loader2,
   Bot,
   User,
+  RefreshCw,
 } from "lucide-react";
 import {
   Dialog,
@@ -21,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   useChatBotMessages,
+  useSyncMessagesToClose,
   type ChatBotConversation,
 } from "../hooks/useChatBot";
 
@@ -43,6 +45,24 @@ export function ConversationThread({
     page,
     limit,
   );
+
+  // Auto-sync bot messages → Close when conversation opens
+  const sync = useSyncMessagesToClose(conversation?.id || null);
+  const syncedConvRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (
+      open &&
+      conversation?.id &&
+      conversation.closeLeadId &&
+      syncedConvRef.current !== conversation.id
+    ) {
+      syncedConvRef.current = conversation.id;
+      sync.mutate();
+    }
+    if (!open) {
+      syncedConvRef.current = null;
+    }
+  }, [open, conversation?.id, conversation?.closeLeadId]);
 
   const messages = messagesData?.data || [];
   const total = messagesData?.total || 0;
@@ -91,6 +111,17 @@ export function ConversationThread({
               >
                 {conversation.status}
               </Badge>
+              {sync.isPending && (
+                <span className="text-[9px] text-zinc-400 flex items-center gap-0.5">
+                  <RefreshCw className="h-2.5 w-2.5 animate-spin" />
+                  Syncing to Close…
+                </span>
+              )}
+              {sync.isSuccess && sync.data && sync.data.synced > 0 && (
+                <span className="text-[9px] text-emerald-600 dark:text-emerald-400">
+                  {sync.data.synced} synced to Close
+                </span>
+              )}
             </div>
           )}
         </DialogHeader>
@@ -109,7 +140,7 @@ export function ConversationThread({
               </p>
             </div>
           ) : (
-            messages.map((msg) => (
+            [...messages].reverse().map((msg) => (
               <div
                 key={msg.id}
                 className={cn(

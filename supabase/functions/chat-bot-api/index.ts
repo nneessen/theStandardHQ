@@ -15,6 +15,7 @@ import {
   parseUpdateConfigParams,
 } from "../../../src/features/voice-agent/lib/voice-agent-contract.ts";
 import { createStandardChatBotVoiceClient } from "../_shared/standard-chat-bot-voice.ts";
+import { decrypt } from "../_shared/encryption.ts";
 import {
   DEFAULT_VOICE_FEATURES,
   getUtcCalendarMonthCycle,
@@ -32,8 +33,10 @@ const ALLOWED_ORIGINS = [
   "https://thestandardhq.com",
   "http://localhost:3000",
   "http://localhost:3001",
+  "http://localhost:3004",
   "http://127.0.0.1:3000",
   "http://127.0.0.1:3001",
+  "http://127.0.0.1:3004",
 ];
 
 function buildCorsHeaders(req?: Request) {
@@ -1524,11 +1527,80 @@ serve(async (req) => {
         if (!apiKey) {
           return jsonResponse({ error: "Close API key is required." }, 400);
         }
+        // Send to standard-chat-bot (existing flow)
         const res = await callChatBotApi(
           "POST",
           `/api/external/agents/${agentId}/connections/close`,
           { apiKey },
         );
+
+        // Also store encrypted key in close_config for direct Close API access
+        try {
+          const { encrypt } = await import("../_shared/encryption.ts");
+          const encryptedKey = await encrypt(apiKey);
+
+          // Verify key + get org info from Close API
+          let orgName: string | null = null;
+          let orgId: string | null = null;
+          try {
+            const meRes = await fetch("https://api.close.com/api/v1/me/", {
+              headers: {
+                Authorization: `Basic ${btoa(`${apiKey}:`)}`,
+                Accept: "application/json",
+              },
+              signal: AbortSignal.timeout(8000),
+            });
+            if (meRes.ok) {
+              const meData = await meRes.json();
+              orgId = meData.organization_id ?? null;
+              // Fetch org name if we have the org ID
+              if (orgId) {
+                const orgRes = await fetch(
+                  `https://api.close.com/api/v1/organization/${orgId}/`,
+                  {
+                    headers: {
+                      Authorization: `Basic ${btoa(`${apiKey}:`)}`,
+                      Accept: "application/json",
+                    },
+                    signal: AbortSignal.timeout(8000),
+                  },
+                );
+                if (orgRes.ok) {
+                  const orgData = await orgRes.json();
+                  orgName = orgData.name ?? orgData.display_name ?? null;
+                }
+              }
+            }
+          } catch {
+            // Non-critical: org info is optional, key storage is what matters
+          }
+
+          await supabase.from("close_config").upsert(
+            {
+              user_id: effectiveUserId,
+              api_key_encrypted: encryptedKey,
+              organization_id: orgId,
+              organization_name: orgName,
+              is_active: true,
+              last_verified_at: new Date().toISOString(),
+            },
+            { onConflict: "user_id" },
+          );
+        } catch (e) {
+          console.error(
+            "[chat-bot-api] Failed to store Close key in close_config:",
+            e,
+          );
+          // Return success with warning — connection works but KPI dashboard may not
+          const baseResult = res.ok ? (res.data?.data ?? res.data ?? {}) : {};
+          return jsonResponse({
+            ...baseResult,
+            success: true,
+            warning:
+              "Close connected but KPI data storage failed. Try reconnecting if the KPI dashboard shows no data.",
+          });
+        }
+
         return sendResult(res);
       }
 
@@ -1537,6 +1609,17 @@ serve(async (req) => {
           "DELETE",
           `/api/external/agents/${agentId}/connections/close`,
         );
+
+        // Also deactivate in close_config
+        try {
+          await supabase
+            .from("close_config")
+            .update({ is_active: false })
+            .eq("user_id", effectiveUserId);
+        } catch {
+          // Non-blocking
+        }
+
         return sendResult(res);
       }
 
@@ -2854,6 +2937,8 @@ serve(async (req) => {
         return jsonResponse({ smartViews });
       }
 
+      // CLOSE KPI DASHBOARD actions moved to dedicated close-kpi-data edge function
+
       // ──────────────────────────────────────────────
       // VOICE RULES & GUARDRAILS
       // ──────────────────────────────────────────────
@@ -2981,6 +3066,224 @@ serve(async (req) => {
           `/api/external/agents/${agentId}/close/metadata/refresh`,
         );
         return sendResult(res);
+      }
+
+      // ──────────────────────────────────────────────
+      // SYNC BOT MESSAGES → CLOSE SMS ACTIVITIES
+      // ──────────────────────────────────────────────
+      case "sync_messages_to_close": {
+        const { conversationId } = params;
+        if (!conversationId) {
+          return jsonResponse({ error: "conversationId is required" }, 400);
+        }
+
+        // 1. Get the conversation to find closeLeadId + phone numbers
+        const convRes = await callChatBotApi(
+          "GET",
+          `/api/external/agents/${agentId}/conversations/${conversationId}`,
+        );
+        const convData = convRes.ok
+          ? (convRes.data?.data?.conversation ??
+            convRes.data?.data ??
+            convRes.data)
+          : null;
+        if (!convData) {
+          return jsonResponse({ error: "Conversation not found" }, 404);
+        }
+        const closeLeadId = convData.closeLeadId || convData.close_lead_id;
+        if (!closeLeadId) {
+          return jsonResponse({
+            synced: 0,
+            skipped: true,
+            reason: "No Close lead linked to this conversation",
+          });
+        }
+        const remotePhone = convData.leadPhone || convData.lead_phone || null;
+        const localPhone = convData.localPhone || convData.local_phone || null;
+
+        // 2. Fetch all bot messages (paginate up to 500)
+        const allBotMessages: {
+          id: string;
+          direction: string;
+          content: string;
+          createdAt: string;
+        }[] = [];
+        let msgPage = 1;
+        const msgLimit = 100;
+        while (allBotMessages.length < 500) {
+          const msgRes = await callChatBotApi(
+            "GET",
+            `/api/external/agents/${agentId}/conversations/${conversationId}/messages?page=${msgPage}&limit=${msgLimit}`,
+          );
+          const { payload, meta } = unwrap(msgRes);
+          const items = Array.isArray(payload) ? payload : [];
+          if (items.length === 0) break;
+          for (const m of items) {
+            allBotMessages.push({
+              id: m.id || m.uuid || "",
+              direction: m.direction || "outbound",
+              content: m.content || m.text || m.body || "",
+              createdAt: m.createdAt || m.created_at || m.date_created || "",
+            });
+          }
+          const totalItems =
+            meta?.pagination?.totalItems ?? meta?.pagination?.total ?? 0;
+          if (allBotMessages.length >= totalItems || items.length < msgLimit)
+            break;
+          msgPage++;
+        }
+
+        if (allBotMessages.length === 0) {
+          return jsonResponse({ synced: 0, reason: "No bot messages" });
+        }
+
+        // 3. Get Close API key
+        const envCloseKey = Deno.env.get("CLOSE_API_KEY");
+        let closeApiKey: string;
+        if (envCloseKey) {
+          closeApiKey = envCloseKey;
+        } else {
+          const { data: encryptedKey, error: rpcError } = await supabase.rpc(
+            "get_close_api_key",
+            { p_user_id: effectiveUserId },
+          );
+          if (rpcError || !encryptedKey) {
+            return jsonResponse(
+              {
+                error:
+                  "Close CRM not connected. Connect your Close account first.",
+                code: "CLOSE_NOT_CONNECTED",
+              },
+              400,
+            );
+          }
+          closeApiKey = await decrypt(encryptedKey);
+        }
+
+        const closeAuth = `Basic ${btoa(`${closeApiKey}:`)}`;
+        const CLOSE_BASE = "https://api.close.com/api/v1";
+
+        // 4. Fetch existing Close SMS activities for this lead
+        const existingSms: {
+          text: string;
+          direction: string;
+          date_created: string;
+        }[] = [];
+        let hasMore = true;
+        let skip = 0;
+        while (hasMore) {
+          const smsRes = await fetch(
+            `${CLOSE_BASE}/activity/sms/?lead_id=${closeLeadId}&_skip=${skip}&_limit=100`,
+            {
+              headers: {
+                Authorization: closeAuth,
+                Accept: "application/json",
+              },
+              signal: AbortSignal.timeout(12_000),
+            },
+          );
+          if (!smsRes.ok) {
+            const errText = await smsRes.text().catch(() => "");
+            console.error(
+              "[sync_messages_to_close] Failed to fetch Close SMS:",
+              smsRes.status,
+              errText,
+            );
+            return jsonResponse(
+              {
+                error: `Failed to fetch Close SMS activities: ${smsRes.status}`,
+              },
+              400,
+            );
+          }
+          const smsData = await smsRes.json();
+          const items = smsData.data || [];
+          for (const s of items) {
+            existingSms.push({
+              text: (s.text || "").trim(),
+              direction: s.direction || "",
+              date_created: s.date_created || "",
+            });
+          }
+          hasMore = smsData.has_more === true;
+          skip += items.length;
+          if (items.length === 0) break;
+        }
+
+        // 5. Diff: find bot messages not in Close
+        // Match by content + direction (fuzzy timestamp within 60s)
+        function isSynced(botMsg: {
+          content: string;
+          direction: string;
+          createdAt: string;
+        }): boolean {
+          const botText = botMsg.content.trim();
+          const botDir =
+            botMsg.direction === "outbound" ? "outbound" : "inbound";
+          const botTime = new Date(botMsg.createdAt).getTime();
+          return existingSms.some((s) => {
+            if (s.text !== botText) return false;
+            if (s.direction !== botDir) return false;
+            const closeTime = new Date(s.date_created).getTime();
+            return Math.abs(botTime - closeTime) < 120_000; // 2min tolerance
+          });
+        }
+
+        const toSync = allBotMessages.filter((m) => m.content && !isSynced(m));
+
+        // 6. Create missing SMS activities in Close
+        let synced = 0;
+        let failed = 0;
+        for (const msg of toSync) {
+          const smsBody: Record<string, unknown> = {
+            lead_id: closeLeadId,
+            text: msg.content,
+            direction: msg.direction === "outbound" ? "outbound" : "inbound",
+            status: msg.direction === "outbound" ? "sent" : "inbox",
+            date_created: msg.createdAt,
+          };
+          if (remotePhone) smsBody.remote_phone = remotePhone;
+          if (localPhone) smsBody.local_phone = localPhone;
+
+          try {
+            const createRes = await fetch(`${CLOSE_BASE}/activity/sms/`, {
+              method: "POST",
+              headers: {
+                Authorization: closeAuth,
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              body: JSON.stringify(smsBody),
+              signal: AbortSignal.timeout(10_000),
+            });
+            if (createRes.ok) {
+              synced++;
+            } else {
+              failed++;
+              const errText = await createRes.text().catch(() => "");
+              console.error(
+                `[sync_messages_to_close] Failed to create SMS activity: ${createRes.status}`,
+                errText,
+              );
+            }
+          } catch (e) {
+            failed++;
+            console.error("[sync_messages_to_close] Error creating SMS:", e);
+          }
+
+          // Rate limit protection: small delay between creates
+          if (toSync.length > 10) {
+            await new Promise((r) => setTimeout(r, 200));
+          }
+        }
+
+        return jsonResponse({
+          synced,
+          failed,
+          total: allBotMessages.length,
+          alreadyInClose: allBotMessages.length - toSync.length,
+          closeLeadId,
+        });
       }
 
       default:
