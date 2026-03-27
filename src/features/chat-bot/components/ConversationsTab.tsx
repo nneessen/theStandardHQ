@@ -10,6 +10,8 @@ import {
   RefreshCw,
   Search,
   X,
+  Phone,
+  PhoneCall,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +31,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { ConversationThread } from "./ConversationThread";
 import {
   useChatBotConversations,
@@ -118,6 +126,29 @@ export function ConversationsTab() {
     if (conv.leadName) return conv.leadName;
     if (conv.leadPhone) return conv.leadPhone;
     return "Unknown Lead";
+  };
+
+  const channelIcon = (channel: string | null | undefined) => {
+    if (!channel || channel === "email") return null;
+    const map: Record<string, { icon: typeof Phone; label: string }> = {
+      sms: { icon: Phone, label: "SMS" },
+      voice: { icon: PhoneCall, label: "Voice" },
+    };
+    const entry = map[channel];
+    if (!entry) return null;
+    const Icon = entry.icon;
+    return (
+      <TooltipProvider delayDuration={200}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Icon className="h-3 w-3 text-zinc-400" />
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-[10px]">
+            {entry.label}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
   };
 
   const statusBadge = (s: string) => {
@@ -238,6 +269,9 @@ export function ConversationsTab() {
                 <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
                   Lead
                 </TableHead>
+                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-10 text-center">
+                  Ch
+                </TableHead>
                 <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
                   Status
                 </TableHead>
@@ -249,13 +283,13 @@ export function ConversationsTab() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="py-8 text-center">
+                  <TableCell colSpan={4} className="py-8 text-center">
                     <Loader2 className="h-5 w-5 animate-spin text-zinc-400 mx-auto" />
                   </TableCell>
                 </TableRow>
               ) : conversations.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={3} className="py-8 text-center">
+                  <TableCell colSpan={4} className="py-8 text-center">
                     <MessageSquare className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
                     <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
                       {debouncedSearch
@@ -287,6 +321,9 @@ export function ConversationsTab() {
                           </p>
                         )}
                       </div>
+                    </TableCell>
+                    <TableCell className="py-1.5 text-center">
+                      {channelIcon(conv.channel)}
                     </TableCell>
                     <TableCell className="py-1.5">
                       {statusBadge(conv.status)}

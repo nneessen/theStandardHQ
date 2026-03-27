@@ -153,6 +153,12 @@ export interface ChatBotConversation {
   lastEventAt: string | null;
   updatedAt: string;
   createdAt: string;
+  channel: "sms" | "email" | "voice" | null;
+  objectionCount?: number;
+  hardNoCount?: number;
+  voiceCallOutcome?: string | null;
+  lastOutboundChannel?: "sms" | "voice" | null;
+  lastOutboundChannelAt?: string | null;
 }
 
 export interface ChatBotMessage {
@@ -161,6 +167,9 @@ export interface ChatBotMessage {
   direction: "inbound" | "outbound";
   content: string;
   createdAt: string;
+  channel?: "sms" | "email" | "voice";
+  senderType?: "human" | "bot";
+  messageKind?: "generic" | "intro" | "follow_up";
 }
 
 export interface ChatBotAppointment {

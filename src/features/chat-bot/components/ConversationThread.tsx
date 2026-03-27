@@ -10,6 +10,8 @@ import {
   Bot,
   User,
   RefreshCw,
+  Phone,
+  PhoneCall,
 } from "lucide-react";
 import {
   Dialog,
@@ -64,9 +66,19 @@ export function ConversationThread({
     }
   }, [open, conversation?.id, conversation?.closeLeadId]);
 
-  const messages = messagesData?.data || [];
+  // Filter out email messages — this is an SMS/voice conversation viewer
+  const allMessages = messagesData?.data || [];
+  const messages = allMessages.filter((m) => m.channel !== "email");
   const total = messagesData?.total || 0;
   const totalPages = Math.ceil(total / limit);
+
+  // Auto-scroll to bottom (newest messages) when messages load or dialog opens
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (messages.length > 0 && !isLoading) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+    }
+  }, [messages.length, isLoading, open]);
 
   const formatTime = (dateStr: string) => {
     const d = new Date(dateStr);
@@ -85,16 +97,26 @@ export function ConversationThread({
         <DialogHeader className="px-3 pt-3 pb-2 border-b border-zinc-100 dark:border-zinc-800">
           <DialogTitle className="text-sm font-semibold flex items-center gap-2">
             <MessageSquare className="h-4 w-4 text-zinc-400" />
-            {conversation?.closeLeadId
-              ? conversation.closeLeadId.replace(/^lead_/, "").slice(0, 16) +
-                "…"
-              : "Conversation"}
+            {conversation?.leadName ??
+              conversation?.leadPhone ??
+              "Unknown Lead"}
           </DialogTitle>
           {conversation && (
             <div className="flex items-center gap-2 mt-1">
               {conversation.localPhone && (
                 <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
                   {conversation.localPhone}
+                </span>
+              )}
+              {conversation.channel && conversation.channel !== "email" && (
+                <span className="flex items-center gap-0.5 text-[10px] text-zinc-400">
+                  {conversation.channel === "sms" && (
+                    <Phone className="h-2.5 w-2.5" />
+                  )}
+                  {conversation.channel === "voice" && (
+                    <PhoneCall className="h-2.5 w-2.5" />
+                  )}
+                  <span className="uppercase">{conversation.channel}</span>
                 </span>
               )}
               <Badge
@@ -140,50 +162,72 @@ export function ConversationThread({
               </p>
             </div>
           ) : (
-            [...messages].reverse().map((msg) => (
-              <div
-                key={msg.id}
-                className={cn(
-                  "flex gap-1.5",
-                  msg.direction === "outbound"
-                    ? "justify-end"
-                    : "justify-start",
-                )}
-              >
-                {msg.direction === "inbound" && (
-                  <div className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <User className="h-2.5 w-2.5 text-zinc-500 dark:text-zinc-400" />
-                  </div>
-                )}
+            <>
+              {messages.map((msg) => (
                 <div
+                  key={msg.id}
                   className={cn(
-                    "max-w-[75%] rounded-lg px-2.5 py-1.5",
+                    "flex gap-1.5",
                     msg.direction === "outbound"
-                      ? "bg-blue-600 text-white"
-                      : "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100",
+                      ? "justify-end"
+                      : "justify-start",
                   )}
                 >
-                  <p className="text-[11px] whitespace-pre-wrap">
-                    {msg.content}
-                  </p>
-                  <p
+                  {msg.direction === "inbound" && (
+                    <div className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <User className="h-2.5 w-2.5 text-zinc-500 dark:text-zinc-400" />
+                    </div>
+                  )}
+                  <div
                     className={cn(
-                      "text-[9px] mt-0.5",
+                      "max-w-[75%] rounded-lg px-2.5 py-1.5",
                       msg.direction === "outbound"
-                        ? "text-blue-200"
-                        : "text-zinc-400 dark:text-zinc-500",
+                        ? "bg-blue-600 text-white"
+                        : "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100",
                     )}
                   >
-                    {formatTime(msg.createdAt)}
-                  </p>
-                </div>
-                {msg.direction === "outbound" && (
-                  <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Bot className="h-2.5 w-2.5 text-white" />
+                    <p className="text-[11px] whitespace-pre-wrap">
+                      {msg.content}
+                    </p>
+                    <div
+                      className={cn(
+                        "flex items-center gap-1 mt-0.5",
+                        msg.direction === "outbound"
+                          ? "text-blue-200"
+                          : "text-zinc-400 dark:text-zinc-500",
+                      )}
+                    >
+                      <span className="text-[9px]">
+                        {formatTime(msg.createdAt)}
+                      </span>
+                      {msg.senderType === "bot" && (
+                        <span className="text-[8px] flex items-center gap-0.5 opacity-70">
+                          <Bot className="h-2 w-2" />
+                          AI
+                        </span>
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
-            ))
+                  {msg.direction === "outbound" && (
+                    <div
+                      className={cn(
+                        "w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5",
+                        msg.senderType === "human"
+                          ? "bg-zinc-600"
+                          : "bg-blue-600",
+                      )}
+                    >
+                      {msg.senderType === "human" ? (
+                        <User className="h-2.5 w-2.5 text-white" />
+                      ) : (
+                        <Bot className="h-2.5 w-2.5 text-white" />
+                      )}
+                    </div>
+                  )}
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </>
           )}
         </div>
 
