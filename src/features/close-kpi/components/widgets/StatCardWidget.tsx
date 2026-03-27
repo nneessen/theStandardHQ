@@ -8,8 +8,24 @@ interface StatCardWidgetProps {
   data: StatCardResult;
 }
 
+function formatValue(value: number, unit?: string): string {
+  if (unit === "$" || unit === "currency") {
+    return `$${value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  }
+  if (unit === "%" || unit === "percent") {
+    return `${value}%`;
+  }
+  if (unit === " min" || unit === "minutes") {
+    return `${value.toLocaleString()} min`;
+  }
+  if (unit === "duration_days") {
+    return `${value} days`;
+  }
+  return value.toLocaleString();
+}
+
 export const StatCardWidget: React.FC<StatCardWidgetProps> = ({ data }) => {
-  const { value, changePercent, previousValue, label } = data;
+  const { value, changePercent, previousValue, label, unit } = data;
   const trend =
     changePercent == null
       ? "neutral"
@@ -26,7 +42,7 @@ export const StatCardWidget: React.FC<StatCardWidgetProps> = ({ data }) => {
       </p>
       <div className="flex items-baseline gap-2">
         <span className="font-mono text-2xl font-bold text-foreground">
-          {value.toLocaleString()}
+          {formatValue(value, unit)}
         </span>
         {changePercent != null && (
           <span
@@ -51,7 +67,7 @@ export const StatCardWidget: React.FC<StatCardWidgetProps> = ({ data }) => {
       </div>
       {previousValue != null && (
         <p className="text-[10px] text-muted-foreground">
-          vs {previousValue.toLocaleString()} previous period
+          vs {formatValue(previousValue, unit)} previous period
         </p>
       )}
     </div>

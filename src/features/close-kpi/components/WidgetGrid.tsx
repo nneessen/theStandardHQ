@@ -41,6 +41,7 @@ import type {
   StatusDistributionResult,
   OpportunitySummaryResult,
   CallAnalyticsResult,
+  LifecycleTrackerResult,
   StatCardConfig as StatCardConfigType,
   StatusDistributionConfig as StatusDistConfigType,
   SmartViewMonitorConfig as SmartViewConfigType,
@@ -296,44 +297,46 @@ const WidgetContent: React.FC<{
       switch (metric) {
         case "calls_total":
           val = callData.total ?? 0;
+          lbl = "Total Calls";
           break;
         case "calls_inbound":
           val = callData.inbound ?? 0;
-          lbl = "Inbound";
+          lbl = "Inbound Calls";
           break;
         case "calls_outbound":
           val = callData.outbound ?? 0;
-          lbl = "Outbound";
+          lbl = "Outbound Calls";
           break;
         case "calls_answered":
           val = callData.answered ?? 0;
-          lbl = "Answered";
+          lbl = "Answered Calls";
           break;
         case "calls_voicemail":
           val = callData.voicemail ?? 0;
-          lbl = "Voicemail";
+          lbl = "Voicemail Calls";
           break;
         case "calls_missed":
           val = callData.missed ?? 0;
-          lbl = "Missed";
+          lbl = "Missed Calls";
           break;
         case "call_connect_rate":
           val = callData.connectRate ?? 0;
           lbl = "Connect Rate";
-          unit = "%";
+          unit = "percent";
           break;
         case "call_duration_total":
           val = callData.totalDurationMin ?? 0;
-          lbl = "Total Minutes";
-          unit = " min";
+          lbl = "Total Call Time";
+          unit = "minutes";
           break;
         case "call_duration_avg":
           val = callData.avgDurationMin ?? 0;
-          lbl = "Avg Duration";
-          unit = " min";
+          lbl = "Avg Call Duration";
+          unit = "minutes";
           break;
         default:
           val = callData.total ?? 0;
+          lbl = "Total Calls";
       }
       return (
         <StatCardWidget
@@ -352,21 +355,21 @@ const WidgetContent: React.FC<{
         case "pipeline_value":
           oppVal = oppData.totalValue ?? 0;
           oppLbl = "Pipeline Value";
-          oppUnit = "$";
+          oppUnit = "currency";
           break;
         case "pipeline_count":
           oppVal = oppData.activeCount ?? 0;
-          oppLbl = "Active Opps";
+          oppLbl = "Active Opportunities";
           break;
         case "win_rate":
           oppVal = oppData.winRate ?? 0;
           oppLbl = "Win Rate";
-          oppUnit = "%";
+          oppUnit = "percent";
           break;
         case "avg_deal_size":
           oppVal = oppData.avgDealSize ?? 0;
-          oppLbl = "Avg Deal";
-          oppUnit = "$";
+          oppLbl = "Avg Deal Size";
+          oppUnit = "currency";
           break;
         case "deals_won":
           oppVal = oppData.wonCount ?? 0;
@@ -379,19 +382,21 @@ const WidgetContent: React.FC<{
         case "deals_won_value":
           oppVal = oppData.wonValue ?? 0;
           oppLbl = "Revenue Won";
-          oppUnit = "$";
+          oppUnit = "currency";
           break;
         case "avg_time_to_close":
           oppVal = oppData.avgTimeToClose ?? 0;
           oppLbl = "Avg Days to Close";
+          oppUnit = "duration_days";
           break;
         case "sales_velocity":
           oppVal = oppData.salesVelocity ?? 0;
           oppLbl = "Sales Velocity";
-          oppUnit = "$";
+          oppUnit = "currency";
           break;
         default:
           oppVal = oppData.dealCount ?? 0;
+          oppLbl = "Total Opportunities";
       }
       return (
         <StatCardWidget
@@ -400,29 +405,33 @@ const WidgetContent: React.FC<{
       );
     }
     case "lifecycle_tracker": {
-      const lcData = data as Record<string, unknown>;
-      const transitions =
-        (lcData?.transitions as
-          | { avgDays: number; medianDays: number; sampleSize: number }[]
-          | undefined) ?? [];
-      const t = transitions[0];
+      const lcData = data as LifecycleTrackerResult;
+      const lcConfig = widget.config as LifecycleConfigType;
+      const t = lcData.transitions?.[0];
       if (!t)
         return (
           <p className="text-[10px] text-muted-foreground">
-            No transition data
+            No transition data for this period
           </p>
         );
+      const fromLabel = lcConfig.fromStatus || "Any";
+      const toLabel = lcConfig.toStatus || "Next Status";
       return (
         <div className="flex h-full flex-col justify-center">
           <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-            Avg Time
+            {fromLabel} → {toLabel}
           </p>
           <span className="font-mono text-2xl font-bold text-foreground">
-            {t.avgDays}d
+            {t.avgDays} days
           </span>
-          <p className="text-[10px] text-muted-foreground">
-            Median: {t.medianDays}d · {t.sampleSize} leads
-          </p>
+          <div className="mt-1 space-y-0.5">
+            <p className="text-[10px] text-muted-foreground">
+              Median: {t.medianDays}d · Range: {t.minDays}d – {t.maxDays}d
+            </p>
+            <p className="text-[10px] text-muted-foreground">
+              Sample: {t.sampleSize} leads
+            </p>
+          </div>
         </div>
       );
     }

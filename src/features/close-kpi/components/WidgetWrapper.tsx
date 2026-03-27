@@ -8,6 +8,7 @@ import {
   AlertCircle,
   RefreshCw,
   Check,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +19,18 @@ import {
 import { WidgetSkeleton } from "./skeletons/WidgetSkeleton";
 import type { CloseKpiWidget, WidgetResult } from "../types/close-kpi.types";
 import { getWidgetColSpan } from "../config/widget-registry";
+
+const DATE_RANGE_LABELS: Record<string, string> = {
+  today: "Today",
+  this_week: "This Week",
+  this_month: "This Month",
+  last_7_days: "Last 7 Days",
+  last_30_days: "Last 30 Days",
+  last_90_days: "Last 90 Days",
+  this_quarter: "This Quarter",
+  this_year: "This Year",
+  custom: "Custom",
+};
 
 interface WidgetWrapperProps {
   widget: CloseKpiWidget;
@@ -69,15 +82,20 @@ export const WidgetWrapper: React.FC<WidgetWrapperProps> = ({
       <Collapsible open={configOpen} onOpenChange={setConfigOpen}>
         {/* Header */}
         <div className="flex h-7 items-center justify-between border-b border-border px-2">
-          <div className="flex items-center gap-1">
+          <div className="flex min-w-0 items-center gap-1">
             <div
               {...dragHandleProps}
               className="cursor-grab text-muted-foreground/50 hover:text-muted-foreground"
             >
               <GripVertical className="h-3 w-3" />
             </div>
-            <span className="text-[11px] font-semibold text-card-foreground">
+            <span className="truncate text-[11px] font-semibold text-card-foreground">
               {widget.title}
+            </span>
+            <span className="flex shrink-0 items-center gap-0.5 rounded bg-muted px-1 py-0.5 text-[9px] text-muted-foreground">
+              <Calendar className="h-2.5 w-2.5" />
+              {DATE_RANGE_LABELS[widget.config.dateRange] ??
+                widget.config.dateRange}
             </span>
           </div>
           <div className="flex items-center gap-0.5">
@@ -131,7 +149,12 @@ export const WidgetWrapper: React.FC<WidgetWrapperProps> = ({
         ) : error ? (
           <div className="flex h-full flex-col items-center justify-center text-center">
             <AlertCircle className="mb-1 h-4 w-4 text-destructive" />
-            <p className="text-[10px] text-destructive">Failed to load</p>
+            <p className="text-[10px] font-medium text-destructive">
+              Failed to load
+            </p>
+            <p className="mt-0.5 max-w-[200px] text-[9px] text-muted-foreground">
+              {error.message}
+            </p>
             {onRetry && (
               <Button
                 variant="ghost"
