@@ -408,14 +408,20 @@ const WidgetContent: React.FC<{
       const lcData = data as LifecycleTrackerResult;
       const lcConfig = widget.config as LifecycleConfigType;
       const t = lcData.transitions?.[0];
-      if (!t)
-        return (
-          <p className="text-[10px] text-muted-foreground">
-            No transition data for this period
-          </p>
-        );
       const fromLabel = lcConfig.fromStatus || "Any";
       const toLabel = lcConfig.toStatus || "Next Status";
+      if (!t || t.sampleSize === 0)
+        return (
+          <div className="flex h-full flex-col justify-center">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              {fromLabel} → {toLabel}
+            </p>
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              No leads transitioned between these statuses in this period. Try a
+              wider date range (Last 30 Days or Last 90 Days).
+            </p>
+          </div>
+        );
       return (
         <div className="flex h-full flex-col justify-center">
           <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
