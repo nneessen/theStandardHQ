@@ -20,17 +20,22 @@ import { CSS } from "@dnd-kit/utilities";
 import { WidgetWrapper } from "./WidgetWrapper";
 import { StatCardWidget } from "./widgets/StatCardWidget";
 import { StatusDistributionWidget } from "./widgets/StatusDistributionWidget";
+import { CallAnalyticsWidget } from "./widgets/CallAnalyticsWidget";
+import { OpportunitySummaryWidget } from "./widgets/OpportunitySummaryWidget";
 import { VmRateSmartViewWidget } from "./widgets/VmRateSmartViewWidget";
+import { BestCallTimesWidget } from "./widgets/BestCallTimesWidget";
+import { CrossReferenceWidget } from "./widgets/CrossReferenceWidget";
+import { SpeedToLeadWidget } from "./widgets/SpeedToLeadWidget";
+import { ContactCadenceWidget } from "./widgets/ContactCadenceWidget";
+import { DialAttemptsWidget } from "./widgets/DialAttemptsWidget";
 import { StatCardConfig } from "./config-forms/StatCardConfig";
 import { StatusDistributionConfig } from "./config-forms/StatusDistributionConfig";
-import { SmartViewMonitorConfig } from "./config-forms/SmartViewMonitorConfig";
 import { LifecycleTrackerConfig } from "./config-forms/LifecycleTrackerConfig";
-import { ActivityTimelineConfig } from "./config-forms/ActivityTimelineConfig";
-import { CrossReferenceConfig } from "./config-forms/CrossReferenceConfig";
 import { OpportunitySummaryConfig } from "./config-forms/OpportunitySummaryConfig";
 import { CallAnalyticsConfig } from "./config-forms/CallAnalyticsConfig";
-import { CustomFieldBreakdownConfig } from "./config-forms/CustomFieldBreakdownConfig";
 import { VmRateSmartViewConfig } from "./config-forms/VmRateSmartViewConfig";
+import { CrossReferenceConfig } from "./config-forms/CrossReferenceConfig";
+import { DateRangeOnlyConfig } from "./config-forms/DateRangeOnlyConfig";
 import { useKpiWidgetData } from "../hooks/useKpiWidgetData";
 import { useUpdateWidget } from "../hooks/useCloseKpiDashboard";
 import type {
@@ -44,15 +49,17 @@ import type {
   LifecycleTrackerResult,
   StatCardConfig as StatCardConfigType,
   StatusDistributionConfig as StatusDistConfigType,
-  SmartViewMonitorConfig as SmartViewConfigType,
   LifecycleTrackerConfig as LifecycleConfigType,
-  ActivityTimelineConfig as ActivityConfigType,
-  CrossReferenceConfig as CrossRefConfigType,
   OpportunitySummaryConfig as OppConfigType,
   CallAnalyticsConfig as CallConfigType,
-  CustomFieldBreakdownConfig as CFConfigType,
   VmRateSmartViewConfig as VmRateConfigType,
   VmRateSmartViewResult,
+  BestCallTimesResult,
+  CrossReferenceResult,
+  CrossReferenceConfig as CrossRefConfigType,
+  SpeedToLeadResult,
+  ContactCadenceResult,
+  DialAttemptsResult,
 } from "../types/close-kpi.types";
 
 interface WidgetGridProps {
@@ -207,31 +214,10 @@ const WidgetConfigForm: React.FC<{
           onChange={onChange}
         />
       );
-    case "smart_view_monitor":
-      return (
-        <SmartViewMonitorConfig
-          config={config as SmartViewConfigType}
-          onChange={onChange}
-        />
-      );
     case "lifecycle_tracker":
       return (
         <LifecycleTrackerConfig
           config={config as LifecycleConfigType}
-          onChange={onChange}
-        />
-      );
-    case "activity_timeline":
-      return (
-        <ActivityTimelineConfig
-          config={config as ActivityConfigType}
-          onChange={onChange}
-        />
-      );
-    case "cross_reference":
-      return (
-        <CrossReferenceConfig
-          config={config as CrossRefConfigType}
           onChange={onChange}
         />
       );
@@ -249,18 +235,29 @@ const WidgetConfigForm: React.FC<{
           onChange={onChange}
         />
       );
-    case "custom_field_breakdown":
-      return (
-        <CustomFieldBreakdownConfig
-          config={config as CFConfigType}
-          onChange={onChange}
-        />
-      );
     case "vm_rate_smart_view":
       return (
         <VmRateSmartViewConfig
           config={config as VmRateConfigType}
           onChange={onChange}
+        />
+      );
+    case "cross_reference":
+      return (
+        <CrossReferenceConfig
+          config={config as CrossRefConfigType}
+          onChange={onChange}
+        />
+      );
+    case "best_call_times":
+    case "speed_to_lead":
+    case "contact_cadence":
+    case "dial_attempts":
+      return (
+        <DateRangeOnlyConfig
+          config={config}
+          onChange={onChange}
+          showSmartViewFilter={widgetType !== "best_call_times"}
         />
       );
     default:
@@ -285,125 +282,17 @@ const WidgetContent: React.FC<{
       return <StatCardWidget data={data as StatCardResult} />;
     case "status_distribution":
       return (
-        <StatusDistributionWidget data={data as StatusDistributionResult} />
-      );
-    case "call_analytics": {
-      const callData = data as CallAnalyticsResult;
-      const metric = (widget.config as unknown as Record<string, unknown>)
-        .metric as string;
-      let val = 0;
-      let lbl = "Calls";
-      let unit = "";
-      switch (metric) {
-        case "calls_total":
-          val = callData.total ?? 0;
-          lbl = "Total Calls";
-          break;
-        case "calls_inbound":
-          val = callData.inbound ?? 0;
-          lbl = "Inbound Calls";
-          break;
-        case "calls_outbound":
-          val = callData.outbound ?? 0;
-          lbl = "Outbound Calls";
-          break;
-        case "calls_answered":
-          val = callData.answered ?? 0;
-          lbl = "Answered Calls";
-          break;
-        case "calls_voicemail":
-          val = callData.voicemail ?? 0;
-          lbl = "Voicemail Calls";
-          break;
-        case "calls_missed":
-          val = callData.missed ?? 0;
-          lbl = "Missed Calls";
-          break;
-        case "call_connect_rate":
-          val = callData.connectRate ?? 0;
-          lbl = "Connect Rate";
-          unit = "percent";
-          break;
-        case "call_duration_total":
-          val = callData.totalDurationMin ?? 0;
-          lbl = "Total Call Time";
-          unit = "minutes";
-          break;
-        case "call_duration_avg":
-          val = callData.avgDurationMin ?? 0;
-          lbl = "Avg Call Duration";
-          unit = "minutes";
-          break;
-        default:
-          val = callData.total ?? 0;
-          lbl = "Total Calls";
-      }
-      return (
-        <StatCardWidget
-          data={{ value: val, label: lbl, unit: unit || undefined }}
+        <StatusDistributionWidget
+          data={data as StatusDistributionResult}
+          label={widget.title}
         />
       );
-    }
-    case "opportunity_summary": {
-      const oppData = data as OpportunitySummaryResult;
-      const oppMetric = (widget.config as unknown as Record<string, unknown>)
-        .metric as string;
-      let oppVal = 0;
-      let oppLbl = "Pipeline";
-      let oppUnit = "";
-      switch (oppMetric) {
-        case "pipeline_value":
-          oppVal = oppData.totalValue ?? 0;
-          oppLbl = "Pipeline Value";
-          oppUnit = "currency";
-          break;
-        case "pipeline_count":
-          oppVal = oppData.activeCount ?? 0;
-          oppLbl = "Active Opportunities";
-          break;
-        case "win_rate":
-          oppVal = oppData.winRate ?? 0;
-          oppLbl = "Win Rate";
-          oppUnit = "percent";
-          break;
-        case "avg_deal_size":
-          oppVal = oppData.avgDealSize ?? 0;
-          oppLbl = "Avg Deal Size";
-          oppUnit = "currency";
-          break;
-        case "deals_won":
-          oppVal = oppData.wonCount ?? 0;
-          oppLbl = "Deals Won";
-          break;
-        case "deals_lost":
-          oppVal = oppData.lostCount ?? 0;
-          oppLbl = "Deals Lost";
-          break;
-        case "deals_won_value":
-          oppVal = oppData.wonValue ?? 0;
-          oppLbl = "Revenue Won";
-          oppUnit = "currency";
-          break;
-        case "avg_time_to_close":
-          oppVal = oppData.avgTimeToClose ?? 0;
-          oppLbl = "Avg Days to Close";
-          oppUnit = "duration_days";
-          break;
-        case "sales_velocity":
-          oppVal = oppData.salesVelocity ?? 0;
-          oppLbl = "Sales Velocity";
-          oppUnit = "currency";
-          break;
-        default:
-          oppVal = oppData.dealCount ?? 0;
-          oppLbl = "Total Opportunities";
-      }
+    case "call_analytics":
+      return <CallAnalyticsWidget data={data as CallAnalyticsResult} />;
+    case "opportunity_summary":
       return (
-        <StatCardWidget
-          data={{ value: oppVal, label: oppLbl, unit: oppUnit || undefined }}
-        />
+        <OpportunitySummaryWidget data={data as OpportunitySummaryResult} />
       );
-    }
     case "lifecycle_tracker": {
       const lcData = data as LifecycleTrackerResult;
       const lcConfig = widget.config as LifecycleConfigType;
@@ -451,15 +340,16 @@ const WidgetContent: React.FC<{
         />
       );
     }
-    case "smart_view_monitor":
-    case "activity_timeline":
+    case "best_call_times":
+      return <BestCallTimesWidget data={data as BestCallTimesResult} />;
     case "cross_reference":
-    case "custom_field_breakdown":
-      return (
-        <div className="flex h-full items-center justify-center">
-          <p className="text-[10px] text-muted-foreground">Coming soon</p>
-        </div>
-      );
+      return <CrossReferenceWidget data={data as CrossReferenceResult} />;
+    case "speed_to_lead":
+      return <SpeedToLeadWidget data={data as SpeedToLeadResult} />;
+    case "contact_cadence":
+      return <ContactCadenceWidget data={data as ContactCadenceResult} />;
+    case "dial_attempts":
+      return <DialAttemptsWidget data={data as DialAttemptsResult} />;
     default:
       return null;
   }

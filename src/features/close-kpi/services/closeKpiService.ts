@@ -94,14 +94,26 @@ export interface ActivitiesResponse {
     totalDurationMin: number;
     avgDurationMin: number;
     byDisposition: Record<string, number>;
+    byHour?: Record<number, { total: number; answered: number }>;
     isTruncated?: boolean;
   };
-  email?: { total: number };
-  sms?: { total: number };
+  email?: {
+    total: number;
+    sent: number;
+    received: number;
+    isTruncated?: boolean;
+  };
+  sms?: {
+    total: number;
+    sent: number;
+    received: number;
+    isTruncated?: boolean;
+  };
 }
 
 export interface OpportunitiesResponse {
   total: number;
+  isTruncated?: boolean;
   totalValue: number;
   wonCount: number;
   wonValue: number;
@@ -203,4 +215,109 @@ export const closeKpiService = {
     firstCallOnly?: boolean;
   }) =>
     closeKpiApi<VmRateSmartViewResponse>("get_vm_rate_by_smart_view", params),
+
+  /** Best time to call — connect rates by hour and day of week */
+  getBestCallTimes: (params: { from?: string; to?: string }) =>
+    closeKpiApi<{
+      hourly: {
+        hour: number;
+        label: string;
+        total: number;
+        answered: number;
+        vm: number;
+        noAnswer: number;
+        connectRate: number;
+      }[];
+      daily: {
+        day: number;
+        label: string;
+        total: number;
+        answered: number;
+        connectRate: number;
+      }[];
+      bestHour: {
+        hour: number;
+        label: string;
+        connectRate: number;
+        total: number;
+      } | null;
+      bestDay: {
+        day: number;
+        label: string;
+        connectRate: number;
+        total: number;
+      } | null;
+      totalCalls: number;
+      isTruncated: boolean;
+    }>("get_best_call_times", params),
+
+  /** Cross-reference: smart view rows × status columns */
+  getCrossReference: (params: {
+    smartViewIds: string[];
+    statusIds?: string[];
+  }) =>
+    closeKpiApi<{
+      rows: {
+        smartViewId: string;
+        smartViewName: string;
+        cells: Record<string, number>;
+        total: number;
+      }[];
+      statusLabels: { id: string; label: string }[];
+      totals: Record<string, number>;
+      grandTotal: number;
+    }>("get_cross_reference", params),
+
+  /** Speed to lead — time from creation to first outbound touch */
+  getSpeedToLead: (params: {
+    from?: string;
+    to?: string;
+    smartViewId?: string;
+  }) =>
+    closeKpiApi<{
+      avgMinutes: number;
+      medianMinutes: number;
+      distribution: { label: string; max: number; count: number }[];
+      totalLeads: number;
+      leadsWithActivity: number;
+      pctContacted: number;
+    }>("get_speed_to_lead", params),
+
+  /** Contact cadence — time gaps between touches */
+  getContactCadence: (params: {
+    from?: string;
+    to?: string;
+    smartViewId?: string;
+  }) =>
+    closeKpiApi<{
+      avgGapHours: number;
+      medianGapHours: number;
+      totalLeads: number;
+      leadsContacted: number;
+      leadsMultiTouch: number;
+      totalTouches: number;
+      avgTouchesPerLead: number;
+      touchDistribution: { touches: number; leads: number }[];
+    }>("get_contact_cadence", params),
+
+  /** Dial attempts — how many calls before connection */
+  getDialAttempts: (params: {
+    from?: string;
+    to?: string;
+    smartViewId?: string;
+  }) =>
+    closeKpiApi<{
+      avgAttempts: number;
+      medianAttempts: number;
+      totalLeadsDialed: number;
+      leadsConnected: number;
+      neverConnected: number;
+      connectPct: number;
+      attemptRates: {
+        attempt: number;
+        total: number;
+        answered: number;
+        connectRate: number;
+      }[];
+    }>("get_dial_attempts", params),
 };

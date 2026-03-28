@@ -1,0 +1,108 @@
+// src/features/close-kpi/components/widgets/ContactCadenceWidget.tsx
+
+import React from "react";
+import { Repeat } from "lucide-react";
+import type { ContactCadenceResult } from "../../types/close-kpi.types";
+
+interface ContactCadenceWidgetProps {
+  data: ContactCadenceResult;
+}
+
+function formatHours(hours: number): string {
+  if (hours < 1) return `${Math.round(hours * 60)} min`;
+  if (hours < 24) return `${hours.toFixed(1)} hr`;
+  return `${(hours / 24).toFixed(1)} days`;
+}
+
+export const ContactCadenceWidget: React.FC<ContactCadenceWidgetProps> = ({
+  data,
+}) => {
+  const {
+    avgGapHours,
+    medianGapHours,
+    totalLeads,
+    leadsContacted,
+    leadsMultiTouch,
+    totalTouches,
+    avgTouchesPerLead,
+    touchDistribution,
+  } = data;
+
+  const maxTouchDist = Math.max(...touchDistribution.map((d) => d.leads), 1);
+
+  return (
+    <div className="flex h-full flex-col gap-2">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <Repeat className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+            Contact Cadence
+          </span>
+        </div>
+      </div>
+
+      {/* Primary metrics */}
+      <div className="grid grid-cols-3 gap-1.5">
+        <div className="rounded bg-muted/50 px-1.5 py-1">
+          <p className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+            Avg Gap
+          </p>
+          <p className="font-mono text-sm font-semibold text-foreground">
+            {formatHours(avgGapHours)}
+          </p>
+        </div>
+        <div className="rounded bg-muted/50 px-1.5 py-1">
+          <p className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+            Median Gap
+          </p>
+          <p className="font-mono text-sm font-semibold text-foreground">
+            {formatHours(medianGapHours)}
+          </p>
+        </div>
+        <div className="rounded bg-muted/50 px-1.5 py-1">
+          <p className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+            Avg Touches
+          </p>
+          <p className="font-mono text-sm font-semibold text-foreground">
+            {avgTouchesPerLead}
+          </p>
+        </div>
+      </div>
+
+      {/* Touch distribution */}
+      <div className="flex-1 space-y-0.5">
+        <p className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+          Touches per Lead
+        </p>
+        {touchDistribution.map((d) => (
+          <div key={d.touches} className="flex items-center gap-1.5">
+            <span className="w-6 shrink-0 text-right font-mono text-[10px] text-muted-foreground">
+              {d.touches}×
+            </span>
+            <div className="flex-1">
+              <div
+                className="h-3 rounded-sm bg-foreground/60"
+                style={{
+                  width: `${(d.leads / maxTouchDist) * 100}%`,
+                  minWidth: d.leads > 0 ? "2px" : "0",
+                }}
+              />
+            </div>
+            <span className="w-10 text-right font-mono text-[10px] text-foreground">
+              {d.leads} leads
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer */}
+      <div className="flex gap-3 text-[10px] text-muted-foreground">
+        <span>{totalLeads} leads</span>
+        <span>{leadsContacted} contacted</span>
+        <span>{leadsMultiTouch} multi-touch</span>
+        <span>{totalTouches} total touches</span>
+      </div>
+    </div>
+  );
+};

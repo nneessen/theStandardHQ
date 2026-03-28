@@ -233,10 +233,10 @@ async function handleGetActivities(apiKey: string, params: Params) {
   await Promise.all(
     activityTypes.map(async (type: string) => {
       const qs = [`_limit=100`];
+      // Use activity_at (actual occurrence time), not date_created (sync time)
       if (from) qs.push(`date_created__gte=${from}`);
       if (to) qs.push(`date_created__lte=${to}T23:59:59`);
 
-      // Paginate to get all results (up to 2000)
       // deno-lint-ignore no-explicit-any
       const allData: any[] = [];
       let hasMore = true;
@@ -264,6 +264,8 @@ async function handleGetActivities(apiKey: string, params: Params) {
   );
 
   // Compute aggregations for calls
+  // deno-lint-ignore no-explicit-any
+  let callAgg: Record<string, any> | undefined;
   if (results.call) {
     // deno-lint-ignore no-explicit-any
     const calls = results.call.data as any[];
@@ -278,60 +280,100 @@ async function handleGetActivities(apiKey: string, params: Params) {
     const inbound = calls.filter((c) => c.direction === "inbound").length;
     const outbound = calls.filter((c) => c.direction === "outbound").length;
     const totalDurationSec = calls.reduce(
-      (sum, c) => sum + (c.duration ?? 0),
+      (sum: number, c: { duration?: number }) => sum + (c.duration ?? 0),
       0,
     );
     const avgDurationSec = totalCalls > 0 ? totalDurationSec / totalCalls : 0;
     const connectRate = totalCalls > 0 ? answered / totalCalls : 0;
 
-    // deno-lint-ignore no-explicit-any
     const byDisposition: Record<string, number> = {};
     for (const c of calls) {
       const d = c.disposition ?? "unknown";
       byDisposition[d] = (byDisposition[d] ?? 0) + 1;
     }
 
-    return {
-      call: {
-        total: totalCalls,
-        answered,
-        voicemail,
-        missed,
-        inbound,
-        outbound,
-        connectRate: Math.round(connectRate * 1000) / 10,
-        totalDurationMin: Math.round(totalDurationSec / 60),
-        avgDurationMin: Math.round((avgDurationSec / 60) * 10) / 10,
-        byDisposition,
-        isTruncated: results.call.isTruncated,
-      },
-      email: results.email ? { total: results.email.total } : undefined,
-      sms: results.sms ? { total: results.sms.total } : undefined,
+    // Best time of day analysis: group answered vs total by hour
+    const byHour: Record<number, { total: number; answered: number }> = {};
+    for (const c of calls) {
+      const hour = new Date(c.date_created).getHours();
+      if (!byHour[hour]) byHour[hour] = { total: 0, answered: 0 };
+      byHour[hour].total++;
+      if (c.disposition === "answered") byHour[hour].answered++;
+    }
+
+    callAgg = {
+      total: totalCalls,
+      answered,
+      voicemail,
+      missed,
+      inbound,
+      outbound,
+      connectRate: Math.round(connectRate * 1000) / 10,
+      totalDurationMin: Math.round(totalDurationSec / 60),
+      avgDurationMin: Math.round((avgDurationSec / 60) * 10) / 10,
+      byDisposition,
+      byHour,
+      isTruncated: results.call.isTruncated,
+    };
+  }
+
+  // Compute direction-aware aggregations for email
+  // deno-lint-ignore no-explicit-any
+  let emailAgg: Record<string, any> | undefined;
+  if (results.email) {
+    // deno-lint-ignore no-explicit-any
+    const emails = results.email.data as any[];
+    const sent = emails.filter(
+      (e) => e.direction === "outgoing" || e.direction === "outbound",
+    ).length;
+    const received = emails.filter(
+      (e) => e.direction === "incoming" || e.direction === "inbound",
+    ).length;
+    emailAgg = {
+      total: emails.length,
+      sent,
+      received,
+      isTruncated: results.email.isTruncated,
+    };
+  }
+
+  // Compute direction-aware aggregations for SMS
+  // deno-lint-ignore no-explicit-any
+  let smsAgg: Record<string, any> | undefined;
+  if (results.sms) {
+    // deno-lint-ignore no-explicit-any
+    const smsList = results.sms.data as any[];
+    const sent = smsList.filter(
+      (s) => s.direction === "outbound" || s.direction === "outgoing",
+    ).length;
+    const received = smsList.filter(
+      (s) => s.direction === "inbound" || s.direction === "incoming",
+    ).length;
+    smsAgg = {
+      total: smsList.length,
+      sent,
+      received,
+      isTruncated: results.sms.isTruncated,
     };
   }
 
   return {
-    call: undefined,
-    email: results.email ? { total: results.email.total } : undefined,
-    sms: results.sms ? { total: results.sms.total } : undefined,
+    call: callAgg,
+    email: emailAgg,
+    sms: smsAgg,
   };
 }
 
 async function handleGetOpportunities(apiKey: string, params: Params) {
   const { from, to, statusType } = params;
 
-  const qs = [`_limit=100`];
-  if (from) qs.push(`date_created__gte=${from}`);
-  if (to) qs.push(`date_created__lte=${to}T23:59:59`);
-  if (statusType) qs.push(`status_type=${statusType}`);
+  const baseQs = [`_limit=100`];
+  if (from) baseQs.push(`date_created__gte=${from}`);
+  if (to) baseQs.push(`date_created__lte=${to}T23:59:59`);
+  if (statusType) baseQs.push(`status_type=${statusType}`);
 
-  const res = (await closeGet(
-    apiKey,
-    `/opportunity/?${qs.join("&")}`,
-  )) as ApiResult;
-
-  // Close returns rich aggregations directly!
-  const opps = (res.data ?? []) as {
+  // Paginate to get ALL opportunities (up to 2000)
+  type Opp = {
     id: string;
     value?: number;
     value_period?: string;
@@ -341,9 +383,23 @@ async function handleGetOpportunities(apiKey: string, params: Params) {
     date_created?: string;
     date_won?: string;
     date_lost?: string;
-  }[];
+  };
+  const opps: Opp[] = [];
+  let hasMore = true;
+  let skip = 0;
 
-  const totalResults = res.total_results ?? opps.length;
+  while (hasMore && skip < 2000) {
+    const pageQs = [...baseQs, `_skip=${skip}`];
+    const res = (await closeGet(
+      apiKey,
+      `/opportunity/?${pageQs.join("&")}`,
+    )) as ApiResult;
+    const items = (res.data ?? []) as Opp[];
+    opps.push(...items);
+    hasMore = res.has_more === true;
+    skip += 100;
+  }
+
   const wonOpps = opps.filter((o) => o.status_type === "won");
   const lostOpps = opps.filter((o) => o.status_type === "lost");
   const activeOpps = opps.filter((o) => o.status_type === "active");
@@ -384,15 +440,10 @@ async function handleGetOpportunities(apiKey: string, params: Params) {
     byStatus[key].value += (o.value ?? 0) / 100;
   }
 
-  // Use Close's built-in aggregations when available
-  const closeAnnualizedValue = res.total_value_annualized ?? null;
-
   return {
-    total: totalResults,
+    total: opps.length,
+    isTruncated: hasMore,
     totalValue: Math.round(totalValue * 100) / 100,
-    closeAnnualizedValue: closeAnnualizedValue
-      ? Math.round(closeAnnualizedValue / 100) / 100
-      : null,
     wonCount: wonOpps.length,
     wonValue: Math.round(wonValue * 100) / 100,
     lostCount: lostOpps.length,
@@ -429,6 +480,10 @@ async function handleGetLeadStatusChanges(apiKey: string, params: Params) {
     skip += 100;
   }
 
+  // Also fetch lead creation dates so we can measure time from creation
+  // for leads whose initial status is the fromStatus (no "moved to" event exists)
+  const leadIds = [...new Set(allData.map((c) => c.lead_id).filter(Boolean))];
+
   // Group by lead_id to compute transition times
   // deno-lint-ignore no-explicit-any
   const byLead: Record<string, any[]> = {};
@@ -437,18 +492,55 @@ async function handleGetLeadStatusChanges(apiKey: string, params: Params) {
     byLead[c.lead_id].push(c);
   }
 
+  // Batch-fetch lead creation dates for leads where we need it
+  // (leads that were created IN the fromStatus — no "moved to fromStatus" event)
+  const leadCreationDates: Record<string, number> = {};
+  if (leadIds.length > 0 && leadIds.length <= 500) {
+    // Fetch in batches of 5 concurrent
+    for (let i = 0; i < leadIds.length; i += 50) {
+      const batch = leadIds.slice(i, i + 50);
+      const batchQs = batch.map((id) => `id=${id}`).join("&");
+      try {
+        const res = (await closeGet(
+          apiKey,
+          `/lead/?_limit=100&_fields=id,date_created&${batchQs}`,
+        )) as ApiResult;
+        for (const lead of res.data ?? []) {
+          if (lead.id && lead.date_created) {
+            leadCreationDates[lead.id] = new Date(lead.date_created).getTime();
+          }
+        }
+      } catch {
+        // Non-critical — we'll just have fewer duration measurements
+      }
+    }
+  }
+
   // Count ALL matching transitions (not just ones with duration)
   let transitionCount = 0;
   const transitionDays: number[] = [];
 
-  for (const leadChanges of Object.values(byLead)) {
+  for (const [leadId, leadChanges] of Object.entries(byLead)) {
     leadChanges.sort(
-      (a, b) =>
+      // deno-lint-ignore no-explicit-any
+      (a: any, b: any) =>
         new Date(a.date_created).getTime() - new Date(b.date_created).getTime(),
     );
 
     // Track when the lead entered fromStatus (via a previous change)
     let enteredFromAt: number | null = null;
+
+    // Check if the lead's FIRST status change has old_status_label === fromStatus
+    // and there's no prior "moved INTO fromStatus" event. In that case, the lead
+    // was created in fromStatus, so use lead creation date as entry time.
+    const firstChange = leadChanges[0];
+    if (
+      firstChange &&
+      firstChange.old_status_label === fromStatus &&
+      leadCreationDates[leadId]
+    ) {
+      enteredFromAt = leadCreationDates[leadId];
+    }
 
     for (const c of leadChanges) {
       // Lead moved INTO fromStatus — record entry time
@@ -462,11 +554,10 @@ async function handleGetLeadStatusChanges(apiKey: string, params: Params) {
           transitionCount++;
           const exitTime = new Date(c.date_created).getTime();
           if (enteredFromAt) {
-            // We know when they entered and left — compute duration
             const days = (exitTime - enteredFromAt) / (1000 * 60 * 60 * 24);
             transitionDays.push(days);
           }
-          // Found the transition for this lead, move on
+          enteredFromAt = null;
           break;
         }
       }
@@ -681,6 +772,579 @@ async function handleGetVmRateBySmartView(apiKey: string, params: Params) {
   };
 }
 
+// ─── Best Time to Call Handler ─────────────────────────────────────
+
+async function handleGetBestCallTimes(apiKey: string, params: Params) {
+  const { from, to } = params;
+
+  const qs = [`_limit=100`, `direction=outbound`];
+  if (from) qs.push(`date_created__gte=${from}`);
+  if (to) qs.push(`date_created__lte=${to}T23:59:59`);
+
+  // deno-lint-ignore no-explicit-any
+  const allCalls: any[] = [];
+  let hasMore = true;
+  let skip = 0;
+
+  while (hasMore && skip < 3000) {
+    const pageQs = [...qs, `_skip=${skip}`];
+    const res = (await closeGet(
+      apiKey,
+      `/activity/call/?${pageQs.join("&")}`,
+    )) as ApiResult;
+    allCalls.push(...(res.data ?? []));
+    hasMore = res.has_more === true;
+    skip += 100;
+  }
+
+  // Group by hour of day and day of week
+  const byHour: Record<
+    number,
+    { total: number; answered: number; vm: number; noAnswer: number }
+  > = {};
+  const byDayOfWeek: Record<number, { total: number; answered: number }> = {};
+
+  for (const c of allCalls) {
+    const dt = new Date(c.date_created);
+    const hour = dt.getHours();
+    const dow = dt.getDay(); // 0=Sun, 6=Sat
+
+    if (!byHour[hour])
+      byHour[hour] = { total: 0, answered: 0, vm: 0, noAnswer: 0 };
+    byHour[hour].total++;
+    if (c.disposition === "answered") byHour[hour].answered++;
+    else if (c.disposition === "vm-left" || c.disposition === "vm-answer")
+      byHour[hour].vm++;
+    else byHour[hour].noAnswer++;
+
+    if (!byDayOfWeek[dow]) byDayOfWeek[dow] = { total: 0, answered: 0 };
+    byDayOfWeek[dow].total++;
+    if (c.disposition === "answered") byDayOfWeek[dow].answered++;
+  }
+
+  // Build sorted arrays with connect rates
+  const hourlyData = Array.from({ length: 24 }, (_, h) => {
+    const d = byHour[h] ?? { total: 0, answered: 0, vm: 0, noAnswer: 0 };
+    return {
+      hour: h,
+      label: `${h === 0 ? 12 : h > 12 ? h - 12 : h}${h < 12 ? "am" : "pm"}`,
+      total: d.total,
+      answered: d.answered,
+      vm: d.vm,
+      noAnswer: d.noAnswer,
+      connectRate:
+        d.total > 0 ? Math.round((d.answered / d.total) * 1000) / 10 : 0,
+    };
+  });
+
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const dailyData = Array.from({ length: 7 }, (_, d) => {
+    const data = byDayOfWeek[d] ?? { total: 0, answered: 0 };
+    return {
+      day: d,
+      label: dayNames[d],
+      total: data.total,
+      answered: data.answered,
+      connectRate:
+        data.total > 0
+          ? Math.round((data.answered / data.total) * 1000) / 10
+          : 0,
+    };
+  });
+
+  // Find best hour and best day
+  const bestHour = hourlyData.reduce(
+    (best, h) => (h.total >= 5 && h.connectRate > best.connectRate ? h : best),
+    {
+      hour: -1,
+      label: "",
+      total: 0,
+      answered: 0,
+      vm: 0,
+      noAnswer: 0,
+      connectRate: 0,
+    },
+  );
+  const bestDay = dailyData.reduce(
+    (best, d) => (d.total >= 5 && d.connectRate > best.connectRate ? d : best),
+    { day: -1, label: "", total: 0, answered: 0, connectRate: 0 },
+  );
+
+  return {
+    hourly: hourlyData,
+    daily: dailyData,
+    bestHour: bestHour.hour >= 0 ? bestHour : null,
+    bestDay: bestDay.day >= 0 ? bestDay : null,
+    totalCalls: allCalls.length,
+    isTruncated: hasMore,
+  };
+}
+
+// ─── Cross-Reference (Smart View × Status) Handler ───────────────
+
+async function handleGetCrossReference(apiKey: string, params: Params) {
+  const { smartViewIds, statusIds } = params;
+
+  if (!smartViewIds?.length) {
+    return { rows: [], statusLabels: [], totals: {}, grandTotal: 0 };
+  }
+
+  // Fetch status labels
+  const statusRes = (await closeGet(apiKey, "/status/lead/")) as ApiResult;
+  const allStatuses = (statusRes.data ?? []) as { id: string; label: string }[];
+  const filterStatuses = statusIds?.length
+    ? allStatuses.filter((s: { id: string }) => statusIds.includes(s.id))
+    : allStatuses;
+
+  // For each smart view, get lead counts by status
+  // deno-lint-ignore no-explicit-any
+  const rows: any[] = [];
+  const totals: Record<string, number> = {};
+  let grandTotal = 0;
+
+  for (let i = 0; i < smartViewIds.length; i += 3) {
+    const batch = smartViewIds.slice(i, i + 3);
+    const batchResults = await Promise.all(
+      batch.map(async (svId: string) => {
+        // Fetch all leads in this smart view with status_id
+        const statusCounts: Record<string, number> = {};
+        let svHasMore = true;
+        let svSkip = 0;
+        let svTotal = 0;
+
+        while (svHasMore && svSkip < 2000) {
+          const res = (await closeGet(
+            apiKey,
+            `/lead/?_limit=100&_skip=${svSkip}&_fields=id,status_id&saved_search_id=${svId}`,
+          )) as ApiResult;
+          for (const lead of res.data ?? []) {
+            const sid = lead.status_id ?? "unknown";
+            statusCounts[sid] = (statusCounts[sid] ?? 0) + 1;
+            svTotal++;
+          }
+          svHasMore = res.has_more === true;
+          svSkip += 100;
+        }
+
+        return { smartViewId: svId, statusCounts, total: svTotal };
+      }),
+    );
+
+    for (const result of batchResults) {
+      // Get smart view name
+      const cells: Record<string, number> = {};
+      for (const status of filterStatuses) {
+        const count = result.statusCounts[status.id] ?? 0;
+        cells[status.id] = count;
+        totals[status.id] = (totals[status.id] ?? 0) + count;
+      }
+      grandTotal += result.total;
+      rows.push({
+        smartViewId: result.smartViewId,
+        cells,
+        total: result.total,
+      });
+    }
+  }
+
+  // Resolve smart view names
+  const svMeta = (await closeGet(
+    apiKey,
+    "/saved_search/?_limit=50",
+  )) as ApiResult;
+  const svMap: Record<string, string> = {};
+  for (const sv of svMeta.data ?? []) svMap[sv.id] = sv.name;
+  for (const row of rows)
+    row.smartViewName = svMap[row.smartViewId] ?? row.smartViewId;
+
+  return {
+    rows,
+    statusLabels: filterStatuses.map((s: { id: string; label: string }) => ({
+      id: s.id,
+      label: s.label,
+    })),
+    totals,
+    grandTotal,
+  };
+}
+
+// ─── Speed to Lead Handler ────────────────────────────────────────
+
+async function handleGetSpeedToLead(apiKey: string, params: Params) {
+  const { from, to, smartViewId } = params;
+
+  // Fetch leads created in range
+  const dateQuery = [];
+  if (from) dateQuery.push(`created >= "${from}"`);
+  if (to) dateQuery.push(`created <= "${to}"`);
+  const queryParam =
+    dateQuery.length > 0
+      ? `&query=${encodeURIComponent(dateQuery.join(" "))}`
+      : "";
+  const svParam = smartViewId ? `&saved_search_id=${smartViewId}` : "";
+
+  // deno-lint-ignore no-explicit-any
+  const leads: any[] = [];
+  let hasMore = true;
+  let skip = 0;
+
+  while (hasMore && skip < 2000) {
+    const res = (await closeGet(
+      apiKey,
+      `/lead/?_limit=100&_skip=${skip}&_fields=id,date_created${queryParam}${svParam}`,
+    )) as ApiResult;
+    leads.push(...(res.data ?? []));
+    hasMore = res.has_more === true;
+    skip += 100;
+  }
+
+  if (leads.length === 0) {
+    return {
+      avgMinutes: 0,
+      medianMinutes: 0,
+      distribution: [],
+      totalLeads: 0,
+      leadsWithActivity: 0,
+    };
+  }
+
+  // For each lead, find their first outbound activity
+  // Fetch all outbound calls/emails/sms in range
+  const actQs = [`_limit=100`];
+  if (from) actQs.push(`date_created__gte=${from}`);
+  if (to) actQs.push(`date_created__lte=${to}T23:59:59`);
+
+  // deno-lint-ignore no-explicit-any
+  const allActivities: any[] = [];
+  for (const type of ["call", "email", "sms"]) {
+    let actHasMore = true;
+    let actSkip = 0;
+    while (actHasMore && actSkip < 2000) {
+      const res = (await closeGet(
+        apiKey,
+        `/activity/${type}/?${[...actQs, `_skip=${actSkip}`].join("&")}`,
+      )) as ApiResult;
+      for (const act of res.data ?? []) {
+        allActivities.push({ ...act, _type: type });
+      }
+      actHasMore = res.has_more === true;
+      actSkip += 100;
+    }
+  }
+
+  // Group activities by lead_id, find earliest outbound
+  const firstActivityByLead: Record<string, number> = {};
+  for (const act of allActivities) {
+    const lid = act.lead_id;
+    if (!lid) continue;
+    // Only outbound activities count
+    const dir = act.direction ?? "";
+    if (dir === "inbound" || dir === "incoming") continue;
+
+    const actTime = new Date(act.date_created).getTime();
+    if (!firstActivityByLead[lid] || actTime < firstActivityByLead[lid]) {
+      firstActivityByLead[lid] = actTime;
+    }
+  }
+
+  // Compute speed-to-lead for each lead
+  const speedMinutes: number[] = [];
+  for (const lead of leads) {
+    const createdAt = new Date(lead.date_created).getTime();
+    const firstAct = firstActivityByLead[lead.id];
+    if (firstAct && firstAct >= createdAt) {
+      speedMinutes.push((firstAct - createdAt) / (1000 * 60));
+    }
+  }
+
+  speedMinutes.sort((a, b) => a - b);
+
+  const avg =
+    speedMinutes.length > 0
+      ? speedMinutes.reduce((a, b) => a + b, 0) / speedMinutes.length
+      : 0;
+  const mid = Math.floor(speedMinutes.length / 2);
+  const med =
+    speedMinutes.length > 0
+      ? speedMinutes.length % 2 !== 0
+        ? speedMinutes[mid]
+        : (speedMinutes[mid - 1] + speedMinutes[mid]) / 2
+      : 0;
+
+  // Distribution buckets: <5min, 5-15min, 15-30min, 30-60min, 1-4hr, 4-24hr, >24hr
+  const buckets = [
+    { label: "< 5 min", max: 5, count: 0 },
+    { label: "5–15 min", max: 15, count: 0 },
+    { label: "15–30 min", max: 30, count: 0 },
+    { label: "30–60 min", max: 60, count: 0 },
+    { label: "1–4 hr", max: 240, count: 0 },
+    { label: "4–24 hr", max: 1440, count: 0 },
+    { label: "> 24 hr", max: Infinity, count: 0 },
+  ];
+  for (const m of speedMinutes) {
+    const bucket = buckets.find((b) => m < b.max);
+    if (bucket) bucket.count++;
+  }
+
+  return {
+    avgMinutes: Math.round(avg * 10) / 10,
+    medianMinutes: Math.round(med * 10) / 10,
+    distribution: buckets,
+    totalLeads: leads.length,
+    leadsWithActivity: speedMinutes.length,
+    pctContacted:
+      leads.length > 0
+        ? Math.round((speedMinutes.length / leads.length) * 1000) / 10
+        : 0,
+  };
+}
+
+// ─── Contact Cadence Handler ──────────────────────────────────────
+
+async function handleGetContactCadence(apiKey: string, params: Params) {
+  const { from, to, smartViewId } = params;
+
+  // Fetch leads
+  const dateQuery = [];
+  if (from) dateQuery.push(`created >= "${from}"`);
+  if (to) dateQuery.push(`created <= "${to}"`);
+  const queryParam =
+    dateQuery.length > 0
+      ? `&query=${encodeURIComponent(dateQuery.join(" "))}`
+      : "";
+  const svParam = smartViewId ? `&saved_search_id=${smartViewId}` : "";
+
+  // deno-lint-ignore no-explicit-any
+  const leads: any[] = [];
+  let hasMore = true;
+  let skip = 0;
+  while (hasMore && skip < 1000) {
+    const res = (await closeGet(
+      apiKey,
+      `/lead/?_limit=100&_skip=${skip}&_fields=id${queryParam}${svParam}`,
+    )) as ApiResult;
+    leads.push(...(res.data ?? []));
+    hasMore = res.has_more === true;
+    skip += 100;
+  }
+
+  const leadIdSet = new Set(leads.map((l: { id: string }) => l.id));
+
+  // Fetch all outbound activities
+  const actQs = [`_limit=100`];
+  if (from) actQs.push(`date_created__gte=${from}`);
+  if (to) actQs.push(`date_created__lte=${to}T23:59:59`);
+
+  // deno-lint-ignore no-explicit-any
+  const activitiesByLead: Record<string, any[]> = {};
+  for (const type of ["call", "email", "sms"]) {
+    let actHasMore = true;
+    let actSkip = 0;
+    while (actHasMore && actSkip < 2000) {
+      const res = (await closeGet(
+        apiKey,
+        `/activity/${type}/?${[...actQs, `_skip=${actSkip}`].join("&")}`,
+      )) as ApiResult;
+      for (const act of res.data ?? []) {
+        const lid = act.lead_id;
+        if (!lid || !leadIdSet.has(lid)) continue;
+        const dir = act.direction ?? "";
+        if (dir === "inbound" || dir === "incoming") continue;
+        if (!activitiesByLead[lid]) activitiesByLead[lid] = [];
+        activitiesByLead[lid].push({
+          type,
+          time: new Date(act.date_created).getTime(),
+        });
+      }
+      actHasMore = res.has_more === true;
+      actSkip += 100;
+    }
+  }
+
+  // Compute gaps between touches per lead
+  const allGapsHours: number[] = [];
+  let totalTouches = 0;
+  let leadsMultiTouch = 0;
+  const touchCountDist: Record<number, number> = {};
+
+  for (const [, acts] of Object.entries(activitiesByLead)) {
+    acts.sort((a: { time: number }, b: { time: number }) => a.time - b.time);
+    const touchCount = acts.length;
+    totalTouches += touchCount;
+    touchCountDist[touchCount] = (touchCountDist[touchCount] ?? 0) + 1;
+
+    if (touchCount >= 2) {
+      leadsMultiTouch++;
+      for (let i = 1; i < acts.length; i++) {
+        const gapHours = (acts[i].time - acts[i - 1].time) / (1000 * 60 * 60);
+        allGapsHours.push(gapHours);
+      }
+    }
+  }
+
+  allGapsHours.sort((a, b) => a - b);
+
+  const avgGapHours =
+    allGapsHours.length > 0
+      ? allGapsHours.reduce((a, b) => a + b, 0) / allGapsHours.length
+      : 0;
+  const midG = Math.floor(allGapsHours.length / 2);
+  const medianGapHours =
+    allGapsHours.length > 0
+      ? allGapsHours.length % 2 !== 0
+        ? allGapsHours[midG]
+        : (allGapsHours[midG - 1] + allGapsHours[midG]) / 2
+      : 0;
+
+  // Touch count distribution (top entries)
+  const touchDist = Object.entries(touchCountDist)
+    .map(([count, leads]) => ({ touches: parseInt(count), leads }))
+    .sort((a, b) => a.touches - b.touches)
+    .slice(0, 10);
+
+  return {
+    avgGapHours: Math.round(avgGapHours * 10) / 10,
+    medianGapHours: Math.round(medianGapHours * 10) / 10,
+    totalLeads: leads.length,
+    leadsContacted: Object.keys(activitiesByLead).length,
+    leadsMultiTouch,
+    totalTouches,
+    avgTouchesPerLead:
+      leads.length > 0
+        ? Math.round((totalTouches / leads.length) * 10) / 10
+        : 0,
+    touchDistribution: touchDist,
+  };
+}
+
+// ─── Dial Attempt Tracker Handler ─────────────────────────────────
+
+async function handleGetDialAttempts(apiKey: string, params: Params) {
+  const { from, to, smartViewId } = params;
+
+  // Fetch outbound calls
+  const callQs = [`_limit=100`, `direction=outbound`];
+  if (from) callQs.push(`date_created__gte=${from}`);
+  if (to) callQs.push(`date_created__lte=${to}T23:59:59`);
+
+  // deno-lint-ignore no-explicit-any
+  const allCalls: any[] = [];
+  let hasMore = true;
+  let skip = 0;
+  while (hasMore && skip < 3000) {
+    const res = (await closeGet(
+      apiKey,
+      `/activity/call/?${[...callQs, `_skip=${skip}`].join("&")}`,
+    )) as ApiResult;
+    allCalls.push(...(res.data ?? []));
+    hasMore = res.has_more === true;
+    skip += 100;
+  }
+
+  // If smart view filter, get lead IDs
+  let filterLeadIds: Set<string> | null = null;
+  if (smartViewId) {
+    filterLeadIds = new Set<string>();
+    let svHasMore = true;
+    let svSkip = 0;
+    while (svHasMore && svSkip < 2000) {
+      const res = (await closeGet(
+        apiKey,
+        `/lead/?_limit=100&_skip=${svSkip}&_fields=id&saved_search_id=${smartViewId}`,
+      )) as ApiResult;
+      for (const lead of res.data ?? []) filterLeadIds.add(lead.id);
+      svHasMore = res.has_more === true;
+      svSkip += 100;
+    }
+  }
+
+  // Group calls by lead, sorted by time
+  // deno-lint-ignore no-explicit-any
+  const callsByLead: Record<string, any[]> = {};
+  for (const call of allCalls) {
+    const lid = call.lead_id;
+    if (!lid) continue;
+    if (filterLeadIds && !filterLeadIds.has(lid)) continue;
+    if (!callsByLead[lid]) callsByLead[lid] = [];
+    callsByLead[lid].push(call);
+  }
+
+  // For each lead, find: how many attempts before first answer
+  const attemptsToConnect: number[] = [];
+  let neverConnected = 0;
+  let totalLeadsDialed = 0;
+
+  // Success rate by attempt number (1st call, 2nd call, etc.)
+  const successByAttempt: Record<number, { total: number; answered: number }> =
+    {};
+
+  for (const [, calls] of Object.entries(callsByLead)) {
+    calls.sort(
+      // deno-lint-ignore no-explicit-any
+      (a: any, b: any) =>
+        new Date(a.date_created).getTime() - new Date(b.date_created).getTime(),
+    );
+    totalLeadsDialed++;
+
+    let connected = false;
+    for (let i = 0; i < calls.length; i++) {
+      const attemptNum = i + 1;
+      if (!successByAttempt[attemptNum])
+        successByAttempt[attemptNum] = { total: 0, answered: 0 };
+      successByAttempt[attemptNum].total++;
+
+      if (calls[i].disposition === "answered") {
+        if (!connected) {
+          attemptsToConnect.push(attemptNum);
+          connected = true;
+        }
+        successByAttempt[attemptNum].answered++;
+      }
+    }
+
+    if (!connected) neverConnected++;
+  }
+
+  attemptsToConnect.sort((a, b) => a - b);
+  const avg =
+    attemptsToConnect.length > 0
+      ? attemptsToConnect.reduce((a, b) => a + b, 0) / attemptsToConnect.length
+      : 0;
+  const mid = Math.floor(attemptsToConnect.length / 2);
+  const med =
+    attemptsToConnect.length > 0
+      ? attemptsToConnect.length % 2 !== 0
+        ? attemptsToConnect[mid]
+        : (attemptsToConnect[mid - 1] + attemptsToConnect[mid]) / 2
+      : 0;
+
+  // Build attempt-by-attempt success rates (up to 10)
+  const attemptRates = Array.from({ length: 10 }, (_, i) => {
+    const n = i + 1;
+    const d = successByAttempt[n] ?? { total: 0, answered: 0 };
+    return {
+      attempt: n,
+      total: d.total,
+      answered: d.answered,
+      connectRate:
+        d.total > 0 ? Math.round((d.answered / d.total) * 1000) / 10 : 0,
+    };
+  }).filter((a) => a.total > 0);
+
+  return {
+    avgAttempts: Math.round(avg * 10) / 10,
+    medianAttempts: Math.round(med * 10) / 10,
+    totalLeadsDialed,
+    leadsConnected: attemptsToConnect.length,
+    neverConnected,
+    connectPct:
+      totalLeadsDialed > 0
+        ? Math.round((attemptsToConnect.length / totalLeadsDialed) * 1000) / 10
+        : 0,
+    attemptRates,
+  };
+}
+
 // ─── Main Handler ──────────────────────────────────────────────────
 
 serve(async (req) => {
@@ -787,6 +1451,21 @@ serve(async (req) => {
         break;
       case "get_vm_rate_by_smart_view":
         result = await handleGetVmRateBySmartView(apiKey, params);
+        break;
+      case "get_best_call_times":
+        result = await handleGetBestCallTimes(apiKey, params);
+        break;
+      case "get_cross_reference":
+        result = await handleGetCrossReference(apiKey, params);
+        break;
+      case "get_speed_to_lead":
+        result = await handleGetSpeedToLead(apiKey, params);
+        break;
+      case "get_contact_cadence":
+        result = await handleGetContactCadence(apiKey, params);
+        break;
+      case "get_dial_attempts":
+        result = await handleGetDialAttempts(apiKey, params);
         break;
       default:
         return jsonResponse({ error: `Unknown action: ${action}` }, 400, req);

@@ -115,33 +115,6 @@ export const CallAnalyticsConfig: React.FC<CallAnalyticsConfigProps> = ({
         </Select>
       </div>
 
-      {/* Time bucket for time-series metrics */}
-      {config.metric === "calls_over_time" && (
-        <div>
-          <Label className="text-[10px] text-muted-foreground">
-            Granularity
-          </Label>
-          <Select
-            value={config.timeBucket ?? "day"}
-            onValueChange={(v) =>
-              onChange({
-                ...config,
-                timeBucket: v as CallConfigType["timeBucket"],
-              })
-            }
-          >
-            <SelectTrigger className="h-7 text-[11px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="day">Daily</SelectItem>
-              <SelectItem value="week">Weekly</SelectItem>
-              <SelectItem value="month">Monthly</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
       {/* Date Range */}
       <div>
         <Label className="text-[10px] text-muted-foreground">Date Range</Label>

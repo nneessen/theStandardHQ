@@ -10,14 +10,15 @@ import type {
   Metric,
   StatCardConfig,
   StatusDistributionConfig,
-  SmartViewMonitorConfig,
   LifecycleTrackerConfig,
-  ActivityTimelineConfig,
-  CrossReferenceConfig,
   OpportunitySummaryConfig,
   CallAnalyticsConfig,
-  CustomFieldBreakdownConfig,
   VmRateSmartViewConfig,
+  BestCallTimesConfig,
+  CrossReferenceConfig,
+  SpeedToLeadConfig,
+  ContactCadenceConfig,
+  DialAttemptsConfig,
 } from "../types/close-kpi.types";
 
 // ─── Widget Registry ───────────────────────────────────────────────
@@ -72,22 +73,6 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetRegistryEntry> = {
       sortOrder: "count_desc",
     } satisfies StatusDistributionConfig,
   },
-  smart_view_monitor: {
-    type: "smart_view_monitor",
-    label: "Smart View Monitor",
-    description: "Track lead counts across smart views with status breakdown",
-    category: "leads",
-    icon: "Eye",
-    defaultSize: "large",
-    allowedSizes: ["medium", "large"],
-    colSpan: { small: 1, medium: 1, large: 2 },
-    comingSoon: true,
-    defaultConfig: {
-      ...DEFAULT_BASE,
-      smartViewIds: [],
-      statusIds: [],
-    } satisfies SmartViewMonitorConfig,
-  },
   call_analytics: {
     type: "call_analytics",
     label: "Call Analytics",
@@ -104,24 +89,6 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetRegistryEntry> = {
       direction: "all",
       dateRange: "this_week",
     } satisfies CallAnalyticsConfig,
-  },
-  activity_timeline: {
-    type: "activity_timeline",
-    label: "Activity Timeline",
-    description: "Calls, emails, and SMS volume over time",
-    category: "email_sms",
-    icon: "Activity",
-    defaultSize: "medium",
-    allowedSizes: ["medium", "large"],
-    colSpan: { small: 1, medium: 1, large: 2 },
-    comingSoon: true,
-    defaultConfig: {
-      ...DEFAULT_BASE,
-      activityTypes: ["call", "email", "sms"],
-      timeBucket: "day",
-      direction: "all",
-      dateRange: "this_week",
-    } satisfies ActivityTimelineConfig,
   },
   opportunity_summary: {
     type: "opportunity_summary",
@@ -142,7 +109,7 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetRegistryEntry> = {
     type: "lifecycle_tracker",
     label: "Lifecycle Velocity",
     description: "Time between status transitions — find bottlenecks",
-    category: "lifecycle",
+    category: "leads",
     icon: "Timer",
     defaultSize: "medium",
     allowedSizes: ["medium", "large"],
@@ -153,41 +120,6 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetRegistryEntry> = {
       fromStatus: "New",
       toStatus: null,
     } satisfies LifecycleTrackerConfig,
-  },
-  cross_reference: {
-    type: "cross_reference",
-    label: "Cross-Reference Matrix",
-    description:
-      "Smart view rows vs status columns — where do your leads stand",
-    category: "leads",
-    icon: "Grid3X3",
-    defaultSize: "large",
-    allowedSizes: ["large"],
-    colSpan: { small: 1, medium: 1, large: 2 },
-    comingSoon: true,
-    defaultConfig: {
-      ...DEFAULT_BASE,
-      smartViewIds: [],
-      statusIds: [],
-    } satisfies CrossReferenceConfig,
-  },
-  custom_field_breakdown: {
-    type: "custom_field_breakdown",
-    label: "Custom Field Breakdown",
-    description:
-      "Group leads by any custom field — carriers, policy status, agent, etc.",
-    category: "insurance",
-    icon: "Tag",
-    defaultSize: "medium",
-    allowedSizes: ["medium", "large"],
-    colSpan: { small: 1, medium: 1, large: 2 },
-    comingSoon: true,
-    defaultConfig: {
-      ...DEFAULT_BASE,
-      customFieldKey: "",
-      aggregation: "count",
-      sortOrder: "count_desc",
-    } satisfies CustomFieldBreakdownConfig,
   },
   vm_rate_smart_view: {
     type: "vm_rate_smart_view",
@@ -207,13 +139,88 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetRegistryEntry> = {
       dateRange: "this_week",
     } satisfies VmRateSmartViewConfig,
   },
+  best_call_times: {
+    type: "best_call_times",
+    label: "Best Time to Call",
+    description:
+      "Connect rates by hour and day — find when prospects actually pick up",
+    category: "calls",
+    icon: "Clock",
+    defaultSize: "medium",
+    allowedSizes: ["medium", "large"],
+    colSpan: { small: 1, medium: 1, large: 2 },
+    defaultConfig: {
+      ...DEFAULT_BASE,
+      dateRange: "last_30_days",
+    } satisfies BestCallTimesConfig,
+  },
+  cross_reference: {
+    type: "cross_reference",
+    label: "Smart View × Status",
+    description:
+      "How many leads in each smart view have each status — find spam lists fast",
+    category: "leads",
+    icon: "Grid3X3",
+    defaultSize: "large",
+    allowedSizes: ["large"],
+    colSpan: { small: 1, medium: 1, large: 2 },
+    defaultConfig: {
+      ...DEFAULT_BASE,
+      smartViewIds: [],
+      statusIds: [],
+    } satisfies CrossReferenceConfig,
+  },
+  speed_to_lead: {
+    type: "speed_to_lead",
+    label: "Speed to Lead",
+    description:
+      "How fast agents make first contact after lead creation — strike while hot",
+    category: "leads",
+    icon: "Zap",
+    defaultSize: "medium",
+    allowedSizes: ["small", "medium", "large"],
+    colSpan: { small: 1, medium: 1, large: 2 },
+    defaultConfig: {
+      ...DEFAULT_BASE,
+      dateRange: "last_30_days",
+    } satisfies SpeedToLeadConfig,
+  },
+  contact_cadence: {
+    type: "contact_cadence",
+    label: "Contact Cadence",
+    description:
+      "Time gaps between touches — are agents following up fast enough?",
+    category: "leads",
+    icon: "Repeat",
+    defaultSize: "medium",
+    allowedSizes: ["medium", "large"],
+    colSpan: { small: 1, medium: 1, large: 2 },
+    defaultConfig: {
+      ...DEFAULT_BASE,
+      dateRange: "last_30_days",
+    } satisfies ContactCadenceConfig,
+  },
+  dial_attempts: {
+    type: "dial_attempts",
+    label: "Dial Attempt Tracker",
+    description: "How many calls before connection — know when to stop trying",
+    category: "calls",
+    icon: "PhoneCall",
+    defaultSize: "medium",
+    allowedSizes: ["medium", "large"],
+    colSpan: { small: 1, medium: 1, large: 2 },
+    defaultConfig: {
+      ...DEFAULT_BASE,
+      dateRange: "last_30_days",
+    } satisfies DialAttemptsConfig,
+  },
 };
 
 // ─── Metric Catalog ────────────────────────────────────────────────
 // The full list of measurable things from Close CRM
 
 export const METRIC_CATALOG: MetricDefinition[] = [
-  // ── Lead Metrics ──
+  // ── Lead Metrics (implemented) ──
   {
     key: "lead_count",
     label: "Total Leads",
@@ -233,55 +240,8 @@ export const METRIC_CATALOG: MetricDefinition[] = [
     field: "date_created",
     unit: "number",
   },
-  {
-    key: "leads_by_status",
-    label: "Leads by Status",
-    description: "Lead count broken down by status",
-    category: "leads",
-    aggregationType: "count",
-    objectType: "lead",
-    groupByField: "lead_status_id",
-    unit: "number",
-  },
-  {
-    key: "leads_by_source",
-    label: "Leads by Source",
-    description: "Lead count broken down by source",
-    category: "leads",
-    aggregationType: "count",
-    objectType: "lead",
-    groupByField: "lead_source",
-    unit: "number",
-  },
-  {
-    key: "leads_by_smart_view",
-    label: "Leads by Smart View",
-    description: "Lead count per saved smart view",
-    category: "leads",
-    aggregationType: "count",
-    objectType: "lead",
-    unit: "number",
-  },
-  {
-    key: "leads_untouched",
-    label: "Untouched Leads",
-    description: "Leads with zero activities",
-    category: "leads",
-    aggregationType: "count",
-    objectType: "lead",
-    unit: "number",
-  },
-  {
-    key: "leads_by_custom_field",
-    label: "Leads by Custom Field",
-    description: "Lead count grouped by a custom field value",
-    category: "leads",
-    aggregationType: "count",
-    objectType: "lead",
-    unit: "number",
-  },
 
-  // ── Call Metrics ──
+  // ── Call Metrics (implemented) ──
   {
     key: "calls_total",
     label: "Total Calls",
@@ -370,38 +330,8 @@ export const METRIC_CATALOG: MetricDefinition[] = [
     objectType: "call",
     unit: "percent",
   },
-  {
-    key: "calls_by_disposition",
-    label: "Calls by Disposition",
-    description: "Breakdown: answered, VM, no-answer, busy, blocked",
-    category: "calls",
-    aggregationType: "count",
-    objectType: "call",
-    groupByField: "disposition",
-    unit: "number",
-  },
-  {
-    key: "calls_by_direction",
-    label: "Calls by Direction",
-    description: "Inbound vs outbound split",
-    category: "calls",
-    aggregationType: "count",
-    objectType: "call",
-    groupByField: "direction",
-    unit: "number",
-  },
-  {
-    key: "calls_over_time",
-    label: "Calls Over Time",
-    description: "Call volume trend",
-    category: "calls",
-    aggregationType: "count",
-    objectType: "call",
-    field: "activity_at",
-    unit: "number",
-  },
 
-  // ── Email & SMS ──
+  // ── Email & SMS (implemented with direction) ──
   {
     key: "emails_sent",
     label: "Emails Sent",
@@ -429,16 +359,6 @@ export const METRIC_CATALOG: MetricDefinition[] = [
     category: "email_sms",
     aggregationType: "count",
     objectType: "email",
-    unit: "number",
-  },
-  {
-    key: "emails_over_time",
-    label: "Emails Over Time",
-    description: "Email volume trend",
-    category: "email_sms",
-    aggregationType: "count",
-    objectType: "email",
-    field: "activity_at",
     unit: "number",
   },
   {
@@ -470,18 +390,8 @@ export const METRIC_CATALOG: MetricDefinition[] = [
     objectType: "sms",
     unit: "number",
   },
-  {
-    key: "sms_over_time",
-    label: "SMS Over Time",
-    description: "SMS volume trend",
-    category: "email_sms",
-    aggregationType: "count",
-    objectType: "sms",
-    field: "activity_at",
-    unit: "number",
-  },
 
-  // ── Opportunity Metrics ──
+  // ── Opportunity Metrics (implemented with pagination) ──
   {
     key: "pipeline_value",
     label: "Pipeline Value",
@@ -523,7 +433,7 @@ export const METRIC_CATALOG: MetricDefinition[] = [
   {
     key: "sales_velocity",
     label: "Sales Velocity",
-    description: "(# opps × avg deal × win rate) / avg time to win",
+    description: "(# opps x avg deal x win rate) / avg time to win",
     category: "opportunities",
     aggregationType: "computed",
     objectType: "opportunity",
@@ -566,163 +476,6 @@ export const METRIC_CATALOG: MetricDefinition[] = [
     field: "value",
     unit: "currency",
   },
-  {
-    key: "opps_by_status",
-    label: "Opps by Status",
-    description: "Opportunity count per pipeline stage",
-    category: "opportunities",
-    aggregationType: "count",
-    objectType: "opportunity",
-    groupByField: "opp_status_id",
-    unit: "number",
-  },
-  {
-    key: "opps_by_value_bucket",
-    label: "Opps by Deal Size",
-    description: "Bucketed by opportunity value",
-    category: "opportunities",
-    aggregationType: "count",
-    objectType: "opportunity",
-    field: "value",
-    unit: "number",
-  },
-  {
-    key: "opps_stalled",
-    label: "Stalled Opportunities",
-    description: "Deals needing attention",
-    category: "opportunities",
-    aggregationType: "count",
-    objectType: "opportunity",
-    unit: "number",
-  },
-
-  // ── Lifecycle Metrics ──
-  {
-    key: "time_to_first_contact",
-    label: "Time to First Contact",
-    description: "Avg days from New → first Contacted status",
-    category: "lifecycle",
-    aggregationType: "average",
-    objectType: "lead_status_change",
-    unit: "duration_days",
-  },
-  {
-    key: "time_to_quote",
-    label: "Time to Quote",
-    description: "Avg days from creation to Quoted",
-    category: "lifecycle",
-    aggregationType: "average",
-    objectType: "lead_status_change",
-    unit: "duration_days",
-  },
-  {
-    key: "time_to_sold",
-    label: "Time to Sold",
-    description: "Avg days from creation to Sold",
-    category: "lifecycle",
-    aggregationType: "average",
-    objectType: "lead_status_change",
-    unit: "duration_days",
-  },
-  {
-    key: "time_to_negative",
-    label: "Time to Negative Outcome",
-    description: "How fast leads reach bad statuses",
-    category: "lifecycle",
-    aggregationType: "average",
-    objectType: "lead_status_change",
-    unit: "duration_days",
-  },
-  {
-    key: "status_conversion_rate",
-    label: "Status Conversion Rate",
-    description: "% of leads moving from status A → B",
-    category: "lifecycle",
-    aggregationType: "computed",
-    objectType: "lead_status_change",
-    unit: "percent",
-  },
-  {
-    key: "custom_status_path",
-    label: "Custom Status Path",
-    description: "Track time between any two statuses",
-    category: "lifecycle",
-    aggregationType: "average",
-    objectType: "lead_status_change",
-    unit: "duration_days",
-  },
-
-  // ── Insurance-Specific ──
-  {
-    key: "leads_by_carrier",
-    label: "Leads by Carrier",
-    description: "Grouped by Carriers custom field",
-    category: "insurance",
-    aggregationType: "count",
-    objectType: "lead",
-    groupByField: "custom.Carriers",
-    unit: "number",
-  },
-  {
-    key: "leads_by_app_status",
-    label: "Leads by Application Status",
-    description: "Grouped by Application Status",
-    category: "insurance",
-    aggregationType: "count",
-    objectType: "lead",
-    groupByField: "custom.Application Status",
-    unit: "number",
-  },
-  {
-    key: "leads_by_policy_status",
-    label: "Leads by Policy Status",
-    description: "Grouped by Policy Status",
-    category: "insurance",
-    aggregationType: "count",
-    objectType: "lead",
-    groupByField: "custom.Policy Status",
-    unit: "number",
-  },
-  {
-    key: "premium_pipeline",
-    label: "Premium Pipeline",
-    description: "Sum of Annual/Monthly Premium values",
-    category: "insurance",
-    aggregationType: "sum",
-    objectType: "lead",
-    field: "custom.Annual Premium",
-    unit: "currency",
-  },
-  {
-    key: "face_amount_distribution",
-    label: "Face Amount Distribution",
-    description: "Coverage amounts being quoted",
-    category: "insurance",
-    aggregationType: "count",
-    objectType: "lead",
-    groupByField: "custom.Face Amount",
-    unit: "number",
-  },
-  {
-    key: "leads_by_agent",
-    label: "Leads by Agent",
-    description: "Which agents own the most leads",
-    category: "insurance",
-    aggregationType: "count",
-    objectType: "lead",
-    groupByField: "custom.Agent",
-    unit: "number",
-  },
-  {
-    key: "leads_by_campaign",
-    label: "Leads by Campaign",
-    description: "Which campaigns produce the most leads",
-    category: "insurance",
-    aggregationType: "count",
-    objectType: "lead",
-    groupByField: "custom.Campaign Name",
-    unit: "number",
-  },
 ];
 
 // ─── Category Definitions ──────────────────────────────────────────
@@ -732,8 +485,6 @@ export const WIDGET_CATEGORIES = [
   { id: "calls" as const, label: "Calls" },
   { id: "email_sms" as const, label: "Email & SMS" },
   { id: "opportunities" as const, label: "Opportunities" },
-  { id: "lifecycle" as const, label: "Lifecycle" },
-  { id: "insurance" as const, label: "Insurance" },
 ] as const;
 
 // ─── Helpers ───────────────────────────────────────────────────────
@@ -752,41 +503,7 @@ export function getMetricDefinition(key: Metric): MetricDefinition | undefined {
   return METRIC_CATALOG.find((m) => m.key === key);
 }
 
-/** Metrics that fetchStatCard actually handles — others return 0 */
-const IMPLEMENTED_STAT_METRICS = new Set([
-  // Lead metrics
-  "lead_count",
-  "leads_created",
-  // Call metrics
-  "calls_total",
-  "calls_inbound",
-  "calls_outbound",
-  "calls_answered",
-  "calls_voicemail",
-  "calls_missed",
-  "call_duration_total",
-  "call_duration_avg",
-  "call_connect_rate",
-  // Email/SMS
-  "emails_sent",
-  "emails_received",
-  "emails_total",
-  "sms_sent",
-  "sms_received",
-  "sms_total",
-  // Opportunity metrics
-  "pipeline_value",
-  "pipeline_count",
-  "win_rate",
-  "avg_deal_size",
-  "sales_velocity",
-  "avg_time_to_close",
-  "deals_won",
-  "deals_lost",
-  "deals_won_value",
-]);
-
-/** Get metrics that can be used in a stat card (only implemented ones) */
+/** Get metrics that can be used in a stat card — all catalog metrics are implemented */
 export function getStatCardMetrics(): MetricDefinition[] {
-  return METRIC_CATALOG.filter((m) => IMPLEMENTED_STAT_METRICS.has(m.key));
+  return METRIC_CATALOG;
 }

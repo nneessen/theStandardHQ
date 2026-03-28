@@ -5,18 +5,19 @@ import type { StatusDistributionResult } from "../../types/close-kpi.types";
 
 interface StatusDistributionWidgetProps {
   data: StatusDistributionResult;
+  label?: string;
 }
 
 export const StatusDistributionWidget: React.FC<
   StatusDistributionWidgetProps
-> = ({ data }) => {
+> = ({ data, label }) => {
   const maxCount = Math.max(...data.items.map((i) => i.count), 1);
 
   return (
     <div className="flex h-full flex-col">
       <div className="mb-1 flex items-center justify-between">
         <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-          Leads by Status
+          {label ?? "Lead Pipeline"}
         </span>
         <span className="font-mono text-[10px] text-muted-foreground">
           {data.total.toLocaleString()} total

@@ -24,21 +24,18 @@ export const StatusDistributionConfig: React.FC<
 
   return (
     <div className="space-y-2">
-      {/* Group By */}
+      {/* Group By — currently only status is fully implemented */}
       <div>
         <Label className="text-[10px] text-muted-foreground">Group By</Label>
         <Select
-          value={config.groupBy}
-          onValueChange={(v) =>
-            onChange({ ...config, groupBy: v as "status" | "source" })
-          }
+          value="status"
+          onValueChange={(v) => onChange({ ...config, groupBy: v as "status" })}
         >
           <SelectTrigger className="h-7 text-[11px]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="status">Lead Status</SelectItem>
-            <SelectItem value="source">Lead Source</SelectItem>
           </SelectContent>
         </Select>
       </div>

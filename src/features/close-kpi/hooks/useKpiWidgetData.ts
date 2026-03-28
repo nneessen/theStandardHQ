@@ -27,6 +27,12 @@ import type {
   LifecycleTrackerResult,
   VmRateSmartViewConfig,
   VmRateSmartViewResult,
+  BestCallTimesResult,
+  CrossReferenceConfig,
+  CrossReferenceResult,
+  SpeedToLeadResult,
+  ContactCadenceResult,
+  DialAttemptsResult,
   GlobalDashboardConfig,
 } from "../types/close-kpi.types";
 
@@ -89,12 +95,16 @@ async function fetchWidgetData(
       return fetchLifecycleTracker(config as LifecycleTrackerConfig);
     case "vm_rate_smart_view":
       return fetchVmRateSmartView(config as VmRateSmartViewConfig);
-    case "activity_timeline":
-    case "smart_view_monitor":
+    case "best_call_times":
+      return fetchBestCallTimes(config);
     case "cross_reference":
-    case "custom_field_breakdown":
-      // These will be wired up as we build out the Close API endpoints
-      return { value: 0, label: "Coming soon" } as StatCardResult;
+      return fetchCrossReference(config as CrossReferenceConfig);
+    case "speed_to_lead":
+      return fetchSpeedToLead(config);
+    case "contact_cadence":
+      return fetchContactCadence(config);
+    case "dial_attempts":
+      return fetchDialAttempts(config);
     default:
       throw new Error(`Unknown widget type: ${widget.widget_type}`);
   }
@@ -172,23 +182,47 @@ async function fetchStatCard(config: StatCardConfig): Promise<StatCardResult> {
       }
     }
   }
-  // Email metrics
+  // Email metrics — direction-aware
   else if (metric.startsWith("emails_")) {
     const res = await closeKpiService.getActivities({
       from,
       to,
       types: ["email"],
     });
-    value = res.email?.total ?? 0;
+    if (res.email) {
+      switch (metric) {
+        case "emails_sent":
+          value = res.email.sent;
+          break;
+        case "emails_received":
+          value = res.email.received;
+          break;
+        case "emails_total":
+        default:
+          value = res.email.total;
+      }
+    }
   }
-  // SMS metrics
+  // SMS metrics — direction-aware
   else if (metric.startsWith("sms_")) {
     const res = await closeKpiService.getActivities({
       from,
       to,
       types: ["sms"],
     });
-    value = res.sms?.total ?? 0;
+    if (res.sms) {
+      switch (metric) {
+        case "sms_sent":
+          value = res.sms.sent;
+          break;
+        case "sms_received":
+          value = res.sms.received;
+          break;
+        case "sms_total":
+        default:
+          value = res.sms.total;
+      }
+    }
   }
   // Opportunity metrics → real Close opportunity data
   else if (
@@ -304,34 +338,14 @@ async function fetchStatusDistribution(
 
   let items: { id: string; label: string; count: number }[] = [];
 
-  if (config.groupBy === "status") {
-    // Real Close lead counts per CRM status
-    const res = await closeKpiService.getLeadCounts({
-      from,
-      to,
-      smartViewId: config.smartViewId ?? undefined,
-    });
-    items = res.byStatus;
-  } else if (config.groupBy === "source") {
-    // Get metadata for source names, then search per source
-    const meta = await closeKpiService.getMetadata();
-    const sourceField = meta.customFields.find(
-      (f) => f.name === "Lead Source" || f.name === "lead_source",
-    );
-    if (sourceField?.choices) {
-      const results = await Promise.all(
-        sourceField.choices.map(async (source) => {
-          // For now, return the source names — actual per-source counts
-          // would require search queries per source which hits rate limits
-          return { id: source, label: source, count: 0 };
-        }),
-      );
-      items = results;
-    }
-  } else if (config.groupBy === "custom_field" && config.customFieldKey) {
-    // Custom field breakdown — placeholder for now
-    items = [];
-  }
+  // Currently only status grouping is fully implemented.
+  // Source/custom field grouping requires the Close Advanced Filtering API.
+  const res = await closeKpiService.getLeadCounts({
+    from,
+    to,
+    smartViewId: config.smartViewId ?? undefined,
+  });
+  items = res.byStatus;
 
   // Sort
   if (config.sortOrder === "count_desc") {
@@ -493,5 +507,94 @@ async function fetchVmRateSmartView(
     to,
     smartViewIds: config.smartViewIds,
     firstCallOnly: config.firstCallOnly,
+  });
+}
+
+// ─── Best Call Times Fetcher ─────────────────────────────────────
+
+async function fetchBestCallTimes(config: {
+  dateRange: string;
+  customFrom?: string;
+  customTo?: string;
+}): Promise<BestCallTimesResult> {
+  const { from, to } = getDateRangeBounds(
+    config.dateRange,
+    config.customFrom,
+    config.customTo,
+  );
+  return closeKpiService.getBestCallTimes({ from, to });
+}
+
+// ─── Cross-Reference Fetcher ─────────────────────────────────────
+
+async function fetchCrossReference(
+  config: CrossReferenceConfig,
+): Promise<CrossReferenceResult> {
+  if (!config.smartViewIds || config.smartViewIds.length === 0) {
+    return { rows: [], statusLabels: [], totals: {}, grandTotal: 0 };
+  }
+  return closeKpiService.getCrossReference({
+    smartViewIds: config.smartViewIds,
+    statusIds: config.statusIds?.length ? config.statusIds : undefined,
+  });
+}
+
+// ─── Speed to Lead Fetcher ───────────────────────────────────────
+
+async function fetchSpeedToLead(config: {
+  dateRange: string;
+  customFrom?: string;
+  customTo?: string;
+  smartViewId?: string | null;
+}): Promise<SpeedToLeadResult> {
+  const { from, to } = getDateRangeBounds(
+    config.dateRange,
+    config.customFrom,
+    config.customTo,
+  );
+  return closeKpiService.getSpeedToLead({
+    from,
+    to,
+    smartViewId: config.smartViewId ?? undefined,
+  });
+}
+
+// ─── Contact Cadence Fetcher ─────────────────────────────────────
+
+async function fetchContactCadence(config: {
+  dateRange: string;
+  customFrom?: string;
+  customTo?: string;
+  smartViewId?: string | null;
+}): Promise<ContactCadenceResult> {
+  const { from, to } = getDateRangeBounds(
+    config.dateRange,
+    config.customFrom,
+    config.customTo,
+  );
+  return closeKpiService.getContactCadence({
+    from,
+    to,
+    smartViewId: config.smartViewId ?? undefined,
+  });
+}
+
+// ─── Dial Attempts Fetcher ───────────────────────────────────────
+
+async function fetchDialAttempts(config: {
+  dateRange: string;
+  customFrom?: string;
+  customTo?: string;
+  smartViewId?: string | null;
+}): Promise<DialAttemptsResult> {
+  const { from, to } = getDateRangeBounds(
+    config.dateRange,
+    config.customFrom,
+    config.customTo,
+  );
+  return closeKpiService.getDialAttempts({
+    from,
+    to,
+    smartViewId: config.smartViewId ?? undefined,
   });
 }

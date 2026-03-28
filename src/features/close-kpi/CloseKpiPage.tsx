@@ -20,7 +20,7 @@ import {
   useReorderWidgets,
   closeKpiKeys,
 } from "./hooks/useCloseKpiDashboard";
-import { WIDGET_REGISTRY } from "./config/widget-registry";
+import { WIDGET_REGISTRY, METRIC_CATALOG } from "./config/widget-registry";
 import type { WidgetType } from "./types/close-kpi.types";
 
 export const CloseKpiPage: React.FC = () => {
@@ -50,16 +50,24 @@ export const CloseKpiPage: React.FC = () => {
     (widgetType: WidgetType) => {
       if (!dashData?.dashboard) return;
       const registry = WIDGET_REGISTRY[widgetType];
+      // Generate a meaningful title instead of generic type label
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const config = registry.defaultConfig as any;
+      const metricKey = config.metric as string | undefined;
+      const metricDef = metricKey
+        ? METRIC_CATALOG.find((m) => m.key === metricKey)
+        : undefined;
+      const title = metricDef?.label ?? registry.description.split(" — ")[0];
       addWidget.mutate(
         {
           dashboardId: dashData.dashboard.id,
           widgetType,
-          title: registry.label,
+          title,
           size: registry.defaultSize,
           config: registry.defaultConfig,
         },
         {
-          onSuccess: () => toast.success(`Added ${registry.label}`),
+          onSuccess: () => toast.success(`Added ${title}`),
           onError: (err) => toast.error(err.message),
         },
       );
