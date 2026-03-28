@@ -16,6 +16,7 @@ import {
   ShieldBan,
   Tag,
   User,
+  MessageSquare,
   Users,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -39,6 +40,7 @@ import { ConnectionCard } from "./ConnectionCard";
 import { LeadSourceSelector } from "./LeadSourceSelector";
 import { LeadStatusSelector } from "./LeadStatusSelector";
 import { ResponseScheduleSection } from "./ResponseScheduleSection";
+import { StatusTriggerSequenceEditor } from "./StatusTriggerSequenceEditor";
 import {
   getConnectionStateLabel,
   resolveConnectionState,
@@ -463,7 +465,7 @@ export function SetupTab() {
       <Tabs defaultValue="automation" className="space-y-3">
         <TabsList
           variant="segment"
-          className="grid h-auto w-full grid-cols-2 gap-1 rounded-xl bg-zinc-200/70 p-1 lg:grid-cols-4 dark:bg-zinc-800/70"
+          className="grid h-auto w-full grid-cols-2 gap-1 rounded-xl bg-zinc-200/70 p-1 lg:grid-cols-5 dark:bg-zinc-800/70"
         >
           <TabsTrigger
             value="automation"
@@ -500,6 +502,15 @@ export function SetupTab() {
           >
             <Users className="h-3.5 w-3.5" />
             <span className="text-[10px] lg:text-[11px]">Audience</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="sequences"
+            variant="segment"
+            size="sm"
+            className="h-9 gap-2"
+          >
+            <MessageSquare className="h-3.5 w-3.5" />
+            <span className="text-[10px] lg:text-[11px]">Sequences</span>
           </TabsTrigger>
         </TabsList>
 
@@ -1187,6 +1198,10 @@ export function SetupTab() {
               ) : null}
             </SectionCard>
           </div>
+        </TabsContent>
+
+        <TabsContent value="sequences" className="mt-0">
+          <StatusTriggerSequenceEditor />
         </TabsContent>
       </Tabs>
     </div>

@@ -13,6 +13,7 @@ import type { AgentMonitoringResponse } from "@/types/chat-bot-monitoring";
 
 import { useAuth } from "@/contexts/AuthContext";
 import type { ResponseSchedule } from "../lib/response-schedule";
+import type { StatusTriggerSequence } from "../lib/status-trigger-sequences";
 import type { VoicePhoneNumber } from "../../voice-agent/types/voice-phone-number.types";
 
 // ─── Query Key Factory ──────────────────────────────────────────
@@ -102,6 +103,7 @@ export interface ChatBotAgent {
   voiceHumanHandoffEnabled?: boolean;
   voiceQuotedFollowupEnabled?: boolean;
   primaryPhone?: string | null;
+  statusTriggerSequences?: StatusTriggerSequence[];
   connections?: {
     close?: { connected: boolean; orgName?: string };
     calendly?: { connected: boolean; eventType?: string };
@@ -772,7 +774,7 @@ export function useChatBotConversations(
         status,
         search,
       }),
-    staleTime: 10_000,
+    staleTime: 30_000, // 30s — auto-refresh handles freshness
     enabled,
   });
 }
@@ -1611,6 +1613,7 @@ export function useUpdateBotConfig() {
       voiceHumanHandoffEnabled?: boolean;
       voiceQuotedFollowupEnabled?: boolean;
       primaryPhone?: string | null;
+      statusTriggerSequences?: StatusTriggerSequence[];
     }) => chatBotApi<{ success: boolean }>("update_config", config),
     onMutate: async (config) => {
       await queryClient.cancelQueries({ queryKey: chatBotKeys.agent() });

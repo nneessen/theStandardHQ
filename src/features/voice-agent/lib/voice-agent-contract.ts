@@ -49,6 +49,7 @@ const BOT_CONFIG_ALLOWED_KEYS = new Set([
   "voiceHumanHandoffEnabled",
   "voiceQuotedFollowupEnabled",
   "primaryPhone",
+  "statusTriggerSequences",
 ]);
 
 const PENDING_VOICE_AGENT_STATUSES = new Set([
