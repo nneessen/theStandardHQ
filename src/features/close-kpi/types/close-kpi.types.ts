@@ -6,14 +6,15 @@
 export type WidgetType =
   | "stat_card"
   | "status_distribution"
-  | "smart_view_monitor"
   | "lifecycle_tracker"
-  | "activity_timeline"
-  | "cross_reference"
   | "opportunity_summary"
   | "call_analytics"
-  | "custom_field_breakdown"
-  | "vm_rate_smart_view";
+  | "vm_rate_smart_view"
+  | "best_call_times"
+  | "cross_reference"
+  | "speed_to_lead"
+  | "contact_cadence"
+  | "dial_attempts";
 
 export type WidgetSize = "small" | "medium" | "large";
 
@@ -39,71 +40,40 @@ export type OpportunityStatusType = "active" | "won" | "lost";
 // ─── Metric Definitions ────────────────────────────────────────────
 // These are the actual measurable things a user can pick from.
 
-export type LeadMetric =
-  | "lead_count" // Total leads matching filters
-  | "leads_created" // Leads created in date range
-  | "leads_by_status" // Lead count per status
-  | "leads_by_source" // Lead count per source
-  | "leads_by_smart_view" // Lead count per smart view
-  | "leads_untouched" // Leads with no activities
-  | "leads_by_custom_field"; // Lead count grouped by a custom field
+export type LeadMetric = "lead_count" | "leads_created";
 
 export type CallMetric =
-  | "calls_total" // Total calls
-  | "calls_inbound" // Incoming calls
-  | "calls_outbound" // Outgoing calls
-  | "calls_answered" // Calls with answered disposition
-  | "calls_voicemail" // VM left + VM answer
-  | "calls_missed" // No-answer + busy
-  | "call_duration_total" // Total call minutes
-  | "call_duration_avg" // Average call duration
-  | "call_connect_rate" // Answered / total calls
-  | "calls_by_disposition" // Count per disposition (answered, vm-left, etc.)
-  | "calls_by_direction" // Inbound vs outbound
-  | "calls_over_time"; // Call count by time bucket
+  | "calls_total"
+  | "calls_inbound"
+  | "calls_outbound"
+  | "calls_answered"
+  | "calls_voicemail"
+  | "calls_missed"
+  | "call_duration_total"
+  | "call_duration_avg"
+  | "call_connect_rate";
 
-export type EmailMetric =
-  | "emails_sent"
-  | "emails_received"
-  | "emails_total"
-  | "emails_over_time";
+export type EmailMetric = "emails_sent" | "emails_received" | "emails_total";
 
-export type SmsMetric =
-  | "sms_sent"
-  | "sms_received"
-  | "sms_total"
-  | "sms_over_time";
+export type SmsMetric = "sms_sent" | "sms_received" | "sms_total";
 
 export type OpportunityMetric =
-  | "pipeline_value" // Total $ in active pipeline
-  | "pipeline_count" // Number of active opportunities
-  | "win_rate" // Won / (won + lost)
-  | "avg_deal_size" // Average opportunity value
-  | "sales_velocity" // (# opps × avg deal × win rate) / avg time to win
-  | "avg_time_to_close" // Days from opp created to won
-  | "deals_won" // Count of won deals in range
-  | "deals_lost" // Count of lost deals in range
-  | "deals_won_value" // Total $ won in range
-  | "opps_by_status" // Count per pipeline status
-  | "opps_by_value_bucket" // Bucketed by deal size
-  | "opps_stalled"; // Needing attention
+  | "pipeline_value"
+  | "pipeline_count"
+  | "win_rate"
+  | "avg_deal_size"
+  | "sales_velocity"
+  | "avg_time_to_close"
+  | "deals_won"
+  | "deals_lost"
+  | "deals_won_value";
 
 export type LifecycleMetric =
-  | "time_to_first_contact" // New → any Contacted status
-  | "time_to_quote" // Created → Quoted
-  | "time_to_sold" // Created → Sold
-  | "time_to_negative" // Created → negative outcome
-  | "status_conversion_rate" // % that move from status A → B
-  | "custom_status_path"; // User-defined from → to
-
-export type InsuranceMetric =
-  | "leads_by_carrier" // Custom field: Carriers
-  | "leads_by_app_status" // Custom field: Application Status
-  | "leads_by_policy_status" // Custom field: Policy Status
-  | "premium_pipeline" // Sum of Annual/Monthly Premium
-  | "face_amount_distribution" // Coverage amounts
-  | "leads_by_agent" // Custom field: Agent
-  | "leads_by_campaign"; // Custom field: Campaign Name
+  | "time_to_first_contact"
+  | "time_to_quote"
+  | "time_to_sold"
+  | "time_to_negative"
+  | "custom_status_path";
 
 export type Metric =
   | LeadMetric
@@ -111,16 +81,9 @@ export type Metric =
   | EmailMetric
   | SmsMetric
   | OpportunityMetric
-  | LifecycleMetric
-  | InsuranceMetric;
+  | LifecycleMetric;
 
-export type MetricCategory =
-  | "leads"
-  | "calls"
-  | "email_sms"
-  | "opportunities"
-  | "lifecycle"
-  | "insurance";
+export type MetricCategory = "leads" | "calls" | "email_sms" | "opportunities";
 
 // ─── Metric Registry Entry ─────────────────────────────────────────
 
@@ -230,6 +193,23 @@ export interface VmRateSmartViewConfig extends BaseWidgetConfig {
   firstCallOnly: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface BestCallTimesConfig extends BaseWidgetConfig {}
+
+export interface CrossReferenceConfig extends BaseWidgetConfig {
+  smartViewIds: string[];
+  statusIds: string[];
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface SpeedToLeadConfig extends BaseWidgetConfig {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ContactCadenceConfig extends BaseWidgetConfig {}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface DialAttemptsConfig extends BaseWidgetConfig {}
+
 export type WidgetConfig =
   | StatCardConfig
   | StatusDistributionConfig
@@ -240,7 +220,11 @@ export type WidgetConfig =
   | OpportunitySummaryConfig
   | CallAnalyticsConfig
   | CustomFieldBreakdownConfig
-  | VmRateSmartViewConfig;
+  | VmRateSmartViewConfig
+  | BestCallTimesConfig
+  | SpeedToLeadConfig
+  | ContactCadenceConfig
+  | DialAttemptsConfig;
 
 // ─── Database Row Types ────────────────────────────────────────────
 
@@ -406,6 +390,74 @@ export interface VmRateSmartViewResult {
   };
 }
 
+export interface BestCallTimesResult {
+  hourly: {
+    hour: number;
+    label: string;
+    total: number;
+    answered: number;
+    vm: number;
+    noAnswer: number;
+    connectRate: number;
+  }[];
+  daily: {
+    day: number;
+    label: string;
+    total: number;
+    answered: number;
+    connectRate: number;
+  }[];
+  bestHour: {
+    hour: number;
+    label: string;
+    connectRate: number;
+    total: number;
+  } | null;
+  bestDay: {
+    day: number;
+    label: string;
+    connectRate: number;
+    total: number;
+  } | null;
+  totalCalls: number;
+  isTruncated: boolean;
+}
+
+export interface SpeedToLeadResult {
+  avgMinutes: number;
+  medianMinutes: number;
+  distribution: { label: string; max: number; count: number }[];
+  totalLeads: number;
+  leadsWithActivity: number;
+  pctContacted: number;
+}
+
+export interface ContactCadenceResult {
+  avgGapHours: number;
+  medianGapHours: number;
+  totalLeads: number;
+  leadsContacted: number;
+  leadsMultiTouch: number;
+  totalTouches: number;
+  avgTouchesPerLead: number;
+  touchDistribution: { touches: number; leads: number }[];
+}
+
+export interface DialAttemptsResult {
+  avgAttempts: number;
+  medianAttempts: number;
+  totalLeadsDialed: number;
+  leadsConnected: number;
+  neverConnected: number;
+  connectPct: number;
+  attemptRates: {
+    attempt: number;
+    total: number;
+    answered: number;
+    connectRate: number;
+  }[];
+}
+
 export type WidgetResult =
   | StatCardResult
   | StatusDistributionResult
@@ -416,7 +468,11 @@ export type WidgetResult =
   | OpportunitySummaryResult
   | CallAnalyticsResult
   | CustomFieldBreakdownResult
-  | VmRateSmartViewResult;
+  | VmRateSmartViewResult
+  | BestCallTimesResult
+  | SpeedToLeadResult
+  | ContactCadenceResult
+  | DialAttemptsResult;
 
 // ─── Close API Data Types ──────────────────────────────────────────
 
