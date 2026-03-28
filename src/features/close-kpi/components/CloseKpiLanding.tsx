@@ -46,29 +46,18 @@ const VALUE_PROPS = [
 
 export function CloseKpiLanding() {
   return (
-    <div className="mx-auto max-w-2xl space-y-6 px-4 py-8">
-      <div className="space-y-2 text-center">
-        <h2 className="text-base font-semibold text-foreground">
-          CRM KPI Dashboard
-        </h2>
-        <p className="mx-auto max-w-md text-xs text-muted-foreground">
-          Build a fully configurable analytics dashboard from your Close CRM
-          data. Monitor pipeline health, call performance, and lead lifecycle
-          velocity with real-time widgets.
-        </p>
-      </div>
-
+    <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         {VALUE_PROPS.map((vp) => (
           <div
             key={vp.title}
-            className="rounded-lg border border-border bg-card p-3 shadow-sm"
+            className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3"
           >
             <vp.icon className="mb-1.5 h-4 w-4 text-muted-foreground" />
-            <h3 className="text-[11px] font-semibold text-card-foreground">
+            <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
               {vp.title}
             </h3>
-            <p className="mt-0.5 text-[10px] leading-relaxed text-muted-foreground">
+            <p className="mt-0.5 text-[10px] leading-relaxed text-zinc-500 dark:text-zinc-400">
               {vp.desc}
             </p>
           </div>

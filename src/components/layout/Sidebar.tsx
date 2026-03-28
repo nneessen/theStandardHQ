@@ -371,10 +371,10 @@ export default function Sidebar({
           href: "/channel-orchestration",
           public: true,
         },
-        // CRM KPIs — Close CRM analytics dashboard
+        // Close KPIs — Close CRM analytics dashboard
         {
-          icon: BarChart3,
-          label: "CRM KPIs",
+          icon: CloseCrmIcon,
+          label: "Close KPIs",
           href: "/close-kpi",
           public: true,
         },
