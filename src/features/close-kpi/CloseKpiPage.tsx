@@ -36,7 +36,11 @@ export const CloseKpiPage: React.FC = () => {
     staleTime: 5 * 60_000,
   });
 
-  const { data: dashData, isLoading: isDashLoading } = useKpiDashboard();
+  const {
+    data: dashData,
+    isLoading: isDashLoading,
+    error: dashError,
+  } = useKpiDashboard();
   const addWidget = useAddWidget();
   const deleteWidgetMut = useDeleteWidget();
   const reorderMut = useReorderWidgets();
@@ -48,7 +52,10 @@ export const CloseKpiPage: React.FC = () => {
 
   const handleAddWidget = useCallback(
     (widgetType: WidgetType) => {
-      if (!dashData?.dashboard) return;
+      if (!dashData?.dashboard) {
+        toast.error("Dashboard not available — please refresh the page");
+        return;
+      }
       const registry = WIDGET_REGISTRY[widgetType];
       // Generate a meaningful title instead of generic type label
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -123,6 +130,23 @@ export const CloseKpiPage: React.FC = () => {
           <WidgetSkeleton size="small" />
           <WidgetSkeleton size="small" />
           <WidgetSkeleton size="medium" />
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Error state ─────────────────────────────────────────────
+  if (dashError) {
+    return (
+      <div className="mx-auto max-w-7xl px-3 py-4">
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <AlertTriangle className="mb-2 h-5 w-5 text-destructive" />
+          <h2 className="mb-1 text-sm font-semibold text-foreground">
+            Dashboard unavailable
+          </h2>
+          <p className="max-w-md text-[11px] text-muted-foreground">
+            {dashError.message}
+          </p>
         </div>
       </div>
     );
