@@ -7,10 +7,30 @@ export type Json =
   | Json[];
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.5";
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
   public: {
     Tables: {
@@ -1812,112 +1832,6 @@ export type Database = {
           },
         ];
       };
-      chat_bot_conversation_reviews: {
-        Row: {
-          agent_snapshot: Json | null;
-          close_lead_id: string | null;
-          conversation_snapshot: Json | null;
-          conversation_status: string | null;
-          created_at: string;
-          external_agent_id: string;
-          external_conversation_id: string | null;
-          findings: Json;
-          found_conversation: boolean;
-          gaps: Json;
-          human_verdict: string | null;
-          id: string;
-          improvement_brief: string | null;
-          inbound_count: number;
-          outbound_count: number;
-          primary_reason: string;
-          primary_reason_code: string;
-          prompt_version: string | null;
-          resolution_status: string;
-          review_mode: string;
-          review_payload: Json;
-          target_payload: Json;
-          timeline: Json;
-          updated_at: string;
-          user_id: string;
-        };
-        Insert: {
-          agent_snapshot?: Json | null;
-          close_lead_id?: string | null;
-          conversation_snapshot?: Json | null;
-          conversation_status?: string | null;
-          created_at?: string;
-          external_agent_id: string;
-          external_conversation_id?: string | null;
-          findings?: Json;
-          found_conversation?: boolean;
-          gaps?: Json;
-          human_verdict?: string | null;
-          id?: string;
-          improvement_brief?: string | null;
-          inbound_count?: number;
-          outbound_count?: number;
-          primary_reason: string;
-          primary_reason_code: string;
-          prompt_version?: string | null;
-          resolution_status?: string;
-          review_mode: string;
-          review_payload?: Json;
-          target_payload?: Json;
-          timeline?: Json;
-          updated_at?: string;
-          user_id: string;
-        };
-        Update: {
-          agent_snapshot?: Json | null;
-          close_lead_id?: string | null;
-          conversation_snapshot?: Json | null;
-          conversation_status?: string | null;
-          created_at?: string;
-          external_agent_id?: string;
-          external_conversation_id?: string | null;
-          findings?: Json;
-          found_conversation?: boolean;
-          gaps?: Json;
-          human_verdict?: string | null;
-          id?: string;
-          improvement_brief?: string | null;
-          inbound_count?: number;
-          outbound_count?: number;
-          primary_reason?: string;
-          primary_reason_code?: string;
-          prompt_version?: string | null;
-          resolution_status?: string;
-          review_mode?: string;
-          review_payload?: Json;
-          target_payload?: Json;
-          timeline?: Json;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "active_user_profiles";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "user_management_view";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "user_profiles";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
       chat_bot_team_overrides: {
         Row: {
           created_at: string;
@@ -2029,6 +1943,190 @@ export type Database = {
           user_id?: string | null;
         };
         Relationships: [];
+      };
+      close_config: {
+        Row: {
+          api_key_encrypted: string;
+          created_at: string;
+          id: string;
+          is_active: boolean;
+          last_verified_at: string | null;
+          organization_id: string | null;
+          organization_name: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          api_key_encrypted: string;
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          last_verified_at?: string | null;
+          organization_id?: string | null;
+          organization_name?: string | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          api_key_encrypted?: string;
+          created_at?: string;
+          id?: string;
+          is_active?: boolean;
+          last_verified_at?: string | null;
+          organization_id?: string | null;
+          organization_name?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      close_kpi_cache: {
+        Row: {
+          cache_key: string;
+          expires_at: string;
+          fetched_at: string;
+          id: string;
+          result: Json;
+          user_id: string;
+          widget_id: string;
+        };
+        Insert: {
+          cache_key: string;
+          expires_at?: string;
+          fetched_at?: string;
+          id?: string;
+          result?: Json;
+          user_id: string;
+          widget_id: string;
+        };
+        Update: {
+          cache_key?: string;
+          expires_at?: string;
+          fetched_at?: string;
+          id?: string;
+          result?: Json;
+          user_id?: string;
+          widget_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "close_kpi_cache_widget_id_fkey";
+            columns: ["widget_id"];
+            isOneToOne: false;
+            referencedRelation: "close_kpi_widgets";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      close_kpi_dashboards: {
+        Row: {
+          created_at: string;
+          global_config: Json;
+          id: string;
+          name: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          global_config?: Json;
+          id?: string;
+          name?: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          global_config?: Json;
+          id?: string;
+          name?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      close_kpi_widget_templates: {
+        Row: {
+          category: string;
+          created_at: string;
+          default_config: Json;
+          description: string | null;
+          icon: string | null;
+          id: string;
+          name: string;
+          sort_order: number;
+          widget_type: string;
+        };
+        Insert: {
+          category: string;
+          created_at?: string;
+          default_config?: Json;
+          description?: string | null;
+          icon?: string | null;
+          id?: string;
+          name: string;
+          sort_order?: number;
+          widget_type: string;
+        };
+        Update: {
+          category?: string;
+          created_at?: string;
+          default_config?: Json;
+          description?: string | null;
+          icon?: string | null;
+          id?: string;
+          name?: string;
+          sort_order?: number;
+          widget_type?: string;
+        };
+        Relationships: [];
+      };
+      close_kpi_widgets: {
+        Row: {
+          config: Json;
+          created_at: string;
+          dashboard_id: string;
+          id: string;
+          position_order: number;
+          size: string;
+          title: string;
+          updated_at: string;
+          user_id: string;
+          widget_type: string;
+        };
+        Insert: {
+          config?: Json;
+          created_at?: string;
+          dashboard_id: string;
+          id?: string;
+          position_order?: number;
+          size?: string;
+          title: string;
+          updated_at?: string;
+          user_id: string;
+          widget_type: string;
+        };
+        Update: {
+          config?: Json;
+          created_at?: string;
+          dashboard_id?: string;
+          id?: string;
+          position_order?: number;
+          size?: string;
+          title?: string;
+          updated_at?: string;
+          user_id?: string;
+          widget_type?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "close_kpi_widgets_dashboard_id_fkey";
+            columns: ["dashboard_id"];
+            isOneToOne: false;
+            referencedRelation: "close_kpi_dashboards";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       commissions: {
         Row: {
@@ -15133,6 +15231,7 @@ export type Database = {
           user_id: string;
         }[];
       };
+      get_close_api_key: { Args: { p_user_id: string }; Returns: string };
       get_commissions_for_threshold_check: {
         Args: {
           p_end_date: string;
@@ -17758,6 +17857,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       agent_status: ["unlicensed", "licensed", "not_applicable"],
