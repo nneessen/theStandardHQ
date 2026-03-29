@@ -1,7 +1,7 @@
 // src/features/chat-bot/components/ConversationsTab.tsx
 // Conversation list with search, filters, pagination, and message thread viewer
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   MessageSquare,
   ChevronLeft,
@@ -88,13 +88,15 @@ export function ConversationsTab() {
     status === "all" && !debouncedSearch,
   );
 
-  // Auto-refresh every 10 seconds
+  // Auto-refresh every 30 seconds — use ref to avoid re-creating interval on every render
+  const refetchRef = useRef(refetch);
+  refetchRef.current = refetch;
   useEffect(() => {
     const interval = setInterval(() => {
-      refetch();
-    }, 10_000);
+      refetchRef.current();
+    }, 30_000);
     return () => clearInterval(interval);
-  }, [refetch]);
+  }, []);
 
   const conversations = data?.data || [];
   const total = data?.total || 0;

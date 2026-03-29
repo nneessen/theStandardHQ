@@ -36,6 +36,7 @@
     "email:build": "email export --dir supabase/email-src --outDir supabase/templates",
     "slack:leaderboard": "node scripts/invoke-slack-leaderboard.js",
     "slack:ip-leaderboard": "node scripts/invoke-slack-ip-leaderboard.js",
+    "discord:ip-leaderboard": "node scripts/invoke-discord-ip-leaderboard.js",
     "slack:auto-complete": "node scripts/invoke-slack-auto-complete.js",
     "bot:review": "node scripts/review-chat-bot-lead.mjs",
     "bot:review:recent": "node scripts/review-chat-bot-recent.mjs",

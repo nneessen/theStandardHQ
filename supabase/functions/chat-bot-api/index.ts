@@ -1867,9 +1867,27 @@ serve(async (req) => {
         if (errorMessage) {
           return jsonResponse({ error: errorMessage }, status);
         }
+        // deno-lint-ignore no-explicit-any
+        const rawItems: any[] = Array.isArray(payload) ? payload : [];
+        // Normalize external API fields → frontend ChatBotMessage shape.
+        // Spread raw message first to preserve all fields, then overlay normalized keys.
+        // deno-lint-ignore no-explicit-any
+        const normalizedMessages = rawItems.map((m: any) => ({
+          ...m,
+          id: m.id || m.uuid || "",
+          conversationId:
+            m.conversationId || m.conversation_id || conversationId,
+          direction: m.direction || "outbound",
+          content:
+            m.content || m.text || m.body || m.message || m.full_content || "",
+          createdAt: m.createdAt || m.created_at || m.date_created || "",
+          channel: m.channel || null,
+          senderType: m.senderType || m.sender_type || null,
+          messageKind: m.messageKind || m.message_kind || null,
+        }));
         const pagination = meta?.pagination || {};
         return jsonResponse({
-          data: Array.isArray(payload) ? payload : [],
+          data: normalizedMessages,
           total: pagination.totalItems ?? pagination.total ?? 0,
           page: pagination.page ?? 1,
           limit: pagination.limit ?? 50,

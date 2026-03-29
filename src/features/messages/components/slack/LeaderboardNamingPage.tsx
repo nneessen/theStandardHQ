@@ -22,7 +22,8 @@ import { Trophy, Sparkles, AlertCircle, CheckCircle } from "lucide-react";
 interface DailyLog {
   id: string;
   imo_id: string;
-  slack_integration_id: string;
+  slack_integration_id: string | null;
+  discord_integration_id: string | null;
   channel_id: string;
   log_date: string;
   title: string | null;
@@ -98,17 +99,26 @@ export function LeaderboardNamingPage({ logId }: LeaderboardNamingPageProps) {
       setSuccess(true);
       queryClient.invalidateQueries({ queryKey: ["daily-sales-logs"] });
 
-      // Trigger refresh of the Slack leaderboard message
+      // Trigger refresh of the leaderboard message (Slack or Discord)
       if (targetLog) {
         try {
-          await supabase.functions.invoke("slack-refresh-leaderboard", {
-            body: {
-              logId: targetLog.id,
-              title: title,
-            },
-          });
+          if (targetLog.discord_integration_id) {
+            await supabase.functions.invoke("discord-policy-notification", {
+              body: {
+                action: "update-leaderboard",
+                logId: targetLog.id,
+              },
+            });
+          } else {
+            await supabase.functions.invoke("slack-refresh-leaderboard", {
+              body: {
+                logId: targetLog.id,
+                title: title,
+              },
+            });
+          }
         } catch (err) {
-          console.error("Failed to refresh Slack leaderboard:", err);
+          console.error("Failed to refresh leaderboard:", err);
         }
       }
 
