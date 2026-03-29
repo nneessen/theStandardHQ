@@ -93,11 +93,12 @@ serve(async (req) => {
       .select("id", { count: "exact", head: true })
       .eq("provisioning_status", "active");
 
-    // 4. Compute aggregate attribution metrics
+    // 4. Compute aggregate attribution metrics + daily breakdown
     let totalAttributions = 0;
     let botConverted = 0;
     let botAssisted = 0;
     let totalPremium = 0;
+    const dailyConversions: Record<string, number> = {};
 
     for (const a of attrs) {
       totalAttributions++;
@@ -106,6 +107,9 @@ serve(async (req) => {
       // deno-lint-ignore no-explicit-any
       const premium = (a.policies as any)?.annual_premium;
       if (typeof premium === "number") totalPremium += premium;
+      // Group attributions by date for timeline conversions
+      const day = a.created_at?.slice(0, 10);
+      if (day) dailyConversions[day] = (dailyConversions[day] ?? 0) + 1;
     }
 
     // Subtract "open" conversations (bot hasn't engaged yet) from totals
@@ -131,7 +135,16 @@ serve(async (req) => {
         engagedConversations > 0
           ? Math.round((totalAttributions / engagedConversations) * 10000) / 100
           : 0,
-      timeline: externalMetrics?.timeline ?? [],
+      timeline: (externalMetrics?.timeline ?? []).map(
+        // deno-lint-ignore no-explicit-any
+        (row: any) => ({
+          date: row.date,
+          conversations: row.conversations ?? 0,
+          appointments: row.appointments ?? 0,
+          // Use real policy attributions instead of the external API's conversions
+          conversions: dailyConversions[row.date] ?? 0,
+        }),
+      ),
     });
   } catch (err) {
     console.error("[bot-collective-analytics] Error:", err);
