@@ -1,0 +1,265 @@
+// src/features/close-kpi/components/widgets/LeadHeatListWidget.tsx
+// Sortable lead table with heat score badges, filtering, and inline AI deep-dive.
+
+import React, { useState, useRef } from "react";
+import {
+  Brain,
+  Loader2,
+  ChevronDown,
+  ChevronUp,
+  AlertCircle,
+} from "lucide-react";
+import type {
+  LeadHeatListResult,
+  LeadHeatScoreRow,
+  LeadHeatDeepDiveResult,
+} from "../../types/close-kpi.types";
+import { LeadHeatBadge } from "../LeadHeatBadge";
+import { closeKpiService } from "../../services/closeKpiService";
+
+interface LeadHeatListWidgetProps {
+  data: LeadHeatListResult;
+}
+
+// Sentinel value for failed deep dives
+const DEEP_DIVE_ERROR = Symbol("error");
+type DeepDiveEntry = LeadHeatDeepDiveResult | typeof DEEP_DIVE_ERROR;
+
+export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
+  data,
+}) => {
+  const { leads, total, page, pageSize } = data;
+  const [expandedLeadId, setExpandedLeadId] = useState<string | null>(null);
+  const [deepDiveData, setDeepDiveData] = useState<
+    Record<string, DeepDiveEntry>
+  >({});
+  const [loadingDeepDive, setLoadingDeepDive] = useState<string | null>(null);
+  const pendingRef = useRef<Set<string>>(new Set());
+
+  const handleRowClick = async (lead: LeadHeatScoreRow) => {
+    if (expandedLeadId === lead.closeLeadId) {
+      setExpandedLeadId(null);
+      return;
+    }
+    setExpandedLeadId(lead.closeLeadId);
+
+    // Check if we already have the AI insight from scored data
+    if (lead.aiInsight) {
+      const insight = lead.aiInsight;
+      setDeepDiveData((prev) => ({ ...prev, [lead.closeLeadId]: insight }));
+      return;
+    }
+
+    // Already fetched (success or error) — don't re-fetch unless error
+    const existing = deepDiveData[lead.closeLeadId];
+    if (existing && existing !== DEEP_DIVE_ERROR) return;
+
+    // Deduplication guard: prevent concurrent requests for the same lead
+    if (pendingRef.current.has(lead.closeLeadId)) return;
+    pendingRef.current.add(lead.closeLeadId);
+
+    setLoadingDeepDive(lead.closeLeadId);
+    try {
+      const result = await closeKpiService.analyzeLeadDeepDive(
+        lead.closeLeadId,
+      );
+      setDeepDiveData((prev) => ({ ...prev, [lead.closeLeadId]: result }));
+    } catch {
+      setDeepDiveData((prev) => ({
+        ...prev,
+        [lead.closeLeadId]: DEEP_DIVE_ERROR,
+      }));
+    } finally {
+      setLoadingDeepDive(null);
+      pendingRef.current.delete(lead.closeLeadId);
+    }
+  };
+
+  if (leads.length === 0) {
+    return (
+      <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+        No leads scored yet. Click "Rescore" to analyze your leads.
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-full flex-col gap-1">
+      <div className="text-[10px] text-muted-foreground">
+        {total} leads{" "}
+        {total > pageSize && (
+          <span>
+            (showing {(page - 1) * pageSize + 1}-
+            {Math.min(page * pageSize, total)})
+          </span>
+        )}
+      </div>
+
+      <div className="overflow-auto">
+        <table className="w-full text-xs">
+          <thead>
+            <tr className="border-b border-border/50 text-[10px] uppercase text-muted-foreground">
+              <th className="pb-1 text-left font-medium">Lead</th>
+              <th className="pb-1 text-center font-medium">Score</th>
+              <th className="pb-1 text-left font-medium">Status</th>
+              <th className="pb-1 text-left font-medium">Top Signal</th>
+              <th className="pb-1 text-center font-medium w-6">AI</th>
+            </tr>
+          </thead>
+          <tbody>
+            {leads.map((lead) => (
+              <React.Fragment key={lead.closeLeadId}>
+                <tr
+                  className="cursor-pointer border-b border-border/30 hover:bg-muted/30 transition-colors"
+                  onClick={() => handleRowClick(lead)}
+                >
+                  <td className="py-1.5 pr-2">
+                    <span className="font-medium text-foreground">
+                      {lead.displayName}
+                    </span>
+                  </td>
+                  <td className="py-1.5 text-center">
+                    <LeadHeatBadge
+                      score={lead.score}
+                      heatLevel={lead.heatLevel}
+                      trend={lead.trend}
+                      previousScore={lead.previousScore}
+                    />
+                  </td>
+                  <td className="py-1.5 pr-2 text-muted-foreground">
+                    {lead.currentStatus}
+                  </td>
+                  <td className="py-1.5 pr-2 text-muted-foreground">
+                    {lead.topSignal}
+                  </td>
+                  <td className="py-1.5 text-center">
+                    {expandedLeadId === lead.closeLeadId ? (
+                      <ChevronUp className="mx-auto h-3 w-3 text-muted-foreground" />
+                    ) : (
+                      <ChevronDown className="mx-auto h-3 w-3 text-muted-foreground" />
+                    )}
+                  </td>
+                </tr>
+
+                {/* Inline AI Deep Dive */}
+                {expandedLeadId === lead.closeLeadId && (
+                  <tr>
+                    <td colSpan={5} className="pb-2">
+                      <DeepDivePanel
+                        data={
+                          deepDiveData[lead.closeLeadId] === DEEP_DIVE_ERROR
+                            ? null
+                            : ((deepDiveData[
+                                lead.closeLeadId
+                              ] as LeadHeatDeepDiveResult) ?? null)
+                        }
+                        isLoading={loadingDeepDive === lead.closeLeadId}
+                        hasError={
+                          deepDiveData[lead.closeLeadId] === DEEP_DIVE_ERROR
+                        }
+                      />
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+// ─── Inline Deep Dive Panel ───────────────────────────────────────────
+
+interface DeepDivePanelProps {
+  data: LeadHeatDeepDiveResult | null;
+  isLoading: boolean;
+  hasError?: boolean;
+}
+
+const DeepDivePanel: React.FC<DeepDivePanelProps> = ({
+  data,
+  isLoading,
+  hasError,
+}) => {
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 rounded border border-border/50 bg-muted/20 px-3 py-2 text-[11px] text-muted-foreground">
+        <Loader2 className="h-3 w-3 animate-spin" />
+        Analyzing lead with AI...
+      </div>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <div className="flex items-center gap-2 rounded border border-destructive/30 bg-destructive/5 px-3 py-2 text-[11px] text-destructive">
+        <AlertCircle className="h-3 w-3" />
+        AI analysis failed. Click again to retry.
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="flex items-center gap-2 rounded border border-border/50 bg-muted/20 px-3 py-2 text-[11px] text-muted-foreground">
+        <Brain className="h-3 w-3" />
+        Click to analyze this lead with AI
+      </div>
+    );
+  }
+
+  const probColors: Record<string, string> = {
+    high: "text-emerald-600 dark:text-emerald-400",
+    medium: "text-amber-600 dark:text-amber-400",
+    low: "text-orange-600 dark:text-orange-400",
+    very_low: "text-red-600 dark:text-red-400",
+  };
+
+  return (
+    <div className="rounded border border-border/50 bg-muted/10 px-3 py-2 space-y-1.5">
+      {/* Narrative */}
+      <p className="text-[11px] text-foreground leading-relaxed">
+        {data.narrative}
+      </p>
+
+      {/* Recommended Action */}
+      <div className="flex items-start gap-2 rounded bg-primary/5 px-2 py-1.5 border border-primary/10">
+        <Brain className="h-3 w-3 mt-0.5 text-primary flex-shrink-0" />
+        <div className="text-[11px]">
+          <span className="font-semibold text-primary">
+            {data.recommendedAction.action}
+          </span>
+          <span className="text-muted-foreground">
+            {" "}
+            — {data.recommendedAction.timing}
+          </span>
+          <p className="text-muted-foreground/80 text-[10px] mt-0.5">
+            {data.recommendedAction.reasoning}
+          </p>
+        </div>
+      </div>
+
+      {/* Key Signals + Probability */}
+      <div className="flex items-center gap-3 text-[10px]">
+        <span className="text-muted-foreground">
+          Conversion:{" "}
+          <span
+            className={`font-semibold ${probColors[data.conversionProbability] ?? ""}`}
+          >
+            {data.conversionProbability.replace("_", " ")}
+          </span>
+        </span>
+        <span className="text-muted-foreground">
+          Confidence: {Math.round(data.confidence * 100)}%
+        </span>
+        {data.riskFactors.length > 0 && (
+          <span className="text-destructive/80">
+            Risks: {data.riskFactors.join(", ")}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+};

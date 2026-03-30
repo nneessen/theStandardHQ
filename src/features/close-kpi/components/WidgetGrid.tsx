@@ -28,6 +28,9 @@ import { CrossReferenceWidget } from "./widgets/CrossReferenceWidget";
 import { SpeedToLeadWidget } from "./widgets/SpeedToLeadWidget";
 import { ContactCadenceWidget } from "./widgets/ContactCadenceWidget";
 import { DialAttemptsWidget } from "./widgets/DialAttemptsWidget";
+import { LeadHeatSummaryWidget } from "./widgets/LeadHeatSummaryWidget";
+import { LeadHeatListWidget } from "./widgets/LeadHeatListWidget";
+import { LeadHeatAiInsightsWidget } from "./widgets/LeadHeatAiInsightsWidget";
 import { StatCardConfig } from "./config-forms/StatCardConfig";
 import { StatusDistributionConfig } from "./config-forms/StatusDistributionConfig";
 import { LifecycleTrackerConfig } from "./config-forms/LifecycleTrackerConfig";
@@ -60,6 +63,9 @@ import type {
   SpeedToLeadResult,
   ContactCadenceResult,
   DialAttemptsResult,
+  LeadHeatSummaryResult,
+  LeadHeatListResult,
+  LeadHeatAiInsightsResult,
 } from "../types/close-kpi.types";
 
 interface WidgetGridProps {
@@ -260,6 +266,14 @@ const WidgetConfigForm: React.FC<{
           showSmartViewFilter={widgetType !== "best_call_times"}
         />
       );
+    case "lead_heat_summary":
+    case "lead_heat_list":
+    case "lead_heat_ai_insights":
+      return (
+        <p className="text-[10px] text-muted-foreground">
+          Lead Heat widgets are configured automatically.
+        </p>
+      );
     default:
       return (
         <p className="text-[10px] text-muted-foreground">
@@ -350,6 +364,14 @@ const WidgetContent: React.FC<{
       return <ContactCadenceWidget data={data as ContactCadenceResult} />;
     case "dial_attempts":
       return <DialAttemptsWidget data={data as DialAttemptsResult} />;
+    case "lead_heat_summary":
+      return <LeadHeatSummaryWidget data={data as LeadHeatSummaryResult} />;
+    case "lead_heat_list":
+      return <LeadHeatListWidget data={data as LeadHeatListResult} />;
+    case "lead_heat_ai_insights":
+      return (
+        <LeadHeatAiInsightsWidget data={data as LeadHeatAiInsightsResult} />
+      );
     default:
       return null;
   }

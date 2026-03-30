@@ -320,4 +320,272 @@ export const closeKpiService = {
         connectRate: number;
       }[];
     }>("get_dial_attempts", params),
+
+  // ─── Lead Heat Index Methods ──────────────────────────────────────
+
+  /** Get lead heat summary (distribution by heat level) — uses server-side aggregation */
+  getLeadHeatSummary: async (userId: string) => {
+    // Server-side aggregate: count by heat_level (avoids fetching all rows to client)
+    const [distributionResult, statsResult, outcomeResult] = await Promise.all([
+      supabase
+        .from("lead_heat_scores")
+        .select("heat_level")
+        .eq("user_id", userId),
+      supabase
+        .from("lead_heat_scores")
+        .select("score, scored_at")
+        .eq("user_id", userId)
+        .order("scored_at", { ascending: false })
+        .limit(1),
+      supabase
+        .from("lead_heat_outcomes")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId),
+    ]);
+
+    if (distributionResult.error)
+      throw new Error(distributionResult.error.message);
+
+    const allLevels = distributionResult.data ?? [];
+    const total = allLevels.length;
+
+    // Count per level from the heat_level column only (small payload: just one text column)
+    const levels = ["hot", "warming", "neutral", "cooling", "cold"] as const;
+    const levelCounts = new Map<string, number>();
+    for (const row of allLevels) {
+      levelCounts.set(
+        row.heat_level,
+        (levelCounts.get(row.heat_level) ?? 0) + 1,
+      );
+    }
+    const distribution = levels.map((level) => {
+      const count = levelCounts.get(level) ?? 0;
+      return {
+        level,
+        count,
+        pct: total > 0 ? Math.round((count / total) * 100) : 0,
+      };
+    });
+
+    // Avg score: compute from the count + sum via a lightweight approach
+    // Since we only fetched heat_level above, do a separate count-only for avg
+    const { data: avgData } = await supabase.rpc("avg_lead_heat_score", {
+      p_user_id: userId,
+    });
+    const avgRow = Array.isArray(avgData) ? avgData[0] : avgData;
+    const avgScore = (avgRow as { avg_score: number } | null)?.avg_score ?? 0;
+
+    const lastScoredAt = statsResult.data?.[0]?.scored_at ?? null;
+    const sampleSize = outcomeResult.count ?? 0;
+
+    return {
+      distribution,
+      totalScored: total,
+      avgScore: Math.round(avgScore),
+      avgScorePrevious: null,
+      trend: "right" as const,
+      lastScoredAt,
+      isPersonalized: sampleSize >= 50,
+      sampleSize,
+    };
+  },
+
+  /** Get lead heat list (paginated, sorted, filtered) — reads from pre-computed Supabase table */
+  getLeadHeatList: async (params: {
+    userId: string;
+    filterLevel?: string;
+    sortBy?: string;
+    page?: number;
+    pageSize?: number;
+  }) => {
+    const {
+      userId,
+      filterLevel = "all",
+      sortBy = "score_desc",
+      page = 1,
+      pageSize = 25,
+    } = params;
+    const from = (page - 1) * pageSize;
+    const to = from + pageSize - 1;
+
+    let query = supabase
+      .from("lead_heat_scores")
+      .select(
+        "close_lead_id, display_name, score, heat_level, trend, previous_score, scored_at, breakdown, signals, ai_insights",
+        { count: "exact" },
+      )
+      .eq("user_id", userId);
+
+    if (filterLevel && filterLevel !== "all") {
+      query = query.eq("heat_level", filterLevel);
+    }
+
+    switch (sortBy) {
+      case "score_asc":
+        query = query.order("score", { ascending: true });
+        break;
+      case "recency":
+        query = query.order("scored_at", { ascending: false });
+        break;
+      case "name":
+        query = query.order("display_name", { ascending: true });
+        break;
+      default: // score_desc
+        query = query.order("score", { ascending: false });
+    }
+
+    const { data, count, error } = await query.range(from, to);
+
+    if (error) throw new Error(error.message);
+
+    const leads = (data ?? []).map((row) => {
+      // Determine the top contributing signal from breakdown
+      const breakdown = row.breakdown as Record<string, number> | null;
+      let topSignal = "";
+      if (breakdown) {
+        const entries = Object.entries(breakdown)
+          .filter(([key]) => key !== "penalties")
+          .sort(([, a], [, b]) => b - a);
+        if (entries.length > 0) {
+          topSignal = formatSignalName(entries[0][0]);
+        }
+      }
+
+      return {
+        closeLeadId: row.close_lead_id,
+        displayName: row.display_name ?? "Unknown",
+        score: row.score,
+        heatLevel: row.heat_level,
+        trend: row.trend,
+        previousScore: row.previous_score,
+        lastTouchAt:
+          ((row.signals as Record<string, unknown>)?.lastActivityAt as
+            | string
+            | null) ?? null,
+        currentStatus:
+          ((row.signals as Record<string, unknown>)
+            ?.currentStatusLabel as string) ?? "Unknown",
+        topSignal,
+        aiInsight: row.ai_insights ?? null,
+      };
+    });
+
+    return {
+      leads,
+      total: count ?? 0,
+      page,
+      pageSize,
+    };
+  },
+
+  /** Get AI portfolio insights — reads from cached analysis */
+  getLeadHeatAiInsights: async (userId: string) => {
+    const { data: analysis } = await supabase
+      .from("lead_heat_ai_portfolio_analysis")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    const { data: weightsRow } = await supabase
+      .from("lead_heat_agent_weights")
+      .select("version, sample_size")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    return {
+      recommendations: (analysis?.recommendations ?? []) as {
+        text: string;
+        priority: "high" | "medium" | "low";
+      }[],
+      anomalies: (analysis?.anomalies ?? []) as {
+        closeLeadId: string;
+        displayName: string;
+        type: string;
+        message: string;
+        urgency: string;
+        score: number;
+      }[],
+      patterns: ((analysis?.analysis as Record<string, unknown>)?.insights ??
+        []) as { title: string; description: string }[],
+      weightAdjustments: (analysis?.weight_adjustments ?? []) as {
+        signalKey: string;
+        recommendedMultiplier: number;
+        reason: string;
+      }[],
+      modelVersion: weightsRow?.version ?? 1,
+      sampleSize: weightsRow?.sample_size ?? 0,
+      analyzedAt: analysis?.analyzed_at ?? null,
+      overallAssessment:
+        ((analysis?.analysis as Record<string, unknown>)?.overall as string) ??
+        "",
+    };
+  },
+
+  /** Trigger a lead heat rescore — calls the lead heat scoring edge function */
+  triggerRescore: async () => {
+    const accessToken = await getAccessToken();
+    const { data, error } = await supabase.functions.invoke(
+      "close-lead-heat-score",
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        body: { action: "score_all" },
+      },
+    );
+
+    if (error) throw new Error(error.message);
+    return data;
+  },
+
+  /** AI deep dive on a single lead — calls edge function (Tier 3) */
+  analyzeLeadDeepDive: async (closeLeadId: string) => {
+    const accessToken = await getAccessToken();
+    const { data, error } = await supabase.functions.invoke(
+      "close-lead-heat-score",
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        body: { action: "analyze_lead", closeLeadId },
+      },
+    );
+
+    if (error) throw new Error(error.message);
+    return data;
+  },
 };
+
+// ─── Helpers ──────────────────────────────────────────────────────────
+
+async function getAccessToken(): Promise<string> {
+  let accessToken = (await supabase.auth.getSession()).data.session
+    ?.access_token;
+  if (!accessToken) {
+    const {
+      data: { session },
+    } = await supabase.auth.refreshSession();
+    accessToken = session?.access_token;
+  }
+  if (!accessToken) throw new Error("Session expired. Please log in again.");
+  return accessToken;
+}
+
+function formatSignalName(key: string): string {
+  const names: Record<string, string> = {
+    callAnswerRate: "Call Answer Rate",
+    emailReplyRate: "Email Reply Rate",
+    smsResponseRate: "SMS Response",
+    engagementRecency: "Recent Activity",
+    inboundCalls: "Inbound Calls",
+    quoteRequested: "Quote Requested",
+    emailEngagement: "Email Engagement",
+    appointment: "Appointment Set",
+    leadAge: "Lead Freshness",
+    timeSinceTouch: "Follow-up Recency",
+    timeInStatus: "Status Duration",
+    statusVelocity: "Pipeline Momentum",
+    hasOpportunity: "Active Opportunity",
+    opportunityValue: "Deal Value",
+    stageProgression: "Stage Progress",
+    sourceQuality: "Source Quality",
+    similarLeadPattern: "AI Pattern Match",
+  };
+  return names[key] ?? key;
+}

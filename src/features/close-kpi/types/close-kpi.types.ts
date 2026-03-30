@@ -14,7 +14,10 @@ export type WidgetType =
   | "cross_reference"
   | "speed_to_lead"
   | "contact_cadence"
-  | "dial_attempts";
+  | "dial_attempts"
+  | "lead_heat_summary"
+  | "lead_heat_list"
+  | "lead_heat_ai_insights";
 
 export type WidgetSize = "small" | "medium" | "large";
 
@@ -36,6 +39,14 @@ export type TimeBucket = "day" | "week" | "month" | "quarter";
 export type ActivityType = "call" | "email" | "sms" | "meeting" | "note";
 
 export type OpportunityStatusType = "active" | "won" | "lost";
+
+export type LeadHeatLevel = "hot" | "warming" | "neutral" | "cooling" | "cold";
+export type LeadTrendDirection =
+  | "up"
+  | "up-right"
+  | "right"
+  | "down-right"
+  | "down";
 
 // ─── Metric Definitions ────────────────────────────────────────────
 // These are the actual measurable things a user can pick from.
@@ -210,6 +221,21 @@ export interface ContactCadenceConfig extends BaseWidgetConfig {}
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface DialAttemptsConfig extends BaseWidgetConfig {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface LeadHeatSummaryConfig extends BaseWidgetConfig {}
+
+export interface LeadHeatListConfig extends BaseWidgetConfig {
+  filterLevel?: LeadHeatLevel | "all";
+  sortBy?: "score_desc" | "score_asc" | "recency" | "name";
+  pageSize?: number;
+}
+
+export interface LeadHeatAiInsightsConfig extends BaseWidgetConfig {
+  showAnomalies?: boolean;
+  showRecommendations?: boolean;
+  showPatterns?: boolean;
+}
+
 export type WidgetConfig =
   | StatCardConfig
   | StatusDistributionConfig
@@ -224,7 +250,10 @@ export type WidgetConfig =
   | BestCallTimesConfig
   | SpeedToLeadConfig
   | ContactCadenceConfig
-  | DialAttemptsConfig;
+  | DialAttemptsConfig
+  | LeadHeatSummaryConfig
+  | LeadHeatListConfig
+  | LeadHeatAiInsightsConfig;
 
 // ─── Database Row Types ────────────────────────────────────────────
 
@@ -458,6 +487,74 @@ export interface DialAttemptsResult {
   }[];
 }
 
+export interface LeadHeatSummaryResult {
+  distribution: { level: LeadHeatLevel; count: number; pct: number }[];
+  totalScored: number;
+  avgScore: number;
+  avgScorePrevious: number | null;
+  trend: LeadTrendDirection;
+  lastScoredAt: string | null;
+  isPersonalized: boolean;
+  sampleSize: number;
+}
+
+export interface LeadHeatScoreRow {
+  closeLeadId: string;
+  displayName: string;
+  score: number;
+  heatLevel: LeadHeatLevel;
+  trend: LeadTrendDirection;
+  previousScore: number | null;
+  lastTouchAt: string | null;
+  currentStatus: string;
+  topSignal: string;
+  aiInsight: LeadHeatDeepDiveResult | null;
+}
+
+export interface LeadHeatListResult {
+  leads: LeadHeatScoreRow[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface LeadHeatAiInsightsResult {
+  recommendations: { text: string; priority: "high" | "medium" | "low" }[];
+  anomalies: {
+    closeLeadId: string;
+    displayName: string;
+    type: string;
+    message: string;
+    urgency: string;
+    score: number;
+  }[];
+  patterns: { title: string; description: string }[];
+  weightAdjustments: {
+    signalKey: string;
+    recommendedMultiplier: number;
+    reason: string;
+  }[];
+  modelVersion: number;
+  sampleSize: number;
+  analyzedAt: string | null;
+  overallAssessment: string;
+}
+
+export interface LeadHeatDeepDiveResult {
+  adjustedScore: number;
+  confidence: number;
+  heatLevel: LeadHeatLevel;
+  narrative: string;
+  keySignals: {
+    signal: string;
+    impact: "positive" | "negative" | "neutral";
+    detail: string;
+  }[];
+  recommendedAction: { action: string; timing: string; reasoning: string };
+  riskFactors: string[];
+  conversionProbability: "high" | "medium" | "low" | "very_low";
+}
+
 export type WidgetResult =
   | StatCardResult
   | StatusDistributionResult
@@ -472,7 +569,10 @@ export type WidgetResult =
   | BestCallTimesResult
   | SpeedToLeadResult
   | ContactCadenceResult
-  | DialAttemptsResult;
+  | DialAttemptsResult
+  | LeadHeatSummaryResult
+  | LeadHeatListResult
+  | LeadHeatAiInsightsResult;
 
 // ─── Close API Data Types ──────────────────────────────────────────
 

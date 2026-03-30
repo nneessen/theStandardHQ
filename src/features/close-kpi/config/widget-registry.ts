@@ -19,6 +19,9 @@ import type {
   SpeedToLeadConfig,
   ContactCadenceConfig,
   DialAttemptsConfig,
+  LeadHeatSummaryConfig,
+  LeadHeatListConfig,
+  LeadHeatAiInsightsConfig,
 } from "../types/close-kpi.types";
 
 // ─── Widget Registry ───────────────────────────────────────────────
@@ -213,6 +216,55 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetRegistryEntry> = {
       ...DEFAULT_BASE,
       dateRange: "last_30_days",
     } satisfies DialAttemptsConfig,
+  },
+  lead_heat_summary: {
+    type: "lead_heat_summary",
+    label: "Lead Heat Index",
+    description: "AI-scored lead temperature distribution across your pipeline",
+    category: "leads",
+    icon: "Flame",
+    defaultSize: "small",
+    allowedSizes: ["small", "medium"],
+    colSpan: { small: 1, medium: 1, large: 2 },
+    defaultConfig: {
+      ...DEFAULT_BASE,
+      dateRange: "last_30_days",
+    } satisfies LeadHeatSummaryConfig,
+  },
+  lead_heat_list: {
+    type: "lead_heat_list",
+    label: "Lead Heat List",
+    description: "Ranked list of leads by AI heat score with insights",
+    category: "leads",
+    icon: "ThermometerSun",
+    defaultSize: "large",
+    allowedSizes: ["medium", "large"],
+    colSpan: { small: 1, medium: 1, large: 2 },
+    defaultConfig: {
+      ...DEFAULT_BASE,
+      dateRange: "last_30_days",
+      filterLevel: "all",
+      sortBy: "score_desc",
+      pageSize: 25,
+    } satisfies LeadHeatListConfig,
+  },
+  lead_heat_ai_insights: {
+    type: "lead_heat_ai_insights",
+    label: "AI Lead Insights",
+    description:
+      "AI-powered patterns, anomalies, and recommendations for your leads",
+    category: "leads",
+    icon: "Brain",
+    defaultSize: "medium",
+    allowedSizes: ["medium", "large"],
+    colSpan: { small: 1, medium: 1, large: 2 },
+    defaultConfig: {
+      ...DEFAULT_BASE,
+      dateRange: "last_30_days",
+      showAnomalies: true,
+      showRecommendations: true,
+      showPatterns: true,
+    } satisfies LeadHeatAiInsightsConfig,
   },
 };
 

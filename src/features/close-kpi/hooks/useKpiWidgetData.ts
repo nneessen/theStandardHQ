@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { closeKpiKeys } from "./useCloseKpiDashboard";
 import { generateCacheKey } from "../lib/cache-key";
 import { closeKpiService } from "../services/closeKpiService";
+import { supabase } from "@/services/base/supabase";
 import {
   getDateRangeBounds,
   getComparisonBounds,
@@ -33,6 +34,10 @@ import type {
   SpeedToLeadResult,
   ContactCadenceResult,
   DialAttemptsResult,
+  LeadHeatSummaryResult,
+  LeadHeatListResult,
+  LeadHeatAiInsightsResult,
+  LeadHeatListConfig,
   GlobalDashboardConfig,
 } from "../types/close-kpi.types";
 
@@ -105,6 +110,12 @@ async function fetchWidgetData(
       return fetchContactCadence(config);
     case "dial_attempts":
       return fetchDialAttempts(config);
+    case "lead_heat_summary":
+      return fetchLeadHeatSummary();
+    case "lead_heat_list":
+      return fetchLeadHeatList(config as LeadHeatListConfig);
+    case "lead_heat_ai_insights":
+      return fetchLeadHeatAiInsights();
     default:
       throw new Error(`Unknown widget type: ${widget.widget_type}`);
   }
@@ -597,4 +608,38 @@ async function fetchDialAttempts(config: {
     to,
     smartViewId: config.smartViewId ?? undefined,
   });
+}
+
+// ─── Lead Heat Index Fetchers (read from pre-computed Supabase tables) ──
+
+async function getUserId(): Promise<string> {
+  // Use getSession (cached, no network call) instead of getUser (network call per invocation)
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session?.user) throw new Error("Not authenticated");
+  return session.user.id;
+}
+
+async function fetchLeadHeatSummary(): Promise<LeadHeatSummaryResult> {
+  const userId = await getUserId();
+  return closeKpiService.getLeadHeatSummary(userId);
+}
+
+async function fetchLeadHeatList(
+  config: LeadHeatListConfig,
+): Promise<LeadHeatListResult> {
+  const userId = await getUserId();
+  return closeKpiService.getLeadHeatList({
+    userId,
+    filterLevel: config.filterLevel ?? "all",
+    sortBy: config.sortBy ?? "score_desc",
+    page: 1,
+    pageSize: config.pageSize ?? 25,
+  });
+}
+
+async function fetchLeadHeatAiInsights(): Promise<LeadHeatAiInsightsResult> {
+  const userId = await getUserId();
+  return closeKpiService.getLeadHeatAiInsights(userId);
 }
