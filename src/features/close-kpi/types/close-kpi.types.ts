@@ -289,9 +289,11 @@ export interface CloseKpiWidget {
 export interface CloseKpiCacheEntry {
   id: string;
   user_id: string;
-  widget_id: string;
+  widget_id: string | null;
+  resource_scope: string;
+  resource_key: string;
   cache_key: string;
-  result: WidgetResult;
+  result: WidgetResult | PrebuiltDashboardRollupResponse;
   fetched_at: string;
   expires_at: string;
 }
@@ -498,6 +500,23 @@ export interface LeadHeatSummaryResult {
   sampleSize: number;
 }
 
+export type LeadHeatDashboardState =
+  | "never_scored"
+  | "fresh"
+  | "stale"
+  | "running";
+
+export interface LeadHeatDashboardStatus {
+  state: LeadHeatDashboardState;
+  hasCachedScores: boolean;
+  lastScoredAt: string | null;
+  lastRunStatus: "running" | "completed" | "failed" | null;
+  lastRunStartedAt: string | null;
+  lastRunCompletedAt: string | null;
+  lastRunErrorMessage: string | null;
+  staleAfterMs: number;
+}
+
 export interface LeadHeatScoreRow {
   closeLeadId: string;
   displayName: string;
@@ -538,6 +557,43 @@ export interface LeadHeatAiInsightsResult {
   sampleSize: number;
   analyzedAt: string | null;
   overallAssessment: string;
+}
+
+export type PrebuiltCloseApiWidgetId =
+  | "total_leads"
+  | "new_leads"
+  | "speed_to_lead"
+  | "status_dist"
+  | "lifecycle"
+  | "call_analytics"
+  | "best_call_times"
+  | "vm_rate"
+  | "contact_cadence"
+  | "dial_attempts"
+  | "opp_funnel"
+  | "cross_ref";
+
+export interface PrebuiltCloseApiWidgetResults {
+  total_leads: StatCardResult;
+  new_leads: StatCardResult;
+  speed_to_lead: SpeedToLeadResult;
+  status_dist: StatusDistributionResult;
+  lifecycle: LifecycleTrackerResult;
+  call_analytics: CallAnalyticsResult;
+  best_call_times: BestCallTimesResult;
+  vm_rate: VmRateSmartViewResult;
+  contact_cadence: ContactCadenceResult;
+  dial_attempts: DialAttemptsResult;
+  opp_funnel: OpportunitySummaryResult;
+  cross_ref: CrossReferenceResult;
+}
+
+export interface PrebuiltDashboardRollupResponse {
+  version: string;
+  cacheHit: boolean;
+  fetchedAt: string;
+  expiresAt: string;
+  widgets: PrebuiltCloseApiWidgetResults;
 }
 
 export interface LeadHeatDeepDiveResult {

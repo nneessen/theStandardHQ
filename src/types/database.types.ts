@@ -2072,27 +2072,33 @@ export type Database = {
           expires_at: string;
           fetched_at: string;
           id: string;
+          resource_key: string;
+          resource_scope: string;
           result: Json;
           user_id: string;
-          widget_id: string;
+          widget_id: string | null;
         };
         Insert: {
           cache_key: string;
           expires_at?: string;
           fetched_at?: string;
           id?: string;
+          resource_key: string;
+          resource_scope?: string;
           result?: Json;
           user_id: string;
-          widget_id: string;
+          widget_id?: string | null;
         };
         Update: {
           cache_key?: string;
           expires_at?: string;
           fetched_at?: string;
           id?: string;
+          resource_key?: string;
+          resource_scope?: string;
           result?: Json;
           user_id?: string;
-          widget_id?: string;
+          widget_id?: string | null;
         };
         Relationships: [
           {

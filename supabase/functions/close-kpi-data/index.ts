@@ -14,19 +14,29 @@ const ALLOWED_ORIGINS = [
   "https://thestandardhq.com",
   "http://localhost:3000",
   "http://localhost:3001",
+  "http://localhost:3003",
   "http://localhost:3004",
   "http://127.0.0.1:3000",
   "http://127.0.0.1:3001",
+  "http://127.0.0.1:3003",
   "http://127.0.0.1:3004",
 ];
 
+function isLoopbackValue(value?: string | null) {
+  if (!value) return false;
+  return value.includes("127.0.0.1") || value.includes("localhost");
+}
+
 function corsHeaders(req?: Request) {
+  const reqOrigin = req?.headers.get("origin") ?? "";
   const isLocal =
-    Deno.env.get("SUPABASE_URL")?.includes("127.0.0.1") ||
-    Deno.env.get("SUPABASE_URL")?.includes("localhost");
+    isLoopbackValue(Deno.env.get("SUPABASE_URL")) ||
+    isLoopbackValue(reqOrigin) ||
+    isLoopbackValue(req?.url);
   let origin = "*";
-  if (!isLocal && req) {
-    const reqOrigin = req.headers.get("origin") ?? "";
+  if (reqOrigin && isLoopbackValue(reqOrigin)) {
+    origin = reqOrigin;
+  } else if (!isLocal && req) {
     origin = ALLOWED_ORIGINS.includes(reqOrigin)
       ? reqOrigin
       : ALLOWED_ORIGINS[0];
@@ -102,6 +112,356 @@ type Params = Record<string, any>;
 // deno-lint-ignore no-explicit-any
 type ApiResult = Record<string, any>;
 
+const PREBUILT_DASHBOARD_ROLLUP_VERSION = "v1";
+const PREBUILT_DASHBOARD_CACHE_SCOPE = "prebuilt_dashboard";
+const PREBUILT_DASHBOARD_CACHE_RESOURCE_KEY = "close_api_rollup";
+const PREBUILT_DASHBOARD_CACHE_TTL_MS = 15 * 60_000;
+
+type CloseLeadStatus = {
+  id: string;
+  label: string;
+};
+
+type CloseSavedSearch = {
+  id: string;
+  name: string;
+};
+
+type CloseLeadRecord = {
+  id: string;
+  status_id?: string;
+  date_created?: string;
+};
+
+type CloseCallRecord = {
+  lead_id?: string;
+  direction?: string;
+  disposition?: string;
+  duration?: number;
+  date_created: string;
+};
+
+type CloseMessageRecord = {
+  lead_id?: string;
+  direction?: string;
+  date_created: string;
+};
+
+type SmartViewSnapshot = {
+  smartViewId: string;
+  smartViewName: string;
+  leadIds: Set<string>;
+  statusCounts: Record<string, number>;
+  total: number;
+  isTruncated: boolean;
+};
+
+function buildLeadSearchQueryFragment(from?: string, to?: string) {
+  const dateQuery = [];
+  if (from) dateQuery.push(`created >= "${from}"`);
+  if (to) dateQuery.push(`created <= "${to}"`);
+  return dateQuery.length > 0
+    ? `&query=${encodeURIComponent(dateQuery.join(" "))}`
+    : "";
+}
+
+function calculateChangePercent(current: number, previous: number) {
+  if (previous === 0) return current > 0 ? 100 : null;
+  return Math.round(((current - previous) / previous) * 1000) / 10;
+}
+
+function getComparisonBounds(currentFrom: string, currentTo: string) {
+  const fromDate = new Date(currentFrom);
+  const toDate = new Date(currentTo);
+  const durationMs = toDate.getTime() - fromDate.getTime();
+
+  const compTo = new Date(fromDate.getTime() - 1);
+  const compFrom = new Date(compTo.getTime() - durationMs);
+
+  return {
+    from: compFrom.toISOString().split("T")[0],
+    to: compTo.toISOString().split("T")[0],
+  };
+}
+
+async function fetchPaginatedResults<T>(
+  apiKey: string,
+  pathBuilder: (skip: number) => string,
+  maxResults: number,
+) {
+  const items: T[] = [];
+  let hasMore = true;
+  let skip = 0;
+
+  while (hasMore && skip < maxResults) {
+    const res = (await closeGet(apiKey, pathBuilder(skip))) as ApiResult;
+    items.push(...((res.data ?? []) as T[]));
+    hasMore = res.has_more === true;
+    skip += 100;
+  }
+
+  return { items, isTruncated: hasMore };
+}
+
+async function fetchLeadTotalForRange(
+  apiKey: string,
+  params: {
+    from?: string;
+    to?: string;
+    smartViewId?: string;
+    statusId?: string;
+  },
+) {
+  const { from, to, smartViewId, statusId } = params;
+  const queryParam = buildLeadSearchQueryFragment(from, to);
+  const svParam = smartViewId ? `&saved_search_id=${smartViewId}` : "";
+  const statusParam = statusId ? `&status_id=${statusId}` : "";
+  const res = (await closeGet(
+    apiKey,
+    `/lead/?_limit=1&_fields=id${queryParam}${svParam}${statusParam}`,
+  )) as ApiResult;
+  return res.total_results ?? 0;
+}
+
+async function fetchLeadCountsForRange(
+  apiKey: string,
+  params: {
+    from?: string;
+    to?: string;
+    smartViewId?: string;
+    statuses: CloseLeadStatus[];
+  },
+) {
+  const { from, to, smartViewId, statuses } = params;
+  const queryParam = buildLeadSearchQueryFragment(from, to);
+  const svParam = smartViewId ? `&saved_search_id=${smartViewId}` : "";
+  const total = await fetchLeadTotalForRange(apiKey, { from, to, smartViewId });
+
+  if (total <= 5000) {
+    const leadStatusRows = await fetchPaginatedResults<{ status_id?: string }>(
+      apiKey,
+      (skip) =>
+        `/lead/?_limit=100&_skip=${skip}&_fields=status_id${queryParam}${svParam}`,
+      5000,
+    );
+
+    const statusCounts: Record<string, number> = {};
+    for (const lead of leadStatusRows.items) {
+      const statusId = lead.status_id ?? "unknown";
+      statusCounts[statusId] = (statusCounts[statusId] ?? 0) + 1;
+    }
+
+    return {
+      byStatus: statuses.map((status) => ({
+        id: status.id,
+        label: status.label,
+        count: statusCounts[status.id] ?? 0,
+      })),
+      total,
+      isTruncated: leadStatusRows.isTruncated,
+    };
+  }
+
+  const byStatus: { id: string; label: string; count: number }[] = [];
+  for (let index = 0; index < statuses.length; index += 5) {
+    const batch = statuses.slice(index, index + 5);
+    const batchCounts = await Promise.all(
+      batch.map(async (status) => ({
+        id: status.id,
+        label: status.label,
+        count: await fetchLeadTotalForRange(apiKey, {
+          from,
+          to,
+          smartViewId,
+          statusId: status.id,
+        }),
+      })),
+    );
+    byStatus.push(...batchCounts);
+  }
+
+  return { byStatus, total, isTruncated: false };
+}
+
+async function fetchCreatedLeads(
+  apiKey: string,
+  params: { from?: string; to?: string; smartViewId?: string },
+) {
+  const { from, to, smartViewId } = params;
+  const queryParam = buildLeadSearchQueryFragment(from, to);
+  const svParam = smartViewId ? `&saved_search_id=${smartViewId}` : "";
+
+  return fetchPaginatedResults<CloseLeadRecord>(
+    apiKey,
+    (skip) =>
+      `/lead/?_limit=100&_skip=${skip}&_fields=id,date_created${queryParam}${svParam}`,
+    2000,
+  );
+}
+
+async function fetchActivityGroups(
+  apiKey: string,
+  params: { from?: string; to?: string },
+) {
+  const { from, to } = params;
+  const callParams: string[] = [];
+  if (from) callParams.push(`date_created__gte=${from}`);
+  if (to) callParams.push(`date_created__lte=${to}T23:59:59`);
+
+  const [call, email, sms] = await Promise.all([
+    fetchPaginatedResults<CloseCallRecord>(
+      apiKey,
+      (skip) =>
+        `/activity/call/?_limit=100&_skip=${skip}&_fields=lead_id,direction,disposition,duration,date_created${
+          callParams.length ? `&${callParams.join("&")}` : ""
+        }`,
+      3000,
+    ),
+    fetchPaginatedResults<CloseMessageRecord>(
+      apiKey,
+      (skip) =>
+        `/activity/email/?_limit=100&_skip=${skip}&_fields=lead_id,direction,date_created${
+          callParams.length ? `&${callParams.join("&")}` : ""
+        }`,
+      2000,
+    ),
+    fetchPaginatedResults<CloseMessageRecord>(
+      apiKey,
+      (skip) =>
+        `/activity/sms/?_limit=100&_skip=${skip}&_fields=lead_id,direction,date_created${
+          callParams.length ? `&${callParams.join("&")}` : ""
+        }`,
+      2000,
+    ),
+  ]);
+
+  return { call, email, sms };
+}
+
+async function fetchSmartViewSnapshots(
+  apiKey: string,
+  smartViews: CloseSavedSearch[],
+) {
+  const snapshots: SmartViewSnapshot[] = [];
+
+  for (let index = 0; index < smartViews.length; index += 3) {
+    const batch = smartViews.slice(index, index + 3);
+    const batchSnapshots = await Promise.all(
+      batch.map(async (smartView) => {
+        const leads = await fetchPaginatedResults<CloseLeadRecord>(
+          apiKey,
+          (skip) =>
+            `/lead/?_limit=100&_skip=${skip}&_fields=id,status_id&saved_search_id=${smartView.id}`,
+          2000,
+        );
+
+        const leadIds = new Set<string>();
+        const statusCounts: Record<string, number> = {};
+        for (const lead of leads.items) {
+          leadIds.add(lead.id);
+          const statusId = lead.status_id ?? "unknown";
+          statusCounts[statusId] = (statusCounts[statusId] ?? 0) + 1;
+        }
+
+        return {
+          smartViewId: smartView.id,
+          smartViewName: smartView.name,
+          leadIds,
+          statusCounts,
+          total: leads.items.length,
+          isTruncated: leads.isTruncated,
+        } satisfies SmartViewSnapshot;
+      }),
+    );
+
+    snapshots.push(...batchSnapshots);
+  }
+
+  return snapshots;
+}
+
+// deno-lint-ignore no-explicit-any
+async function readCloseKpiCacheEntry(
+  dataClient: any,
+  params: {
+    userId: string;
+    resourceScope: string;
+    resourceKey: string;
+    cacheKey: string;
+  },
+) {
+  const { userId, resourceScope, resourceKey, cacheKey } = params;
+  const { data, error } = await dataClient
+    .from("close_kpi_cache")
+    .select("result, fetched_at, expires_at")
+    .eq("user_id", userId)
+    .eq("resource_scope", resourceScope)
+    .eq("resource_key", resourceKey)
+    .eq("cache_key", cacheKey)
+    .gt("expires_at", new Date().toISOString())
+    .maybeSingle();
+
+  if (error) {
+    console.error("[close-kpi-data] cache read failed:", error.message);
+    return null;
+  }
+
+  return data;
+}
+
+// deno-lint-ignore no-explicit-any
+async function writeCloseKpiCacheEntry(
+  dataClient: any,
+  params: {
+    userId: string;
+    resourceScope: string;
+    resourceKey: string;
+    cacheKey: string;
+    result: unknown;
+    fetchedAt: string;
+    expiresAt: string;
+  },
+) {
+  const {
+    userId,
+    resourceScope,
+    resourceKey,
+    cacheKey,
+    result,
+    fetchedAt,
+    expiresAt,
+  } = params;
+
+  const { error } = await dataClient.from("close_kpi_cache").upsert(
+    {
+      user_id: userId,
+      widget_id: null,
+      resource_scope: resourceScope,
+      resource_key: resourceKey,
+      cache_key: cacheKey,
+      result,
+      fetched_at: fetchedAt,
+      expires_at: expiresAt,
+    },
+    {
+      onConflict: "user_id,resource_scope,resource_key,cache_key",
+    },
+  );
+
+  if (error) {
+    console.error("[close-kpi-data] cache write failed:", error.message);
+  }
+}
+
+function buildPrebuiltDashboardRollupCacheKey(params: Params) {
+  return JSON.stringify({
+    version: PREBUILT_DASHBOARD_ROLLUP_VERSION,
+    dateRange: params.dateRange ?? "unknown",
+    from: params.from ?? null,
+    to: params.to ?? null,
+  });
+}
+
 async function handleGetMetadata(apiKey: string) {
   const [statusRes, fieldRes, svRes, pipelineRes] = await Promise.all([
     closeGet(apiKey, "/status/lead/") as Promise<ApiResult>,
@@ -120,85 +480,13 @@ async function handleGetMetadata(apiKey: string) {
 
 async function handleGetLeadCounts(apiKey: string, params: Params) {
   const { from, to, smartViewId } = params;
-
-  // Get statuses + total lead count in parallel (2 API calls, not 34)
-  const dateQuery = [];
-  if (from) dateQuery.push(`created >= "${from}"`);
-  if (to) dateQuery.push(`created <= "${to}"`);
-  const queryParam =
-    dateQuery.length > 0
-      ? `&query=${encodeURIComponent(dateQuery.join(" "))}`
-      : "";
-  const svParam = smartViewId ? `&saved_search_id=${smartViewId}` : "";
-
-  const [statusRes, totalRes] = await Promise.all([
-    closeGet(apiKey, "/status/lead/") as Promise<ApiResult>,
-    closeGet(
-      apiKey,
-      `/lead/?_limit=1&_fields=id${queryParam}${svParam}`,
-    ) as Promise<ApiResult>,
-  ]);
-
-  const statuses = (statusRes.data ?? []) as { id: string; label: string }[];
-  const total = totalRes.total_results ?? 0;
-
-  // If total is small enough, fetch all lead status_ids in one paginated call
-  // and count client-side (MUCH faster than N separate API calls)
-  if (total <= 5000) {
-    const statusCounts: Record<string, number> = {};
-    let hasMore = true;
-    let skip = 0;
-
-    while (hasMore && skip < 5000) {
-      const res = (await closeGet(
-        apiKey,
-        `/lead/?_limit=100&_skip=${skip}&_fields=status_id${queryParam}${svParam}`,
-      )) as ApiResult;
-      const leads = (res.data ?? []) as { status_id: string }[];
-      for (const lead of leads) {
-        const sid = lead.status_id ?? "unknown";
-        statusCounts[sid] = (statusCounts[sid] ?? 0) + 1;
-      }
-      hasMore = res.has_more === true;
-      skip += 100;
-    }
-
-    const byStatus = statuses.map((s) => ({
-      id: s.id,
-      label: s.label,
-      count: statusCounts[s.id] ?? 0,
-    }));
-
-    return { byStatus, total };
-  }
-
-  // For very large datasets (>5000 leads), fall back to per-status count
-  // but only for statuses likely to have leads (skip obviously empty ones)
-  const byStatus: { id: string; label: string; count: number }[] = [];
-  const batchSize = 5;
-
-  for (let i = 0; i < statuses.length; i += batchSize) {
-    const batch = statuses.slice(i, i + batchSize);
-    const results = await Promise.all(
-      batch.map(async (status) => {
-        const qs = [`_limit=1`, `status_id=${status.id}`, `_fields=id`];
-        if (queryParam) qs.push(queryParam.substring(1));
-        if (svParam) qs.push(svParam.substring(1));
-        const res = (await closeGet(
-          apiKey,
-          `/lead/?${qs.join("&")}`,
-        )) as ApiResult;
-        return {
-          id: status.id,
-          label: status.label,
-          count: res.total_results ?? 0,
-        };
-      }),
-    );
-    byStatus.push(...results);
-  }
-
-  return { byStatus, total };
+  const statusRes = (await closeGet(apiKey, "/status/lead/")) as ApiResult;
+  return fetchLeadCountsForRange(apiKey, {
+    from,
+    to,
+    smartViewId,
+    statuses: (statusRes.data ?? []) as CloseLeadStatus[],
+  });
 }
 
 async function handleSearchLeads(apiKey: string, params: Params) {
@@ -226,13 +514,18 @@ async function handleSearchLeads(apiKey: string, params: Params) {
 async function handleGetActivities(apiKey: string, params: Params) {
   const { from, to, types } = params;
   const activityTypes = types ?? ["call"];
+  const activityFieldMap: Record<string, string> = {
+    call: "_fields=lead_id,direction,disposition,duration,date_created",
+    email: "_fields=lead_id,direction,date_created",
+    sms: "_fields=lead_id,direction,date_created",
+  };
 
   // deno-lint-ignore no-explicit-any
   const results: Record<string, any> = {};
 
   await Promise.all(
     activityTypes.map(async (type: string) => {
-      const qs = [`_limit=100`];
+      const qs = [`_limit=100`, activityFieldMap[type] ?? "_fields=id"];
       // Use activity_at (actual occurrence time), not date_created (sync time)
       if (from) qs.push(`date_created__gte=${from}`);
       if (to) qs.push(`date_created__lte=${to}T23:59:59`);
@@ -367,7 +660,10 @@ async function handleGetActivities(apiKey: string, params: Params) {
 async function handleGetOpportunities(apiKey: string, params: Params) {
   const { from, to, statusType } = params;
 
-  const baseQs = [`_limit=100`];
+  const baseQs = [
+    `_limit=100`,
+    `_fields=id,value,status_id,status_type,status_label,date_created,date_won,date_lost`,
+  ];
   if (from) baseQs.push(`date_created__gte=${from}`);
   if (to) baseQs.push(`date_created__lte=${to}T23:59:59`);
   if (statusType) baseQs.push(`status_type=${statusType}`);
@@ -458,7 +754,10 @@ async function handleGetOpportunities(apiKey: string, params: Params) {
 async function handleGetLeadStatusChanges(apiKey: string, params: Params) {
   const { from, to, fromStatus, toStatus } = params;
 
-  const qs = [`_limit=100`];
+  const qs = [
+    `_limit=100`,
+    `_fields=lead_id,date_created,old_status_label,new_status_label`,
+  ];
   if (from) qs.push(`date_created__gte=${from}`);
   if (to) qs.push(`date_created__lte=${to}T23:59:59`);
 
@@ -619,7 +918,7 @@ async function handleGetVmRateBySmartView(apiKey: string, params: Params) {
   const allCalls: any[] = [];
   let hasMore = true;
   let skip = 0;
-  const callQs = [`_limit=100`];
+  const callQs = [`_limit=100`, `_fields=lead_id,date_created,disposition`];
   if (from) callQs.push(`date_created__gte=${from}`);
   if (to) callQs.push(`date_created__lte=${to}T23:59:59`);
   callQs.push(`direction=outbound`);
@@ -777,7 +1076,11 @@ async function handleGetVmRateBySmartView(apiKey: string, params: Params) {
 async function handleGetBestCallTimes(apiKey: string, params: Params) {
   const { from, to } = params;
 
-  const qs = [`_limit=100`, `direction=outbound`];
+  const qs = [
+    `_limit=100`,
+    `_fields=date_created,disposition`,
+    `direction=outbound`,
+  ];
   if (from) qs.push(`date_created__gte=${from}`);
   if (to) qs.push(`date_created__lte=${to}T23:59:59`);
 
@@ -1010,7 +1313,7 @@ async function handleGetSpeedToLead(apiKey: string, params: Params) {
 
   // For each lead, find their first outbound activity
   // Fetch all outbound calls/emails/sms in range
-  const actQs = [`_limit=100`];
+  const actQs = [`_limit=100`, `_fields=lead_id,direction,date_created`];
   if (from) actQs.push(`date_created__gte=${from}`);
   if (to) actQs.push(`date_created__lte=${to}T23:59:59`);
 
@@ -1131,7 +1434,7 @@ async function handleGetContactCadence(apiKey: string, params: Params) {
   const leadIdSet = new Set(leads.map((l: { id: string }) => l.id));
 
   // Fetch all outbound activities
-  const actQs = [`_limit=100`];
+  const actQs = [`_limit=100`, `_fields=lead_id,direction,date_created`];
   if (from) actQs.push(`date_created__gte=${from}`);
   if (to) actQs.push(`date_created__lte=${to}T23:59:59`);
 
@@ -1223,7 +1526,11 @@ async function handleGetDialAttempts(apiKey: string, params: Params) {
   const { from, to, smartViewId } = params;
 
   // Fetch outbound calls
-  const callQs = [`_limit=100`, `direction=outbound`];
+  const callQs = [
+    `_limit=100`,
+    `_fields=lead_id,date_created,disposition`,
+    `direction=outbound`,
+  ];
   if (from) callQs.push(`date_created__gte=${from}`);
   if (to) callQs.push(`date_created__lte=${to}T23:59:59`);
 
@@ -1345,6 +1652,686 @@ async function handleGetDialAttempts(apiKey: string, params: Params) {
   };
 }
 
+function buildCallAnalyticsResult(
+  calls: CloseCallRecord[],
+  isTruncated: boolean,
+) {
+  const total = calls.length;
+  const answered = calls.filter(
+    (call) => call.disposition === "answered",
+  ).length;
+  const voicemail = calls.filter((call) =>
+    ["vm-left", "vm-answer"].includes(call.disposition ?? ""),
+  ).length;
+  const missed = calls.filter((call) =>
+    ["no-answer", "busy", "blocked"].includes(call.disposition ?? ""),
+  ).length;
+  const inbound = calls.filter((call) => call.direction === "inbound").length;
+  const outbound = calls.filter((call) => call.direction === "outbound").length;
+  const totalDurationSec = calls.reduce(
+    (sum, call) => sum + (call.duration ?? 0),
+    0,
+  );
+  const avgDurationSec = total > 0 ? totalDurationSec / total : 0;
+
+  const byDisposition: Record<string, number> = {};
+  for (const call of calls) {
+    const disposition = call.disposition ?? "unknown";
+    byDisposition[disposition] = (byDisposition[disposition] ?? 0) + 1;
+  }
+
+  return {
+    total,
+    answered,
+    voicemail,
+    missed,
+    inbound,
+    outbound,
+    connectRate: total > 0 ? Math.round((answered / total) * 1000) / 10 : 0,
+    totalDurationMin: Math.round(totalDurationSec / 60),
+    avgDurationMin: Math.round((avgDurationSec / 60) * 10) / 10,
+    isTruncated,
+    byDisposition: Object.entries(byDisposition).map(
+      ([disposition, count]) => ({
+        disposition,
+        count,
+      }),
+    ),
+    byDirection: [
+      { direction: "inbound", count: inbound },
+      { direction: "outbound", count: outbound },
+    ],
+  };
+}
+
+function buildBestCallTimesResult(
+  calls: CloseCallRecord[],
+  isTruncated: boolean,
+) {
+  const outboundCalls = calls.filter((call) => call.direction === "outbound");
+  const byHour: Record<
+    number,
+    { total: number; answered: number; vm: number; noAnswer: number }
+  > = {};
+  const byDayOfWeek: Record<number, { total: number; answered: number }> = {};
+
+  for (const call of outboundCalls) {
+    const date = new Date(call.date_created);
+    const hour = date.getHours();
+    const day = date.getDay();
+
+    if (!byHour[hour]) {
+      byHour[hour] = { total: 0, answered: 0, vm: 0, noAnswer: 0 };
+    }
+
+    byHour[hour].total++;
+    if (call.disposition === "answered") byHour[hour].answered++;
+    else if (["vm-left", "vm-answer"].includes(call.disposition ?? "")) {
+      byHour[hour].vm++;
+    } else {
+      byHour[hour].noAnswer++;
+    }
+
+    if (!byDayOfWeek[day]) byDayOfWeek[day] = { total: 0, answered: 0 };
+    byDayOfWeek[day].total++;
+    if (call.disposition === "answered") byDayOfWeek[day].answered++;
+  }
+
+  const hourly = Array.from({ length: 24 }, (_, hour) => {
+    const data = byHour[hour] ?? { total: 0, answered: 0, vm: 0, noAnswer: 0 };
+    return {
+      hour,
+      label: `${hour === 0 ? 12 : hour > 12 ? hour - 12 : hour}${hour < 12 ? "am" : "pm"}`,
+      total: data.total,
+      answered: data.answered,
+      vm: data.vm,
+      noAnswer: data.noAnswer,
+      connectRate:
+        data.total > 0
+          ? Math.round((data.answered / data.total) * 1000) / 10
+          : 0,
+    };
+  });
+
+  const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const daily = Array.from({ length: 7 }, (_, day) => {
+    const data = byDayOfWeek[day] ?? { total: 0, answered: 0 };
+    return {
+      day,
+      label: dayNames[day],
+      total: data.total,
+      answered: data.answered,
+      connectRate:
+        data.total > 0
+          ? Math.round((data.answered / data.total) * 1000) / 10
+          : 0,
+    };
+  });
+
+  const bestHour = hourly.reduce(
+    (best, entry) =>
+      entry.total >= 5 && entry.connectRate > best.connectRate ? entry : best,
+    {
+      hour: -1,
+      label: "",
+      total: 0,
+      answered: 0,
+      vm: 0,
+      noAnswer: 0,
+      connectRate: 0,
+    },
+  );
+  const bestDay = daily.reduce(
+    (best, entry) =>
+      entry.total >= 5 && entry.connectRate > best.connectRate ? entry : best,
+    { day: -1, label: "", total: 0, answered: 0, connectRate: 0 },
+  );
+
+  return {
+    hourly,
+    daily,
+    bestHour: bestHour.hour >= 0 ? bestHour : null,
+    bestDay: bestDay.day >= 0 ? bestDay : null,
+    totalCalls: outboundCalls.length,
+    isTruncated,
+  };
+}
+
+function buildVmRateBySmartViewResult(
+  outboundCalls: CloseCallRecord[],
+  smartViewSnapshots: SmartViewSnapshot[],
+) {
+  const firstCallByLead: Record<string, CloseCallRecord> = {};
+  for (const call of outboundCalls) {
+    const leadId = call.lead_id;
+    if (!leadId) continue;
+    if (
+      !firstCallByLead[leadId] ||
+      new Date(call.date_created) <
+        new Date(firstCallByLead[leadId].date_created)
+    ) {
+      firstCallByLead[leadId] = call;
+    }
+  }
+
+  let overallTotal = 0;
+  let overallVm = 0;
+
+  const rows = smartViewSnapshots.map((snapshot) => {
+    let totalFirstCalls = 0;
+    let vmCount = 0;
+    let answeredCount = 0;
+    let otherCount = 0;
+
+    for (const leadId of snapshot.leadIds) {
+      const call = firstCallByLead[leadId];
+      if (!call) continue;
+
+      totalFirstCalls++;
+      const disposition = call.disposition ?? "";
+      if (["vm-left", "vm-answer", "no-answer"].includes(disposition)) {
+        vmCount++;
+      } else if (disposition === "answered") {
+        answeredCount++;
+      } else {
+        otherCount++;
+      }
+    }
+
+    overallTotal += totalFirstCalls;
+    overallVm += vmCount;
+
+    return {
+      smartViewId: snapshot.smartViewId,
+      smartViewName: snapshot.smartViewName,
+      totalFirstCalls,
+      vmCount,
+      answeredCount,
+      otherCount,
+      vmRate:
+        totalFirstCalls > 0
+          ? Math.round((vmCount / totalFirstCalls) * 1000) / 10
+          : 0,
+    };
+  });
+
+  rows.sort((left, right) => right.vmRate - left.vmRate);
+
+  return {
+    rows,
+    overall: {
+      totalFirstCalls: overallTotal,
+      vmCount: overallVm,
+      vmRate:
+        overallTotal > 0
+          ? Math.round((overallVm / overallTotal) * 1000) / 10
+          : 0,
+    },
+  };
+}
+
+function buildCrossReferenceResult(
+  statuses: CloseLeadStatus[],
+  smartViewSnapshots: SmartViewSnapshot[],
+) {
+  const totals: Record<string, number> = {};
+  let grandTotal = 0;
+
+  const rows = smartViewSnapshots.map((snapshot) => {
+    const cells: Record<string, number> = {};
+    for (const status of statuses) {
+      const count = snapshot.statusCounts[status.id] ?? 0;
+      cells[status.id] = count;
+      totals[status.id] = (totals[status.id] ?? 0) + count;
+    }
+    grandTotal += snapshot.total;
+    return {
+      smartViewId: snapshot.smartViewId,
+      smartViewName: snapshot.smartViewName,
+      cells,
+      total: snapshot.total,
+    };
+  });
+
+  return {
+    rows,
+    statusLabels: statuses.map((status) => ({
+      id: status.id,
+      label: status.label,
+    })),
+    totals,
+    grandTotal,
+  };
+}
+
+function buildSpeedToLeadResult(
+  leads: CloseLeadRecord[],
+  activityGroups: {
+    call: { items: CloseCallRecord[] };
+    email: { items: CloseMessageRecord[] };
+    sms: { items: CloseMessageRecord[] };
+  },
+) {
+  if (leads.length === 0) {
+    return {
+      avgMinutes: 0,
+      medianMinutes: 0,
+      distribution: [],
+      totalLeads: 0,
+      leadsWithActivity: 0,
+      pctContacted: 0,
+    };
+  }
+
+  const firstActivityByLead: Record<string, number> = {};
+  for (const activity of [
+    ...activityGroups.call.items,
+    ...activityGroups.email.items,
+    ...activityGroups.sms.items,
+  ]) {
+    const leadId = activity.lead_id;
+    if (!leadId) continue;
+    const direction = activity.direction ?? "";
+    if (direction === "inbound" || direction === "incoming") continue;
+
+    const activityTime = new Date(activity.date_created).getTime();
+    if (
+      !firstActivityByLead[leadId] ||
+      activityTime < firstActivityByLead[leadId]
+    ) {
+      firstActivityByLead[leadId] = activityTime;
+    }
+  }
+
+  const speedMinutes: number[] = [];
+  for (const lead of leads) {
+    if (!lead.date_created) continue;
+    const createdAt = new Date(lead.date_created).getTime();
+    const firstActivity = firstActivityByLead[lead.id];
+    if (firstActivity && firstActivity >= createdAt) {
+      speedMinutes.push((firstActivity - createdAt) / (1000 * 60));
+    }
+  }
+
+  speedMinutes.sort((left, right) => left - right);
+  const avgMinutes =
+    speedMinutes.length > 0
+      ? speedMinutes.reduce((sum, value) => sum + value, 0) /
+        speedMinutes.length
+      : 0;
+  const mid = Math.floor(speedMinutes.length / 2);
+  const medianMinutes =
+    speedMinutes.length > 0
+      ? speedMinutes.length % 2 !== 0
+        ? speedMinutes[mid]
+        : (speedMinutes[mid - 1] + speedMinutes[mid]) / 2
+      : 0;
+
+  const distribution = [
+    { label: "< 5 min", max: 5, count: 0 },
+    { label: "5–15 min", max: 15, count: 0 },
+    { label: "15–30 min", max: 30, count: 0 },
+    { label: "30–60 min", max: 60, count: 0 },
+    { label: "1–4 hr", max: 240, count: 0 },
+    { label: "4–24 hr", max: 1440, count: 0 },
+    { label: "> 24 hr", max: Infinity, count: 0 },
+  ];
+
+  for (const minutes of speedMinutes) {
+    const bucket = distribution.find((entry) => minutes < entry.max);
+    if (bucket) bucket.count++;
+  }
+
+  return {
+    avgMinutes: Math.round(avgMinutes * 10) / 10,
+    medianMinutes: Math.round(medianMinutes * 10) / 10,
+    distribution,
+    totalLeads: leads.length,
+    leadsWithActivity: speedMinutes.length,
+    pctContacted:
+      leads.length > 0
+        ? Math.round((speedMinutes.length / leads.length) * 1000) / 10
+        : 0,
+  };
+}
+
+function buildContactCadenceResult(
+  leads: CloseLeadRecord[],
+  activityGroups: {
+    call: { items: CloseCallRecord[] };
+    email: { items: CloseMessageRecord[] };
+    sms: { items: CloseMessageRecord[] };
+  },
+) {
+  const leadIds = new Set(leads.map((lead) => lead.id));
+  const activitiesByLead: Record<string, number[]> = {};
+
+  for (const activity of [
+    ...activityGroups.call.items,
+    ...activityGroups.email.items,
+    ...activityGroups.sms.items,
+  ]) {
+    const leadId = activity.lead_id;
+    if (!leadId || !leadIds.has(leadId)) continue;
+
+    const direction = activity.direction ?? "";
+    if (direction === "inbound" || direction === "incoming") continue;
+
+    if (!activitiesByLead[leadId]) activitiesByLead[leadId] = [];
+    activitiesByLead[leadId].push(new Date(activity.date_created).getTime());
+  }
+
+  const allGapsHours: number[] = [];
+  let totalTouches = 0;
+  let leadsMultiTouch = 0;
+  const touchDistributionCounts: Record<number, number> = {};
+
+  for (const times of Object.values(activitiesByLead)) {
+    times.sort((left, right) => left - right);
+    totalTouches += times.length;
+    touchDistributionCounts[times.length] =
+      (touchDistributionCounts[times.length] ?? 0) + 1;
+
+    if (times.length >= 2) {
+      leadsMultiTouch++;
+      for (let index = 1; index < times.length; index++) {
+        allGapsHours.push((times[index] - times[index - 1]) / (1000 * 60 * 60));
+      }
+    }
+  }
+
+  allGapsHours.sort((left, right) => left - right);
+  const avgGapHours =
+    allGapsHours.length > 0
+      ? allGapsHours.reduce((sum, value) => sum + value, 0) /
+        allGapsHours.length
+      : 0;
+  const mid = Math.floor(allGapsHours.length / 2);
+  const medianGapHours =
+    allGapsHours.length > 0
+      ? allGapsHours.length % 2 !== 0
+        ? allGapsHours[mid]
+        : (allGapsHours[mid - 1] + allGapsHours[mid]) / 2
+      : 0;
+
+  const touchDistribution = Object.entries(touchDistributionCounts)
+    .map(([touches, count]) => ({
+      touches: parseInt(touches, 10),
+      leads: count,
+    }))
+    .sort((left, right) => left.touches - right.touches)
+    .slice(0, 10);
+
+  return {
+    avgGapHours: Math.round(avgGapHours * 10) / 10,
+    medianGapHours: Math.round(medianGapHours * 10) / 10,
+    totalLeads: leads.length,
+    leadsContacted: Object.keys(activitiesByLead).length,
+    leadsMultiTouch,
+    totalTouches,
+    avgTouchesPerLead:
+      leads.length > 0
+        ? Math.round((totalTouches / leads.length) * 10) / 10
+        : 0,
+    touchDistribution,
+  };
+}
+
+function buildDialAttemptsResult(calls: CloseCallRecord[]) {
+  const outboundCalls = calls.filter((call) => call.direction === "outbound");
+  const callsByLead: Record<string, CloseCallRecord[]> = {};
+
+  for (const call of outboundCalls) {
+    const leadId = call.lead_id;
+    if (!leadId) continue;
+    if (!callsByLead[leadId]) callsByLead[leadId] = [];
+    callsByLead[leadId].push(call);
+  }
+
+  const attemptsToConnect: number[] = [];
+  let neverConnected = 0;
+  let totalLeadsDialed = 0;
+  const successByAttempt: Record<number, { total: number; answered: number }> =
+    {};
+
+  for (const callsForLead of Object.values(callsByLead)) {
+    callsForLead.sort(
+      (left, right) =>
+        new Date(left.date_created).getTime() -
+        new Date(right.date_created).getTime(),
+    );
+    totalLeadsDialed++;
+
+    let connected = false;
+    for (let index = 0; index < callsForLead.length; index++) {
+      const attempt = index + 1;
+      if (!successByAttempt[attempt]) {
+        successByAttempt[attempt] = { total: 0, answered: 0 };
+      }
+
+      successByAttempt[attempt].total++;
+      if (callsForLead[index].disposition === "answered") {
+        if (!connected) {
+          attemptsToConnect.push(attempt);
+          connected = true;
+        }
+        successByAttempt[attempt].answered++;
+      }
+    }
+
+    if (!connected) neverConnected++;
+  }
+
+  attemptsToConnect.sort((left, right) => left - right);
+  const avgAttempts =
+    attemptsToConnect.length > 0
+      ? attemptsToConnect.reduce((sum, value) => sum + value, 0) /
+        attemptsToConnect.length
+      : 0;
+  const mid = Math.floor(attemptsToConnect.length / 2);
+  const medianAttempts =
+    attemptsToConnect.length > 0
+      ? attemptsToConnect.length % 2 !== 0
+        ? attemptsToConnect[mid]
+        : (attemptsToConnect[mid - 1] + attemptsToConnect[mid]) / 2
+      : 0;
+
+  const attemptRates = Array.from({ length: 10 }, (_, index) => {
+    const attempt = index + 1;
+    const data = successByAttempt[attempt] ?? { total: 0, answered: 0 };
+    return {
+      attempt,
+      total: data.total,
+      answered: data.answered,
+      connectRate:
+        data.total > 0
+          ? Math.round((data.answered / data.total) * 1000) / 10
+          : 0,
+    };
+  }).filter((entry) => entry.total > 0);
+
+  return {
+    avgAttempts: Math.round(avgAttempts * 10) / 10,
+    medianAttempts: Math.round(medianAttempts * 10) / 10,
+    totalLeadsDialed,
+    leadsConnected: attemptsToConnect.length,
+    neverConnected,
+    connectPct:
+      totalLeadsDialed > 0
+        ? Math.round((attemptsToConnect.length / totalLeadsDialed) * 1000) / 10
+        : 0,
+    attemptRates,
+  };
+}
+
+// deno-lint-ignore no-explicit-any
+async function handleGetPrebuiltDashboardRollup(
+  apiKey: string,
+  params: Params,
+  context: any,
+) {
+  const { from, to } = params;
+  if (!from || !to) {
+    throw Object.assign(
+      new Error("get_prebuilt_dashboard_rollup requires from and to"),
+      { code: "INVALID_PARAMS", status: 400 },
+    );
+  }
+
+  const [statusRes, smartViewRes] = await Promise.all([
+    closeGet(apiKey, "/status/lead/") as Promise<ApiResult>,
+    closeGet(apiKey, "/saved_search/?_limit=50") as Promise<ApiResult>,
+  ]);
+
+  const statuses = (statusRes.data ?? []) as CloseLeadStatus[];
+  const smartViews = (smartViewRes.data ?? []) as CloseSavedSearch[];
+  const vmSmartViews = smartViews.slice(0, 5);
+  const comparison = getComparisonBounds(from, to);
+
+  const [
+    currentLeadCounts,
+    previousLeadTotal,
+    createdLeads,
+    activityGroups,
+    opportunityRes,
+    lifecycleRes,
+    smartViewSnapshots,
+  ] = await Promise.all([
+    fetchLeadCountsForRange(apiKey, { from, to, statuses }),
+    fetchLeadTotalForRange(apiKey, {
+      from: comparison.from,
+      to: comparison.to,
+    }),
+    fetchCreatedLeads(apiKey, { from, to }),
+    fetchActivityGroups(apiKey, { from, to }),
+    handleGetOpportunities(apiKey, {
+      from,
+      to,
+      statusType: "active",
+    }),
+    handleGetLeadStatusChanges(apiKey, {
+      from,
+      to,
+      fromStatus: "New",
+    }),
+    fetchSmartViewSnapshots(apiKey, smartViews),
+  ]);
+
+  const callAnalytics = buildCallAnalyticsResult(
+    activityGroups.call.items,
+    activityGroups.call.isTruncated,
+  );
+  const bestCallTimes = buildBestCallTimesResult(
+    activityGroups.call.items,
+    activityGroups.call.isTruncated,
+  );
+  const dialAttempts = buildDialAttemptsResult(activityGroups.call.items);
+  const vmRate = buildVmRateBySmartViewResult(
+    activityGroups.call.items.filter((call) => call.direction === "outbound"),
+    smartViewSnapshots.filter((snapshot) =>
+      vmSmartViews.some((smartView) => smartView.id === snapshot.smartViewId),
+    ),
+  );
+  const crossReference = buildCrossReferenceResult(
+    statuses,
+    smartViewSnapshots,
+  );
+  const speedToLead = buildSpeedToLeadResult(
+    createdLeads.items,
+    activityGroups,
+  );
+  const contactCadence = buildContactCadenceResult(
+    createdLeads.items,
+    activityGroups,
+  );
+  const statusDistributionItems = [...currentLeadCounts.byStatus].sort(
+    (left, right) => right.count - left.count,
+  );
+
+  const fetchedAt = new Date().toISOString();
+  const expiresAt = new Date(
+    Date.now() + PREBUILT_DASHBOARD_CACHE_TTL_MS,
+  ).toISOString();
+  const rollup = {
+    version: PREBUILT_DASHBOARD_ROLLUP_VERSION,
+    cacheHit: false,
+    fetchedAt,
+    expiresAt,
+    widgets: {
+      total_leads: {
+        value: currentLeadCounts.total,
+        previousValue: previousLeadTotal,
+        changePercent:
+          calculateChangePercent(currentLeadCounts.total, previousLeadTotal) ??
+          undefined,
+        label: "Leads",
+        unit: "number",
+      },
+      new_leads: {
+        value: currentLeadCounts.total,
+        previousValue: previousLeadTotal,
+        changePercent:
+          calculateChangePercent(currentLeadCounts.total, previousLeadTotal) ??
+          undefined,
+        label: "Leads",
+        unit: "number",
+      },
+      speed_to_lead: speedToLead,
+      status_dist: {
+        items: statusDistributionItems,
+        total: statusDistributionItems.reduce(
+          (sum, item) => sum + item.count,
+          0,
+        ),
+      },
+      lifecycle: {
+        transitions: lifecycleRes.transitions,
+      },
+      call_analytics: callAnalytics,
+      best_call_times: bestCallTimes,
+      vm_rate: vmRate,
+      contact_cadence: contactCadence,
+      dial_attempts: dialAttempts,
+      opp_funnel: {
+        totalValue: opportunityRes.totalValue,
+        dealCount: opportunityRes.total,
+        activeCount: opportunityRes.activeCount,
+        wonCount: opportunityRes.wonCount,
+        wonValue: opportunityRes.wonValue,
+        lostCount: opportunityRes.lostCount,
+        winRate: opportunityRes.winRate,
+        avgDealSize: opportunityRes.avgDealSize,
+        salesVelocity:
+          opportunityRes.avgTimeToCloseDays > 0
+            ? Math.round(
+                ((opportunityRes.wonCount *
+                  opportunityRes.avgDealSize *
+                  (opportunityRes.winRate / 100)) /
+                  opportunityRes.avgTimeToCloseDays) *
+                  100,
+              ) / 100
+            : 0,
+        avgTimeToClose: opportunityRes.avgTimeToCloseDays,
+        stalledCount: 0,
+        byStatus: opportunityRes.byStatus,
+      },
+      cross_ref: crossReference,
+    },
+  };
+
+  await writeCloseKpiCacheEntry(context.dataClient, {
+    userId: context.userId,
+    resourceScope: PREBUILT_DASHBOARD_CACHE_SCOPE,
+    resourceKey: PREBUILT_DASHBOARD_CACHE_RESOURCE_KEY,
+    cacheKey: buildPrebuiltDashboardRollupCacheKey(params),
+    result: rollup,
+    fetchedAt,
+    expiresAt,
+  });
+
+  return rollup;
+}
+
 // ─── Main Handler ──────────────────────────────────────────────────
 
 serve(async (req) => {
@@ -1373,10 +2360,19 @@ serve(async (req) => {
     )!;
     const REMOTE_URL = Deno.env.get("REMOTE_SUPABASE_URL");
     const REMOTE_KEY = Deno.env.get("REMOTE_SUPABASE_SERVICE_ROLE_KEY");
+    const useLocalSupabaseDev =
+      Deno.env.get("VITE_USE_LOCAL") === "true" ||
+      isLoopbackValue(SUPABASE_URL) ||
+      isLoopbackValue(req.url);
+    const allowRemoteSupabaseDev =
+      Deno.env.get("VITE_ALLOW_REMOTE_SUPABASE_DEV") === "true";
+    const shouldUseRemoteDataClient =
+      Boolean(REMOTE_URL && REMOTE_KEY) &&
+      (allowRemoteSupabaseDev || !useLocalSupabaseDev);
 
     const authClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const dataClient =
-      REMOTE_URL && REMOTE_KEY
+      shouldUseRemoteDataClient && REMOTE_URL && REMOTE_KEY
         ? createClient(REMOTE_URL, REMOTE_KEY)
         : authClient;
 
@@ -1392,6 +2388,28 @@ serve(async (req) => {
     } = await authClient.auth.getUser(token);
     if (authError || !user) {
       return jsonResponse({ error: "Unauthorized" }, 401, req);
+    }
+
+    if (action === "get_prebuilt_dashboard_rollup") {
+      const cachedRollup = await readCloseKpiCacheEntry(dataClient, {
+        userId: user.id,
+        resourceScope: PREBUILT_DASHBOARD_CACHE_SCOPE,
+        resourceKey: PREBUILT_DASHBOARD_CACHE_RESOURCE_KEY,
+        cacheKey: buildPrebuiltDashboardRollupCacheKey(params),
+      });
+
+      if (cachedRollup?.result) {
+        return jsonResponse(
+          {
+            ...(cachedRollup.result as Record<string, unknown>),
+            cacheHit: true,
+            fetchedAt: cachedRollup.fetched_at,
+            expiresAt: cachedRollup.expires_at,
+          },
+          200,
+          req,
+        );
+      }
     }
 
     // ── Get Close API key ──
@@ -1466,6 +2484,12 @@ serve(async (req) => {
         break;
       case "get_dial_attempts":
         result = await handleGetDialAttempts(apiKey, params);
+        break;
+      case "get_prebuilt_dashboard_rollup":
+        result = await handleGetPrebuiltDashboardRollup(apiKey, params, {
+          dataClient,
+          userId: user.id,
+        });
         break;
       default:
         return jsonResponse({ error: `Unknown action: ${action}` }, 400, req);

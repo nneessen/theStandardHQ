@@ -3,7 +3,10 @@
 // Each widget type has a dedicated fetcher that returns real Close CRM data.
 
 import { useQuery } from "@tanstack/react-query";
-import { closeKpiKeys } from "./useCloseKpiDashboard";
+import {
+  closeKpiKeys,
+  getCloseKpiWidgetQueryGroup,
+} from "./useCloseKpiDashboard";
 import { generateCacheKey } from "../lib/cache-key";
 import { closeKpiService } from "../services/closeKpiService";
 import { supabase } from "@/services/base/supabase";
@@ -47,6 +50,7 @@ export function useKpiWidgetData(
   widget: CloseKpiWidget | null,
   globalConfig?: GlobalDashboardConfig,
 ) {
+  const widgetGroup = getCloseKpiWidgetQueryGroup(widget?.widget_type);
   const cacheKey = widget
     ? generateCacheKey(
         widget.widget_type,
@@ -57,7 +61,11 @@ export function useKpiWidgetData(
 
   return useQuery<WidgetResult | null>({
     // Include cacheKey so config changes trigger refetch (Bug 7 fix)
-    queryKey: [...closeKpiKeys.cache(widget?.id ?? "none"), cacheKey],
+    queryKey: closeKpiKeys.widgetCache(
+      widgetGroup,
+      widget?.id ?? "none",
+      cacheKey,
+    ),
     queryFn: async () => {
       if (!widget) return null;
       return fetchWidgetData(widget, globalConfig);
@@ -66,7 +74,7 @@ export function useKpiWidgetData(
     staleTime: 5 * 60_000,
     gcTime: 30 * 60_000,
     refetchOnWindowFocus: false,
-    refetchInterval: 10 * 60_000,
+    refetchInterval: widgetGroup === "lead-heat" ? 10 * 60_000 : false,
     retry: 1,
     // Bug 4 fix: errors propagate to useQuery error state — no silent zeroes
   });

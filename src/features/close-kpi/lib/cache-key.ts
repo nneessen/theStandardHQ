@@ -1,15 +1,13 @@
 // src/features/close-kpi/lib/cache-key.ts
 // Deterministic hash of widget config + date range for cache dedup
 
-import type { WidgetConfig } from "../types/close-kpi.types";
-
 /**
  * Generates a stable cache key from widget config.
  * Uses JSON.stringify with sorted keys so identical configs always produce the same key.
  */
 export function generateCacheKey(
   widgetType: string,
-  config: WidgetConfig,
+  config: unknown,
   globalDateRange?: string,
 ): string {
   const normalized = {

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
-import { closeKpiService } from "../services/closeKpiService";
+import { useLeadHeatRescore } from "../hooks/useCloseKpiDashboard";
 
 interface SetupGuideProps {
   isCloseConnected: boolean;
@@ -73,7 +73,7 @@ export const SetupGuide: React.FC<SetupGuideProps> = ({
   hasScoringRuns,
   onNavigateToDashboard,
 }) => {
-  const [rescoring, setRescoring] = useState(false);
+  const leadHeatRescore = useLeadHeatRescore();
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
 
   const getStepStatus = (
@@ -97,13 +97,10 @@ export const SetupGuide: React.FC<SetupGuideProps> = ({
   };
 
   const handleRescore = async () => {
-    setRescoring(true);
     try {
-      await closeKpiService.triggerRescore();
+      await leadHeatRescore.mutateAsync();
     } catch {
       // silently handle
-    } finally {
-      setRescoring(false);
     }
   };
 
@@ -206,14 +203,14 @@ export const SetupGuide: React.FC<SetupGuideProps> = ({
                         size="sm"
                         className="h-7 text-[10px] gap-1.5"
                         onClick={handleRescore}
-                        disabled={rescoring}
+                        disabled={leadHeatRescore.isPending}
                       >
-                        {rescoring ? (
+                        {leadHeatRescore.isPending ? (
                           <Loader2 className="h-3 w-3 animate-spin" />
                         ) : (
                           <RefreshCw className="h-3 w-3" />
                         )}
-                        {rescoring ? "Scoring..." : "Score Now"}
+                        {leadHeatRescore.isPending ? "Scoring..." : "Score Now"}
                       </Button>
                     )}
                     {step.id === "scoring" && (
@@ -222,14 +219,16 @@ export const SetupGuide: React.FC<SetupGuideProps> = ({
                         size="sm"
                         className="h-7 text-[10px] gap-1.5"
                         onClick={handleRescore}
-                        disabled={rescoring}
+                        disabled={leadHeatRescore.isPending}
                       >
-                        {rescoring ? (
+                        {leadHeatRescore.isPending ? (
                           <Loader2 className="h-3 w-3 animate-spin" />
                         ) : (
                           <Brain className="h-3 w-3" />
                         )}
-                        {rescoring ? "Running..." : "Run AI Analysis"}
+                        {leadHeatRescore.isPending
+                          ? "Running..."
+                          : "Run AI Analysis"}
                       </Button>
                     )}
                   </div>

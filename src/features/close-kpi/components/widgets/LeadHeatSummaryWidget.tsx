@@ -1,14 +1,14 @@
 // src/features/close-kpi/components/widgets/LeadHeatSummaryWidget.tsx
 // Donut chart showing score distribution by heat level + summary stats.
 
-import React, { useState } from "react";
+import React from "react";
 import { Flame, RefreshCw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type {
   LeadHeatSummaryResult,
   LeadHeatLevel,
 } from "../../types/close-kpi.types";
-import { closeKpiService } from "../../services/closeKpiService";
+import { useLeadHeatRescore } from "../../hooks/useCloseKpiDashboard";
 
 interface LeadHeatSummaryWidgetProps {
   data: LeadHeatSummaryResult;
@@ -25,6 +25,7 @@ const LEVEL_COLORS: Record<LeadHeatLevel, { fill: string; label: string }> = {
 export const LeadHeatSummaryWidget: React.FC<LeadHeatSummaryWidgetProps> = ({
   data,
 }) => {
+  const leadHeatRescore = useLeadHeatRescore();
   const {
     distribution,
     totalScored,
@@ -33,16 +34,12 @@ export const LeadHeatSummaryWidget: React.FC<LeadHeatSummaryWidgetProps> = ({
     isPersonalized,
     sampleSize,
   } = data;
-  const [rescoring, setRescoring] = useState(false);
 
   const handleRescore = async () => {
-    setRescoring(true);
     try {
-      await closeKpiService.triggerRescore();
+      await leadHeatRescore.mutateAsync();
     } catch {
       // Widget will show updated data on next query refetch
-    } finally {
-      setRescoring(false);
     }
   };
 
@@ -57,14 +54,14 @@ export const LeadHeatSummaryWidget: React.FC<LeadHeatSummaryWidgetProps> = ({
           size="sm"
           className="h-6 text-[10px] gap-1"
           onClick={handleRescore}
-          disabled={rescoring}
+          disabled={leadHeatRescore.isPending}
         >
-          {rescoring ? (
+          {leadHeatRescore.isPending ? (
             <Loader2 className="h-2.5 w-2.5 animate-spin" />
           ) : (
             <RefreshCw className="h-2.5 w-2.5" />
           )}
-          {rescoring ? "Scoring..." : "Score Leads"}
+          {leadHeatRescore.isPending ? "Scoring..." : "Score Leads"}
         </Button>
       </div>
     );

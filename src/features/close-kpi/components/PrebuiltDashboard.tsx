@@ -2,7 +2,7 @@
 // Main pre-built dashboard rendering all 4 sections with 14 widgets.
 // No manual add/remove/reorder — everything is always displayed.
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
 import { DashboardSection } from "./DashboardSection";
 import { PrebuiltWidget } from "./PrebuiltWidget";
@@ -20,7 +20,10 @@ import { LeadHeatSummaryWidget } from "./widgets/LeadHeatSummaryWidget";
 import { LeadHeatListWidget } from "./widgets/LeadHeatListWidget";
 import { LeadHeatAiInsightsWidget } from "./widgets/LeadHeatAiInsightsWidget";
 import { usePrebuiltDashboardData } from "../hooks/usePrebuiltWidgetData";
-import { closeKpiService } from "../services/closeKpiService";
+import {
+  useLeadHeatDashboardStatus,
+  useLeadHeatRescore,
+} from "../hooks/useCloseKpiDashboard";
 import { DASHBOARD_SECTIONS } from "../config/prebuilt-layout";
 import type {
   DateRangePreset,
@@ -47,40 +50,47 @@ interface PrebuiltDashboardProps {
 export const PrebuiltDashboard: React.FC<PrebuiltDashboardProps> = ({
   dateRange,
 }) => {
-  const { widgetDataMap, isMetadataLoading } =
+  const { widgetDataMap, isCloseApiLoading } =
     usePrebuiltDashboardData(dateRange);
-  const [autoScoring, setAutoScoring] = useState(false);
-  const autoScoreTriggered = useRef(false);
+  const { data: leadHeatStatus } = useLeadHeatDashboardStatus();
+  const {
+    mutateAsync: triggerLeadHeatRescore,
+    isPending: isLeadHeatRescorePending,
+  } = useLeadHeatRescore();
+  const autoRefreshTriggered = useRef(false);
 
-  // Auto-trigger scoring if no leads scored yet
   const heatSummary = widgetDataMap.get("heat_summary");
   const heatData = heatSummary?.data as LeadHeatSummaryResult | null;
+  const hasCachedLeadHeatScores = (heatData?.totalScored ?? 0) > 0;
+  const shouldRefreshStaleLeadHeat =
+    leadHeatStatus?.state === "stale" && hasCachedLeadHeatScores;
+  const isLeadHeatRunning =
+    leadHeatStatus?.state === "running" || isLeadHeatRescorePending;
+  const leadHeatBannerMessage = hasCachedLeadHeatScores
+    ? "Refreshing lead heat in the background. Cached scores remain visible until the rescore finishes."
+    : "Scoring your leads for the first time — this takes 30-60 seconds...";
 
   useEffect(() => {
     if (
-      heatData &&
-      heatData.totalScored === 0 &&
-      !autoScoring &&
-      !autoScoreTriggered.current
+      shouldRefreshStaleLeadHeat &&
+      !isLeadHeatRescorePending &&
+      !autoRefreshTriggered.current
     ) {
-      autoScoreTriggered.current = true;
-      setAutoScoring(true);
-      closeKpiService
-        .triggerRescore()
-        .catch(() => {})
-        .finally(() => setAutoScoring(false));
+      autoRefreshTriggered.current = true;
+      void triggerLeadHeatRescore().catch(() => {});
     }
-  }, [heatData, autoScoring]);
+  }, [
+    isLeadHeatRescorePending,
+    shouldRefreshStaleLeadHeat,
+    triggerLeadHeatRescore,
+  ]);
 
   return (
     <div className="space-y-4 pb-4">
-      {/* Auto-scoring banner */}
-      {autoScoring && (
+      {isLeadHeatRunning && (
         <div className="flex items-center gap-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2">
           <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-          <p className="text-[11px] text-primary">
-            Scoring your leads for the first time — this takes 30-60 seconds...
-          </p>
+          <p className="text-[11px] text-primary">{leadHeatBannerMessage}</p>
         </div>
       )}
 
@@ -99,7 +109,7 @@ export const PrebuiltDashboard: React.FC<PrebuiltDashboardProps> = ({
             const data = state?.data ?? null;
             const isLoading =
               state?.isLoading ??
-              (isMetadataLoading && !widgetDef.type.startsWith("lead_heat_"));
+              (isCloseApiLoading && !widgetDef.type.startsWith("lead_heat_"));
             const error = state?.error ?? null;
 
             return (

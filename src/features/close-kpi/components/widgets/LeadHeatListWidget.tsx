@@ -19,38 +19,34 @@ import type {
 } from "../../types/close-kpi.types";
 import { LeadHeatBadge } from "../LeadHeatBadge";
 import { closeKpiService } from "../../services/closeKpiService";
+import { useLeadHeatRescore } from "../../hooks/useCloseKpiDashboard";
 
 interface LeadHeatListWidgetProps {
   data: LeadHeatListResult;
 }
 
-// Sentinel value for failed deep dives
-const DEEP_DIVE_ERROR = Symbol("error");
-type DeepDiveEntry = LeadHeatDeepDiveResult | typeof DEEP_DIVE_ERROR;
-
 export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
   data,
 }) => {
+  const leadHeatRescore = useLeadHeatRescore();
   const { leads, total, page, pageSize } = data;
   const [expandedLeadId, setExpandedLeadId] = useState<string | null>(null);
   const [deepDiveData, setDeepDiveData] = useState<
-    Record<string, DeepDiveEntry>
+    Record<string, LeadHeatDeepDiveResult>
   >({});
+  const [deepDiveErrors, setDeepDiveErrors] = useState<Record<string, string>>(
+    {},
+  );
   const [loadingDeepDive, setLoadingDeepDive] = useState<string | null>(null);
   const pendingRef = useRef<Set<string>>(new Set());
-  const [rescoring, setRescoring] = useState(false);
   const [rescoreError, setRescoreError] = useState<string | null>(null);
 
   const handleRescore = async () => {
-    setRescoring(true);
     setRescoreError(null);
     try {
-      await closeKpiService.triggerRescore();
-      // Data will refresh via TanStack Query staleTime
+      await leadHeatRescore.mutateAsync();
     } catch (err) {
       setRescoreError((err as Error).message);
-    } finally {
-      setRescoring(false);
     }
   };
 
@@ -64,11 +60,16 @@ export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
     if (lead.aiInsight) {
       const insight = lead.aiInsight;
       setDeepDiveData((prev) => ({ ...prev, [lead.closeLeadId]: insight }));
+      setDeepDiveErrors((prev) => {
+        const next = { ...prev };
+        delete next[lead.closeLeadId];
+        return next;
+      });
       return;
     }
 
     const existing = deepDiveData[lead.closeLeadId];
-    if (existing && existing !== DEEP_DIVE_ERROR) return;
+    if (existing) return;
 
     if (pendingRef.current.has(lead.closeLeadId)) return;
     pendingRef.current.add(lead.closeLeadId);
@@ -79,10 +80,17 @@ export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
         lead.closeLeadId,
       );
       setDeepDiveData((prev) => ({ ...prev, [lead.closeLeadId]: result }));
-    } catch {
-      setDeepDiveData((prev) => ({
+      setDeepDiveErrors((prev) => {
+        const next = { ...prev };
+        delete next[lead.closeLeadId];
+        return next;
+      });
+    } catch (err) {
+      setDeepDiveErrors((prev) => ({
         ...prev,
-        [lead.closeLeadId]: DEEP_DIVE_ERROR,
+        [lead.closeLeadId]: normalizeDeepDiveErrorMessage(
+          (err as Error).message,
+        ),
       }));
     } finally {
       setLoadingDeepDive(null);
@@ -108,14 +116,14 @@ export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
           size="sm"
           className="h-7 text-[11px] gap-1.5 mt-1"
           onClick={handleRescore}
-          disabled={rescoring}
+          disabled={leadHeatRescore.isPending}
         >
-          {rescoring ? (
+          {leadHeatRescore.isPending ? (
             <Loader2 className="h-3 w-3 animate-spin" />
           ) : (
             <RefreshCw className="h-3 w-3" />
           )}
-          {rescoring ? "Scoring leads..." : "Score My Leads"}
+          {leadHeatRescore.isPending ? "Scoring leads..." : "Score My Leads"}
         </Button>
         {rescoreError && (
           <p className="text-[10px] text-destructive">{rescoreError}</p>
@@ -141,15 +149,15 @@ export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
           size="sm"
           className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground gap-1"
           onClick={handleRescore}
-          disabled={rescoring}
+          disabled={leadHeatRescore.isPending}
           title="Rescore all leads"
         >
-          {rescoring ? (
+          {leadHeatRescore.isPending ? (
             <Loader2 className="h-2.5 w-2.5 animate-spin" />
           ) : (
             <RefreshCw className="h-2.5 w-2.5" />
           )}
-          {rescoring ? "Scoring..." : "Rescore"}
+          {leadHeatRescore.isPending ? "Scoring..." : "Rescore"}
         </Button>
       </div>
 
@@ -203,17 +211,10 @@ export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
                   <tr>
                     <td colSpan={5} className="pb-2">
                       <DeepDivePanel
-                        data={
-                          deepDiveData[lead.closeLeadId] === DEEP_DIVE_ERROR
-                            ? null
-                            : ((deepDiveData[
-                                lead.closeLeadId
-                              ] as LeadHeatDeepDiveResult) ?? null)
-                        }
+                        data={deepDiveData[lead.closeLeadId] ?? null}
                         isLoading={loadingDeepDive === lead.closeLeadId}
-                        hasError={
-                          deepDiveData[lead.closeLeadId] === DEEP_DIVE_ERROR
-                        }
+                        hasError={!!deepDiveErrors[lead.closeLeadId]}
+                        errorMessage={deepDiveErrors[lead.closeLeadId]}
                       />
                     </td>
                   </tr>
@@ -233,12 +234,14 @@ interface DeepDivePanelProps {
   data: LeadHeatDeepDiveResult | null;
   isLoading: boolean;
   hasError?: boolean;
+  errorMessage?: string;
 }
 
 const DeepDivePanel: React.FC<DeepDivePanelProps> = ({
   data,
   isLoading,
   hasError,
+  errorMessage,
 }) => {
   if (isLoading) {
     return (
@@ -253,7 +256,7 @@ const DeepDivePanel: React.FC<DeepDivePanelProps> = ({
     return (
       <div className="flex items-center gap-2 rounded border border-destructive/30 bg-destructive/5 px-3 py-2 text-[11px] text-destructive">
         <AlertCircle className="h-3 w-3" />
-        AI analysis failed. Click again to retry.
+        {errorMessage ?? "AI analysis failed. Click again to retry."}
       </div>
     );
   }
@@ -317,3 +320,11 @@ const DeepDivePanel: React.FC<DeepDivePanelProps> = ({
     </div>
   );
 };
+
+function normalizeDeepDiveErrorMessage(message: string): string {
+  if (message.includes("ANTHROPIC_API_KEY not configured")) {
+    return "AI lead analysis is unavailable locally until ANTHROPIC_API_KEY is set.";
+  }
+
+  return message || "AI analysis failed. Click again to retry.";
+}

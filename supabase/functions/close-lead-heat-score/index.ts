@@ -33,19 +33,29 @@ const ALLOWED_ORIGINS = [
   "https://thestandardhq.com",
   "http://localhost:3000",
   "http://localhost:3001",
+  "http://localhost:3003",
   "http://localhost:3004",
   "http://127.0.0.1:3000",
   "http://127.0.0.1:3001",
+  "http://127.0.0.1:3003",
   "http://127.0.0.1:3004",
 ];
 
+function isLoopbackValue(value?: string | null) {
+  if (!value) return false;
+  return value.includes("127.0.0.1") || value.includes("localhost");
+}
+
 function corsHeaders(req?: Request) {
+  const reqOrigin = req?.headers.get("origin") ?? "";
   const isLocal =
-    Deno.env.get("SUPABASE_URL")?.includes("127.0.0.1") ||
-    Deno.env.get("SUPABASE_URL")?.includes("localhost");
+    isLoopbackValue(Deno.env.get("SUPABASE_URL")) ||
+    isLoopbackValue(reqOrigin) ||
+    isLoopbackValue(req?.url);
   let origin = "*";
-  if (!isLocal && req) {
-    const reqOrigin = req.headers.get("origin") ?? "";
+  if (reqOrigin && isLoopbackValue(reqOrigin)) {
+    origin = reqOrigin;
+  } else if (!isLocal && req) {
     origin = ALLOWED_ORIGINS.includes(reqOrigin)
       ? reqOrigin
       : ALLOWED_ORIGINS[0];
@@ -840,10 +850,19 @@ serve(async (req) => {
     )!;
     const REMOTE_URL = Deno.env.get("REMOTE_SUPABASE_URL");
     const REMOTE_KEY = Deno.env.get("REMOTE_SUPABASE_SERVICE_ROLE_KEY");
+    const useLocalSupabaseDev =
+      Deno.env.get("VITE_USE_LOCAL") === "true" ||
+      isLoopbackValue(SUPABASE_URL) ||
+      isLoopbackValue(req.url);
+    const allowRemoteSupabaseDev =
+      Deno.env.get("VITE_ALLOW_REMOTE_SUPABASE_DEV") === "true";
+    const shouldUseRemoteDataClient =
+      Boolean(REMOTE_URL && REMOTE_KEY) &&
+      (allowRemoteSupabaseDev || !useLocalSupabaseDev);
 
     const authClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const dataClient =
-      REMOTE_URL && REMOTE_KEY
+      shouldUseRemoteDataClient && REMOTE_URL && REMOTE_KEY
         ? createClient(REMOTE_URL, REMOTE_KEY)
         : authClient;
 

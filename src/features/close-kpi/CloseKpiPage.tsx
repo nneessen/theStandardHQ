@@ -2,11 +2,9 @@
 // Pre-built Close KPI dashboard with AI Lead Scoring.
 // 2 tabs: Dashboard (all widgets pre-rendered) + Setup (connection guide).
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useFeatureAccess } from "@/hooks/subscription";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/contexts/AuthContext";
-import { closeKpiService } from "./services/closeKpiService";
+import { useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, BarChart3, Loader2, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -16,6 +14,13 @@ import { DashboardHeader } from "./components/DashboardHeader";
 import { PrebuiltDashboard } from "./components/PrebuiltDashboard";
 import { SetupGuide } from "./components/SetupGuide";
 import { CloseKpiLanding } from "./components/CloseKpiLanding";
+import {
+  closeKpiKeys,
+  useCloseConnectionStatus,
+  useLeadHeatCompletedRuns,
+  useLeadHeatRescore,
+  useLeadHeatScoreCount,
+} from "./hooks/useCloseKpiDashboard";
 import type { DateRangePreset } from "./types/close-kpi.types";
 
 type TabId = "dashboard" | "setup";
@@ -25,46 +30,36 @@ const ACCENT = "#4EC375";
 export const CloseKpiPage: React.FC = () => {
   const { hasAccess, isLoading: isFeatureLoading } =
     useFeatureAccess("close_kpi");
-  const { user } = useAuth();
   const queryClient = useQueryClient();
 
+  // Tab state — default to setup, update when connection status resolves
+  const [activeTab, setActiveTab] = useState<TabId>("setup");
+  const [hasResolvedInitialTab, setHasResolvedInitialTab] = useState(false);
+  const isSetupTabActive = hasResolvedInitialTab && activeTab === "setup";
+
   // Check close connection
-  const { data: closeConfig } = useQuery({
-    queryKey: ["close-config-status", user?.id],
-    queryFn: () => closeKpiService.getConnectionStatus(user!.id!),
-    enabled: !!user?.id,
-    staleTime: 5 * 60_000,
-  });
+  const { data: closeConfig } = useCloseConnectionStatus(hasAccess);
 
   // Check if any scores exist (for setup guide status)
-  const { data: scoreCount } = useQuery({
-    queryKey: ["lead-heat-score-count", user?.id],
-    queryFn: () => closeKpiService.getLeadHeatScoreCount(user!.id!),
-    enabled: !!user?.id && hasAccess,
-    staleTime: 60_000,
-  });
+  const { data: scoreCount } = useLeadHeatScoreCount(
+    hasAccess && isSetupTabActive,
+  );
 
   // Check if any scoring runs completed
-  const { data: hasCompletedRuns } = useQuery({
-    queryKey: ["lead-heat-runs-status", user?.id],
-    queryFn: () => closeKpiService.hasCompletedScoringRuns(user!.id!),
-    enabled: !!user?.id && hasAccess,
-    staleTime: 60_000,
-  });
+  const { data: hasCompletedRuns } = useLeadHeatCompletedRuns(
+    hasAccess && isSetupTabActive,
+  );
+  const leadHeatRescore = useLeadHeatRescore();
 
   const isCloseConnected = !!closeConfig;
   const hasScores = (scoreCount ?? 0) > 0;
 
-  // Tab state — default to setup, update when connection status resolves
-  const [activeTab, setActiveTab] = useState<TabId>("setup");
-  const tabInitialized = useRef(false);
-
   useEffect(() => {
-    if (!tabInitialized.current && closeConfig !== undefined) {
-      tabInitialized.current = true;
+    if (!hasResolvedInitialTab && closeConfig !== undefined) {
+      setHasResolvedInitialTab(true);
       setActiveTab(closeConfig ? "dashboard" : "setup");
     }
-  }, [closeConfig]);
+  }, [closeConfig, hasResolvedInitialTab]);
 
   // Dashboard state
   const [dateRange, setDateRange] = useState<DateRangePreset>("last_30_days");
@@ -75,10 +70,17 @@ export const CloseKpiPage: React.FC = () => {
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      await queryClient.invalidateQueries({ queryKey: ["prebuilt-widget"] });
-      await queryClient.invalidateQueries({
-        queryKey: ["close-metadata-prebuilt"],
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: closeKpiKeys.prebuiltWidgets(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: closeKpiKeys.closeMetadata(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: closeKpiKeys.leadHeat(),
+        }),
+      ]);
       setLastUpdated(new Date().toISOString());
     } finally {
       setIsRefreshing(false);
@@ -88,16 +90,14 @@ export const CloseKpiPage: React.FC = () => {
   const handleRescore = useCallback(async () => {
     setIsRescoring(true);
     try {
-      await closeKpiService.triggerRescore();
-      // Refresh heat widget data after scoring
-      await queryClient.invalidateQueries({ queryKey: ["prebuilt-widget"] });
+      await leadHeatRescore.mutateAsync();
       setLastUpdated(new Date().toISOString());
     } catch {
       // handled by widget error states
     } finally {
       setIsRescoring(false);
     }
-  }, [queryClient]);
+  }, [leadHeatRescore]);
 
   // ─── Tabs ─────────────────────────────────────────────────────
   const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
@@ -233,7 +233,7 @@ export const CloseKpiPage: React.FC = () => {
               onRefresh={handleRefresh}
               isRefreshing={isRefreshing}
               onRescore={handleRescore}
-              isRescoring={isRescoring}
+              isRescoring={isRescoring || leadHeatRescore.isPending}
               lastUpdated={lastUpdated}
             />
 

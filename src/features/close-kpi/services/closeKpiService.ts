@@ -3,6 +3,10 @@
 // This function decrypts the user's Close API key and calls Close API v1.
 
 import { supabase } from "@/services/base/supabase";
+import type {
+  LeadHeatDashboardStatus,
+  PrebuiltDashboardRollupResponse,
+} from "../types/close-kpi.types";
 
 // ─── Edge Function Caller ──────────────────────────────────────────
 
@@ -155,6 +159,9 @@ export interface VmRateSmartViewResponse {
   };
 }
 
+const LEAD_HEAT_STALE_AFTER_MS = 24 * 60 * 60_000;
+const LEAD_HEAT_ACTIVE_RUN_WINDOW_MS = 25 * 60_000;
+
 // ─── Service Methods ───────────────────────────────────────────────
 
 export const closeKpiService = {
@@ -171,6 +178,17 @@ export const closeKpiService = {
 
   /** Fetch all Close metadata in one call (statuses, custom fields, smart views, pipelines) */
   getMetadata: () => closeKpiApi<CloseMetadataResponse>("get_metadata"),
+
+  /** Fetch the shipped Close-backed prebuilt dashboard widgets in one batched rollup */
+  getPrebuiltDashboardRollup: (params: {
+    dateRange: string;
+    from: string;
+    to: string;
+  }) =>
+    closeKpiApi<PrebuiltDashboardRollupResponse>(
+      "get_prebuilt_dashboard_rollup",
+      params,
+    ),
 
   /** Get lead counts grouped by status, optionally filtered by date range and smart view */
   getLeadCounts: (params: {
@@ -532,7 +550,7 @@ export const closeKpiService = {
       },
     );
 
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(await getFunctionsInvokeErrorMessage(error));
     return data;
   },
 
@@ -547,7 +565,7 @@ export const closeKpiService = {
       },
     );
 
-    if (error) throw new Error(error.message);
+    if (error) throw new Error(await getFunctionsInvokeErrorMessage(error));
     return data;
   },
 
@@ -571,6 +589,63 @@ export const closeKpiService = {
     if (error) throw new Error(error.message);
     return (count ?? 0) > 0;
   },
+
+  /** Get lightweight lead-heat freshness state for dashboard decisions */
+  getLeadHeatDashboardStatus: async (
+    userId: string,
+  ): Promise<LeadHeatDashboardStatus> => {
+    const [latestScoreResult, latestRunResult] = await Promise.all([
+      supabase
+        .from("lead_heat_scores")
+        .select("scored_at")
+        .eq("user_id", userId)
+        .order("scored_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from("lead_heat_scoring_runs")
+        .select("status, started_at, completed_at, error_message")
+        .eq("user_id", userId)
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+    ]);
+
+    if (latestScoreResult.error) {
+      throw new Error(latestScoreResult.error.message);
+    }
+    if (latestRunResult.error) {
+      throw new Error(latestRunResult.error.message);
+    }
+
+    const lastScoredAt = latestScoreResult.data?.scored_at ?? null;
+    const latestRun = latestRunResult.data;
+    const isActiveRunning =
+      latestRun?.status === "running" &&
+      !!latestRun.started_at &&
+      Date.now() - new Date(latestRun.started_at).getTime() <
+        LEAD_HEAT_ACTIVE_RUN_WINDOW_MS;
+
+    let state: LeadHeatDashboardStatus["state"] = "never_scored";
+
+    if (isActiveRunning) {
+      state = "running";
+    } else if (lastScoredAt) {
+      const scoreAgeMs = Date.now() - new Date(lastScoredAt).getTime();
+      state = scoreAgeMs > LEAD_HEAT_STALE_AFTER_MS ? "stale" : "fresh";
+    }
+
+    return {
+      state,
+      hasCachedScores: !!lastScoredAt,
+      lastScoredAt,
+      lastRunStatus: isActiveRunning ? "running" : (latestRun?.status ?? null),
+      lastRunStartedAt: latestRun?.started_at ?? null,
+      lastRunCompletedAt: latestRun?.completed_at ?? null,
+      lastRunErrorMessage: latestRun?.error_message ?? null,
+      staleAfterMs: LEAD_HEAT_STALE_AFTER_MS,
+    };
+  },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────
@@ -586,6 +661,22 @@ async function getAccessToken(): Promise<string> {
   }
   if (!accessToken) throw new Error("Session expired. Please log in again.");
   return accessToken;
+}
+
+async function getFunctionsInvokeErrorMessage(error: Error): Promise<string> {
+  let msg = error.message || "Edge function error";
+
+  try {
+    const ctx = (error as { context?: Response }).context;
+    if (ctx && typeof ctx.json === "function") {
+      const body = await ctx.json();
+      if (body?.error) msg = body.error;
+    }
+  } catch {
+    // response body may already be consumed
+  }
+
+  return msg;
 }
 
 function formatSignalName(key: string): string {

@@ -137,8 +137,11 @@ export async function analyzePortfolio(
   });
 
   const text = response.content
-    .filter((block: { type: string }) => block.type === "text")
-    .map((block: { type: string; text: string }) => block.text)
+    .filter(
+      (block): block is { type: "text"; text: string } =>
+        block.type === "text" && "text" in block,
+    )
+    .map((block) => block.text)
     .join("");
 
   const tokensUsed =
@@ -242,8 +245,11 @@ export async function analyzeLeadDeepDive(
   });
 
   const text = response.content
-    .filter((block: { type: string }) => block.type === "text")
-    .map((block: { type: string; text: string }) => block.text)
+    .filter(
+      (block): block is { type: "text"; text: string } =>
+        block.type === "text" && "text" in block,
+    )
+    .map((block) => block.text)
     .join("");
 
   const tokensUsed =

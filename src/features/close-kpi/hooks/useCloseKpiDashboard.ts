@@ -14,8 +14,13 @@ import {
   reorderWidgets,
   getTemplates,
 } from "../services/kpiDashboardService";
+import {
+  closeKpiService,
+  type CloseMetadataResponse,
+} from "../services/closeKpiService";
 import type {
   DashboardWithWidgets,
+  LeadHeatDashboardStatus,
   GlobalDashboardConfig,
   WidgetType,
   WidgetSize,
@@ -25,20 +30,184 @@ import { WIDGET_REGISTRY } from "../config/widget-registry";
 
 // ─── Query Keys ────────────────────────────────────────────────────
 
+type CloseKpiWidgetQueryGroup = "lead-heat" | "close-api";
+
+export const CLOSE_KPI_PREBUILT_ROLLUP_VERSION = "v1";
+
+export function getCloseKpiWidgetQueryGroup(
+  widgetType?: string | null,
+): CloseKpiWidgetQueryGroup {
+  return widgetType?.startsWith("lead_heat_") ? "lead-heat" : "close-api";
+}
+
 export const closeKpiKeys = {
   all: ["close-kpi"] as const,
+  connectionStatus: (userId: string) =>
+    [...closeKpiKeys.all, "connection-status", userId] as const,
   dashboard: (userId: string) =>
     [...closeKpiKeys.all, "dashboard", userId] as const,
   widgets: (dashboardId: string) =>
     [...closeKpiKeys.all, "widgets", dashboardId] as const,
   templates: () => [...closeKpiKeys.all, "templates"] as const,
-  cache: (widgetId: string) =>
-    [...closeKpiKeys.all, "cache", widgetId] as const,
+  widgetCacheRoot: () => [...closeKpiKeys.all, "widget-cache"] as const,
+  widgetCacheGroup: (group: CloseKpiWidgetQueryGroup) =>
+    [...closeKpiKeys.widgetCacheRoot(), group] as const,
+  widgetCache: (
+    group: CloseKpiWidgetQueryGroup,
+    widgetId: string,
+    cacheKey: string,
+  ) => [...closeKpiKeys.widgetCacheGroup(group), widgetId, cacheKey] as const,
+  prebuiltWidgets: () => [...closeKpiKeys.all, "prebuilt-widget"] as const,
+  prebuiltWidget: (
+    group: CloseKpiWidgetQueryGroup,
+    widgetType: string,
+    widgetId: string,
+    paramsKey: string,
+  ) =>
+    [
+      ...closeKpiKeys.prebuiltWidgets(),
+      group,
+      widgetType,
+      widgetId,
+      paramsKey,
+    ] as const,
+  prebuiltRollup: (version: string, paramsKey: string) =>
+    [...closeKpiKeys.prebuiltWidgets(), "rollup", version, paramsKey] as const,
   closeMetadata: () => [...closeKpiKeys.all, "close-metadata"] as const,
+  leadHeat: () => [...closeKpiKeys.all, "lead-heat"] as const,
+  leadHeatScoreCount: (userId: string) =>
+    [...closeKpiKeys.leadHeat(), "score-count", userId] as const,
+  leadHeatRunsStatus: (userId: string) =>
+    [...closeKpiKeys.leadHeat(), "runs-status", userId] as const,
+  leadHeatStatus: (userId: string) =>
+    [...closeKpiKeys.leadHeat(), "status", userId] as const,
+  leadHeatWidgets: () =>
+    [...closeKpiKeys.prebuiltWidgets(), "lead-heat"] as const,
   leadStatuses: () => [...closeKpiKeys.all, "lead-statuses"] as const,
   leadSources: () => [...closeKpiKeys.all, "lead-sources"] as const,
   smartViews: () => [...closeKpiKeys.all, "smart-views"] as const,
 };
+
+// ─── Shared Status Queries ────────────────────────────────────────
+
+export function useCloseConnectionStatus(enabled = true) {
+  const { user } = useAuth();
+  const userId = user?.id ?? "";
+
+  return useQuery({
+    queryKey: closeKpiKeys.connectionStatus(userId),
+    queryFn: () => closeKpiService.getConnectionStatus(userId),
+    enabled: enabled && !!userId,
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
+  });
+}
+
+export function useLeadHeatScoreCount(enabled = true) {
+  const { user } = useAuth();
+  const userId = user?.id ?? "";
+
+  return useQuery({
+    queryKey: closeKpiKeys.leadHeatScoreCount(userId),
+    queryFn: () => closeKpiService.getLeadHeatScoreCount(userId),
+    enabled: enabled && !!userId,
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+  });
+}
+
+export function useLeadHeatCompletedRuns(enabled = true) {
+  const { user } = useAuth();
+  const userId = user?.id ?? "";
+
+  return useQuery({
+    queryKey: closeKpiKeys.leadHeatRunsStatus(userId),
+    queryFn: () => closeKpiService.hasCompletedScoringRuns(userId),
+    enabled: enabled && !!userId,
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+  });
+}
+
+export function useLeadHeatDashboardStatus(enabled = true) {
+  const { user } = useAuth();
+  const userId = user?.id ?? "";
+
+  return useQuery({
+    queryKey: closeKpiKeys.leadHeatStatus(userId),
+    queryFn: () => closeKpiService.getLeadHeatDashboardStatus(userId),
+    enabled: enabled && !!userId,
+    staleTime: 60_000,
+    gcTime: 10 * 60_000,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useLeadHeatRescore() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const userId = user?.id ?? "";
+
+  return useMutation({
+    mutationFn: () => closeKpiService.triggerRescore(),
+    onMutate: async () => {
+      if (!userId) return { previousStatus: undefined as undefined };
+
+      const statusKey = closeKpiKeys.leadHeatStatus(userId);
+      await queryClient.cancelQueries({ queryKey: statusKey });
+
+      const previousStatus =
+        queryClient.getQueryData<LeadHeatDashboardStatus>(statusKey);
+
+      queryClient.setQueryData<LeadHeatDashboardStatus>(
+        statusKey,
+        (current) => ({
+          state: "running",
+          hasCachedScores: current?.hasCachedScores ?? false,
+          lastScoredAt: current?.lastScoredAt ?? null,
+          lastRunStatus: "running",
+          lastRunStartedAt: new Date().toISOString(),
+          lastRunCompletedAt: current?.lastRunCompletedAt ?? null,
+          lastRunErrorMessage: null,
+          staleAfterMs: current?.staleAfterMs ?? 24 * 60 * 60_000,
+        }),
+      );
+
+      return { previousStatus, statusKey };
+    },
+    onError: (_error, _variables, context) => {
+      if (!context?.statusKey) return;
+
+      if (context.previousStatus) {
+        queryClient.setQueryData(context.statusKey, context.previousStatus);
+        return;
+      }
+
+      queryClient.removeQueries({
+        queryKey: context.statusKey,
+        exact: true,
+      });
+    },
+    onSuccess: async () => {
+      if (!userId) return;
+
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: closeKpiKeys.leadHeatStatus(userId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: closeKpiKeys.leadHeatWidgets(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: closeKpiKeys.widgetCacheGroup("lead-heat"),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: closeKpiKeys.leadHeat(),
+        }),
+      ]);
+    },
+  });
+}
 
 // ─── Dashboard Query ───────────────────────────────────────────────
 
@@ -195,21 +364,18 @@ export function useKpiTemplates() {
     queryKey: closeKpiKeys.templates(),
     queryFn: getTemplates,
     staleTime: Infinity,
+    gcTime: 60 * 60 * 1000,
   });
 }
 
 // ─── Close Metadata (single call for all metadata) ────────────────
 
-import type { CloseMetadataResponse } from "../services/closeKpiService";
-
 export function useCloseMetadata(enabled = true) {
   return useQuery<CloseMetadataResponse>({
     queryKey: closeKpiKeys.closeMetadata(),
-    queryFn: async () => {
-      const { closeKpiService } = await import("../services/closeKpiService");
-      return closeKpiService.getMetadata();
-    },
+    queryFn: () => closeKpiService.getMetadata(),
     staleTime: 10 * 60 * 1000, // Metadata changes rarely
+    gcTime: 30 * 60 * 1000,
     enabled,
   });
 }
@@ -277,16 +443,17 @@ const STARTER_WIDGETS: {
 ];
 
 async function seedStarterWidgets(dashboardId: string, userId: string) {
-  for (let i = 0; i < STARTER_WIDGETS.length; i++) {
-    const s = STARTER_WIDGETS[i];
-    await createWidget({
-      dashboardId,
-      userId,
-      widgetType: s.widgetType,
-      title: s.title,
-      size: s.size,
-      config: s.config,
-      positionOrder: i,
-    });
-  }
+  await Promise.all(
+    STARTER_WIDGETS.map((s, i) =>
+      createWidget({
+        dashboardId,
+        userId,
+        widgetType: s.widgetType,
+        title: s.title,
+        size: s.size,
+        config: s.config,
+        positionOrder: i,
+      }),
+    ),
+  );
 }

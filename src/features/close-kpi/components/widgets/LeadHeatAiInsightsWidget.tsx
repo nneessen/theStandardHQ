@@ -1,7 +1,7 @@
 // src/features/close-kpi/components/widgets/LeadHeatAiInsightsWidget.tsx
 // AI-powered insights panel: recommendations, anomalies, patterns, personalization progress.
 
-import React, { useState } from "react";
+import React from "react";
 import {
   Brain,
   AlertTriangle,
@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { LeadHeatAiInsightsResult } from "../../types/close-kpi.types";
-import { closeKpiService } from "../../services/closeKpiService";
+import { useLeadHeatRescore } from "../../hooks/useCloseKpiDashboard";
 
 interface LeadHeatAiInsightsWidgetProps {
   data: LeadHeatAiInsightsResult;
@@ -35,6 +35,7 @@ const URGENCY_DOT: Record<string, string> = {
 export const LeadHeatAiInsightsWidget: React.FC<
   LeadHeatAiInsightsWidgetProps
 > = ({ data }) => {
+  const leadHeatRescore = useLeadHeatRescore();
   const {
     recommendations,
     anomalies,
@@ -42,16 +43,12 @@ export const LeadHeatAiInsightsWidget: React.FC<
     sampleSize,
     analyzedAt,
   } = data;
-  const [rescoring, setRescoring] = useState(false);
 
   const handleRescore = async () => {
-    setRescoring(true);
     try {
-      await closeKpiService.triggerRescore();
+      await leadHeatRescore.mutateAsync();
     } catch {
       // Widget will show updated data on next query refetch
-    } finally {
-      setRescoring(false);
     }
   };
 
@@ -75,14 +72,14 @@ export const LeadHeatAiInsightsWidget: React.FC<
           size="sm"
           className="h-6 text-[10px] gap-1 mt-1"
           onClick={handleRescore}
-          disabled={rescoring}
+          disabled={leadHeatRescore.isPending}
         >
-          {rescoring ? (
+          {leadHeatRescore.isPending ? (
             <Loader2 className="h-2.5 w-2.5 animate-spin" />
           ) : (
             <RefreshCw className="h-2.5 w-2.5" />
           )}
-          {rescoring ? "Scoring..." : "Score Leads"}
+          {leadHeatRescore.isPending ? "Scoring..." : "Score Leads"}
         </Button>
         {/* Personalization progress */}
         <div className="w-full max-w-[180px] mt-1">
