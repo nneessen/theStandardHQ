@@ -47,6 +47,7 @@ import type {
   RecruitActionCallbacks,
   RecruitActionLoading,
   RecruitSlackContext,
+  RecruitDiscordContext,
   RecruitActionPolicy,
 } from "../types/recruit-detail.types";
 import { getRecruitActionPolicy } from "../utils/recruit-action-policy";
@@ -59,6 +60,7 @@ interface RecruitActionBarProps {
   currentPhase: PhaseProgress | null | undefined;
   canRevert: boolean;
   slack: RecruitSlackContext;
+  discord: RecruitDiscordContext;
   actions: RecruitActionCallbacks;
   loading: RecruitActionLoading;
 }
@@ -376,6 +378,117 @@ function SlackActionBar({
   );
 }
 
+// ─── Discord notification sub-component ──────────────────────────────────────
+
+interface DiscordActionBarProps {
+  policy: RecruitActionPolicy;
+  loading: RecruitActionLoading;
+  discord: RecruitDiscordContext;
+  recruit: UserProfile;
+  sendingType: "new_recruit" | "npn_received" | null;
+  onSendNew: () => void;
+  onSendNpn: () => void;
+}
+
+function DiscordActionBar({
+  policy,
+  loading,
+  discord,
+  recruit,
+  sendingType,
+  onSendNew,
+  onSendNpn,
+}: DiscordActionBarProps) {
+  const channelLabel = discord.recruitChannelName
+    ? `#${discord.recruitChannelName}`
+    : "the Discord recruit channel";
+
+  return (
+    <>
+      {policy.showNewRecruitDiscord && (
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={policy.newRecruitDiscordDisabled}
+                onClick={onSendNew}
+                className={cn(
+                  "h-6 text-[10px] px-2 flex-shrink-0",
+                  discord.notificationStatus?.newRecruitSent &&
+                    "text-emerald-600 border-emerald-300",
+                )}
+              >
+                {sendingType === "new_recruit" && loading.isSendingDiscord ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : discord.notificationStatus?.newRecruitSent ? (
+                  <Check className="h-3 w-3 mr-0.5" />
+                ) : (
+                  <Hash className="h-3 w-3 mr-0.5" />
+                )}
+                {discord.notificationStatus?.newRecruitSent
+                  ? "Sent"
+                  : "Discord: New Recruit"}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-[10px]">
+                {discord.notificationStatus?.newRecruitSent
+                  ? "New recruit notification already sent to Discord"
+                  : `Post to ${channelLabel}`}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+      {policy.showNpnDiscord && (
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={policy.npnDiscordDisabled}
+                onClick={() => {
+                  if (!recruit.npn) {
+                    toast.error("Set the recruit's NPN first, then post.");
+                    return;
+                  }
+                  onSendNpn();
+                }}
+                className={cn(
+                  "h-6 text-[10px] px-2 flex-shrink-0",
+                  discord.notificationStatus?.npnReceivedSent &&
+                    "text-emerald-600 border-emerald-300",
+                )}
+              >
+                {sendingType === "npn_received" && loading.isSendingDiscord ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : discord.notificationStatus?.npnReceivedSent ? (
+                  <Check className="h-3 w-3 mr-0.5" />
+                ) : (
+                  <Hash className="h-3 w-3 mr-0.5" />
+                )}
+                {discord.notificationStatus?.npnReceivedSent
+                  ? "Sent"
+                  : "Discord: NPN"}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-[10px]">
+                {discord.notificationStatus?.npnReceivedSent
+                  ? "NPN received notification already sent to Discord"
+                  : `Post NPN received to ${channelLabel}`}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function RecruitActionBar({
@@ -386,6 +499,7 @@ export function RecruitActionBar({
   currentPhase,
   canRevert,
   slack,
+  discord,
   actions,
   loading,
 }: RecruitActionBarProps) {
@@ -412,6 +526,7 @@ export function RecruitActionBar({
     hasPipelineProgress,
     recruit,
     slack,
+    discord,
     loading,
   });
 
@@ -469,7 +584,7 @@ export function RecruitActionBar({
           )}
         </div>
 
-        {/* Slack notification buttons — registered recruits only */}
+        {/* Notification buttons — registered recruits only */}
         {!isInvitation && (
           <div className="flex items-center gap-1">
             <SlackActionBar
@@ -494,6 +609,33 @@ export function RecruitActionBar({
                   await actions.onSendSlackNotification("npn_received");
                 } catch {
                   // hook's onError fires toast; spinner resets via finally
+                } finally {
+                  setSendingNotificationType(null);
+                }
+              }}
+            />
+            <DiscordActionBar
+              policy={policy}
+              loading={loading}
+              discord={discord}
+              recruit={recruit}
+              sendingType={sendingNotificationType}
+              onSendNew={async () => {
+                setSendingNotificationType("new_recruit");
+                try {
+                  await actions.onSendDiscordNotification("new_recruit");
+                } catch {
+                  // hook's onError fires toast
+                } finally {
+                  setSendingNotificationType(null);
+                }
+              }}
+              onSendNpn={async () => {
+                setSendingNotificationType("npn_received");
+                try {
+                  await actions.onSendDiscordNotification("npn_received");
+                } catch {
+                  // hook's onError fires toast
                 } finally {
                   setSendingNotificationType(null);
                 }

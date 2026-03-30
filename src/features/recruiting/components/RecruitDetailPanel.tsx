@@ -2,6 +2,7 @@
 // Orchestrator — delegates to focused subcomponents
 
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type { UserProfile } from "@/types/hierarchy.types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -81,6 +82,13 @@ import {
   buildNewRecruitMessage,
   buildNpnReceivedMessage,
 } from "@/hooks/slack";
+import {
+  useRecruitDiscordNotificationStatus,
+  useSendRecruitDiscordNotification,
+  findDiscordRecruitIntegration,
+  buildNewRecruitEmbed,
+  buildNpnReceivedEmbed,
+} from "@/hooks/discord";
 import type {
   RecruitEntity,
   RecruitPermissions,
@@ -208,6 +216,18 @@ export function RecruitDetailPanel({
   const { data: notificationStatus } =
     useRecruitNotificationStatus(recruitIdForQueries);
   const sendSlackNotification = useSendRecruitSlackNotification();
+
+  // ─── Discord ─────────────────────────────────────────────────────
+  const imoId = currentUserProfile?.imo_id ?? null;
+  const { data: discordIntegration = null } = useQuery({
+    queryKey: ["discord", "recruit-integration", imoId],
+    queryFn: () => (imoId ? findDiscordRecruitIntegration(imoId) : null),
+    enabled: !!imoId,
+    staleTime: 5 * 60 * 1000,
+  });
+  const { data: discordNotificationStatus } =
+    useRecruitDiscordNotificationStatus(recruitIdForQueries);
+  const sendDiscordNotification = useSendRecruitDiscordNotification();
 
   // ─── Handlers ─────────────────────────────────────────────────────
   const handleAdvancePhase = async (): Promise<void> => {
@@ -344,6 +364,38 @@ export function RecruitDetailPanel({
     });
   };
 
+  const handleSendDiscordNotification = async (
+    notificationType: "new_recruit" | "npn_received",
+  ): Promise<void> => {
+    if (
+      !discordIntegration ||
+      !discordIntegration.recruit_channel_id ||
+      !currentUserProfile?.imo_id
+    )
+      return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- upline joined by RecruitRepository
+    const upline = (recruit as any).upline as
+      | { first_name?: string; last_name?: string; email?: string }
+      | undefined;
+    const uplineName =
+      upline?.first_name && upline?.last_name
+        ? `${upline.first_name} ${upline.last_name}`
+        : upline?.email || null;
+    const recruitWithUpline = { ...recruit, upline_name: uplineName };
+    const embed =
+      notificationType === "new_recruit"
+        ? buildNewRecruitEmbed(recruitWithUpline)
+        : buildNpnReceivedEmbed(recruitWithUpline);
+    await sendDiscordNotification.mutateAsync({
+      integrationId: discordIntegration.id,
+      channelId: discordIntegration.recruit_channel_id,
+      embed,
+      notificationType,
+      recruitId: recruit.id,
+      imoId: currentUserProfile.imo_id!,
+    });
+  };
+
   // ─── Loading state ────────────────────────────────────────────────
   if (progressLoading || currentPhaseLoading || templateLoading) {
     return (
@@ -445,6 +497,16 @@ export function RecruitDetailPanel({
             imoId: currentUserProfile?.imo_id ?? null,
             notificationStatus,
           }}
+          discord={{
+            integration: discordIntegration
+              ? { id: discordIntegration.id }
+              : null,
+            recruitChannelId: discordIntegration?.recruit_channel_id ?? null,
+            recruitChannelName:
+              discordIntegration?.recruit_channel_name ?? null,
+            imoId: currentUserProfile?.imo_id ?? null,
+            notificationStatus: discordNotificationStatus,
+          }}
           actions={{
             onAdvancePhase: handleAdvancePhase,
             onBlockPhase: handleBlockPhase,
@@ -456,6 +518,7 @@ export function RecruitDetailPanel({
             onCancelInvitation: handleCancelInvitation,
             onDeleteOpen: () => setDeleteDialogOpen(true),
             onSendSlackNotification: handleSendSlackNotification,
+            onSendDiscordNotification: handleSendDiscordNotification,
           }}
           loading={{
             isAdvancing: advancePhase.isPending,
@@ -465,6 +528,7 @@ export function RecruitDetailPanel({
             isResendingInvite: resendInvite.isPending,
             isCancellingInvitation: cancelInvitation.isPending,
             isSendingSlack: sendSlackNotification.isPending,
+            isSendingDiscord: sendDiscordNotification.isPending,
           }}
         />
       </div>

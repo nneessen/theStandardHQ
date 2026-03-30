@@ -33,6 +33,7 @@ const noLoadingStates: RecruitActionLoading = {
   isResendingInvite: false,
   isCancellingInvitation: false,
   isSendingSlack: false,
+  isSendingDiscord: false,
 };
 
 const activePhase: PhaseProgress = {
@@ -42,7 +43,7 @@ const activePhase: PhaseProgress = {
 const blockedPhase: PhaseProgress = { phase_id: "phase-1", status: "blocked" };
 
 function buildInput(overrides: Partial<PolicyInput> = {}): PolicyInput {
-  return {
+  const base: PolicyInput = {
     entity: {
       kind: "registered",
       recruit: baseRecruit as UserProfile,
@@ -53,9 +54,16 @@ function buildInput(overrides: Partial<PolicyInput> = {}): PolicyInput {
     hasPipelineProgress: true,
     recruit: baseRecruit as UserProfile,
     slack: baseSlack,
+    discord: {
+      integration: null,
+      recruitChannelId: null,
+      recruitChannelName: null,
+      imoId: null,
+      notificationStatus: undefined,
+    },
     loading: noLoadingStates,
-    ...overrides,
   };
+  return { ...base, ...overrides };
 }
 
 // ─── canResendInvite ──────────────────────────────────────────────────────────
