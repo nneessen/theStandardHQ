@@ -16,7 +16,7 @@ import type {
 
 const PORTFOLIO_MODEL = "claude-haiku-4-5-20251001";
 const DEEP_DIVE_MODEL = "claude-sonnet-4-20250514";
-const MAX_PORTFOLIO_TOKENS = 2048;
+const MAX_PORTFOLIO_TOKENS = 4096;
 const MAX_DEEP_DIVE_TOKENS = 1024;
 
 // ─── Anthropic Client ─────────────────────────────────────────────────
@@ -68,7 +68,7 @@ You understand insurance sales dynamics:
 - Speed to first contact strongly predicts conversion
 - Insurance agents work high volumes; they need to focus on the right leads
 
-Return ONLY valid JSON matching the requested schema. No markdown, no explanation, no code fences.`;
+Return ONLY valid JSON matching the requested schema. Keep strings concise. No markdown, no explanation, no code fences.`;
 
 function buildPortfolioPrompt(summary: PortfolioSummary): string {
   return `Analyze this insurance agent's lead scoring performance and recommend weight adjustments.
@@ -113,6 +113,12 @@ ${summary.topHotLeads.map((l) => `- ${l.name}: score ${l.score}, last touch ${l.
 ## Top Cold Leads (for hidden gem check)
 ${summary.topColdLeads.map((l) => `- ${l.name}: score ${l.score}, last touch ${l.lastTouch ?? "never"}`).join("\n")}
 
+Keep the response compact:
+- Maximum 3 weightAdjustments
+- Maximum 4 insights
+- Maximum 4 anomalies
+- Maximum 4 recommendations
+
 Return JSON matching this exact schema:
 {
   "weightAdjustments": [{ "signalKey": "string", "recommendedMultiplier": number, "reason": "string" }],
@@ -121,6 +127,24 @@ Return JSON matching this exact schema:
   "recommendations": [{ "text": "string", "priority": "high|medium|low" }],
   "overallAssessment": "string (1-2 sentences)"
 }`;
+}
+
+function parseStructuredJson<T>(text: string): T {
+  const trimmed = text.trim();
+  const fencedMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  const candidate = fencedMatch?.[1]?.trim() ?? trimmed;
+  const firstBrace = candidate.indexOf("{");
+  const lastBrace = candidate.lastIndexOf("}");
+  const jsonText =
+    firstBrace !== -1 && lastBrace > firstBrace
+      ? candidate.slice(firstBrace, lastBrace + 1).trim()
+      : candidate;
+
+  try {
+    return JSON.parse(jsonText) as T;
+  } catch {
+    throw new Error(`AI returned invalid JSON: ${trimmed.slice(0, 200)}`);
+  }
 }
 
 export async function analyzePortfolio(
@@ -147,7 +171,7 @@ export async function analyzePortfolio(
   const tokensUsed =
     (response.usage?.input_tokens ?? 0) + (response.usage?.output_tokens ?? 0);
 
-  const parsed = JSON.parse(text) as PortfolioAnalysisResult;
+  const parsed = parseStructuredJson<PortfolioAnalysisResult>(text);
 
   // Validate weight adjustments are bounded
   if (parsed.weightAdjustments) {
@@ -255,7 +279,7 @@ export async function analyzeLeadDeepDive(
   const tokensUsed =
     (response.usage?.input_tokens ?? 0) + (response.usage?.output_tokens ?? 0);
 
-  const parsed = JSON.parse(text) as LeadDeepDiveResult;
+  const parsed = parseStructuredJson<LeadDeepDiveResult>(text);
 
   // Clamp adjusted score to valid range
   parsed.adjustedScore = Math.max(

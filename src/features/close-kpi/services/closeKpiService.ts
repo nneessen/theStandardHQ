@@ -7,6 +7,10 @@ import type {
   LeadHeatDashboardStatus,
   PrebuiltDashboardRollupResponse,
 } from "../types/close-kpi.types";
+import {
+  isRankableLeadHeatSignals,
+  mapLeadHeatAiInsightsRow,
+} from "../lib/lead-heat";
 
 // ─── Edge Function Caller ──────────────────────────────────────────
 
@@ -432,7 +436,16 @@ export const closeKpiService = {
         "close_lead_id, display_name, score, heat_level, trend, previous_score, scored_at, breakdown, signals, ai_insights",
         { count: "exact" },
       )
-      .eq("user_id", userId);
+      .eq("user_id", userId)
+      .not("signals->>hasWonOpportunity", "eq", "true")
+      .not("signals->>currentStatusLabel", "ilike", "%sold%")
+      .not("signals->>currentStatusLabel", "ilike", "%won%")
+      .not("signals->>currentStatusLabel", "ilike", "%policy pending%")
+      .not("signals->>currentStatusLabel", "ilike", "%policy issued%")
+      .not("signals->>currentStatusLabel", "ilike", "%issued%")
+      .not("signals->>currentStatusLabel", "ilike", "%bound%")
+      .not("signals->>currentStatusLabel", "ilike", "%in force%")
+      .not("signals->>currentStatusLabel", "ilike", "%active policy%");
 
     if (filterLevel && filterLevel !== "all") {
       query = query.eq("heat_level", filterLevel);
@@ -456,41 +469,47 @@ export const closeKpiService = {
 
     if (error) throw new Error(error.message);
 
-    const leads = (data ?? []).map((row) => {
-      // Determine the top contributing signal from breakdown
-      const breakdown = row.breakdown as Record<string, number> | null;
-      let topSignal = "";
-      if (breakdown) {
-        const entries = Object.entries(breakdown)
-          .filter(([key]) => key !== "penalties")
-          .sort(([, a], [, b]) => b - a);
-        if (entries.length > 0) {
-          topSignal = formatSignalName(entries[0][0]);
+    const leads = (data ?? [])
+      .filter((row) =>
+        isRankableLeadHeatSignals(
+          row.signals as Record<string, unknown> | null | undefined,
+        ),
+      )
+      .map((row) => {
+        // Determine the top contributing signal from breakdown
+        const breakdown = row.breakdown as Record<string, number> | null;
+        let topSignal = "";
+        if (breakdown) {
+          const entries = Object.entries(breakdown)
+            .filter(([key]) => key !== "penalties")
+            .sort(([, a], [, b]) => b - a);
+          if (entries.length > 0) {
+            topSignal = formatSignalName(entries[0][0]);
+          }
         }
-      }
 
-      return {
-        closeLeadId: row.close_lead_id,
-        displayName: row.display_name ?? "Unknown",
-        score: row.score,
-        heatLevel: row.heat_level,
-        trend: row.trend,
-        previousScore: row.previous_score,
-        lastTouchAt:
-          ((row.signals as Record<string, unknown>)?.lastActivityAt as
-            | string
-            | null) ?? null,
-        currentStatus:
-          ((row.signals as Record<string, unknown>)
-            ?.currentStatusLabel as string) ?? "Unknown",
-        topSignal,
-        aiInsight: row.ai_insights ?? null,
-      };
-    });
+        return {
+          closeLeadId: row.close_lead_id,
+          displayName: row.display_name ?? "Unknown",
+          score: row.score,
+          heatLevel: row.heat_level,
+          trend: row.trend,
+          previousScore: row.previous_score,
+          lastTouchAt:
+            ((row.signals as Record<string, unknown>)?.lastActivityAt as
+              | string
+              | null) ?? null,
+          currentStatus:
+            ((row.signals as Record<string, unknown>)
+              ?.currentStatusLabel as string) ?? "Unknown",
+          topSignal,
+          aiInsight: row.ai_insights ?? null,
+        };
+      });
 
     return {
       leads,
-      total: count ?? 0,
+      total: count ?? leads.length,
       page,
       pageSize,
     };
@@ -498,11 +517,52 @@ export const closeKpiService = {
 
   /** Get AI portfolio insights — reads from cached analysis */
   getLeadHeatAiInsights: async (userId: string) => {
-    const { data: analysis } = await supabase
+    const { data: cachedAnalysis, error: analysisError } = await supabase
       .from("lead_heat_ai_portfolio_analysis")
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
+
+    if (analysisError) {
+      throw new Error(analysisError.message);
+    }
+
+    let analysis = cachedAnalysis as {
+      analysis?: Record<string, unknown> | null;
+      anomalies?: unknown[] | null;
+      recommendations?: unknown[] | null;
+      weight_adjustments?: unknown[] | null;
+      analyzed_at?: string | null;
+      expires_at?: string | null;
+    } | null;
+
+    const analysisExpired =
+      !analysis?.expires_at || new Date(analysis.expires_at) <= new Date();
+
+    if (!analysis || analysisExpired) {
+      const accessToken = await getAccessToken();
+      const { data, error } = await supabase.functions.invoke(
+        "close-lead-heat-score",
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+          body: { action: "get_portfolio_insights" },
+        },
+      );
+
+      if (error) {
+        throw new Error(await getFunctionsInvokeErrorMessage(error));
+      }
+
+      analysis =
+        (data as {
+          analysis?: Record<string, unknown> | null;
+          anomalies?: unknown[] | null;
+          recommendations?: unknown[] | null;
+          weight_adjustments?: unknown[] | null;
+          analyzed_at?: string | null;
+          expires_at?: string | null;
+        } | null) ?? null;
+    }
 
     const { data: weightsRow } = await supabase
       .from("lead_heat_agent_weights")
@@ -510,33 +570,7 @@ export const closeKpiService = {
       .eq("user_id", userId)
       .maybeSingle();
 
-    return {
-      recommendations: (analysis?.recommendations ?? []) as {
-        text: string;
-        priority: "high" | "medium" | "low";
-      }[],
-      anomalies: (analysis?.anomalies ?? []) as {
-        closeLeadId: string;
-        displayName: string;
-        type: string;
-        message: string;
-        urgency: string;
-        score: number;
-      }[],
-      patterns: ((analysis?.analysis as Record<string, unknown>)?.insights ??
-        []) as { title: string; description: string }[],
-      weightAdjustments: (analysis?.weight_adjustments ?? []) as {
-        signalKey: string;
-        recommendedMultiplier: number;
-        reason: string;
-      }[],
-      modelVersion: weightsRow?.version ?? 1,
-      sampleSize: weightsRow?.sample_size ?? 0,
-      analyzedAt: analysis?.analyzed_at ?? null,
-      overallAssessment:
-        ((analysis?.analysis as Record<string, unknown>)?.overall as string) ??
-        "",
-    };
+    return mapLeadHeatAiInsightsRow(analysis ?? null, weightsRow);
   },
 
   /** Trigger a lead heat rescore — calls the lead heat scoring edge function */

@@ -164,6 +164,269 @@ async function fetchStatusLabels(apiKey: string): Promise<Map<string, string>> {
   return map;
 }
 
+const PORTFOLIO_ANALYSIS_MODEL = "claude-haiku-4-5-20251001";
+const PORTFOLIO_ANALYSIS_TTL_MS = 4 * 60 * 60 * 1000;
+const CLOSED_WON_STATUS_PATTERNS = [
+  "sold",
+  "won -",
+  "policy pending",
+  "policy issued",
+  "issued and paid",
+  "bound",
+  "in force",
+  "active policy",
+];
+
+function isRankablePortfolioLead(signals: LeadSignals | null | undefined) {
+  if (!signals) return true;
+
+  const currentStatusLabel =
+    signals.currentStatusLabel?.trim().toLowerCase() ?? "";
+  const hasWonOpportunity = signals.hasWonOpportunity === true;
+
+  return (
+    !hasWonOpportunity &&
+    !CLOSED_WON_STATUS_PATTERNS.some((pattern) =>
+      currentStatusLabel.includes(pattern),
+    )
+  );
+}
+
+function emptyPortfolioInsightsRow() {
+  return {
+    analysis: {},
+    anomalies: [],
+    recommendations: [],
+    weight_adjustments: [],
+  };
+}
+
+async function materializePortfolioInsights(
+  userId: string,
+  // deno-lint-ignore no-explicit-any
+  dataClient: any,
+  options?: {
+    now?: Date;
+    scoredLeads?: {
+      closeLeadId: string;
+      displayName: string;
+      score: number;
+      breakdown: ScoreBreakdown;
+      signals: LeadSignals;
+    }[];
+    weightsRow?: { weights: AgentWeights; version: number } | null;
+    outcomeRows?: {
+      close_lead_id: string;
+      outcome_type: string;
+      signals_at_outcome: LeadSignals | null;
+    }[];
+  },
+) {
+  const now = options?.now ?? new Date();
+
+  const { data: existingAnalysis, error: existingAnalysisError } =
+    await dataClient
+      .from("lead_heat_ai_portfolio_analysis")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+  if (existingAnalysisError) {
+    console.warn(
+      "[lead-heat-score] Failed to read existing portfolio analysis:",
+      existingAnalysisError.message,
+    );
+  }
+
+  const analysisExpired =
+    !existingAnalysis || new Date(existingAnalysis.expires_at) < now;
+
+  if (existingAnalysis && !analysisExpired) {
+    return {
+      analysis: existingAnalysis,
+      aiCallsMade: 0,
+      generated: false,
+    };
+  }
+
+  const weightsRow =
+    options?.weightsRow ??
+    (
+      await dataClient
+        .from("lead_heat_agent_weights")
+        .select("weights, version")
+        .eq("user_id", userId)
+        .maybeSingle()
+    ).data ??
+    null;
+  const weights: AgentWeights = weightsRow?.weights ?? DEFAULTS;
+
+  const trainingOutcomeRows =
+    options?.outcomeRows ??
+    (
+      await dataClient
+        .from("lead_heat_outcomes")
+        .select("close_lead_id, outcome_type, signals_at_outcome")
+        .eq("user_id", userId)
+        .in("outcome_type", ["won", "lost"])
+        .gte(
+          "occurred_at",
+          new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString(),
+        )
+    ).data ??
+    [];
+
+  const scoredLeads =
+    options?.scoredLeads ??
+    (
+      await dataClient
+        .from("lead_heat_scores")
+        .select("close_lead_id, display_name, score, breakdown, signals")
+        .eq("user_id", userId)
+    ).data?.map(
+      // deno-lint-ignore no-explicit-any
+      (row: any) => ({
+        closeLeadId: row.close_lead_id,
+        displayName: row.display_name,
+        score: row.score,
+        breakdown: row.breakdown as ScoreBreakdown,
+        signals: row.signals as LeadSignals,
+      }),
+    ) ??
+    [];
+
+  const rankableScoredLeads = scoredLeads.filter(
+    (lead: {
+      score: number;
+      signals: LeadSignals;
+      breakdown: ScoreBreakdown;
+    }) => isRankablePortfolioLead(lead.signals),
+  );
+
+  if (rankableScoredLeads.length < 10) {
+    return {
+      analysis: existingAnalysis ?? emptyPortfolioInsightsRow(),
+      aiCallsMade: 0,
+      generated: false,
+    };
+  }
+
+  const { data: allOutcomes, error: outcomesError } = await dataClient
+    .from("lead_heat_outcomes")
+    .select("outcome_type, signals_at_outcome, breakdown_at_outcome")
+    .eq("user_id", userId)
+    .gte(
+      "occurred_at",
+      new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
+    );
+
+  if (outcomesError) {
+    throw new Error(outcomesError.message);
+  }
+
+  const portfolioSummary = buildPortfolioSummary(
+    rankableScoredLeads.map(
+      (lead: {
+        score: number;
+        signals: LeadSignals;
+        breakdown: ScoreBreakdown;
+      }) => ({
+        score: lead.score,
+        heatLevel: getHeatLevel(lead.score),
+        signals: lead.signals,
+        breakdown: lead.breakdown,
+      }),
+    ),
+    allOutcomes ?? [],
+    weights,
+  );
+
+  const { result: aiResult, tokensUsed } =
+    await analyzePortfolio(portfolioSummary);
+
+  const analysisPayload = {
+    overall: aiResult.overallAssessment ?? "",
+    insights: aiResult.insights ?? [],
+  };
+
+  const portfolioAnalysisRow = {
+    user_id: userId,
+    analysis: analysisPayload,
+    anomalies: aiResult.anomalies ?? [],
+    recommendations: aiResult.recommendations ?? [],
+    weight_adjustments: aiResult.weightAdjustments ?? [],
+    model_used: PORTFOLIO_ANALYSIS_MODEL,
+    tokens_used: tokensUsed,
+    analyzed_at: now.toISOString(),
+    expires_at: new Date(
+      now.getTime() + PORTFOLIO_ANALYSIS_TTL_MS,
+    ).toISOString(),
+  };
+
+  const { data: savedAnalysis, error: saveAnalysisError } = await dataClient
+    .from("lead_heat_ai_portfolio_analysis")
+    .upsert(portfolioAnalysisRow, { onConflict: "user_id" })
+    .select("*")
+    .single();
+
+  if (saveAnalysisError) {
+    throw new Error(saveAnalysisError.message);
+  }
+
+  if (aiResult.weightAdjustments?.length > 0) {
+    const newWeights = { ...weights };
+    for (const adj of aiResult.weightAdjustments) {
+      if (newWeights[adj.signalKey]) {
+        const current = newWeights[adj.signalKey].multiplier;
+        const target = Math.max(0.3, Math.min(2.0, adj.recommendedMultiplier));
+        const change = Math.max(-0.15, Math.min(0.15, target - current));
+        newWeights[adj.signalKey] = {
+          multiplier: Math.round((current + change) * 100) / 100,
+        };
+      }
+    }
+
+    const currentVersion = weightsRow?.version ?? 0;
+    if (currentVersion > 0) {
+      const { error: weightError } = await dataClient
+        .from("lead_heat_agent_weights")
+        .update({
+          weights: newWeights,
+          version: currentVersion + 1,
+          sample_size: trainingOutcomeRows.length,
+          last_trained_at: now.toISOString(),
+          updated_at: now.toISOString(),
+        })
+        .eq("user_id", userId)
+        .eq("version", currentVersion);
+
+      if (weightError) {
+        console.warn(
+          "[lead-heat-score] Weight update skipped: version conflict or error",
+        );
+      }
+    } else {
+      await dataClient.from("lead_heat_agent_weights").upsert(
+        {
+          user_id: userId,
+          weights: newWeights,
+          version: 1,
+          sample_size: trainingOutcomeRows.length,
+          last_trained_at: now.toISOString(),
+          updated_at: now.toISOString(),
+        },
+        { onConflict: "user_id" },
+      );
+    }
+  }
+
+  return {
+    analysis: savedAnalysis ?? portfolioAnalysisRow,
+    aiCallsMade: 1,
+    generated: true,
+  };
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // ACTION: score_all — full rescore of all leads for a user
 // ═══════════════════════════════════════════════════════════════════════
@@ -427,124 +690,26 @@ async function handleScoreAll(
       }
     }
 
-    // 10. Check if AI portfolio analysis should run
+    // 10. Refresh AI portfolio analysis when expired
     let aiCallsMade = 0;
-    const { data: existingAnalysis } = await dataClient
-      .from("lead_heat_ai_portfolio_analysis")
-      .select("expires_at")
-      .eq("user_id", userId)
-      .single();
-
-    const analysisExpired =
-      !existingAnalysis || new Date(existingAnalysis.expires_at) < now;
-
-    if (analysisExpired && scoredLeads.length >= 10) {
-      try {
-        // Load all outcomes for portfolio summary
-        const { data: allOutcomes } = await dataClient
-          .from("lead_heat_outcomes")
-          .select("outcome_type, signals_at_outcome, breakdown_at_outcome")
-          .eq("user_id", userId)
-          .gte(
-            "occurred_at",
-            new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString(),
-          );
-
-        const portfolioSummary = buildPortfolioSummary(
-          scoredLeads.map((s) => ({
-            score: s.score,
-            heatLevel: getHeatLevel(s.score),
-            signals: s.signals,
-            breakdown: s.breakdown,
-          })),
-          allOutcomes ?? [],
-          weights,
-        );
-
-        const { result: aiResult, tokensUsed } =
-          await analyzePortfolio(portfolioSummary);
-        aiCallsMade = 1;
-
-        // Upsert AI analysis
-        await dataClient.from("lead_heat_ai_portfolio_analysis").upsert(
-          {
-            user_id: userId,
-            analysis: aiResult.overallAssessment
-              ? { overall: aiResult.overallAssessment }
-              : {},
-            anomalies: aiResult.anomalies ?? [],
-            recommendations: aiResult.recommendations ?? [],
-            weight_adjustments: aiResult.weightAdjustments ?? [],
-            model_used: "claude-haiku-4-5-20251001",
-            tokens_used: tokensUsed,
-            analyzed_at: now.toISOString(),
-            expires_at: new Date(
-              now.getTime() + 4 * 60 * 60 * 1000,
-            ).toISOString(),
-          },
-          { onConflict: "user_id" },
-        );
-
-        // Apply bounded weight adjustments
-        if (aiResult.weightAdjustments?.length > 0) {
-          const newWeights = { ...weights };
-          for (const adj of aiResult.weightAdjustments) {
-            if (newWeights[adj.signalKey]) {
-              const current = newWeights[adj.signalKey].multiplier;
-              const target = Math.max(
-                0.3,
-                Math.min(2.0, adj.recommendedMultiplier),
-              );
-              // Bound change to 0.15 per cycle
-              const change = Math.max(-0.15, Math.min(0.15, target - current));
-              newWeights[adj.signalKey] = {
-                multiplier: Math.round((current + change) * 100) / 100,
-              };
-            }
-          }
-
-          const currentVersion = weightsRow?.version ?? 0;
-          if (currentVersion > 0) {
-            // Optimistic locking: only update if version hasn't changed since we read it
-            const { error: weightError } = await dataClient
-              .from("lead_heat_agent_weights")
-              .update({
-                weights: newWeights,
-                version: currentVersion + 1,
-                sample_size: outcomeRows?.length ?? 0,
-                last_trained_at: now.toISOString(),
-                updated_at: now.toISOString(),
-              })
-              .eq("user_id", userId)
-              .eq("version", currentVersion);
-
-            if (weightError) {
-              console.warn(
-                "[lead-heat-score] Weight update skipped: version conflict or error",
-              );
-            }
-          } else {
-            // First-time insert
-            await dataClient.from("lead_heat_agent_weights").upsert(
-              {
-                user_id: userId,
-                weights: newWeights,
-                version: 1,
-                sample_size: outcomeRows?.length ?? 0,
-                last_trained_at: now.toISOString(),
-                updated_at: now.toISOString(),
-              },
-              { onConflict: "user_id" },
-            );
-          }
-        }
-      } catch (aiErr) {
-        console.error(
-          "[lead-heat-score] AI analysis failed:",
-          (aiErr as Error).message,
-        );
-        // Non-fatal: scoring still succeeded, just no AI insights this run
-      }
+    try {
+      const portfolioAnalysis = await materializePortfolioInsights(
+        userId,
+        dataClient,
+        {
+          now,
+          scoredLeads,
+          weightsRow,
+          outcomeRows: outcomeRows ?? [],
+        },
+      );
+      aiCallsMade = portfolioAnalysis.aiCallsMade;
+    } catch (aiErr) {
+      console.error(
+        "[lead-heat-score] AI analysis failed:",
+        (aiErr as Error).message,
+      );
+      // Non-fatal: scoring still succeeded, just no AI insights this run
     }
 
     const durationMs = Date.now() - startTime;
@@ -902,51 +1067,72 @@ serve(async (req) => {
       return jsonResponse({ error: "Unauthorized" }, 401, req);
     }
 
-    // Get Close API key
-    const envApiKey = Deno.env.get("CLOSE_API_KEY");
-    let apiKey: string;
-
-    if (envApiKey) {
-      apiKey = envApiKey;
-    } else {
-      const { data: encryptedKey, error: rpcError } = await dataClient.rpc(
-        "get_close_api_key",
-        { p_user_id: user.id },
-      );
-
-      if (rpcError || !encryptedKey) {
-        return jsonResponse(
-          { error: "Close CRM not connected.", code: "CLOSE_NOT_CONNECTED" },
-          400,
-          req,
-        );
-      }
-
-      apiKey = await decrypt(encryptedKey);
-    }
-
     // Dispatch action
     let result: unknown;
 
     switch (action) {
-      case "score_all":
+      case "score_all": {
+        const envApiKey = Deno.env.get("CLOSE_API_KEY");
+        let apiKey: string;
+
+        if (envApiKey) {
+          apiKey = envApiKey;
+        } else {
+          const { data: encryptedKey, error: rpcError } = await dataClient.rpc(
+            "get_close_api_key",
+            { p_user_id: user.id },
+          );
+
+          if (rpcError || !encryptedKey) {
+            return jsonResponse(
+              {
+                error: "Close CRM not connected.",
+                code: "CLOSE_NOT_CONNECTED",
+              },
+              400,
+              req,
+            );
+          }
+
+          apiKey = await decrypt(encryptedKey);
+        }
         result = await handleScoreAll(apiKey, user.id, dataClient, params);
         break;
-      case "analyze_lead":
+      }
+      case "analyze_lead": {
+        const envApiKey = Deno.env.get("CLOSE_API_KEY");
+        let apiKey: string;
+
+        if (envApiKey) {
+          apiKey = envApiKey;
+        } else {
+          const { data: encryptedKey, error: rpcError } = await dataClient.rpc(
+            "get_close_api_key",
+            { p_user_id: user.id },
+          );
+
+          if (rpcError || !encryptedKey) {
+            return jsonResponse(
+              {
+                error: "Close CRM not connected.",
+                code: "CLOSE_NOT_CONNECTED",
+              },
+              400,
+              req,
+            );
+          }
+
+          apiKey = await decrypt(encryptedKey);
+        }
         result = await handleAnalyzeLead(apiKey, user.id, dataClient, params);
         break;
+      }
       case "get_portfolio_insights": {
-        const { data } = await dataClient
-          .from("lead_heat_ai_portfolio_analysis")
-          .select("*")
-          .eq("user_id", user.id)
-          .single();
-        result = data ?? {
-          analysis: {},
-          anomalies: [],
-          recommendations: [],
-          weight_adjustments: [],
-        };
+        const portfolioAnalysis = await materializePortfolioInsights(
+          user.id,
+          dataClient,
+        );
+        result = portfolioAnalysis.analysis ?? emptyPortfolioInsightsRow();
         break;
       }
       default:
