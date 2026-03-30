@@ -2,6 +2,7 @@
 // TanStack Query hooks for dashboard + widget CRUD (Supabase direct)
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   getDashboard,
@@ -175,7 +176,11 @@ export function useLeadHeatRescore() {
 
       return { previousStatus, statusKey };
     },
-    onError: (_error, _variables, context) => {
+    onError: (error, _variables, context) => {
+      const msg =
+        error instanceof Error ? error.message : "Lead scoring failed";
+      toast.error(msg);
+
       if (!context?.statusKey) return;
 
       if (context.previousStatus) {

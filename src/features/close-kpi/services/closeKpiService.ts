@@ -540,28 +540,30 @@ export const closeKpiService = {
       !analysis?.expires_at || new Date(analysis.expires_at) <= new Date();
 
     if (!analysis || analysisExpired) {
-      const accessToken = await getAccessToken();
-      const { data, error } = await supabase.functions.invoke(
-        "close-lead-heat-score",
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-          body: { action: "get_portfolio_insights" },
-        },
-      );
+      try {
+        const accessToken = await getAccessToken();
+        const { data, error } = await supabase.functions.invoke(
+          "close-lead-heat-score",
+          {
+            headers: { Authorization: `Bearer ${accessToken}` },
+            body: { action: "get_portfolio_insights" },
+          },
+        );
 
-      if (error) {
-        throw new Error(await getFunctionsInvokeErrorMessage(error));
+        if (!error && data) {
+          analysis =
+            (data as {
+              analysis?: Record<string, unknown> | null;
+              anomalies?: unknown[] | null;
+              recommendations?: unknown[] | null;
+              weight_adjustments?: unknown[] | null;
+              analyzed_at?: string | null;
+              expires_at?: string | null;
+            } | null) ?? analysis;
+        }
+      } catch {
+        // Non-fatal: return cached (even expired) data rather than crashing
       }
-
-      analysis =
-        (data as {
-          analysis?: Record<string, unknown> | null;
-          anomalies?: unknown[] | null;
-          recommendations?: unknown[] | null;
-          weight_adjustments?: unknown[] | null;
-          analyzed_at?: string | null;
-          expires_at?: string | null;
-        } | null) ?? null;
     }
 
     const { data: weightsRow } = await supabase
