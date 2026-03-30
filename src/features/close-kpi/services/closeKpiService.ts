@@ -550,6 +550,25 @@ export const closeKpiService = {
     if (error) throw new Error(error.message);
     return data;
   },
+
+  /** Get count of scored leads for a user (for setup guide status) */
+  getLeadHeatScoreCount: async (userId: string): Promise<number> => {
+    const { count } = await supabase
+      .from("lead_heat_scores")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
+    return count ?? 0;
+  },
+
+  /** Check if any scoring runs have completed (for setup guide status) */
+  hasCompletedScoringRuns: async (userId: string): Promise<boolean> => {
+    const { count } = await supabase
+      .from("lead_heat_scoring_runs")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("status", "completed");
+    return (count ?? 0) > 0;
+  },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────
