@@ -7,6 +7,11 @@ export type Json =
   | Json[];
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.5";
+  };
   public: {
     Tables: {
       agencies: {
@@ -1807,6 +1812,112 @@ export type Database = {
           },
         ];
       };
+      chat_bot_conversation_reviews: {
+        Row: {
+          agent_snapshot: Json | null;
+          close_lead_id: string | null;
+          conversation_snapshot: Json | null;
+          conversation_status: string | null;
+          created_at: string;
+          external_agent_id: string;
+          external_conversation_id: string | null;
+          findings: Json;
+          found_conversation: boolean;
+          gaps: Json;
+          human_verdict: string | null;
+          id: string;
+          improvement_brief: string | null;
+          inbound_count: number;
+          outbound_count: number;
+          primary_reason: string;
+          primary_reason_code: string;
+          prompt_version: string | null;
+          resolution_status: string;
+          review_mode: string;
+          review_payload: Json;
+          target_payload: Json;
+          timeline: Json;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          agent_snapshot?: Json | null;
+          close_lead_id?: string | null;
+          conversation_snapshot?: Json | null;
+          conversation_status?: string | null;
+          created_at?: string;
+          external_agent_id: string;
+          external_conversation_id?: string | null;
+          findings?: Json;
+          found_conversation?: boolean;
+          gaps?: Json;
+          human_verdict?: string | null;
+          id?: string;
+          improvement_brief?: string | null;
+          inbound_count?: number;
+          outbound_count?: number;
+          primary_reason: string;
+          primary_reason_code: string;
+          prompt_version?: string | null;
+          resolution_status?: string;
+          review_mode: string;
+          review_payload?: Json;
+          target_payload?: Json;
+          timeline?: Json;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          agent_snapshot?: Json | null;
+          close_lead_id?: string | null;
+          conversation_snapshot?: Json | null;
+          conversation_status?: string | null;
+          created_at?: string;
+          external_agent_id?: string;
+          external_conversation_id?: string | null;
+          findings?: Json;
+          found_conversation?: boolean;
+          gaps?: Json;
+          human_verdict?: string | null;
+          id?: string;
+          improvement_brief?: string | null;
+          inbound_count?: number;
+          outbound_count?: number;
+          primary_reason?: string;
+          primary_reason_code?: string;
+          prompt_version?: string | null;
+          resolution_status?: string;
+          review_mode?: string;
+          review_payload?: Json;
+          target_payload?: Json;
+          timeline?: Json;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       chat_bot_team_overrides: {
         Row: {
           created_at: string;
@@ -2625,6 +2736,7 @@ export type Database = {
         Row: {
           channel_id: string;
           created_at: string | null;
+          discord_integration_id: string | null;
           first_sale_group_id: string | null;
           first_seller_id: string | null;
           hierarchy_depth: number | null;
@@ -2644,6 +2756,7 @@ export type Database = {
         Insert: {
           channel_id: string;
           created_at?: string | null;
+          discord_integration_id?: string | null;
           first_sale_group_id?: string | null;
           first_seller_id?: string | null;
           hierarchy_depth?: number | null;
@@ -2663,6 +2776,7 @@ export type Database = {
         Update: {
           channel_id?: string;
           created_at?: string | null;
+          discord_integration_id?: string | null;
           first_sale_group_id?: string | null;
           first_seller_id?: string | null;
           hierarchy_depth?: number | null;
@@ -2680,6 +2794,13 @@ export type Database = {
           updated_at?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "daily_sales_logs_discord_integration_id_fkey";
+            columns: ["discord_integration_id"];
+            isOneToOne: false;
+            referencedRelation: "discord_integrations";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "daily_sales_logs_first_seller_id_fkey";
             columns: ["first_seller_id"];
@@ -2713,6 +2834,168 @@ export type Database = {
             columns: ["slack_integration_id"];
             isOneToOne: false;
             referencedRelation: "slack_integrations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      discord_integrations: {
+        Row: {
+          agency_id: string | null;
+          agency_leaderboard_channel_id: string | null;
+          agency_leaderboard_channel_name: string | null;
+          bot_token_encrypted: string;
+          bot_username: string | null;
+          connection_status: string;
+          created_at: string;
+          created_by: string | null;
+          guild_id: string;
+          guild_name: string;
+          id: string;
+          imo_id: string;
+          is_active: boolean;
+          last_connected_at: string | null;
+          last_error: string | null;
+          leaderboard_channel_id: string | null;
+          leaderboard_channel_name: string | null;
+          policy_channel_id: string | null;
+          policy_channel_name: string | null;
+          recruit_channel_id: string | null;
+          recruit_channel_name: string | null;
+          updated_at: string;
+          weekly_leaderboard_channel_id: string | null;
+          weekly_leaderboard_channel_name: string | null;
+          workspace_logo_url: string | null;
+        };
+        Insert: {
+          agency_id?: string | null;
+          agency_leaderboard_channel_id?: string | null;
+          agency_leaderboard_channel_name?: string | null;
+          bot_token_encrypted: string;
+          bot_username?: string | null;
+          connection_status?: string;
+          created_at?: string;
+          created_by?: string | null;
+          guild_id: string;
+          guild_name: string;
+          id?: string;
+          imo_id: string;
+          is_active?: boolean;
+          last_connected_at?: string | null;
+          last_error?: string | null;
+          leaderboard_channel_id?: string | null;
+          leaderboard_channel_name?: string | null;
+          policy_channel_id?: string | null;
+          policy_channel_name?: string | null;
+          recruit_channel_id?: string | null;
+          recruit_channel_name?: string | null;
+          updated_at?: string;
+          weekly_leaderboard_channel_id?: string | null;
+          weekly_leaderboard_channel_name?: string | null;
+          workspace_logo_url?: string | null;
+        };
+        Update: {
+          agency_id?: string | null;
+          agency_leaderboard_channel_id?: string | null;
+          agency_leaderboard_channel_name?: string | null;
+          bot_token_encrypted?: string;
+          bot_username?: string | null;
+          connection_status?: string;
+          created_at?: string;
+          created_by?: string | null;
+          guild_id?: string;
+          guild_name?: string;
+          id?: string;
+          imo_id?: string;
+          is_active?: boolean;
+          last_connected_at?: string | null;
+          last_error?: string | null;
+          leaderboard_channel_id?: string | null;
+          leaderboard_channel_name?: string | null;
+          policy_channel_id?: string | null;
+          policy_channel_name?: string | null;
+          recruit_channel_id?: string | null;
+          recruit_channel_name?: string | null;
+          updated_at?: string;
+          weekly_leaderboard_channel_id?: string | null;
+          weekly_leaderboard_channel_name?: string | null;
+          workspace_logo_url?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "discord_integrations_agency_id_fkey";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "discord_integrations_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      discord_messages: {
+        Row: {
+          channel_id: string;
+          created_at: string;
+          discord_integration_id: string;
+          error_message: string | null;
+          id: string;
+          imo_id: string;
+          message_id: string | null;
+          message_text: string | null;
+          notification_type: string;
+          related_entity_id: string | null;
+          related_entity_type: string | null;
+          sent_at: string | null;
+          status: string;
+        };
+        Insert: {
+          channel_id: string;
+          created_at?: string;
+          discord_integration_id: string;
+          error_message?: string | null;
+          id?: string;
+          imo_id: string;
+          message_id?: string | null;
+          message_text?: string | null;
+          notification_type: string;
+          related_entity_id?: string | null;
+          related_entity_type?: string | null;
+          sent_at?: string | null;
+          status?: string;
+        };
+        Update: {
+          channel_id?: string;
+          created_at?: string;
+          discord_integration_id?: string;
+          error_message?: string | null;
+          id?: string;
+          imo_id?: string;
+          message_id?: string | null;
+          message_text?: string | null;
+          notification_type?: string;
+          related_entity_id?: string | null;
+          related_entity_type?: string | null;
+          sent_at?: string | null;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "discord_messages_discord_integration_id_fkey";
+            columns: ["discord_integration_id"];
+            isOneToOne: false;
+            referencedRelation: "discord_integrations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "discord_messages_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
             referencedColumns: ["id"];
           },
         ];
@@ -16039,6 +16322,7 @@ export type Database = {
           can_rename: boolean;
           channel_id: string;
           created_at: string;
+          discord_integration_id: string;
           first_seller_id: string;
           id: string;
           imo_id: string;
