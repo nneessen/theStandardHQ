@@ -74,7 +74,8 @@ export function useKpiWidgetData(
 
 // ─── Widget Data Fetcher (dispatches by type) ──────────────────────
 
-async function fetchWidgetData(
+/** Exported for reuse by usePrebuiltWidgetData — dispatches to the correct fetcher by widget type */
+export async function fetchWidgetData(
   widget: CloseKpiWidget,
   globalConfig?: GlobalDashboardConfig,
 ): Promise<WidgetResult> {

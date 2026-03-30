@@ -2,7 +2,7 @@
 // Pre-built Close KPI dashboard with AI Lead Scoring.
 // 2 tabs: Dashboard (all widgets pre-rendered) + Setup (connection guide).
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useFeatureAccess } from "@/hooks/subscription";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
@@ -55,9 +55,16 @@ export const CloseKpiPage: React.FC = () => {
   const isCloseConnected = !!closeConfig;
   const hasScores = (scoreCount ?? 0) > 0;
 
-  // Default tab logic
-  const defaultTab: TabId = isCloseConnected ? "dashboard" : "setup";
-  const [activeTab, setActiveTab] = useState<TabId>(defaultTab);
+  // Tab state — default to setup, update when connection status resolves
+  const [activeTab, setActiveTab] = useState<TabId>("setup");
+  const tabInitialized = useRef(false);
+
+  useEffect(() => {
+    if (!tabInitialized.current && closeConfig !== undefined) {
+      tabInitialized.current = true;
+      setActiveTab(closeConfig ? "dashboard" : "setup");
+    }
+  }, [closeConfig]);
 
   // Dashboard state
   const [dateRange, setDateRange] = useState<DateRangePreset>("last_30_days");
