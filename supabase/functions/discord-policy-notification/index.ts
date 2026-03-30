@@ -92,18 +92,11 @@ function buildPolicyEmbed(
   productName: string,
   annualPremium: number,
   effectiveDate: string,
-  agentAvatarUrl?: string | null,
 ): DiscordEmbed {
   const ap = formatCurrency(annualPremium);
   const date = formatDateCompact(effectiveDate);
-  const description = `**${ap}** ${carrierName} ${productName} Eff Date: ${date}`;
-
   return {
-    author: {
-      name: agentName,
-      ...(agentAvatarUrl ? { icon_url: agentAvatarUrl } : {}),
-    },
-    description,
+    description: `**${agentName}** ${ap} ${carrierName} ${productName} Eff Date: ${date}`,
     color: COLORS.GREEN,
     timestamp: new Date().toISOString(),
   };
@@ -226,7 +219,6 @@ async function handleCompleteFirstSale(
     pending.productName,
     pending.annualPremium,
     pending.effectiveDate,
-    pending.agentAvatarUrl,
   );
   const policyResult = await sendDiscordMessage(botToken, channelId, {
     embeds: [policyEmbed],
@@ -402,6 +394,22 @@ async function handlePostPolicy(
     return jsonResponse({ ok: false, error: "Missing imoId or policyId" }, 400);
   }
 
+  // Resolve agentId — fallback to policies.user_id if trigger payload had null
+  let resolvedAgentId = agentId;
+  if (!resolvedAgentId && policyId) {
+    const { data: policyRow } = await supabase
+      .from("policies")
+      .select("user_id")
+      .eq("id", policyId)
+      .maybeSingle();
+    resolvedAgentId = policyRow?.user_id || undefined;
+    if (resolvedAgentId) {
+      console.log(
+        `[discord-policy-notification] Resolved agentId from policies.user_id: ${resolvedAgentId}`,
+      );
+    }
+  }
+
   // Backdating defense
   const todayDate = getTodayET();
   const { data: policy } = await supabase
@@ -440,7 +448,7 @@ async function handlePostPolicy(
   // Fetch carrier, product, and agent names
   // Log IDs to help debug "Unknown" issues
   console.log(
-    `[discord-policy-notification] Lookup IDs — agent=${agentId}, carrier=${carrierId}, product=${productId}`,
+    `[discord-policy-notification] Lookup IDs — agent=${resolvedAgentId}, carrier=${carrierId}, product=${productId}`,
   );
 
   const [carrierRes, productRes, agentRes] = await Promise.all([
@@ -458,11 +466,11 @@ async function handlePostPolicy(
           .eq("id", productId)
           .maybeSingle()
       : null,
-    agentId
+    resolvedAgentId
       ? supabase
           .from("user_profiles")
           .select("first_name, last_name, email, avatar_url")
-          .eq("id", agentId)
+          .eq("id", resolvedAgentId)
           .maybeSingle()
       : null,
   ]);
@@ -528,14 +536,14 @@ async function handlePostPolicy(
       agentAvatarUrl: agentData?.avatar_url || null,
       annualPremium: premium,
       effectiveDate: effectiveDate || "",
-      agentId: agentId || "",
+      agentId: resolvedAgentId || "",
     };
 
     if (existingLog) {
       await supabase
         .from("daily_sales_logs")
         .update({
-          first_seller_id: agentId,
+          first_seller_id: resolvedAgentId,
           pending_policy_data: pendingData,
           leaderboard_message_ts: null,
           first_sale_group_id: firstSaleGroupId,
@@ -557,7 +565,7 @@ async function handlePostPolicy(
           discord_integration_id: integration.id,
           channel_id: channelId,
           log_date: todayDate,
-          first_seller_id: agentId,
+          first_seller_id: resolvedAgentId,
           pending_policy_data: pendingData,
           first_sale_group_id: firstSaleGroupId,
           hierarchy_depth: 0,
@@ -591,7 +599,6 @@ async function handlePostPolicy(
     productName,
     premium,
     effectiveDate || "",
-    agentData?.avatar_url || null,
   );
 
   const policyResult = await sendDiscordMessage(botToken, channelId, {
