@@ -9,6 +9,7 @@ interface DiscordEmbed {
   color?: number;
   fields?: { name: string; value: string; inline?: boolean }[];
   footer?: { text: string; icon_url?: string };
+  author?: { name: string; icon_url?: string; url?: string };
   thumbnail?: { url: string };
   timestamp?: string;
 }

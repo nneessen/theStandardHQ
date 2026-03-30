@@ -79,29 +79,32 @@ function getTodayET(): string {
   return `${year}-${month}-${day}`;
 }
 
+function formatDateCompact(dateStr: string): string {
+  if (!dateStr) return "N/A";
+  const parts = dateStr.split("-");
+  if (parts.length !== 3) return dateStr;
+  return `${parseInt(parts[1], 10)}/${parseInt(parts[2], 10)}`;
+}
+
 function buildPolicyEmbed(
   agentName: string,
   carrierName: string,
   productName: string,
   annualPremium: number,
   effectiveDate: string,
-  policyNumber: string,
+  agentAvatarUrl?: string | null,
 ): DiscordEmbed {
+  const ap = formatCurrency(annualPremium);
+  const date = formatDateCompact(effectiveDate);
+  const description = `**${ap}** ${carrierName} ${productName} Eff Date: ${date}`;
+
   return {
-    title: "🔔 New Policy Submitted",
+    author: {
+      name: agentName,
+      ...(agentAvatarUrl ? { icon_url: agentAvatarUrl } : {}),
+    },
+    description,
     color: COLORS.GREEN,
-    fields: [
-      { name: "Agent", value: agentName || "Unknown", inline: true },
-      { name: "Carrier", value: carrierName || "Unknown", inline: true },
-      { name: "Product", value: productName || "Unknown", inline: true },
-      {
-        name: "Annual Premium",
-        value: formatCurrency(annualPremium),
-        inline: true,
-      },
-      { name: "Effective Date", value: effectiveDate || "N/A", inline: true },
-    ],
-    footer: policyNumber ? { text: `Policy #${policyNumber}` } : undefined,
     timestamp: new Date().toISOString(),
   };
 }
@@ -119,72 +122,42 @@ function buildLeaderboardEmbeds(
     day: "numeric",
   });
 
-  const headerTitle = title || `📊 Daily Leaderboard — ${today}`;
+  const headerTitle = title || `📊 ${today} Sales`;
 
-  // Today's leaderboard
-  const todayLines = agents
+  // Daily rankings only — matches Slack format
+  const todayEntries = agents
     .filter((a) => a.today_ap > 0 || a.today_policies > 0)
-    .sort((a, b) => b.today_ap - a.today_ap)
-    .map((agent, i) => {
-      const rank = getRankEmoji(i + 1);
-      return `${rank} **${formatCurrency(agent.today_ap)}** · ${agent.agent_name} (${agent.today_policies} ${agent.today_policies === 1 ? "app" : "apps"})`;
-    });
+    .sort((a, b) => b.today_ap - a.today_ap);
 
-  const wtdLines = agents
-    .filter((a) => a.wtd_ap > 0)
-    .sort((a, b) => b.wtd_ap - a.wtd_ap)
-    .slice(0, 10)
-    .map((agent, i) => {
-      const rank = getRankEmoji(i + 1);
-      return `${rank} **${formatCurrency(agent.wtd_ap)}** · ${agent.agent_name}`;
-    });
-
-  const mtdLines = agents
-    .filter((a) => a.mtd_ap > 0)
-    .sort((a, b) => b.mtd_ap - a.mtd_ap)
-    .slice(0, 10)
-    .map((agent, i) => {
-      const rank = getRankEmoji(i + 1);
-      return `${rank} **${formatCurrency(agent.mtd_ap)}** · ${agent.agent_name}`;
-    });
+  const todayLines = todayEntries.map((agent, i) => {
+    const rank = getRankEmoji(i + 1);
+    const policies = agent.today_policies;
+    const policyText = policies === 1 ? "app" : "apps";
+    return `${rank} ${formatCurrency(agent.today_ap)}  ·  ${agent.agent_name}  _(${policies} ${policyText})_`;
+  });
 
   const totalToday = agents.reduce((s, a) => s + a.today_ap, 0);
   const totalWTD = agents.reduce((s, a) => s + a.wtd_ap, 0);
   const totalMTD = agents.reduce((s, a) => s + a.mtd_ap, 0);
 
-  const embeds: DiscordEmbed[] = [];
+  if (todayLines.length === 0) return [];
 
-  // Main embed with today's rankings
-  if (todayLines.length > 0) {
-    embeds.push({
+  // Single embed: daily rankings + summary totals (matching Slack layout)
+  const description = [
+    todayLines.join("\n"),
+    "",
+    `**💰 Total: ${formatCurrency(totalToday)}**`,
+    `**📈 WTD: ${formatCurrency(totalWTD)}**`,
+    `**📆 MTD: ${formatCurrency(totalMTD)}**`,
+  ].join("\n");
+
+  return [
+    {
       title: headerTitle,
-      description: todayLines.join("\n"),
+      description,
       color: COLORS.GOLD,
-      footer: { text: `Today's Total: ${formatCurrency(totalToday)}` },
-    });
-  }
-
-  // WTD + MTD in a second embed
-  if (wtdLines.length > 0 || mtdLines.length > 0) {
-    const sections: string[] = [];
-    if (wtdLines.length > 0) {
-      sections.push(
-        `**Week-to-Date**\n${wtdLines.join("\n")}\nTotal: ${formatCurrency(totalWTD)}`,
-      );
-    }
-    if (mtdLines.length > 0) {
-      sections.push(
-        `**Month-to-Date**\n${mtdLines.join("\n")}\nTotal: ${formatCurrency(totalMTD)}`,
-      );
-    }
-
-    embeds.push({
-      description: sections.join("\n\n"),
-      color: COLORS.BLUE,
-    });
-  }
-
-  return embeds;
+    },
+  ];
 }
 
 // ── Action Handlers ──
@@ -253,7 +226,7 @@ async function handleCompleteFirstSale(
     pending.productName,
     pending.annualPremium,
     pending.effectiveDate,
-    "",
+    pending.agentAvatarUrl,
   );
   const policyResult = await sendDiscordMessage(botToken, channelId, {
     embeds: [policyEmbed],
@@ -416,7 +389,6 @@ async function handlePostPolicy(
 ): Promise<Response> {
   const {
     policyId,
-    policyNumber,
     carrierId,
     productId,
     agentId,
@@ -465,7 +437,12 @@ async function handlePostPolicy(
   const integration = integrations[0];
   const channelId = integration.policy_channel_id!;
 
-  // Fetch carrier and product names
+  // Fetch carrier, product, and agent names
+  // Log IDs to help debug "Unknown" issues
+  console.log(
+    `[discord-policy-notification] Lookup IDs — agent=${agentId}, carrier=${carrierId}, product=${productId}`,
+  );
+
   const [carrierRes, productRes, agentRes] = await Promise.all([
     carrierId
       ? supabase
@@ -476,7 +453,7 @@ async function handlePostPolicy(
       : null,
     productId
       ? supabase
-          .from("carrier_products")
+          .from("products")
           .select("name")
           .eq("id", productId)
           .maybeSingle()
@@ -490,6 +467,25 @@ async function handlePostPolicy(
       : null,
   ]);
 
+  if (carrierRes?.error) {
+    console.error(
+      "[discord-policy-notification] Carrier lookup error:",
+      carrierRes.error.message,
+    );
+  }
+  if (productRes?.error) {
+    console.error(
+      "[discord-policy-notification] Product lookup error:",
+      productRes.error.message,
+    );
+  }
+  if (agentRes?.error) {
+    console.error(
+      "[discord-policy-notification] Agent lookup error:",
+      agentRes.error.message,
+    );
+  }
+
   const carrierName = carrierRes?.data?.name || "Unknown Carrier";
   const productName = productRes?.data?.name || "Unknown Product";
   const agentData = agentRes?.data;
@@ -498,6 +494,10 @@ async function handlePostPolicy(
       agentData.email ||
       "Unknown"
     : "Unknown Agent";
+
+  console.log(
+    `[discord-policy-notification] Resolved — agent=${agentName}, carrier=${carrierName}, product=${productName}`,
+  );
   const premium = Number(annualPremium || 0);
 
   // Check daily_sales_logs for first sale
@@ -591,7 +591,7 @@ async function handlePostPolicy(
     productName,
     premium,
     effectiveDate || "",
-    policyNumber || "",
+    agentData?.avatar_url || null,
   );
 
   const policyResult = await sendDiscordMessage(botToken, channelId, {
