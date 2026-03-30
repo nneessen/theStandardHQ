@@ -1,15 +1,19 @@
 // src/features/close-kpi/components/widgets/LeadHeatAiInsightsWidget.tsx
 // AI-powered insights panel: recommendations, anomalies, patterns, personalization progress.
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Brain,
   AlertTriangle,
   TrendingUp,
   Lightbulb,
   Target,
+  RefreshCw,
+  Loader2,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { LeadHeatAiInsightsResult } from "../../types/close-kpi.types";
+import { closeKpiService } from "../../services/closeKpiService";
 
 interface LeadHeatAiInsightsWidgetProps {
   data: LeadHeatAiInsightsResult;
@@ -38,6 +42,18 @@ export const LeadHeatAiInsightsWidget: React.FC<
     sampleSize,
     analyzedAt,
   } = data;
+  const [rescoring, setRescoring] = useState(false);
+
+  const handleRescore = async () => {
+    setRescoring(true);
+    try {
+      await closeKpiService.triggerRescore();
+    } catch {
+      // Widget will show updated data on next query refetch
+    } finally {
+      setRescoring(false);
+    }
+  };
 
   const hasData =
     recommendations.length > 0 || anomalies.length > 0 || overallAssessment;
@@ -51,13 +67,25 @@ export const LeadHeatAiInsightsWidget: React.FC<
             AI insights not yet available
           </p>
           <p className="text-[10px] text-muted-foreground/60">
-            {sampleSize < 10
-              ? `Score your leads first, then AI will analyze patterns (${sampleSize}/10 minimum)`
-              : "Run a rescore to generate AI insights"}
+            Score your leads first, then AI will analyze patterns automatically
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-6 text-[10px] gap-1 mt-1"
+          onClick={handleRescore}
+          disabled={rescoring}
+        >
+          {rescoring ? (
+            <Loader2 className="h-2.5 w-2.5 animate-spin" />
+          ) : (
+            <RefreshCw className="h-2.5 w-2.5" />
+          )}
+          {rescoring ? "Scoring..." : "Score Leads"}
+        </Button>
         {/* Personalization progress */}
-        <div className="w-full max-w-[180px]">
+        <div className="w-full max-w-[180px] mt-1">
           <div className="flex justify-between text-[9px] text-muted-foreground/60 mb-0.5">
             <span>Learning</span>
             <span>{Math.min(sampleSize, 50)}/50</span>

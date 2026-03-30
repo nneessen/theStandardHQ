@@ -1,12 +1,14 @@
 // src/features/close-kpi/components/widgets/LeadHeatSummaryWidget.tsx
 // Donut chart showing score distribution by heat level + summary stats.
 
-import React from "react";
-import { Flame } from "lucide-react";
+import React, { useState } from "react";
+import { Flame, RefreshCw, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type {
   LeadHeatSummaryResult,
   LeadHeatLevel,
 } from "../../types/close-kpi.types";
+import { closeKpiService } from "../../services/closeKpiService";
 
 interface LeadHeatSummaryWidgetProps {
   data: LeadHeatSummaryResult;
@@ -31,6 +33,42 @@ export const LeadHeatSummaryWidget: React.FC<LeadHeatSummaryWidgetProps> = ({
     isPersonalized,
     sampleSize,
   } = data;
+  const [rescoring, setRescoring] = useState(false);
+
+  const handleRescore = async () => {
+    setRescoring(true);
+    try {
+      await closeKpiService.triggerRescore();
+    } catch {
+      // Widget will show updated data on next query refetch
+    } finally {
+      setRescoring(false);
+    }
+  };
+
+  // Empty state
+  if (totalScored === 0) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-1.5 text-center">
+        <Flame className="h-4 w-4 text-muted-foreground/40" />
+        <p className="text-[10px] text-muted-foreground">No leads scored yet</p>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-6 text-[10px] gap-1"
+          onClick={handleRescore}
+          disabled={rescoring}
+        >
+          {rescoring ? (
+            <Loader2 className="h-2.5 w-2.5 animate-spin" />
+          ) : (
+            <RefreshCw className="h-2.5 w-2.5" />
+          )}
+          {rescoring ? "Scoring..." : "Score Leads"}
+        </Button>
+      </div>
+    );
+  }
 
   // Build donut segments
   const total = distribution.reduce((sum, d) => sum + d.count, 0);
@@ -50,23 +88,12 @@ export const LeadHeatSummaryWidget: React.FC<LeadHeatSummaryWidgetProps> = ({
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
-  const formatLastScored = (ts: string | null) => {
-    if (!ts) return "Not scored yet";
-    const mins = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
-    if (mins < 1) return "Just now";
-    if (mins < 60) return `${mins}m ago`;
-    const hrs = Math.round(mins / 60);
-    if (hrs < 24) return `${hrs}h ago`;
-    return `${Math.round(hrs / 24)}d ago`;
-  };
-
   return (
     <div className="flex h-full flex-col gap-2">
       <div className="flex items-center gap-3">
         {/* Donut */}
         <div className="relative flex-shrink-0">
           <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-            {/* Background ring */}
             <circle
               cx={size / 2}
               cy={size / 2}
@@ -76,7 +103,6 @@ export const LeadHeatSummaryWidget: React.FC<LeadHeatSummaryWidgetProps> = ({
               strokeWidth={strokeWidth}
               className="text-muted/20"
             />
-            {/* Segments */}
             {segments.map((seg) => {
               const offset = circumference * (1 - seg.pct / 100);
               const rotation = (seg.start / 100) * 360 - 90;
@@ -92,7 +118,7 @@ export const LeadHeatSummaryWidget: React.FC<LeadHeatSummaryWidgetProps> = ({
                   strokeDasharray={`${circumference}`}
                   strokeDashoffset={offset}
                   transform={`rotate(${rotation} ${size / 2} ${size / 2})`}
-                  strokeLinecap="round"
+                  strokeLinecap={segments.length > 1 ? "round" : undefined}
                 />
               );
             })}
@@ -130,7 +156,7 @@ export const LeadHeatSummaryWidget: React.FC<LeadHeatSummaryWidgetProps> = ({
               ))}
           </div>
           <span className="text-[10px] text-muted-foreground">
-            {formatLastScored(lastScoredAt)}
+            {formatTimeAgo(lastScoredAt)}
             {isPersonalized && (
               <span className="ml-1 rounded bg-emerald-100 px-1 py-px text-[9px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
                 Personalized
@@ -147,3 +173,13 @@ export const LeadHeatSummaryWidget: React.FC<LeadHeatSummaryWidgetProps> = ({
     </div>
   );
 };
+
+function formatTimeAgo(ts: string | null): string {
+  if (!ts) return "Not scored yet";
+  const mins = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.round(hrs / 24)}d ago`;
+}

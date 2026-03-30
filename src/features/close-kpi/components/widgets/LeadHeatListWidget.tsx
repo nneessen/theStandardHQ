@@ -8,7 +8,10 @@ import {
   ChevronDown,
   ChevronUp,
   AlertCircle,
+  Flame,
+  RefreshCw,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type {
   LeadHeatListResult,
   LeadHeatScoreRow,
@@ -35,6 +38,21 @@ export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
   >({});
   const [loadingDeepDive, setLoadingDeepDive] = useState<string | null>(null);
   const pendingRef = useRef<Set<string>>(new Set());
+  const [rescoring, setRescoring] = useState(false);
+  const [rescoreError, setRescoreError] = useState<string | null>(null);
+
+  const handleRescore = async () => {
+    setRescoring(true);
+    setRescoreError(null);
+    try {
+      await closeKpiService.triggerRescore();
+      // Data will refresh via TanStack Query staleTime
+    } catch (err) {
+      setRescoreError((err as Error).message);
+    } finally {
+      setRescoring(false);
+    }
+  };
 
   const handleRowClick = async (lead: LeadHeatScoreRow) => {
     if (expandedLeadId === lead.closeLeadId) {
@@ -43,18 +61,15 @@ export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
     }
     setExpandedLeadId(lead.closeLeadId);
 
-    // Check if we already have the AI insight from scored data
     if (lead.aiInsight) {
       const insight = lead.aiInsight;
       setDeepDiveData((prev) => ({ ...prev, [lead.closeLeadId]: insight }));
       return;
     }
 
-    // Already fetched (success or error) — don't re-fetch unless error
     const existing = deepDiveData[lead.closeLeadId];
     if (existing && existing !== DEEP_DIVE_ERROR) return;
 
-    // Deduplication guard: prevent concurrent requests for the same lead
     if (pendingRef.current.has(lead.closeLeadId)) return;
     pendingRef.current.add(lead.closeLeadId);
 
@@ -77,22 +92,65 @@ export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
 
   if (leads.length === 0) {
     return (
-      <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-        No leads scored yet. Click "Rescore" to analyze your leads.
+      <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
+        <Flame className="h-5 w-5 text-muted-foreground/40" />
+        <div className="space-y-0.5">
+          <p className="text-xs font-medium text-muted-foreground">
+            No leads scored yet
+          </p>
+          <p className="text-[10px] text-muted-foreground/60">
+            Run your first scoring analysis to see your leads ranked by heat
+            score
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 text-[11px] gap-1.5 mt-1"
+          onClick={handleRescore}
+          disabled={rescoring}
+        >
+          {rescoring ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <RefreshCw className="h-3 w-3" />
+          )}
+          {rescoring ? "Scoring leads..." : "Score My Leads"}
+        </Button>
+        {rescoreError && (
+          <p className="text-[10px] text-destructive">{rescoreError}</p>
+        )}
       </div>
     );
   }
 
   return (
     <div className="flex h-full flex-col gap-1">
-      <div className="text-[10px] text-muted-foreground">
-        {total} leads{" "}
-        {total > pageSize && (
-          <span>
-            (showing {(page - 1) * pageSize + 1}-
-            {Math.min(page * pageSize, total)})
-          </span>
-        )}
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] text-muted-foreground">
+          {total} leads{" "}
+          {total > pageSize && (
+            <span>
+              (showing {(page - 1) * pageSize + 1}-
+              {Math.min(page * pageSize, total)})
+            </span>
+          )}
+        </span>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-5 px-1.5 text-[10px] text-muted-foreground hover:text-foreground gap-1"
+          onClick={handleRescore}
+          disabled={rescoring}
+          title="Rescore all leads"
+        >
+          {rescoring ? (
+            <Loader2 className="h-2.5 w-2.5 animate-spin" />
+          ) : (
+            <RefreshCw className="h-2.5 w-2.5" />
+          )}
+          {rescoring ? "Scoring..." : "Rescore"}
+        </Button>
       </div>
 
       <div className="overflow-auto">
@@ -141,7 +199,6 @@ export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
                   </td>
                 </tr>
 
-                {/* Inline AI Deep Dive */}
                 {expandedLeadId === lead.closeLeadId && (
                   <tr>
                     <td colSpan={5} className="pb-2">
@@ -219,12 +276,10 @@ const DeepDivePanel: React.FC<DeepDivePanelProps> = ({
 
   return (
     <div className="rounded border border-border/50 bg-muted/10 px-3 py-2 space-y-1.5">
-      {/* Narrative */}
       <p className="text-[11px] text-foreground leading-relaxed">
         {data.narrative}
       </p>
 
-      {/* Recommended Action */}
       <div className="flex items-start gap-2 rounded bg-primary/5 px-2 py-1.5 border border-primary/10">
         <Brain className="h-3 w-3 mt-0.5 text-primary flex-shrink-0" />
         <div className="text-[11px]">
@@ -241,7 +296,6 @@ const DeepDivePanel: React.FC<DeepDivePanelProps> = ({
         </div>
       </div>
 
-      {/* Key Signals + Probability */}
       <div className="flex items-center gap-3 text-[10px]">
         <span className="text-muted-foreground">
           Conversion:{" "}
