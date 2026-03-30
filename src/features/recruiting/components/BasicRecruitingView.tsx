@@ -63,7 +63,6 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
-  Hash,
   Check,
   Loader2,
   Pencil,
@@ -88,12 +87,15 @@ import {
 } from "../hooks";
 import { useResendInvite } from "../hooks/useAuthUser";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRecruitNotificationStatus } from "@/hooks/slack";
-// eslint-disable-next-line no-restricted-imports -- pre-existing: RecruitSlackActions + BasicAddRecruitDialog use raw service fns
+// eslint-disable-next-line no-restricted-imports -- RecruitDiscordActions uses raw service fns
 import {
-  autoPostRecruitNotification,
-  checkNotificationSent,
-} from "@/services/slack";
+  findDiscordRecruitIntegration,
+  buildNewRecruitEmbed,
+  buildNpnReceivedEmbed,
+  checkDiscordNotificationSent,
+  sendDiscordRecruitNotification,
+} from "@/services/discord/discordRecruitNotificationService";
+import { useRecruitDiscordNotificationStatus } from "@/hooks/discord";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -187,8 +189,8 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
     setDetailSheetOpen(true);
   };
 
-  // Slack is available if user has an imo_id (autoPostRecruitNotification resolves integration + channel internally)
-  const slackAvailable = !!user?.imo_id;
+  // Discord uses imo_id check; RecruitDiscordActions resolves integration internally
+  const discordAvailable = !!user?.imo_id;
 
   // Simple status badge mapping
   const getStatusBadge = (status: string | null) => {
@@ -428,12 +430,8 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                   Licensing status determines next steps
                 </span>{" "}
                 — If the recruit is <em>not already licensed</em>, they are
-                added as "unlicensed" and their details are automatically posted
-                to the Slack channel (
-                <code className="text-[9px] bg-zinc-100 dark:bg-zinc-800 px-1 rounded">
-                  #new-agent-testing-odette
-                </code>
-                ).
+                added as "unlicensed" and their details can be posted to the
+                Discord recruit channel.
               </li>
               <li>
                 <span className="font-medium text-zinc-800 dark:text-zinc-200">
@@ -447,7 +445,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                   NPN received triggers a second notification
                 </span>{" "}
                 — When the recruit's NPN (National Producer Number) is entered,
-                a second Slack notification is posted requesting email #2 be
+                a second Discord notification is posted requesting email #2 be
                 sent.
               </li>
               <li>
@@ -611,8 +609,8 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="flex items-center gap-1">
-                      {slackAvailable && (
-                        <RecruitSlackActions
+                      {discordAvailable && (
+                        <RecruitDiscordActions
                           recruit={recruit}
                           imoId={user!.imo_id!}
                         />
@@ -731,29 +729,54 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
   );
 }
 
-// Per-recruit Slack notification action buttons
-// Separate component so each recruit can use its own notification status hook
-// Uses autoPostRecruitNotification which resolves integration + channel internally
-// (avoids dependency on slack-list-channels edge function CORS for rendering buttons)
-interface RecruitSlackActionsProps {
+// Per-recruit Discord notification action buttons
+// Self-contained per row — resolves integration internally
+interface RecruitDiscordActionsProps {
   recruit: UserProfile;
   imoId: string;
 }
 
-function RecruitSlackActions({ recruit, imoId }: RecruitSlackActionsProps) {
+function RecruitDiscordActions({ recruit, imoId }: RecruitDiscordActionsProps) {
   const queryClient = useQueryClient();
-  const { data: notificationStatus } = useRecruitNotificationStatus(recruit.id);
+  const { data: notificationStatus } = useRecruitDiscordNotificationStatus(
+    recruit.id,
+  );
   const [sendingType, setSendingType] = useState<
     "new_recruit" | "npn_received" | null
   >(null);
+  const [integration, setIntegration] = useState<{
+    id: string;
+    recruit_channel_id: string | null;
+    recruit_channel_name: string | null;
+  } | null>(undefined as unknown as null);
+  const [integrationChecked, setIntegrationChecked] = useState(false);
+
+  // Resolve Discord integration once on mount
+  useEffect(() => {
+    let cancelled = false;
+    findDiscordRecruitIntegration(imoId).then((result) => {
+      if (!cancelled) {
+        setIntegration(result);
+        setIntegrationChecked(true);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [imoId]);
+
+  // Don't render until we know if integration exists; hide if no integration/channel
+  if (!integrationChecked) return null;
+  if (!integration?.recruit_channel_id) return null;
+
+  const channelLabel = integration.recruit_channel_name
+    ? `#${integration.recruit_channel_name}`
+    : "Discord recruit channel";
 
   const showNewRecruit =
     recruit.agent_status === "unlicensed" || !recruit.agent_status;
-  // Always show the NPN button — it's the 2nd Slack notification (exam passed, NPN received)
-  const showNpn = true;
 
   const handleSend = async (type: "new_recruit" | "npn_received") => {
-    // NPN notification requires the recruit to have an NPN set first
     if (type === "npn_received" && !recruit.npn) {
       toast.error("Set the recruit's NPN first (edit recruit), then post.");
       return;
@@ -761,10 +784,9 @@ function RecruitSlackActions({ recruit, imoId }: RecruitSlackActionsProps) {
 
     setSendingType(type);
     try {
-      // Check duplicate before sending
-      const alreadySent = await checkNotificationSent(recruit.id, type);
+      const alreadySent = await checkDiscordNotificationSent(recruit.id, type);
       if (alreadySent) {
-        toast.error("This notification has already been sent.");
+        toast.error("This Discord notification has already been sent.");
         return;
       }
 
@@ -776,19 +798,28 @@ function RecruitSlackActions({ recruit, imoId }: RecruitSlackActionsProps) {
         upline?.first_name && upline?.last_name
           ? `${upline.first_name} ${upline.last_name}`
           : upline?.email || null;
-      await autoPostRecruitNotification(
-        { ...recruit, upline_name: uplineName },
-        type,
-        imoId,
-      );
 
-      // Invalidate to refresh button state
-      queryClient.invalidateQueries({
-        queryKey: ["slack", "recruit-notification-status", recruit.id],
+      const recruitWithUpline = { ...recruit, upline_name: uplineName };
+      const embed =
+        type === "new_recruit"
+          ? buildNewRecruitEmbed(recruitWithUpline)
+          : buildNpnReceivedEmbed(recruitWithUpline);
+
+      await sendDiscordRecruitNotification({
+        integrationId: integration.id,
+        channelId: integration.recruit_channel_id!,
+        embed,
+        notificationType: type,
+        recruitId: recruit.id,
+        imoId,
       });
-      toast.success("Slack notification sent");
+
+      queryClient.invalidateQueries({
+        queryKey: ["discord", "recruit-notification-status", recruit.id],
+      });
+      toast.success("Discord notification sent");
     } catch {
-      toast.error("Failed to send Slack notification");
+      toast.error("Failed to send Discord notification");
     } finally {
       setSendingType(null);
     }
@@ -816,7 +847,7 @@ function RecruitSlackActions({ recruit, imoId }: RecruitSlackActionsProps) {
                 ) : notificationStatus?.newRecruitSent ? (
                   <Check className="h-3 w-3" />
                 ) : (
-                  <Hash className="h-3 w-3 mr-0.5" />
+                  <MessageSquare className="h-3 w-3 mr-0.5" />
                 )}
                 {notificationStatus?.newRecruitSent ? "Sent" : "New"}
               </Button>
@@ -824,48 +855,46 @@ function RecruitSlackActions({ recruit, imoId }: RecruitSlackActionsProps) {
             <TooltipContent>
               <p className="text-[10px]">
                 {notificationStatus?.newRecruitSent
-                  ? "New recruit notification already sent"
-                  : "Post to #new-agent-testing-odette"}
+                  ? "New recruit notification already sent to Discord"
+                  : `Post to ${channelLabel}`}
               </p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       )}
-      {showNpn && (
-        <TooltipProvider delayDuration={200}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={notificationStatus?.npnReceivedSent || !!sendingType}
-                onClick={() => handleSend("npn_received")}
-                className={cn(
-                  "h-5 text-[9px] px-1.5",
-                  notificationStatus?.npnReceivedSent &&
-                    "text-emerald-600 border-emerald-300",
-                )}
-              >
-                {sendingType === "npn_received" ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : notificationStatus?.npnReceivedSent ? (
-                  <Check className="h-3 w-3" />
-                ) : (
-                  <Hash className="h-3 w-3 mr-0.5" />
-                )}
-                {notificationStatus?.npnReceivedSent ? "Sent" : "NPN"}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="text-[10px]">
-                {notificationStatus?.npnReceivedSent
-                  ? "NPN received notification already sent"
-                  : "Post NPN received to #new-agent-testing-odette"}
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
+      <TooltipProvider delayDuration={200}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={notificationStatus?.npnReceivedSent || !!sendingType}
+              onClick={() => handleSend("npn_received")}
+              className={cn(
+                "h-5 text-[9px] px-1.5",
+                notificationStatus?.npnReceivedSent &&
+                  "text-emerald-600 border-emerald-300",
+              )}
+            >
+              {sendingType === "npn_received" ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : notificationStatus?.npnReceivedSent ? (
+                <Check className="h-3 w-3" />
+              ) : (
+                <MessageSquare className="h-3 w-3 mr-0.5" />
+              )}
+              {notificationStatus?.npnReceivedSent ? "Sent" : "NPN"}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="text-[10px]">
+              {notificationStatus?.npnReceivedSent
+                ? "NPN received notification already sent to Discord"
+                : `Post NPN received to ${channelLabel}`}
+            </p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </>
   );
 }
