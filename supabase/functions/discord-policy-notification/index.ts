@@ -66,6 +66,38 @@ interface PendingPolicyData {
   agentId: string;
 }
 
+// ── Discord guild member lookup ──
+
+async function findDiscordDisplayName(
+  botToken: string,
+  guildId: string,
+  searchName: string,
+): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `https://discord.com/api/v10/guilds/${guildId}/members/search?query=${encodeURIComponent(searchName)}&limit=5`,
+      { headers: { Authorization: `Bot ${botToken}` } },
+    );
+    if (!response.ok) {
+      console.log(
+        `[discord-policy-notification] Guild member search failed: ${response.status}`,
+      );
+      return null;
+    }
+    const members = await response.json();
+    if (members.length > 0) {
+      // Use nickname (server-specific) first, then global display name, then username
+      const member = members[0];
+      return (
+        member.nick || member.user?.global_name || member.user?.username || null
+      );
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 // ── Helpers ──
 
 function getTodayET(): string {
@@ -394,18 +426,31 @@ async function handlePostPolicy(
     return jsonResponse({ ok: false, error: "Missing imoId or policyId" }, 400);
   }
 
-  // Resolve agentId — fallback to policies.user_id if trigger payload had null
+  // Resolve agentId — fallback chain: policies.user_id → commissions.user_id
   let resolvedAgentId = agentId;
   if (!resolvedAgentId && policyId) {
+    // Try policies.user_id first
     const { data: policyRow } = await supabase
       .from("policies")
       .select("user_id")
       .eq("id", policyId)
       .maybeSingle();
     resolvedAgentId = policyRow?.user_id || undefined;
+
+    // If still null, check commissions table (source of truth for selling agent)
+    if (!resolvedAgentId) {
+      const { data: commission } = await supabase
+        .from("commissions")
+        .select("user_id")
+        .eq("policy_id", policyId)
+        .eq("type", "advance")
+        .maybeSingle();
+      resolvedAgentId = commission?.user_id || undefined;
+    }
+
     if (resolvedAgentId) {
       console.log(
-        `[discord-policy-notification] Resolved agentId from policies.user_id: ${resolvedAgentId}`,
+        `[discord-policy-notification] Resolved agentId via fallback: ${resolvedAgentId}`,
       );
     }
   }
@@ -469,7 +514,7 @@ async function handlePostPolicy(
     resolvedAgentId
       ? supabase
           .from("user_profiles")
-          .select("first_name, last_name, email, avatar_url")
+          .select("first_name, last_name, email, profile_photo_url")
           .eq("id", resolvedAgentId)
           .maybeSingle()
       : null,
@@ -497,11 +542,28 @@ async function handlePostPolicy(
   const carrierName = carrierRes?.data?.name || "Unknown Carrier";
   const productName = productRes?.data?.name || "Unknown Product";
   const agentData = agentRes?.data;
-  const agentName = agentData
+  const profileName = agentData
     ? `${agentData.first_name || ""} ${agentData.last_name || ""}`.trim() ||
       agentData.email ||
       "Unknown"
     : "Unknown Agent";
+
+  // Try Discord guild member search first, fall back to user_profiles name
+  const botToken = await decrypt(integration.bot_token_encrypted);
+  let agentName = profileName;
+  if (profileName !== "Unknown Agent" && integration.guild_id) {
+    const discordName = await findDiscordDisplayName(
+      botToken,
+      integration.guild_id,
+      profileName,
+    );
+    if (discordName) {
+      agentName = discordName;
+      console.log(
+        `[discord-policy-notification] Using Discord display name: ${discordName}`,
+      );
+    }
+  }
 
   console.log(
     `[discord-policy-notification] Resolved — agent=${agentName}, carrier=${carrierName}, product=${productName}`,
@@ -533,7 +595,7 @@ async function handlePostPolicy(
       productName,
       agentName,
       agentDisplayName: agentName,
-      agentAvatarUrl: agentData?.avatar_url || null,
+      agentAvatarUrl: agentData?.profile_photo_url || null,
       annualPremium: premium,
       effectiveDate: effectiveDate || "",
       agentId: resolvedAgentId || "",
@@ -591,8 +653,6 @@ async function handlePostPolicy(
   }
 
   // Subsequent sale — post policy immediately
-  const botToken = await decrypt(integration.bot_token_encrypted);
-
   const policyEmbed = buildPolicyEmbed(
     agentName,
     carrierName,
