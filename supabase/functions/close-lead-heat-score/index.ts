@@ -963,7 +963,8 @@ async function handleAnalyzeLead(
 
 // deno-lint-ignore no-explicit-any
 async function handleScoreAllUsers(dataClient: any) {
-  // Get all users with active Close connections
+  // Score only users with their own close_config (their own Close API key).
+  // Each agent has their own Close account — never use another user's key.
   const { data: activeConfigs, error } = await dataClient
     .from("close_config")
     .select("user_id, api_key_encrypted")
@@ -973,84 +974,25 @@ async function handleScoreAllUsers(dataClient: any) {
     return { usersProcessed: 0, message: "No active Close connections" };
   }
 
-  // Build a map of owner_id → decrypted API key for agency fallback scoring
-  const ownerKeyMap = new Map<string, string>();
-  for (const config of activeConfigs) {
-    try {
-      ownerKeyMap.set(config.user_id, await decrypt(config.api_key_encrypted));
-    } catch (err) {
-      console.error(
-        `[lead-heat-score] Failed to decrypt key for ${config.user_id}:`,
-        (err as Error).message,
-      );
-    }
-  }
-
-  // Find all agency members who should be scored using their owner's key.
-  // For each owner with a close_config, find their agency and all members of that agency.
-  const ownerIds = Array.from(ownerKeyMap.keys());
-  const { data: agencyMembers } = await dataClient
-    .from("user_profiles")
-    .select("id, agency_id")
-    .in(
-      "agency_id",
-      // Subquery: get agency IDs where the owner has a close_config
-      (
-        await dataClient.from("agencies").select("id").in("owner_id", ownerIds)
-      ).data?.map((a: { id: string }) => a.id) ?? [],
-    );
-
-  // Build a map: agency_id → owner_id (for key lookup)
-  const { data: agencies } = await dataClient
-    .from("agencies")
-    .select("id, owner_id")
-    .in("owner_id", ownerIds);
-  const agencyOwnerMap = new Map<string, string>();
-  for (const a of agencies ?? []) {
-    agencyOwnerMap.set(a.id, a.owner_id);
-  }
-
-  // Build the full list of users to score: each user gets the API key of their agency owner
-  const usersToScore: { userId: string; apiKey: string }[] = [];
-  const scoredUserIds = new Set<string>();
-
-  // First: users with their own close_config (they use their own key)
-  for (const config of activeConfigs) {
-    const key = ownerKeyMap.get(config.user_id);
-    if (key) {
-      usersToScore.push({ userId: config.user_id, apiKey: key });
-      scoredUserIds.add(config.user_id);
-    }
-  }
-
-  // Second: agency members who don't have their own close_config (use owner's key)
-  for (const member of agencyMembers ?? []) {
-    if (scoredUserIds.has(member.id)) continue; // already has own key
-    const ownerId = agencyOwnerMap.get(member.agency_id);
-    const ownerKey = ownerId ? ownerKeyMap.get(ownerId) : undefined;
-    if (ownerKey) {
-      usersToScore.push({ userId: member.id, apiKey: ownerKey });
-      scoredUserIds.add(member.id);
-    }
-  }
-
-  console.log(
-    `[lead-heat-score] Scoring ${usersToScore.length} users (${activeConfigs.length} with own key, ${usersToScore.length - activeConfigs.length} via agency fallback)`,
-  );
-
   const results: { userId: string; leadsScored: number; error?: string }[] = [];
 
-  for (const { userId, apiKey } of usersToScore) {
+  for (const config of activeConfigs) {
     try {
-      const result = await handleScoreAll(apiKey, userId, dataClient, {});
-      results.push({ userId, leadsScored: result.leadsScored });
+      const apiKey = await decrypt(config.api_key_encrypted);
+      const result = await handleScoreAll(
+        apiKey,
+        config.user_id,
+        dataClient,
+        {},
+      );
+      results.push({ userId: config.user_id, leadsScored: result.leadsScored });
     } catch (err) {
       console.error(
-        `[lead-heat-score] Failed for user ${userId}:`,
+        `[lead-heat-score] Failed for user ${config.user_id}:`,
         (err as Error).message,
       );
       results.push({
-        userId,
+        userId: config.user_id,
         leadsScored: 0,
         error: (err as Error).message,
       });
