@@ -2,6 +2,7 @@
 // Uses Bot token auth — no OAuth needed
 
 const DISCORD_API = "https://discord.com/api/v10";
+const DISCORD_TIMEOUT_MS = 10_000; // 10s timeout prevents hung connections from exhausting edge function resources
 
 interface DiscordEmbed {
   title?: string;
@@ -40,26 +41,33 @@ export async function sendDiscordMessage(
   channelId: string,
   payload: DiscordMessagePayload,
 ): Promise<DiscordSendResult> {
-  const response = await fetch(
-    `${DISCORD_API}/channels/${channelId}/messages`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bot ${botToken}`,
-        "Content-Type": "application/json",
+  try {
+    const response = await fetch(
+      `${DISCORD_API}/channels/${channelId}/messages`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bot ${botToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(DISCORD_TIMEOUT_MS),
       },
-      body: JSON.stringify(payload),
-    },
-  );
+    );
 
-  if (!response.ok) {
-    await response.text(); // consume body
-    console.error(`[discord] Send failed: ${response.status}`);
-    return { ok: false, error: `Discord API error: ${response.status}` };
+    if (!response.ok) {
+      await response.text(); // consume body
+      console.error(`[discord] Send failed: ${response.status}`);
+      return { ok: false, error: `Discord API error: ${response.status}` };
+    }
+
+    const data = (await response.json()) as DiscordMessageResponse;
+    return { ok: true, messageId: data.id };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    console.error(`[discord] Send error (timeout or network): ${msg}`);
+    return { ok: false, error: msg };
   }
-
-  const data = (await response.json()) as DiscordMessageResponse;
-  return { ok: true, messageId: data.id };
 }
 
 /**
@@ -71,26 +79,33 @@ export async function editDiscordMessage(
   messageId: string,
   payload: DiscordMessagePayload,
 ): Promise<DiscordSendResult> {
-  const response = await fetch(
-    `${DISCORD_API}/channels/${channelId}/messages/${messageId}`,
-    {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bot ${botToken}`,
-        "Content-Type": "application/json",
+  try {
+    const response = await fetch(
+      `${DISCORD_API}/channels/${channelId}/messages/${messageId}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bot ${botToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(DISCORD_TIMEOUT_MS),
       },
-      body: JSON.stringify(payload),
-    },
-  );
+    );
 
-  if (!response.ok) {
-    await response.text(); // consume body
-    console.error(`[discord] Edit failed: ${response.status}`);
-    return { ok: false, error: `Discord API error: ${response.status}` };
+    if (!response.ok) {
+      await response.text(); // consume body
+      console.error(`[discord] Edit failed: ${response.status}`);
+      return { ok: false, error: `Discord API error: ${response.status}` };
+    }
+
+    const data = (await response.json()) as DiscordMessageResponse;
+    return { ok: true, messageId: data.id };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    console.error(`[discord] Edit error (timeout or network): ${msg}`);
+    return { ok: false, error: msg };
   }
-
-  const data = (await response.json()) as DiscordMessageResponse;
-  return { ok: true, messageId: data.id };
 }
 
 /**
@@ -101,6 +116,7 @@ export async function verifyBotToken(
 ): Promise<{ ok: boolean; username?: string; error?: string }> {
   const response = await fetch(`${DISCORD_API}/users/@me`, {
     headers: { Authorization: `Bot ${botToken}` },
+    signal: AbortSignal.timeout(DISCORD_TIMEOUT_MS),
   });
 
   if (!response.ok) {
@@ -121,6 +137,7 @@ export async function listGuildChannels(
 ): Promise<{ id: string; name: string; type: number }[]> {
   const response = await fetch(`${DISCORD_API}/guilds/${guildId}/channels`, {
     headers: { Authorization: `Bot ${botToken}` },
+    signal: AbortSignal.timeout(DISCORD_TIMEOUT_MS),
   });
 
   if (!response.ok) {

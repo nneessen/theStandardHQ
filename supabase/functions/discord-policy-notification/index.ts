@@ -76,7 +76,10 @@ async function findDiscordDisplayName(
   try {
     const response = await fetch(
       `https://discord.com/api/v10/guilds/${guildId}/members/search?query=${encodeURIComponent(searchName)}&limit=5`,
-      { headers: { Authorization: `Bot ${botToken}` } },
+      {
+        headers: { Authorization: `Bot ${botToken}` },
+        signal: AbortSignal.timeout(10_000),
+      },
     );
     if (!response.ok) {
       console.log(
@@ -702,6 +705,7 @@ async function handlePostPolicy(
           {
             method: "DELETE",
             headers: { Authorization: `Bot ${botToken}` },
+            signal: AbortSignal.timeout(10_000),
           },
         );
       } catch {

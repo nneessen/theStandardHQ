@@ -109,31 +109,51 @@ export function FirstSellerNamingDialog({
       }
 
       // Step 2: Complete the first sale batch - posts to ALL channels with the same title
+      // Call both Slack and Discord edge functions in parallel — each only processes
+      // its own integration type's logs, so the other is a safe no-op.
       try {
-        const response = await supabase.functions.invoke(
-          "slack-policy-notification",
-          {
-            body: {
-              action: "complete-first-sale-batch",
-              firstSaleGroupId: groupId,
-              title: title.trim(),
-            },
-          },
-        );
+        const batchBody = {
+          action: "complete-first-sale-batch",
+          firstSaleGroupId: groupId,
+          title: title.trim(),
+        };
 
-        if (response.error) {
-          console.error("Error completing first sale batch:", response.error);
-          toast.error("Leaderboard named but failed to post to Slack");
+        const [slackResult, discordResult] = await Promise.allSettled([
+          supabase.functions.invoke("slack-policy-notification", {
+            body: batchBody,
+          }),
+          supabase.functions.invoke("discord-policy-notification", {
+            body: batchBody,
+          }),
+        ]);
+
+        const slackOk =
+          slackResult.status === "fulfilled" && !slackResult.value.error;
+        const discordOk =
+          discordResult.status === "fulfilled" && !discordResult.value.error;
+
+        if (!slackOk && !discordOk) {
+          console.error("Both notification channels failed:", {
+            slack:
+              slackResult.status === "rejected"
+                ? slackResult.reason
+                : slackResult.value.error,
+            discord:
+              discordResult.status === "rejected"
+                ? discordResult.reason
+                : discordResult.value.error,
+          });
+          toast.error("Leaderboard named but failed to post notifications");
         } else {
           const channelText =
             totalChannels > 1
               ? `${totalChannels} channels`
-              : channelNames[0] || "Slack";
+              : channelNames[0] || "channel";
           toast.success(`Leaderboard posted to ${channelText}!`);
         }
-      } catch (slackErr) {
-        console.error("Error calling complete-first-sale-batch:", slackErr);
-        toast.error("Leaderboard named but failed to post to Slack");
+      } catch (err) {
+        console.error("Error calling complete-first-sale-batch:", err);
+        toast.error("Leaderboard named but failed to post notifications");
       }
 
       onOpenChange(false);
@@ -148,19 +168,37 @@ export function FirstSellerNamingDialog({
   // Complete first sale batch with default title (shared by skip button and dismiss)
   const completeFirstSaleBatchWithDefault = async (): Promise<boolean> => {
     try {
-      const response = await supabase.functions.invoke(
-        "slack-policy-notification",
-        {
-          body: {
-            action: "complete-first-sale-batch",
-            firstSaleGroupId: groupId,
-            // No title = use default
-          },
-        },
-      );
+      const batchBody = {
+        action: "complete-first-sale-batch",
+        firstSaleGroupId: groupId,
+        // No title = use default
+      };
 
-      if (response.error) {
-        console.error("Error completing first sale batch:", response.error);
+      const [slackResult, discordResult] = await Promise.allSettled([
+        supabase.functions.invoke("slack-policy-notification", {
+          body: batchBody,
+        }),
+        supabase.functions.invoke("discord-policy-notification", {
+          body: batchBody,
+        }),
+      ]);
+
+      const slackOk =
+        slackResult.status === "fulfilled" && !slackResult.value.error;
+      const discordOk =
+        discordResult.status === "fulfilled" && !discordResult.value.error;
+
+      if (!slackOk && !discordOk) {
+        console.error("Both notification channels failed:", {
+          slack:
+            slackResult.status === "rejected"
+              ? slackResult.reason
+              : slackResult.value.error,
+          discord:
+            discordResult.status === "rejected"
+              ? discordResult.reason
+              : discordResult.value.error,
+        });
         return false;
       }
       return true;

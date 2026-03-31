@@ -1106,6 +1106,17 @@ async function handleCompleteFirstSale(
     return { ok: true, policyOk: true, leaderboardOk: true };
   }
 
+  // Guard: skip logs that belong to Discord (not Slack).
+  // The batch handler gets ALL logs in a group — Discord logs have
+  // slack_integration_id = NULL. We must NOT clear pending_policy_data
+  // on Discord logs, or the Discord edge function will think it's done.
+  if (!log.slack_integration_id) {
+    console.log(
+      "[slack-policy-notification] Log has no slack_integration_id (Discord log) - skipping",
+    );
+    return { ok: true, policyOk: true, leaderboardOk: true };
+  }
+
   const pendingData = log.pending_policy_data as {
     policyText: string;
     carrierName: string;
