@@ -2581,7 +2581,23 @@ serve(async (req) => {
         );
       }
 
-      apiKey = await decrypt(encryptedKey);
+      try {
+        apiKey = await decrypt(encryptedKey);
+      } catch (decryptErr) {
+        console.error("[close-kpi-data] Failed to decrypt Close API key:", {
+          userId: user.id,
+          error: (decryptErr as Error).message,
+        });
+        return jsonResponse(
+          {
+            error:
+              "Close CRM configuration error. Please reconnect your Close account or contact your agency admin.",
+            code: "CLOSE_DECRYPT_ERROR",
+          },
+          400,
+          req,
+        );
+      }
     }
 
     // ── Dispatch action ──
