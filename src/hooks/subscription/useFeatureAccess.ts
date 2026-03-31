@@ -89,10 +89,6 @@ export const FEATURE_DISPLAY_NAMES: Record<FeatureKey, string> = {
   recruiting_basic: "Basic Recruiting",
   recruiting_custom_pipeline: "Custom Recruiting Pipeline",
   custom_branding: "Custom Branding",
-  // Tools features
-  business_tools: "Business Tools",
-  // CRM KPI Dashboard
-  close_kpi: "CRM KPI Dashboard",
 };
 
 export interface UseFeatureAccessResult {

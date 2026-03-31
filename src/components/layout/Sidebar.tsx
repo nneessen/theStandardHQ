@@ -53,6 +53,7 @@ import {
   type FeatureKey,
   useOwnerDownlineAccess,
   isOwnerDownlineGrantedFeature,
+  THE_STANDARD_AGENCY_ID,
 } from "@/hooks/subscription";
 import type { PermissionCode } from "@/types/permissions.types";
 import type { RoleName } from "@/types/permissions.types";
@@ -352,38 +353,43 @@ export default function Sidebar({
           href: "/underwriting/quick-quote",
           public: true,
         },
-        // Chat Bot — page handles upsell internally
+        // Chat Bot — restricted to The Standard agency
         {
           icon: CloseCrmIcon,
           label: "Chat Bot",
           href: "/chat-bot",
           public: true,
+          allowedAgencyId: THE_STANDARD_AGENCY_ID,
         },
         {
           icon: PhoneCall,
           label: "AI Voice Agent",
           href: "/voice-agent",
           public: true,
+          allowedAgencyId: THE_STANDARD_AGENCY_ID,
         },
         {
           icon: Network,
           label: "Orchestrator",
           href: "/channel-orchestration",
           public: true,
+          allowedAgencyId: THE_STANDARD_AGENCY_ID,
         },
-        // Close KPIs — Close CRM analytics dashboard
+        // Close KPIs — restricted to The Standard agency
         {
           icon: CloseCrmIcon,
           label: "Close KPIs",
           href: "/close-kpi",
           public: true,
+          allowedAgencyId: THE_STANDARD_AGENCY_ID,
         },
-        // Business Tools — page handles upsell internally
+        // Business Tools — restricted to The Standard agency
         {
           icon: Briefcase,
           label: "Business Tools",
           href: "/business-tools",
           public: true,
+          allowedAgencyId: THE_STANDARD_AGENCY_ID,
         },
       ] as NavItem[],
     },

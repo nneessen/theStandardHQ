@@ -12,6 +12,9 @@ import { supabase } from "@/services/base/supabase";
  */
 export const OWNER_EMAILS = ["nickneessen@thestandardhq.com"];
 
+/** The Standard agency ID — used for gating internal-only tools */
+export const THE_STANDARD_AGENCY_ID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+
 // Lowercase version for case-insensitive comparisons
 const OWNER_EMAILS_LOWER = OWNER_EMAILS.map((e) => e.toLowerCase());
 
@@ -41,7 +44,6 @@ export const OWNER_DOWNLINE_GRANTED_FEATURES = [
   "downline_reports",
   "team_analytics",
   "training",
-  "business_tools",
 ] as const;
 
 export type OwnerDownlineGrantedFeature =

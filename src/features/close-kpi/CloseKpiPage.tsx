@@ -3,9 +3,10 @@
 // 2 tabs: Dashboard (all widgets pre-rendered) + Setup (connection guide).
 
 import React, { useCallback, useEffect, useState } from "react";
-import { useFeatureAccess } from "@/hooks/subscription";
+import { THE_STANDARD_AGENCY_ID } from "@/hooks/subscription";
+import { useImo } from "@/contexts/ImoContext";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, BarChart3, Loader2, Settings } from "lucide-react";
+import { AlertTriangle, BarChart3, Settings } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
@@ -13,7 +14,6 @@ import { CloseLogo } from "@/features/chat-bot";
 import { DashboardHeader } from "./components/DashboardHeader";
 import { PrebuiltDashboard } from "./components/PrebuiltDashboard";
 import { SetupGuide } from "./components/SetupGuide";
-import { CloseKpiLanding } from "./components/CloseKpiLanding";
 import {
   closeKpiKeys,
   useCloseConnectionStatus,
@@ -28,8 +28,8 @@ type TabId = "dashboard" | "setup";
 const ACCENT = "#4EC375";
 
 export const CloseKpiPage: React.FC = () => {
-  const { hasAccess, isLoading: isFeatureLoading } =
-    useFeatureAccess("close_kpi");
+  const { agency, isSuperAdmin } = useImo();
+  const hasAccess = isSuperAdmin || agency?.id === THE_STANDARD_AGENCY_ID;
   const queryClient = useQueryClient();
 
   // Tab state — default to setup, update when connection status resolves
@@ -116,22 +116,9 @@ export const CloseKpiPage: React.FC = () => {
     </Badge>
   );
 
-  // ─── Loading ──────────────────────────────────────────────────
-  if (isFeatureLoading) {
-    return (
-      <div className="h-[calc(100vh-4rem)] flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
-        <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
-      </div>
-    );
-  }
-
-  // ─── No access → upsell ───────────────────────────────────────
+  // ─── No access ────────────────────────────────────────────────
   if (!hasAccess) {
-    return (
-      <div className="h-[calc(100vh-4rem)] flex flex-col p-3 bg-zinc-50 dark:bg-zinc-950">
-        <CloseKpiLanding />
-      </div>
-    );
+    return null;
   }
 
   return (

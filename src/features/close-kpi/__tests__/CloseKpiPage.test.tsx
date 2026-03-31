@@ -4,27 +4,32 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
-  mockUseFeatureAccess,
+  mockUseImo,
   mockUseCloseConnectionStatus,
   mockUseLeadHeatScoreCount,
   mockUseLeadHeatCompletedRuns,
   mockUseLeadHeatRescore,
 } = vi.hoisted(() => ({
-  mockUseFeatureAccess: vi.fn(),
+  mockUseImo: vi.fn(),
   mockUseCloseConnectionStatus: vi.fn(),
   mockUseLeadHeatScoreCount: vi.fn(),
   mockUseLeadHeatCompletedRuns: vi.fn(),
   mockUseLeadHeatRescore: vi.fn(),
 }));
 
+vi.mock("@/contexts/ImoContext", () => ({
+  useImo: (...args: unknown[]) => mockUseImo(...args),
+}));
+
 vi.mock("@/hooks/subscription", () => ({
-  useFeatureAccess: (...args: unknown[]) => mockUseFeatureAccess(...args),
+  THE_STANDARD_AGENCY_ID: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
 }));
 
 vi.mock("../hooks/useCloseKpiDashboard", () => ({
   closeKpiKeys: {
     prebuiltWidgets: () => ["close-kpi", "prebuilt-widget"],
     closeMetadata: () => ["close-kpi", "close-metadata"],
+    leadHeat: () => ["close-kpi", "lead-heat"],
   },
   useCloseConnectionStatus: (...args: unknown[]) =>
     mockUseCloseConnectionStatus(...args),
@@ -57,10 +62,6 @@ vi.mock("../components/SetupGuide", () => ({
   SetupGuide: () => <div data-testid="setup-guide" />,
 }));
 
-vi.mock("../components/CloseKpiLanding", () => ({
-  CloseKpiLanding: () => <div data-testid="close-kpi-landing" />,
-}));
-
 import { CloseKpiPage } from "../CloseKpiPage";
 
 describe("CloseKpiPage", () => {
@@ -75,9 +76,9 @@ describe("CloseKpiPage", () => {
     });
 
     vi.clearAllMocks();
-    mockUseFeatureAccess.mockReturnValue({
-      hasAccess: true,
-      isLoading: false,
+    mockUseImo.mockReturnValue({
+      agency: { id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" },
+      isSuperAdmin: false,
     });
     mockUseLeadHeatScoreCount.mockReturnValue({ data: 0 });
     mockUseLeadHeatCompletedRuns.mockReturnValue({ data: false });

@@ -928,10 +928,6 @@ class AdminSubscriptionService {
         recruiting_basic: false,
         recruiting_custom_pipeline: false,
         custom_branding: false,
-        // Tools features
-        business_tools: false,
-        // CRM KPI Dashboard
-        close_kpi: false,
       };
 
       const { data, error } = await supabase

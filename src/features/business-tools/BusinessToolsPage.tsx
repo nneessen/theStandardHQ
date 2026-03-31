@@ -7,12 +7,11 @@ import {
   Upload,
   List,
   FileText,
-  Loader2,
   LayoutDashboard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useFeatureAccess } from "@/hooks/subscription";
-import { BusinessToolsLanding } from "./components/BusinessToolsLanding";
+import { useImo } from "@/contexts/ImoContext";
+import { THE_STANDARD_AGENCY_ID } from "@/hooks/subscription";
 import { OverviewTab } from "./components/OverviewTab";
 import { UploadTab } from "./components/UploadTab";
 import { TransactionsTab } from "./components/TransactionsTab";
@@ -29,23 +28,12 @@ const TABS: { id: BusinessToolsTab; label: string; icon: React.ElementType }[] =
   ];
 
 export default function BusinessToolsPage() {
-  const { hasAccess, isLoading } = useFeatureAccess("business_tools");
+  const { agency, isSuperAdmin } = useImo();
+  const hasAccess = isSuperAdmin || agency?.id === THE_STANDARD_AGENCY_ID;
   const [activeTab, setActiveTab] = useState<BusinessToolsTab>("overview");
 
-  if (isLoading) {
-    return (
-      <div className="h-[calc(100vh-4rem)] flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
-        <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
-      </div>
-    );
-  }
-
   if (!hasAccess) {
-    return (
-      <div className="h-[calc(100vh-4rem)] overflow-y-auto bg-zinc-50 dark:bg-zinc-950">
-        <BusinessToolsLanding />
-      </div>
-    );
+    return null;
   }
 
   return (
