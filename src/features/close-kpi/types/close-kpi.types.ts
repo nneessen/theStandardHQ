@@ -514,6 +514,7 @@ export interface LeadHeatDashboardStatus {
   lastRunStartedAt: string | null;
   lastRunCompletedAt: string | null;
   lastRunErrorMessage: string | null;
+  isTruncated: boolean;
   staleAfterMs: number;
 }
 

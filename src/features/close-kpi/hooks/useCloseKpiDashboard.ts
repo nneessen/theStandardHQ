@@ -170,6 +170,7 @@ export function useLeadHeatRescore() {
           lastRunStartedAt: new Date().toISOString(),
           lastRunCompletedAt: current?.lastRunCompletedAt ?? null,
           lastRunErrorMessage: null,
+          isTruncated: current?.isTruncated ?? false,
           staleAfterMs: current?.staleAfterMs ?? 24 * 60 * 60_000,
         }),
       );

@@ -36,7 +36,7 @@ export const SECTION_TOOLTIPS: Record<string, TooltipDef> = {
   ai_lead_scoring: {
     title: "AI Lead Scoring",
     description:
-      "AI analyzes your Close CRM activity to score each lead 0-100. Hot leads (75+) need immediate attention. The model learns your personal conversion patterns over time — the more you use it, the smarter it gets.",
+      "AI analyzes your Close CRM activity to score each lead 0-100. Hot leads need immediate attention. AI-generated insights highlight portfolio patterns and recommended actions.",
     note: "Scores update automatically every 30 minutes",
   },
   lead_pipeline: {
@@ -68,7 +68,7 @@ export const WIDGET_TOOLTIPS: Record<string, TooltipDef> = {
     title: "AI Recommendations",
     description:
       "AI-generated insights based on your portfolio patterns. Includes recommended actions, anomaly detection (hot leads being ignored), and conversion pattern analysis.",
-    note: "Insights improve as you close more deals (50+ outcomes for full personalization)",
+    note: "Insights are generated from your portfolio patterns and recent outcomes",
   },
   lead_heat_list: {
     title: "Lead Rankings",

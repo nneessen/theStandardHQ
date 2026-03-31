@@ -33,6 +33,7 @@ interface AiHeroSectionProps {
   insightsData: LeadHeatAiInsightsResult | null;
   isLoading: boolean;
   isRescoring: boolean;
+  isTruncated?: boolean;
   onRescore: () => void;
 }
 
@@ -69,6 +70,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
   insightsData,
   isLoading,
   isRescoring,
+  isTruncated,
   onRescore,
 }) => {
   const [showAllLeads, setShowAllLeads] = React.useState(false);
@@ -119,6 +121,12 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
               {totalScored > 0
                 ? `${totalScored} leads scored — ${actionableCount} need attention`
                 : "Score your leads to see AI insights"}
+              {isTruncated && totalScored > 0 && (
+                <span className="ml-1.5 inline-flex items-center gap-0.5 text-amber-600 dark:text-amber-400">
+                  <AlertTriangle className="h-2.5 w-2.5" />
+                  Partial data — large portfolio exceeded scoring limits
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -235,16 +243,10 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                 ))}
             </div>
 
-            {/* Personalization badge */}
-            {summaryData?.isPersonalized ? (
-              <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-[9px] font-medium text-emerald-700 dark:text-emerald-400">
-                Personalized
-              </span>
-            ) : summaryData?.sampleSize ? (
-              <span className="text-[9px] text-muted-foreground/60">
-                Learning: {summaryData.sampleSize}/50 outcomes
-              </span>
-            ) : null}
+            {/* AI scoring badge */}
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-medium text-primary">
+              AI-assisted scoring
+            </span>
           </div>
 
           {/* Column 2: Hot Leads (immediate action) */}

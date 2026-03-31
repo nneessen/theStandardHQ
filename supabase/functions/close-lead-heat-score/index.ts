@@ -135,10 +135,11 @@ async function closeGetAll(
   apiKey: string,
   basePath: string,
   maxItems = 2000,
-): Promise<unknown[]> {
+): Promise<{ items: unknown[]; truncated: boolean }> {
   const all: unknown[] = [];
   let skip = 0;
   const limit = 100;
+  let truncated = false;
 
   while (all.length < maxItems) {
     const sep = basePath.includes("?") ? "&" : "?";
@@ -148,7 +149,12 @@ async function closeGetAll(
     if (!page.has_more || (page.data?.length ?? 0) < limit) break;
     skip += limit;
   }
-  return all;
+  // If we hit maxItems but the API had more data, mark as truncated
+  if (all.length >= maxItems) {
+    truncated = true;
+    all.length = maxItems; // trim to exact limit
+  }
+  return { items: all, truncated };
 }
 
 // ─── Status Label Resolver ────────────────────────────────────────────
@@ -485,12 +491,13 @@ async function handleScoreAll(
     const statusLabels = await fetchStatusLabels(apiKey);
 
     // 2. Fetch all leads
-    const leadsRaw = await closeGetAll(
+    const leadsResult = await closeGetAll(
       apiKey,
       "/lead/?_fields=id,display_name,status_id,date_created,custom",
       5000,
     );
-    const leads = leadsRaw as CloseLead[];
+    const leads = leadsResult.items as CloseLead[];
+    const leadsTruncated = leadsResult.truncated;
 
     // 3. Load previous scores for trend + outcome detection
     const { data: previousScores } = await dataClient
@@ -500,13 +507,24 @@ async function handleScoreAll(
 
     const prevMap = new Map<
       string,
-      { score: number; breakdown: ScoreBreakdown; signals: LeadSignals }
+      {
+        score: number;
+        breakdown: ScoreBreakdown;
+        signals: LeadSignals;
+        oppSnapshot: { id: string; statusType: string }[];
+      }
     >();
     for (const ps of previousScores ?? []) {
+      // Extract opportunity snapshot stored from previous scoring run
+      // deno-lint-ignore no-explicit-any
+      const rawSignals = ps.signals as Record<string, any>;
       prevMap.set(ps.close_lead_id, {
         score: ps.score,
         breakdown: ps.breakdown,
         signals: ps.signals,
+        oppSnapshot: Array.isArray(rawSignals?._oppSnapshot)
+          ? rawSignals._oppSnapshot
+          : [],
       });
     }
 
@@ -541,40 +559,51 @@ async function handleScoreAll(
     ).toISOString();
     const dateFilter = `date_created__gte=${thirtyDaysAgo}`;
 
-    const [callsRaw, emailsRaw, smsRaw, statusChangesRaw, oppsRaw] =
-      await Promise.all([
-        closeGetAll(
-          apiKey,
-          `/activity/call/?${dateFilter}&_fields=id,lead_id,date_created,direction,duration,disposition`,
-          3000,
-        ),
-        closeGetAll(
-          apiKey,
-          `/activity/email/?${dateFilter}&_fields=id,lead_id,date_created,direction`,
-          3000,
-        ),
-        closeGetAll(
-          apiKey,
-          `/activity/sms/?${dateFilter}&_fields=id,lead_id,date_created,direction`,
-          3000,
-        ),
-        closeGetAll(
-          apiKey,
-          `/activity/status_change/lead/?${dateFilter}&_fields=id,lead_id,date_created,old_status_id,new_status_id,old_status_label,new_status_label`,
-          3000,
-        ),
-        closeGetAll(
-          apiKey,
-          `/opportunity/?_fields=id,lead_id,value,status_type,status_label,date_created,date_won,date_lost`,
-          2000,
-        ),
-      ]);
+    const [
+      callsResult,
+      emailsResult,
+      smsResult,
+      statusChangesResult,
+      oppsResult,
+    ] = await Promise.all([
+      closeGetAll(
+        apiKey,
+        `/activity/call/?${dateFilter}&_fields=id,lead_id,date_created,direction,duration,disposition`,
+        3000,
+      ),
+      closeGetAll(
+        apiKey,
+        `/activity/email/?${dateFilter}&_fields=id,lead_id,date_created,direction`,
+        3000,
+      ),
+      closeGetAll(
+        apiKey,
+        `/activity/sms/?${dateFilter}&_fields=id,lead_id,date_created,direction`,
+        3000,
+      ),
+      closeGetAll(
+        apiKey,
+        `/activity/status_change/lead/?${dateFilter}&_fields=id,lead_id,date_created,old_status_id,new_status_id,old_status_label,new_status_label`,
+        3000,
+      ),
+      closeGetAll(
+        apiKey,
+        `/opportunity/?_fields=id,lead_id,value,status_type,status_label,date_created,date_won,date_lost`,
+        2000,
+      ),
+    ]);
 
-    const calls = callsRaw as CloseActivity[];
-    const emails = emailsRaw as CloseActivity[];
-    const sms = smsRaw as CloseActivity[];
-    const statusChanges = statusChangesRaw as CloseStatusChange[];
-    const opportunities = oppsRaw as CloseOpportunity[];
+    const calls = callsResult.items as CloseActivity[];
+    const emails = emailsResult.items as CloseActivity[];
+    const sms = smsResult.items as CloseActivity[];
+    const statusChanges = statusChangesResult.items as CloseStatusChange[];
+    const opportunities = oppsResult.items as CloseOpportunity[];
+    const activitiesTruncated =
+      callsResult.truncated ||
+      emailsResult.truncated ||
+      smsResult.truncated ||
+      statusChangesResult.truncated ||
+      oppsResult.truncated;
 
     // 7. Score each lead
     const now = new Date();
@@ -588,6 +617,11 @@ async function handleScoreAll(
       breakdown: ScoreBreakdown;
       signals: LeadSignals;
     }[] = [];
+    // Track current opportunity states per lead for persistence (outcome detection next run)
+    const oppSnapshotMap = new Map<
+      string,
+      { id: string; statusType: string }[]
+    >();
 
     const allOutcomeEvents: {
       user_id: string;
@@ -620,6 +654,10 @@ async function handleScoreAll(
 
       // Detect outcomes for learning
       const leadOpps = opportunities.filter((o) => o.lead_id === lead.id);
+      oppSnapshotMap.set(
+        lead.id,
+        leadOpps.map((o) => ({ id: o.id, statusType: o.status_type })),
+      );
       const outcomes = detectOutcomes(
         signals,
         scored.score,
@@ -631,7 +669,7 @@ async function handleScoreAll(
               score: prev.score,
               breakdown: prev.breakdown,
               signals: prev.signals,
-              previousOpps: [], // simplified: we track opp changes via status_type comparison
+              previousOpps: prev.oppSnapshot,
             }
           : null,
       );
@@ -651,20 +689,51 @@ async function handleScoreAll(
       }
     }
 
-    // 8. Upsert scores into DB
-    const upsertRows = scoredLeads.map((s) => ({
-      user_id: userId,
-      close_lead_id: s.closeLeadId,
-      display_name: s.displayName,
-      score: s.score,
-      heat_level: s.heatLevel,
-      trend: s.trend,
-      previous_score: s.previousScore,
-      breakdown: s.breakdown,
-      signals: s.signals,
-      scored_at: now.toISOString(),
-      updated_at: now.toISOString(),
-    }));
+    // 8. Calibrate: percentile-based heat bands (replaces fixed score thresholds)
+    const calibrationMap = new Map<
+      string,
+      { percentileRank: number; heatLevel: string }
+    >();
+    if (scoredLeads.length >= 5) {
+      const sorted = [...scoredLeads].sort((a, b) => b.score - a.score);
+      const n = sorted.length;
+      for (let i = 0; i < n; i++) {
+        const percentileRank = Math.round(((n - i - 0.5) / n) * 100);
+        let heatLevel: string;
+        if (percentileRank >= 90) heatLevel = "hot";
+        else if (percentileRank >= 75) heatLevel = "warming";
+        else if (percentileRank >= 50) heatLevel = "neutral";
+        else if (percentileRank >= 25) heatLevel = "cooling";
+        else heatLevel = "cold";
+        calibrationMap.set(sorted[i].closeLeadId, {
+          percentileRank,
+          heatLevel,
+        });
+      }
+    }
+
+    // 9. Upsert scores into DB (include opp snapshot + calibrated heat levels)
+    const upsertRows = scoredLeads.map((s) => {
+      const cal = calibrationMap.get(s.closeLeadId);
+      return {
+        user_id: userId,
+        close_lead_id: s.closeLeadId,
+        display_name: s.displayName,
+        score: s.score,
+        heat_level: cal?.heatLevel ?? s.heatLevel,
+        trend: s.trend,
+        previous_score: s.previousScore,
+        breakdown: s.breakdown,
+        signals: {
+          ...s.signals,
+          _oppSnapshot: oppSnapshotMap.get(s.closeLeadId) ?? [],
+        },
+        percentile_rank: cal?.percentileRank ?? null,
+        scoring_model_version: "heuristic_v1",
+        scored_at: now.toISOString(),
+        updated_at: now.toISOString(),
+      };
+    });
 
     // Batch upsert in chunks of 500
     for (let i = 0; i < upsertRows.length; i += 500) {
@@ -725,6 +794,7 @@ async function handleScoreAll(
           ai_calls_made: aiCallsMade,
           duration_ms: durationMs,
           completed_at: now.toISOString(),
+          is_truncated: leadsTruncated || activitiesTruncated,
         })
         .eq("id", runId);
     }
@@ -733,6 +803,7 @@ async function handleScoreAll(
       runId,
       leadsScored: scoredLeads.length,
       leadsTotal: leads.length,
+      isTruncated: leadsTruncated || activitiesTruncated,
       aiCallsMade,
       durationMs,
       outcomesDetected: allOutcomeEvents.length,
@@ -794,17 +865,17 @@ async function handleAnalyzeLead(
     });
   }
 
-  // Check cache (1hr TTL for AI insights)
-  if (existingScore.ai_insights) {
+  // Check cache (1hr TTL for AI insights — use dedicated timestamp, not updated_at)
+  if (existingScore.ai_insights && existingScore.ai_insights_generated_at) {
     const insightsAge =
-      Date.now() - new Date(existingScore.updated_at).getTime();
+      Date.now() - new Date(existingScore.ai_insights_generated_at).getTime();
     if (insightsAge < 60 * 60 * 1000) {
       return { cached: true, ...existingScore.ai_insights };
     }
   }
 
   // Fetch activity timeline for this lead
-  const [callsRaw, emailsRaw, smsRaw, statusChangesRaw] = await Promise.all([
+  const [callsRes, emailsRes, smsRes, scRes] = await Promise.all([
     closeGetAll(
       apiKey,
       `/activity/call/?lead_id=${closeLeadId}&_fields=id,date_created,direction,duration,disposition`,
@@ -830,28 +901,28 @@ async function handleAnalyzeLead(
   // Build timeline
   const timeline: { date: string; type: string; description: string }[] = [];
 
-  for (const call of callsRaw as CloseActivity[]) {
+  for (const call of callsRes.items as CloseActivity[]) {
     timeline.push({
       date: call.date_created,
       type: "Call",
       description: `${call.direction ?? "unknown"} call, disposition: ${call.disposition ?? "unknown"}, duration: ${call.duration ?? 0}s`,
     });
   }
-  for (const email of emailsRaw as CloseActivity[]) {
+  for (const email of emailsRes.items as CloseActivity[]) {
     timeline.push({
       date: email.date_created,
       type: "Email",
       description: `${email.direction ?? "unknown"} email`,
     });
   }
-  for (const s of smsRaw as CloseActivity[]) {
+  for (const s of smsRes.items as CloseActivity[]) {
     timeline.push({
       date: s.date_created,
       type: "SMS",
       description: `${s.direction ?? "unknown"} SMS`,
     });
   }
-  for (const sc of statusChangesRaw as CloseStatusChange[]) {
+  for (const sc of scRes.items as CloseStatusChange[]) {
     timeline.push({
       date: sc.date_created,
       type: "Status Change",
@@ -864,37 +935,6 @@ async function handleAnalyzeLead(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
   );
 
-  // Get similar lead stats
-  const source = existingScore.signals?.leadSource;
-  const { data: similarOutcomes } = await dataClient
-    .from("lead_heat_outcomes")
-    .select("outcome_type")
-    .eq("user_id", userId);
-
-  const similarConverted = (similarOutcomes ?? []).filter(
-    (o: { outcome_type: string }) => o.outcome_type === "won",
-  ).length;
-  const similarLost = (similarOutcomes ?? []).filter(
-    (o: { outcome_type: string }) => o.outcome_type === "lost",
-  ).length;
-
-  // Source conversion rate from outcomes
-  let sourceRate: number | null = null;
-  if (source) {
-    const sourceOutcomes = (similarOutcomes ?? []).filter(
-      // deno-lint-ignore no-explicit-any
-      (_o: any) => true, // simplified: we'd filter by source from signals_at_outcome
-    );
-    const sourceWon = sourceOutcomes.filter(
-      (o: { outcome_type: string }) => o.outcome_type === "won",
-    ).length;
-    const sourceTotal = sourceOutcomes.filter(
-      (o: { outcome_type: string }) =>
-        o.outcome_type === "won" || o.outcome_type === "lost",
-    ).length;
-    if (sourceTotal > 0) sourceRate = sourceWon / sourceTotal;
-  }
-
   const { result, tokensUsed } = await analyzeLeadDeepDive({
     displayName: existingScore.display_name,
     score: existingScore.score,
@@ -902,17 +942,14 @@ async function handleAnalyzeLead(
     breakdown: existingScore.breakdown,
     signals: existingScore.signals,
     activityTimeline: timeline,
-    agentSourceConversionRate: sourceRate,
-    similarConvertedCount: similarConverted,
-    similarLostCount: similarLost,
   });
 
-  // Cache the AI insights on the score row
+  // Cache the AI insights on the score row (use dedicated timestamp for cache TTL)
   await dataClient
     .from("lead_heat_scores")
     .update({
       ai_insights: result,
-      updated_at: new Date().toISOString(),
+      ai_insights_generated_at: new Date().toISOString(),
     })
     .eq("user_id", userId)
     .eq("close_lead_id", closeLeadId);
@@ -936,25 +973,84 @@ async function handleScoreAllUsers(dataClient: any) {
     return { usersProcessed: 0, message: "No active Close connections" };
   }
 
-  const results: { userId: string; leadsScored: number; error?: string }[] = [];
-
+  // Build a map of owner_id → decrypted API key for agency fallback scoring
+  const ownerKeyMap = new Map<string, string>();
   for (const config of activeConfigs) {
     try {
-      const apiKey = await decrypt(config.api_key_encrypted);
-      const result = await handleScoreAll(
-        apiKey,
-        config.user_id,
-        dataClient,
-        {},
-      );
-      results.push({ userId: config.user_id, leadsScored: result.leadsScored });
+      ownerKeyMap.set(config.user_id, await decrypt(config.api_key_encrypted));
     } catch (err) {
       console.error(
-        `[lead-heat-score] Failed for user ${config.user_id}:`,
+        `[lead-heat-score] Failed to decrypt key for ${config.user_id}:`,
+        (err as Error).message,
+      );
+    }
+  }
+
+  // Find all agency members who should be scored using their owner's key.
+  // For each owner with a close_config, find their agency and all members of that agency.
+  const ownerIds = Array.from(ownerKeyMap.keys());
+  const { data: agencyMembers } = await dataClient
+    .from("user_profiles")
+    .select("id, agency_id")
+    .in(
+      "agency_id",
+      // Subquery: get agency IDs where the owner has a close_config
+      (
+        await dataClient.from("agencies").select("id").in("owner_id", ownerIds)
+      ).data?.map((a: { id: string }) => a.id) ?? [],
+    );
+
+  // Build a map: agency_id → owner_id (for key lookup)
+  const { data: agencies } = await dataClient
+    .from("agencies")
+    .select("id, owner_id")
+    .in("owner_id", ownerIds);
+  const agencyOwnerMap = new Map<string, string>();
+  for (const a of agencies ?? []) {
+    agencyOwnerMap.set(a.id, a.owner_id);
+  }
+
+  // Build the full list of users to score: each user gets the API key of their agency owner
+  const usersToScore: { userId: string; apiKey: string }[] = [];
+  const scoredUserIds = new Set<string>();
+
+  // First: users with their own close_config (they use their own key)
+  for (const config of activeConfigs) {
+    const key = ownerKeyMap.get(config.user_id);
+    if (key) {
+      usersToScore.push({ userId: config.user_id, apiKey: key });
+      scoredUserIds.add(config.user_id);
+    }
+  }
+
+  // Second: agency members who don't have their own close_config (use owner's key)
+  for (const member of agencyMembers ?? []) {
+    if (scoredUserIds.has(member.id)) continue; // already has own key
+    const ownerId = agencyOwnerMap.get(member.agency_id);
+    const ownerKey = ownerId ? ownerKeyMap.get(ownerId) : undefined;
+    if (ownerKey) {
+      usersToScore.push({ userId: member.id, apiKey: ownerKey });
+      scoredUserIds.add(member.id);
+    }
+  }
+
+  console.log(
+    `[lead-heat-score] Scoring ${usersToScore.length} users (${activeConfigs.length} with own key, ${usersToScore.length - activeConfigs.length} via agency fallback)`,
+  );
+
+  const results: { userId: string; leadsScored: number; error?: string }[] = [];
+
+  for (const { userId, apiKey } of usersToScore) {
+    try {
+      const result = await handleScoreAll(apiKey, userId, dataClient, {});
+      results.push({ userId, leadsScored: result.leadsScored });
+    } catch (err) {
+      console.error(
+        `[lead-heat-score] Failed for user ${userId}:`,
         (err as Error).message,
       );
       results.push({
-        userId: config.user_id,
+        userId,
         leadsScored: 0,
         error: (err as Error).message,
       });
@@ -1031,22 +1127,20 @@ serve(async (req) => {
         ? createClient(REMOTE_URL, REMOTE_KEY)
         : authClient;
 
-    // For cron (service-role calls), verify caller is service_role, not a regular user
+    // For cron (service-role calls), positively verify the caller sent the service_role key
     if (action === "score_all_users") {
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
       const authHeader = req.headers.get("authorization") || "";
       const token = authHeader.replace(/^Bearer\s*/i, "").trim();
-      if (token) {
-        const {
-          data: { user },
-        } = await authClient.auth.getUser(token);
-        // Service role tokens do NOT resolve to a user — if we get a user, this is a regular authenticated call
-        if (user) {
-          return jsonResponse(
-            { error: "Forbidden: service_role only" },
-            403,
-            req,
-          );
-        }
+      if (!serviceKey || !token || token !== serviceKey) {
+        console.warn(
+          "[score_all_users] Rejected: missing or invalid service_role key",
+        );
+        return jsonResponse(
+          { error: "Forbidden: service_role only" },
+          403,
+          req,
+        );
       }
       const result = await handleScoreAllUsers(dataClient);
       return jsonResponse(result, 200, req);

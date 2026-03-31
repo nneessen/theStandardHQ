@@ -11,7 +11,7 @@ import type {
 } from "./types.ts";
 
 // ═══════════════════════════════════════════════════════════════════════
-// ENGAGEMENT SIGNALS (25 pts max)
+// ENGAGEMENT SIGNALS (27 pts max)
 // ═══════════════════════════════════════════════════════════════════════
 
 /** Call answer rate: lead answers agent's outbound calls (0-8 pts) */
@@ -66,7 +66,7 @@ function scoreLastInteractionRecency(
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// BEHAVIORAL SIGNALS (20 pts max)
+// BEHAVIORAL SIGNALS (25 pts max)
 // ═══════════════════════════════════════════════════════════════════════
 
 /** Inbound call from lead: strongest buying signal (0-10 pts) */
@@ -162,7 +162,7 @@ function scoreStatusVelocity(
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// PIPELINE SIGNALS (15 pts max)
+// PIPELINE SIGNALS (13 pts max)
 // ═══════════════════════════════════════════════════════════════════════
 
 /** Has active opportunity (0-6 pts) */
@@ -184,19 +184,8 @@ function scoreOpportunityValue(valueUsd: number | null): number {
   return 1;
 }
 
-/** Stage progression: opportunity moving forward (0-5 pts) */
-function scoreStageProgression(
-  stageAdvances: number,
-  hasWonOpp: boolean,
-): number {
-  if (hasWonOpp) return 5;
-  if (stageAdvances >= 2) return 4;
-  if (stageAdvances === 1) return 3;
-  return 0;
-}
-
 // ═══════════════════════════════════════════════════════════════════════
-// HISTORICAL SIGNALS (10 pts max)
+// HISTORICAL SIGNALS (5 pts max)
 // ═══════════════════════════════════════════════════════════════════════
 
 /** Lead source conversion rate (0-5 pts) */
@@ -208,12 +197,6 @@ function scoreSourceQuality(sourceConversionRate: number | null): number {
   if (sourceConversionRate >= 0.03) return 2;
   if (sourceConversionRate > 0) return 1;
   return 0;
-}
-
-/** Similar lead pattern match (0-5 pts) — populated by AI tier */
-function scoreSimilarLeadPattern(aiSimilarityScore: number | null): number {
-  if (aiSimilarityScore === null) return 0;
-  return Math.min(5, Math.max(0, Math.round(aiSimilarityScore)));
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -281,24 +264,24 @@ export function getTrendDirection(
 // WEIGHT APPLICATION
 // ═══════════════════════════════════════════════════════════════════════
 
+// Redistributed 10 dead-signal points (oppStageAdvances=5, aiSimilarityScore=5)
+// to live signals: inboundCalls +3, engagementRecency +2, hasOpportunity +3, quoteRequested +2
 const DEFAULT_MAX_POINTS: Record<string, number> = {
-  engagementRecency: 7,
+  engagementRecency: 9,
   callAnswerRate: 8,
   emailReplyRate: 5,
   smsResponseRate: 5,
-  inboundCalls: 10,
-  quoteRequested: 5,
+  inboundCalls: 13,
+  quoteRequested: 7,
   emailEngagement: 3,
   appointment: 2,
   leadAge: 5,
   timeSinceTouch: 5,
   timeInStatus: 5,
   statusVelocity: 5,
-  hasOpportunity: 6,
+  hasOpportunity: 9,
   opportunityValue: 4,
-  stageProgression: 5,
   sourceQuality: 5,
-  similarLeadPattern: 5,
 };
 
 function applyWeight(
@@ -331,7 +314,7 @@ export function scoreLead(
   weights: AgentWeights,
   previousScore: number | null,
 ): ScoredLead {
-  // Engagement (25 max)
+  // Engagement (27 max)
   const callAnswerRate = applyWeight(
     scoreCallAnswerRate(signals.callsAnswered, signals.callsOutbound),
     "callAnswerRate",
@@ -353,7 +336,7 @@ export function scoreLead(
     weights,
   );
 
-  // Behavioral (20 max)
+  // Behavioral (25 max)
   const inboundCalls = applyWeight(
     scoreInboundCalls(signals.callsInbound),
     "inboundCalls",
@@ -400,7 +383,7 @@ export function scoreLead(
     weights,
   );
 
-  // Pipeline (15 max)
+  // Pipeline (13 max)
   const hasOpportunity = applyWeight(
     scoreHasOpportunity(
       signals.hasActiveOpportunity,
@@ -414,21 +397,10 @@ export function scoreLead(
     "opportunityValue",
     weights,
   );
-  const stageProgression = applyWeight(
-    scoreStageProgression(signals.oppStageAdvances, signals.hasWonOpportunity),
-    "stageProgression",
-    weights,
-  );
-
-  // Historical (10 max)
+  // Historical (5 max)
   const sourceQuality = applyWeight(
     scoreSourceQuality(signals.sourceConversionRate),
     "sourceQuality",
-    weights,
-  );
-  const similarLeadPattern = applyWeight(
-    scoreSimilarLeadPattern(signals.aiSimilarityScore),
-    "similarLeadPattern",
     weights,
   );
 
@@ -459,9 +431,7 @@ export function scoreLead(
     statusVelocity +
     hasOpportunity +
     opportunityValue +
-    stageProgression +
     sourceQuality +
-    similarLeadPattern +
     totalPenalty;
 
   const score = Math.max(0, Math.min(100, Math.round(rawTotal)));
@@ -485,10 +455,8 @@ export function scoreLead(
     // Pipeline
     hasOpportunity,
     opportunityValue,
-    stageProgression,
     // Historical
     sourceQuality,
-    similarLeadPattern,
     // Penalties
     penalties: totalPenalty,
   };

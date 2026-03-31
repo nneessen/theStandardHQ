@@ -32,7 +32,11 @@ async function closeKpiApi<T>(
     headers: accessToken
       ? { Authorization: `Bearer ${accessToken}` }
       : undefined,
-    body: { action, ...params },
+    body: {
+      action,
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      ...params,
+    },
   });
 
   if (error) {
@@ -646,7 +650,7 @@ export const closeKpiService = {
         .maybeSingle(),
       supabase
         .from("lead_heat_scoring_runs")
-        .select("status, started_at, completed_at, error_message")
+        .select("status, started_at, completed_at, error_message, is_truncated")
         .eq("user_id", userId)
         .order("started_at", { ascending: false })
         .limit(1)
@@ -685,6 +689,7 @@ export const closeKpiService = {
       lastRunStartedAt: latestRun?.started_at ?? null,
       lastRunCompletedAt: latestRun?.completed_at ?? null,
       lastRunErrorMessage: latestRun?.error_message ?? null,
+      isTruncated: latestRun?.is_truncated ?? false,
       staleAfterMs: LEAD_HEAT_STALE_AFTER_MS,
     };
   },

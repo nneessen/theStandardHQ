@@ -46,6 +46,10 @@ vi.mock("../../config/prebuilt-layout", () => ({
   ],
 }));
 
+vi.mock("../AiHeroSection", () => ({
+  AiHeroSection: () => <div data-testid="ai-hero-section" />,
+}));
+
 vi.mock("../DashboardSection", () => ({
   DashboardSection: ({ children }: { children: ReactNode }) => (
     <div data-testid="dashboard-section">{children}</div>
@@ -148,6 +152,7 @@ describe("PrebuiltDashboard", () => {
         lastRunStartedAt: "2026-03-29T11:30:00.000Z",
         lastRunCompletedAt: "2026-03-29T12:00:00.000Z",
         lastRunErrorMessage: null,
+        isTruncated: false,
         staleAfterMs: 24 * 60 * 60_000,
       },
     });
@@ -171,6 +176,7 @@ describe("PrebuiltDashboard", () => {
         lastRunStartedAt: null,
         lastRunCompletedAt: null,
         lastRunErrorMessage: null,
+        isTruncated: false,
         staleAfterMs: 24 * 60 * 60_000,
       },
     });
@@ -194,6 +200,7 @@ describe("PrebuiltDashboard", () => {
         lastRunStartedAt: "2026-03-26T11:30:00.000Z",
         lastRunCompletedAt: "2026-03-26T12:00:00.000Z",
         lastRunErrorMessage: null,
+        isTruncated: false,
         staleAfterMs: 24 * 60 * 60_000,
       },
     });
@@ -219,6 +226,7 @@ describe("PrebuiltDashboard", () => {
         lastRunStartedAt: "2026-03-30T12:00:00.000Z",
         lastRunCompletedAt: null,
         lastRunErrorMessage: null,
+        isTruncated: false,
         staleAfterMs: 24 * 60 * 60_000,
       },
     });

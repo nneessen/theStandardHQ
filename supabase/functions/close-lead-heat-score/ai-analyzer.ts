@@ -199,9 +199,6 @@ interface LeadDeepDiveInput {
     type: string;
     description: string;
   }[];
-  agentSourceConversionRate: number | null;
-  similarConvertedCount: number;
-  similarLostCount: number;
 }
 
 const DEEP_DIVE_SYSTEM_PROMPT = `You are an insurance sales advisor analyzing a single lead's history to help an agent prioritize their time. Provide actionable, specific recommendations.
@@ -236,11 +233,6 @@ ${
     .map((a) => `- [${a.date}] ${a.type}: ${a.description}`)
     .join("\n") || "No activities recorded"
 }
-
-## Agent's Performance with Similar Leads
-- Same source conversion rate: ${input.agentSourceConversionRate !== null ? `${(input.agentSourceConversionRate * 100).toFixed(1)}%` : "N/A"}
-- Similar leads that converted: ${input.similarConvertedCount}
-- Similar leads that were lost: ${input.similarLostCount}
 
 Return JSON matching this exact schema:
 {

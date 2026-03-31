@@ -58,6 +58,38 @@ function jsonResponse(data: any, status = 200, req?: Request) {
   });
 }
 
+// ─── Timezone-aware date extraction ────────────────────────────────
+
+/** Extract hour (0-23) and day-of-week (0=Sun, 6=Sat) in the user's timezone. */
+function getDatePartsInTz(
+  isoDate: string,
+  tz: string,
+): { hour: number; dayOfWeek: number } {
+  const d = new Date(isoDate);
+  // Intl.DateTimeFormat works in Deno with IANA timezone strings
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz,
+    hour: "numeric",
+    hour12: false,
+    weekday: "short",
+  }).formatToParts(d);
+
+  const hourPart = parts.find((p) => p.type === "hour");
+  // Intl returns "24" for midnight in hour12:false — normalize to 0
+  const hour = parseInt(hourPart?.value ?? "0", 10) % 24;
+  const dayName = parts.find((p) => p.type === "weekday")?.value ?? "Sun";
+  const dayMap: Record<string, number> = {
+    Sun: 0,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
+  };
+  return { hour, dayOfWeek: dayMap[dayName] ?? 0 };
+}
+
 // ─── Close API v1 Client ───────────────────────────────────────────
 
 const CLOSE_API_BASE = "https://api.close.com/api/v1";
@@ -714,10 +746,11 @@ async function handleGetActivities(apiKey: string, params: Params) {
       byDisposition[d] = (byDisposition[d] ?? 0) + 1;
     }
 
-    // Best time of day analysis: group answered vs total by hour
+    // Best time of day analysis: group answered vs total by hour (timezone-aware)
+    const tz = typeof params.timezone === "string" ? params.timezone : "UTC";
     const byHour: Record<number, { total: number; answered: number }> = {};
     for (const c of calls) {
-      const hour = new Date(c.date_created).getHours();
+      const { hour } = getDatePartsInTz(c.date_created, tz);
       if (!byHour[hour]) byHour[hour] = { total: 0, answered: 0 };
       byHour[hour].total++;
       if (c.disposition === "answered") byHour[hour].answered++;
@@ -1219,7 +1252,8 @@ async function handleGetBestCallTimes(apiKey: string, params: Params) {
     skip += 100;
   }
 
-  // Group by hour of day and day of week
+  // Group by hour of day and day of week (timezone-aware)
+  const tz = typeof params.timezone === "string" ? params.timezone : "UTC";
   const byHour: Record<
     number,
     { total: number; answered: number; vm: number; noAnswer: number }
@@ -1227,9 +1261,7 @@ async function handleGetBestCallTimes(apiKey: string, params: Params) {
   const byDayOfWeek: Record<number, { total: number; answered: number }> = {};
 
   for (const c of allCalls) {
-    const dt = new Date(c.date_created);
-    const hour = dt.getHours();
-    const dow = dt.getDay(); // 0=Sun, 6=Sat
+    const { hour, dayOfWeek: dow } = getDatePartsInTz(c.date_created, tz);
 
     if (!byHour[hour])
       byHour[hour] = { total: 0, answered: 0, vm: 0, noAnswer: 0 };
@@ -1838,6 +1870,7 @@ function buildCallAnalyticsResult(
 function buildBestCallTimesResult(
   calls: CloseCallRecord[],
   isTruncated: boolean,
+  tz = "UTC",
 ) {
   const outboundCalls = calls.filter((call) => call.direction === "outbound");
   const byHour: Record<
@@ -1847,9 +1880,7 @@ function buildBestCallTimesResult(
   const byDayOfWeek: Record<number, { total: number; answered: number }> = {};
 
   for (const call of outboundCalls) {
-    const date = new Date(call.date_created);
-    const hour = date.getHours();
-    const day = date.getDay();
+    const { hour, dayOfWeek: day } = getDatePartsInTz(call.date_created, tz);
 
     if (!byHour[hour]) {
       byHour[hour] = { total: 0, answered: 0, vm: 0, noAnswer: 0 };
@@ -2360,9 +2391,12 @@ async function handleGetPrebuiltDashboardRollup(
     activityGroups.call.items,
     activityGroups.call.isTruncated,
   );
+  const rollupTz =
+    typeof params.timezone === "string" ? params.timezone : "UTC";
   const bestCallTimes = buildBestCallTimesResult(
     activityGroups.call.items,
     activityGroups.call.isTruncated,
+    rollupTz,
   );
   const dialAttempts = buildDialAttemptsResult(activityGroups.call.items);
   const vmRate = buildVmRateBySmartViewResult(

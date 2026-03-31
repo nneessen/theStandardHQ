@@ -119,6 +119,7 @@ export function ChatBotOverviewTab({
     error: collectiveError,
   } = useCollectiveAnalytics(range.from, range.to, {
     refetchInterval: 30_000,
+    enabled: hasAccess && agent !== undefined,
   });
 
   const personalEnabled = hasAccess && !!agent && isSetupDone;

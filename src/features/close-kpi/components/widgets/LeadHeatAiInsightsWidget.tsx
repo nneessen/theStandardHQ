@@ -36,13 +36,7 @@ export const LeadHeatAiInsightsWidget: React.FC<
   LeadHeatAiInsightsWidgetProps
 > = ({ data }) => {
   const leadHeatRescore = useLeadHeatRescore();
-  const {
-    recommendations,
-    anomalies,
-    overallAssessment,
-    sampleSize,
-    analyzedAt,
-  } = data;
+  const { recommendations, anomalies, overallAssessment, analyzedAt } = data;
 
   const handleRescore = async () => {
     try {
@@ -81,19 +75,9 @@ export const LeadHeatAiInsightsWidget: React.FC<
           )}
           {leadHeatRescore.isPending ? "Scoring..." : "Score Leads"}
         </Button>
-        {/* Personalization progress */}
-        <div className="w-full max-w-[180px] mt-1">
-          <div className="flex justify-between text-[9px] text-muted-foreground/60 mb-0.5">
-            <span>Learning</span>
-            <span>{Math.min(sampleSize, 50)}/50</span>
-          </div>
-          <div className="h-1 rounded-full bg-muted/30">
-            <div
-              className="h-1 rounded-full bg-primary/40 transition-all"
-              style={{ width: `${Math.min((sampleSize / 50) * 100, 100)}%` }}
-            />
-          </div>
-        </div>
+        <span className="text-[9px] text-muted-foreground/60 mt-1">
+          Score your leads to see AI-generated insights
+        </span>
       </div>
     );
   }
@@ -160,28 +144,16 @@ export const LeadHeatAiInsightsWidget: React.FC<
         </div>
       )}
 
-      {/* Personalization status */}
+      {/* AI status footer */}
       <div className="mt-auto flex items-center gap-3 border-t border-border/30 pt-1.5">
         <div className="flex items-center gap-1.5">
           <TrendingUp className="h-3 w-3 text-muted-foreground" />
           <span className="text-[10px] text-muted-foreground">
-            Model v{data.modelVersion}
+            AI-assisted &middot; v{data.modelVersion}
           </span>
         </div>
-        <div className="flex-1">
-          <div className="flex justify-between text-[9px] text-muted-foreground/60 mb-0.5">
-            <span>{sampleSize >= 50 ? "Personalized" : "Learning"}</span>
-            <span>{Math.min(sampleSize, 50)}/50</span>
-          </div>
-          <div className="h-1 rounded-full bg-muted/30">
-            <div
-              className={`h-1 rounded-full transition-all ${sampleSize >= 50 ? "bg-emerald-500" : "bg-primary/40"}`}
-              style={{ width: `${Math.min((sampleSize / 50) * 100, 100)}%` }}
-            />
-          </div>
-        </div>
         {analyzedAt && (
-          <span className="text-[9px] text-muted-foreground/50">
+          <span className="text-[9px] text-muted-foreground/50 ml-auto">
             {formatTimeAgo(analyzedAt)}
           </span>
         )}

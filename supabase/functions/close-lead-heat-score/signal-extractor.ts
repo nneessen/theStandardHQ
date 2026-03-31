@@ -180,7 +180,6 @@ interface OpportunityAnalysis {
   hasAnyOpportunity: boolean;
   hasWonOpportunity: boolean;
   opportunityValueUsd: number | null;
-  oppStageAdvances: number;
 }
 
 function analyzeOpportunities(
@@ -192,7 +191,6 @@ function analyzeOpportunities(
       hasAnyOpportunity: false,
       hasWonOpportunity: false,
       opportunityValueUsd: null,
-      oppStageAdvances: 0,
     };
   }
 
@@ -209,7 +207,6 @@ function analyzeOpportunities(
     hasAnyOpportunity: true,
     hasWonOpportunity: hasWon,
     opportunityValueUsd: totalValueCents > 0 ? totalValueCents / 100 : null,
-    oppStageAdvances: 0, // Close doesn't expose opportunity stage changes directly
   };
 }
 
@@ -333,7 +330,6 @@ export function extractSignals(
 
     // Historical
     sourceConversionRate,
-    aiSimilarityScore: null, // populated by AI tier
 
     // Negative
     consecutiveNoAnswers,

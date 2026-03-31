@@ -55,7 +55,7 @@ const STEPS: StepDef[] = [
     title: "AI Scoring Active",
     description: "AI is analyzing and scoring your leads every 30 minutes",
     detail:
-      "The AI engine scores each lead 0-100 based on 17 engagement, behavioral, temporal, and pipeline signals. It learns your personal patterns over time — after 50+ deal outcomes, the model is fully personalized to you.",
+      "The scoring engine evaluates each lead 0-100 based on 17 engagement, behavioral, temporal, and pipeline signals. AI generates portfolio insights and per-lead recommendations to help you prioritize.",
   },
   {
     id: "ready",
@@ -299,7 +299,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "How does AI lead scoring work?",
-    a: "The AI analyzes 17 signals for each lead — call answer rates, email responses, status changes, pipeline activity, and more. Each signal contributes to a 0-100 heat score. Leads scoring 75+ are 'Hot' and need immediate attention. The model personalizes to your selling patterns after 50+ deal outcomes.",
+    a: "The scoring engine analyzes 17 signals for each lead — call answer rates, email responses, status changes, pipeline activity, and more. Each signal contributes to a 0-100 heat score. AI then generates portfolio insights and per-lead recommendations to help you prioritize.",
   },
   {
     q: "How often does data update?",
@@ -307,7 +307,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "What does each heat level mean?",
-    a: "Hot (75-100): High engagement, strong buying signals — call immediately. Warming (55-74): Positive momentum — priority follow-up. Neutral (35-54): No strong signals — standard cadence. Cooling (15-34): Weak engagement — deprioritize. Cold (0-14): No response, stale — consider archiving.",
+    a: "Hot (top 10%): Your highest-priority leads by engagement and pipeline signals — call immediately. Warming (next 15%): Strong leads trending positive — priority follow-up. Neutral (middle 25%): Average engagement — standard cadence. Cooling (next 25%): Below-average signals — deprioritize. Cold (bottom 25%): Lowest engagement in your portfolio — consider archiving.",
   },
   {
     q: "Can I use this with my existing Close setup?",

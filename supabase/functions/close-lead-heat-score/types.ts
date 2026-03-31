@@ -51,11 +51,9 @@ export interface LeadSignals {
   hasAnyOpportunity: boolean;
   hasWonOpportunity: boolean;
   opportunityValueUsd: number | null;
-  oppStageAdvances: number;
 
   // Historical
   sourceConversionRate: number | null;
-  aiSimilarityScore: number | null;
 
   // Negative
   consecutiveNoAnswers: number;
@@ -93,10 +91,8 @@ export interface ScoreBreakdown {
   // Pipeline
   hasOpportunity: number;
   opportunityValue: number;
-  stageProgression: number;
   // Historical
   sourceQuality: number;
-  similarLeadPattern: number;
   // Penalties
   penalties: number;
 }
@@ -124,9 +120,7 @@ export const DEFAULT_AGENT_WEIGHTS: AgentWeights = {
   statusVelocity: { multiplier: 1.0 },
   hasOpportunity: { multiplier: 1.0 },
   opportunityValue: { multiplier: 1.0 },
-  stageProgression: { multiplier: 1.0 },
   sourceQuality: { multiplier: 1.0 },
-  similarLeadPattern: { multiplier: 1.0 },
 };
 
 // ─── Close API Response Types ─────────────────────────────────────────

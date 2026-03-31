@@ -174,7 +174,7 @@ export function useUnlinkAttribution() {
 export function useCollectiveAnalytics(
   from: string,
   to: string,
-  options?: { refetchInterval?: number },
+  options?: { refetchInterval?: number; enabled?: boolean },
 ) {
   return useQuery<CollectiveAnalytics>({
     queryKey: analyticsKeys.collective(from, to),
@@ -186,6 +186,7 @@ export function useCollectiveAnalytics(
       if (error) throw error;
       return data as CollectiveAnalytics;
     },
+    enabled: options?.enabled ?? true,
     staleTime: 10 * 60 * 1000,
     retry: 1,
     refetchInterval: options?.refetchInterval,

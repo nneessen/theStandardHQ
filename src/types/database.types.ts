@@ -7,10 +7,30 @@ export type Json =
   | Json[];
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.5";
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
   public: {
     Tables: {
@@ -1807,112 +1827,6 @@ export type Database = {
             foreignKeyName: "chat_bot_agents_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: true;
-            referencedRelation: "user_profiles";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      chat_bot_conversation_reviews: {
-        Row: {
-          agent_snapshot: Json | null;
-          close_lead_id: string | null;
-          conversation_snapshot: Json | null;
-          conversation_status: string | null;
-          created_at: string;
-          external_agent_id: string;
-          external_conversation_id: string | null;
-          findings: Json;
-          found_conversation: boolean;
-          gaps: Json;
-          human_verdict: string | null;
-          id: string;
-          improvement_brief: string | null;
-          inbound_count: number;
-          outbound_count: number;
-          primary_reason: string;
-          primary_reason_code: string;
-          prompt_version: string | null;
-          resolution_status: string;
-          review_mode: string;
-          review_payload: Json;
-          target_payload: Json;
-          timeline: Json;
-          updated_at: string;
-          user_id: string;
-        };
-        Insert: {
-          agent_snapshot?: Json | null;
-          close_lead_id?: string | null;
-          conversation_snapshot?: Json | null;
-          conversation_status?: string | null;
-          created_at?: string;
-          external_agent_id: string;
-          external_conversation_id?: string | null;
-          findings?: Json;
-          found_conversation?: boolean;
-          gaps?: Json;
-          human_verdict?: string | null;
-          id?: string;
-          improvement_brief?: string | null;
-          inbound_count?: number;
-          outbound_count?: number;
-          primary_reason: string;
-          primary_reason_code: string;
-          prompt_version?: string | null;
-          resolution_status?: string;
-          review_mode: string;
-          review_payload?: Json;
-          target_payload?: Json;
-          timeline?: Json;
-          updated_at?: string;
-          user_id: string;
-        };
-        Update: {
-          agent_snapshot?: Json | null;
-          close_lead_id?: string | null;
-          conversation_snapshot?: Json | null;
-          conversation_status?: string | null;
-          created_at?: string;
-          external_agent_id?: string;
-          external_conversation_id?: string | null;
-          findings?: Json;
-          found_conversation?: boolean;
-          gaps?: Json;
-          human_verdict?: string | null;
-          id?: string;
-          improvement_brief?: string | null;
-          inbound_count?: number;
-          outbound_count?: number;
-          primary_reason?: string;
-          primary_reason_code?: string;
-          prompt_version?: string | null;
-          resolution_status?: string;
-          review_mode?: string;
-          review_payload?: Json;
-          target_payload?: Json;
-          timeline?: Json;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "active_user_profiles";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "user_management_view";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
             referencedRelation: "user_profiles";
             referencedColumns: ["id"];
           },
@@ -5191,15 +5105,18 @@ export type Database = {
       lead_heat_scores: {
         Row: {
           ai_insights: Json | null;
+          ai_insights_generated_at: string | null;
           breakdown: Json;
           close_lead_id: string;
           created_at: string;
           display_name: string | null;
           heat_level: string;
           id: string;
+          percentile_rank: number | null;
           previous_score: number | null;
           score: number;
           scored_at: string;
+          scoring_model_version: string | null;
           signals: Json;
           trend: string;
           updated_at: string;
@@ -5207,15 +5124,18 @@ export type Database = {
         };
         Insert: {
           ai_insights?: Json | null;
+          ai_insights_generated_at?: string | null;
           breakdown?: Json;
           close_lead_id: string;
           created_at?: string;
           display_name?: string | null;
           heat_level?: string;
           id?: string;
+          percentile_rank?: number | null;
           previous_score?: number | null;
           score?: number;
           scored_at?: string;
+          scoring_model_version?: string | null;
           signals?: Json;
           trend?: string;
           updated_at?: string;
@@ -5223,15 +5143,18 @@ export type Database = {
         };
         Update: {
           ai_insights?: Json | null;
+          ai_insights_generated_at?: string | null;
           breakdown?: Json;
           close_lead_id?: string;
           created_at?: string;
           display_name?: string | null;
           heat_level?: string;
           id?: string;
+          percentile_rank?: number | null;
           previous_score?: number | null;
           score?: number;
           scored_at?: string;
+          scoring_model_version?: string | null;
           signals?: Json;
           trend?: string;
           updated_at?: string;
@@ -5246,6 +5169,7 @@ export type Database = {
           duration_ms: number | null;
           error_message: string | null;
           id: string;
+          is_truncated: boolean | null;
           leads_scored: number | null;
           leads_total: number | null;
           run_type: string;
@@ -5259,6 +5183,7 @@ export type Database = {
           duration_ms?: number | null;
           error_message?: string | null;
           id?: string;
+          is_truncated?: boolean | null;
           leads_scored?: number | null;
           leads_total?: number | null;
           run_type?: string;
@@ -5272,6 +5197,7 @@ export type Database = {
           duration_ms?: number | null;
           error_message?: string | null;
           id?: string;
+          is_truncated?: boolean | null;
           leads_scored?: number | null;
           leads_total?: number | null;
           run_type?: string;
@@ -15712,6 +15638,14 @@ export type Database = {
         }[];
       };
       get_close_api_key: { Args: { p_user_id: string }; Returns: string };
+      get_close_connection_status: {
+        Args: { p_user_id: string };
+        Returns: {
+          id: string;
+          is_active: boolean;
+          organization_name: string;
+        }[];
+      };
       get_commissions_for_threshold_check: {
         Args: {
           p_end_date: string;
@@ -18338,6 +18272,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       agent_status: ["unlicensed", "licensed", "not_applicable"],

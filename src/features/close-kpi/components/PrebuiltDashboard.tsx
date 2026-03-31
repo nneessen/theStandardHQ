@@ -96,6 +96,7 @@ export const PrebuiltDashboard: React.FC<PrebuiltDashboardProps> = ({
         insightsData={aiInsightsData}
         isLoading={isAiLoading}
         isRescoring={isLeadHeatRescorePending}
+        isTruncated={leadHeatStatus?.isTruncated ?? false}
         onRescore={() => void triggerLeadHeatRescore().catch(() => {})}
       />
 
