@@ -100,7 +100,7 @@ export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
 
   if (leads.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
+      <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
         <Flame className="h-5 w-5 text-muted-foreground/40" />
         <div className="space-y-0.5">
           <p className="text-xs font-medium text-muted-foreground">
@@ -133,7 +133,7 @@ export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
   }
 
   return (
-    <div className="flex h-full flex-col gap-1">
+    <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between">
         <span className="text-[10px] text-muted-foreground">
           {total} leads{" "}
@@ -161,7 +161,7 @@ export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
         </Button>
       </div>
 
-      <div className="overflow-auto">
+      <div>
         <table className="w-full text-xs">
           <thead>
             <tr className="border-b border-border/50 text-[10px] uppercase text-muted-foreground">

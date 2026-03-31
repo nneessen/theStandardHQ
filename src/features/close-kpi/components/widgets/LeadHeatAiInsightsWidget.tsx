@@ -57,7 +57,7 @@ export const LeadHeatAiInsightsWidget: React.FC<
 
   if (!hasData) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
+      <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
         <Brain className="h-6 w-6 text-muted-foreground/40" />
         <div className="space-y-0.5">
           <p className="text-xs font-medium text-muted-foreground">
@@ -99,7 +99,7 @@ export const LeadHeatAiInsightsWidget: React.FC<
   }
 
   return (
-    <div className="flex h-full flex-col gap-2 overflow-auto">
+    <div className="flex flex-col gap-2">
       {/* Overall Assessment */}
       {overallAssessment && (
         <div className="flex items-start gap-2 rounded border border-primary/20 bg-primary/5 px-2 py-1.5">

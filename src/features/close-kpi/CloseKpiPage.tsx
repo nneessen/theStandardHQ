@@ -1,6 +1,6 @@
 // src/features/close-kpi/CloseKpiPage.tsx
-// Pre-built Close KPI dashboard with AI Lead Scoring.
-// 2 tabs: Dashboard (all widgets pre-rendered) + Setup (connection guide).
+// Close KPI dashboard with pre-built overview + custom user dashboard.
+// 2 tabs: Dashboard (with Overview / My Dashboard sub-views) + Setup.
 
 import React, { useCallback, useEffect, useState } from "react";
 import { THE_STANDARD_AGENCY_ID } from "@/hooks/subscription";
@@ -13,6 +13,7 @@ import { Link } from "@tanstack/react-router";
 import { CloseLogo } from "@/features/chat-bot";
 import { DashboardHeader } from "./components/DashboardHeader";
 import { PrebuiltDashboard } from "./components/PrebuiltDashboard";
+import { CustomDashboard } from "./components/CustomDashboard";
 import { SetupGuide } from "./components/SetupGuide";
 import {
   closeKpiKeys,
@@ -24,6 +25,7 @@ import {
 import type { DateRangePreset } from "./types/close-kpi.types";
 
 type TabId = "dashboard" | "setup";
+type DashboardMode = "prebuilt" | "custom";
 
 const ACCENT = "#4EC375";
 
@@ -36,6 +38,9 @@ export const CloseKpiPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>("setup");
   const [hasResolvedInitialTab, setHasResolvedInitialTab] = useState(false);
   const isSetupTabActive = hasResolvedInitialTab && activeTab === "setup";
+
+  // Dashboard mode: prebuilt overview vs custom
+  const [dashboardMode, setDashboardMode] = useState<DashboardMode>("prebuilt");
 
   // Check close connection
   const { data: closeConfig } = useCloseConnectionStatus(hasAccess);
@@ -105,6 +110,12 @@ export const CloseKpiPage: React.FC = () => {
     { id: "setup", label: "Setup", icon: Settings },
   ];
 
+  // ─── Dashboard Mode Segments ──────────────────────────────────
+  const dashboardModes: { id: DashboardMode; label: string }[] = [
+    { id: "prebuilt", label: "AI + Metrics" },
+    { id: "custom", label: "Custom KPIs" },
+  ];
+
   // ─── Status badge ─────────────────────────────────────────────
   const statusBadge = isCloseConnected ? (
     <Badge className="text-[9px] h-4 px-1.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
@@ -122,8 +133,8 @@ export const CloseKpiPage: React.FC = () => {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-2 sm:p-3 space-y-2 bg-zinc-50 dark:bg-zinc-950">
-      {/* ══════ Hero Header ══════ */}
+    <div className="flex flex-col p-2 sm:p-3 space-y-2 bg-zinc-50 dark:bg-zinc-950">
+      {/* Hero Header */}
       <div className="relative overflow-hidden rounded-xl bg-foreground flex-shrink-0">
         <div className="absolute inset-0 opacity-[0.03]">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -174,7 +185,7 @@ export const CloseKpiPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ══════ Tab Bar ══════ */}
+      {/* Tab Bar */}
       <div className="flex items-center gap-0.5 bg-zinc-200/50 dark:bg-zinc-800/50 rounded-md p-0.5 flex-shrink-0">
         {tabs.map((tab) => (
           <button
@@ -193,7 +204,7 @@ export const CloseKpiPage: React.FC = () => {
         ))}
       </div>
 
-      {/* ══════ Tab Content ══════ */}
+      {/* Tab Content */}
       <div className="flex-1 overflow-y-auto min-h-0">
         {activeTab === "dashboard" && (
           <>
@@ -214,17 +225,44 @@ export const CloseKpiPage: React.FC = () => {
               </div>
             )}
 
-            <DashboardHeader
-              dateRange={dateRange}
-              onDateRangeChange={setDateRange}
-              onRefresh={handleRefresh}
-              isRefreshing={isRefreshing}
-              onRescore={handleRescore}
-              isRescoring={isRescoring || leadHeatRescore.isPending}
-              lastUpdated={lastUpdated}
-            />
+            {/* Dashboard header with mode segmented control */}
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+              {/* Left: Segmented control for dashboard mode */}
+              <div className="flex items-center gap-0.5 bg-zinc-100 dark:bg-zinc-800/50 rounded-md p-0.5">
+                {dashboardModes.map((mode) => (
+                  <button
+                    key={mode.id}
+                    onClick={() => setDashboardMode(mode.id)}
+                    className={cn(
+                      "px-2.5 py-1 text-[10px] font-medium rounded transition-all whitespace-nowrap",
+                      dashboardMode === mode.id
+                        ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
+                        : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+                    )}
+                  >
+                    {mode.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-            <PrebuiltDashboard dateRange={dateRange} />
+            {/* Dashboard Content */}
+            {dashboardMode === "prebuilt" && (
+              <>
+                <DashboardHeader
+                  dateRange={dateRange}
+                  onDateRangeChange={setDateRange}
+                  onRefresh={handleRefresh}
+                  isRefreshing={isRefreshing}
+                  onRescore={handleRescore}
+                  isRescoring={isRescoring || leadHeatRescore.isPending}
+                  lastUpdated={lastUpdated}
+                />
+                <PrebuiltDashboard dateRange={dateRange} />
+              </>
+            )}
+
+            {dashboardMode === "custom" && <CustomDashboard />}
           </>
         )}
 

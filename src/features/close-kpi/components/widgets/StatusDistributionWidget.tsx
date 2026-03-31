@@ -14,7 +14,7 @@ export const StatusDistributionWidget: React.FC<
   const maxCount = Math.max(...data.items.map((i) => i.count), 1);
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-col">
       <div className="mb-1 flex items-center justify-between">
         <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
           {label ?? "Lead Pipeline"}
@@ -23,7 +23,7 @@ export const StatusDistributionWidget: React.FC<
           {data.total.toLocaleString()} total
         </span>
       </div>
-      <div className="flex-1 space-y-0.5 overflow-y-auto">
+      <div className="space-y-0.5">
         {data.items.map((item) => {
           const pct =
             data.total > 0 ? Math.round((item.count / data.total) * 100) : 0;

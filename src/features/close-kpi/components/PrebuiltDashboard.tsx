@@ -1,24 +1,13 @@
 // src/features/close-kpi/components/PrebuiltDashboard.tsx
-// Main pre-built dashboard rendering all 4 sections with 14 widgets.
-// No manual add/remove/reorder — everything is always displayed.
+// Pre-built dashboard: AI hero at top, then Close metric sections below.
+// AI section is a purpose-built command center, not generic cards.
 
 import React, { useEffect, useRef } from "react";
 import { Loader2 } from "lucide-react";
+import { AiHeroSection } from "./AiHeroSection";
 import { DashboardSection } from "./DashboardSection";
 import { PrebuiltWidget } from "./PrebuiltWidget";
-import { StatCardWidget } from "./widgets/StatCardWidget";
-import { StatusDistributionWidget } from "./widgets/StatusDistributionWidget";
-import { CallAnalyticsWidget } from "./widgets/CallAnalyticsWidget";
-import { OpportunitySummaryWidget } from "./widgets/OpportunitySummaryWidget";
-import { VmRateSmartViewWidget } from "./widgets/VmRateSmartViewWidget";
-import { BestCallTimesWidget } from "./widgets/BestCallTimesWidget";
-import { CrossReferenceWidget } from "./widgets/CrossReferenceWidget";
-import { SpeedToLeadWidget } from "./widgets/SpeedToLeadWidget";
-import { ContactCadenceWidget } from "./widgets/ContactCadenceWidget";
-import { DialAttemptsWidget } from "./widgets/DialAttemptsWidget";
-import { LeadHeatSummaryWidget } from "./widgets/LeadHeatSummaryWidget";
-import { LeadHeatListWidget } from "./widgets/LeadHeatListWidget";
-import { LeadHeatAiInsightsWidget } from "./widgets/LeadHeatAiInsightsWidget";
+import { WidgetRenderer } from "./WidgetRenderer";
 import { usePrebuiltDashboardData } from "../hooks/usePrebuiltWidgetData";
 import {
   useLeadHeatDashboardStatus,
@@ -27,17 +16,6 @@ import {
 import { DASHBOARD_SECTIONS } from "../config/prebuilt-layout";
 import type {
   DateRangePreset,
-  StatCardResult,
-  StatusDistributionResult,
-  CallAnalyticsResult,
-  OpportunitySummaryResult,
-  LifecycleTrackerResult,
-  VmRateSmartViewResult,
-  BestCallTimesResult,
-  CrossReferenceResult,
-  SpeedToLeadResult,
-  ContactCadenceResult,
-  DialAttemptsResult,
   LeadHeatSummaryResult,
   LeadHeatListResult,
   LeadHeatAiInsightsResult,
@@ -66,9 +44,6 @@ export const PrebuiltDashboard: React.FC<PrebuiltDashboardProps> = ({
     leadHeatStatus?.state === "stale" && hasCachedLeadHeatScores;
   const isLeadHeatRunning =
     leadHeatStatus?.state === "running" || isLeadHeatRescorePending;
-  const leadHeatBannerMessage = hasCachedLeadHeatScores
-    ? "Refreshing lead heat in the background. Cached scores remain visible until the rescore finishes."
-    : "Scoring your leads for the first time — this takes 30-60 seconds...";
 
   useEffect(() => {
     if (
@@ -85,16 +60,47 @@ export const PrebuiltDashboard: React.FC<PrebuiltDashboardProps> = ({
     triggerLeadHeatRescore,
   ]);
 
+  // Extract AI widget data for the hero section
+  const aiSummaryData =
+    (widgetDataMap.get("heat_summary")?.data as LeadHeatSummaryResult) ?? null;
+  const aiListData =
+    (widgetDataMap.get("heat_list")?.data as LeadHeatListResult) ?? null;
+  const aiInsightsData =
+    (widgetDataMap.get("ai_insights")?.data as LeadHeatAiInsightsResult) ??
+    null;
+  const isAiLoading = heatSummary?.isLoading ?? false;
+
+  // Non-AI sections only (skip ai_lead_scoring — it's rendered by AiHeroSection)
+  const metricSections = DASHBOARD_SECTIONS.filter(
+    (s) => s.id !== "ai_lead_scoring",
+  );
+
   return (
     <div className="space-y-4 pb-4">
+      {/* Rescore banner */}
       {isLeadHeatRunning && (
-        <div className="flex items-center gap-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2">
-          <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-          <p className="text-[11px] text-primary">{leadHeatBannerMessage}</p>
+        <div className="flex items-center gap-2 rounded-md border border-foreground/10 bg-foreground/[0.02] px-3 py-2">
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-foreground" />
+          <p className="text-[11px] text-foreground">
+            {hasCachedLeadHeatScores
+              ? "Refreshing lead heat in the background. Cached scores remain visible."
+              : "Scoring your leads for the first time — this takes 30-60 seconds..."}
+          </p>
         </div>
       )}
 
-      {DASHBOARD_SECTIONS.map((section) => (
+      {/* AI Hero Section — always first, always prominent */}
+      <AiHeroSection
+        summaryData={aiSummaryData}
+        listData={aiListData}
+        insightsData={aiInsightsData}
+        isLoading={isAiLoading}
+        isRescoring={isLeadHeatRescorePending}
+        onRescore={() => void triggerLeadHeatRescore().catch(() => {})}
+      />
+
+      {/* Close Metric Sections */}
+      {metricSections.map((section) => (
         <DashboardSection
           key={section.id}
           id={section.id}
@@ -107,7 +113,7 @@ export const PrebuiltDashboard: React.FC<PrebuiltDashboardProps> = ({
           {section.widgets.map((widgetDef) => {
             const state = widgetDataMap.get(widgetDef.id);
             const data = state?.data ?? null;
-            const isLoading =
+            const widgetLoading =
               state?.isLoading ??
               (isCloseApiLoading && !widgetDef.type.startsWith("lead_heat_"));
             const error = state?.error ?? null;
@@ -120,7 +126,7 @@ export const PrebuiltDashboard: React.FC<PrebuiltDashboardProps> = ({
                 size={widgetDef.size}
                 colSpan={widgetDef.colSpan}
                 data={data}
-                isLoading={isLoading}
+                isLoading={widgetLoading}
                 error={error}
                 onRetry={() => state?.refetch()}
               >
@@ -132,106 +138,4 @@ export const PrebuiltDashboard: React.FC<PrebuiltDashboardProps> = ({
       ))}
     </div>
   );
-};
-
-// ─── Widget Renderer (dispatches to the correct display component) ────
-
-interface WidgetRendererProps {
-  type: string;
-  data: unknown;
-}
-
-const WidgetRenderer: React.FC<WidgetRendererProps> = ({ type, data }) => {
-  if (!data) return null;
-
-  switch (type) {
-    case "stat_card":
-      return <StatCardWidget data={data as StatCardResult} />;
-
-    case "status_distribution":
-      return (
-        <StatusDistributionWidget
-          data={data as StatusDistributionResult}
-          label="Status Distribution"
-        />
-      );
-
-    case "call_analytics":
-      return <CallAnalyticsWidget data={data as CallAnalyticsResult} />;
-
-    case "opportunity_summary":
-      return (
-        <OpportunitySummaryWidget data={data as OpportunitySummaryResult} />
-      );
-
-    case "lifecycle_tracker": {
-      const lcData = data as LifecycleTrackerResult;
-      const t = lcData.transitions?.[0];
-      if (!t || t.sampleSize === 0) {
-        return (
-          <div className="flex h-full flex-col justify-center">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              New → Next Status
-            </p>
-            <p className="mt-2 text-[11px] text-muted-foreground">
-              No leads transitioned between these statuses. Try a wider date
-              range.
-            </p>
-          </div>
-        );
-      }
-      return (
-        <div className="flex h-full flex-col justify-center">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-            {t.from} → {t.to}
-          </p>
-          <span className="font-mono text-2xl font-bold text-foreground">
-            {t.avgDays} days
-          </span>
-          <div className="mt-1 space-y-0.5">
-            <p className="text-[10px] text-muted-foreground">
-              Median: {t.medianDays}d · Range: {t.minDays}d – {t.maxDays}d
-            </p>
-            <p className="text-[10px] text-muted-foreground">
-              Sample: {t.sampleSize} leads
-            </p>
-          </div>
-        </div>
-      );
-    }
-
-    case "vm_rate_smart_view": {
-      const vmData = data as VmRateSmartViewResult;
-      return <VmRateSmartViewWidget data={vmData} vmThreshold={40} />;
-    }
-
-    case "best_call_times":
-      return <BestCallTimesWidget data={data as BestCallTimesResult} />;
-
-    case "cross_reference":
-      return <CrossReferenceWidget data={data as CrossReferenceResult} />;
-
-    case "speed_to_lead":
-      return <SpeedToLeadWidget data={data as SpeedToLeadResult} />;
-
-    case "contact_cadence":
-      return <ContactCadenceWidget data={data as ContactCadenceResult} />;
-
-    case "dial_attempts":
-      return <DialAttemptsWidget data={data as DialAttemptsResult} />;
-
-    case "lead_heat_summary":
-      return <LeadHeatSummaryWidget data={data as LeadHeatSummaryResult} />;
-
-    case "lead_heat_list":
-      return <LeadHeatListWidget data={data as LeadHeatListResult} />;
-
-    case "lead_heat_ai_insights":
-      return (
-        <LeadHeatAiInsightsWidget data={data as LeadHeatAiInsightsResult} />
-      );
-
-    default:
-      return null;
-  }
 };

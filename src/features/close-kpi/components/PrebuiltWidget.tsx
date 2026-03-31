@@ -22,11 +22,12 @@ interface PrebuiltWidgetProps {
   children: React.ReactNode;
 }
 
-const HEIGHT_CLASS: Record<string, string> = {
-  small: "h-[6rem]",
-  medium: "h-[12rem]",
-  large: "h-[16rem]",
-  full: "h-[20rem]",
+// Min-heights for skeleton loading only — content auto-sizes
+const MIN_HEIGHT_CLASS: Record<string, string> = {
+  small: "min-h-[4rem]",
+  medium: "min-h-[6rem]",
+  large: "min-h-[8rem]",
+  full: "min-h-[10rem]",
 };
 
 export const PrebuiltWidget: React.FC<PrebuiltWidgetProps> = ({
@@ -41,7 +42,7 @@ export const PrebuiltWidget: React.FC<PrebuiltWidgetProps> = ({
   children,
 }) => {
   const tooltip = WIDGET_TOOLTIPS[tooltipKey];
-  const heightClass = HEIGHT_CLASS[size] ?? HEIGHT_CLASS.medium;
+  const minHeightClass = MIN_HEIGHT_CLASS[size] ?? MIN_HEIGHT_CLASS.medium;
 
   return (
     <div
@@ -64,8 +65,8 @@ export const PrebuiltWidget: React.FC<PrebuiltWidgetProps> = ({
         )}
       </div>
 
-      {/* Content */}
-      <div className={`overflow-y-auto p-2 ${heightClass}`}>
+      {/* Content — auto-sizes, no scroll */}
+      <div className={`p-2 ${isLoading && !data ? minHeightClass : ""}`}>
         {isLoading && !data ? (
           <WidgetSkeleton size={size === "full" ? "large" : size} />
         ) : error ? (

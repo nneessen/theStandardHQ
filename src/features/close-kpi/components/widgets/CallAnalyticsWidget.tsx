@@ -85,7 +85,7 @@ export const CallAnalyticsWidget: React.FC<CallAnalyticsWidgetProps> = ({
 
       {data.isTruncated && (
         <p className="text-[9px] text-muted-foreground/60">
-          Data limited to first 2,000 calls
+          Data limited to first {data.total.toLocaleString()} calls
         </p>
       )}
     </div>

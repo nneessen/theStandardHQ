@@ -62,13 +62,13 @@ function jsonResponse(data: any, status = 200, req?: Request) {
 
 const CLOSE_API_BASE = "https://api.close.com/api/v1";
 
-async function closeGet(apiKey: string, path: string): Promise<unknown> {
-  const res = await fetch(`${CLOSE_API_BASE}${path}`, {
-    headers: {
-      Authorization: `Basic ${btoa(`${apiKey}:`)}`,
-      Accept: "application/json",
-    },
-    signal: AbortSignal.timeout(12_000),
+async function closeApiFetch(
+  url: string,
+  init: RequestInit,
+): Promise<Response> {
+  const res = await fetch(url, {
+    ...init,
+    signal: AbortSignal.timeout(15_000),
   });
 
   if (res.status === 401) {
@@ -77,24 +77,23 @@ async function closeGet(apiKey: string, path: string): Promise<unknown> {
       status: 401,
     });
   }
+
   if (res.status === 429) {
-    // Retry once after backoff
-    const retryAfter = parseInt(res.headers.get("retry-after") ?? "2", 10);
-    await new Promise((r) => setTimeout(r, retryAfter * 1000));
-    const retryRes = await fetch(`${CLOSE_API_BASE}${path}`, {
-      headers: {
-        Authorization: `Basic ${btoa(`${apiKey}:`)}`,
-        Accept: "application/json",
-      },
-      signal: AbortSignal.timeout(12_000),
+    const wait = parseInt(res.headers.get("retry-after") ?? "3", 10);
+    await new Promise((r) => setTimeout(r, wait * 1000));
+    const retry = await fetch(url, {
+      ...init,
+      signal: AbortSignal.timeout(15_000),
     });
-    if (!retryRes.ok)
+    if (!retry.ok) {
       throw Object.assign(new Error("Close API rate limit"), {
         code: "CLOSE_RATE_LIMIT",
         status: 429,
       });
-    return retryRes.json();
+    }
+    return retry;
   }
+
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
     throw Object.assign(new Error(`Close API ${res.status}: ${errText}`), {
@@ -102,7 +101,77 @@ async function closeGet(apiKey: string, path: string): Promise<unknown> {
       status: res.status,
     });
   }
+
+  return res;
+}
+
+async function closeGet(apiKey: string, path: string): Promise<unknown> {
+  const res = await closeApiFetch(`${CLOSE_API_BASE}${path}`, {
+    headers: {
+      Authorization: `Basic ${btoa(`${apiKey}:`)}`,
+      Accept: "application/json",
+    },
+  });
   return res.json();
+}
+
+async function closePost(
+  apiKey: string,
+  path: string,
+  body: Record<string, unknown>,
+): Promise<unknown> {
+  const res = await closeApiFetch(`${CLOSE_API_BASE}${path}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${btoa(`${apiKey}:`)}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  return res.json();
+}
+
+/** Fetch leads in a smart view using its s_query via POST /data/search/.
+ *  Pass preloaded s_query.query when available (from bulk /saved_search/ fetch). */
+async function fetchLeadsBySmartView(
+  apiKey: string,
+  smartViewId: string,
+  fields: string[],
+  maxResults = 2000,
+  preloadedQuery?: Record<string, unknown>,
+) {
+  // Get the structured query from s_query field
+  let searchQuery = preloadedQuery;
+  if (!searchQuery) {
+    const svDef = (await closeGet(
+      apiKey,
+      `/saved_search/${smartViewId}/`,
+    )) as ApiResult;
+    searchQuery = svDef.s_query?.query as Record<string, unknown> | undefined;
+    if (!searchQuery) return { items: [], isTruncated: false };
+  }
+
+  const items: Record<string, unknown>[] = [];
+  let cursor: string | undefined;
+
+  while (items.length < maxResults) {
+    const body: Record<string, unknown> = {
+      query: searchQuery,
+      _limit: 100,
+      _fields: { lead: fields },
+    };
+    if (cursor) body.cursor = cursor;
+
+    const res = (await closePost(apiKey, "/data/search/", body)) as ApiResult;
+    const page = (res.data ?? []) as Record<string, unknown>[];
+    items.push(...page);
+
+    cursor = res.cursor as string | undefined;
+    if (!cursor || page.length < 100) break;
+  }
+
+  return { items, isTruncated: items.length >= maxResults };
 }
 
 // ─── Action Handlers ───────────────────────────────────────────────
@@ -125,6 +194,7 @@ type CloseLeadStatus = {
 type CloseSavedSearch = {
   id: string;
   name: string;
+  s_query?: { query: Record<string, unknown> };
 };
 
 type CloseLeadRecord = {
@@ -156,12 +226,17 @@ type SmartViewSnapshot = {
   isTruncated: boolean;
 };
 
+/**
+ * Build a Close API query fragment for date filtering on GET /lead/.
+ * NOTE: Smart view filtering does NOT work via GET /lead/ query params.
+ * Use fetchLeadsBySmartView() (POST /data/search/) for smart view queries.
+ */
 function buildLeadSearchQueryFragment(from?: string, to?: string) {
-  const dateQuery = [];
-  if (from) dateQuery.push(`created >= "${from}"`);
-  if (to) dateQuery.push(`created <= "${to}"`);
-  return dateQuery.length > 0
-    ? `&query=${encodeURIComponent(dateQuery.join(" "))}`
+  const parts: string[] = [];
+  if (from) parts.push(`created >= "${from}"`);
+  if (to) parts.push(`created <= "${to}"`);
+  return parts.length > 0
+    ? `&query=${encodeURIComponent(parts.join(" "))}`
     : "";
 }
 
@@ -208,17 +283,15 @@ async function fetchLeadTotalForRange(
   params: {
     from?: string;
     to?: string;
-    smartViewId?: string;
     statusId?: string;
   },
 ) {
-  const { from, to, smartViewId, statusId } = params;
+  const { from, to, statusId } = params;
   const queryParam = buildLeadSearchQueryFragment(from, to);
-  const svParam = smartViewId ? `&saved_search_id=${smartViewId}` : "";
   const statusParam = statusId ? `&status_id=${statusId}` : "";
   const res = (await closeGet(
     apiKey,
-    `/lead/?_limit=1&_fields=id${queryParam}${svParam}${statusParam}`,
+    `/lead/?_limit=1&_fields=id${queryParam}${statusParam}`,
   )) as ApiResult;
   return res.total_results ?? 0;
 }
@@ -228,20 +301,18 @@ async function fetchLeadCountsForRange(
   params: {
     from?: string;
     to?: string;
-    smartViewId?: string;
     statuses: CloseLeadStatus[];
   },
 ) {
-  const { from, to, smartViewId, statuses } = params;
+  const { from, to, statuses } = params;
   const queryParam = buildLeadSearchQueryFragment(from, to);
-  const svParam = smartViewId ? `&saved_search_id=${smartViewId}` : "";
-  const total = await fetchLeadTotalForRange(apiKey, { from, to, smartViewId });
+  const total = await fetchLeadTotalForRange(apiKey, { from, to });
 
   if (total <= 5000) {
     const leadStatusRows = await fetchPaginatedResults<{ status_id?: string }>(
       apiKey,
       (skip) =>
-        `/lead/?_limit=100&_skip=${skip}&_fields=status_id${queryParam}${svParam}`,
+        `/lead/?_limit=100&_skip=${skip}&_fields=status_id${queryParam}`,
       5000,
     );
 
@@ -272,7 +343,6 @@ async function fetchLeadCountsForRange(
         count: await fetchLeadTotalForRange(apiKey, {
           from,
           to,
-          smartViewId,
           statusId: status.id,
         }),
       })),
@@ -285,17 +355,16 @@ async function fetchLeadCountsForRange(
 
 async function fetchCreatedLeads(
   apiKey: string,
-  params: { from?: string; to?: string; smartViewId?: string },
+  params: { from?: string; to?: string },
 ) {
-  const { from, to, smartViewId } = params;
+  const { from, to } = params;
   const queryParam = buildLeadSearchQueryFragment(from, to);
-  const svParam = smartViewId ? `&saved_search_id=${smartViewId}` : "";
 
   return fetchPaginatedResults<CloseLeadRecord>(
     apiKey,
     (skip) =>
-      `/lead/?_limit=100&_skip=${skip}&_fields=id,date_created${queryParam}${svParam}`,
-    2000,
+      `/lead/?_limit=100&_skip=${skip}&_fields=id,date_created${queryParam}`,
+    500,
   );
 }
 
@@ -308,6 +377,7 @@ async function fetchActivityGroups(
   if (from) callParams.push(`date_created__gte=${from}`);
   if (to) callParams.push(`date_created__lte=${to}T23:59:59`);
 
+  // Concurrency limiter prevents 429s — parallel is safe.
   const [call, email, sms] = await Promise.all([
     fetchPaginatedResults<CloseCallRecord>(
       apiKey,
@@ -315,7 +385,7 @@ async function fetchActivityGroups(
         `/activity/call/?_limit=100&_skip=${skip}&_fields=lead_id,direction,disposition,duration,date_created${
           callParams.length ? `&${callParams.join("&")}` : ""
         }`,
-      3000,
+      1000,
     ),
     fetchPaginatedResults<CloseMessageRecord>(
       apiKey,
@@ -323,7 +393,7 @@ async function fetchActivityGroups(
         `/activity/email/?_limit=100&_skip=${skip}&_fields=lead_id,direction,date_created${
           callParams.length ? `&${callParams.join("&")}` : ""
         }`,
-      2000,
+      1000,
     ),
     fetchPaginatedResults<CloseMessageRecord>(
       apiKey,
@@ -331,7 +401,7 @@ async function fetchActivityGroups(
         `/activity/sms/?_limit=100&_skip=${skip}&_fields=lead_id,direction,date_created${
           callParams.length ? `&${callParams.join("&")}` : ""
         }`,
-      2000,
+      1000,
     ),
   ]);
 
@@ -344,22 +414,24 @@ async function fetchSmartViewSnapshots(
 ) {
   const snapshots: SmartViewSnapshot[] = [];
 
-  for (let index = 0; index < smartViews.length; index += 3) {
-    const batch = smartViews.slice(index, index + 3);
+  for (let index = 0; index < smartViews.length; index += 2) {
+    const batch = smartViews.slice(index, index + 2);
     const batchSnapshots = await Promise.all(
       batch.map(async (smartView) => {
-        const leads = await fetchPaginatedResults<CloseLeadRecord>(
+        const leads = await fetchLeadsBySmartView(
           apiKey,
-          (skip) =>
-            `/lead/?_limit=100&_skip=${skip}&_fields=id,status_id&saved_search_id=${smartView.id}`,
-          2000,
+          smartView.id,
+          ["id", "status_id"],
+          500,
+          smartView.s_query?.query,
         );
 
         const leadIds = new Set<string>();
         const statusCounts: Record<string, number> = {};
         for (const lead of leads.items) {
-          leadIds.add(lead.id);
-          const statusId = lead.status_id ?? "unknown";
+          const id = lead.id as string;
+          leadIds.add(id);
+          const statusId = (lead.status_id as string) ?? "unknown";
           statusCounts[statusId] = (statusCounts[statusId] ?? 0) + 1;
         }
 
@@ -481,31 +553,88 @@ async function handleGetMetadata(apiKey: string) {
 async function handleGetLeadCounts(apiKey: string, params: Params) {
   const { from, to, smartViewId } = params;
   const statusRes = (await closeGet(apiKey, "/status/lead/")) as ApiResult;
-  return fetchLeadCountsForRange(apiKey, {
-    from,
-    to,
-    smartViewId,
-    statuses: (statusRes.data ?? []) as CloseLeadStatus[],
-  });
+  const statuses = (statusRes.data ?? []) as CloseLeadStatus[];
+
+  // Smart view filtering requires POST /data/search/
+  if (smartViewId) {
+    const svLeads = await fetchLeadsBySmartView(
+      apiKey,
+      smartViewId,
+      ["id", "status_id", "date_created"],
+      5000,
+    );
+    // Apply date filter client-side
+    const filtered = svLeads.items.filter((l) => {
+      const created = l.date_created as string | undefined;
+      if (!created) return true;
+      if (from && created < from) return false;
+      if (to && created > `${to}T23:59:59`) return false;
+      return true;
+    });
+
+    const statusCounts: Record<string, number> = {};
+    for (const lead of filtered) {
+      const statusId = (lead.status_id as string) ?? "unknown";
+      statusCounts[statusId] = (statusCounts[statusId] ?? 0) + 1;
+    }
+
+    return {
+      byStatus: statuses.map((status) => ({
+        id: status.id,
+        label: status.label,
+        count: statusCounts[status.id] ?? 0,
+      })),
+      total: filtered.length,
+      isTruncated: svLeads.isTruncated,
+    };
+  }
+
+  return fetchLeadCountsForRange(apiKey, { from, to, statuses });
 }
 
 async function handleSearchLeads(apiKey: string, params: Params) {
   const { from, to, statusId, smartViewId, limit } = params;
 
+  // Smart view filtering requires POST /data/search/ — GET /lead/ ignores it.
+  if (smartViewId) {
+    const svLeads = await fetchLeadsBySmartView(
+      apiKey,
+      smartViewId,
+      ["id", "display_name", "status_id", "date_created"],
+      limit ?? 1,
+    );
+    // Apply additional filters client-side (date range + status)
+    let filtered = svLeads.items;
+    if (from) {
+      filtered = filtered.filter(
+        (l) => !l.date_created || (l.date_created as string) >= from,
+      );
+    }
+    if (to) {
+      filtered = filtered.filter(
+        (l) =>
+          !l.date_created || (l.date_created as string) <= `${to}T23:59:59`,
+      );
+    }
+    if (statusId) {
+      filtered = filtered.filter((l) => l.status_id === statusId);
+    }
+    return { totalResults: filtered.length, data: filtered };
+  }
+
+  // No smart view — use standard GET /lead/ endpoint
   const qs = [
     `_limit=${limit ?? 1}`,
     `_fields=id,display_name,status_id,date_created`,
   ];
 
   if (statusId) qs.push(`status_id=${statusId}`);
-  if (smartViewId) qs.push(`saved_search_id=${smartViewId}`);
 
-  // Build date query
-  const dateQuery = [];
-  if (from) dateQuery.push(`created >= "${from}"`);
-  if (to) dateQuery.push(`created <= "${to}"`);
-  if (dateQuery.length > 0)
-    qs.push(`query=${encodeURIComponent(dateQuery.join(" "))}`);
+  const queryParts: string[] = [];
+  if (from) queryParts.push(`created >= "${from}"`);
+  if (to) queryParts.push(`created <= "${to}"`);
+  if (queryParts.length > 0)
+    qs.push(`query=${encodeURIComponent(queryParts.join(" "))}`);
 
   const res = (await closeGet(apiKey, `/lead/?${qs.join("&")}`)) as ApiResult;
   return { totalResults: res.total_results ?? 0, data: res.data ?? [] };
@@ -707,7 +836,7 @@ async function handleGetOpportunities(apiKey: string, params: Params) {
     wonOpps.length + lostOpps.length > 0
       ? wonOpps.length / (wonOpps.length + lostOpps.length)
       : 0;
-  const avgDealSize = wonOpps.length > 0 ? wonValue / wonOpps.length : 0;
+  const avgDealSize = opps.length > 0 ? totalValue / opps.length : 0;
 
   // Average time to close
   let avgTimeToCloseDays = 0;
@@ -972,8 +1101,10 @@ async function handleGetVmRateBySmartView(apiKey: string, params: Params) {
     `/saved_search/?_limit=50`,
   )) as ApiResult;
   const svMap: Record<string, string> = {};
+  const svQueryMap: Record<string, Record<string, unknown>> = {};
   for (const sv of svMeta.data ?? []) {
     svMap[sv.id] = sv.name;
+    if (sv.s_query?.query) svQueryMap[sv.id] = sv.s_query.query;
   }
 
   // deno-lint-ignore no-explicit-any
@@ -986,28 +1117,16 @@ async function handleGetVmRateBySmartView(apiKey: string, params: Params) {
     const batch = smartViewIds.slice(i, i + 3);
     const batchResults = await Promise.all(
       batch.map(async (svId: string) => {
-        // Fetch lead IDs in this smart view (paginate up to 2000)
-        const leadIds = new Set<string>();
-        let svHasMore = true;
-        let svSkip = 0;
-
-        while (svHasMore && svSkip < 2000) {
-          const svQs = [
-            `_limit=100`,
-            `_skip=${svSkip}`,
-            `_fields=id`,
-            `saved_search_id=${svId}`,
-          ];
-          const res = (await closeGet(
-            apiKey,
-            `/lead/?${svQs.join("&")}`,
-          )) as ApiResult;
-          for (const lead of res.data ?? []) {
-            leadIds.add(lead.id);
-          }
-          svHasMore = res.has_more === true;
-          svSkip += 100;
-        }
+        const svLeads = await fetchLeadsBySmartView(
+          apiKey,
+          svId,
+          ["id"],
+          2000,
+          svQueryMap[svId],
+        );
+        const leadIds = new Set<string>(
+          svLeads.items.map((l) => l.id as string),
+        );
 
         // Cross-reference: find calls whose lead_id is in this smart view
         let totalFirstCalls = 0;
@@ -1192,12 +1311,21 @@ async function handleGetCrossReference(apiKey: string, params: Params) {
     return { rows: [], statusLabels: [], totals: {}, grandTotal: 0 };
   }
 
-  // Fetch status labels
-  const statusRes = (await closeGet(apiKey, "/status/lead/")) as ApiResult;
+  // Fetch status labels + smart view metadata (for names and queries) in parallel
+  const [statusRes, svMeta] = await Promise.all([
+    closeGet(apiKey, "/status/lead/") as Promise<ApiResult>,
+    closeGet(apiKey, "/saved_search/?_limit=50") as Promise<ApiResult>,
+  ]);
   const allStatuses = (statusRes.data ?? []) as { id: string; label: string }[];
   const filterStatuses = statusIds?.length
     ? allStatuses.filter((s: { id: string }) => statusIds.includes(s.id))
     : allStatuses;
+  const svMap: Record<string, string> = {};
+  const svQueryMap: Record<string, Record<string, unknown>> = {};
+  for (const sv of svMeta.data ?? []) {
+    svMap[sv.id] = sv.name;
+    if (sv.s_query?.query) svQueryMap[sv.id] = sv.s_query.query;
+  }
 
   // For each smart view, get lead counts by status
   // deno-lint-ignore no-explicit-any
@@ -1209,32 +1337,24 @@ async function handleGetCrossReference(apiKey: string, params: Params) {
     const batch = smartViewIds.slice(i, i + 3);
     const batchResults = await Promise.all(
       batch.map(async (svId: string) => {
-        // Fetch all leads in this smart view with status_id
+        const svLeads = await fetchLeadsBySmartView(
+          apiKey,
+          svId,
+          ["id", "status_id"],
+          2000,
+          svQueryMap[svId],
+        );
         const statusCounts: Record<string, number> = {};
-        let svHasMore = true;
-        let svSkip = 0;
-        let svTotal = 0;
-
-        while (svHasMore && svSkip < 2000) {
-          const res = (await closeGet(
-            apiKey,
-            `/lead/?_limit=100&_skip=${svSkip}&_fields=id,status_id&saved_search_id=${svId}`,
-          )) as ApiResult;
-          for (const lead of res.data ?? []) {
-            const sid = lead.status_id ?? "unknown";
-            statusCounts[sid] = (statusCounts[sid] ?? 0) + 1;
-            svTotal++;
-          }
-          svHasMore = res.has_more === true;
-          svSkip += 100;
+        for (const lead of svLeads.items) {
+          const sid = (lead.status_id as string) ?? "unknown";
+          statusCounts[sid] = (statusCounts[sid] ?? 0) + 1;
         }
 
-        return { smartViewId: svId, statusCounts, total: svTotal };
+        return { smartViewId: svId, statusCounts, total: svLeads.items.length };
       }),
     );
 
     for (const result of batchResults) {
-      // Get smart view name
       const cells: Record<string, number> = {};
       for (const status of filterStatuses) {
         const count = result.statusCounts[status.id] ?? 0;
@@ -1250,13 +1370,7 @@ async function handleGetCrossReference(apiKey: string, params: Params) {
     }
   }
 
-  // Resolve smart view names
-  const svMeta = (await closeGet(
-    apiKey,
-    "/saved_search/?_limit=50",
-  )) as ApiResult;
-  const svMap: Record<string, string> = {};
-  for (const sv of svMeta.data ?? []) svMap[sv.id] = sv.name;
+  // Resolve smart view names (already fetched above)
   for (const row of rows)
     row.smartViewName = svMap[row.smartViewId] ?? row.smartViewId;
 
@@ -1276,29 +1390,40 @@ async function handleGetCrossReference(apiKey: string, params: Params) {
 async function handleGetSpeedToLead(apiKey: string, params: Params) {
   const { from, to, smartViewId } = params;
 
-  // Fetch leads created in range
-  const dateQuery = [];
-  if (from) dateQuery.push(`created >= "${from}"`);
-  if (to) dateQuery.push(`created <= "${to}"`);
-  const queryParam =
-    dateQuery.length > 0
-      ? `&query=${encodeURIComponent(dateQuery.join(" "))}`
-      : "";
-  const svParam = smartViewId ? `&saved_search_id=${smartViewId}` : "";
-
+  // Fetch leads — use search API when smart view is specified
   // deno-lint-ignore no-explicit-any
-  const leads: any[] = [];
-  let hasMore = true;
-  let skip = 0;
+  let leads: any[];
 
-  while (hasMore && skip < 2000) {
-    const res = (await closeGet(
+  if (smartViewId) {
+    const svLeads = await fetchLeadsBySmartView(
       apiKey,
-      `/lead/?_limit=100&_skip=${skip}&_fields=id,date_created${queryParam}${svParam}`,
-    )) as ApiResult;
-    leads.push(...(res.data ?? []));
-    hasMore = res.has_more === true;
-    skip += 100;
+      smartViewId,
+      ["id", "date_created"],
+      2000,
+    );
+    // Apply date filter client-side (search API filters by smart view only)
+    leads = svLeads.items.filter((l) => {
+      const created = l.date_created as string | undefined;
+      if (!created) return true;
+      if (from && created < from) return false;
+      if (to && created > `${to}T23:59:59`) return false;
+      return true;
+    });
+  } else {
+    const queryParam = buildLeadSearchQueryFragment(from, to);
+    leads = [];
+    let hasMore = true;
+    let skip = 0;
+
+    while (hasMore && skip < 2000) {
+      const res = (await closeGet(
+        apiKey,
+        `/lead/?_limit=100&_skip=${skip}&_fields=id,date_created${queryParam}`,
+      )) as ApiResult;
+      leads.push(...(res.data ?? []));
+      hasMore = res.has_more === true;
+      skip += 100;
+    }
   }
 
   if (leads.length === 0) {
@@ -1407,28 +1532,39 @@ async function handleGetSpeedToLead(apiKey: string, params: Params) {
 async function handleGetContactCadence(apiKey: string, params: Params) {
   const { from, to, smartViewId } = params;
 
-  // Fetch leads
-  const dateQuery = [];
-  if (from) dateQuery.push(`created >= "${from}"`);
-  if (to) dateQuery.push(`created <= "${to}"`);
-  const queryParam =
-    dateQuery.length > 0
-      ? `&query=${encodeURIComponent(dateQuery.join(" "))}`
-      : "";
-  const svParam = smartViewId ? `&saved_search_id=${smartViewId}` : "";
-
+  // Fetch leads — use search API when smart view is specified
   // deno-lint-ignore no-explicit-any
-  const leads: any[] = [];
-  let hasMore = true;
-  let skip = 0;
-  while (hasMore && skip < 1000) {
-    const res = (await closeGet(
+  let leads: any[];
+
+  if (smartViewId) {
+    const svLeads = await fetchLeadsBySmartView(
       apiKey,
-      `/lead/?_limit=100&_skip=${skip}&_fields=id${queryParam}${svParam}`,
-    )) as ApiResult;
-    leads.push(...(res.data ?? []));
-    hasMore = res.has_more === true;
-    skip += 100;
+      smartViewId,
+      ["id", "date_created"],
+      1000,
+    );
+    // Apply date filter client-side
+    leads = svLeads.items.filter((l) => {
+      const created = l.date_created as string | undefined;
+      if (!created) return true;
+      if (from && created < from) return false;
+      if (to && created > `${to}T23:59:59`) return false;
+      return true;
+    });
+  } else {
+    const queryParam = buildLeadSearchQueryFragment(from, to);
+    leads = [];
+    let hasMore = true;
+    let skip = 0;
+    while (hasMore && skip < 1000) {
+      const res = (await closeGet(
+        apiKey,
+        `/lead/?_limit=100&_skip=${skip}&_fields=id${queryParam}`,
+      )) as ApiResult;
+      leads.push(...(res.data ?? []));
+      hasMore = res.has_more === true;
+      skip += 100;
+    }
   }
 
   const leadIdSet = new Set(leads.map((l: { id: string }) => l.id));
@@ -1548,21 +1684,16 @@ async function handleGetDialAttempts(apiKey: string, params: Params) {
     skip += 100;
   }
 
-  // If smart view filter, get lead IDs
+  // If smart view filter, get lead IDs via search API
   let filterLeadIds: Set<string> | null = null;
   if (smartViewId) {
-    filterLeadIds = new Set<string>();
-    let svHasMore = true;
-    let svSkip = 0;
-    while (svHasMore && svSkip < 2000) {
-      const res = (await closeGet(
-        apiKey,
-        `/lead/?_limit=100&_skip=${svSkip}&_fields=id&saved_search_id=${smartViewId}`,
-      )) as ApiResult;
-      for (const lead of res.data ?? []) filterLeadIds.add(lead.id);
-      svHasMore = res.has_more === true;
-      svSkip += 100;
-    }
+    const svLeads = await fetchLeadsBySmartView(
+      apiKey,
+      smartViewId,
+      ["id"],
+      2000,
+    );
+    filterLeadIds = new Set<string>(svLeads.items.map((l) => l.id as string));
   }
 
   // Group calls by lead, sorted by time
@@ -2178,6 +2309,7 @@ async function handleGetPrebuiltDashboardRollup(
     );
   }
 
+  // Phase 0: Metadata (2 lightweight calls)
   const [statusRes, smartViewRes] = await Promise.all([
     closeGet(apiKey, "/status/lead/") as Promise<ApiResult>,
     closeGet(apiKey, "/saved_search/?_limit=50") as Promise<ApiResult>,
@@ -2185,9 +2317,12 @@ async function handleGetPrebuiltDashboardRollup(
 
   const statuses = (statusRes.data ?? []) as CloseLeadStatus[];
   const smartViews = (smartViewRes.data ?? []) as CloseSavedSearch[];
+  // Cap smart views to 5 for the dashboard rollup to limit API calls
+  const cappedSmartViews = smartViews.slice(0, 5);
   const vmSmartViews = smartViews.slice(0, 5);
   const comparison = getComparisonBounds(from, to);
 
+  // Phase 1: Lead counts + activities (moderate API load, run in parallel)
   const [
     currentLeadCounts,
     previousLeadTotal,
@@ -2195,7 +2330,6 @@ async function handleGetPrebuiltDashboardRollup(
     activityGroups,
     opportunityRes,
     lifecycleRes,
-    smartViewSnapshots,
   ] = await Promise.all([
     fetchLeadCountsForRange(apiKey, { from, to, statuses }),
     fetchLeadTotalForRange(apiKey, {
@@ -2214,8 +2348,13 @@ async function handleGetPrebuiltDashboardRollup(
       to,
       fromStatus: "New",
     }),
-    fetchSmartViewSnapshots(apiKey, smartViews),
   ]);
+
+  // Phase 2: Smart view snapshots (heavy — 1 search per SV, run AFTER phase 1)
+  const smartViewSnapshots = await fetchSmartViewSnapshots(
+    apiKey,
+    cappedSmartViews,
+  );
 
   const callAnalytics = buildCallAnalyticsResult(
     activityGroups.call.items,
@@ -2449,6 +2588,41 @@ serve(async (req) => {
     let result: unknown;
 
     switch (action) {
+      case "debug_smart_views": {
+        const svList = (await closeGet(
+          apiKey,
+          "/saved_search/?_limit=3",
+        )) as ApiResult;
+        const svs = (svList.data ?? []).slice(0, 3);
+        const debug: Record<string, unknown>[] = [];
+        for (const sv of svs) {
+          const sq = sv.s_query?.query;
+          let postCount = "no_query";
+          let postError = null;
+          if (sq) {
+            try {
+              const res = (await closePost(apiKey, "/data/search/", {
+                query: sq,
+                _limit: 1,
+                _fields: { lead: ["id"] },
+              })) as ApiResult;
+              postCount = res.total_results ?? (res.data ?? []).length;
+            } catch (e: unknown) {
+              postError = (e as Error).message;
+            }
+          }
+          debug.push({
+            id: sv.id,
+            name: sv.name,
+            has_s_query: !!sv.s_query,
+            has_s_query_query: !!sq,
+            postDataSearch_with_s_query: postCount,
+            postError,
+          });
+        }
+        result = { debug };
+        break;
+      }
       case "get_metadata":
         result = await handleGetMetadata(apiKey);
         break;

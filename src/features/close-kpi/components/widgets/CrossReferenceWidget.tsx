@@ -31,7 +31,7 @@ export const CrossReferenceWidget: React.FC<CrossReferenceWidgetProps> = ({
   );
 
   return (
-    <div className="flex h-full flex-col gap-1">
+    <div className="flex flex-col gap-1">
       <div className="flex items-center gap-1.5">
         <Grid3X3 className="h-3 w-3 text-muted-foreground" />
         <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
@@ -42,7 +42,7 @@ export const CrossReferenceWidget: React.FC<CrossReferenceWidgetProps> = ({
         </span>
       </div>
 
-      <div className="flex-1 overflow-auto">
+      <div>
         <table className="w-full text-[10px]">
           <thead>
             <tr className="border-b border-border">

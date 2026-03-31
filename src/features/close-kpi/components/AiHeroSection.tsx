@@ -1,0 +1,417 @@
+// src/features/close-kpi/components/AiHeroSection.tsx
+// Full-width AI command center — the hero section of the Close KPI page.
+// Shows avg score, heat distribution, hot leads, and top AI recommendation
+// all visible on initial render without scrolling.
+
+import React from "react";
+import {
+  Brain,
+  Flame,
+  Sparkles,
+  Target,
+  TrendingUp,
+  AlertTriangle,
+  Loader2,
+  RefreshCw,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MetricTooltip } from "@/components/ui/MetricTooltip";
+import { LeadHeatBadge } from "./LeadHeatBadge";
+import { SECTION_TOOLTIPS } from "../config/prebuilt-layout";
+import type {
+  LeadHeatSummaryResult,
+  LeadHeatListResult,
+  LeadHeatAiInsightsResult,
+  LeadHeatLevel,
+} from "../types/close-kpi.types";
+
+interface AiHeroSectionProps {
+  summaryData: LeadHeatSummaryResult | null;
+  listData: LeadHeatListResult | null;
+  insightsData: LeadHeatAiInsightsResult | null;
+  isLoading: boolean;
+  isRescoring: boolean;
+  onRescore: () => void;
+}
+
+const LEVEL_COLORS: Record<
+  LeadHeatLevel,
+  { bg: string; text: string; label: string }
+> = {
+  hot: {
+    bg: "bg-red-500",
+    text: "text-red-600 dark:text-red-400",
+    label: "Hot",
+  },
+  warming: {
+    bg: "bg-orange-400",
+    text: "text-orange-600 dark:text-orange-400",
+    label: "Warming",
+  },
+  neutral: { bg: "bg-zinc-400", text: "text-zinc-500", label: "Neutral" },
+  cooling: {
+    bg: "bg-blue-400",
+    text: "text-blue-600 dark:text-blue-400",
+    label: "Cooling",
+  },
+  cold: {
+    bg: "bg-blue-600",
+    text: "text-blue-700 dark:text-blue-300",
+    label: "Cold",
+  },
+};
+
+export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
+  summaryData,
+  listData,
+  insightsData,
+  isLoading,
+  isRescoring,
+  onRescore,
+}) => {
+  const [showAllLeads, setShowAllLeads] = React.useState(false);
+  const tooltip = SECTION_TOOLTIPS.ai_lead_scoring;
+
+  const hotLeads =
+    listData?.leads.filter(
+      (l) => l.heatLevel === "hot" || l.heatLevel === "warming",
+    ) ?? [];
+  const topRecommendation = insightsData?.recommendations?.[0];
+  const topAnomaly = insightsData?.anomalies?.[0];
+  const totalScored = summaryData?.totalScored ?? 0;
+  const avgScore = summaryData?.avgScore ?? 0;
+  const distribution = summaryData?.distribution ?? [];
+
+  // Hot + warming count
+  const hotCount = distribution.find((d) => d.level === "hot")?.count ?? 0;
+  const warmingCount =
+    distribution.find((d) => d.level === "warming")?.count ?? 0;
+  const actionableCount = hotCount + warmingCount;
+
+  const visibleLeads = showAllLeads
+    ? (listData?.leads ?? [])
+    : hotLeads.slice(0, 5);
+
+  return (
+    <div className="rounded-xl border border-border/60 bg-gradient-to-br from-zinc-50 via-white to-zinc-50 dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900/80 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/40">
+        <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-background" />
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <h2 className="text-sm font-bold text-foreground">
+                AI Lead Scoring
+              </h2>
+              {tooltip && (
+                <MetricTooltip
+                  title={tooltip.title}
+                  description={tooltip.description}
+                  note={tooltip.note}
+                />
+              )}
+            </div>
+            <p className="text-[10px] text-muted-foreground">
+              {totalScored > 0
+                ? `${totalScored} leads scored — ${actionableCount} need attention`
+                : "Score your leads to see AI insights"}
+            </p>
+          </div>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 text-[10px] gap-1"
+          onClick={onRescore}
+          disabled={isRescoring}
+        >
+          {isRescoring ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <RefreshCw className="h-3 w-3" />
+          )}
+          {isRescoring ? "Scoring..." : "Rescore"}
+        </Button>
+      </div>
+
+      {/* Loading state */}
+      {isLoading && !summaryData && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          <span className="ml-2 text-[11px] text-muted-foreground">
+            Loading AI data...
+          </span>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!isLoading && totalScored === 0 && (
+        <div className="flex flex-col items-center justify-center py-10 text-center">
+          <Flame className="h-6 w-6 text-muted-foreground/40 mb-2" />
+          <p className="text-xs font-medium text-muted-foreground">
+            No leads scored yet
+          </p>
+          <p className="text-[10px] text-muted-foreground/60 mt-0.5 max-w-xs">
+            Run your first scoring analysis to see AI-ranked leads and
+            recommendations
+          </p>
+          <Button
+            size="sm"
+            className="h-7 text-[10px] gap-1 mt-3"
+            onClick={onRescore}
+            disabled={isRescoring}
+          >
+            {isRescoring ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Flame className="h-3 w-3" />
+            )}
+            {isRescoring ? "Scoring..." : "Score My Leads"}
+          </Button>
+        </div>
+      )}
+
+      {/* Main content — 3 column layout */}
+      {totalScored > 0 && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-border/40">
+          {/* Column 1: Score Overview */}
+          <div className="lg:col-span-3 p-4 flex flex-col items-center justify-center gap-3">
+            {/* Big score */}
+            <div className="text-center">
+              <div className="font-mono text-4xl font-black text-foreground leading-none">
+                {avgScore}
+              </div>
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">
+                avg score
+              </div>
+            </div>
+
+            {/* Heat distribution bar */}
+            <div className="w-full max-w-[180px]">
+              <div className="flex h-2.5 rounded-full overflow-hidden">
+                {distribution
+                  .filter((d) => d.count > 0)
+                  .map((d) => (
+                    <div
+                      key={d.level}
+                      className={`${LEVEL_COLORS[d.level].bg} transition-all`}
+                      style={{ width: `${d.pct}%` }}
+                      title={`${LEVEL_COLORS[d.level].label}: ${d.count} (${d.pct}%)`}
+                    />
+                  ))}
+              </div>
+              <div className="flex justify-between mt-1">
+                {distribution
+                  .filter((d) => d.count > 0)
+                  .map((d) => (
+                    <span
+                      key={d.level}
+                      className={`text-[9px] ${LEVEL_COLORS[d.level].text}`}
+                    >
+                      {d.count}
+                    </span>
+                  ))}
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div className="flex flex-wrap justify-center gap-x-2 gap-y-0.5">
+              {distribution
+                .filter((d) => d.count > 0)
+                .map((d) => (
+                  <span
+                    key={d.level}
+                    className="flex items-center gap-0.5 text-[9px] text-muted-foreground"
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${LEVEL_COLORS[d.level].bg}`}
+                    />
+                    {LEVEL_COLORS[d.level].label}
+                  </span>
+                ))}
+            </div>
+
+            {/* Personalization badge */}
+            {summaryData?.isPersonalized ? (
+              <span className="rounded-full bg-emerald-100 dark:bg-emerald-900/30 px-2 py-0.5 text-[9px] font-medium text-emerald-700 dark:text-emerald-400">
+                Personalized
+              </span>
+            ) : summaryData?.sampleSize ? (
+              <span className="text-[9px] text-muted-foreground/60">
+                Learning: {summaryData.sampleSize}/50 outcomes
+              </span>
+            ) : null}
+          </div>
+
+          {/* Column 2: Hot Leads (immediate action) */}
+          <div className="lg:col-span-5 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-1.5">
+                <Flame className="h-3.5 w-3.5 text-red-500" />
+                <span className="text-[11px] font-bold text-foreground">
+                  {actionableCount > 0
+                    ? `${actionableCount} Leads Need Action`
+                    : "Lead Rankings"}
+                </span>
+              </div>
+              <button
+                onClick={() => setShowAllLeads((p) => !p)}
+                className="flex items-center gap-0.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {showAllLeads ? "Hot only" : "Show all"}
+                {showAllLeads ? (
+                  <ChevronUp className="h-3 w-3" />
+                ) : (
+                  <ChevronDown className="h-3 w-3" />
+                )}
+              </button>
+            </div>
+
+            {visibleLeads.length > 0 ? (
+              <div className="space-y-0.5">
+                {visibleLeads.map((lead, i) => (
+                  <div
+                    key={lead.closeLeadId}
+                    className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-muted/40 transition-colors"
+                  >
+                    <span className="text-[10px] text-muted-foreground/50 w-4 shrink-0 text-right font-mono">
+                      {i + 1}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-medium text-foreground truncate">
+                          {lead.displayName}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[9px] text-muted-foreground">
+                          {lead.currentStatus}
+                        </span>
+                        {lead.topSignal && (
+                          <span className="text-[9px] text-muted-foreground/60">
+                            {lead.topSignal}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <LeadHeatBadge
+                      score={lead.score}
+                      heatLevel={lead.heatLevel}
+                      trend={lead.trend}
+                      previousScore={lead.previousScore}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[10px] text-muted-foreground/60 py-4 text-center">
+                No hot leads right now. Run a rescore to update.
+              </p>
+            )}
+          </div>
+
+          {/* Column 3: AI Insights */}
+          <div className="lg:col-span-4 p-3">
+            <div className="flex items-center gap-1.5 mb-2">
+              <Brain className="h-3.5 w-3.5 text-foreground" />
+              <span className="text-[11px] font-bold text-foreground">
+                AI Insights
+              </span>
+            </div>
+
+            {/* Overall assessment */}
+            {insightsData?.overallAssessment && (
+              <div className="rounded-md border border-border/50 bg-muted/30 px-3 py-2 mb-2">
+                <p className="text-[11px] text-foreground leading-relaxed">
+                  {insightsData.overallAssessment}
+                </p>
+              </div>
+            )}
+
+            {/* Top recommendation */}
+            {topRecommendation && (
+              <div className="flex items-start gap-2 rounded-md border border-foreground/10 bg-foreground/[0.02] px-3 py-2 mb-2">
+                <Target className="h-3 w-3 mt-0.5 flex-shrink-0 text-foreground" />
+                <div>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Top Recommendation
+                  </span>
+                  <p className="text-[11px] text-foreground mt-0.5">
+                    {topRecommendation.text}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Top anomaly */}
+            {topAnomaly && (
+              <div className="flex items-start gap-2 rounded-md border border-amber-200/60 dark:border-amber-800/40 bg-amber-50/30 dark:bg-amber-950/10 px-3 py-2 mb-2">
+                <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+                <div>
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Attention
+                  </span>
+                  <p className="text-[11px] text-foreground mt-0.5">
+                    <span className="font-medium">
+                      {topAnomaly.displayName}
+                    </span>{" "}
+                    — {topAnomaly.message}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Additional recommendations */}
+            {insightsData && insightsData.recommendations.length > 1 && (
+              <div className="space-y-1">
+                {insightsData.recommendations.slice(1, 4).map((rec, i) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-1.5 text-[10px] text-muted-foreground"
+                  >
+                    <TrendingUp className="h-2.5 w-2.5 mt-0.5 flex-shrink-0" />
+                    <span>{rec.text}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* No insights state */}
+            {!insightsData?.overallAssessment && !topRecommendation && (
+              <p className="text-[10px] text-muted-foreground/60 py-2">
+                AI insights will appear after scoring completes.
+              </p>
+            )}
+
+            {/* Model info */}
+            {insightsData?.modelVersion && (
+              <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/30">
+                <span className="text-[9px] text-muted-foreground/50">
+                  Model v{insightsData.modelVersion}
+                </span>
+                {insightsData.analyzedAt && (
+                  <span className="text-[9px] text-muted-foreground/50">
+                    {formatTimeAgo(insightsData.analyzedAt)}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+function formatTimeAgo(ts: string): string {
+  const mins = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
+  if (mins < 1) return "Just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.round(hrs / 24)}d ago`;
+}

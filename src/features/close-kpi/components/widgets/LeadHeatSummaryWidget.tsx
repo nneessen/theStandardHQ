@@ -46,7 +46,7 @@ export const LeadHeatSummaryWidget: React.FC<LeadHeatSummaryWidgetProps> = ({
   // Empty state
   if (totalScored === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-1.5 text-center">
+      <div className="flex flex-col items-center justify-center gap-1.5 py-6 text-center">
         <Flame className="h-4 w-4 text-muted-foreground/40" />
         <p className="text-[10px] text-muted-foreground">No leads scored yet</p>
         <Button
@@ -79,14 +79,14 @@ export const LeadHeatSummaryWidget: React.FC<LeadHeatSummaryWidgetProps> = ({
       return { ...d, pct, start };
     });
 
-  // SVG donut
-  const size = 80;
-  const strokeWidth = 12;
+  // SVG donut — larger for hero section prominence
+  const size = 100;
+  const strokeWidth = 14;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
   return (
-    <div className="flex h-full flex-col gap-2">
+    <div className="flex flex-col gap-2">
       <div className="flex items-center gap-3">
         {/* Donut */}
         <div className="relative flex-shrink-0">
@@ -121,7 +121,7 @@ export const LeadHeatSummaryWidget: React.FC<LeadHeatSummaryWidgetProps> = ({
             })}
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-mono text-lg font-bold">{avgScore}</span>
+            <span className="font-mono text-2xl font-bold">{avgScore}</span>
             <span className="text-[8px] uppercase text-muted-foreground">
               avg
             </span>

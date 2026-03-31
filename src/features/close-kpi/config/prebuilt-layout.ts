@@ -171,6 +171,7 @@ export interface SectionDef {
   icon: string; // lucide icon name
   tooltipKey: string;
   gridClass: string;
+  variant?: "default" | "hero";
   widgets: PrebuiltWidgetDef[];
 }
 
@@ -180,7 +181,7 @@ const BASE_CONFIG = (dateRange: DateRangePreset) => ({
 });
 
 export const DASHBOARD_SECTIONS: SectionDef[] = [
-  // ═══ Section 1: AI Lead Scoring ═══
+  // ═══ Section 1: AI Lead Scoring (Hero) ═══
   {
     id: "ai_lead_scoring",
     title: "AI Lead Scoring",
@@ -188,7 +189,7 @@ export const DASHBOARD_SECTIONS: SectionDef[] = [
       "AI-powered scoring ranks every lead in your pipeline by likelihood to convert",
     icon: "Flame",
     tooltipKey: "ai_lead_scoring",
-    gridClass: "grid grid-cols-1 md:grid-cols-3 gap-2",
+    gridClass: "grid grid-cols-1 md:grid-cols-3 gap-3",
     widgets: [
       {
         id: "heat_summary",

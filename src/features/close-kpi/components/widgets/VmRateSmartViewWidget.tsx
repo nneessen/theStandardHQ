@@ -24,7 +24,7 @@ export const VmRateSmartViewWidget: React.FC<VmRateSmartViewWidgetProps> = ({
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-col">
       {/* Overall summary bar */}
       <div className="mb-1.5 flex items-center justify-between border-b border-border pb-1.5">
         <div className="flex items-center gap-2">
@@ -52,7 +52,7 @@ export const VmRateSmartViewWidget: React.FC<VmRateSmartViewWidgetProps> = ({
       </div>
 
       {/* Per-smart-view table */}
-      <div className="flex-1 overflow-y-auto">
+      <div>
         <table className="w-full">
           <thead>
             <tr className="text-[9px] uppercase tracking-wider text-muted-foreground">
