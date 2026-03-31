@@ -66,6 +66,22 @@ interface PendingPolicyData {
   agentId: string;
 }
 
+interface AgencySubmitTotals {
+  agency_id: string;
+  agency_name: string;
+  wtd_ap: number;
+  wtd_policies: number;
+  mtd_ap: number;
+  mtd_policies: number;
+}
+
+interface ImoSubmitTotals {
+  wtd_ap: number;
+  wtd_policies: number;
+  mtd_ap: number;
+  mtd_policies: number;
+}
+
 // ── Discord guild member lookup ──
 
 async function findDiscordDisplayName(
@@ -140,6 +156,9 @@ function buildPolicyEmbed(
 function buildLeaderboardEmbeds(
   agents: LeaderboardAgent[],
   title: string | null,
+  agencyTotals: AgencySubmitTotals[] | null,
+  scopeAgencyId: string | null,
+  imoTotals: ImoSubmitTotals | null = null,
 ): DiscordEmbed[] {
   if (agents.length === 0) return [];
 
@@ -165,27 +184,69 @@ function buildLeaderboardEmbeds(
   });
 
   const totalToday = agents.reduce((s, a) => s + a.today_ap, 0);
-  const totalWTD = agents.reduce((s, a) => s + a.wtd_ap, 0);
-  const totalMTD = agents.reduce((s, a) => s + a.mtd_ap, 0);
+
+  // WTD/MTD totals come from agency/IMO-level RPCs, NOT from summing today's sellers
+  // (today's sellers miss anyone who sold earlier in the week/month but not today)
+  let wtdTotalAP = 0;
+  let mtdTotalAP = 0;
+
+  if (agencyTotals && agencyTotals.length > 0) {
+    if (scopeAgencyId) {
+      const scopedAgency = agencyTotals.find(
+        (a) => a.agency_id === scopeAgencyId,
+      );
+      if (scopedAgency) {
+        wtdTotalAP = scopedAgency.wtd_ap;
+        mtdTotalAP = scopedAgency.mtd_ap;
+      }
+    } else {
+      // IMO-level: use flat IMO totals to avoid double-counting hierarchical agency rows
+      if (imoTotals) {
+        wtdTotalAP = imoTotals.wtd_ap;
+        mtdTotalAP = imoTotals.mtd_ap;
+      } else {
+        // Fallback: sum all agencies (may double-count with hierarchy)
+        wtdTotalAP = agencyTotals.reduce((sum, a) => sum + (a.wtd_ap || 0), 0);
+        mtdTotalAP = agencyTotals.reduce((sum, a) => sum + (a.mtd_ap || 0), 0);
+      }
+    }
+  }
 
   if (todayLines.length === 0) return [];
 
-  // Single embed: daily rankings + summary totals (matching Slack layout)
+  // Main embed: daily rankings + summary totals
   const description = [
     todayLines.join("\n"),
     "",
     `**💰 Total: ${formatCurrency(totalToday)}**`,
-    `**📈 WTD: ${formatCurrency(totalWTD)}**`,
-    `**📆 MTD: ${formatCurrency(totalMTD)}**`,
+    `**📈 WTD: ${formatCurrency(wtdTotalAP)}**`,
+    `**📆 MTD: ${formatCurrency(mtdTotalAP)}**`,
   ].join("\n");
 
-  return [
+  const embeds: DiscordEmbed[] = [
     {
       title: headerTitle,
       description,
       color: COLORS.GOLD,
     },
   ];
+
+  // Agency rankings embed
+  if (agencyTotals && agencyTotals.length > 0) {
+    const agencyLines = agencyTotals.map((agency) => {
+      const wtd = formatCurrency(agency.wtd_ap);
+      const mtd = formatCurrency(agency.mtd_ap);
+      return `**${agency.agency_name}**: WTD ${wtd} · MTD ${mtd}`;
+    });
+
+    embeds.push({
+      title: "🏢 Agency Rankings",
+      description: agencyLines.join("\n"),
+      color: COLORS.ZINC,
+    });
+  }
+
+  return embeds;
 }
 
 // ── Action Handlers ──
@@ -259,14 +320,33 @@ async function handleCompleteFirstSale(
     embeds: [policyEmbed],
   });
 
-  // Post leaderboard
-  const { data: leaderboardData } = await supabase.rpc(
-    "get_slack_leaderboard_with_periods",
-    { p_imo_id: log.imo_id, p_agency_id: integration.agency_id || null },
-  );
+  // Post leaderboard — fetch all 3 RPCs for correct WTD/MTD totals
+  const [{ data: leaderboardData }, { data: agencyData }, { data: imoData }] =
+    await Promise.all([
+      supabase.rpc("get_slack_leaderboard_with_periods", {
+        p_imo_id: log.imo_id,
+        p_agency_id: integration.agency_id || null,
+      }),
+      supabase.rpc("get_all_agencies_submit_totals", {
+        p_imo_id: log.imo_id,
+      }),
+      !integration.agency_id
+        ? supabase.rpc("get_imo_submit_totals", { p_imo_id: log.imo_id })
+        : Promise.resolve({ data: null }),
+    ]);
 
   const agents = (leaderboardData || []) as LeaderboardAgent[];
-  const leaderboardEmbeds = buildLeaderboardEmbeds(agents, effectiveTitle);
+  const agencyTotals = (agencyData || []) as AgencySubmitTotals[];
+  const imoTotals: ImoSubmitTotals | null = Array.isArray(imoData)
+    ? imoData[0] || null
+    : null;
+  const leaderboardEmbeds = buildLeaderboardEmbeds(
+    agents,
+    effectiveTitle,
+    agencyTotals,
+    integration.agency_id || null,
+    imoTotals,
+  );
 
   let leaderboardOk = true;
   if (leaderboardEmbeds.length > 0) {
@@ -358,13 +438,33 @@ async function handleUpdateLeaderboard(
 
   const botToken = await decrypt(integration.bot_token_encrypted);
 
-  const { data: leaderboardData } = await supabase.rpc(
-    "get_slack_leaderboard_with_periods",
-    { p_imo_id: log.imo_id, p_agency_id: integration.agency_id || null },
-  );
+  // Fetch all 3 RPCs for correct WTD/MTD totals
+  const [{ data: leaderboardData }, { data: agencyData }, { data: imoData }] =
+    await Promise.all([
+      supabase.rpc("get_slack_leaderboard_with_periods", {
+        p_imo_id: log.imo_id,
+        p_agency_id: integration.agency_id || null,
+      }),
+      supabase.rpc("get_all_agencies_submit_totals", {
+        p_imo_id: log.imo_id,
+      }),
+      !integration.agency_id
+        ? supabase.rpc("get_imo_submit_totals", { p_imo_id: log.imo_id })
+        : Promise.resolve({ data: null }),
+    ]);
 
   const agents = (leaderboardData || []) as LeaderboardAgent[];
-  const leaderboardEmbeds = buildLeaderboardEmbeds(agents, log.title);
+  const agencyTotals = (agencyData || []) as AgencySubmitTotals[];
+  const imoTotals: ImoSubmitTotals | null = Array.isArray(imoData)
+    ? imoData[0] || null
+    : null;
+  const leaderboardEmbeds = buildLeaderboardEmbeds(
+    agents,
+    log.title,
+    agencyTotals,
+    integration.agency_id || null,
+    imoTotals,
+  );
 
   if (leaderboardEmbeds.length === 0) {
     return { ok: true, updated: false };
@@ -683,16 +783,32 @@ async function handlePostPolicy(
     error_message: policyResult.error || null,
   });
 
-  // Update leaderboard
-  const { data: leaderboardData } = await supabase.rpc(
-    "get_slack_leaderboard_with_periods",
-    { p_imo_id: imoId, p_agency_id: integration.agency_id || null },
-  );
+  // Update leaderboard — fetch all 3 RPCs for correct WTD/MTD totals
+  const [{ data: leaderboardData }, { data: agencyData }, { data: imoData }] =
+    await Promise.all([
+      supabase.rpc("get_slack_leaderboard_with_periods", {
+        p_imo_id: imoId,
+        p_agency_id: integration.agency_id || null,
+      }),
+      supabase.rpc("get_all_agencies_submit_totals", {
+        p_imo_id: imoId,
+      }),
+      !integration.agency_id
+        ? supabase.rpc("get_imo_submit_totals", { p_imo_id: imoId })
+        : Promise.resolve({ data: null }),
+    ]);
 
   const agents = (leaderboardData || []) as LeaderboardAgent[];
+  const agencyTotals = (agencyData || []) as AgencySubmitTotals[];
+  const imoTotals: ImoSubmitTotals | null = Array.isArray(imoData)
+    ? imoData[0] || null
+    : null;
   const leaderboardEmbeds = buildLeaderboardEmbeds(
     agents,
     existingLog?.title || null,
+    agencyTotals,
+    integration.agency_id || null,
+    imoTotals,
   );
 
   if (leaderboardEmbeds.length > 0 && existingLog) {
