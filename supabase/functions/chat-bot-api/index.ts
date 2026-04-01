@@ -2440,7 +2440,16 @@ serve(async (req) => {
       case "get_analytics": {
         const qs = new URLSearchParams();
         if (params.from) qs.set("from", String(params.from));
-        if (params.to) qs.set("to", String(params.to));
+        if (params.to) {
+          const toStr = String(params.to);
+          if (/^\d{4}-\d{2}-\d{2}$/.test(toStr)) {
+            const d = new Date(toStr + "T00:00:00Z");
+            d.setUTCDate(d.getUTCDate() + 1);
+            qs.set("to", d.toISOString().slice(0, 10));
+          } else {
+            qs.set("to", toStr);
+          }
+        }
         const queryString = qs.toString() ? `?${qs.toString()}` : "";
         try {
           const res = await callChatBotApi(

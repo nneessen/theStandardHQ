@@ -24,8 +24,8 @@ export function AllBotsTab({
   onNavigateToSubscription?: () => void;
 }) {
   const [range] = useState(() => {
-    const to = new Date().toISOString().slice(0, 10);
-    const from = new Date(Date.now() - 30 * 86400000)
+    const to = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+    const from = new Date(Date.now() - 30 * 86_400_000)
       .toISOString()
       .slice(0, 10);
     return { from, to };

@@ -60,7 +60,19 @@ serve(async (req) => {
       try {
         const qs = new URLSearchParams();
         if (from) qs.set("from", String(from));
-        if (to) qs.set("to", String(to));
+        if (to) {
+          // Railway treats `to` as exclusive. A date-only value like "2026-04-01"
+          // means < 2026-04-01T00:00:00Z, excluding the entire day.
+          // Push to start of the next day so the full `to` date is included.
+          const toStr = String(to);
+          if (/^\d{4}-\d{2}-\d{2}$/.test(toStr)) {
+            const d = new Date(toStr + "T00:00:00Z");
+            d.setUTCDate(d.getUTCDate() + 1);
+            qs.set("to", d.toISOString().slice(0, 10));
+          } else {
+            qs.set("to", toStr);
+          }
+        }
         const queryString = qs.toString() ? `?${qs.toString()}` : "";
 
         const res = await fetch(
