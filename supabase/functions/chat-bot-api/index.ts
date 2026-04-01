@@ -1575,30 +1575,47 @@ serve(async (req) => {
             // Non-critical: org info is optional, key storage is what matters
           }
 
-          await supabase.from("close_config").upsert(
-            {
-              user_id: effectiveUserId,
-              api_key_encrypted: encryptedKey,
-              organization_id: orgId,
-              organization_name: orgName,
-              is_active: true,
-              last_verified_at: new Date().toISOString(),
-            },
-            { onConflict: "user_id" },
-          );
+          const { error: upsertError } = await supabase
+            .from("close_config")
+            .upsert(
+              {
+                user_id: effectiveUserId,
+                api_key_encrypted: encryptedKey,
+                organization_id: orgId,
+                organization_name: orgName,
+                is_active: true,
+                last_verified_at: new Date().toISOString(),
+              },
+              { onConflict: "user_id" },
+            );
+
+          if (upsertError) {
+            console.error(
+              "[chat-bot-api] close_config upsert failed:",
+              upsertError,
+            );
+            return jsonResponse(
+              {
+                error:
+                  "Failed to save Close CRM configuration. Please try again.",
+                detail: upsertError.message,
+              },
+              500,
+            );
+          }
         } catch (e) {
           console.error(
             "[chat-bot-api] Failed to store Close key in close_config:",
             e,
           );
-          // Return success with warning — connection works but KPI dashboard may not
-          const baseResult = res.ok ? (res.data?.data ?? res.data ?? {}) : {};
-          return jsonResponse({
-            ...baseResult,
-            success: true,
-            warning:
-              "Close connected but KPI data storage failed. Try reconnecting if the KPI dashboard shows no data.",
-          });
+          return jsonResponse(
+            {
+              error:
+                "Failed to save Close CRM configuration. Please try again.",
+              detail: String(e),
+            },
+            500,
+          );
         }
 
         return sendResult(res);

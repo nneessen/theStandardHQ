@@ -175,8 +175,7 @@ const LEAD_HEAT_ACTIVE_RUN_WINDOW_MS = 25 * 60_000;
 export const closeKpiService = {
   /** Check if user has an active Close CRM connection */
   getConnectionStatus: async (userId: string) => {
-    // Uses agency-level fallback RPC — if the user has no close_config,
-    // it falls back to their agency owner's config.
+    // Returns user's own close_config only — each agent has their own Close account.
     const { data, error } = await (supabase.rpc as CallableFunction)(
       "get_close_connection_status",
       { p_user_id: userId },
