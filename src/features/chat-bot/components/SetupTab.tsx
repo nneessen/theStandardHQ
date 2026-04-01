@@ -22,6 +22,7 @@ import {
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -203,6 +204,31 @@ export function SetupTab() {
       setBhDirty(false);
     }
   }, [agent?.businessHours]);
+
+  const [reEngageDelay, setReEngageDelay] = useState(
+    String(agent?.reEngagementDelayHours ?? 48),
+  );
+  const [reEngageAttempts, setReEngageAttempts] = useState(
+    String(agent?.reEngagementMaxAttempts ?? 2),
+  );
+
+  useEffect(() => {
+    setReEngageDelay(String(agent?.reEngagementDelayHours ?? 48));
+    setReEngageAttempts(String(agent?.reEngagementMaxAttempts ?? 2));
+  }, [agent?.reEngagementDelayHours, agent?.reEngagementMaxAttempts]);
+
+  const reEngageDirty =
+    String(agent?.reEngagementDelayHours ?? 48) !== reEngageDelay ||
+    String(agent?.reEngagementMaxAttempts ?? 2) !== reEngageAttempts;
+  const reEngageDelayParsed = Number.parseInt(reEngageDelay, 10);
+  const reEngageAttemptsParsed = Number.parseInt(reEngageAttempts, 10);
+  const reEngageValid =
+    Number.isInteger(reEngageDelayParsed) &&
+    reEngageDelayParsed >= 1 &&
+    reEngageDelayParsed <= 720 &&
+    Number.isInteger(reEngageAttemptsParsed) &&
+    reEngageAttemptsParsed >= 1 &&
+    reEngageAttemptsParsed <= 10;
 
   const displayedSources = leadSources ?? agent?.autoOutreachLeadSources ?? [];
   const displayedStatuses = leadStatuses ?? agent?.allowedLeadStatuses ?? [];
@@ -678,6 +704,111 @@ export function SetupTab() {
                     automatically at the specified interval before the
                     appointment.
                   </p>
+                </SectionCard>
+              ) : null}
+
+              {agent ? (
+                <SectionCard
+                  icon={<RefreshCw className="h-4 w-4" />}
+                  title="Stale Lead Re-Engagement"
+                  description="Automatically re-engage leads that stop responding after initial outreach."
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950/40">
+                      <div>
+                        <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                          Enable re-engagement
+                        </p>
+                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                          Send follow-up messages to stale leads automatically.
+                          Hard declines are always excluded.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={agent.reEngagementEnabled ?? false}
+                        onCheckedChange={(checked) =>
+                          updateConfig.mutate({ reEngagementEnabled: checked })
+                        }
+                        disabled={updateConfig.isPending}
+                        variant="success"
+                      />
+                    </div>
+
+                    <div
+                      className={cn(
+                        "space-y-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/40",
+                        !(agent.reEngagementEnabled ?? false) && "opacity-50",
+                      )}
+                    >
+                      <label className="space-y-1">
+                        <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                          Delay before re-engagement (hours)
+                        </span>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={720}
+                          value={reEngageDelay}
+                          onChange={(e) => setReEngageDelay(e.target.value)}
+                          disabled={
+                            !(agent.reEngagementEnabled ?? false) ||
+                            updateConfig.isPending
+                          }
+                          className="h-8 text-[11px]"
+                        />
+                      </label>
+
+                      <label className="space-y-1">
+                        <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                          Max attempts per lead
+                        </span>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={10}
+                          value={reEngageAttempts}
+                          onChange={(e) => setReEngageAttempts(e.target.value)}
+                          disabled={
+                            !(agent.reEngagementEnabled ?? false) ||
+                            updateConfig.isPending
+                          }
+                          className="h-8 text-[11px]"
+                        />
+                      </label>
+
+                      {reEngageDirty ? (
+                        <div className="flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                          <Button
+                            size="sm"
+                            className="h-7 text-[10px]"
+                            disabled={
+                              !reEngageValid ||
+                              !(agent.reEngagementEnabled ?? false) ||
+                              updateConfig.isPending
+                            }
+                            onClick={() =>
+                              updateConfig.mutate({
+                                reEngagementDelayHours: reEngageDelayParsed,
+                                reEngagementMaxAttempts: reEngageAttemptsParsed,
+                              })
+                            }
+                          >
+                            {updateConfig.isPending ? (
+                              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                            ) : (
+                              <Check className="mr-1 h-3 w-3" />
+                            )}
+                            Save
+                          </Button>
+                          {!reEngageValid ? (
+                            <p className="text-[10px] text-red-500">
+                              Delay must be 1–720h, attempts 1–10.
+                            </p>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
                 </SectionCard>
               ) : null}
 

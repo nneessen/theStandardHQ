@@ -50,6 +50,9 @@ const BOT_CONFIG_ALLOWED_KEYS = new Set([
   "voiceQuotedFollowupEnabled",
   "primaryPhone",
   "statusTriggerSequences",
+  "reEngagementEnabled",
+  "reEngagementDelayHours",
+  "reEngagementMaxAttempts",
 ]);
 
 const PENDING_VOICE_AGENT_STATUSES = new Set([

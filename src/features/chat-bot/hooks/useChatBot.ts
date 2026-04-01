@@ -104,6 +104,9 @@ export interface ChatBotAgent {
   voiceQuotedFollowupEnabled?: boolean;
   primaryPhone?: string | null;
   statusTriggerSequences?: StatusTriggerSequence[];
+  reEngagementEnabled?: boolean;
+  reEngagementDelayHours?: number | null;
+  reEngagementMaxAttempts?: number | null;
   connections?: {
     close?: { connected: boolean; orgName?: string };
     calendly?: { connected: boolean; eventType?: string };
@@ -1614,6 +1617,9 @@ export function useUpdateBotConfig() {
       voiceQuotedFollowupEnabled?: boolean;
       primaryPhone?: string | null;
       statusTriggerSequences?: StatusTriggerSequence[];
+      reEngagementEnabled?: boolean;
+      reEngagementDelayHours?: number | null;
+      reEngagementMaxAttempts?: number | null;
     }) => chatBotApi<{ success: boolean }>("update_config", config),
     onMutate: async (config) => {
       await queryClient.cancelQueries({ queryKey: chatBotKeys.agent() });
