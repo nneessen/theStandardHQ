@@ -286,6 +286,46 @@ function isVoiceCreateRouteUnavailable(res: {
   );
 }
 
+const DEFAULT_STATUS_TRIGGER_SEQUENCES = [
+  {
+    statusLabel: "Contacted/Missed Appointment",
+    enabled: true,
+    steps: [
+      {
+        delayMinutes: 5,
+        aiInstructions:
+          "Send a brief, empathetic message acknowledging the missed appointment. No guilt-tripping. Ask if everything is okay and whether they would like to reschedule for a better time. Keep it casual and warm.",
+      },
+      {
+        delayMinutes: 120,
+        aiInstructions:
+          "Follow up if no response yet. Offer a specific time window today or tomorrow that works for the agent. Frame it as making it easy for them — no pressure. Keep it to 2-3 sentences max.",
+      },
+      {
+        delayMinutes: 1440,
+        aiInstructions:
+          "Final gentle check-in. Let them know you are still happy to help whenever they are ready and that their information is on file. Do not push for a specific time. Leave the door open.",
+      },
+    ],
+  },
+];
+
+async function applyDefaultAgentConfig(agentId: string) {
+  try {
+    await callChatBotApi("PATCH", `/api/external/agents/${agentId}`, {
+      statusTriggerSequences: DEFAULT_STATUS_TRIGGER_SEQUENCES,
+      reEngagementEnabled: true,
+      reEngagementDelayHours: 4,
+      reEngagementMaxAttempts: 3,
+    });
+  } catch (err) {
+    console.error(
+      `[chat-bot-api] Failed to apply default config to agent ${agentId}:`,
+      err,
+    );
+  }
+}
+
 async function ensureAgentContext(
   supabase: ReturnType<typeof createClient>,
   userId: string,
@@ -356,6 +396,13 @@ async function ensureAgentContext(
       status: 400,
       error: "Provisioning did not return an external agent ID",
     };
+  }
+
+  const isNewAgent =
+    (provisionRes.data?.data as Record<string, unknown>)?.isNew === true ||
+    provisionRes.data?.isNew === true;
+  if (isNewAgent) {
+    await applyDefaultAgentConfig(newAgentId);
   }
 
   const { error: upsertError } = await supabase.from("chat_bot_agents").upsert(
@@ -1021,6 +1068,13 @@ serve(async (req) => {
       const newAgentId =
         (provisionRes.data.data as Record<string, unknown>)?.agentId ||
         provisionRes.data.agentId;
+
+      const isNewTeamAgent =
+        (provisionRes.data?.data as Record<string, unknown>)?.isNew === true ||
+        provisionRes.data?.isNew === true;
+      if (isNewTeamAgent) {
+        await applyDefaultAgentConfig(String(newAgentId));
+      }
 
       // 5. Upsert local record
       await supabase.from("chat_bot_agents").upsert(
