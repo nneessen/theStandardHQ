@@ -1409,6 +1409,10 @@ serve(async (req) => {
           voiceQuotedFollowupEnabled:
             agentData.voiceQuotedFollowupEnabled ?? false,
           primaryPhone: agentData.primaryPhone ?? null,
+          statusTriggerSequences: agentData.statusTriggerSequences || [],
+          reEngagementEnabled: agentData.reEngagementEnabled ?? false,
+          reEngagementDelayHours: agentData.reEngagementDelayHours ?? null,
+          reEngagementMaxAttempts: agentData.reEngagementMaxAttempts ?? null,
           connections: {
             close: closeConn
               ? { connected: true, orgName: closeConn.orgId || undefined }
