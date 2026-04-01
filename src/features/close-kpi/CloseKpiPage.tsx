@@ -1,20 +1,18 @@
 // src/features/close-kpi/CloseKpiPage.tsx
 // Close KPI dashboard with pre-built overview + custom user dashboard.
-// 2 tabs: Dashboard (with Overview / My Dashboard sub-views) + Setup.
+// 3 tabs: Dashboard (with Overview / My Dashboard sub-views) + Setup + Connection.
 
 import React, { useCallback, useEffect, useState } from "react";
-import { THE_STANDARD_AGENCY_ID } from "@/hooks/subscription";
-import { useImo } from "@/contexts/ImoContext";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, BarChart3, Settings } from "lucide-react";
+import { AlertTriangle, BarChart3, Settings, Wrench } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Link } from "@tanstack/react-router";
 import { CloseLogo } from "@/features/chat-bot";
 import { DashboardHeader } from "./components/DashboardHeader";
 import { PrebuiltDashboard } from "./components/PrebuiltDashboard";
 import { CustomDashboard } from "./components/CustomDashboard";
 import { SetupGuide } from "./components/SetupGuide";
+import { CloseSettings } from "./components/CloseSettings";
 import {
   closeKpiKeys,
   useCloseConnectionStatus,
@@ -24,14 +22,12 @@ import {
 } from "./hooks/useCloseKpiDashboard";
 import type { DateRangePreset } from "./types/close-kpi.types";
 
-type TabId = "dashboard" | "setup";
+type TabId = "dashboard" | "setup" | "settings";
 type DashboardMode = "prebuilt" | "custom";
 
 const ACCENT = "#4EC375";
 
 export const CloseKpiPage: React.FC = () => {
-  const { agency, isSuperAdmin } = useImo();
-  const hasAccess = isSuperAdmin || agency?.id === THE_STANDARD_AGENCY_ID;
   const queryClient = useQueryClient();
 
   // Tab state — default to setup, update when connection status resolves
@@ -43,17 +39,13 @@ export const CloseKpiPage: React.FC = () => {
   const [dashboardMode, setDashboardMode] = useState<DashboardMode>("prebuilt");
 
   // Check close connection
-  const { data: closeConfig } = useCloseConnectionStatus(hasAccess);
+  const { data: closeConfig } = useCloseConnectionStatus();
 
   // Check if any scores exist (for setup guide status)
-  const { data: scoreCount } = useLeadHeatScoreCount(
-    hasAccess && isSetupTabActive,
-  );
+  const { data: scoreCount } = useLeadHeatScoreCount(isSetupTabActive);
 
   // Check if any scoring runs completed
-  const { data: hasCompletedRuns } = useLeadHeatCompletedRuns(
-    hasAccess && isSetupTabActive,
-  );
+  const { data: hasCompletedRuns } = useLeadHeatCompletedRuns(isSetupTabActive);
   const leadHeatRescore = useLeadHeatRescore();
 
   const isCloseConnected = !!closeConfig;
@@ -108,6 +100,7 @@ export const CloseKpiPage: React.FC = () => {
   const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
     { id: "setup", label: "Setup", icon: Settings },
+    { id: "settings", label: "Connection", icon: Wrench },
   ];
 
   // ─── Dashboard Mode Segments ──────────────────────────────────
@@ -126,11 +119,6 @@ export const CloseKpiPage: React.FC = () => {
       Not Connected
     </Badge>
   );
-
-  // ─── No access ────────────────────────────────────────────────
-  if (!hasAccess) {
-    return null;
-  }
 
   return (
     <div className="flex flex-col p-2 sm:p-3 space-y-2 bg-zinc-50 dark:bg-zinc-950">
@@ -214,12 +202,12 @@ export const CloseKpiPage: React.FC = () => {
                 <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-[hsl(var(--warning))]" />
                 <p className="text-[11px] text-muted-foreground">
                   Close CRM not connected.{" "}
-                  <Link
-                    to="/chat-bot"
+                  <button
+                    onClick={() => setActiveTab("settings")}
                     className="font-medium underline hover:no-underline"
                   >
                     Connect in Settings
-                  </Link>{" "}
+                  </button>{" "}
                   to see your data.
                 </p>
               </div>
@@ -272,8 +260,11 @@ export const CloseKpiPage: React.FC = () => {
             hasScores={hasScores}
             hasScoringRuns={hasCompletedRuns ?? false}
             onNavigateToDashboard={() => setActiveTab("dashboard")}
+            onNavigateToSettings={() => setActiveTab("settings")}
           />
         )}
+
+        {activeTab === "settings" && <CloseSettings />}
       </div>
     </div>
   );

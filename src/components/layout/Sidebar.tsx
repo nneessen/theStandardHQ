@@ -375,13 +375,12 @@ export default function Sidebar({
           public: true,
           allowedAgencyId: THE_STANDARD_AGENCY_ID,
         },
-        // Close KPIs — restricted to The Standard agency
+        // Close KPIs — available to all authenticated users
         {
           icon: CloseCrmIcon,
           label: "Close KPIs",
           href: "/close-kpi",
           public: true,
-          allowedAgencyId: THE_STANDARD_AGENCY_ID,
         },
         // Business Tools — restricted to The Standard agency
         {

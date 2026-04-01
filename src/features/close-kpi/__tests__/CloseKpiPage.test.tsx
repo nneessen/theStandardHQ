@@ -4,25 +4,15 @@ import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
-  mockUseImo,
   mockUseCloseConnectionStatus,
   mockUseLeadHeatScoreCount,
   mockUseLeadHeatCompletedRuns,
   mockUseLeadHeatRescore,
 } = vi.hoisted(() => ({
-  mockUseImo: vi.fn(),
   mockUseCloseConnectionStatus: vi.fn(),
   mockUseLeadHeatScoreCount: vi.fn(),
   mockUseLeadHeatCompletedRuns: vi.fn(),
   mockUseLeadHeatRescore: vi.fn(),
-}));
-
-vi.mock("@/contexts/ImoContext", () => ({
-  useImo: (...args: unknown[]) => mockUseImo(...args),
-}));
-
-vi.mock("@/hooks/subscription", () => ({
-  THE_STANDARD_AGENCY_ID: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
 }));
 
 vi.mock("../hooks/useCloseKpiDashboard", () => ({
@@ -38,12 +28,6 @@ vi.mock("../hooks/useCloseKpiDashboard", () => ({
   useLeadHeatCompletedRuns: (...args: unknown[]) =>
     mockUseLeadHeatCompletedRuns(...args),
   useLeadHeatRescore: (...args: unknown[]) => mockUseLeadHeatRescore(...args),
-}));
-
-vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, to }: { children: ReactNode; to: string }) => (
-    <a href={to}>{children}</a>
-  ),
 }));
 
 vi.mock("@/features/chat-bot", () => ({
@@ -62,6 +46,10 @@ vi.mock("../components/SetupGuide", () => ({
   SetupGuide: () => <div data-testid="setup-guide" />,
 }));
 
+vi.mock("../components/CloseSettings", () => ({
+  CloseSettings: () => <div data-testid="close-settings" />,
+}));
+
 import { CloseKpiPage } from "../CloseKpiPage";
 
 describe("CloseKpiPage", () => {
@@ -76,10 +64,6 @@ describe("CloseKpiPage", () => {
     });
 
     vi.clearAllMocks();
-    mockUseImo.mockReturnValue({
-      agency: { id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa" },
-      isSuperAdmin: false,
-    });
     mockUseLeadHeatScoreCount.mockReturnValue({ data: 0 });
     mockUseLeadHeatCompletedRuns.mockReturnValue({ data: false });
     mockUseLeadHeatRescore.mockReturnValue({

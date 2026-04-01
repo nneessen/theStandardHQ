@@ -11,10 +11,9 @@ import {
   Loader2,
   ChevronDown,
   ChevronRight,
-  ExternalLink,
+  Wrench,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "@tanstack/react-router";
 import { useLeadHeatRescore } from "../hooks/useCloseKpiDashboard";
 
 interface SetupGuideProps {
@@ -22,6 +21,7 @@ interface SetupGuideProps {
   hasScores: boolean;
   hasScoringRuns: boolean;
   onNavigateToDashboard: () => void;
+  onNavigateToSettings: () => void;
 }
 
 interface StepDef {
@@ -39,7 +39,7 @@ const STEPS: StepDef[] = [
     title: "Connect Close CRM",
     description: "Link your Close account by entering your API key",
     detail:
-      "Go to Close CRM → Settings → API Keys → Generate a new key. Then paste it in your Chat Bot settings page under the Close CRM section. Your key is encrypted and never shared.",
+      "Go to Close CRM → Settings → Developer → + New API Key. Then go to the Connection tab above to paste your key and connect. Your key is encrypted and never shared.",
   },
   {
     id: "sync",
@@ -72,6 +72,7 @@ export const SetupGuide: React.FC<SetupGuideProps> = ({
   hasScores,
   hasScoringRuns,
   onNavigateToDashboard,
+  onNavigateToSettings,
 }) => {
   const leadHeatRescore = useLeadHeatRescore();
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
@@ -186,15 +187,13 @@ export const SetupGuide: React.FC<SetupGuideProps> = ({
                   <div className="mt-2">
                     {step.id === "connect" && (
                       <Button
-                        asChild
                         variant="outline"
                         size="sm"
                         className="h-7 text-[10px] gap-1.5"
+                        onClick={onNavigateToSettings}
                       >
-                        <Link to="/chat-bot">
-                          <ExternalLink className="h-3 w-3" />
-                          Go to Settings
-                        </Link>
+                        <Wrench className="h-3 w-3" />
+                        Go to Connection
                       </Button>
                     )}
                     {step.id === "sync" && (
@@ -295,7 +294,7 @@ export const SetupGuide: React.FC<SetupGuideProps> = ({
 const FAQ_ITEMS = [
   {
     q: "Where do I find my Close API key?",
-    a: "In Close CRM, go to Settings (gear icon) → API → API Keys. Click 'Generate a new API Key', give it a name, and copy the key. You only need read access.",
+    a: "In Close CRM, go to Settings (gear icon) → Developer → + New API Key. Give it a name, copy the key, and paste it in the Connection tab. You only need read access.",
   },
   {
     q: "How does AI lead scoring work?",
