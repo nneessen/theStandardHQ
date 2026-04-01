@@ -11,13 +11,13 @@ export function EngagementMetrics({
   data: ChatBotAnalytics["engagement"];
   messagePerformance: ChatBotAnalytics["messagePerformance"];
 }) {
-  const responseRate = data.responseRate ?? 0;
-  const multiTurnRate = data.multiTurnRate ?? 0;
+  const responseRate = Math.min(data.responseRate ?? 0, 1);
+  const multiTurnRate = Math.min(data.multiTurnRate ?? 0, 1);
   const avgFirstResponseMin = data.avgFirstResponseMin ?? 0;
   const avgObjectionCount = data.avgObjectionCount ?? 0;
-  const hardNoRate = data.hardNoRate ?? 0;
-  const positiveRate = messagePerformance.positiveRate ?? 0;
-  const negativeRate = messagePerformance.negativeRate ?? 0;
+  const hardNoRate = Math.min(data.hardNoRate ?? 0, 1);
+  const positiveRate = Math.min(messagePerformance.positiveRate ?? 0, 1);
+  const negativeRate = Math.min(messagePerformance.negativeRate ?? 0, 1);
   const topReplyCategories = messagePerformance.topReplyCategories ?? [];
 
   const rows = [

@@ -14,9 +14,9 @@ export function BotROI({
   monthlyCost: number;
 }) {
   const totalPremium = attributions.reduce((sum, a) => {
-    return (
-      sum + (a.policies?.annual_premium ?? a.policies?.monthly_premium ?? 0)
-    );
+    const annual = a.policies?.annual_premium;
+    const monthly = a.policies?.monthly_premium;
+    return sum + (annual ?? (monthly ? monthly * 12 : 0));
   }, 0);
 
   // Approximate agent commission as 70% of first year premium

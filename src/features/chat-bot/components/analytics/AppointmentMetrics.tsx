@@ -10,9 +10,9 @@ export function AppointmentMetrics({
   data: ChatBotAnalytics["appointments"];
 }) {
   const total = data.total ?? 0;
-  const bookingRate = data.bookingRate ?? 0;
-  const showRate = data.showRate ?? 0;
-  const cancelRate = data.cancelRate ?? 0;
+  const bookingRate = Math.min(data.bookingRate ?? 0, 1);
+  const showRate = Math.min(data.showRate ?? 0, 1);
+  const cancelRate = Math.min(data.cancelRate ?? 0, 1);
   const avgDays = data.avgDaysToAppointment ?? 0;
 
   return (

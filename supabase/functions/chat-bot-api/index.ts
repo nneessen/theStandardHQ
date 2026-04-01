@@ -395,6 +395,75 @@ function safeStatus(status: number): number {
   return status >= 500 ? 400 : status;
 }
 
+// Normalize a rate value to 0-1 decimal range.
+// External API may return either 0-1 decimals or 0-100 percentages.
+function normalizeRate(val: unknown): number {
+  if (typeof val !== "number" || isNaN(val)) return 0;
+  return val > 1 ? val / 100 : val;
+}
+
+// deno-lint-ignore no-explicit-any
+function normalizeAnalyticsPayload(payload: any): any {
+  if (!payload || typeof payload !== "object") return payload;
+
+  if (payload.appointments) {
+    payload.appointments.bookingRate = normalizeRate(
+      payload.appointments.bookingRate,
+    );
+    payload.appointments.showRate = normalizeRate(
+      payload.appointments.showRate,
+    );
+    payload.appointments.cancelRate = normalizeRate(
+      payload.appointments.cancelRate,
+    );
+  }
+  if (payload.conversations) {
+    payload.conversations.suppressionRate = normalizeRate(
+      payload.conversations.suppressionRate,
+    );
+    payload.conversations.staleRate = normalizeRate(
+      payload.conversations.staleRate,
+    );
+  }
+  if (payload.engagement) {
+    payload.engagement.responseRate = normalizeRate(
+      payload.engagement.responseRate,
+    );
+    payload.engagement.multiTurnRate = normalizeRate(
+      payload.engagement.multiTurnRate,
+    );
+    payload.engagement.hardNoRate = normalizeRate(
+      payload.engagement.hardNoRate,
+    );
+  }
+  if (payload.messagePerformance) {
+    payload.messagePerformance.positiveRate = normalizeRate(
+      payload.messagePerformance.positiveRate,
+    );
+    payload.messagePerformance.negativeRate = normalizeRate(
+      payload.messagePerformance.negativeRate,
+    );
+    payload.messagePerformance.schedulingRate = normalizeRate(
+      payload.messagePerformance.schedulingRate,
+    );
+    payload.messagePerformance.optOutRate = normalizeRate(
+      payload.messagePerformance.optOutRate,
+    );
+    payload.messagePerformance.resolvedOutcomeRate = normalizeRate(
+      payload.messagePerformance.resolvedOutcomeRate,
+    );
+    if (Array.isArray(payload.messagePerformance.topReplyCategories)) {
+      for (const cat of payload.messagePerformance.topReplyCategories) {
+        cat.positiveRate = normalizeRate(cat.positiveRate);
+        cat.negativeRate = normalizeRate(cat.negativeRate);
+        cat.schedulingRate = normalizeRate(cat.schedulingRate);
+        cat.optOutRate = normalizeRate(cat.optOutRate);
+      }
+    }
+  }
+  return payload;
+}
+
 // Unwrap apiSuccess envelope: { success: true, data: <payload>, meta?: {...} } → <payload>
 // deno-lint-ignore no-explicit-any
 function unwrap(res: { ok: boolean; status: number; data: any }): {
@@ -2358,7 +2427,7 @@ serve(async (req) => {
               timeline: [],
             });
           }
-          return jsonResponse(payload);
+          return jsonResponse(normalizeAnalyticsPayload(payload));
         } catch {
           // External API unavailable — return empty shell
           return jsonResponse({
@@ -2402,8 +2471,9 @@ serve(async (req) => {
           .eq("user_id", effectiveUserId)
           .order("created_at", { ascending: false });
 
-        if (from) query = query.gte("created_at", from);
-        if (to) query = query.lte("created_at", `${to}T23:59:59.999Z`);
+        if (from) query = query.gte("conversation_started_at", from);
+        if (to)
+          query = query.lte("conversation_started_at", `${to}T23:59:59.999Z`);
 
         const { data: rawAttrs, error: qErr } = await query;
         if (qErr) {

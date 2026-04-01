@@ -111,37 +111,46 @@ export function AnalyticsTab() {
           </div>
         </div>
       ) : analytics.data ? (
-        <>
-          {/* Metric Cards Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-            <ConversationMetrics
-              data={analytics.data.conversations ?? emptyConversations}
-            />
-            <AppointmentMetrics
-              data={analytics.data.appointments ?? emptyAppointments}
-            />
-            <EngagementMetrics
-              data={analytics.data.engagement ?? emptyEngagement}
-              messagePerformance={
-                analytics.data.messagePerformance ?? emptyMessagePerformance
-              }
-            />
-            <ConversionMetrics
-              attributions={attributions.data || []}
-              totalConversations={analytics.data.conversations?.total ?? 0}
-            />
-          </div>
+        (() => {
+          const openCount = analytics.data.conversations?.byStatus?.open ?? 0;
+          const engagedConversations = Math.max(
+            0,
+            (analytics.data.conversations?.total ?? 0) - openCount,
+          );
+          return (
+            <>
+              {/* Metric Cards Grid */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                <ConversationMetrics
+                  data={analytics.data.conversations ?? emptyConversations}
+                />
+                <AppointmentMetrics
+                  data={analytics.data.appointments ?? emptyAppointments}
+                />
+                <EngagementMetrics
+                  data={analytics.data.engagement ?? emptyEngagement}
+                  messagePerformance={
+                    analytics.data.messagePerformance ?? emptyMessagePerformance
+                  }
+                />
+                <ConversionMetrics
+                  attributions={attributions.data || []}
+                  totalConversations={engagedConversations}
+                />
+              </div>
 
-          {/* ROI Card */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-            <BotROI
-              attributions={attributions.data || []}
-              totalConversations={analytics.data.conversations?.total ?? 0}
-              monthlyCost={BOT_MONTHLY_COST}
-            />
-            <TimelineChart data={analytics.data.timeline ?? []} />
-          </div>
-        </>
+              {/* ROI Card */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+                <BotROI
+                  attributions={attributions.data || []}
+                  totalConversations={engagedConversations}
+                  monthlyCost={BOT_MONTHLY_COST}
+                />
+                <TimelineChart data={analytics.data.timeline ?? []} />
+              </div>
+            </>
+          );
+        })()
       ) : null}
 
       {/* Attribution Table — always shown (uses Supabase data, not external API) */}

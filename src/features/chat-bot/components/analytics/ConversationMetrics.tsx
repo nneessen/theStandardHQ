@@ -12,8 +12,8 @@ export function ConversationMetrics({
   const openCount = data.byStatus?.open ?? 0;
   const total = Math.max(0, (data.total ?? 0) - openCount);
   const avgMsgs = data.avgMessagesPerConvo ?? 0;
-  const suppression = data.suppressionRate ?? 0;
-  const stale = data.staleRate ?? 0;
+  const suppression = Math.min(data.suppressionRate ?? 0, 1);
+  const stale = Math.min(data.staleRate ?? 0, 1);
   const statusEntries = Object.entries(data.byStatus || {}).sort(
     ([, a], [, b]) => b - a,
   );

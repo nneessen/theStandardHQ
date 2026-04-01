@@ -12,6 +12,11 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+function normalizeRate(val: unknown): number {
+  if (typeof val !== "number" || isNaN(val)) return 0;
+  return val > 1 ? val / 100 : val;
+}
+
 // deno-lint-ignore no-explicit-any
 function jsonResponse(data: any, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -130,7 +135,7 @@ serve(async (req) => {
       botConverted,
       botAssisted,
       totalPremium: Math.round(totalPremium * 100) / 100,
-      bookingRate: externalMetrics?.bookingRate ?? 0,
+      bookingRate: normalizeRate(externalMetrics?.bookingRate),
       conversionRate:
         engagedConversations > 0
           ? Math.round((totalAttributions / engagedConversations) * 10000) / 100

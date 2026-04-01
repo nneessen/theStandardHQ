@@ -17,9 +17,9 @@ export function ConversionMetrics({
     (a) => a.attribution_type === "bot_assisted",
   ).length;
   const totalPremium = attributions.reduce((sum, a) => {
-    return (
-      sum + (a.policies?.annual_premium ?? a.policies?.monthly_premium ?? 0)
-    );
+    const annual = a.policies?.annual_premium;
+    const monthly = a.policies?.monthly_premium;
+    return sum + (annual ?? (monthly ? monthly * 12 : 0));
   }, 0);
   const conversionRate =
     totalConversations > 0
