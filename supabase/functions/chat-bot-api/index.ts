@@ -1463,6 +1463,7 @@ serve(async (req) => {
           voiceQuotedFollowupEnabled:
             agentData.voiceQuotedFollowupEnabled ?? false,
           primaryPhone: agentData.primaryPhone ?? null,
+          notificationPhone: agentData.notificationPhone ?? null,
           statusTriggerSequences: agentData.statusTriggerSequences || [],
           reEngagementEnabled: agentData.reEngagementEnabled ?? false,
           reEngagementDelayHours: agentData.reEngagementDelayHours ?? null,

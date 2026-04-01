@@ -50,6 +50,7 @@ const BOT_CONFIG_ALLOWED_KEYS = new Set([
   "voiceQuotedFollowupEnabled",
   "primaryPhone",
   "statusTriggerSequences",
+  "notificationPhone",
   "reEngagementEnabled",
   "reEngagementDelayHours",
   "reEngagementMaxAttempts",
