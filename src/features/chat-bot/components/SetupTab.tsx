@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Settings2,
   ShieldBan,
+  Smartphone,
   Tag,
   User,
   MessageSquare,
@@ -204,6 +205,13 @@ export function SetupTab() {
       setBhDirty(false);
     }
   }, [agent?.businessHours]);
+
+  const [notifPhone, setNotifPhone] = useState(agent?.notificationPhone ?? "");
+  const [notifPhoneDirty, setNotifPhoneDirty] = useState(false);
+  useEffect(() => {
+    setNotifPhone(agent?.notificationPhone ?? "");
+    setNotifPhoneDirty(false);
+  }, [agent?.notificationPhone]);
 
   const [reEngageDelay, setReEngageDelay] = useState(
     String(agent?.reEngagementDelayHours ?? 48),
@@ -704,6 +712,85 @@ export function SetupTab() {
                     automatically at the specified interval before the
                     appointment.
                   </p>
+                </SectionCard>
+              ) : null}
+
+              {agent ? (
+                <SectionCard
+                  icon={<Smartphone className="h-4 w-4" />}
+                  title="Appointment SMS Notification"
+                  description="Receive a text when your bot books an appointment."
+                >
+                  <div className="space-y-2">
+                    <Input
+                      type="tel"
+                      placeholder="+1 (555) 123-4567"
+                      value={notifPhone}
+                      onChange={(e) => {
+                        setNotifPhone(e.target.value);
+                        setNotifPhoneDirty(true);
+                      }}
+                      className="h-9 text-[11px]"
+                    />
+                    {notifPhoneDirty && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          className="h-7 px-3 text-[10px]"
+                          disabled={updateConfig.isPending}
+                          onClick={() => {
+                            const cleaned = notifPhone.replace(/[^\d+]/g, "");
+                            if (cleaned && !/^\+?1?\d{10,14}$/.test(cleaned)) {
+                              toast.error(
+                                "Enter a valid phone number (e.g. +15551234567).",
+                              );
+                              return;
+                            }
+                            let normalized = cleaned;
+                            if (normalized && !normalized.startsWith("+")) {
+                              normalized =
+                                normalized.length === 10
+                                  ? `+1${normalized}`
+                                  : `+${normalized}`;
+                            }
+                            updateConfig.mutate(
+                              {
+                                notificationPhone: normalized || null,
+                              },
+                              {
+                                onSuccess: () => setNotifPhoneDirty(false),
+                              },
+                            );
+                          }}
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-[10px]"
+                          onClick={() => {
+                            setNotifPhone(agent.notificationPhone ?? "");
+                            setNotifPhoneDirty(false);
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
+                    {agent.notificationPhone && !notifPhoneDirty && (
+                      <p className="flex items-center gap-1.5 text-[10px] text-emerald-600 dark:text-emerald-400">
+                        <Check className="h-3 w-3" />
+                        Notifications will be sent to {agent.notificationPhone}
+                      </p>
+                    )}
+                    {!agent.notificationPhone && !notifPhoneDirty && (
+                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                        No phone set. You won&apos;t receive SMS notifications
+                        for booked appointments.
+                      </p>
+                    )}
+                  </div>
                 </SectionCard>
               ) : null}
 

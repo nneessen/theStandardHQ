@@ -104,6 +104,7 @@ export interface ChatBotAgent {
   voiceQuotedFollowupEnabled?: boolean;
   primaryPhone?: string | null;
   statusTriggerSequences?: StatusTriggerSequence[];
+  notificationPhone?: string | null;
   reEngagementEnabled?: boolean;
   reEngagementDelayHours?: number | null;
   reEngagementMaxAttempts?: number | null;
@@ -1617,6 +1618,7 @@ export function useUpdateBotConfig() {
       voiceQuotedFollowupEnabled?: boolean;
       primaryPhone?: string | null;
       statusTriggerSequences?: StatusTriggerSequence[];
+      notificationPhone?: string | null;
       reEngagementEnabled?: boolean;
       reEngagementDelayHours?: number | null;
       reEngagementMaxAttempts?: number | null;
