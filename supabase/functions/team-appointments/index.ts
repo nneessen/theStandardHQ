@@ -50,6 +50,19 @@ function jsonResponse(data: any, status = 200, req?: Request): Response {
   });
 }
 
+// --- Security helpers ---
+
+function escapeLikePattern(pattern: string): string {
+  return pattern.replace(/[%_\\]/g, "\\$&");
+}
+
+function isValidDateStr(d: string): boolean {
+  return (
+    /^\d{4}-\d{2}-\d{2}$/.test(d) &&
+    !isNaN(new Date(d + "T00:00:00Z").getTime())
+  );
+}
+
 // --- External API helper ---
 
 function getChatBotApiConfig(): { url: string; key: string } | null {
@@ -72,7 +85,7 @@ async function fetchAgentAppointments(
 
   try {
     const res = await fetch(
-      `${apiConfig.url}/api/external/agents/${externalAgentId}/appointments?page=1&limit=100`,
+      `${apiConfig.url}/api/external/agents/${encodeURIComponent(externalAgentId)}/appointments?page=1&limit=100`,
       {
         method: "GET",
         headers: { "X-API-Key": apiConfig.key },
@@ -202,7 +215,10 @@ serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const today = body.date || new Date().toISOString().slice(0, 10);
+    const rawDate = typeof body.date === "string" ? body.date : "";
+    const today = isValidDateStr(rawDate)
+      ? rawDate
+      : new Date().toISOString().slice(0, 10);
     const weekStart = getStartOfWeek(today);
 
     // ── Two-client pattern (same as chat-bot-api) ──
@@ -254,37 +270,22 @@ serve(async (req) => {
         "callerId:",
         callerId,
       );
-      return jsonResponse(
-        {
-          error: "User profile not found",
-          _debug: {
-            callerId,
-            profileError: profileError?.message ?? "no profile row",
-          },
-        },
-        404,
-        req,
-      );
+      return jsonResponse({ error: "User profile not found" }, 404, req);
     }
 
     const callerPath = callerProfile.hierarchy_path || callerId;
+    const escapedPath = escapeLikePattern(callerPath);
 
-    // ── Step 1: Find all downline user profiles ──
+    // ── Step 1: Find all downline user profiles (capped at 100) ──
     const { data: downlineProfiles, error: downlineError } = await supabase
       .from("user_profiles")
       .select("id, first_name, last_name")
-      .like("hierarchy_path", `${callerPath}.%`);
+      .like("hierarchy_path", `${escapedPath}.%`)
+      .limit(100);
 
     if (downlineError) {
       console.error("[team-appointments] downline query error:", downlineError);
-      return jsonResponse(
-        {
-          error: "Failed to fetch team data",
-          _debug: { callerPath, downlineError: downlineError.message },
-        },
-        500,
-        req,
-      );
+      return jsonResponse({ error: "Failed to fetch team data" }, 500, req);
     }
 
     const allUserIds = [
@@ -301,17 +302,7 @@ serve(async (req) => {
 
     if (botError) {
       console.error("[team-appointments] bot agents query error:", botError);
-      return jsonResponse(
-        {
-          error: "Failed to fetch bot data",
-          _debug: {
-            allUserIds: allUserIds.slice(0, 5),
-            botError: botError.message,
-          },
-        },
-        500,
-        req,
-      );
+      return jsonResponse({ error: "Failed to fetch bot data" }, 500, req);
     }
 
     // ── Step 3: Build agent list ──
@@ -359,17 +350,16 @@ serve(async (req) => {
     }
 
     if (agents.length === 0) {
+      console.error(
+        "[team-appointments] no agents found — downlines:",
+        (downlineProfiles || []).length,
+        "botAgents:",
+        (botAgents || []).length,
+      );
       return jsonResponse(
         {
           agents: [],
           summary: { totalAgents: 0, todayTotal: 0, thisWeekTotal: 0 },
-          _debug: {
-            callerId,
-            callerPath,
-            downlineCount: (downlineProfiles || []).length,
-            allUserIds: allUserIds.slice(0, 10),
-            botAgentsFound: (botAgents || []).length,
-          },
         },
         200,
         req,
@@ -505,13 +495,6 @@ serve(async (req) => {
     );
   } catch (err) {
     console.error("[team-appointments] Unhandled error:", err);
-    return jsonResponse(
-      {
-        error: "Internal server error",
-        _debug: { message: String(err) },
-      },
-      500,
-      req,
-    );
+    return jsonResponse({ error: "Internal server error" }, 500, req);
   }
 });
