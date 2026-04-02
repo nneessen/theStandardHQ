@@ -40,12 +40,6 @@ export const AGENT_FIELD_HINTS: Record<string, string> = {
   beginMessageDelayMs:
     "How long the agent waits before speaking after the call connects. 0 means it speaks immediately.",
 
-  // Call Flow — Voicemail (Step 3)
-  enableVoicemailDetection:
-    "Detect when the call reaches a voicemail greeting instead of a live person.",
-  voicemailDetectionTimeoutMs:
-    "How long to listen before deciding whether it's voicemail. 30 seconds is typical.",
-
   // Advanced (Step 4)
   sttMode:
     "'fast' prioritizes speed, 'accurate' prioritizes quality. Leave blank for the default.",

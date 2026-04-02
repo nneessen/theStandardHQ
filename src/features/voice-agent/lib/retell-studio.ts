@@ -18,9 +18,6 @@ export interface RetellStructuredAgentForm {
   endCallAfterSilenceMs: string;
   maxCallDurationMs: string;
   allowUserDtmf: boolean;
-  enableVoicemailDetection: boolean;
-  voicemailDetectionTimeoutMs: string;
-  voicemailOption: string;
   enableBackchannel: boolean;
   backchannelFrequency: string;
   enableDynamicResponsiveness: boolean;
@@ -223,11 +220,6 @@ export function buildStructuredRetellAgentForm(
     endCallAfterSilenceMs: asNumberString(agent?.end_call_after_silence_ms),
     maxCallDurationMs: asNumberString(agent?.max_call_duration_ms),
     allowUserDtmf: asBoolean(agent?.allow_user_dtmf),
-    enableVoicemailDetection: asBoolean(agent?.enable_voicemail_detection),
-    voicemailDetectionTimeoutMs: asNumberString(
-      agent?.voicemail_detection_timeout_ms,
-    ),
-    voicemailOption: asString(agent?.voicemail_option),
     enableBackchannel: asBoolean(agent?.enable_backchannel),
     backchannelFrequency: asNumberString(agent?.backchannel_frequency),
     enableDynamicResponsiveness: asBoolean(
@@ -327,16 +319,6 @@ export function serializeStructuredRetellAgentForm(
       },
     ),
     allow_user_dtmf: form.allowUserDtmf,
-    enable_voicemail_detection: form.enableVoicemailDetection,
-    voicemail_detection_timeout_ms: parseInteger(
-      form.voicemailDetectionTimeoutMs,
-      "Voicemail detection timeout",
-      {
-        min: 0,
-        max: 120_000,
-      },
-    ),
-    voicemail_option: form.voicemailOption.trim() || null,
     enable_backchannel: form.enableBackchannel,
     backchannel_frequency: parseFloatValue(
       form.backchannelFrequency,
@@ -476,16 +458,6 @@ export function validateStructuredRetellAgentForm(
       min: 30_000,
       max: 28_800_000,
     });
-  });
-  collectValidationError(errors, () => {
-    parseInteger(
-      form.voicemailDetectionTimeoutMs,
-      "Voicemail detection timeout",
-      {
-        min: 0,
-        max: 120_000,
-      },
-    );
   });
   collectValidationError(errors, () => {
     parseFloatValue(form.backchannelFrequency, "Backchannel frequency", {

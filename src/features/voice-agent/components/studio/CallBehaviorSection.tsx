@@ -1,4 +1,4 @@
-import { MessageCircle, Timer, Voicemail } from "lucide-react";
+import { MessageCircle, Timer } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -205,50 +205,6 @@ export function CallBehaviorSection({
               />
               <FieldHint>{AGENT_FIELD_HINTS.beginMessageDelayMs}</FieldHint>
             </div>
-          </div>
-        </Section>
-
-        {/* Voicemail behavior */}
-        <Section
-          icon={<Voicemail className="h-4 w-4" />}
-          title="Voicemail behavior"
-          description="Control what happens when the agent reaches voicemail."
-        >
-          <div className="space-y-3">
-            <ToggleRow
-              title="Detect voicemail"
-              description={AGENT_FIELD_HINTS.enableVoicemailDetection}
-              checked={agentForm.enableVoicemailDetection}
-              onCheckedChange={(checked) =>
-                onAgentFormChange("enableVoicemailDetection", checked)
-              }
-            />
-
-            {agentForm.enableVoicemailDetection && (
-              <div className="space-y-1.5">
-                <Label htmlFor="retell-voicemail-timeout">
-                  Voicemail detection timeout (ms)
-                </Label>
-                <Input
-                  id="retell-voicemail-timeout"
-                  type="number"
-                  min={0}
-                  max={120000}
-                  step="1000"
-                  value={agentForm.voicemailDetectionTimeoutMs}
-                  onChange={(event) =>
-                    onAgentFormChange(
-                      "voicemailDetectionTimeoutMs",
-                      event.target.value,
-                    )
-                  }
-                  placeholder="30000"
-                />
-                <FieldHint>
-                  {AGENT_FIELD_HINTS.voicemailDetectionTimeoutMs}
-                </FieldHint>
-              </div>
-            )}
           </div>
         </Section>
       </div>

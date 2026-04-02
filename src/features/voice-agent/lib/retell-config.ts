@@ -28,8 +28,6 @@ export const RETELL_AGENT_EDITABLE_KEYS = [
   "enable_dynamic_voice_speed",
   "ambient_sound",
   "ambient_sound_volume",
-  "enable_voicemail_detection",
-  "voicemail_detection_timeout_ms",
   "voicemail_option",
   "reminder_trigger_ms",
   "reminder_max_count",
