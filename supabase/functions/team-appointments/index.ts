@@ -81,7 +81,13 @@ async function fetchAgentAppointments(
     );
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      return { ok: false, items: [], error: `HTTP ${res.status}` };
+      // deno-lint-ignore no-explicit-any
+      const errMsg =
+        (data as any)?.error?.message ||
+        (data as any)?.error ||
+        (data as any)?.message ||
+        JSON.stringify(data).slice(0, 200);
+      return { ok: false, items: [], error: `HTTP ${res.status}: ${errMsg}` };
     }
     // deno-lint-ignore no-explicit-any
     const payload = (data as any)?.data ?? data;
