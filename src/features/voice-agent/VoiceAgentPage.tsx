@@ -583,13 +583,20 @@ export function VoiceAgentPage() {
     ? voiceSetupState.agent?.exists === true ||
       isVoiceAgentProvisioned(voiceAgentProvisioningStatus)
     : retellConnected || isVoiceAgentProvisioned(voiceAgentProvisioningStatus);
+  // Runtime is needed on overview (for is_published), setup, and admin.
+  // LLM + voices are editor-only data — only load on setup/admin.
+  const shouldLoadRetellRuntime =
+    (activeTab === "overview" ||
+      activeTab === "setup" ||
+      activeTab === "admin") &&
+    retellConnected;
   const shouldLoadRetellDetails =
     (activeTab === "setup" || activeTab === "admin") && retellConnected;
   const {
     data: retellRuntime,
     error: retellRuntimeError,
     isLoading: retellRuntimeLoading,
-  } = useChatBotRetellRuntime(shouldLoadRetellDetails);
+  } = useChatBotRetellRuntime(shouldLoadRetellRuntime);
   const {
     data: retellLlm,
     error: retellLlmError,
