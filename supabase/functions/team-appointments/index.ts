@@ -72,7 +72,7 @@ async function fetchAgentAppointments(
 
   try {
     const res = await fetch(
-      `${apiConfig.url}/api/external/agents/${externalAgentId}/appointments?page=1&limit=200`,
+      `${apiConfig.url}/api/external/agents/${externalAgentId}/appointments?page=1&limit=100`,
       {
         method: "GET",
         headers: { "X-API-Key": apiConfig.key },
