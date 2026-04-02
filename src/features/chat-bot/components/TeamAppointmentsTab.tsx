@@ -37,14 +37,16 @@ function formatTime(dateStr: string | null): string {
 function AgentRow({ agent }: { agent: TeamAgentAppointments }) {
   const hasFetchError = !!agent.fetchError;
 
-  // Find next upcoming appointment (today, status=scheduled, sorted by time)
-  const todayStr = new Date().toISOString().slice(0, 10);
+  // Find next upcoming appointment (today, status=scheduled, not yet passed)
+  const now = new Date();
+  const todayStr = now.toISOString().slice(0, 10);
   const upcoming = agent.items
     .filter(
       (a) =>
         a.scheduledAt &&
         a.scheduledAt.slice(0, 10) === todayStr &&
-        a.status === "scheduled",
+        a.status === "scheduled" &&
+        new Date(a.scheduledAt) > now,
     )
     .sort((a, b) => (a.scheduledAt || "").localeCompare(b.scheduledAt || ""));
 
