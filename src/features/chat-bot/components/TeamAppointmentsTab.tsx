@@ -1,24 +1,15 @@
 // src/features/chat-bot/components/TeamAppointmentsTab.tsx
 // Team-level appointment monitoring — daily focus view for upline managers.
 
-import { useState } from "react";
 import {
   AlertTriangle,
   Calendar,
-  ChevronDown,
-  ChevronRight,
   RefreshCw,
   Users,
+  Clock,
+  User,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -28,195 +19,173 @@ import {
   type TeamAppointmentItem,
 } from "../hooks/useTeamAppointments";
 
-// ─── Status badge ───────────────────────────────────────────────
+// ─── Helpers ────────────────────────────────────────────────────
 
-const statusConfig: Record<string, { label: string; className: string }> = {
-  scheduled: {
-    label: "Scheduled",
-    className:
-      "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
-  },
-  completed: {
-    label: "Completed",
-    className:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300",
-  },
-  cancelled: {
-    label: "Cancelled",
-    className: "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400",
-  },
-  no_show: {
-    label: "No-Show",
-    className: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
-  },
+const statusStyles: Record<string, string> = {
+  scheduled:
+    "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800",
+  completed:
+    "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800",
+  cancelled:
+    "bg-zinc-50 text-zinc-500 border-zinc-200 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-700",
+  no_show:
+    "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800",
 };
 
-function StatusBadge({ status }: { status: string }) {
-  const config = statusConfig[status] || statusConfig.scheduled;
-  return (
-    <Badge
-      variant="secondary"
-      className={`text-[9px] h-4 px-1.5 font-medium ${config.className}`}
-    >
-      {config.label}
-    </Badge>
-  );
-}
+const statusLabels: Record<string, string> = {
+  scheduled: "Scheduled",
+  completed: "Completed",
+  cancelled: "Cancelled",
+  no_show: "No-Show",
+};
 
-// ─── Date formatting ────────────────────────────────────────────
-
-function formatDateTime(dateStr: string | null): string {
-  if (!dateStr) return "—";
+function formatTime(dateStr: string | null): string {
+  if (!dateStr) return "";
   const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
   });
 }
 
-// ─── Expanded row: agent's individual appointments ──────────────
+// ─── Appointment row ────────────────────────────────────────────
 
-function AgentDetailRows({
-  items,
-  fetchError,
-}: {
-  items: TeamAppointmentItem[];
-  fetchError?: string;
-}) {
-  if (fetchError) {
-    return (
-      <TableRow>
-        <TableCell
-          colSpan={7}
-          className="text-[10px] text-amber-600 dark:text-amber-400 text-center py-2 bg-zinc-50/50 dark:bg-zinc-900/30"
-        >
-          Could not load appointments: {fetchError}
-        </TableCell>
-      </TableRow>
-    );
-  }
-
-  if (items.length === 0) {
-    return (
-      <TableRow>
-        <TableCell
-          colSpan={7}
-          className="text-[10px] text-muted-foreground text-center py-2 bg-zinc-50/50 dark:bg-zinc-900/30"
-        >
-          No appointments this week
-        </TableCell>
-      </TableRow>
-    );
-  }
+function AppointmentRow({ appt }: { appt: TeamAppointmentItem }) {
+  const style = statusStyles[appt.status] || statusStyles.scheduled;
+  const label = statusLabels[appt.status] || appt.status;
 
   return (
-    <>
-      {items.map((appt) => (
-        <TableRow key={appt.id} className="bg-zinc-50/50 dark:bg-zinc-900/30">
-          <TableCell className="pl-8 text-[10px] text-muted-foreground">
-            &nbsp;
-          </TableCell>
-          <TableCell
-            colSpan={2}
-            className="text-[10px] text-foreground font-medium"
-          >
-            {appt.leadName}
-          </TableCell>
-          <TableCell className="text-[10px] text-muted-foreground">
-            {formatDateTime(appt.scheduledAt)}
-          </TableCell>
-          <TableCell>
-            <StatusBadge status={appt.status} />
-          </TableCell>
-          <TableCell className="text-[10px] text-muted-foreground">
-            {appt.source === "bot"
-              ? "Bot"
-              : appt.source === "calendar_sync"
-                ? "Cal Sync"
-                : "—"}
-          </TableCell>
-          <TableCell />
-        </TableRow>
-      ))}
-    </>
+    <div className="flex items-center gap-3 py-1.5 px-2 rounded hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+      <div className="flex items-center gap-1.5 w-[72px] flex-shrink-0">
+        <Clock className="h-3 w-3 text-zinc-400" />
+        <span className="text-[11px] font-medium text-foreground tabular-nums">
+          {formatTime(appt.scheduledAt) || "TBD"}
+        </span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <span className="text-[11px] text-foreground truncate block">
+          {appt.leadName}
+        </span>
+      </div>
+      <Badge
+        variant="outline"
+        className={`text-[9px] h-4 px-1.5 font-medium border ${style}`}
+      >
+        {label}
+      </Badge>
+    </div>
   );
 }
 
-// ─── Agent row (expandable) ─────────────────────────────────────
+// ─── Agent section ──────────────────────────────────────────────
 
-function AgentRow({ agent }: { agent: TeamAgentAppointments }) {
-  const [expanded, setExpanded] = useState(false);
+function AgentSection({ agent }: { agent: TeamAgentAppointments }) {
   const hasFetchError = !!agent.fetchError;
 
+  // Split items into today vs rest-of-week
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayItems = agent.items.filter(
+    (a) => a.scheduledAt && a.scheduledAt.slice(0, 10) === todayStr,
+  );
+  const restOfWeek = agent.items.filter(
+    (a) => a.scheduledAt && a.scheduledAt.slice(0, 10) !== todayStr,
+  );
+
+  // Sort by time
+  const sortByTime = (a: TeamAppointmentItem, b: TeamAppointmentItem) =>
+    (a.scheduledAt || "").localeCompare(b.scheduledAt || "");
+  todayItems.sort(sortByTime);
+  restOfWeek.sort(sortByTime);
+
   return (
-    <>
-      <TableRow
-        className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors"
-        onClick={() => setExpanded(!expanded)}
-      >
-        <TableCell className="w-[200px]">
-          <div className="flex items-center gap-1.5">
-            {expanded ? (
-              <ChevronDown className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-            ) : (
-              <ChevronRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-            )}
-            <span className="text-[11px] font-medium text-foreground truncate">
-              {agent.name}
-            </span>
-            {hasFetchError && (
-              <AlertTriangle className="h-2.5 w-2.5 text-amber-500 flex-shrink-0" />
-            )}
-          </div>
-        </TableCell>
-        <TableCell className="text-center">
-          <span
-            className={`text-[11px] font-bold ${
-              hasFetchError
-                ? "text-muted-foreground"
-                : agent.today > 0
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-muted-foreground"
-            }`}
+    <div className="rounded-lg border border-border bg-background">
+      {/* Agent header */}
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-border">
+        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex-shrink-0">
+          <User className="h-3 w-3 text-zinc-500" />
+        </div>
+        <span className="text-[12px] font-semibold text-foreground flex-1 truncate">
+          {agent.name}
+        </span>
+        {hasFetchError ? (
+          <Badge
+            variant="outline"
+            className="text-[9px] h-4 px-1.5 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400"
           >
-            {hasFetchError ? "—" : agent.today}
-          </span>
-        </TableCell>
-        <TableCell className="text-center">
-          <span className="text-[11px] font-semibold text-foreground">
-            {hasFetchError ? "—" : agent.thisWeek}
-          </span>
-        </TableCell>
-        <TableCell className="text-center">
-          <span className="text-[10px] text-blue-600 dark:text-blue-400">
-            {hasFetchError ? "—" : agent.byStatus.scheduled}
-          </span>
-        </TableCell>
-        <TableCell className="text-center">
-          <span className="text-[10px] text-emerald-600 dark:text-emerald-400">
-            {hasFetchError ? "—" : agent.byStatus.completed}
-          </span>
-        </TableCell>
-        <TableCell className="text-center">
-          <span className="text-[10px] text-zinc-500">
-            {hasFetchError ? "—" : agent.byStatus.cancelled}
-          </span>
-        </TableCell>
-        <TableCell className="text-center">
-          <span className="text-[10px] text-zinc-500">
-            {hasFetchError ? "—" : agent.byStatus.noShow}
-          </span>
-        </TableCell>
-      </TableRow>
-      {expanded && (
-        <AgentDetailRows items={agent.items} fetchError={agent.fetchError} />
-      )}
-    </>
+            Error
+          </Badge>
+        ) : (
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-muted-foreground">Today</span>
+              <span
+                className={`text-[12px] font-bold tabular-nums ${
+                  agent.today > 0
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-zinc-400"
+                }`}
+              >
+                {agent.today}
+              </span>
+            </div>
+            <div className="w-px h-3 bg-border" />
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-muted-foreground">Week</span>
+              <span className="text-[12px] font-bold tabular-nums text-foreground">
+                {agent.thisWeek}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div className="px-1 py-1">
+        {hasFetchError ? (
+          <div className="flex items-center gap-2 px-2 py-2">
+            <AlertTriangle className="h-3 w-3 text-amber-500 flex-shrink-0" />
+            <span className="text-[10px] text-amber-600 dark:text-amber-400">
+              {agent.fetchError}
+            </span>
+          </div>
+        ) : todayItems.length === 0 && restOfWeek.length === 0 ? (
+          <div className="px-2 py-3 text-center">
+            <span className="text-[10px] text-muted-foreground">
+              No appointments this week
+            </span>
+          </div>
+        ) : (
+          <>
+            {todayItems.length > 0 && (
+              <div>
+                <div className="px-2 pt-1 pb-0.5">
+                  <span className="text-[9px] uppercase tracking-wider font-medium text-muted-foreground">
+                    Today
+                  </span>
+                </div>
+                {todayItems.map((appt) => (
+                  <AppointmentRow key={appt.id} appt={appt} />
+                ))}
+              </div>
+            )}
+            {restOfWeek.length > 0 && (
+              <div>
+                <div className="px-2 pt-1.5 pb-0.5">
+                  <span className="text-[9px] uppercase tracking-wider font-medium text-muted-foreground">
+                    Earlier this week
+                  </span>
+                </div>
+                {restOfWeek.map((appt) => (
+                  <AppointmentRow key={appt.id} appt={appt} />
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -233,38 +202,29 @@ export function TeamAppointmentsTab() {
     });
   };
 
-  // Loading skeleton
   if (isLoading) {
     return (
-      <div className="space-y-3">
-        <div className="rounded-lg border border-border bg-background p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">
-              Team Appointments
-            </span>
+      <div className="space-y-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-lg border border-border bg-background p-3"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-6 h-6 rounded-full bg-muted animate-pulse" />
+              <div className="h-3 w-24 bg-muted rounded animate-pulse" />
+              <div className="ml-auto h-3 w-16 bg-muted rounded animate-pulse" />
+            </div>
+            <div className="space-y-1.5 pl-8">
+              <div className="h-6 bg-muted rounded animate-pulse" />
+              <div className="h-6 bg-muted rounded animate-pulse w-3/4" />
+            </div>
           </div>
-          <div className="flex items-center divide-x divide-border">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex-1 px-3 first:pl-0 last:pr-0">
-                <div className="h-2.5 w-16 bg-muted rounded animate-pulse mb-1" />
-                <div className="h-5 w-8 bg-muted rounded animate-pulse" />
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="rounded-lg border border-border bg-background p-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div
-              key={i}
-              className="h-8 bg-muted rounded animate-pulse mb-1.5 last:mb-0"
-            />
-          ))}
-        </div>
+        ))}
       </div>
     );
   }
 
-  // Error state — function returned non-200 or network failure
   if (error || !data) {
     return (
       <div className="rounded-lg border border-border bg-background p-3">
@@ -291,7 +251,6 @@ export function TeamAppointmentsTab() {
     );
   }
 
-  // Empty state — no agents with active bots in the downline
   if (data.agents.length === 0) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const debug = (data as any)?._debug;
@@ -316,101 +275,46 @@ export function TeamAppointmentsTab() {
   const { summary, errors: fetchErrors } = data;
 
   return (
-    <div className="space-y-3">
-      {/* ── Summary Strip ─────────────────────────────────────── */}
-      <div className="rounded-lg border border-border bg-background p-3">
-        <div className="flex items-center gap-2 mb-2">
-          <Calendar className="h-3 w-3 text-muted-foreground" />
-          <span className="text-[9px] text-muted-foreground uppercase tracking-wider font-medium">
-            Team Appointments
+    <div className="space-y-2">
+      {/* ── Header bar ────────────────────────────────────────── */}
+      <div className="flex items-center gap-3 px-1">
+        <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+        <div className="flex items-center gap-3 flex-1">
+          <span className="text-[11px] font-semibold text-foreground">
+            {summary.todayTotal} today
           </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-5 px-1.5 ml-auto text-[9px] text-muted-foreground hover:text-foreground"
-            onClick={handleRefresh}
-          >
-            <RefreshCw className="h-3 w-3" />
-          </Button>
+          <span className="text-[10px] text-muted-foreground">
+            {summary.thisWeekTotal} this week
+          </span>
+          <span className="text-[10px] text-muted-foreground">
+            {summary.totalAgents} agents
+          </span>
         </div>
-
-        <div className="flex items-center divide-x divide-border">
-          <div className="flex-1 px-3 first:pl-0">
-            <div className="text-[9px] text-muted-foreground">Today</div>
-            <div className="text-lg font-bold text-foreground">
-              {summary.todayTotal}
-            </div>
-            <div className="text-[8px] text-muted-foreground/70">
-              appointments
-            </div>
-          </div>
-          <div className="flex-1 px-3">
-            <div className="text-[9px] text-muted-foreground">This Week</div>
-            <div className="text-lg font-bold text-foreground">
-              {summary.thisWeekTotal}
-            </div>
-            <div className="text-[8px] text-muted-foreground/70">
-              appointments
-            </div>
-          </div>
-          <div className="flex-1 px-3 last:pr-0">
-            <div className="text-[9px] text-muted-foreground">Agents</div>
-            <div className="text-lg font-bold text-foreground">
-              {summary.totalAgents}
-            </div>
-            <div className="text-[8px] text-muted-foreground/70">
-              with active bots
-            </div>
-          </div>
-        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 px-2 text-[10px] text-muted-foreground hover:text-foreground"
+          onClick={handleRefresh}
+        >
+          <RefreshCw className="h-3 w-3 mr-1" />
+          Refresh
+        </Button>
       </div>
 
-      {/* ── Partial error warning ──────────────────────────────── */}
+      {/* ── Partial error warning ─────────────────────────────── */}
       {fetchErrors && fetchErrors.length > 0 && (
         <div className="rounded-md border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 px-3 py-1.5 flex items-center gap-2">
           <AlertTriangle className="h-3 w-3 text-amber-600 dark:text-amber-400 flex-shrink-0" />
           <span className="text-[10px] text-amber-700 dark:text-amber-300">
-            Some agents&apos; appointment data couldn&apos;t be loaded (
-            {fetchErrors.length} failed)
+            {fetchErrors.length} agent(s) couldn&apos;t load appointment data
           </span>
         </div>
       )}
 
-      {/* ── Agent Table ────────────────────────────────────────── */}
-      <div className="rounded-lg border border-border bg-background">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-[9px] uppercase tracking-wider font-medium w-[200px]">
-                Agent
-              </TableHead>
-              <TableHead className="text-[9px] uppercase tracking-wider font-medium text-center">
-                Today
-              </TableHead>
-              <TableHead className="text-[9px] uppercase tracking-wider font-medium text-center">
-                Week
-              </TableHead>
-              <TableHead className="text-[9px] uppercase tracking-wider font-medium text-center">
-                Sched.
-              </TableHead>
-              <TableHead className="text-[9px] uppercase tracking-wider font-medium text-center">
-                Done
-              </TableHead>
-              <TableHead className="text-[9px] uppercase tracking-wider font-medium text-center">
-                Cancel
-              </TableHead>
-              <TableHead className="text-[9px] uppercase tracking-wider font-medium text-center">
-                No-Show
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.agents.map((agent) => (
-              <AgentRow key={agent.userId} agent={agent} />
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      {/* ── Agent sections ────────────────────────────────────── */}
+      {data.agents.map((agent) => (
+        <AgentSection key={agent.userId} agent={agent} />
+      ))}
     </div>
   );
 }
