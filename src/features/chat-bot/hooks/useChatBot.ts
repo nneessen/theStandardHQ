@@ -298,6 +298,7 @@ export interface ChatBotVoiceSetupState {
       customFieldKey: string | null;
       allowedLeadStatuses: string[];
       allowedLeadSources: string[];
+      smartViewIds?: string[];
     };
   } | null;
   guardrails?: {

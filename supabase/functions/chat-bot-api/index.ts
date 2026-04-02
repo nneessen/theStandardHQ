@@ -40,10 +40,13 @@ const ALLOWED_ORIGINS = [
 ];
 
 function buildCorsHeaders(req?: Request) {
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
   const isLocal =
     Deno.env.get("ENVIRONMENT") === "local" ||
-    Deno.env.get("SUPABASE_URL")?.includes("127.0.0.1") ||
-    Deno.env.get("SUPABASE_URL")?.includes("localhost");
+    supabaseUrl.includes("127.0.0.1") ||
+    supabaseUrl.includes("localhost") ||
+    supabaseUrl.includes("kong") ||
+    !!Deno.env.get("REMOTE_SUPABASE_URL");
   let origin = "*";
   if (!isLocal && req) {
     const reqOrigin = req.headers.get("origin") ?? "";
@@ -3153,6 +3156,7 @@ serve(async (req) => {
           customFieldKey,
           allowedLeadStatuses,
           allowedLeadSources,
+          smartViewIds,
         } = params;
         const body: Record<string, unknown> = {};
         if (enabled !== undefined) body.enabled = enabled;
@@ -3162,6 +3166,7 @@ serve(async (req) => {
           body.allowedLeadStatuses = allowedLeadStatuses;
         if (allowedLeadSources !== undefined)
           body.allowedLeadSources = allowedLeadSources;
+        if (smartViewIds !== undefined) body.smartViewIds = smartViewIds;
         const res = await callChatBotApi(
           "PATCH",
           `/api/external/agents/${agentId}/voice/rules/outbound`,

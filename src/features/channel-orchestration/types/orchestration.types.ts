@@ -258,7 +258,10 @@ export interface CloseCustomField {
 
 export interface CloseSmartView {
   id: string;
-  name: string;
+  /** Close API returns `label`; kept as `label` to match API response. */
+  label: string;
+  type?: string;
+  shared?: boolean;
 }
 
 // ─── Voice Rules & Guardrails ─────────────────────────────────

@@ -1,6 +1,13 @@
 import { type ReactNode, useEffect, useMemo, useState } from "react";
-import { Check, Loader2, PhoneIncoming, PhoneOutgoing } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  Loader2,
+  PhoneIncoming,
+  PhoneOutgoing,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -20,6 +27,7 @@ import {
   type ChatBotCloseLeadStatus,
   type ChatBotVoiceSetupState,
 } from "@/features/chat-bot";
+import { useCloseSmartViews } from "@/features/channel-orchestration";
 
 // ─── Types ─────────────────────────────────────────────────────
 
@@ -35,6 +43,7 @@ interface OutboundForm {
   customFieldKey: string;
   allowedLeadStatuses: string[];
   allowedLeadSources: string[];
+  smartViewIds: string[];
 }
 
 interface VoiceCallRulesCardProps {
@@ -128,6 +137,7 @@ function buildOutboundForm(
     customFieldKey: outbound?.customFieldKey ?? "",
     allowedLeadStatuses: outbound?.allowedLeadStatuses ?? [],
     allowedLeadSources: outbound?.allowedLeadSources ?? [],
+    smartViewIds: outbound?.smartViewIds ?? [],
   };
 }
 
@@ -144,6 +154,8 @@ export function VoiceCallRulesCard({
 
   const { data: leadSources } = useChatBotCloseLeadSources(closeConnected);
   const { data: customFields } = useChatBotCloseCustomFields(closeConnected);
+  const { data: smartViews, isLoading: smartViewsLoading } =
+    useCloseSmartViews(closeConnected);
 
   // ── Inbound form state ──
   const [inbound, setInbound] = useState<InboundForm>(() =>
@@ -199,6 +211,7 @@ export function VoiceCallRulesCard({
       customFieldKey: outbound.customFieldKey.trim() || null,
       allowedLeadStatuses: outbound.allowedLeadStatuses,
       allowedLeadSources: outbound.allowedLeadSources,
+      smartViewIds: outbound.smartViewIds,
     });
   };
 
@@ -354,6 +367,101 @@ export function VoiceCallRulesCard({
                     disabled={updateOutbound.isPending}
                     options={leadSourceOptions}
                   />
+                </div>
+
+                {/* Smart View picker */}
+                <div className="space-y-1.5">
+                  <Label className="text-[11px]">
+                    Outbound Dialer Smart Views
+                  </Label>
+                  <p className="text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">
+                    The automated dialer only calls leads from selected Smart
+                    Views.
+                  </p>
+                  {!closeConnected ? (
+                    <p className="text-[10px] text-amber-600 dark:text-amber-400">
+                      Connect Close CRM to select Smart Views.
+                    </p>
+                  ) : smartViewsLoading ? (
+                    <div className="flex items-center gap-1.5 py-2 text-[10px] text-zinc-400">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Loading Smart Views…
+                    </div>
+                  ) : !smartViews || smartViews.length === 0 ? (
+                    <p className="text-[10px] text-zinc-400">
+                      No Smart Views found in your Close account.
+                    </p>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between border-b border-zinc-100 pb-1 dark:border-zinc-800">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-5 px-1.5 text-[10px] text-blue-600 dark:text-blue-400"
+                          onClick={() => {
+                            const allIds = smartViews.map((sv) => sv.id);
+                            const allSelected = allIds.every((id) =>
+                              outbound.smartViewIds.includes(id),
+                            );
+                            updateOutboundField(
+                              "smartViewIds",
+                              allSelected ? [] : allIds,
+                            );
+                          }}
+                          disabled={updateOutbound.isPending}
+                        >
+                          {smartViews.every((sv) =>
+                            outbound.smartViewIds.includes(sv.id),
+                          )
+                            ? "Deselect All"
+                            : "Select All"}
+                        </Button>
+                        <span className="text-[10px] text-zinc-400">
+                          {outbound.smartViewIds.length} / {smartViews.length}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 gap-y-1.5">
+                        {smartViews.map((sv) => (
+                          <label
+                            key={sv.id}
+                            className="flex cursor-pointer items-center gap-2"
+                          >
+                            <Checkbox
+                              checked={outbound.smartViewIds.includes(sv.id)}
+                              onCheckedChange={() => {
+                                const next = outbound.smartViewIds.includes(
+                                  sv.id,
+                                )
+                                  ? outbound.smartViewIds.filter(
+                                      (id) => id !== sv.id,
+                                    )
+                                  : [...outbound.smartViewIds, sv.id];
+                                updateOutboundField("smartViewIds", next);
+                              }}
+                              disabled={updateOutbound.isPending}
+                            />
+                            <span className="truncate text-[11px] text-zinc-700 dark:text-zinc-300">
+                              {sv.label}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Warning when no Smart Views selected */}
+                  {closeConnected &&
+                    outbound.enabled &&
+                    outbound.smartViewIds.length === 0 &&
+                    !smartViewsLoading && (
+                      <div className="flex items-start gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-900/60 dark:bg-amber-950/20">
+                        <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 text-amber-600 dark:text-amber-400" />
+                        <p className="text-[10px] leading-4 text-amber-700 dark:text-amber-300">
+                          No Smart Views selected. The voice agent will not make
+                          any outbound calls.
+                        </p>
+                      </div>
+                    )}
                 </div>
               </>
             )}
