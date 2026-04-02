@@ -237,28 +237,52 @@ serve(async (req) => {
 
     const callerPath = callerProfile.hierarchy_path || callerId;
 
-    // ── Find all downline agents with active bots ──
-    // hierarchy_path LIKE 'callerPath.%' matches all descendants
-    const { data: downlineAgents, error: downlineError } = await supabase
+    // ── Step 1: Find all downline user profiles ──
+    const { data: downlineProfiles, error: downlineError } = await supabase
       .from("user_profiles")
-      .select(
-        "id, first_name, last_name, chat_bot_agents!inner(external_agent_id, provisioning_status)",
-      )
-      .like("hierarchy_path", `${callerPath}.%`)
-      .eq("chat_bot_agents.provisioning_status", "active");
+      .select("id, first_name, last_name")
+      .like("hierarchy_path", `${callerPath}.%`);
 
     if (downlineError) {
       console.error("[team-appointments] downline query error:", downlineError);
       return jsonResponse({ error: "Failed to fetch team data" }, 500, req);
     }
 
-    // Also include the caller themselves if they have an active bot
-    const { data: callerAgent } = await supabase
+    // Build list of all user IDs (caller + downlines)
+    const allUserIds = [callerId, ...(downlineProfiles || []).map((p) => p.id)];
+
+    // ── Step 2: Find active bot agents for all these users ──
+    const { data: botAgents, error: botError } = await supabase
       .from("chat_bot_agents")
-      .select("external_agent_id, provisioning_status")
-      .eq("user_id", callerId)
-      .eq("provisioning_status", "active")
-      .maybeSingle();
+      .select("user_id, external_agent_id")
+      .in("user_id", allUserIds)
+      .eq("provisioning_status", "active");
+
+    if (botError) {
+      console.error("[team-appointments] bot agents query error:", botError);
+      return jsonResponse({ error: "Failed to fetch bot data" }, 500, req);
+    }
+
+    // ── Step 3: Join in application code ──
+    const botAgentMap = new Map(
+      (botAgents || []).map((a) => [a.user_id, a.external_agent_id]),
+    );
+
+    // Build profile lookup (include caller)
+    const profileMap = new Map<
+      string,
+      { firstName: string; lastName: string }
+    >();
+    profileMap.set(callerId, {
+      firstName: callerProfile.first_name || "",
+      lastName: callerProfile.last_name || "",
+    });
+    for (const p of downlineProfiles || []) {
+      profileMap.set(p.id, {
+        firstName: p.first_name || "",
+        lastName: p.last_name || "",
+      });
+    }
 
     interface AgentInfo {
       userId: string;
@@ -267,32 +291,16 @@ serve(async (req) => {
     }
 
     const agents: AgentInfo[] = [];
-
-    if (callerAgent) {
+    for (const [userId, externalAgentId] of botAgentMap) {
+      const profile = profileMap.get(userId);
+      if (!profile) continue;
       agents.push({
-        userId: callerId,
+        userId,
         name:
-          [callerProfile.first_name, callerProfile.last_name]
-            .filter(Boolean)
-            .join(" ") || "You",
-        externalAgentId: callerAgent.external_agent_id,
+          [profile.firstName, profile.lastName].filter(Boolean).join(" ") ||
+          "Agent",
+        externalAgentId,
       });
-    }
-
-    for (const profile of downlineAgents || []) {
-      // deno-lint-ignore no-explicit-any
-      const botAgent = (profile as any).chat_bot_agents;
-      // Inner join returns array or single object
-      const agentData = Array.isArray(botAgent) ? botAgent[0] : botAgent;
-      if (agentData?.external_agent_id) {
-        agents.push({
-          userId: profile.id,
-          name:
-            [profile.first_name, profile.last_name].filter(Boolean).join(" ") ||
-            "Agent",
-          externalAgentId: agentData.external_agent_id,
-        });
-      }
     }
 
     if (agents.length === 0) {
