@@ -81,7 +81,26 @@ function formatDateTime(dateStr: string | null): string {
 
 // ─── Expanded row: agent's individual appointments ──────────────
 
-function AgentDetailRows({ items }: { items: TeamAppointmentItem[] }) {
+function AgentDetailRows({
+  items,
+  fetchError,
+}: {
+  items: TeamAppointmentItem[];
+  fetchError?: string;
+}) {
+  if (fetchError) {
+    return (
+      <TableRow>
+        <TableCell
+          colSpan={7}
+          className="text-[10px] text-amber-600 dark:text-amber-400 text-center py-2 bg-zinc-50/50 dark:bg-zinc-900/30"
+        >
+          Could not load appointments: {fetchError}
+        </TableCell>
+      </TableRow>
+    );
+  }
+
   if (items.length === 0) {
     return (
       <TableRow>
@@ -132,6 +151,7 @@ function AgentDetailRows({ items }: { items: TeamAppointmentItem[] }) {
 
 function AgentRow({ agent }: { agent: TeamAgentAppointments }) {
   const [expanded, setExpanded] = useState(false);
+  const hasFetchError = !!agent.fetchError;
 
   return (
     <>
@@ -149,52 +169,53 @@ function AgentRow({ agent }: { agent: TeamAgentAppointments }) {
             <span className="text-[11px] font-medium text-foreground truncate">
               {agent.name}
             </span>
+            {hasFetchError && (
+              <AlertTriangle className="h-2.5 w-2.5 text-amber-500 flex-shrink-0" />
+            )}
           </div>
         </TableCell>
         <TableCell className="text-center">
           <span
             className={`text-[11px] font-bold ${
-              agent.today > 0
-                ? "text-emerald-600 dark:text-emerald-400"
-                : "text-muted-foreground"
+              hasFetchError
+                ? "text-muted-foreground"
+                : agent.today > 0
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-muted-foreground"
             }`}
           >
-            {agent.today}
+            {hasFetchError ? "—" : agent.today}
           </span>
         </TableCell>
         <TableCell className="text-center">
           <span className="text-[11px] font-semibold text-foreground">
-            {agent.thisWeek}
+            {hasFetchError ? "—" : agent.thisWeek}
           </span>
         </TableCell>
         <TableCell className="text-center">
           <span className="text-[10px] text-blue-600 dark:text-blue-400">
-            {agent.byStatus.scheduled}
+            {hasFetchError ? "—" : agent.byStatus.scheduled}
           </span>
         </TableCell>
         <TableCell className="text-center">
           <span className="text-[10px] text-emerald-600 dark:text-emerald-400">
-            {agent.byStatus.completed}
+            {hasFetchError ? "—" : agent.byStatus.completed}
           </span>
         </TableCell>
         <TableCell className="text-center">
           <span className="text-[10px] text-zinc-500">
-            {agent.byStatus.cancelled}
+            {hasFetchError ? "—" : agent.byStatus.cancelled}
           </span>
         </TableCell>
         <TableCell className="text-center">
-          <span
-            className={`text-[10px] ${
-              agent.byStatus.noShow > 0
-                ? "text-red-600 dark:text-red-400 font-medium"
-                : "text-zinc-500"
-            }`}
-          >
-            {agent.byStatus.noShow}
+          <span className="text-[10px] text-zinc-500">
+            {hasFetchError ? "—" : agent.byStatus.noShow}
           </span>
         </TableCell>
       </TableRow>
-      {expanded && <AgentDetailRows items={agent.items} />}
+      {expanded && (
+        <AgentDetailRows items={agent.items} fetchError={agent.fetchError} />
+      )}
     </>
   );
 }
@@ -243,7 +264,7 @@ export function TeamAppointmentsTab() {
     );
   }
 
-  // Error state
+  // Error state — function returned non-200 or network failure
   if (error || !data) {
     return (
       <div className="rounded-lg border border-border bg-background p-3">
@@ -270,10 +291,10 @@ export function TeamAppointmentsTab() {
     );
   }
 
-  // Empty state
+  // Empty state — no agents with active bots in the downline
   if (data.agents.length === 0) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const debug = (data as any)?._debug as Record<string, unknown> | undefined;
+    const debug = (data as any)?._debug;
     return (
       <div className="rounded-lg border border-border bg-background p-6 text-center">
         <Users className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
@@ -349,8 +370,8 @@ export function TeamAppointmentsTab() {
         <div className="rounded-md border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 px-3 py-1.5 flex items-center gap-2">
           <AlertTriangle className="h-3 w-3 text-amber-600 dark:text-amber-400 flex-shrink-0" />
           <span className="text-[10px] text-amber-700 dark:text-amber-300">
-            Some agents&apos; data couldn&apos;t be loaded ({fetchErrors.length}{" "}
-            failed)
+            Some agents&apos; appointment data couldn&apos;t be loaded (
+            {fetchErrors.length} failed)
           </span>
         </div>
       )}

@@ -50,35 +50,46 @@ function jsonResponse(data: any, status = 200, req?: Request): Response {
   });
 }
 
-// --- External API helper (same pattern as chat-bot-api) ---
+// --- External API helper ---
 
-async function callChatBotApi(
-  method: string,
-  path: string,
-): Promise<{ ok: boolean; status: number; data: unknown }> {
-  const CHAT_BOT_API_URL =
+function getChatBotApiConfig(): { url: string; key: string } | null {
+  const url =
     Deno.env.get("STANDARD_CHAT_BOT_API_URL") ||
     Deno.env.get("CHAT_BOT_API_URL");
-  const CHAT_BOT_API_KEY =
+  const key =
     Deno.env.get("STANDARD_CHAT_BOT_EXTERNAL_API_KEY") ||
     Deno.env.get("CHAT_BOT_API_KEY");
+  if (!url || !key) return null;
+  return { url, key };
+}
 
-  if (!CHAT_BOT_API_URL || !CHAT_BOT_API_KEY) {
-    throw new Error("CHAT_BOT_API_URL or CHAT_BOT_API_KEY not configured");
-  }
-
-  const url = `${CHAT_BOT_API_URL}${path}`;
+async function fetchAgentAppointments(
+  apiConfig: { url: string; key: string },
+  externalAgentId: string,
+): Promise<{ ok: boolean; items: NormalizedAppointment[]; error?: string }> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15_000);
 
   try {
-    const res = await fetch(url, {
-      method,
-      headers: { "X-API-Key": CHAT_BOT_API_KEY },
-      signal: controller.signal,
-    });
+    const res = await fetch(
+      `${apiConfig.url}/api/external/agents/${externalAgentId}/appointments?page=1&limit=200`,
+      {
+        method: "GET",
+        headers: { "X-API-Key": apiConfig.key },
+        signal: controller.signal,
+      },
+    );
     const data = await res.json().catch(() => ({}));
-    return { ok: res.ok, status: res.status, data };
+    if (!res.ok) {
+      return { ok: false, items: [], error: `HTTP ${res.status}` };
+    }
+    // deno-lint-ignore no-explicit-any
+    const payload = (data as any)?.data ?? data;
+    // deno-lint-ignore no-explicit-any
+    const rawItems: any[] = Array.isArray(payload) ? payload : [];
+    return { ok: true, items: rawItems.map(normalizeAppointment) };
+  } catch (err) {
+    return { ok: false, items: [], error: String(err) };
   } finally {
     clearTimeout(timeout);
   }
@@ -196,12 +207,10 @@ serve(async (req) => {
     const REMOTE_URL = Deno.env.get("REMOTE_SUPABASE_URL");
     const REMOTE_KEY = Deno.env.get("REMOTE_SUPABASE_SERVICE_ROLE_KEY");
 
-    // Auth client — validates JWTs against local Supabase
     const authClient = createClient(
       LOCAL_SUPABASE_URL,
       LOCAL_SUPABASE_SERVICE_ROLE_KEY,
     );
-    // Data client — queries production DB (remote when available)
     const supabase =
       REMOTE_URL && REMOTE_KEY
         ? createClient(REMOTE_URL, REMOTE_KEY)
@@ -219,20 +228,37 @@ serve(async (req) => {
       error: authError,
     } = await authClient.auth.getUser(token);
     if (authError || !user) {
+      console.error("[team-appointments] auth failed:", authError?.message);
       return jsonResponse({ error: "Unauthorized" }, 401, req);
     }
 
     const callerId = user.id;
 
     // ── Get caller's hierarchy path ──
-    const { data: callerProfile } = await supabase
+    const { data: callerProfile, error: profileError } = await supabase
       .from("user_profiles")
       .select("id, first_name, last_name, hierarchy_path")
       .eq("id", callerId)
       .maybeSingle();
 
-    if (!callerProfile) {
-      return jsonResponse({ error: "User profile not found" }, 404, req);
+    if (profileError || !callerProfile) {
+      console.error(
+        "[team-appointments] profile lookup failed:",
+        profileError?.message,
+        "callerId:",
+        callerId,
+      );
+      return jsonResponse(
+        {
+          error: "User profile not found",
+          _debug: {
+            callerId,
+            profileError: profileError?.message ?? "no profile row",
+          },
+        },
+        404,
+        req,
+      );
     }
 
     const callerPath = callerProfile.hierarchy_path || callerId;
@@ -245,11 +271,20 @@ serve(async (req) => {
 
     if (downlineError) {
       console.error("[team-appointments] downline query error:", downlineError);
-      return jsonResponse({ error: "Failed to fetch team data" }, 500, req);
+      return jsonResponse(
+        {
+          error: "Failed to fetch team data",
+          _debug: { callerPath, downlineError: downlineError.message },
+        },
+        500,
+        req,
+      );
     }
 
-    // Build list of all user IDs (caller + downlines)
-    const allUserIds = [callerId, ...(downlineProfiles || []).map((p) => p.id)];
+    const allUserIds = [
+      callerId,
+      ...(downlineProfiles || []).map((p: { id: string }) => p.id),
+    ];
 
     // ── Step 2: Find active bot agents for all these users ──
     const { data: botAgents, error: botError } = await supabase
@@ -260,15 +295,29 @@ serve(async (req) => {
 
     if (botError) {
       console.error("[team-appointments] bot agents query error:", botError);
-      return jsonResponse({ error: "Failed to fetch bot data" }, 500, req);
+      return jsonResponse(
+        {
+          error: "Failed to fetch bot data",
+          _debug: {
+            allUserIds: allUserIds.slice(0, 5),
+            botError: botError.message,
+          },
+        },
+        500,
+        req,
+      );
     }
 
-    // ── Step 3: Join in application code ──
-    const botAgentMap = new Map(
-      (botAgents || []).map((a) => [a.user_id, a.external_agent_id]),
+    // ── Step 3: Build agent list ──
+    const botAgentMap = new Map<string, string>(
+      (botAgents || []).map(
+        (a: { user_id: string; external_agent_id: string }) => [
+          a.user_id,
+          a.external_agent_id,
+        ],
+      ),
     );
 
-    // Build profile lookup (include caller)
     const profileMap = new Map<
       string,
       { firstName: string; lastName: string }
@@ -314,9 +363,6 @@ serve(async (req) => {
             downlineCount: (downlineProfiles || []).length,
             allUserIds: allUserIds.slice(0, 10),
             botAgentsFound: (botAgents || []).length,
-            botAgentUserIds: (botAgents || [])
-              .map((a) => a.user_id)
-              .slice(0, 10),
           },
         },
         200,
@@ -324,33 +370,43 @@ serve(async (req) => {
       );
     }
 
-    // ── Fan out: fetch appointments for all agents in parallel ──
-    const errors: string[] = [];
+    // ── Step 4: Fetch appointments — agents ALWAYS appear even if fetch fails ──
+    const apiConfig = getChatBotApiConfig();
+    if (!apiConfig) {
+      // External API not configured — return agents with zero appointments
+      console.error(
+        "[team-appointments] CHAT_BOT_API_URL or API_KEY not configured",
+      );
+      return jsonResponse(
+        {
+          agents: agents.map((a) => ({
+            userId: a.userId,
+            name: a.name,
+            today: 0,
+            thisWeek: 0,
+            byStatus: { scheduled: 0, completed: 0, cancelled: 0, noShow: 0 },
+            items: [],
+            fetchError: "Bot API not configured",
+          })),
+          summary: {
+            totalAgents: agents.length,
+            todayTotal: 0,
+            thisWeekTotal: 0,
+          },
+          errors: ["External bot API not configured"],
+        },
+        200,
+        req,
+      );
+    }
 
+    // Fan out — every agent gets a row regardless of fetch success
     const results = await Promise.allSettled(
-      agents.map(async (agent) => {
-        const res = await callChatBotApi(
-          "GET",
-          `/api/external/agents/${agent.externalAgentId}/appointments?page=1&limit=200`,
-        );
-        if (!res.ok) {
-          throw new Error(
-            `API returned ${res.status} for agent ${agent.userId}`,
-          );
-        }
-        // deno-lint-ignore no-explicit-any
-        const resData = res.data as any;
-        const payload = resData?.data ?? resData;
-        // deno-lint-ignore no-explicit-any
-        const rawItems: any[] = Array.isArray(payload) ? payload : [];
-        return {
-          agent,
-          appointments: rawItems.map(normalizeAppointment),
-        };
-      }),
+      agents.map((agent) =>
+        fetchAgentAppointments(apiConfig, agent.externalAgentId),
+      ),
     );
 
-    // ── Aggregate results ──
     interface AgentResult {
       userId: string;
       name: string;
@@ -363,22 +419,40 @@ serve(async (req) => {
         noShow: number;
       };
       items: NormalizedAppointment[];
+      fetchError?: string;
     }
 
     const agentResults: AgentResult[] = [];
+    const errors: string[] = [];
     let todayTotal = 0;
     let thisWeekTotal = 0;
 
-    for (const result of results) {
+    for (let i = 0; i < agents.length; i++) {
+      const agent = agents[i];
+      const result = results[i];
+
+      // Default: agent appears with zero counts
+      let appointments: NormalizedAppointment[] = [];
+      let fetchError: string | undefined;
+
       if (result.status === "rejected") {
-        console.error("[team-appointments] fetch failed:", result.reason);
-        errors.push(String(result.reason));
-        continue;
+        fetchError = String(result.reason);
+        errors.push(`${agent.name}: ${fetchError}`);
+        console.error(
+          `[team-appointments] fetch failed for ${agent.name}:`,
+          result.reason,
+        );
+      } else if (!result.value.ok) {
+        fetchError = result.value.error || "Unknown error";
+        errors.push(`${agent.name}: ${fetchError}`);
+        console.error(
+          `[team-appointments] API error for ${agent.name}:`,
+          fetchError,
+        );
+      } else {
+        appointments = result.value.items;
       }
 
-      const { agent, appointments } = result.value;
-
-      // Filter to this week's appointments (by scheduledAt)
       const weekAppts = appointments.filter((a) =>
         isInRange(a.scheduledAt, weekStart, today),
       );
@@ -404,10 +478,10 @@ serve(async (req) => {
         thisWeek: weekAppts.length,
         byStatus,
         items: weekAppts,
+        ...(fetchError ? { fetchError } : {}),
       });
     }
 
-    // Sort by today's count desc, then this week desc
     agentResults.sort((a, b) => b.today - a.today || b.thisWeek - a.thisWeek);
 
     return jsonResponse(
@@ -424,7 +498,14 @@ serve(async (req) => {
       req,
     );
   } catch (err) {
-    console.error("[team-appointments] Error:", err);
-    return jsonResponse({ error: "Internal server error" }, 500, req);
+    console.error("[team-appointments] Unhandled error:", err);
+    return jsonResponse(
+      {
+        error: "Internal server error",
+        _debug: { message: String(err) },
+      },
+      500,
+      req,
+    );
   }
 });

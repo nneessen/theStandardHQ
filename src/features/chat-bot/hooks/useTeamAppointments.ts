@@ -29,6 +29,7 @@ export interface TeamAgentAppointments {
     noShow: number;
   };
   items: TeamAppointmentItem[];
+  fetchError?: string;
 }
 
 export interface TeamAppointmentsData {
