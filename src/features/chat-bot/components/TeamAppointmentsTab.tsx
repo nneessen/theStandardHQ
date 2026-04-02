@@ -261,12 +261,19 @@ export function TeamAppointmentsTab() {
             <RefreshCw className="h-3 w-3" />
           </Button>
         </div>
+        {error && (
+          <pre className="mt-2 text-[9px] text-red-500 bg-zinc-100 dark:bg-zinc-900 rounded p-2 overflow-auto max-h-40">
+            {String(error)}
+          </pre>
+        )}
       </div>
     );
   }
 
   // Empty state
   if (data.agents.length === 0) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const debug = (data as any)?._debug as Record<string, unknown> | undefined;
     return (
       <div className="rounded-lg border border-border bg-background p-6 text-center">
         <Users className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
@@ -276,6 +283,11 @@ export function TeamAppointmentsTab() {
         <p className="text-[10px] text-muted-foreground/70 mt-0.5">
           Team members need active bot subscriptions to appear here
         </p>
+        {debug && (
+          <pre className="mt-4 text-left text-[9px] text-muted-foreground bg-zinc-100 dark:bg-zinc-900 rounded p-2 overflow-auto max-h-40">
+            {JSON.stringify(debug, null, 2)}
+          </pre>
+        )}
       </div>
     );
   }

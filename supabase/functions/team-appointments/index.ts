@@ -308,6 +308,16 @@ serve(async (req) => {
         {
           agents: [],
           summary: { totalAgents: 0, todayTotal: 0, thisWeekTotal: 0 },
+          _debug: {
+            callerId,
+            callerPath,
+            downlineCount: (downlineProfiles || []).length,
+            allUserIds: allUserIds.slice(0, 10),
+            botAgentsFound: (botAgents || []).length,
+            botAgentUserIds: (botAgents || [])
+              .map((a) => a.user_id)
+              .slice(0, 10),
+          },
         },
         200,
         req,
