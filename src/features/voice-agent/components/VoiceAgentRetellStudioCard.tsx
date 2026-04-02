@@ -321,8 +321,8 @@ export function VoiceAgentRetellStudioCard({
   const inPublishGrace =
     publishSucceededAtRef.current > 0 &&
     Date.now() - publishSucceededAtRef.current < PUBLISH_GRACE_MS;
-  // agentPublished = "has been published at least once" (from page-level multi-signal check)
-  const isLive = agentPublished || runtime?.agent?.is_published === true;
+  // Trust the actual publish state from Retell, not connection-based guesses.
+  const isLive = runtime?.agent?.is_published === true || agentPublished;
   const selectedVoiceId = agentForm.voiceId.trim();
   const selectedVoice = voices.find(
     (voice) => voice.voice_id === selectedVoiceId,
