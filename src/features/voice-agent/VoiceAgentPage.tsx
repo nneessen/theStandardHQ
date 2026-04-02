@@ -104,6 +104,10 @@ const SETUP_REDIRECT_ACTION_KEYS = new Set<VoiceNextActionKey>([
   "connect_calendar",
   "review_guardrails",
 ]);
+const POST_PUBLISH_ACTION_KEYS = new Set<VoiceNextActionKey>([
+  "review_guardrails",
+  "connect_calendar",
+]);
 
 function isServiceIssue(error: unknown) {
   return error instanceof ChatBotApiError && error.isServiceError;
@@ -603,10 +607,15 @@ export function VoiceAgentPage() {
     : isVoiceAccessActive(voiceEntitlement?.status ?? voiceSnapshot?.status) ||
       voiceAddon?.status === "active";
   // Trust the backend's published state. voiceSetupState is available on all
-  // tabs; retellRuntime is only on setup/admin. Either source is authoritative.
+  // tabs; retellRuntime is only on setup/admin. Post-publish nextAction keys
+  // (review_guardrails, connect_calendar) also prove the agent was published.
+  const setupStateNextActionKey = normalizeNextActionKey(
+    voiceSetupState?.nextAction?.key,
+  );
   const voiceAgentPublished =
     voiceSetupState?.agent?.published === true ||
-    retellRuntime?.agent?.is_published === true;
+    retellRuntime?.agent?.is_published === true ||
+    POST_PUBLISH_ACTION_KEYS.has(setupStateNextActionKey);
 
   const externalAgentId = voiceSetupState?.agent?.id ?? agent?.id ?? null;
 
@@ -637,9 +646,6 @@ export function VoiceAgentPage() {
   };
 
   // ── nextAction.key: trust setup-state, fallback only when absent ──
-  const setupStateNextActionKey = normalizeNextActionKey(
-    voiceSetupState?.nextAction?.key,
-  );
   const fallbackNextActionKey: VoiceNextActionKey = !voiceAccessActive
     ? "activate_voice"
     : !closeConnected
