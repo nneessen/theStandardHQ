@@ -22,6 +22,7 @@ import {
   Sparkles,
   ShieldCheck,
   Lightbulb,
+  Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -53,6 +54,8 @@ import { SetupGuideTab } from "./components/SetupGuideTab";
 import { HowItWorksTab } from "./components/HowItWorksTab";
 import { ChatBotOverviewTab } from "./components/ChatBotOverviewTab";
 import { AdminTab } from "./components/AdminTab";
+import { TeamAppointmentsTab } from "./components/TeamAppointmentsTab";
+import { useMyDownlines } from "@/hooks/hierarchy";
 
 type TabId =
   | "overview"
@@ -60,6 +63,7 @@ type TabId =
   | "how-it-works"
   | "guide"
   | "all-bots"
+  | "team-appts"
   | "setup"
   | "conversations"
   | "appointments"
@@ -80,6 +84,7 @@ function getInitialTab(): TabId {
     tab === "setup" ||
     tab === "guide" ||
     tab === "all-bots" ||
+    tab === "team-appts" ||
     tab === "conversations" ||
     tab === "appointments" ||
     tab === "usage" ||
@@ -115,6 +120,8 @@ export function ChatBotPage() {
   const { isSuperAdmin } = useImo();
   const { data: isOnExemptTeam = false } = useIsOnExemptTeam();
   const isTeamMember = isOnExemptTeam || isSuperAdmin;
+  const { data: downlines = [] } = useMyDownlines({ enabled: true });
+  const hasTeam = downlines.length > 0;
   const { activeAddons, isLoading: addonsLoading } = useUserActiveAddons();
   const chatBotAddon = activeAddons.find(
     (a) => a.addon?.name === "ai_chat_bot",
@@ -224,6 +231,9 @@ export function ChatBotPage() {
     { id: "how-it-works", label: "How It Works", icon: Lightbulb },
     { id: "guide", label: "Setup Guide", icon: BookOpen },
     { id: "all-bots", label: "All Bots", icon: TrendingUp },
+    ...(hasTeam
+      ? [{ id: "team-appts" as TabId, label: "Team Appts", icon: Users }]
+      : []),
     {
       id: "setup",
       label: "Bot Configuration",
@@ -543,6 +553,9 @@ export function ChatBotPage() {
             }
           />
         )}
+
+        {/* Team appointments — visible when user has downlines */}
+        {activeTab === "team-appts" && <TeamAppointmentsTab />}
 
         {/* Dashboard tabs — only rendered when visible */}
         {activeTab === "conversations" && <ConversationsTab />}
