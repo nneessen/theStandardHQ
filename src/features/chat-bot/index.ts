@@ -23,6 +23,7 @@ export {
   useCreateVoiceAgent,
   useConnectClose,
   useDisconnectClose,
+  useChatBotCloseStatus,
   useChatBotRetellRuntime,
   useChatBotRetellVoices,
   useChatBotRetellLlm,

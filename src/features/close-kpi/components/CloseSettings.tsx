@@ -2,13 +2,14 @@
 // Settings tab for managing Close CRM API key connection.
 
 import React from "react";
-import { Shield, KeyRound } from "lucide-react";
+import { Shield, KeyRound, AlertTriangle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   ConnectionCard,
   useConnectClose,
   useDisconnectClose,
+  useChatBotCloseStatus,
   chatBotKeys,
 } from "@/features/chat-bot";
 import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
@@ -24,10 +25,13 @@ export const CloseSettings: React.FC = () => {
 
   const { data: closeConfig, isLoading: statusLoading } =
     useCloseConnectionStatus();
+  const { data: botCloseStatus } = useChatBotCloseStatus();
   const connectClose = useConnectClose();
   const disconnectClose = useDisconnectClose();
 
   const isConnected = !!closeConfig;
+  const botConnectedButMissingConfig =
+    !isConnected && !statusLoading && botCloseStatus?.connected === true;
 
   const handleConnect = (apiKey: string) => {
     connectClose.mutate(apiKey, {
@@ -69,6 +73,23 @@ export const CloseSettings: React.FC = () => {
           Connect your Close account to enable CRM analytics and AI lead scoring
         </p>
       </div>
+
+      {/* Missing close_config warning */}
+      {botConnectedButMissingConfig && (
+        <div className="flex items-start gap-2 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2.5">
+          <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-[11px] font-medium text-amber-800 dark:text-amber-200">
+              Your Close CRM is connected for SMS/calling, but not linked for
+              KPI analytics
+            </p>
+            <p className="text-[10px] text-amber-700/70 dark:text-amber-300/70 mt-0.5">
+              Please re-enter your Close API key below to enable AI lead
+              scoring, Smart Views, and dashboard analytics.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Connection Card */}
       <ConnectionCard
