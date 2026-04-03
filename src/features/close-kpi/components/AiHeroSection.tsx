@@ -97,18 +97,22 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
     : hotLeads.slice(0, 5);
 
   return (
-    <div className="rounded-xl border border-border/60 bg-gradient-to-br from-zinc-50 via-white to-zinc-50 dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900/80 overflow-hidden">
+    <div className="rounded-xl border border-violet-200/80 dark:border-violet-500/20 bg-gradient-to-br from-violet-50/60 via-white to-indigo-50/40 dark:from-violet-950/30 dark:via-zinc-900 dark:to-indigo-950/20 shadow-sm shadow-violet-200/30 dark:shadow-violet-900/20 overflow-hidden ring-1 ring-violet-100/50 dark:ring-violet-800/20">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-border/40">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-violet-200/40 dark:border-violet-800/30">
         <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-foreground">
-            <Sparkles className="h-3.5 w-3.5 text-background" />
+          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 shadow-sm shadow-violet-400/30">
+            <Sparkles className="h-3.5 w-3.5 text-white" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
               <h2 className="text-sm font-bold text-foreground">
                 AI Lead Scoring
               </h2>
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-violet-100 dark:bg-violet-900/40 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-violet-700 dark:text-violet-300">
+                <Sparkles className="h-2 w-2" />
+                AI-Powered
+              </span>
               {tooltip && (
                 <MetricTooltip
                   title={tooltip.title}
@@ -244,7 +248,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
             </div>
 
             {/* AI scoring badge */}
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-medium text-primary">
+            <span className="rounded-full bg-violet-100 dark:bg-violet-900/40 px-2 py-0.5 text-[9px] font-medium text-violet-700 dark:text-violet-300">
               AI-assisted scoring
             </span>
           </div>
@@ -319,7 +323,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
           {/* Column 3: AI Insights */}
           <div className="lg:col-span-4 p-3">
             <div className="flex items-center gap-1.5 mb-2">
-              <Brain className="h-3.5 w-3.5 text-foreground" />
+              <Brain className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
               <span className="text-[11px] font-bold text-foreground">
                 AI Insights
               </span>
@@ -336,8 +340,8 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
 
             {/* Top recommendation */}
             {topRecommendation && (
-              <div className="flex items-start gap-2 rounded-md border border-foreground/10 bg-foreground/[0.02] px-3 py-2 mb-2">
-                <Target className="h-3 w-3 mt-0.5 flex-shrink-0 text-foreground" />
+              <div className="flex items-start gap-2 rounded-md border border-violet-200/60 dark:border-violet-800/40 bg-violet-50/30 dark:bg-violet-950/10 px-3 py-2 mb-2">
+                <Target className="h-3 w-3 mt-0.5 flex-shrink-0 text-violet-600 dark:text-violet-400" />
                 <div>
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                     Top Recommendation
