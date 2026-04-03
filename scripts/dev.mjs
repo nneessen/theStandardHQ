@@ -16,6 +16,9 @@ for (const envFile of ['.env.local', '.env']) {
 const useLocalSupabase = process.env.VITE_USE_LOCAL === 'true';
 const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
+// ── Kill zombie dev processes from previous sessions ──
+killZombieDevProcesses();
+
 // ── Local-mode bootstrap: Docker → Supabase → then dev:local ──
 if (useLocalSupabase) {
   await ensureDocker();
@@ -109,4 +112,24 @@ async function ensureSupabase() {
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
+}
+
+function killZombieDevProcesses() {
+  try {
+    // Find node processes listening on ports 3000-3010 (zombie Vite/Express from previous sessions)
+    const lsofOutput = execSync(
+      'lsof -i -P -n 2>/dev/null | grep "node.*LISTEN" | grep -E ":(30[0-9]{2})" || true',
+      { stdio: 'pipe' }
+    ).toString().trim();
+
+    if (!lsofOutput) return;
+
+    const pids = [...new Set(lsofOutput.split('\n').map(line => line.trim().split(/\s+/)[1]).filter(Boolean))];
+    if (pids.length > 0) {
+      console.log(`🧹 Killing ${pids.length} zombie dev process(es) on ports 3000-3010...`);
+      execSync(`kill ${pids.join(' ')} 2>/dev/null || true`, { stdio: 'ignore' });
+    }
+  } catch {
+    // Non-critical — proceed even if cleanup fails
+  }
 }

@@ -616,13 +616,23 @@ export function VoiceAgentPage() {
   // Trust the backend's published state. voiceSetupState is available on all
   // tabs; retellRuntime is only on setup/admin. Post-publish nextAction keys
   // (review_guardrails, connect_calendar) also prove the agent was published.
+  //
+  // Retell's is_published means "latest draft is published", NOT "agent is
+  // live". An agent with unpublished draft edits still serves calls on its last
+  // published version. Call history (outbound + inbound > 0) proves the agent
+  // has been published at least once and is operational.
   const setupStateNextActionKey = normalizeNextActionKey(
     voiceSetupState?.nextAction?.key,
   );
+  const hasCallHistory =
+    (voiceSetupState?.usage?.outboundCalls ?? 0) +
+      (voiceSetupState?.usage?.inboundCalls ?? 0) >
+    0;
   const voiceAgentPublished =
     voiceSetupState?.agent?.published === true ||
     retellRuntime?.agent?.is_published === true ||
-    POST_PUBLISH_ACTION_KEYS.has(setupStateNextActionKey);
+    POST_PUBLISH_ACTION_KEYS.has(setupStateNextActionKey) ||
+    hasCallHistory;
 
   const externalAgentId = voiceSetupState?.agent?.id ?? agent?.id ?? null;
 

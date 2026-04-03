@@ -158,7 +158,8 @@ export function VoiceAgentOverviewTab({
       : `${((answeredCalls / totalCalls) * 100).toFixed(1)}%`;
 
   const setupComplete = completedSteps >= setupSteps.length;
-  const isSetupDone = voiceAccessActive && setupComplete;
+  const isSetupDone =
+    voiceAccessActive && (setupComplete || voiceAgentPublished);
 
   const ctaLabel = !voiceAccessActive
     ? "Start Free Trial"
