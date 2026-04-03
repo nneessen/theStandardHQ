@@ -13,8 +13,6 @@ import {
   AlertTriangle,
   Loader2,
   RefreshCw,
-  ChevronDown,
-  ChevronUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MetricTooltip } from "@/components/ui/MetricTooltip";
@@ -73,7 +71,8 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
   isTruncated,
   onRescore,
 }) => {
-  const [showAllLeads, setShowAllLeads] = React.useState(false);
+  const [leadPage, setLeadPage] = React.useState(0);
+  const [showAllHeatLevels, setShowAllHeatLevels] = React.useState(false);
   const tooltip = SECTION_TOOLTIPS.ai_lead_scoring;
 
   const hotLeads =
@@ -92,9 +91,16 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
     distribution.find((d) => d.level === "warming")?.count ?? 0;
   const actionableCount = hotCount + warmingCount;
 
-  const visibleLeads = showAllLeads
-    ? (listData?.leads ?? [])
-    : hotLeads.slice(0, 5);
+  const LEADS_PER_PAGE = 5;
+  const sourceLeads = showAllHeatLevels ? (listData?.leads ?? []) : hotLeads;
+  const totalPages = Math.max(
+    1,
+    Math.ceil(sourceLeads.length / LEADS_PER_PAGE),
+  );
+  const visibleLeads = sourceLeads.slice(
+    leadPage * LEADS_PER_PAGE,
+    (leadPage + 1) * LEADS_PER_PAGE,
+  );
 
   return (
     <div className="rounded-xl border border-violet-200/80 dark:border-violet-500/20 bg-gradient-to-br from-violet-50/60 via-white to-indigo-50/40 dark:from-violet-950/30 dark:via-zinc-900 dark:to-indigo-950/20 shadow-sm shadow-violet-200/30 dark:shadow-violet-900/20 overflow-hidden ring-1 ring-violet-100/50 dark:ring-violet-800/20">
@@ -265,15 +271,13 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                 </span>
               </div>
               <button
-                onClick={() => setShowAllLeads((p) => !p)}
-                className="flex items-center gap-0.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => {
+                  setShowAllHeatLevels((p) => !p);
+                  setLeadPage(0);
+                }}
+                className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
               >
-                {showAllLeads ? "Hot only" : "Show all"}
-                {showAllLeads ? (
-                  <ChevronUp className="h-3 w-3" />
-                ) : (
-                  <ChevronDown className="h-3 w-3" />
-                )}
+                {showAllHeatLevels ? "Hot only" : "All leads"}
               </button>
             </div>
 
@@ -317,6 +321,51 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
               <p className="text-[10px] text-muted-foreground/60 py-4 text-center">
                 No hot leads right now. Run a rescore to update.
               </p>
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-border/30">
+                <span className="text-[9px] text-muted-foreground">
+                  {leadPage * LEADS_PER_PAGE + 1}–
+                  {Math.min(
+                    (leadPage + 1) * LEADS_PER_PAGE,
+                    sourceLeads.length,
+                  )}{" "}
+                  of {sourceLeads.length}
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setLeadPage((p) => Math.max(0, p - 1))}
+                    disabled={leadPage === 0}
+                    className="px-1.5 py-0.5 rounded text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 disabled:opacity-30 disabled:cursor-default transition-colors"
+                  >
+                    Prev
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setLeadPage(i)}
+                      className={`w-5 h-5 rounded text-[10px] font-mono transition-colors ${
+                        i === leadPage
+                          ? "bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 font-semibold"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() =>
+                      setLeadPage((p) => Math.min(totalPages - 1, p + 1))
+                    }
+                    disabled={leadPage === totalPages - 1}
+                    className="px-1.5 py-0.5 rounded text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 disabled:opacity-30 disabled:cursor-default transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
             )}
           </div>
 

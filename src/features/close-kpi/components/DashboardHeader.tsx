@@ -3,7 +3,7 @@
 // Global date range selector + refresh + rescore buttons.
 
 import React from "react";
-import { RefreshCw, Flame, Loader2 } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlobalDateRange } from "./GlobalDateRange";
 import type { DateRangePreset } from "../types/close-kpi.types";
@@ -13,8 +13,8 @@ interface DashboardHeaderProps {
   onDateRangeChange: (value: DateRangePreset) => void;
   onRefresh: () => void;
   isRefreshing: boolean;
-  onRescore: () => void;
-  isRescoring: boolean;
+  onRescore?: () => void;
+  isRescoring?: boolean;
   lastUpdated: string | null;
 }
 
@@ -33,8 +33,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   onDateRangeChange,
   onRefresh,
   isRefreshing,
-  onRescore,
-  isRescoring,
   lastUpdated,
 }) => {
   return (
@@ -54,24 +52,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       {/* Right: Controls */}
       <div className="flex items-center gap-1.5 flex-wrap">
         <GlobalDateRange value={dateRange} onChange={onDateRangeChange} />
-
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 px-2 text-[10px] gap-1 text-muted-foreground hover:text-foreground"
-          onClick={onRescore}
-          disabled={isRescoring}
-          title="Re-score all leads with AI"
-        >
-          {isRescoring ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
-          ) : (
-            <Flame className="h-3 w-3" />
-          )}
-          <span className="hidden sm:inline">
-            {isRescoring ? "Scoring..." : "Rescore"}
-          </span>
-        </Button>
 
         <Button
           variant="ghost"
