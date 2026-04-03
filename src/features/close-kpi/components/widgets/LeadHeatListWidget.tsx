@@ -1,5 +1,6 @@
 // src/features/close-kpi/components/widgets/LeadHeatListWidget.tsx
-// Sortable lead table with heat score badges, filtering, and inline AI deep-dive.
+// Lead rankings with heat score badges, inline AI deep-dive.
+// Uses stacked rows instead of a table — readable at any widget width.
 
 import React, { useState, useRef } from "react";
 import {
@@ -134,6 +135,7 @@ export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
 
   return (
     <div className="flex flex-col gap-1">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <span className="text-[10px] text-muted-foreground">
           {total} leads{" "}
@@ -161,68 +163,68 @@ export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
         </Button>
       </div>
 
-      <div>
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="border-b border-border/50 text-[10px] uppercase text-muted-foreground">
-              <th className="pb-1 text-left font-medium">Lead</th>
-              <th className="pb-1 text-center font-medium">Score</th>
-              <th className="pb-1 text-left font-medium">Status</th>
-              <th className="pb-1 text-left font-medium">Top Signal</th>
-              <th className="pb-1 text-center font-medium w-6">AI</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leads.map((lead) => (
-              <React.Fragment key={lead.closeLeadId}>
-                <tr
-                  className="cursor-pointer border-b border-border/30 hover:bg-muted/30 transition-colors"
-                  onClick={() => handleRowClick(lead)}
-                >
-                  <td className="py-1.5 pr-2">
-                    <span className="font-medium text-foreground">
+      {/* Lead rows — stacked layout, readable at any width */}
+      <div className="flex flex-col">
+        {leads.map((lead) => {
+          const isExpanded = expandedLeadId === lead.closeLeadId;
+
+          return (
+            <React.Fragment key={lead.closeLeadId}>
+              <button
+                className="flex items-center gap-2 w-full text-left px-1.5 py-1.5 rounded hover:bg-muted/30 transition-colors border-b border-border/20 last:border-b-0"
+                onClick={() => handleRowClick(lead)}
+              >
+                {/* Score badge — fixed width */}
+                <LeadHeatBadge
+                  score={lead.score}
+                  heatLevel={lead.heatLevel}
+                  trend={lead.trend}
+                  previousScore={lead.previousScore}
+                />
+
+                {/* Lead info — takes remaining space */}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[11px] font-medium text-foreground truncate">
                       {lead.displayName}
                     </span>
-                  </td>
-                  <td className="py-1.5 text-center">
-                    <LeadHeatBadge
-                      score={lead.score}
-                      heatLevel={lead.heatLevel}
-                      trend={lead.trend}
-                      previousScore={lead.previousScore}
-                    />
-                  </td>
-                  <td className="py-1.5 pr-2 text-muted-foreground">
-                    {lead.currentStatus}
-                  </td>
-                  <td className="py-1.5 pr-2 text-muted-foreground">
-                    {lead.topSignal}
-                  </td>
-                  <td className="py-1.5 text-center">
-                    {expandedLeadId === lead.closeLeadId ? (
-                      <ChevronUp className="mx-auto h-3 w-3 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="mx-auto h-3 w-3 text-muted-foreground" />
+                    {lead.currentStatus && (
+                      <span className="text-[9px] text-muted-foreground bg-zinc-100 dark:bg-zinc-800 rounded px-1 py-0.5 shrink-0 truncate max-w-[100px]">
+                        {lead.currentStatus}
+                      </span>
                     )}
-                  </td>
-                </tr>
+                  </div>
+                  {lead.topSignal && (
+                    <p className="text-[9px] text-muted-foreground/70 truncate mt-0.5">
+                      {lead.topSignal}
+                    </p>
+                  )}
+                </div>
 
-                {expandedLeadId === lead.closeLeadId && (
-                  <tr>
-                    <td colSpan={5} className="pb-2">
-                      <DeepDivePanel
-                        data={deepDiveData[lead.closeLeadId] ?? null}
-                        isLoading={loadingDeepDive === lead.closeLeadId}
-                        hasError={!!deepDiveErrors[lead.closeLeadId]}
-                        errorMessage={deepDiveErrors[lead.closeLeadId]}
-                      />
-                    </td>
-                  </tr>
-                )}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
+                {/* Expand indicator */}
+                <div className="shrink-0">
+                  {isExpanded ? (
+                    <ChevronUp className="h-3 w-3 text-muted-foreground" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3 text-muted-foreground" />
+                  )}
+                </div>
+              </button>
+
+              {/* Expanded deep-dive */}
+              {isExpanded && (
+                <div className="px-1 pb-1.5">
+                  <DeepDivePanel
+                    data={deepDiveData[lead.closeLeadId] ?? null}
+                    isLoading={loadingDeepDive === lead.closeLeadId}
+                    hasError={!!deepDiveErrors[lead.closeLeadId]}
+                    errorMessage={deepDiveErrors[lead.closeLeadId]}
+                  />
+                </div>
+              )}
+            </React.Fragment>
+          );
+        })}
       </div>
     </div>
   );
@@ -299,7 +301,7 @@ const DeepDivePanel: React.FC<DeepDivePanelProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-3 text-[10px]">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px]">
         <span className="text-muted-foreground">
           Conversion:{" "}
           <span
