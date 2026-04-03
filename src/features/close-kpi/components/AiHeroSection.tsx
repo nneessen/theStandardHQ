@@ -196,97 +196,142 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
       {/* Main content — 3 column layout */}
       {totalScored > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-border/40">
-          {/* Column 1: Score Overview */}
-          <div className="lg:col-span-3 p-4 flex flex-col gap-3">
-            {/* Score header */}
-            <div className="flex items-center gap-3">
-              <div
-                className={`flex items-center justify-center w-14 h-14 rounded-xl font-mono text-2xl font-black ${
-                  avgScore >= 60
-                    ? "bg-red-500/10 text-red-600 dark:text-red-400 ring-1 ring-red-500/20"
-                    : avgScore >= 40
-                      ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 ring-1 ring-orange-500/20"
-                      : avgScore >= 20
-                        ? "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 ring-1 ring-zinc-500/20"
-                        : "bg-blue-500/10 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/20"
-                }`}
-              >
-                {avgScore}
-              </div>
-              <div>
-                <div className="text-[11px] font-semibold text-foreground">
-                  Avg Lead Score
-                </div>
-                <div className="text-[10px] text-muted-foreground">
-                  {totalScored.toLocaleString()} leads scored
-                </div>
-              </div>
-            </div>
+          {/* Column 1: Score Overview — SVG donut + breakdown */}
+          <div className="lg:col-span-3 p-4 flex flex-col items-center gap-2">
+            {/* SVG Donut Chart with score center */}
+            {(() => {
+              const size = 140;
+              const strokeWidth = 16;
+              const radius = (size - strokeWidth) / 2;
+              const circumference = 2 * Math.PI * radius;
+              const nonEmpty = distribution.filter((d) => d.count > 0);
+              const DONUT_COLORS: Record<string, string> = {
+                hot: "#ef4444",
+                warming: "#f97316",
+                neutral: "#a1a1aa",
+                cooling: "#60a5fa",
+                cold: "#2563eb",
+              };
 
-            {/* Heat distribution bar — full width */}
-            <div className="w-full">
-              <div className="flex h-3 rounded-full overflow-hidden">
-                {distribution
-                  .filter((d) => d.count > 0)
-                  .map((d) => (
-                    <div
-                      key={d.level}
-                      className={`${LEVEL_COLORS[d.level].bg} transition-all`}
-                      style={{ width: `${d.pct}%` }}
-                      title={`${LEVEL_COLORS[d.level].label}: ${d.count} (${d.pct}%)`}
-                    />
-                  ))}
-              </div>
-            </div>
+              let cumulativeOffset = 0;
+              const segments = nonEmpty.map((d) => {
+                const segLen = (d.pct / 100) * circumference;
+                const offset = cumulativeOffset;
+                cumulativeOffset += segLen;
+                return {
+                  level: d.level,
+                  length: segLen,
+                  offset,
+                  color: DONUT_COLORS[d.level] ?? "#a1a1aa",
+                };
+              });
 
-            {/* Distribution breakdown — each level as a row */}
-            <div className="flex flex-col gap-0.5">
-              {distribution
-                .filter((d) => d.count > 0)
-                .map((d) => (
-                  <div
-                    key={d.level}
-                    className="flex items-center justify-between"
+              return (
+                <div className="relative">
+                  <svg
+                    width={size}
+                    height={size}
+                    viewBox={`0 0 ${size} ${size}`}
                   >
-                    <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                      <span
-                        className={`h-2 w-2 rounded-full ${LEVEL_COLORS[d.level].bg}`}
+                    {/* Background ring */}
+                    <circle
+                      cx={size / 2}
+                      cy={size / 2}
+                      r={radius}
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={strokeWidth}
+                      className="text-muted/20"
+                    />
+                    {/* Distribution segments */}
+                    {segments.map((seg) => (
+                      <circle
+                        key={seg.level}
+                        cx={size / 2}
+                        cy={size / 2}
+                        r={radius}
+                        fill="none"
+                        stroke={seg.color}
+                        strokeWidth={strokeWidth}
+                        strokeDasharray={`${seg.length} ${circumference - seg.length}`}
+                        strokeDashoffset={-seg.offset}
+                        strokeLinecap="butt"
+                        transform={`rotate(-90 ${size / 2} ${size / 2})`}
                       />
-                      {LEVEL_COLORS[d.level].label}
+                    ))}
+                  </svg>
+                  {/* Center score */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="font-mono text-3xl font-black text-foreground leading-none">
+                      {avgScore}
                     </span>
-                    <span className="flex items-center gap-1.5">
-                      <span
-                        className={`font-mono text-[11px] font-semibold ${LEVEL_COLORS[d.level].text}`}
-                      >
-                        {d.count}
-                      </span>
-                      <span className="text-[9px] text-muted-foreground w-8 text-right">
-                        {d.pct}%
-                      </span>
+                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground mt-0.5">
+                      avg score
                     </span>
                   </div>
-                ))}
+                </div>
+              );
+            })()}
+
+            {/* Leads scored count */}
+            <div className="text-center text-[10px] text-muted-foreground">
+              <span className="font-mono font-semibold text-foreground">
+                {totalScored.toLocaleString()}
+              </span>{" "}
+              leads scored
+            </div>
+
+            {/* Distribution legend with bars */}
+            <div className="w-full flex flex-col gap-1 px-1">
+              {distribution
+                .filter((d) => d.count > 0)
+                .map((d) => {
+                  const barPct =
+                    totalScored > 0 ? (d.count / totalScored) * 100 : 0;
+                  return (
+                    <div key={d.level} className="flex items-center gap-1.5">
+                      <span
+                        className={`w-[52px] shrink-0 flex items-center gap-1 text-[10px] ${LEVEL_COLORS[d.level].text}`}
+                      >
+                        <span
+                          className={`h-2 w-2 rounded-full ${LEVEL_COLORS[d.level].bg}`}
+                        />
+                        {LEVEL_COLORS[d.level].label}
+                      </span>
+                      <div className="flex-1 h-2 rounded-full bg-muted/30 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${LEVEL_COLORS[d.level].bg} opacity-70`}
+                          style={{
+                            width: `${Math.max(barPct, d.count > 0 ? 3 : 0)}%`,
+                          }}
+                        />
+                      </div>
+                      <span className="w-[40px] shrink-0 text-right font-mono text-[10px] font-semibold text-foreground">
+                        {d.count}
+                      </span>
+                    </div>
+                  );
+                })}
             </div>
 
             {/* Action summary */}
-            {actionableCount > 0 && (
-              <div className="rounded-md bg-red-50/50 dark:bg-red-950/20 border border-red-200/40 dark:border-red-800/30 px-2.5 py-1.5">
-                <div className="flex items-center gap-1.5">
+            {actionableCount > 0 ? (
+              <div className="w-full rounded-md bg-red-50/50 dark:bg-red-950/20 border border-red-200/40 dark:border-red-800/30 px-2.5 py-1.5 text-center">
+                <div className="flex items-center justify-center gap-1.5">
                   <Flame className="h-3 w-3 text-red-500" />
                   <span className="text-[10px] font-semibold text-red-700 dark:text-red-300">
-                    {actionableCount} leads ready to close
+                    {actionableCount} leads need action
                   </span>
                 </div>
                 <span className="text-[9px] text-red-600/70 dark:text-red-400/70">
                   {hotCount} hot + {warmingCount} warming
                 </span>
               </div>
+            ) : (
+              <span className="rounded-full bg-violet-100 dark:bg-violet-900/40 px-2 py-0.5 text-[9px] font-medium text-violet-700 dark:text-violet-300">
+                AI-assisted scoring
+              </span>
             )}
-
-            {/* AI badge */}
-            <span className="mt-auto self-center rounded-full bg-violet-100 dark:bg-violet-900/40 px-2 py-0.5 text-[9px] font-medium text-violet-700 dark:text-violet-300">
-              AI-assisted scoring
-            </span>
           </div>
 
           {/* Column 2: Hot Leads (immediate action) */}
