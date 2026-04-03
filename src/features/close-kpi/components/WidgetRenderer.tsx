@@ -15,6 +15,8 @@ import { DialAttemptsWidget } from "./widgets/DialAttemptsWidget";
 import { LeadHeatSummaryWidget } from "./widgets/LeadHeatSummaryWidget";
 import { LeadHeatListWidget } from "./widgets/LeadHeatListWidget";
 import { LeadHeatAiInsightsWidget } from "./widgets/LeadHeatAiInsightsWidget";
+import { LifecycleVelocityWidget } from "./widgets/LifecycleVelocityWidget";
+import { FollowUpGapsWidget } from "./widgets/FollowUpGapsWidget";
 import type {
   StatCardResult,
   StatusDistributionResult,
@@ -22,6 +24,7 @@ import type {
   OpportunitySummaryResult,
   LifecycleTrackerResult,
   VmRateSmartViewResult,
+  FollowUpGapsResult,
   BestCallTimesResult,
   CrossReferenceResult,
   SpeedToLeadResult,
@@ -63,46 +66,16 @@ export const WidgetRenderer: React.FC<WidgetRendererProps> = ({
         <OpportunitySummaryWidget data={data as OpportunitySummaryResult} />
       );
 
-    case "lifecycle_tracker": {
-      const lcData = data as LifecycleTrackerResult;
-      const t = lcData.transitions?.[0];
-      if (!t || t.sampleSize === 0) {
-        return (
-          <div className="flex h-full flex-col justify-center">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-              New → Next Status
-            </p>
-            <p className="mt-2 text-[11px] text-muted-foreground">
-              No leads transitioned between these statuses. Try a wider date
-              range.
-            </p>
-          </div>
-        );
-      }
-      return (
-        <div className="flex h-full flex-col justify-center">
-          <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-            {t.from} → {t.to}
-          </p>
-          <span className="font-mono text-2xl font-bold text-foreground">
-            {t.avgDays} days
-          </span>
-          <div className="mt-1 space-y-0.5">
-            <p className="text-[10px] text-muted-foreground">
-              Median: {t.medianDays}d · Range: {t.minDays}d – {t.maxDays}d
-            </p>
-            <p className="text-[10px] text-muted-foreground">
-              Sample: {t.sampleSize} leads
-            </p>
-          </div>
-        </div>
-      );
-    }
+    case "lifecycle_tracker":
+      return <LifecycleVelocityWidget data={data as LifecycleTrackerResult} />;
 
     case "vm_rate_smart_view": {
       const vmData = data as VmRateSmartViewResult;
       return <VmRateSmartViewWidget data={vmData} vmThreshold={40} />;
     }
+
+    case "follow_up_gaps":
+      return <FollowUpGapsWidget data={data as FollowUpGapsResult} />;
 
     case "best_call_times":
       return <BestCallTimesWidget data={data as BestCallTimesResult} />;

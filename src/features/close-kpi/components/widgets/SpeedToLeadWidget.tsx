@@ -1,7 +1,7 @@
 // src/features/close-kpi/components/widgets/SpeedToLeadWidget.tsx
 
 import React from "react";
-import { Zap } from "lucide-react";
+import { Zap, Phone, Mail, MessageSquare, AlertTriangle } from "lucide-react";
 import type { SpeedToLeadResult } from "../../types/close-kpi.types";
 
 interface SpeedToLeadWidgetProps {
@@ -14,6 +14,12 @@ function formatTime(minutes: number): string {
   return `${(minutes / 1440).toFixed(1)} days`;
 }
 
+const CHANNEL_ICONS: Record<string, React.ReactNode> = {
+  call: <Phone className="h-2.5 w-2.5" />,
+  email: <Mail className="h-2.5 w-2.5" />,
+  sms: <MessageSquare className="h-2.5 w-2.5" />,
+};
+
 export const SpeedToLeadWidget: React.FC<SpeedToLeadWidgetProps> = ({
   data,
 }) => {
@@ -24,20 +30,27 @@ export const SpeedToLeadWidget: React.FC<SpeedToLeadWidgetProps> = ({
     totalLeads,
     leadsWithActivity,
     pctContacted,
+    firstContactChannel,
+    missedWindows,
+    untouchedAvgAgeDays,
   } = data;
 
   const maxBucket = Math.max(...distribution.map((d) => d.count), 1);
+  const untouchedCount = totalLeads - leadsWithActivity;
 
   // Color code: fast = green, slow = red
   const speedColor =
     medianMinutes <= 15
       ? "text-[hsl(var(--success))]"
       : medianMinutes <= 60
-        ? "text-[hsl(var(--warning))]"
+        ? "text-amber-500"
         : "text-destructive";
 
+  // Find the most impactful missed window signal (first one with significant count)
+  const topMissedWindow = missedWindows?.find((w) => w.pctOfContacted >= 20);
+
   return (
-    <div className="flex h-full flex-col gap-2">
+    <div className="flex h-full flex-col gap-1.5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
@@ -90,11 +103,66 @@ export const SpeedToLeadWidget: React.FC<SpeedToLeadWidgetProps> = ({
         ))}
       </div>
 
+      {/* Channel breakdown */}
+      {firstContactChannel && firstContactChannel.length > 0 && (
+        <div className="flex items-center gap-2 border-t border-border/40 pt-1">
+          <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+            1st touch
+          </span>
+          {firstContactChannel.map((ch) => (
+            <span
+              key={ch.channel}
+              className="flex items-center gap-0.5 text-[10px] text-muted-foreground"
+            >
+              {CHANNEL_ICONS[ch.channel]}
+              <span className="font-mono font-semibold text-foreground">
+                {ch.count}
+              </span>
+              <span className="text-[9px]">({formatTime(ch.avgMinutes)})</span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Missed window + untouched signals */}
+      {(topMissedWindow ||
+        (untouchedCount > 0 &&
+          untouchedAvgAgeDays &&
+          untouchedAvgAgeDays > 1)) && (
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 rounded bg-amber-50/50 px-1.5 py-0.5 dark:bg-amber-950/20">
+          <AlertTriangle className="h-2.5 w-2.5 text-amber-600 dark:text-amber-400" />
+          {topMissedWindow && (
+            <span className="text-[10px] text-amber-700 dark:text-amber-300">
+              <span className="font-mono font-semibold">
+                {topMissedWindow.count}
+              </span>{" "}
+              leads {topMissedWindow.label} ({topMissedWindow.pctOfContacted}%)
+            </span>
+          )}
+          {untouchedCount > 0 &&
+            untouchedAvgAgeDays != null &&
+            untouchedAvgAgeDays > 1 && (
+              <span className="text-[10px] text-amber-700 dark:text-amber-300">
+                <span className="font-mono font-semibold">
+                  {untouchedCount}
+                </span>{" "}
+                untouched, {Math.round(untouchedAvgAgeDays)}d avg age
+              </span>
+            )}
+        </div>
+      )}
+
       {/* Footer stats */}
       <div className="flex gap-3 text-[10px] text-muted-foreground">
         <span>{totalLeads} leads</span>
-        <span>{leadsWithActivity} contacted</span>
-        <span>{totalLeads - leadsWithActivity} untouched</span>
+        <span className="text-emerald-600 dark:text-emerald-400">
+          {leadsWithActivity} contacted
+        </span>
+        {untouchedCount > 0 && (
+          <span className="text-amber-600 dark:text-amber-400">
+            {untouchedCount} untouched
+          </span>
+        )}
       </div>
     </div>
   );

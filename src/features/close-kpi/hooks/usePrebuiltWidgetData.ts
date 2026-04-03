@@ -55,7 +55,7 @@ const CLOSE_API_WIDGET_IDS = new Set<PrebuiltCloseApiWidgetId>([
   "lifecycle",
   "call_analytics",
   "best_call_times",
-  "vm_rate",
+  "follow_up_gaps",
   "contact_cadence",
   "dial_attempts",
   "opp_funnel",

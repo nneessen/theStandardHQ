@@ -1,7 +1,7 @@
 // src/features/close-kpi/components/widgets/ContactCadenceWidget.tsx
 
 import React from "react";
-import { Repeat } from "lucide-react";
+import { Repeat, Phone, Mail, MessageSquare } from "lucide-react";
 import type { ContactCadenceResult } from "../../types/close-kpi.types";
 
 interface ContactCadenceWidgetProps {
@@ -21,11 +21,11 @@ export const ContactCadenceWidget: React.FC<ContactCadenceWidgetProps> = ({
     avgGapHours,
     medianGapHours,
     totalLeads,
-    leadsContacted,
     leadsMultiTouch,
     totalTouches,
     avgTouchesPerLead,
     touchDistribution,
+    channelMix,
   } = data;
 
   const maxTouchDist = Math.max(...touchDistribution.map((d) => d.leads), 1);
@@ -96,12 +96,42 @@ export const ContactCadenceWidget: React.FC<ContactCadenceWidgetProps> = ({
         ))}
       </div>
 
+      {/* Channel mix */}
+      {channelMix && channelMix.length > 0 && (
+        <div className="flex items-center gap-2 border-t border-border/40 pt-1">
+          <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+            Mix
+          </span>
+          {channelMix.map((ch) => {
+            const icon =
+              ch.channel === "call" ? (
+                <Phone className="h-2.5 w-2.5" />
+              ) : ch.channel === "email" ? (
+                <Mail className="h-2.5 w-2.5" />
+              ) : (
+                <MessageSquare className="h-2.5 w-2.5" />
+              );
+            return (
+              <span
+                key={ch.channel}
+                className="flex items-center gap-0.5 text-[10px] text-muted-foreground"
+              >
+                {icon}
+                <span className="font-mono font-semibold text-foreground">
+                  {ch.count}
+                </span>
+                <span className="text-[9px]">({ch.pct}%)</span>
+              </span>
+            );
+          })}
+        </div>
+      )}
+
       {/* Footer */}
       <div className="flex gap-3 text-[10px] text-muted-foreground">
         <span>{totalLeads} leads</span>
-        <span>{leadsContacted} contacted</span>
         <span>{leadsMultiTouch} multi-touch</span>
-        <span>{totalTouches} total touches</span>
+        <span>{totalTouches} touches</span>
       </div>
     </div>
   );

@@ -15,6 +15,7 @@ export type WidgetType =
   | "speed_to_lead"
   | "contact_cadence"
   | "dial_attempts"
+  | "follow_up_gaps"
   | "lead_heat_summary"
   | "lead_heat_list"
   | "lead_heat_ai_insights";
@@ -312,12 +313,19 @@ export interface CloseKpiWidgetTemplate {
 
 // ─── Widget Result Types ───────────────────────────────────────────
 
+export interface StatCardSubMetric {
+  label: string;
+  value: number | string;
+  color?: "success" | "warning" | "destructive" | "muted";
+}
+
 export interface StatCardResult {
   value: number;
   previousValue?: number;
   changePercent?: number;
   label: string;
   unit?: string;
+  subMetrics?: StatCardSubMetric[];
 }
 
 export interface StatusDistributionResult {
@@ -334,16 +342,21 @@ export interface SmartViewMonitorResult {
   }[];
 }
 
+export interface LifecycleTransition {
+  from: string;
+  to: string;
+  avgDays: number;
+  medianDays: number;
+  minDays: number;
+  maxDays: number;
+  sampleSize: number;
+  durationSampleSize: number;
+}
+
 export interface LifecycleTrackerResult {
-  transitions: {
-    from: string;
-    to: string;
-    avgDays: number;
-    medianDays: number;
-    minDays: number;
-    maxDays: number;
-    sampleSize: number;
-  }[];
+  transitions: LifecycleTransition[];
+  totalChanges?: number;
+  isTruncated?: boolean;
 }
 
 export interface ActivityTimelineResult {
@@ -365,6 +378,26 @@ export interface CrossReferenceResult {
   grandTotal: number;
 }
 
+export interface OpportunityStatusEntry {
+  id: string;
+  label: string;
+  count: number;
+  value: number;
+  type: string;
+  avgAgeDays: number;
+  staleCount: number;
+  daysSinceLastActivity: number | null;
+  untouchedCount: number;
+}
+
+export interface PipelineHealth {
+  revenueAtRisk: number;
+  untouchedActive: { count: number; value: number };
+  staleActive: { count: number; value: number };
+  weightedForecast: number;
+  avgActivePipelineAge: number;
+}
+
 export interface OpportunitySummaryResult {
   totalValue: number;
   dealCount: number;
@@ -377,7 +410,9 @@ export interface OpportunitySummaryResult {
   salesVelocity?: number;
   avgTimeToClose?: number;
   stalledCount: number;
-  byStatus?: { id: string; label: string; count: number; value: number }[];
+  byStatus?: OpportunityStatusEntry[];
+  pipelineName?: string | null;
+  pipelineHealth?: PipelineHealth;
   previousTotalValue?: number;
   previousDealCount?: number;
 }
@@ -390,6 +425,7 @@ export interface CallAnalyticsResult {
   inbound: number;
   outbound: number;
   connectRate: number;
+  outboundConnectRate?: number;
   totalDurationMin: number;
   avgDurationMin: number;
   isTruncated?: boolean;
@@ -461,6 +497,17 @@ export interface SpeedToLeadResult {
   totalLeads: number;
   leadsWithActivity: number;
   pctContacted: number;
+  firstContactChannel?: {
+    channel: string;
+    count: number;
+    avgMinutes: number;
+  }[];
+  missedWindows?: {
+    label: string;
+    count: number;
+    pctOfContacted: number;
+  }[];
+  untouchedAvgAgeDays?: number;
 }
 
 export interface ContactCadenceResult {
@@ -472,6 +519,7 @@ export interface ContactCadenceResult {
   totalTouches: number;
   avgTouchesPerLead: number;
   touchDistribution: { touches: number; leads: number }[];
+  channelMix?: { channel: string; count: number; pct: number }[];
 }
 
 export interface DialAttemptsResult {
@@ -487,6 +535,7 @@ export interface DialAttemptsResult {
     answered: number;
     connectRate: number;
   }[];
+  diminishingReturnsAttempt?: number | null;
 }
 
 export interface LeadHeatSummaryResult {
@@ -560,6 +609,24 @@ export interface LeadHeatAiInsightsResult {
   overallAssessment: string;
 }
 
+export interface FollowUpGapStatus {
+  statusId: string;
+  label: string;
+  totalLeads: number;
+  untouchedCount: number;
+  gapLeads: number;
+  avgDaysSinceActivity: number | null;
+}
+
+export interface FollowUpGapsResult {
+  items: FollowUpGapStatus[];
+  totalLeads: number;
+  totalNeedingAttention: number;
+  totalUntouched: number;
+  totalGap: number;
+  gapThresholdDays: number;
+}
+
 export type PrebuiltCloseApiWidgetId =
   | "total_leads"
   | "new_leads"
@@ -568,7 +635,7 @@ export type PrebuiltCloseApiWidgetId =
   | "lifecycle"
   | "call_analytics"
   | "best_call_times"
-  | "vm_rate"
+  | "follow_up_gaps"
   | "contact_cadence"
   | "dial_attempts"
   | "opp_funnel"
@@ -582,7 +649,7 @@ export interface PrebuiltCloseApiWidgetResults {
   lifecycle: LifecycleTrackerResult;
   call_analytics: CallAnalyticsResult;
   best_call_times: BestCallTimesResult;
-  vm_rate: VmRateSmartViewResult;
+  follow_up_gaps: FollowUpGapsResult;
   contact_cadence: ContactCadenceResult;
   dial_attempts: DialAttemptsResult;
   opp_funnel: OpportunitySummaryResult;

@@ -142,6 +142,20 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetRegistryEntry> = {
       dateRange: "this_week",
     } satisfies VmRateSmartViewConfig,
   },
+  follow_up_gaps: {
+    type: "follow_up_gaps",
+    label: "Follow-up Gaps",
+    description:
+      "Leads needing attention — untouched or stale, grouped by status",
+    category: "leads",
+    icon: "Clock",
+    defaultSize: "medium",
+    allowedSizes: ["medium", "large"],
+    colSpan: { small: 1, medium: 1, large: 1 },
+    defaultConfig: {
+      ...DEFAULT_BASE,
+    },
+  },
   best_call_times: {
     type: "best_call_times",
     label: "Best Time to Call",

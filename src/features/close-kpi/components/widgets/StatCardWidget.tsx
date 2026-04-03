@@ -24,8 +24,15 @@ function formatValue(value: number, unit?: string): string {
   return value.toLocaleString();
 }
 
+const SUB_METRIC_COLORS: Record<string, string> = {
+  success: "text-emerald-600 dark:text-emerald-400",
+  warning: "text-amber-600 dark:text-amber-400",
+  destructive: "text-red-500 dark:text-red-400",
+  muted: "text-muted-foreground",
+};
+
 export const StatCardWidget: React.FC<StatCardWidgetProps> = ({ data }) => {
-  const { value, changePercent, previousValue, label, unit } = data;
+  const { value, changePercent, previousValue, label, unit, subMetrics } = data;
   const trend =
     changePercent == null
       ? "neutral"
@@ -69,6 +76,23 @@ export const StatCardWidget: React.FC<StatCardWidgetProps> = ({ data }) => {
         <p className="text-[10px] text-muted-foreground">
           vs {formatValue(previousValue, unit)} previous period
         </p>
+      )}
+      {subMetrics && subMetrics.length > 0 && (
+        <div className="mt-1 flex flex-wrap gap-x-2 gap-y-0.5 border-t border-border/40 pt-1">
+          {subMetrics.map((m, i) => (
+            <span
+              key={i}
+              className={`text-[10px] ${SUB_METRIC_COLORS[m.color ?? "muted"]}`}
+            >
+              {m.label}:{" "}
+              <span className="font-mono font-semibold">
+                {typeof m.value === "number"
+                  ? m.value.toLocaleString()
+                  : m.value}
+              </span>
+            </span>
+          ))}
+        </div>
       )}
     </div>
   );

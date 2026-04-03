@@ -501,7 +501,11 @@ async function fetchLifecycleTracker(
     toStatus: config.toStatus ?? undefined,
   });
 
-  return { transitions: res.transitions };
+  return {
+    transitions: res.transitions,
+    totalChanges: res.totalChanges,
+    isTruncated: res.isTruncated,
+  };
 }
 
 // ─── VM Rate by Smart View Fetcher ──────────────────────────────────

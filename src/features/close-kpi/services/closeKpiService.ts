@@ -134,7 +134,18 @@ export interface OpportunitiesResponse {
   winRate: number;
   avgDealSize: number;
   avgTimeToCloseDays: number;
-  byStatus: { id: string; label: string; count: number; value: number }[];
+  staleThresholdDays?: number;
+  byStatus: {
+    id: string;
+    label: string;
+    count: number;
+    value: number;
+    type: string;
+    avgAgeDays: number;
+    staleCount: number;
+    daysSinceLastActivity: number | null;
+    untouchedCount: number;
+  }[];
 }
 
 export interface StatusChangesResponse {
@@ -146,8 +157,10 @@ export interface StatusChangesResponse {
     minDays: number;
     maxDays: number;
     sampleSize: number;
+    durationSampleSize: number;
   }[];
   totalChanges: number;
+  isTruncated?: boolean;
 }
 
 export interface VmRateSmartViewResponse {

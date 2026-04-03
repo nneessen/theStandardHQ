@@ -1,7 +1,7 @@
 // src/features/close-kpi/components/widgets/DialAttemptsWidget.tsx
 
 import React from "react";
-import { PhoneCall } from "lucide-react";
+import { PhoneCall, AlertTriangle } from "lucide-react";
 import type { DialAttemptsResult } from "../../types/close-kpi.types";
 
 interface DialAttemptsWidgetProps {
@@ -19,6 +19,7 @@ export const DialAttemptsWidget: React.FC<DialAttemptsWidgetProps> = ({
     neverConnected,
     connectPct,
     attemptRates,
+    diminishingReturnsAttempt,
   } = data;
 
   const maxAttemptTotal = Math.max(...attemptRates.map((a) => a.total), 1);
@@ -94,6 +95,20 @@ export const DialAttemptsWidget: React.FC<DialAttemptsWidgetProps> = ({
           </div>
         ))}
       </div>
+
+      {/* Diminishing returns signal */}
+      {diminishingReturnsAttempt != null && (
+        <div className="flex items-center gap-1 rounded bg-amber-50/50 px-1.5 py-0.5 dark:bg-amber-950/20">
+          <AlertTriangle className="h-2.5 w-2.5 shrink-0 text-amber-600 dark:text-amber-400" />
+          <span className="text-[10px] text-amber-700 dark:text-amber-300">
+            Diminishing returns after attempt{" "}
+            <span className="font-mono font-semibold">
+              #{diminishingReturnsAttempt}
+            </span>{" "}
+            — consider deprioritizing
+          </span>
+        </div>
+      )}
 
       {/* Footer */}
       <div className="grid grid-cols-3 gap-1.5 text-[10px]">

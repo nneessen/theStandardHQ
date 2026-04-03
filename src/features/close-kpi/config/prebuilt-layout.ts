@@ -12,7 +12,6 @@ import type {
   CallAnalyticsConfig,
   OpportunitySummaryConfig,
   LifecycleTrackerConfig,
-  VmRateSmartViewConfig,
   BestCallTimesConfig,
   CrossReferenceConfig,
   SpeedToLeadConfig,
@@ -90,8 +89,9 @@ export const WIDGET_TOOLTIPS: Record<string, TooltipDef> = {
   speed_to_lead: {
     title: "Speed to Lead",
     description:
-      "How fast you make first contact after a lead is created. Industry data shows contacting within 5 minutes is 21x more effective than waiting 30 minutes.",
+      "How fast you make first contact after a lead is created. Shows channel breakdown (call/email/SMS), missed response windows, and untouched lead aging.",
     formula: "Time from lead creation → first outbound call, email, or SMS",
+    note: "Industry data: contacting within 5 min is 21x more effective than waiting 30 min.",
   },
   status_distribution: {
     title: "Status Distribution",
@@ -101,8 +101,8 @@ export const WIDGET_TOOLTIPS: Record<string, TooltipDef> = {
   lifecycle_tracker: {
     title: "Lifecycle Velocity",
     description:
-      "How long it takes leads to move between statuses. Slow transitions mean leads are cooling off. Fast transitions mean your process is working.",
-    formula: "Average days from one status to the next",
+      "Top status transitions in the period, ranked by volume. Shows which pipeline movements happen most frequently. Auto-detected from actual status change data.",
+    formula: "Count of leads transitioning from one status to another",
   },
 
   // Call Performance
@@ -116,13 +116,20 @@ export const WIDGET_TOOLTIPS: Record<string, TooltipDef> = {
     title: "Best Time to Call",
     description:
       "Shows which hours and days have the highest connect rate. Schedule your power-dial sessions when leads actually pick up.",
-    note: "Needs at least 50 calls for reliable patterns",
+    note: "Best hour/day requires at least 5 outbound calls to qualify. More data = more reliable patterns.",
   },
   vm_rate_smart_view: {
     title: "VM Rate by Smart View",
     description:
       "First-call voicemail rate for each smart view. High VM rates (40%+) often indicate bad lead batches or stale data. Compare across sources to find your best lists.",
     formula: "VM Rate = (VM Left + No Answer) ÷ First Outbound Calls per Lead",
+  },
+  follow_up_gaps: {
+    title: "Follow-up Gaps",
+    description:
+      "Leads grouped by status that need follow-up attention. Shows untouched leads (no activity in the period) and stale leads (last activity >7 days ago). Sorted by urgency.",
+    formula:
+      "Untouched = no activity in period. Stale = last activity > 7 days ago.",
   },
   contact_cadence: {
     title: "Contact Cadence",
@@ -141,9 +148,10 @@ export const WIDGET_TOOLTIPS: Record<string, TooltipDef> = {
   opportunity_summary: {
     title: "Opportunity Funnel",
     description:
-      "Pipeline value, win rate, average deal size, and sales velocity across your opportunities. Track the health of your revenue pipeline.",
+      "Full pipeline breakdown by status with health signals. Shows deal aging per stage, flags stale/untouched deals, and computes revenue at risk and weighted forecast.",
     formula:
-      "Sales Velocity = (Deals × Avg Size × Win Rate) ÷ Avg Days to Close",
+      "Forecast = Active Pipeline Value × Win Rate. At Risk = stale (>2× avg cycle) or untouched (no activity in 14d).",
+    note: "Age shown per stage. Amber dot = stale or untouched deals needing attention.",
   },
   cross_reference: {
     title: "Smart View × Status Matrix",
@@ -275,7 +283,7 @@ export const DASHBOARD_SECTIONS: SectionDef[] = [
         type: "speed_to_lead",
         title: "Speed to Lead",
         tooltipKey: "speed_to_lead",
-        size: "small",
+        size: "medium",
         buildConfig: (dr) =>
           ({ ...BASE_CONFIG(dr) }) satisfies SpeedToLeadConfig,
       },
@@ -285,7 +293,6 @@ export const DASHBOARD_SECTIONS: SectionDef[] = [
         title: "Status Distribution",
         tooltipKey: "status_distribution",
         size: "medium",
-        colSpan: "lg:col-span-2",
         buildConfig: (dr) =>
           ({
             ...BASE_CONFIG(dr),
@@ -299,6 +306,7 @@ export const DASHBOARD_SECTIONS: SectionDef[] = [
         title: "Lifecycle Velocity",
         tooltipKey: "lifecycle_tracker",
         size: "medium",
+        colSpan: "lg:col-span-2",
         buildConfig: (dr) =>
           ({
             ...BASE_CONFIG(dr),
@@ -343,18 +351,12 @@ export const DASHBOARD_SECTIONS: SectionDef[] = [
           ({ ...BASE_CONFIG(dr) }) satisfies BestCallTimesConfig,
       },
       {
-        id: "vm_rate",
-        type: "vm_rate_smart_view",
-        title: "VM Rate by Smart View",
-        tooltipKey: "vm_rate_smart_view",
+        id: "follow_up_gaps",
+        type: "follow_up_gaps",
+        title: "Follow-up Gaps",
+        tooltipKey: "follow_up_gaps",
         size: "medium",
-        buildConfig: (dr) =>
-          ({
-            ...BASE_CONFIG(dr),
-            smartViewIds: [], // auto-populated from metadata
-            vmThreshold: 40,
-            firstCallOnly: true,
-          }) satisfies VmRateSmartViewConfig,
+        buildConfig: (dr) => ({ ...BASE_CONFIG(dr) }),
       },
       {
         id: "contact_cadence",

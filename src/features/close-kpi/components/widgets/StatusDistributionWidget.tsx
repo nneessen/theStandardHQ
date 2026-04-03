@@ -8,54 +8,104 @@ interface StatusDistributionWidgetProps {
   label?: string;
 }
 
+// Muted zinc palette — no rainbow
+const SEGMENT_COLORS = [
+  "bg-zinc-500",
+  "bg-zinc-400",
+  "bg-zinc-600",
+  "bg-zinc-350 bg-zinc-300",
+  "bg-zinc-700",
+];
+const LEGEND_DOTS = [
+  "bg-zinc-500",
+  "bg-zinc-400",
+  "bg-zinc-600",
+  "bg-zinc-300",
+  "bg-zinc-700",
+];
+
+const MAX_VISIBLE = 5;
+
 export const StatusDistributionWidget: React.FC<
   StatusDistributionWidgetProps
 > = ({ data, label }) => {
-  const maxCount = Math.max(...data.items.map((i) => i.count), 1);
+  if (data.items.length === 0) {
+    return (
+      <div className="flex h-full flex-col justify-center">
+        <p className="text-[10px] text-muted-foreground">No data</p>
+      </div>
+    );
+  }
+
+  const sorted = [...data.items].sort((a, b) => b.count - a.count);
+  const visible = sorted.slice(0, MAX_VISIBLE);
+  const otherItems = sorted.slice(MAX_VISIBLE);
+  const otherCount = otherItems.reduce((sum, item) => sum + item.count, 0);
+  const total = data.total || sorted.reduce((sum, item) => sum + item.count, 0);
 
   return (
-    <div className="flex flex-col">
-      <div className="mb-1 flex items-center justify-between">
+    <div className="flex h-full flex-col gap-1.5">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
           {label ?? "Lead Pipeline"}
         </span>
         <span className="font-mono text-[10px] text-muted-foreground">
-          {data.total.toLocaleString()} total
+          {total.toLocaleString()} total
         </span>
       </div>
-      <div className="space-y-0.5">
-        {data.items.map((item) => {
-          const pct =
-            data.total > 0 ? Math.round((item.count / data.total) * 100) : 0;
+
+      {/* Stacked horizontal bar */}
+      <div className="flex h-5 w-full overflow-hidden rounded-sm">
+        {visible.map((item, i) => {
+          const pct = total > 0 ? (item.count / total) * 100 : 0;
+          if (pct === 0) return null;
           return (
-            <div key={item.id} className="flex items-center gap-2">
-              <span className="w-28 shrink-0 truncate text-[11px] text-muted-foreground">
-                {item.label}
-              </span>
-              <div className="flex-1">
-                <div
-                  className="h-4 rounded-sm bg-foreground/70"
-                  style={{
-                    width: `${(item.count / maxCount) * 100}%`,
-                    minWidth: item.count > 0 ? "2px" : "0",
-                  }}
-                />
-              </div>
-              <span className="w-14 text-right font-mono text-[11px] text-foreground">
-                <span className="font-semibold">
-                  {item.count.toLocaleString()}
-                </span>
-                <span className="ml-0.5 text-[9px] text-muted-foreground">
-                  {pct}%
-                </span>
-              </span>
-            </div>
+            <div
+              key={item.id}
+              className={`${SEGMENT_COLORS[i % SEGMENT_COLORS.length]} transition-all`}
+              style={{ width: `${pct}%`, minWidth: pct > 0 ? "2px" : "0" }}
+              title={`${item.label}: ${item.count} (${Math.round(pct)}%)`}
+            />
           );
         })}
-        {data.items.length === 0 && (
-          <p className="py-4 text-center text-[10px] text-muted-foreground">
-            No data
-          </p>
+        {otherCount > 0 && (
+          <div
+            className="bg-zinc-200 dark:bg-zinc-800 transition-all"
+            style={{ width: `${(otherCount / total) * 100}%`, minWidth: "2px" }}
+            title={`Other: ${otherCount}`}
+          />
+        )}
+      </div>
+
+      {/* Compact legend */}
+      <div className="flex flex-wrap gap-x-2.5 gap-y-0.5">
+        {visible.map((item, i) => {
+          const pct = total > 0 ? Math.round((item.count / total) * 100) : 0;
+          return (
+            <span
+              key={item.id}
+              className="flex items-center gap-1 text-[10px] text-muted-foreground"
+            >
+              <span
+                className={`inline-block h-2 w-2 shrink-0 rounded-sm ${LEGEND_DOTS[i % LEGEND_DOTS.length]}`}
+              />
+              <span className="truncate">{item.label}</span>
+              <span className="font-mono font-semibold text-foreground">
+                {item.count.toLocaleString()}
+              </span>
+              <span className="text-[9px]">{pct}%</span>
+            </span>
+          );
+        })}
+        {otherCount > 0 && (
+          <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <span className="inline-block h-2 w-2 shrink-0 rounded-sm bg-zinc-200 dark:bg-zinc-800" />
+            <span>Other ({otherItems.length})</span>
+            <span className="font-mono font-semibold text-foreground">
+              {otherCount.toLocaleString()}
+            </span>
+          </span>
         )}
       </div>
     </div>

@@ -19,6 +19,7 @@ export const CallAnalyticsWidget: React.FC<CallAnalyticsWidgetProps> = ({
     inbound,
     outbound,
     connectRate,
+    outboundConnectRate,
     totalDurationMin,
     avgDurationMin,
   } = data;
@@ -72,8 +73,15 @@ export const CallAnalyticsWidget: React.FC<CallAnalyticsWidgetProps> = ({
           <PhoneIncoming className="h-2.5 w-2.5" />
           {inbound} in
         </span>
-        <span className="ml-auto font-mono font-semibold text-foreground">
-          {connectRate}% connect
+        <span className="ml-auto flex gap-2">
+          {outboundConnectRate != null && outbound > 0 && (
+            <span className="font-mono text-[10px] font-semibold text-foreground">
+              {outboundConnectRate}% out
+            </span>
+          )}
+          <span className="font-mono text-[10px] font-semibold text-muted-foreground">
+            {connectRate}% all
+          </span>
         </span>
       </div>
 

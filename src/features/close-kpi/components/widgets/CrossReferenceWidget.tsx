@@ -1,4 +1,6 @@
 // src/features/close-kpi/components/widgets/CrossReferenceWidget.tsx
+// Transposed matrix: statuses as rows, smart views as columns.
+// Fits any number of statuses (vertical scroll) with max 5 smart view columns.
 
 import React from "react";
 import { Grid3X3 } from "lucide-react";
@@ -18,20 +20,21 @@ export const CrossReferenceWidget: React.FC<CrossReferenceWidgetProps> = ({
       <div className="flex h-full flex-col items-center justify-center gap-1">
         <Grid3X3 className="h-5 w-5 text-muted-foreground/40" />
         <p className="text-[10px] text-muted-foreground">
-          Select smart views and statuses in config to see the matrix
+          No smart view data available. Configure smart views in Close CRM.
         </p>
       </div>
     );
   }
 
-  // Find max cell value for heat coloring
+  // Max cell for heat coloring
   const maxCell = Math.max(
-    ...rows.flatMap((r) => statusLabels.map((s) => r.cells[s.id] ?? 0)),
+    ...statusLabels.flatMap((s) => rows.map((r) => r.cells[s.id] ?? 0)),
     1,
   );
 
   return (
     <div className="flex flex-col gap-1">
+      {/* Header */}
       <div className="flex items-center gap-1.5">
         <Grid3X3 className="h-3 w-3 text-muted-foreground" />
         <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
@@ -42,39 +45,46 @@ export const CrossReferenceWidget: React.FC<CrossReferenceWidgetProps> = ({
         </span>
       </div>
 
-      <div>
-        <table className="w-full text-[10px]">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="py-0.5 text-left font-medium text-muted-foreground">
-                Smart View
+      {/* Transposed table: statuses = rows, smart views = columns */}
+      <table className="w-full text-[10px]">
+        <thead>
+          <tr className="border-b border-border">
+            <th className="py-0.5 text-left font-medium text-muted-foreground">
+              Status
+            </th>
+            {rows.map((sv) => (
+              <th
+                key={sv.smartViewId}
+                className="px-1 py-0.5 text-right font-medium text-muted-foreground"
+                title={sv.smartViewName}
+              >
+                {sv.smartViewName.length > 14
+                  ? sv.smartViewName.slice(0, 14) + "…"
+                  : sv.smartViewName}
               </th>
-              {statusLabels.map((s) => (
-                <th
-                  key={s.id}
-                  className="px-1 py-0.5 text-right font-medium text-muted-foreground"
-                  title={s.label}
+            ))}
+            <th className="px-1 py-0.5 text-right font-semibold text-muted-foreground">
+              Total
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {statusLabels.map((status) => {
+            const total = totals[status.id] ?? 0;
+            return (
+              <tr key={status.id} className="border-b border-border/30">
+                <td
+                  className="max-w-[130px] truncate py-0.5 text-foreground"
+                  title={status.label}
                 >
-                  {s.label.length > 10 ? s.label.slice(0, 10) + "…" : s.label}
-                </th>
-              ))}
-              <th className="px-1 py-0.5 text-right font-semibold text-muted-foreground">
-                Total
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.smartViewId} className="border-b border-border/50">
-                <td className="max-w-[120px] truncate py-0.5 text-foreground">
-                  {row.smartViewName}
+                  {status.label}
                 </td>
-                {statusLabels.map((s) => {
-                  const count = row.cells[s.id] ?? 0;
+                {rows.map((sv) => {
+                  const count = sv.cells[status.id] ?? 0;
                   const intensity = count / maxCell;
                   return (
                     <td
-                      key={s.id}
+                      key={sv.smartViewId}
                       className="px-1 py-0.5 text-right font-mono"
                       style={{
                         backgroundColor:
@@ -88,28 +98,28 @@ export const CrossReferenceWidget: React.FC<CrossReferenceWidgetProps> = ({
                   );
                 })}
                 <td className="px-1 py-0.5 text-right font-mono font-semibold">
-                  {row.total}
+                  {total > 0 ? total : "—"}
                 </td>
               </tr>
-            ))}
-            {/* Totals row */}
-            <tr className="border-t border-border font-semibold">
-              <td className="py-0.5 text-muted-foreground">Total</td>
-              {statusLabels.map((s) => (
-                <td
-                  key={s.id}
-                  className="px-1 py-0.5 text-right font-mono text-foreground"
-                >
-                  {totals[s.id] ?? 0}
-                </td>
-              ))}
-              <td className="px-1 py-0.5 text-right font-mono text-foreground">
-                {grandTotal}
+            );
+          })}
+          {/* Smart view totals row */}
+          <tr className="border-t border-border font-semibold">
+            <td className="py-0.5 text-muted-foreground">Total</td>
+            {rows.map((sv) => (
+              <td
+                key={sv.smartViewId}
+                className="px-1 py-0.5 text-right font-mono text-foreground"
+              >
+                {sv.total}
               </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+            ))}
+            <td className="px-1 py-0.5 text-right font-mono text-foreground">
+              {grandTotal}
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 };

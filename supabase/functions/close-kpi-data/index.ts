@@ -213,7 +213,7 @@ type Params = Record<string, any>;
 // deno-lint-ignore no-explicit-any
 type ApiResult = Record<string, any>;
 
-const PREBUILT_DASHBOARD_ROLLUP_VERSION = "v1";
+const PREBUILT_DASHBOARD_ROLLUP_VERSION = "v2";
 const PREBUILT_DASHBOARD_CACHE_SCOPE = "prebuilt_dashboard";
 const PREBUILT_DASHBOARD_CACHE_RESOURCE_KEY = "close_api_rollup";
 const PREBUILT_DASHBOARD_CACHE_TTL_MS = 15 * 60_000;
@@ -824,7 +824,7 @@ async function handleGetOpportunities(apiKey: string, params: Params) {
 
   const baseQs = [
     `_limit=100`,
-    `_fields=id,value,status_id,status_type,status_label,date_created,date_won,date_lost`,
+    `_fields=id,lead_id,value,status_id,status_type,status_label,date_created,date_won,date_lost`,
   ];
   if (from) baseQs.push(`date_created__gte=${from}`);
   if (to) baseQs.push(`date_created__lte=${to}T23:59:59`);
@@ -833,6 +833,7 @@ async function handleGetOpportunities(apiKey: string, params: Params) {
   // Paginate to get ALL opportunities (up to 2000)
   type Opp = {
     id: string;
+    lead_id?: string;
     value?: number;
     value_period?: string;
     status_id?: string;
@@ -885,17 +886,57 @@ async function handleGetOpportunities(apiKey: string, params: Params) {
       timesToClose.reduce((a, b) => a + b, 0) / timesToClose.length;
   }
 
-  // By status breakdown
-  const byStatus: Record<
-    string,
-    { count: number; value: number; label: string }
-  > = {};
+  // By status breakdown with per-stage enrichments
+  const now = Date.now();
+  const MS_PER_DAY = 1000 * 60 * 60 * 24;
+  const staleThresholdDays =
+    avgTimeToCloseDays > 0 ? avgTimeToCloseDays * 2 : 90;
+
+  type ByStatusEntry = {
+    count: number;
+    value: number;
+    label: string;
+    type: string;
+    avgAgeDays: number;
+    staleCount: number;
+    daysSinceLastActivity: number | null;
+    untouchedCount: number;
+  };
+  const byStatus: Record<string, ByStatusEntry> = {};
+  // Group opps by status for enrichment
+  const oppsByStatus: Record<string, typeof opps> = {};
+
   for (const o of opps) {
     const key = o.status_id ?? "unknown";
     if (!byStatus[key])
-      byStatus[key] = { count: 0, value: 0, label: o.status_label ?? key };
+      byStatus[key] = {
+        count: 0,
+        value: 0,
+        label: o.status_label ?? key,
+        type: o.status_type ?? "active",
+        avgAgeDays: 0,
+        staleCount: 0,
+        daysSinceLastActivity: null,
+        untouchedCount: 0,
+      };
+    if (!oppsByStatus[key]) oppsByStatus[key] = [];
+    oppsByStatus[key].push(o);
     byStatus[key].count++;
     byStatus[key].value += (o.value ?? 0) / 100;
+  }
+
+  // Compute per-stage aging
+  for (const [key, statusOpps] of Object.entries(oppsByStatus)) {
+    const ages = statusOpps
+      .filter((o) => o.date_created)
+      .map((o) => (now - new Date(o.date_created!).getTime()) / MS_PER_DAY);
+    if (ages.length > 0) {
+      byStatus[key].avgAgeDays =
+        Math.round((ages.reduce((a, b) => a + b, 0) / ages.length) * 10) / 10;
+      byStatus[key].staleCount = ages.filter(
+        (age) => age > staleThresholdDays,
+      ).length;
+    }
   }
 
   return {
@@ -909,7 +950,17 @@ async function handleGetOpportunities(apiKey: string, params: Params) {
     winRate: Math.round(winRate * 1000) / 10,
     avgDealSize: Math.round(avgDealSize * 100) / 100,
     avgTimeToCloseDays: Math.round(avgTimeToCloseDays * 10) / 10,
+    staleThresholdDays: Math.round(staleThresholdDays),
     byStatus: Object.entries(byStatus).map(([id, v]) => ({ id, ...v })),
+    // Raw opp data for activity cross-referencing in the rollup
+    _rawOpps: opps.map((o) => ({
+      id: o.id,
+      lead_id: o.lead_id,
+      value: o.value ?? 0,
+      status_id: o.status_id,
+      status_type: o.status_type,
+      date_created: o.date_created,
+    })),
   };
 }
 
@@ -941,11 +992,49 @@ async function handleGetLeadStatusChanges(apiKey: string, params: Params) {
     skip += 100;
   }
 
-  // Also fetch lead creation dates so we can measure time from creation
-  // for leads whose initial status is the fromStatus (no "moved to" event exists)
+  const isTruncated = hasMore;
+
+  // Multi-transition mode: when no fromStatus, compute ALL transition pairs
+  if (!fromStatus) {
+    // Group transitions by "from → to" pair
+    const pairMap = new Map<
+      string,
+      { from: string; to: string; count: number; days: number[] }
+    >();
+
+    for (const c of allData) {
+      const oldLabel = c.old_status_label;
+      const newLabel = c.new_status_label;
+      if (!oldLabel || !newLabel || oldLabel === newLabel) continue;
+
+      const key = `${oldLabel}|||${newLabel}`;
+      if (!pairMap.has(key)) {
+        pairMap.set(key, { from: oldLabel, to: newLabel, count: 0, days: [] });
+      }
+      pairMap.get(key)!.count++;
+    }
+
+    // Build result sorted by count
+    const transitions = [...pairMap.values()]
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10) // Top 10 transitions
+      .map((pair) => ({
+        from: pair.from,
+        to: pair.to,
+        avgDays: 0,
+        medianDays: 0,
+        minDays: 0,
+        maxDays: 0,
+        sampleSize: pair.count,
+        durationSampleSize: 0,
+      }));
+
+    return { transitions, totalChanges: allData.length, isTruncated };
+  }
+
+  // Single-transition mode (legacy): filter by fromStatus/toStatus
   const leadIds = [...new Set(allData.map((c) => c.lead_id).filter(Boolean))];
 
-  // Group by lead_id to compute transition times
   // deno-lint-ignore no-explicit-any
   const byLead: Record<string, any[]> = {};
   for (const c of allData) {
@@ -953,11 +1042,8 @@ async function handleGetLeadStatusChanges(apiKey: string, params: Params) {
     byLead[c.lead_id].push(c);
   }
 
-  // Batch-fetch lead creation dates for leads where we need it
-  // (leads that were created IN the fromStatus — no "moved to fromStatus" event)
   const leadCreationDates: Record<string, number> = {};
   if (leadIds.length > 0 && leadIds.length <= 500) {
-    // Fetch in batches of 5 concurrent
     for (let i = 0; i < leadIds.length; i += 50) {
       const batch = leadIds.slice(i, i + 50);
       const batchQs = batch.map((id) => `id=${id}`).join("&");
@@ -972,12 +1058,11 @@ async function handleGetLeadStatusChanges(apiKey: string, params: Params) {
           }
         }
       } catch {
-        // Non-critical — we'll just have fewer duration measurements
+        // Non-critical
       }
     }
   }
 
-  // Count ALL matching transitions (not just ones with duration)
   let transitionCount = 0;
   const transitionDays: number[] = [];
 
@@ -988,12 +1073,7 @@ async function handleGetLeadStatusChanges(apiKey: string, params: Params) {
         new Date(a.date_created).getTime() - new Date(b.date_created).getTime(),
     );
 
-    // Track when the lead entered fromStatus (via a previous change)
     let enteredFromAt: number | null = null;
-
-    // Check if the lead's FIRST status change has old_status_label === fromStatus
-    // and there's no prior "moved INTO fromStatus" event. In that case, the lead
-    // was created in fromStatus, so use lead creation date as entry time.
     const firstChange = leadChanges[0];
     if (
       firstChange &&
@@ -1004,19 +1084,16 @@ async function handleGetLeadStatusChanges(apiKey: string, params: Params) {
     }
 
     for (const c of leadChanges) {
-      // Lead moved INTO fromStatus — record entry time
       if (c.new_status_label === fromStatus) {
         enteredFromAt = new Date(c.date_created).getTime();
       }
-
-      // Lead moved OUT OF fromStatus — this is a transition we want to measure
       if (c.old_status_label === fromStatus) {
         if (!toStatus || c.new_status_label === toStatus) {
           transitionCount++;
           const exitTime = new Date(c.date_created).getTime();
           if (enteredFromAt) {
             const days = (exitTime - enteredFromAt) / (1000 * 60 * 60 * 24);
-            transitionDays.push(days);
+            if (days >= 0) transitionDays.push(days);
           }
           enteredFromAt = null;
           break;
@@ -1041,7 +1118,7 @@ async function handleGetLeadStatusChanges(apiKey: string, params: Params) {
   return {
     transitions: [
       {
-        from: fromStatus ?? "Any",
+        from: fromStatus,
         to: toStatus ?? "Any next status",
         avgDays: Math.round(avg * 10) / 10,
         medianDays: Math.round(median * 10) / 10,
@@ -1058,6 +1135,7 @@ async function handleGetLeadStatusChanges(apiKey: string, params: Params) {
       },
     ],
     totalChanges: allData.length,
+    isTruncated,
   };
 }
 
@@ -1281,7 +1359,7 @@ async function handleGetBestCallTimes(apiKey: string, params: Params) {
     const d = byHour[h] ?? { total: 0, answered: 0, vm: 0, noAnswer: 0 };
     return {
       hour: h,
-      label: `${h === 0 ? 12 : h > 12 ? h - 12 : h}${h < 12 ? "am" : "pm"}`,
+      label: `${h === 0 ? 12 : h > 12 ? h - 12 : h}${h === 0 || h < 12 ? "am" : "pm"}`,
       total: d.total,
       answered: d.answered,
       vm: d.vm,
@@ -1830,7 +1908,11 @@ function buildCallAnalyticsResult(
     ["no-answer", "busy", "blocked"].includes(call.disposition ?? ""),
   ).length;
   const inbound = calls.filter((call) => call.direction === "inbound").length;
-  const outbound = calls.filter((call) => call.direction === "outbound").length;
+  const outboundCalls = calls.filter((call) => call.direction === "outbound");
+  const outbound = outboundCalls.length;
+  const outboundAnswered = outboundCalls.filter(
+    (call) => call.disposition === "answered",
+  ).length;
   const totalDurationSec = calls.reduce(
     (sum, call) => sum + (call.duration ?? 0),
     0,
@@ -1851,6 +1933,8 @@ function buildCallAnalyticsResult(
     inbound,
     outbound,
     connectRate: total > 0 ? Math.round((answered / total) * 1000) / 10 : 0,
+    outboundConnectRate:
+      outbound > 0 ? Math.round((outboundAnswered / outbound) * 1000) / 10 : 0,
     totalDurationMin: Math.round(totalDurationSec / 60),
     avgDurationMin: Math.round((avgDurationSec / 60) * 10) / 10,
     isTruncated,
@@ -1903,7 +1987,7 @@ function buildBestCallTimesResult(
     const data = byHour[hour] ?? { total: 0, answered: 0, vm: 0, noAnswer: 0 };
     return {
       hour,
-      label: `${hour === 0 ? 12 : hour > 12 ? hour - 12 : hour}${hour < 12 ? "am" : "pm"}`,
+      label: `${hour === 0 ? 12 : hour > 12 ? hour - 12 : hour}${hour === 0 || hour < 12 ? "am" : "pm"}`,
       total: data.total,
       answered: data.answered,
       vm: data.vm,
@@ -1959,7 +2043,7 @@ function buildBestCallTimesResult(
   };
 }
 
-function buildVmRateBySmartViewResult(
+function _buildVmRateBySmartViewResult(
   outboundCalls: CloseCallRecord[],
   smartViewSnapshots: SmartViewSnapshot[],
 ) {
@@ -2055,9 +2139,14 @@ function buildCrossReferenceResult(
     };
   });
 
+  // Filter to only statuses that have at least 1 lead across all smart views
+  const activeStatuses = statuses
+    .filter((status) => (totals[status.id] ?? 0) > 0)
+    .sort((a, b) => (totals[b.id] ?? 0) - (totals[a.id] ?? 0));
+
   return {
     rows,
-    statusLabels: statuses.map((status) => ({
+    statusLabels: activeStatuses.map((status) => ({
       id: status.id,
       label: status.label,
     })),
@@ -2082,36 +2171,64 @@ function buildSpeedToLeadResult(
       totalLeads: 0,
       leadsWithActivity: 0,
       pctContacted: 0,
+      firstContactChannel: [],
+      missedWindows: [],
+      untouchedAvgAgeDays: 0,
     };
   }
 
-  const firstActivityByLead: Record<string, number> = {};
-  for (const activity of [
-    ...activityGroups.call.items,
-    ...activityGroups.email.items,
-    ...activityGroups.sms.items,
-  ]) {
-    const leadId = activity.lead_id;
-    if (!leadId) continue;
-    const direction = activity.direction ?? "";
-    if (direction === "inbound" || direction === "incoming") continue;
+  // Track first activity per lead WITH channel info
+  const firstActivityByLead: Record<string, { time: number; channel: string }> =
+    {};
+  const channelMap: [
+    string,
+    { lead_id?: string; direction?: string; date_created: string }[],
+  ][] = [
+    ["call", activityGroups.call.items],
+    ["email", activityGroups.email.items],
+    ["sms", activityGroups.sms.items],
+  ];
+  for (const [channel, items] of channelMap) {
+    for (const activity of items) {
+      const leadId = activity.lead_id;
+      if (!leadId) continue;
+      const direction = activity.direction ?? "";
+      if (direction === "inbound" || direction === "incoming") continue;
 
-    const activityTime = new Date(activity.date_created).getTime();
-    if (
-      !firstActivityByLead[leadId] ||
-      activityTime < firstActivityByLead[leadId]
-    ) {
-      firstActivityByLead[leadId] = activityTime;
+      const activityTime = new Date(activity.date_created).getTime();
+      const existing = firstActivityByLead[leadId];
+      if (!existing || activityTime < existing.time) {
+        firstActivityByLead[leadId] = { time: activityTime, channel };
+      }
     }
   }
 
+  const nowMs = Date.now();
+  const MS_PER_DAY = 1000 * 60 * 60 * 24;
   const speedMinutes: number[] = [];
+  const channelCounts: Record<string, { count: number; totalMinutes: number }> =
+    {
+      call: { count: 0, totalMinutes: 0 },
+      email: { count: 0, totalMinutes: 0 },
+      sms: { count: 0, totalMinutes: 0 },
+    };
+  const untouchedAges: number[] = [];
+
   for (const lead of leads) {
     if (!lead.date_created) continue;
     const createdAt = new Date(lead.date_created).getTime();
-    const firstActivity = firstActivityByLead[lead.id];
-    if (firstActivity && firstActivity >= createdAt) {
-      speedMinutes.push((firstActivity - createdAt) / (1000 * 60));
+    const first = firstActivityByLead[lead.id];
+    if (first && first.time >= createdAt) {
+      const minutes = (first.time - createdAt) / (1000 * 60);
+      speedMinutes.push(minutes);
+      // Track channel
+      if (channelCounts[first.channel]) {
+        channelCounts[first.channel].count++;
+        channelCounts[first.channel].totalMinutes += minutes;
+      }
+    } else {
+      // Untouched lead — track age
+      untouchedAges.push((nowMs - createdAt) / MS_PER_DAY);
     }
   }
 
@@ -2144,6 +2261,45 @@ function buildSpeedToLeadResult(
     if (bucket) bucket.count++;
   }
 
+  // Channel breakdown: which channel makes first contact
+  const firstContactChannel = Object.entries(channelCounts)
+    .filter(([, v]) => v.count > 0)
+    .map(([channel, v]) => ({
+      channel,
+      count: v.count,
+      avgMinutes: Math.round((v.totalMinutes / v.count) * 10) / 10,
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  // Missed window signals — industry benchmarks
+  const missedWindows = [
+    { label: "> 5 min", threshold: 5 },
+    { label: "> 15 min", threshold: 15 },
+    { label: "> 1 hr", threshold: 60 },
+    { label: "> 24 hr", threshold: 1440 },
+  ]
+    .map(({ label, threshold }) => {
+      const count = speedMinutes.filter((m) => m > threshold).length;
+      return {
+        label,
+        count,
+        pctOfContacted:
+          speedMinutes.length > 0
+            ? Math.round((count / speedMinutes.length) * 1000) / 10
+            : 0,
+      };
+    })
+    .filter((w) => w.count > 0);
+
+  // Untouched lead aging
+  const untouchedAvgAgeDays =
+    untouchedAges.length > 0
+      ? Math.round(
+          (untouchedAges.reduce((a, b) => a + b, 0) / untouchedAges.length) *
+            10,
+        ) / 10
+      : 0;
+
   return {
     avgMinutes: Math.round(avgMinutes * 10) / 10,
     medianMinutes: Math.round(medianMinutes * 10) / 10,
@@ -2154,33 +2310,41 @@ function buildSpeedToLeadResult(
       leads.length > 0
         ? Math.round((speedMinutes.length / leads.length) * 1000) / 10
         : 0,
+    firstContactChannel,
+    missedWindows,
+    untouchedAvgAgeDays,
   };
 }
 
-function buildContactCadenceResult(
-  leads: CloseLeadRecord[],
-  activityGroups: {
-    call: { items: CloseCallRecord[] };
-    email: { items: CloseMessageRecord[] };
-    sms: { items: CloseMessageRecord[] };
-  },
-) {
-  const leadIds = new Set(leads.map((lead) => lead.id));
+function buildContactCadenceResult(activityGroups: {
+  call: { items: CloseCallRecord[] };
+  email: { items: CloseMessageRecord[] };
+  sms: { items: CloseMessageRecord[] };
+}) {
+  // Derive lead set from activities (all leads with outbound activity in period)
   const activitiesByLead: Record<string, number[]> = {};
+  const channelCounts = { call: 0, email: 0, sms: 0 };
 
-  for (const activity of [
-    ...activityGroups.call.items,
-    ...activityGroups.email.items,
-    ...activityGroups.sms.items,
-  ]) {
-    const leadId = activity.lead_id;
-    if (!leadId || !leadIds.has(leadId)) continue;
+  const channelItems: [
+    string,
+    { lead_id?: string; direction?: string; date_created: string }[],
+  ][] = [
+    ["call", activityGroups.call.items],
+    ["email", activityGroups.email.items],
+    ["sms", activityGroups.sms.items],
+  ];
 
-    const direction = activity.direction ?? "";
-    if (direction === "inbound" || direction === "incoming") continue;
+  for (const [channel, items] of channelItems) {
+    for (const activity of items) {
+      const leadId = activity.lead_id;
+      if (!leadId) continue;
+      const direction = activity.direction ?? "";
+      if (direction === "inbound" || direction === "incoming") continue;
 
-    if (!activitiesByLead[leadId]) activitiesByLead[leadId] = [];
-    activitiesByLead[leadId].push(new Date(activity.date_created).getTime());
+      if (!activitiesByLead[leadId]) activitiesByLead[leadId] = [];
+      activitiesByLead[leadId].push(new Date(activity.date_created).getTime());
+      channelCounts[channel as keyof typeof channelCounts]++;
+    }
   }
 
   const allGapsHours: number[] = [];
@@ -2224,18 +2388,46 @@ function buildContactCadenceResult(
     .sort((left, right) => left.touches - right.touches)
     .slice(0, 10);
 
+  const totalLeads = Object.keys(activitiesByLead).length;
+  const totalChannelTouches =
+    channelCounts.call + channelCounts.email + channelCounts.sms;
+
   return {
     avgGapHours: Math.round(avgGapHours * 10) / 10,
     medianGapHours: Math.round(medianGapHours * 10) / 10,
-    totalLeads: leads.length,
-    leadsContacted: Object.keys(activitiesByLead).length,
+    totalLeads,
+    leadsContacted: totalLeads,
     leadsMultiTouch,
     totalTouches,
     avgTouchesPerLead:
-      leads.length > 0
-        ? Math.round((totalTouches / leads.length) * 10) / 10
-        : 0,
+      totalLeads > 0 ? Math.round((totalTouches / totalLeads) * 10) / 10 : 0,
     touchDistribution,
+    channelMix:
+      totalChannelTouches > 0
+        ? [
+            {
+              channel: "call",
+              count: channelCounts.call,
+              pct:
+                Math.round((channelCounts.call / totalChannelTouches) * 1000) /
+                10,
+            },
+            {
+              channel: "email",
+              count: channelCounts.email,
+              pct:
+                Math.round((channelCounts.email / totalChannelTouches) * 1000) /
+                10,
+            },
+            {
+              channel: "sms",
+              count: channelCounts.sms,
+              pct:
+                Math.round((channelCounts.sms / totalChannelTouches) * 1000) /
+                10,
+            },
+          ].filter((c) => c.count > 0)
+        : [],
   };
 }
 
@@ -2312,6 +2504,21 @@ function buildDialAttemptsResult(calls: CloseCallRecord[]) {
     };
   }).filter((entry) => entry.total > 0);
 
+  // Find diminishing returns: attempt where cumulative connect rate plateaus
+  // (marginal connect rate drops below 5% of remaining leads)
+  let diminishingReturnsAttempt: number | null = null;
+  for (const rate of attemptRates) {
+    const marginalRate = rate.total > 0 ? rate.answered / rate.total : 0;
+    if (
+      diminishingReturnsAttempt === null &&
+      rate.attempt > 1 &&
+      marginalRate < 0.05 &&
+      rate.total >= 3
+    ) {
+      diminishingReturnsAttempt = rate.attempt;
+    }
+  }
+
   return {
     avgAttempts: Math.round(avgAttempts * 10) / 10,
     medianAttempts: Math.round(medianAttempts * 10) / 10,
@@ -2323,6 +2530,7 @@ function buildDialAttemptsResult(calls: CloseCallRecord[]) {
         ? Math.round((attemptsToConnect.length / totalLeadsDialed) * 1000) / 10
         : 0,
     attemptRates,
+    diminishingReturnsAttempt,
   };
 }
 
@@ -2340,23 +2548,30 @@ async function handleGetPrebuiltDashboardRollup(
     );
   }
 
-  // Phase 0: Metadata (2 lightweight calls)
-  const [statusRes, smartViewRes] = await Promise.all([
+  // Phase 0: Metadata (3 lightweight calls)
+  const [statusRes, smartViewRes, pipelineRes] = await Promise.all([
     closeGet(apiKey, "/status/lead/") as Promise<ApiResult>,
     closeGet(apiKey, "/saved_search/?_limit=50") as Promise<ApiResult>,
+    closeGet(apiKey, "/pipeline/") as Promise<ApiResult>,
   ]);
 
   const statuses = (statusRes.data ?? []) as CloseLeadStatus[];
+  const pipelines = (pipelineRes.data ?? []) as {
+    id: string;
+    name: string;
+    statuses: { id: string; label: string; type: string }[];
+  }[];
   const smartViews = (smartViewRes.data ?? []) as CloseSavedSearch[];
   // Cap smart views to 5 for the dashboard rollup to limit API calls
   const cappedSmartViews = smartViews.slice(0, 5);
-  const vmSmartViews = smartViews.slice(0, 5);
   const comparison = getComparisonBounds(from, to);
 
   // Phase 1: Lead counts + activities (moderate API load, run in parallel)
   const [
     currentLeadCounts,
     previousLeadTotal,
+    totalLeadCount,
+    previousTotalLeadCount,
     createdLeads,
     activityGroups,
     opportunityRes,
@@ -2367,17 +2582,16 @@ async function handleGetPrebuiltDashboardRollup(
       from: comparison.from,
       to: comparison.to,
     }),
+    // Total leads in CRM (no date filter) for "Total Leads" widget
+    fetchLeadTotalForRange(apiKey, {}),
+    // Previous period total for comparison
+    fetchLeadTotalForRange(apiKey, { to: from }),
     fetchCreatedLeads(apiKey, { from, to }),
     fetchActivityGroups(apiKey, { from, to }),
-    handleGetOpportunities(apiKey, {
-      from,
-      to,
-      statusType: "active",
-    }),
+    handleGetOpportunities(apiKey, {}),
     handleGetLeadStatusChanges(apiKey, {
       from,
       to,
-      fromStatus: "New",
     }),
   ]);
 
@@ -2399,12 +2613,122 @@ async function handleGetPrebuiltDashboardRollup(
     rollupTz,
   );
   const dialAttempts = buildDialAttemptsResult(activityGroups.call.items);
-  const vmRate = buildVmRateBySmartViewResult(
-    activityGroups.call.items.filter((call) => call.direction === "outbound"),
-    smartViewSnapshots.filter((snapshot) =>
-      vmSmartViews.some((smartView) => smartView.id === snapshot.smartViewId),
-    ),
+  // Follow-up gaps: fetch leads created in date range with id+status_id
+  const queryParam = buildLeadSearchQueryFragment(from, to);
+  const leadStatusRecords = await fetchPaginatedResults<{
+    id: string;
+    status_id?: string;
+  }>(
+    apiKey,
+    (skip) =>
+      `/lead/?_limit=100&_skip=${skip}&_fields=id,status_id${queryParam}`,
+    2000,
   );
+
+  // Build follow-up gaps data
+  const followUpGaps = (() => {
+    const MS_PER_DAY = 1000 * 60 * 60 * 24;
+    const nowMs = Date.now();
+    const GAP_THRESHOLD_DAYS = 7;
+
+    // Build lead_id → last activity date from all activity groups
+    const lastActivityByLead = new Map<string, number>();
+    const allActs = [
+      ...(activityGroups.call?.items ?? []),
+      ...(activityGroups.email?.items ?? []),
+      ...(activityGroups.sms?.items ?? []),
+    ];
+    for (const act of allActs) {
+      const lid = (act as { lead_id?: string }).lead_id;
+      const dc = (act as { date_created?: string }).date_created;
+      if (!lid || !dc) continue;
+      const ts = new Date(dc).getTime();
+      const prev = lastActivityByLead.get(lid);
+      if (!prev || ts > prev) lastActivityByLead.set(lid, ts);
+    }
+
+    // Build status_id → label lookup
+    const statusLabelMap = new Map<string, string>();
+    for (const s of statuses) statusLabelMap.set(s.id, s.label);
+
+    // Group leads by status and compute gaps
+    type StatusGap = {
+      statusId: string;
+      label: string;
+      totalLeads: number;
+      untouchedCount: number;
+      gapLeads: number; // leads with activity but gap > threshold
+      avgDaysSinceActivity: number | null;
+    };
+    const gapByStatus = new Map<
+      string,
+      {
+        total: number;
+        untouched: number;
+        gapLeads: number;
+        daysSinceSum: number;
+        daysSinceCount: number;
+      }
+    >();
+
+    for (const lead of leadStatusRecords.items) {
+      const sid = lead.status_id ?? "unknown";
+      if (!gapByStatus.has(sid)) {
+        gapByStatus.set(sid, {
+          total: 0,
+          untouched: 0,
+          gapLeads: 0,
+          daysSinceSum: 0,
+          daysSinceCount: 0,
+        });
+      }
+      const entry = gapByStatus.get(sid)!;
+      entry.total++;
+
+      const lastActivity = lastActivityByLead.get(lead.id);
+      if (!lastActivity) {
+        entry.untouched++;
+      } else {
+        const daysSince = (nowMs - lastActivity) / MS_PER_DAY;
+        entry.daysSinceSum += daysSince;
+        entry.daysSinceCount++;
+        if (daysSince > GAP_THRESHOLD_DAYS) entry.gapLeads++;
+      }
+    }
+
+    const items: StatusGap[] = [...gapByStatus.entries()]
+      .map(([statusId, e]) => ({
+        statusId,
+        label: statusLabelMap.get(statusId) ?? statusId,
+        totalLeads: e.total,
+        untouchedCount: e.untouched,
+        gapLeads: e.gapLeads,
+        avgDaysSinceActivity:
+          e.daysSinceCount > 0
+            ? Math.round((e.daysSinceSum / e.daysSinceCount) * 10) / 10
+            : null,
+      }))
+      // Sort by most needs-attention: untouched + gap leads descending
+      .sort(
+        (a, b) =>
+          b.untouchedCount + b.gapLeads - (a.untouchedCount + a.gapLeads),
+      )
+      // Only show statuses that have at least some gap
+      .filter((s) => s.untouchedCount > 0 || s.gapLeads > 0);
+
+    const totalLeads = leadStatusRecords.items.length;
+    const totalUntouched = items.reduce((sum, s) => sum + s.untouchedCount, 0);
+    const totalGap = items.reduce((sum, s) => sum + s.gapLeads, 0);
+
+    return {
+      items: items.slice(0, 10),
+      totalLeads,
+      totalNeedingAttention: totalUntouched + totalGap,
+      totalUntouched,
+      totalGap,
+      gapThresholdDays: GAP_THRESHOLD_DAYS,
+    };
+  })();
   const crossReference = buildCrossReferenceResult(
     statuses,
     smartViewSnapshots,
@@ -2413,10 +2737,7 @@ async function handleGetPrebuiltDashboardRollup(
     createdLeads.items,
     activityGroups,
   );
-  const contactCadence = buildContactCadenceResult(
-    createdLeads.items,
-    activityGroups,
-  );
+  const contactCadence = buildContactCadenceResult(activityGroups);
   const statusDistributionItems = [...currentLeadCounts.byStatus].sort(
     (left, right) => right.count - left.count,
   );
@@ -2431,24 +2752,70 @@ async function handleGetPrebuiltDashboardRollup(
     fetchedAt,
     expiresAt,
     widgets: {
-      total_leads: {
-        value: currentLeadCounts.total,
-        previousValue: previousLeadTotal,
-        changePercent:
-          calculateChangePercent(currentLeadCounts.total, previousLeadTotal) ??
-          undefined,
-        label: "Leads",
-        unit: "number",
-      },
-      new_leads: {
-        value: currentLeadCounts.total,
-        previousValue: previousLeadTotal,
-        changePercent:
-          calculateChangePercent(currentLeadCounts.total, previousLeadTotal) ??
-          undefined,
-        label: "Leads",
-        unit: "number",
-      },
+      total_leads: (() => {
+        // Net growth = new leads created in period - (we can't track deletions, so show new as growth)
+        const netNew = createdLeads.items.length;
+        return {
+          value: totalLeadCount,
+          previousValue: previousTotalLeadCount,
+          changePercent:
+            calculateChangePercent(totalLeadCount, previousTotalLeadCount) ??
+            undefined,
+          label: "Total Leads",
+          unit: "number",
+          subMetrics: [
+            { label: "New this period", value: netNew, color: "success" },
+            ...(currentLeadCounts.byStatus.length > 0
+              ? currentLeadCounts.byStatus
+                  .sort(
+                    (a: { count: number }, b: { count: number }) =>
+                      b.count - a.count,
+                  )
+                  .slice(0, 3)
+                  .map((s: { label: string; count: number }) => ({
+                    label: s.label,
+                    value: s.count,
+                  }))
+              : []),
+          ],
+        };
+      })(),
+      new_leads: (() => {
+        // Cross-reference new leads with activity data
+        const newLeadIds = new Set(
+          createdLeads.items.map((l: { id: string }) => l.id),
+        );
+        const allActs = [
+          ...(activityGroups.call?.items ?? []),
+          ...(activityGroups.email?.items ?? []),
+          ...(activityGroups.sms?.items ?? []),
+        ];
+        const contactedLeadIds = new Set<string>();
+        for (const act of allActs) {
+          const lid = (act as { lead_id?: string }).lead_id;
+          if (lid && newLeadIds.has(lid)) contactedLeadIds.add(lid);
+        }
+        const contacted = contactedLeadIds.size;
+        const untouched = createdLeads.items.length - contacted;
+
+        return {
+          value: createdLeads.items.length,
+          previousValue: previousLeadTotal,
+          changePercent:
+            calculateChangePercent(
+              createdLeads.items.length,
+              previousLeadTotal,
+            ) ?? undefined,
+          label: "New Leads",
+          unit: "number",
+          subMetrics: [
+            { label: "Contacted", value: contacted, color: "success" },
+            ...(untouched > 0
+              ? [{ label: "Untouched", value: untouched, color: "warning" }]
+              : []),
+          ],
+        };
+      })(),
       speed_to_lead: speedToLead,
       status_dist: {
         items: statusDistributionItems,
@@ -2462,32 +2829,234 @@ async function handleGetPrebuiltDashboardRollup(
       },
       call_analytics: callAnalytics,
       best_call_times: bestCallTimes,
-      vm_rate: vmRate,
+      follow_up_gaps: followUpGaps,
       contact_cadence: contactCadence,
       dial_attempts: dialAttempts,
-      opp_funnel: {
-        totalValue: opportunityRes.totalValue,
-        dealCount: opportunityRes.total,
-        activeCount: opportunityRes.activeCount,
-        wonCount: opportunityRes.wonCount,
-        wonValue: opportunityRes.wonValue,
-        lostCount: opportunityRes.lostCount,
-        winRate: opportunityRes.winRate,
-        avgDealSize: opportunityRes.avgDealSize,
-        salesVelocity:
-          opportunityRes.avgTimeToCloseDays > 0
+      opp_funnel: (() => {
+        const MS_PER_DAY = 1000 * 60 * 60 * 24;
+        const nowMs = Date.now();
+
+        // --- Activity cross-reference: build lead_id → last activity date map ---
+        const lastActivityByLead = new Map<string, number>();
+        const allActivities = [
+          ...(activityGroups.call?.items ?? []),
+          ...(activityGroups.email?.items ?? []),
+          ...(activityGroups.sms?.items ?? []),
+        ];
+        for (const act of allActivities) {
+          const lid = (act as { lead_id?: string }).lead_id;
+          const dc = (act as { date_created?: string }).date_created;
+          if (!lid || !dc) continue;
+          const ts = new Date(dc).getTime();
+          const prev = lastActivityByLead.get(lid);
+          if (!prev || ts > prev) lastActivityByLead.set(lid, ts);
+        }
+
+        // --- Enrich raw opps with activity data ---
+        type RawOpp = {
+          id: string;
+          lead_id?: string;
+          value: number;
+          status_id?: string;
+          status_type?: string;
+          date_created?: string;
+        };
+        const rawOpps = (opportunityRes._rawOpps ?? []) as RawOpp[];
+
+        // Per-status activity enrichment
+        const activityByStatus = new Map<
+          string,
+          {
+            totalDaysSince: number;
+            countWithActivity: number;
+            untouchedCount: number;
+          }
+        >();
+        const UNTOUCHED_THRESHOLD_DAYS = 14;
+
+        // Track at-risk opps (stale OR untouched active opps) for pipeline health
+        const atRiskOppIds = new Set<string>();
+        let untouchedActiveCount = 0;
+        let untouchedActiveValue = 0;
+        let staleActiveCount = 0;
+        let staleActiveValue = 0;
+        const activeAges: number[] = [];
+
+        for (const opp of rawOpps) {
+          const sid = opp.status_id ?? "unknown";
+          if (!activityByStatus.has(sid)) {
+            activityByStatus.set(sid, {
+              totalDaysSince: 0,
+              countWithActivity: 0,
+              untouchedCount: 0,
+            });
+          }
+          const entry = activityByStatus.get(sid)!;
+
+          // Activity recency
+          const lastActivity = opp.lead_id
+            ? lastActivityByLead.get(opp.lead_id)
+            : undefined;
+          const daysSinceActivity = lastActivity
+            ? (nowMs - lastActivity) / MS_PER_DAY
+            : null;
+          const isUntouched =
+            daysSinceActivity === null ||
+            daysSinceActivity > UNTOUCHED_THRESHOLD_DAYS;
+
+          if (daysSinceActivity !== null) {
+            entry.totalDaysSince += daysSinceActivity;
+            entry.countWithActivity++;
+          }
+          if (isUntouched) entry.untouchedCount++;
+
+          // Pipeline health: track active opp risks
+          if (opp.status_type === "active") {
+            const ageDays = opp.date_created
+              ? (nowMs - new Date(opp.date_created).getTime()) / MS_PER_DAY
+              : 0;
+            activeAges.push(ageDays);
+            const isStale = ageDays > (opportunityRes.staleThresholdDays ?? 90);
+
+            if (isUntouched) {
+              untouchedActiveCount++;
+              untouchedActiveValue += (opp.value ?? 0) / 100;
+              atRiskOppIds.add(opp.id);
+            }
+            if (isStale) {
+              staleActiveCount++;
+              staleActiveValue += (opp.value ?? 0) / 100;
+              atRiskOppIds.add(opp.id);
+            }
+          }
+        }
+
+        // Compute revenue at risk (deduplicated — stale OR untouched)
+        let revenueAtRisk = 0;
+        for (const opp of rawOpps) {
+          if (atRiskOppIds.has(opp.id)) revenueAtRisk += (opp.value ?? 0) / 100;
+        }
+
+        // --- Order byStatus entries by pipeline position ---
+        const pipeline = pipelines[0];
+        const pipelineOrder = pipeline
+          ? pipeline.statuses.map((s: { id: string }) => s.id)
+          : [];
+        type StatusEntry = {
+          id: string;
+          label: string;
+          count: number;
+          value: number;
+          type: string;
+          avgAgeDays: number;
+          staleCount: number;
+          daysSinceLastActivity: number | null;
+          untouchedCount: number;
+        };
+        const orderedByStatus: StatusEntry[] =
+          pipelineOrder.length > 0
+            ? pipeline.statuses.map(
+                (ps: { id: string; label: string; type: string }) => {
+                  const found = opportunityRes.byStatus.find(
+                    (s: { id: string }) => s.id === ps.id,
+                  );
+                  const base = found ?? {
+                    id: ps.id,
+                    label: ps.label,
+                    count: 0,
+                    value: 0,
+                    type: ps.type,
+                    avgAgeDays: 0,
+                    staleCount: 0,
+                    daysSinceLastActivity: null,
+                    untouchedCount: 0,
+                  };
+                  // Merge activity enrichment
+                  const actEntry = activityByStatus.get(ps.id);
+                  if (actEntry) {
+                    base.daysSinceLastActivity =
+                      actEntry.countWithActivity > 0
+                        ? Math.round(
+                            (actEntry.totalDaysSince /
+                              actEntry.countWithActivity) *
+                              10,
+                          ) / 10
+                        : null;
+                    base.untouchedCount = actEntry.untouchedCount;
+                  }
+                  return base;
+                },
+              )
+            : opportunityRes.byStatus.map((s: StatusEntry) => {
+                const actEntry = activityByStatus.get(s.id);
+                if (actEntry) {
+                  s.daysSinceLastActivity =
+                    actEntry.countWithActivity > 0
+                      ? Math.round(
+                          (actEntry.totalDaysSince /
+                            actEntry.countWithActivity) *
+                            10,
+                        ) / 10
+                      : null;
+                  s.untouchedCount = actEntry.untouchedCount;
+                }
+                return s;
+              });
+
+        const orderedIds = new Set(orderedByStatus.map((s) => s.id));
+        const extraStatuses = opportunityRes.byStatus.filter(
+          (s: { id: string }) => !orderedIds.has(s.id),
+        );
+
+        const activeValue = opportunityRes.totalValue - opportunityRes.wonValue;
+        const avgActivePipelineAge =
+          activeAges.length > 0
             ? Math.round(
-                ((opportunityRes.wonCount *
-                  opportunityRes.avgDealSize *
-                  (opportunityRes.winRate / 100)) /
-                  opportunityRes.avgTimeToCloseDays) *
-                  100,
-              ) / 100
-            : 0,
-        avgTimeToClose: opportunityRes.avgTimeToCloseDays,
-        stalledCount: 0,
-        byStatus: opportunityRes.byStatus,
-      },
+                (activeAges.reduce((a, b) => a + b, 0) / activeAges.length) *
+                  10,
+              ) / 10
+            : 0;
+
+        return {
+          totalValue: opportunityRes.totalValue,
+          dealCount: opportunityRes.total,
+          activeCount: opportunityRes.activeCount,
+          wonCount: opportunityRes.wonCount,
+          wonValue: opportunityRes.wonValue,
+          lostCount: opportunityRes.lostCount,
+          winRate: opportunityRes.winRate,
+          avgDealSize: opportunityRes.avgDealSize,
+          salesVelocity:
+            opportunityRes.avgTimeToCloseDays > 0
+              ? Math.round(
+                  ((opportunityRes.wonCount *
+                    opportunityRes.avgDealSize *
+                    (opportunityRes.winRate / 100)) /
+                    opportunityRes.avgTimeToCloseDays) *
+                    100,
+                ) / 100
+              : 0,
+          avgTimeToClose: opportunityRes.avgTimeToCloseDays,
+          stalledCount: staleActiveCount,
+          byStatus: [...orderedByStatus, ...extraStatuses],
+          pipelineName: pipeline?.name ?? null,
+          pipelineHealth: {
+            revenueAtRisk: Math.round(revenueAtRisk * 100) / 100,
+            untouchedActive: {
+              count: untouchedActiveCount,
+              value: Math.round(untouchedActiveValue * 100) / 100,
+            },
+            staleActive: {
+              count: staleActiveCount,
+              value: Math.round(staleActiveValue * 100) / 100,
+            },
+            weightedForecast:
+              Math.round(activeValue * (opportunityRes.winRate / 100) * 100) /
+              100,
+            avgActivePipelineAge,
+          },
+        };
+      })(),
       cross_ref: crossReference,
     },
   };

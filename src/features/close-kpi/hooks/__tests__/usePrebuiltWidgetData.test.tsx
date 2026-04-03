@@ -96,13 +96,13 @@ const ROLLUP_RESPONSE = {
       totalCalls: 17,
       isTruncated: false,
     },
-    vm_rate: {
-      rows: [],
-      overall: {
-        totalFirstCalls: 0,
-        vmCount: 0,
-        vmRate: 0,
-      },
+    follow_up_gaps: {
+      items: [],
+      totalLeads: 0,
+      totalNeedingAttention: 0,
+      totalUntouched: 0,
+      totalGap: 0,
+      gapThresholdDays: 7,
     },
     contact_cadence: {
       avgGapHours: 6,
