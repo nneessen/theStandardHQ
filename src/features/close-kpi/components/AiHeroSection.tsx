@@ -196,12 +196,12 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
       {/* Main content — 3 column layout */}
       {totalScored > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-border/40">
-          {/* Column 1: Score Overview — SVG donut + breakdown */}
-          <div className="lg:col-span-3 p-4 flex flex-col items-center gap-2">
-            {/* SVG Donut Chart with score center */}
+          {/* Column 1: Score Overview — full-height donut + detailed breakdown */}
+          <div className="lg:col-span-3 p-4 flex flex-col items-center justify-between gap-3 min-h-[360px]">
+            {/* Large SVG Donut — fills top half */}
             {(() => {
-              const size = 140;
-              const strokeWidth = 16;
+              const size = 180;
+              const strokeWidth = 22;
               const radius = (size - strokeWidth) / 2;
               const circumference = 2 * Math.PI * radius;
               const nonEmpty = distribution.filter((d) => d.count > 0);
@@ -212,7 +212,6 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                 cooling: "#60a5fa",
                 cold: "#2563eb",
               };
-
               let cumulativeOffset = 0;
               const segments = nonEmpty.map((d) => {
                 const segLen = (d.pct / 100) * circumference;
@@ -226,6 +225,24 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                 };
               });
 
+              // Score health label
+              const healthLabel =
+                avgScore >= 60
+                  ? "Hot Pipeline"
+                  : avgScore >= 40
+                    ? "Warming Up"
+                    : avgScore >= 20
+                      ? "Needs Work"
+                      : "Cold Pipeline";
+              const healthColor =
+                avgScore >= 60
+                  ? "text-red-500"
+                  : avgScore >= 40
+                    ? "text-orange-500"
+                    : avgScore >= 20
+                      ? "text-zinc-500"
+                      : "text-blue-500";
+
               return (
                 <div className="relative">
                   <svg
@@ -233,7 +250,6 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                     height={size}
                     viewBox={`0 0 ${size} ${size}`}
                   >
-                    {/* Background ring */}
                     <circle
                       cx={size / 2}
                       cy={size / 2}
@@ -241,9 +257,8 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                       fill="none"
                       stroke="currentColor"
                       strokeWidth={strokeWidth}
-                      className="text-muted/20"
+                      className="text-muted/15"
                     />
-                    {/* Distribution segments */}
                     {segments.map((seg) => (
                       <circle
                         key={seg.level}
@@ -260,77 +275,95 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                       />
                     ))}
                   </svg>
-                  {/* Center score */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="font-mono text-3xl font-black text-foreground leading-none">
+                    <span className="font-mono text-5xl font-black text-foreground leading-none">
                       {avgScore}
                     </span>
-                    <span className="text-[9px] uppercase tracking-wider text-muted-foreground mt-0.5">
+                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">
                       avg score
+                    </span>
+                    <span
+                      className={`text-[9px] font-semibold mt-0.5 ${healthColor}`}
+                    >
+                      {healthLabel}
                     </span>
                   </div>
                 </div>
               );
             })()}
 
-            {/* Leads scored count */}
-            <div className="text-center text-[10px] text-muted-foreground">
-              <span className="font-mono font-semibold text-foreground">
+            {/* Scored count + breakdown header */}
+            <div className="w-full text-center">
+              <span className="font-mono text-lg font-bold text-foreground">
                 {totalScored.toLocaleString()}
-              </span>{" "}
-              leads scored
+              </span>
+              <span className="text-[10px] text-muted-foreground ml-1">
+                leads scored
+              </span>
             </div>
 
-            {/* Distribution legend with bars */}
-            <div className="w-full flex flex-col gap-1 px-1">
-              {distribution
-                .filter((d) => d.count > 0)
-                .map((d) => {
-                  const barPct =
-                    totalScored > 0 ? (d.count / totalScored) * 100 : 0;
-                  return (
-                    <div key={d.level} className="flex items-center gap-1.5">
+            {/* Full distribution breakdown — each level gets a thick bar */}
+            <div className="w-full flex flex-col gap-1.5">
+              {distribution.map((d) => {
+                const barPct =
+                  totalScored > 0 ? (d.count / totalScored) * 100 : 0;
+                return (
+                  <div key={d.level}>
+                    <div className="flex items-center justify-between mb-0.5">
                       <span
-                        className={`w-[52px] shrink-0 flex items-center gap-1 text-[10px] ${LEVEL_COLORS[d.level].text}`}
+                        className={`flex items-center gap-1 text-[10px] font-medium ${LEVEL_COLORS[d.level].text}`}
                       >
                         <span
-                          className={`h-2 w-2 rounded-full ${LEVEL_COLORS[d.level].bg}`}
+                          className={`h-2.5 w-2.5 rounded-full ${LEVEL_COLORS[d.level].bg}`}
                         />
                         {LEVEL_COLORS[d.level].label}
                       </span>
-                      <div className="flex-1 h-2 rounded-full bg-muted/30 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${LEVEL_COLORS[d.level].bg} opacity-70`}
-                          style={{
-                            width: `${Math.max(barPct, d.count > 0 ? 3 : 0)}%`,
-                          }}
-                        />
-                      </div>
-                      <span className="w-[40px] shrink-0 text-right font-mono text-[10px] font-semibold text-foreground">
-                        {d.count}
+                      <span className="flex items-center gap-1.5">
+                        <span className="font-mono text-[11px] font-bold text-foreground">
+                          {d.count.toLocaleString()}
+                        </span>
+                        <span className="text-[9px] text-muted-foreground w-8 text-right">
+                          {d.pct}%
+                        </span>
                       </span>
                     </div>
-                  );
-                })}
+                    <div className="h-2 rounded-full bg-muted/25 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${LEVEL_COLORS[d.level].bg}`}
+                        style={{
+                          width: `${Math.max(barPct, d.count > 0 ? 2 : 0)}%`,
+                          opacity: d.count > 0 ? 0.8 : 0.2,
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Action summary */}
+            {/* Action callout — always present */}
             {actionableCount > 0 ? (
-              <div className="w-full rounded-md bg-red-50/50 dark:bg-red-950/20 border border-red-200/40 dark:border-red-800/30 px-2.5 py-1.5 text-center">
-                <div className="flex items-center justify-center gap-1.5">
-                  <Flame className="h-3 w-3 text-red-500" />
-                  <span className="text-[10px] font-semibold text-red-700 dark:text-red-300">
-                    {actionableCount} leads need action
-                  </span>
+              <div className="w-full rounded-lg bg-red-50/60 dark:bg-red-950/25 border border-red-200/50 dark:border-red-800/40 px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-500/15">
+                    <Flame className="h-4 w-4 text-red-500" />
+                  </div>
+                  <div>
+                    <div className="text-[11px] font-bold text-red-700 dark:text-red-300">
+                      {actionableCount} leads need action
+                    </div>
+                    <div className="text-[9px] text-red-600/70 dark:text-red-400/70">
+                      {hotCount} hot + {warmingCount} warming
+                    </div>
+                  </div>
                 </div>
-                <span className="text-[9px] text-red-600/70 dark:text-red-400/70">
-                  {hotCount} hot + {warmingCount} warming
-                </span>
               </div>
             ) : (
-              <span className="rounded-full bg-violet-100 dark:bg-violet-900/40 px-2 py-0.5 text-[9px] font-medium text-violet-700 dark:text-violet-300">
-                AI-assisted scoring
-              </span>
+              <div className="w-full rounded-lg bg-violet-50/60 dark:bg-violet-950/25 border border-violet-200/50 dark:border-violet-800/40 px-3 py-2 text-center">
+                <span className="text-[10px] font-medium text-violet-700 dark:text-violet-300">
+                  No urgent leads — pipeline is stable
+                </span>
+              </div>
             )}
           </div>
 
