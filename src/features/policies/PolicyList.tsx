@@ -587,7 +587,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
           />
           <Input
             type="text"
-            placeholder="Search policies..."
+            placeholder="Search by policy # or client name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="h-6 pl-7 text-[10px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"

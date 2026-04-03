@@ -47,6 +47,42 @@ export class PolicyRepository extends BaseRepository<
     super(TABLES.POLICIES);
   }
 
+  /**
+   * Build an .or() filter string that searches both policy_number and client name.
+   * PostgREST can't do .or() across foreign-table joins, so we pre-query the
+   * clients table for matching IDs, then combine into a single .or() clause.
+   */
+  private async buildSearchFilter(
+    searchTerm: string | undefined,
+    userId: string | undefined,
+  ): Promise<string | null> {
+    if (!searchTerm) return null;
+
+    // Strip PostgREST filter-syntax chars to prevent filter injection
+    const sanitized = searchTerm.replace(/[.,()]/g, "");
+    if (!sanitized) return null;
+
+    const likeTerm = `%${sanitized}%`;
+
+    // Pre-query clients table for IDs whose name matches
+    let clientQuery = this.client
+      .from("clients")
+      .select("id")
+      .ilike("name", likeTerm);
+
+    if (userId) {
+      clientQuery = clientQuery.eq("user_id", userId);
+    }
+
+    const { data: matchingClients } = await clientQuery;
+    const clientIds = matchingClients?.map((c) => c.id) || [];
+
+    if (clientIds.length > 0) {
+      return `policy_number.ilike.${likeTerm},client_id.in.(${clientIds.join(",")})`;
+    }
+    return `policy_number.ilike.${likeTerm}`;
+  }
+
   // Override create to include client join (same as findById/update)
   // This ensures the returned policy has complete client data for:
   // 1. Immediate edit functionality (client name/state/age populate correctly)
@@ -228,9 +264,13 @@ export class PolicyRepository extends BaseRepository<
           query = query.lte("effective_date", effectiveDateTo);
         }
 
-        // Apply search term filter (searches in policy number)
-        if (searchTerm) {
-          query = query.ilike("policy_number", `%${searchTerm}%`);
+        // Apply search term filter (searches policy_number and client name)
+        const searchFilter = await this.buildSearchFilter(
+          searchTerm,
+          options?.userId,
+        );
+        if (searchFilter) {
+          query = query.or(searchFilter);
         }
       }
 
@@ -774,10 +814,13 @@ export class PolicyRepository extends BaseRepository<
           query = query.lte("effective_date", filters.effectiveDateTo);
         }
 
-        // Search term filter — use .ilike() (parameterized) instead of .or()
-        // string interpolation to prevent PostgREST filter injection
-        if (filters.searchTerm) {
-          query = query.ilike("policy_number", `%${filters.searchTerm}%`);
+        // Search term filter (searches policy_number and client name)
+        const searchFilter = await this.buildSearchFilter(
+          filters.searchTerm,
+          currentUserId,
+        );
+        if (searchFilter) {
+          query = query.or(searchFilter);
         }
       }
 
@@ -965,6 +1008,15 @@ export class PolicyRepository extends BaseRepository<
         }
         if (effectiveDateTo) {
           query = query.lte("effective_date", effectiveDateTo);
+        }
+
+        // Apply search term filter (searches policy_number and client name)
+        const searchFilter = await this.buildSearchFilter(
+          searchTerm,
+          currentUserId,
+        );
+        if (searchFilter) {
+          query = query.or(searchFilter);
         }
       }
 
