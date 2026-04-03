@@ -4,6 +4,7 @@
 import React, { useState } from "react";
 import {
   AlertCircle,
+  Calendar,
   Loader2,
   Pencil,
   Plus,
@@ -12,6 +13,13 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { WidgetRenderer } from "./WidgetRenderer";
 import { WidgetSkeleton } from "./skeletons/WidgetSkeleton";
@@ -20,13 +28,29 @@ import { WidgetConfigSheet } from "./WidgetConfigSheet";
 import {
   useKpiDashboard,
   useDeleteWidget,
+  useUpdateWidget,
 } from "../hooks/useCloseKpiDashboard";
 import { useKpiWidgetData } from "../hooks/useKpiWidgetData";
+import { getAccentStyle, DATE_RANGE_LABELS } from "../lib/widget-styles";
 import type {
   CloseKpiWidget,
+  DateRangePreset,
   GlobalDashboardConfig,
   WidgetSize,
 } from "../types/close-kpi.types";
+
+// ─── Date Range Options (shared with GlobalDateRange) ─────────────
+
+const DATE_RANGE_OPTIONS: { value: DateRangePreset; label: string }[] = [
+  { value: "today", label: "Today" },
+  { value: "this_week", label: "This Week" },
+  { value: "this_month", label: "This Month" },
+  { value: "last_7_days", label: "Last 7 Days" },
+  { value: "last_30_days", label: "Last 30 Days" },
+  { value: "last_90_days", label: "Last 90 Days" },
+  { value: "this_quarter", label: "This Quarter" },
+  { value: "this_year", label: "This Year" },
+];
 
 // ─── Per-Widget Card ──────────────────────────────────────────────
 
@@ -57,49 +81,110 @@ const WidgetCard: React.FC<WidgetCardProps> = ({
     widget,
     globalConfig,
   );
+  const updateWidget = useUpdateWidget();
+
+  const accent = getAccentStyle(widget.config.accentColor);
+  const effectiveDateRange =
+    widget.config.dateRange || globalConfig?.dateRange || "this_month";
+  const dateLabel = DATE_RANGE_LABELS[effectiveDateRange] ?? effectiveDateRange;
 
   const minHeightClass =
     MIN_HEIGHT_CLASS[widget.size] ?? MIN_HEIGHT_CLASS.medium;
 
+  const handleDateRangeChange = (newRange: DateRangePreset) => {
+    updateWidget.mutate({
+      widgetId: widget.id,
+      updates: {
+        config: { ...widget.config, dateRange: newRange },
+      },
+    });
+  };
+
   return (
     <div
       className={cn(
-        "bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm",
+        "rounded-lg border border-zinc-200/80 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border-l-[3px]",
+        accent.border,
         isEditMode && "ring-1 ring-zinc-300 dark:ring-zinc-700",
       )}
     >
-      {/* Header */}
-      <div className="flex h-7 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 px-2">
-        <span className="truncate text-[11px] font-semibold text-foreground">
-          {widget.title}
-        </span>
-        {isEditMode && (
-          <div className="flex items-center gap-0.5 shrink-0">
-            <button
-              onClick={() => onConfigure(widget)}
-              className="flex h-5 w-5 items-center justify-center rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-              title="Configure"
-            >
-              <Settings className="h-3 w-3 text-muted-foreground" />
-            </button>
-            <button
-              onClick={() => onDelete(widget.id)}
-              disabled={isDeleting}
-              className="flex h-5 w-5 items-center justify-center rounded hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-              title="Remove widget"
-            >
-              {isDeleting ? (
-                <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
-              ) : (
-                <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
-              )}
-            </button>
-          </div>
+      {/* Header — tinted background */}
+      <div
+        className={cn(
+          "flex items-center justify-between px-2.5 py-1.5 border-b border-zinc-200/60 dark:border-zinc-800/60",
+          accent.headerBg,
         )}
+      >
+        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+          <span className="truncate text-[11px] font-semibold text-foreground">
+            {widget.title}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1 shrink-0">
+          {/* Date range — dropdown in edit mode, badge in view mode */}
+          {isEditMode ? (
+            <Select
+              value={effectiveDateRange}
+              onValueChange={(v) => handleDateRangeChange(v as DateRangePreset)}
+            >
+              <SelectTrigger className="h-5 w-[90px] text-[9px] border-none bg-transparent shadow-none px-1 gap-0.5">
+                <Calendar className="h-2.5 w-2.5 text-muted-foreground shrink-0" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {DATE_RANGE_OPTIONS.map((opt) => (
+                  <SelectItem
+                    key={opt.value}
+                    value={opt.value}
+                    className="text-[10px]"
+                  >
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <span className="inline-flex items-center gap-0.5 text-[9px] text-muted-foreground bg-zinc-100/60 dark:bg-zinc-800/40 rounded px-1.5 py-0.5">
+              <Calendar className="h-2.5 w-2.5" />
+              {dateLabel}
+            </span>
+          )}
+
+          {isEditMode && (
+            <>
+              <button
+                onClick={() => onConfigure(widget)}
+                className="flex h-5 w-5 items-center justify-center rounded hover:bg-zinc-200/60 dark:hover:bg-zinc-700/60 transition-colors"
+                title="Configure"
+              >
+                <Settings className="h-3 w-3 text-muted-foreground" />
+              </button>
+              <button
+                onClick={() => onDelete(widget.id)}
+                disabled={isDeleting}
+                className="flex h-5 w-5 items-center justify-center rounded hover:bg-red-100/60 dark:hover:bg-red-950/30 transition-colors"
+                title="Remove widget"
+              >
+                {isDeleting ? (
+                  <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                ) : (
+                  <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+                )}
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Content */}
-      <div className={`p-2 ${isLoading && !data ? minHeightClass : ""}`}>
+      <div
+        className={cn(
+          "p-2.5",
+          isLoading && !data ? minHeightClass : "",
+          "bg-white dark:bg-zinc-900",
+        )}
+      >
         {isLoading && !data ? (
           <WidgetSkeleton size={widget.size} />
         ) : error ? (
@@ -122,7 +207,11 @@ const WidgetCard: React.FC<WidgetCardProps> = ({
             </Button>
           </div>
         ) : (
-          <WidgetRenderer type={widget.widget_type} data={data} />
+          <WidgetRenderer
+            type={widget.widget_type}
+            data={data}
+            config={widget.config}
+          />
         )}
       </div>
     </div>

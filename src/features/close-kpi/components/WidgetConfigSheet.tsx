@@ -28,8 +28,10 @@ import {
   useUpdateWidget,
   useDeleteWidget,
 } from "../hooks/useCloseKpiDashboard";
+import { ACCENT_SWATCHES, getAccentStyle } from "../lib/widget-styles";
 import type {
   CloseKpiWidget,
+  WidgetAccentColor,
   WidgetConfig,
   WidgetSize,
 } from "../types/close-kpi.types";
@@ -146,6 +148,37 @@ export const WidgetConfigSheet: React.FC<WidgetConfigSheetProps> = ({
               </Select>
             </div>
           )}
+
+          {/* Color */}
+          <div>
+            <Label className="text-[10px] text-muted-foreground mb-1.5 block">
+              Color
+            </Label>
+            <div className="flex items-center gap-2">
+              {ACCENT_SWATCHES.map((sw) => {
+                const isSelected = (config?.accentColor ?? "zinc") === sw.color;
+                return (
+                  <button
+                    key={sw.color}
+                    type="button"
+                    title={sw.label}
+                    onClick={() => {
+                      if (!config) return;
+                      setConfig({
+                        ...config,
+                        accentColor: sw.color as WidgetAccentColor,
+                      });
+                    }}
+                    className={`h-6 w-6 rounded-full transition-all ${sw.swatch} ${
+                      isSelected
+                        ? `ring-2 ring-offset-2 ring-offset-background ${getAccentStyle(sw.color).ring}`
+                        : "hover:scale-110"
+                    }`}
+                  />
+                );
+              })}
+            </div>
+          </div>
 
           {/* Divider */}
           <div className="border-t border-zinc-200 dark:border-zinc-800" />

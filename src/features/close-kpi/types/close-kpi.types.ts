@@ -126,6 +126,18 @@ export interface MetricDefinition {
     | "minutes";
 }
 
+// ─── Widget Accent Colors ──────────────────────────────────────────
+
+export type WidgetAccentColor =
+  | "zinc"
+  | "violet"
+  | "emerald"
+  | "amber"
+  | "blue"
+  | "rose"
+  | "cyan"
+  | "orange";
+
 // ─── Widget Config (discriminated union by widget_type) ────────────
 
 export interface BaseWidgetConfig {
@@ -136,6 +148,7 @@ export interface BaseWidgetConfig {
   comparisonFrom?: string;
   comparisonTo?: string;
   smartViewId?: string | null;
+  accentColor?: WidgetAccentColor;
 }
 
 export interface StatCardConfig extends BaseWidgetConfig {

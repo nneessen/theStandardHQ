@@ -37,28 +37,37 @@ interface AiHeroSectionProps {
 
 const LEVEL_COLORS: Record<
   LeadHeatLevel,
-  { bg: string; text: string; label: string }
+  { bg: string; text: string; label: string; fill: string }
 > = {
   hot: {
     bg: "bg-red-500",
     text: "text-red-600 dark:text-red-400",
     label: "Hot",
+    fill: "#ef4444",
   },
   warming: {
     bg: "bg-orange-400",
     text: "text-orange-600 dark:text-orange-400",
     label: "Warming",
+    fill: "#f97316",
   },
-  neutral: { bg: "bg-zinc-400", text: "text-zinc-500", label: "Neutral" },
+  neutral: {
+    bg: "bg-zinc-400",
+    text: "text-zinc-500",
+    label: "Neutral",
+    fill: "#a1a1aa",
+  },
   cooling: {
     bg: "bg-blue-400",
     text: "text-blue-600 dark:text-blue-400",
     label: "Cooling",
+    fill: "#60a5fa",
   },
   cold: {
     bg: "bg-blue-600",
     text: "text-blue-700 dark:text-blue-300",
     label: "Cold",
+    fill: "#2563eb",
   },
 };
 
@@ -102,6 +111,24 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
     (leadPage + 1) * LEADS_PER_PAGE,
   );
 
+  // Score health
+  const healthLabel =
+    avgScore >= 60
+      ? "Hot Pipeline"
+      : avgScore >= 40
+        ? "Warming Up"
+        : avgScore >= 20
+          ? "Needs Work"
+          : "Cold Pipeline";
+  const healthColor =
+    avgScore >= 60
+      ? "text-red-500"
+      : avgScore >= 40
+        ? "text-orange-500"
+        : avgScore >= 20
+          ? "text-zinc-500"
+          : "text-blue-500";
+
   return (
     <div className="rounded-xl border border-violet-200/80 dark:border-violet-500/20 bg-gradient-to-br from-violet-50/60 via-white to-indigo-50/40 dark:from-violet-950/30 dark:via-zinc-900 dark:to-indigo-950/20 shadow-sm shadow-violet-200/30 dark:shadow-violet-900/20 overflow-hidden ring-1 ring-violet-100/50 dark:ring-violet-800/20">
       {/* Header */}
@@ -129,7 +156,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
             </div>
             <p className="text-[10px] text-muted-foreground">
               {totalScored > 0
-                ? `${totalScored} leads scored — ${actionableCount} need attention`
+                ? `${totalScored.toLocaleString()} leads scored — ${actionableCount} need attention`
                 : "Score your leads to see AI insights"}
               {isTruncated && totalScored > 0 && (
                 <span className="ml-1.5 inline-flex items-center gap-0.5 text-amber-600 dark:text-amber-400">
@@ -196,22 +223,15 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
       {/* Main content — 3 column layout */}
       {totalScored > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-border/40">
-          {/* Column 1: Score Overview — full-height donut + detailed breakdown */}
-          <div className="lg:col-span-3 p-4 flex flex-col items-center justify-between gap-3 min-h-[360px]">
-            {/* Large SVG Donut — fills top half */}
+          {/* Column 1: Score Overview — large donut + compact distribution */}
+          <div className="lg:col-span-4 p-4 flex flex-col items-center gap-3">
+            {/* Large SVG Donut with score + count in center */}
             {(() => {
-              const size = 180;
-              const strokeWidth = 22;
+              const size = 200;
+              const strokeWidth = 28;
               const radius = (size - strokeWidth) / 2;
               const circumference = 2 * Math.PI * radius;
               const nonEmpty = distribution.filter((d) => d.count > 0);
-              const DONUT_COLORS: Record<string, string> = {
-                hot: "#ef4444",
-                warming: "#f97316",
-                neutral: "#a1a1aa",
-                cooling: "#60a5fa",
-                cold: "#2563eb",
-              };
               let cumulativeOffset = 0;
               const segments = nonEmpty.map((d) => {
                 const segLen = (d.pct / 100) * circumference;
@@ -221,27 +241,9 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                   level: d.level,
                   length: segLen,
                   offset,
-                  color: DONUT_COLORS[d.level] ?? "#a1a1aa",
+                  color: LEVEL_COLORS[d.level]?.fill ?? "#a1a1aa",
                 };
               });
-
-              // Score health label
-              const healthLabel =
-                avgScore >= 60
-                  ? "Hot Pipeline"
-                  : avgScore >= 40
-                    ? "Warming Up"
-                    : avgScore >= 20
-                      ? "Needs Work"
-                      : "Cold Pipeline";
-              const healthColor =
-                avgScore >= 60
-                  ? "text-red-500"
-                  : avgScore >= 40
-                    ? "text-orange-500"
-                    : avgScore >= 20
-                      ? "text-zinc-500"
-                      : "text-blue-500";
 
               return (
                 <div className="relative">
@@ -276,7 +278,9 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                     ))}
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="font-mono text-5xl font-black text-foreground leading-none">
+                    <span
+                      className={`font-mono text-5xl font-black leading-none ${healthColor}`}
+                    >
                       {avgScore}
                     </span>
                     <span className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">
@@ -287,75 +291,63 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                     >
                       {healthLabel}
                     </span>
+                    <span className="text-[9px] text-muted-foreground/60 mt-0.5">
+                      {totalScored.toLocaleString()} scored
+                    </span>
                   </div>
                 </div>
               );
             })()}
 
-            {/* Scored count + breakdown header */}
-            <div className="w-full text-center">
-              <span className="font-mono text-lg font-bold text-foreground">
-                {totalScored.toLocaleString()}
-              </span>
-              <span className="text-[10px] text-muted-foreground ml-1">
-                leads scored
-              </span>
+            {/* Compact stacked horizontal bar */}
+            <div className="w-full">
+              <div className="flex h-3 w-full rounded-full overflow-hidden bg-muted/20">
+                {distribution
+                  .filter((d) => d.count > 0)
+                  .map((d) => (
+                    <div
+                      key={d.level}
+                      className={`h-full ${LEVEL_COLORS[d.level].bg}`}
+                      style={{
+                        width: `${Math.max(d.pct, d.count > 0 ? 1 : 0)}%`,
+                        opacity: 0.85,
+                      }}
+                      title={`${LEVEL_COLORS[d.level].label}: ${d.count.toLocaleString()} (${d.pct}%)`}
+                    />
+                  ))}
+              </div>
+              {/* Labels row */}
+              <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-0.5 mt-2">
+                {distribution.map((d) => (
+                  <span
+                    key={d.level}
+                    className="inline-flex items-center gap-1 text-[9px] text-muted-foreground"
+                  >
+                    <span
+                      className={`h-2 w-2 rounded-full ${LEVEL_COLORS[d.level].bg}`}
+                    />
+                    <span className="font-mono font-bold text-foreground">
+                      {d.count.toLocaleString()}
+                    </span>
+                    {LEVEL_COLORS[d.level].label}
+                  </span>
+                ))}
+              </div>
             </div>
 
-            {/* Full distribution breakdown — each level gets a thick bar */}
-            <div className="w-full flex flex-col gap-1.5">
-              {distribution.map((d) => {
-                const barPct =
-                  totalScored > 0 ? (d.count / totalScored) * 100 : 0;
-                return (
-                  <div key={d.level}>
-                    <div className="flex items-center justify-between mb-0.5">
-                      <span
-                        className={`flex items-center gap-1 text-[10px] font-medium ${LEVEL_COLORS[d.level].text}`}
-                      >
-                        <span
-                          className={`h-2.5 w-2.5 rounded-full ${LEVEL_COLORS[d.level].bg}`}
-                        />
-                        {LEVEL_COLORS[d.level].label}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <span className="font-mono text-[11px] font-bold text-foreground">
-                          {d.count.toLocaleString()}
-                        </span>
-                        <span className="text-[9px] text-muted-foreground w-8 text-right">
-                          {d.pct}%
-                        </span>
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-muted/25 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${LEVEL_COLORS[d.level].bg}`}
-                        style={{
-                          width: `${Math.max(barPct, d.count > 0 ? 2 : 0)}%`,
-                          opacity: d.count > 0 ? 0.8 : 0.2,
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Action callout — always present */}
+            {/* Action callout — slim single-line */}
             {actionableCount > 0 ? (
-              <div className="w-full rounded-lg bg-red-50/60 dark:bg-red-950/25 border border-red-200/50 dark:border-red-800/40 px-3 py-2">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-500/15">
-                    <Flame className="h-4 w-4 text-red-500" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-bold text-red-700 dark:text-red-300">
-                      {actionableCount} leads need action
-                    </div>
-                    <div className="text-[9px] text-red-600/70 dark:text-red-400/70">
-                      {hotCount} hot + {warmingCount} warming
-                    </div>
-                  </div>
+              <div className="w-full flex items-center gap-2 rounded-lg bg-red-50/60 dark:bg-red-950/25 border border-red-200/50 dark:border-red-800/40 px-3 py-2">
+                <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-red-500/15 shrink-0">
+                  <Flame className="h-3.5 w-3.5 text-red-500" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-[11px] font-bold text-red-700 dark:text-red-300">
+                    {actionableCount} leads need action
+                  </span>
+                  <span className="text-[9px] text-red-600/70 dark:text-red-400/70 ml-1.5">
+                    {hotCount} hot + {warmingCount} warming
+                  </span>
                 </div>
               </div>
             ) : (
@@ -368,7 +360,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
           </div>
 
           {/* Column 2: Hot Leads (immediate action) */}
-          <div className="lg:col-span-5 p-3">
+          <div className="lg:col-span-4 p-3">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5">
                 <Flame className="h-3.5 w-3.5 text-red-500" />
@@ -397,7 +389,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                     className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-muted/40 transition-colors"
                   >
                     <span className="text-[10px] text-muted-foreground/50 w-4 shrink-0 text-right font-mono">
-                      {i + 1}
+                      {leadPage * LEADS_PER_PAGE + i + 1}
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
@@ -450,7 +442,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                   >
                     Prev
                   </button>
-                  {Array.from({ length: totalPages }, (_, i) => (
+                  {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => (
                     <button
                       key={i}
                       onClick={() => setLeadPage(i)}
@@ -463,6 +455,11 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                       {i + 1}
                     </button>
                   ))}
+                  {totalPages > 7 && (
+                    <span className="text-[10px] text-muted-foreground">
+                      ...
+                    </span>
+                  )}
                   <button
                     onClick={() =>
                       setLeadPage((p) => Math.min(totalPages - 1, p + 1))

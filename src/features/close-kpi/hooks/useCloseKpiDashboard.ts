@@ -33,7 +33,7 @@ import { WIDGET_REGISTRY } from "../config/widget-registry";
 
 type CloseKpiWidgetQueryGroup = "lead-heat" | "close-api";
 
-export const CLOSE_KPI_PREBUILT_ROLLUP_VERSION = "v1";
+export const CLOSE_KPI_PREBUILT_ROLLUP_VERSION = "v2";
 
 export function getCloseKpiWidgetQueryGroup(
   widgetType?: string | null,

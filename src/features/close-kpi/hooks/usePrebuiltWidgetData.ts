@@ -89,7 +89,7 @@ export function usePrebuiltDashboardData(dateRange: DateRangePreset) {
         from,
         to,
       }),
-    staleTime: 5 * 60_000,
+    staleTime: 0,
     gcTime: 30 * 60_000,
     refetchOnWindowFocus: false,
     retry: 1,
@@ -120,7 +120,7 @@ export function usePrebuiltDashboardData(dateRange: DateRangePreset) {
         ),
         queryFn: async (): Promise<WidgetResult | null> =>
           fetchWidgetData(syntheticWidget),
-        staleTime: 5 * 60_000,
+        staleTime: 2 * 60_000,
         gcTime: 30 * 60_000,
         refetchOnWindowFocus: false,
         refetchInterval: 10 * 60_000,

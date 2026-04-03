@@ -33,22 +33,32 @@ import type {
   LeadHeatSummaryResult,
   LeadHeatListResult,
   LeadHeatAiInsightsResult,
+  WidgetConfig,
 } from "../types/close-kpi.types";
 
 interface WidgetRendererProps {
   type: string;
   data: unknown;
+  config?: WidgetConfig;
 }
 
 export const WidgetRenderer: React.FC<WidgetRendererProps> = ({
   type,
   data,
+  config,
 }) => {
   if (!data) return null;
 
+  const accentColor = config?.accentColor;
+
   switch (type) {
     case "stat_card":
-      return <StatCardWidget data={data as StatCardResult} />;
+      return (
+        <StatCardWidget
+          data={data as StatCardResult}
+          accentColor={accentColor}
+        />
+      );
 
     case "status_distribution":
       return (
