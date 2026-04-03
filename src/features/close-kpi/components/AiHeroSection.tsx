@@ -91,7 +91,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
     distribution.find((d) => d.level === "warming")?.count ?? 0;
   const actionableCount = hotCount + warmingCount;
 
-  const LEADS_PER_PAGE = 5;
+  const LEADS_PER_PAGE = 10;
   const sourceLeads = showAllHeatLevels ? (listData?.leads ?? []) : hotLeads;
   const totalPages = Math.max(
     1,
@@ -197,20 +197,35 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
       {totalScored > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-border/40">
           {/* Column 1: Score Overview */}
-          <div className="lg:col-span-3 p-4 flex flex-col items-center justify-center gap-3">
-            {/* Big score */}
-            <div className="text-center">
-              <div className="font-mono text-4xl font-black text-foreground leading-none">
+          <div className="lg:col-span-3 p-4 flex flex-col gap-3">
+            {/* Score header */}
+            <div className="flex items-center gap-3">
+              <div
+                className={`flex items-center justify-center w-14 h-14 rounded-xl font-mono text-2xl font-black ${
+                  avgScore >= 60
+                    ? "bg-red-500/10 text-red-600 dark:text-red-400 ring-1 ring-red-500/20"
+                    : avgScore >= 40
+                      ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 ring-1 ring-orange-500/20"
+                      : avgScore >= 20
+                        ? "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 ring-1 ring-zinc-500/20"
+                        : "bg-blue-500/10 text-blue-600 dark:text-blue-400 ring-1 ring-blue-500/20"
+                }`}
+              >
                 {avgScore}
               </div>
-              <div className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">
-                avg score
+              <div>
+                <div className="text-[11px] font-semibold text-foreground">
+                  Avg Lead Score
+                </div>
+                <div className="text-[10px] text-muted-foreground">
+                  {totalScored.toLocaleString()} leads scored
+                </div>
               </div>
             </div>
 
-            {/* Heat distribution bar */}
-            <div className="w-full max-w-[180px]">
-              <div className="flex h-2.5 rounded-full overflow-hidden">
+            {/* Heat distribution bar — full width */}
+            <div className="w-full">
+              <div className="flex h-3 rounded-full overflow-hidden">
                 {distribution
                   .filter((d) => d.count > 0)
                   .map((d) => (
@@ -222,39 +237,54 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                     />
                   ))}
               </div>
-              <div className="flex justify-between mt-1">
-                {distribution
-                  .filter((d) => d.count > 0)
-                  .map((d) => (
-                    <span
-                      key={d.level}
-                      className={`text-[9px] ${LEVEL_COLORS[d.level].text}`}
-                    >
-                      {d.count}
-                    </span>
-                  ))}
-              </div>
             </div>
 
-            {/* Legend */}
-            <div className="flex flex-wrap justify-center gap-x-2 gap-y-0.5">
+            {/* Distribution breakdown — each level as a row */}
+            <div className="flex flex-col gap-0.5">
               {distribution
                 .filter((d) => d.count > 0)
                 .map((d) => (
-                  <span
+                  <div
                     key={d.level}
-                    className="flex items-center gap-0.5 text-[9px] text-muted-foreground"
+                    className="flex items-center justify-between"
                   >
-                    <span
-                      className={`h-1.5 w-1.5 rounded-full ${LEVEL_COLORS[d.level].bg}`}
-                    />
-                    {LEVEL_COLORS[d.level].label}
-                  </span>
+                    <span className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+                      <span
+                        className={`h-2 w-2 rounded-full ${LEVEL_COLORS[d.level].bg}`}
+                      />
+                      {LEVEL_COLORS[d.level].label}
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span
+                        className={`font-mono text-[11px] font-semibold ${LEVEL_COLORS[d.level].text}`}
+                      >
+                        {d.count}
+                      </span>
+                      <span className="text-[9px] text-muted-foreground w-8 text-right">
+                        {d.pct}%
+                      </span>
+                    </span>
+                  </div>
                 ))}
             </div>
 
-            {/* AI scoring badge */}
-            <span className="rounded-full bg-violet-100 dark:bg-violet-900/40 px-2 py-0.5 text-[9px] font-medium text-violet-700 dark:text-violet-300">
+            {/* Action summary */}
+            {actionableCount > 0 && (
+              <div className="rounded-md bg-red-50/50 dark:bg-red-950/20 border border-red-200/40 dark:border-red-800/30 px-2.5 py-1.5">
+                <div className="flex items-center gap-1.5">
+                  <Flame className="h-3 w-3 text-red-500" />
+                  <span className="text-[10px] font-semibold text-red-700 dark:text-red-300">
+                    {actionableCount} leads ready to close
+                  </span>
+                </div>
+                <span className="text-[9px] text-red-600/70 dark:text-red-400/70">
+                  {hotCount} hot + {warmingCount} warming
+                </span>
+              </div>
+            )}
+
+            {/* AI badge */}
+            <span className="mt-auto self-center rounded-full bg-violet-100 dark:bg-violet-900/40 px-2 py-0.5 text-[9px] font-medium text-violet-700 dark:text-violet-300">
               AI-assisted scoring
             </span>
           </div>
@@ -370,65 +400,82 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
           </div>
 
           {/* Column 3: AI Insights */}
-          <div className="lg:col-span-4 p-3">
-            <div className="flex items-center gap-1.5 mb-2">
-              <Brain className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
-              <span className="text-[11px] font-bold text-foreground">
-                AI Insights
-              </span>
+          <div className="lg:col-span-4 p-3 flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Brain className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
+                <span className="text-[11px] font-bold text-foreground">
+                  AI Insights
+                </span>
+              </div>
+              {insightsData?.modelVersion && (
+                <span className="text-[9px] text-muted-foreground/50">
+                  v{insightsData.modelVersion}
+                  {insightsData.analyzedAt &&
+                    ` · ${formatTimeAgo(insightsData.analyzedAt)}`}
+                </span>
+              )}
             </div>
 
-            {/* Overall assessment */}
+            {/* Overall assessment — prominent quote block */}
             {insightsData?.overallAssessment && (
-              <div className="rounded-md border border-border/50 bg-muted/30 px-3 py-2 mb-2">
-                <p className="text-[11px] text-foreground leading-relaxed">
+              <div className="rounded-md border-l-2 border-violet-400 dark:border-violet-500 bg-violet-50/40 dark:bg-violet-950/15 pl-3 pr-2.5 py-2">
+                <p className="text-[11px] text-foreground leading-relaxed italic">
                   {insightsData.overallAssessment}
                 </p>
               </div>
             )}
 
-            {/* Top recommendation */}
-            {topRecommendation && (
-              <div className="flex items-start gap-2 rounded-md border border-violet-200/60 dark:border-violet-800/40 bg-violet-50/30 dark:bg-violet-950/10 px-3 py-2 mb-2">
-                <Target className="h-3 w-3 mt-0.5 flex-shrink-0 text-violet-600 dark:text-violet-400" />
-                <div>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Top Recommendation
-                  </span>
-                  <p className="text-[11px] text-foreground mt-0.5">
+            {/* Cards grid — recommendation + anomaly side by side if both exist */}
+            <div
+              className={`grid gap-2 ${topRecommendation && topAnomaly ? "grid-cols-2" : "grid-cols-1"}`}
+            >
+              {/* Top recommendation */}
+              {topRecommendation && (
+                <div className="rounded-md border border-violet-200/60 dark:border-violet-800/40 bg-violet-50/30 dark:bg-violet-950/10 px-2.5 py-2">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Target className="h-2.5 w-2.5 text-violet-600 dark:text-violet-400" />
+                    <span className="text-[9px] font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">
+                      Recommendation
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-foreground leading-snug">
                     {topRecommendation.text}
                   </p>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Top anomaly */}
-            {topAnomaly && (
-              <div className="flex items-start gap-2 rounded-md border border-amber-200/60 dark:border-amber-800/40 bg-amber-50/30 dark:bg-amber-950/10 px-3 py-2 mb-2">
-                <AlertTriangle className="h-3 w-3 mt-0.5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
-                <div>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Attention
-                  </span>
-                  <p className="text-[11px] text-foreground mt-0.5">
+              {/* Top anomaly */}
+              {topAnomaly && (
+                <div className="rounded-md border border-amber-200/60 dark:border-amber-800/40 bg-amber-50/30 dark:bg-amber-950/10 px-2.5 py-2">
+                  <div className="flex items-center gap-1 mb-1">
+                    <AlertTriangle className="h-2.5 w-2.5 text-amber-600 dark:text-amber-400" />
+                    <span className="text-[9px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                      Attention
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-foreground leading-snug">
                     <span className="font-medium">
                       {topAnomaly.displayName}
                     </span>{" "}
                     — {topAnomaly.message}
                   </p>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            {/* Additional recommendations */}
+            {/* Additional recommendations list */}
             {insightsData && insightsData.recommendations.length > 1 && (
-              <div className="space-y-1">
+              <div className="space-y-1 mt-auto">
+                <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  More Actions
+                </span>
                 {insightsData.recommendations.slice(1, 4).map((rec, i) => (
                   <div
                     key={i}
                     className="flex items-start gap-1.5 text-[10px] text-muted-foreground"
                   >
-                    <TrendingUp className="h-2.5 w-2.5 mt-0.5 flex-shrink-0" />
+                    <TrendingUp className="h-2.5 w-2.5 mt-0.5 flex-shrink-0 text-violet-500/60" />
                     <span>{rec.text}</span>
                   </div>
                 ))}
@@ -437,23 +484,9 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
 
             {/* No insights state */}
             {!insightsData?.overallAssessment && !topRecommendation && (
-              <p className="text-[10px] text-muted-foreground/60 py-2">
+              <p className="text-[10px] text-muted-foreground/60 py-4 text-center">
                 AI insights will appear after scoring completes.
               </p>
-            )}
-
-            {/* Model info */}
-            {insightsData?.modelVersion && (
-              <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/30">
-                <span className="text-[9px] text-muted-foreground/50">
-                  Model v{insightsData.modelVersion}
-                </span>
-                {insightsData.analyzedAt && (
-                  <span className="text-[9px] text-muted-foreground/50">
-                    {formatTimeAgo(insightsData.analyzedAt)}
-                  </span>
-                )}
-              </div>
             )}
           </div>
         </div>
