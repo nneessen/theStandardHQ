@@ -369,41 +369,40 @@ export const closeKpiService = {
 
   /** Get lead heat summary (distribution by heat level) — uses server-side aggregation */
   getLeadHeatSummary: async (userId: string) => {
-    // Server-side aggregate: count by heat_level (avoids fetching all rows to client)
-    const [distributionResult, statsResult, outcomeResult] = await Promise.all([
-      supabase
-        .from("lead_heat_scores")
-        .select("heat_level")
-        .eq("user_id", userId),
-      supabase
-        .from("lead_heat_scores")
-        .select("score, scored_at")
-        .eq("user_id", userId)
-        .order("scored_at", { ascending: false })
-        .limit(1),
-      supabase
-        .from("lead_heat_outcomes")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", userId),
-    ]);
-
-    if (distributionResult.error)
-      throw new Error(distributionResult.error.message);
-
-    const allLevels = distributionResult.data ?? [];
-    const total = allLevels.length;
-
-    // Count per level from the heat_level column only (small payload: just one text column)
+    // True server-side aggregate: count per heat level using head+count (no row transfer)
     const levels = ["hot", "warming", "neutral", "cooling", "cold"] as const;
-    const levelCounts = new Map<string, number>();
-    for (const row of allLevels) {
-      levelCounts.set(
-        row.heat_level,
-        (levelCounts.get(row.heat_level) ?? 0) + 1,
-      );
-    }
-    const distribution = levels.map((level) => {
-      const count = levelCounts.get(level) ?? 0;
+
+    const [totalResult, statsResult, outcomeResult, ...levelResults] =
+      await Promise.all([
+        supabase
+          .from("lead_heat_scores")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", userId),
+        supabase
+          .from("lead_heat_scores")
+          .select("score, scored_at")
+          .eq("user_id", userId)
+          .order("scored_at", { ascending: false })
+          .limit(1),
+        supabase
+          .from("lead_heat_outcomes")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", userId),
+        // One count query per heat level
+        ...levels.map((level) =>
+          supabase
+            .from("lead_heat_scores")
+            .select("*", { count: "exact", head: true })
+            .eq("user_id", userId)
+            .eq("heat_level", level),
+        ),
+      ]);
+
+    if (totalResult.error) throw new Error(totalResult.error.message);
+
+    const total = totalResult.count ?? 0;
+    const distribution = levels.map((level, i) => {
+      const count = levelResults[i].count ?? 0;
       return {
         level,
         count,
