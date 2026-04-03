@@ -2562,8 +2562,8 @@ async function handleGetPrebuiltDashboardRollup(
     statuses: { id: string; label: string; type: string }[];
   }[];
   const smartViews = (smartViewRes.data ?? []) as CloseSavedSearch[];
-  // Cap smart views to 5 for the dashboard rollup to limit API calls
-  const cappedSmartViews = smartViews.slice(0, 5);
+  // Cap smart views to 20 for the dashboard rollup (each needs 1 API search call)
+  const cappedSmartViews = smartViews.slice(0, 20);
   const comparison = getComparisonBounds(from, to);
 
   // Phase 1: Lead counts + activities (moderate API load, run in parallel)
