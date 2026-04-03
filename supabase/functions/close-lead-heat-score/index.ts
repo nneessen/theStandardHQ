@@ -494,7 +494,7 @@ async function handleScoreAll(
     const leadsResult = await closeGetAll(
       apiKey,
       "/lead/?_fields=id,display_name,status_id,date_created,custom",
-      5000,
+      50000,
     );
     const leads = leadsResult.items as CloseLead[];
     const leadsTruncated = leadsResult.truncated;
@@ -569,27 +569,27 @@ async function handleScoreAll(
       closeGetAll(
         apiKey,
         `/activity/call/?${dateFilter}&_fields=id,lead_id,date_created,direction,duration,disposition`,
-        3000,
+        50000,
       ),
       closeGetAll(
         apiKey,
         `/activity/email/?${dateFilter}&_fields=id,lead_id,date_created,direction`,
-        3000,
+        50000,
       ),
       closeGetAll(
         apiKey,
         `/activity/sms/?${dateFilter}&_fields=id,lead_id,date_created,direction`,
-        3000,
+        50000,
       ),
       closeGetAll(
         apiKey,
         `/activity/status_change/lead/?${dateFilter}&_fields=id,lead_id,date_created,old_status_id,new_status_id,old_status_label,new_status_label`,
-        3000,
+        50000,
       ),
       closeGetAll(
         apiKey,
         `/opportunity/?_fields=id,lead_id,value,status_type,status_label,date_created,date_won,date_lost`,
-        2000,
+        50000,
       ),
     ]);
 
