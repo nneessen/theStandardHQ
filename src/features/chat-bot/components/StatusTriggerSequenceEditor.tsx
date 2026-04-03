@@ -5,12 +5,19 @@ import {
   ChevronRight,
   Loader2,
   MessageSquare,
+  Pencil,
   Plus,
   Trash2,
   X,
 } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -159,14 +166,127 @@ function DelayPicker({
   );
 }
 
-// ─── Step Editor ────────────────────────────────────────────────
+// ─── Step color coding ──────────────────────────────────────────
 
-function StepEditor({
+const STEP_COLORS = [
+  {
+    bg: "bg-blue-50 dark:bg-blue-950/40",
+    border: "border-l-blue-400 dark:border-l-blue-500",
+    hoverBorder: "hover:border-l-blue-500 dark:hover:border-l-blue-400",
+    circle: "bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300",
+    editCircle: "bg-blue-500 text-white",
+    badge: "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
+  },
+  {
+    bg: "bg-amber-50 dark:bg-amber-950/40",
+    border: "border-l-amber-400 dark:border-l-amber-500",
+    hoverBorder: "hover:border-l-amber-500 dark:hover:border-l-amber-400",
+    circle:
+      "bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300",
+    editCircle: "bg-amber-500 text-white",
+    badge:
+      "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300",
+  },
+  {
+    bg: "bg-emerald-50 dark:bg-emerald-950/40",
+    border: "border-l-emerald-400 dark:border-l-emerald-500",
+    hoverBorder: "hover:border-l-emerald-500 dark:hover:border-l-emerald-400",
+    circle:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300",
+    editCircle: "bg-emerald-500 text-white",
+    badge:
+      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300",
+  },
+] as const;
+
+// ─── Step Summary Row (compact, read-only) ──────────────────────
+
+function StepSummaryRow({
+  step,
+  index,
+  canRemove,
+  onEdit,
+  onRemove,
+  disabled,
+}: {
+  step: StatusTriggerStep;
+  index: number;
+  canRemove: boolean;
+  onEdit: () => void;
+  onRemove: () => void;
+  disabled?: boolean;
+}) {
+  const instructions = step.aiInstructions.trim();
+  const colors = STEP_COLORS[index] ?? STEP_COLORS[0];
+
+  return (
+    <div
+      onClick={disabled ? undefined : onEdit}
+      className={cn(
+        "group flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors",
+        "border-l-2",
+        colors.border,
+        colors.bg,
+        !disabled && cn("cursor-pointer", colors.hoverBorder),
+      )}
+    >
+      <span
+        className={cn(
+          "flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold",
+          colors.circle,
+        )}
+      >
+        {index + 1}
+      </span>
+
+      <Badge variant="ghost" size="sm" className={cn("shrink-0", colors.badge)}>
+        {formatDelay(step.delayMinutes)}
+      </Badge>
+
+      <span className="text-[9px] text-zinc-400 dark:text-zinc-500">·</span>
+
+      <span className="min-w-0 flex-1 truncate text-[11px] text-zinc-700 dark:text-zinc-300">
+        {instructions ? (
+          <>
+            &ldquo;{instructions.slice(0, 80)}
+            {instructions.length > 80 ? "..." : ""}&rdquo;
+          </>
+        ) : (
+          <span className="italic text-zinc-400 dark:text-zinc-500">
+            No instructions yet
+          </span>
+        )}
+      </span>
+
+      <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+        <Pencil className="h-3 w-3 text-zinc-400 dark:text-zinc-500" />
+        {canRemove && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRemove();
+            }}
+            disabled={disabled}
+            className="text-zinc-400 hover:text-red-500 disabled:opacity-50 dark:text-zinc-500 dark:hover:text-red-400"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Step Edit Form (expanded, one at a time) ───────────────────
+
+function StepEditForm({
   step,
   index,
   canRemove,
   onChange,
   onRemove,
+  onClose,
   disabled,
 }: {
   step: StatusTriggerStep;
@@ -174,24 +294,51 @@ function StepEditor({
   canRemove: boolean;
   onChange: (updated: StatusTriggerStep) => void;
   onRemove: () => void;
+  onClose: () => void;
   disabled?: boolean;
 }) {
+  const colors = STEP_COLORS[index] ?? STEP_COLORS[0];
+
   return (
-    <div className="rounded-lg border border-zinc-100 bg-zinc-50/50 p-3 dark:border-zinc-800 dark:bg-zinc-800/30">
+    <div
+      className={cn(
+        "rounded-md border border-zinc-200 p-2.5 dark:border-zinc-700",
+        colors.bg,
+      )}
+    >
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-          Step {index + 1}
-        </span>
-        {canRemove ? (
+        <div className="flex items-center gap-1.5">
+          <span
+            className={cn(
+              "flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-semibold",
+              colors.editCircle,
+            )}
+          >
+            {index + 1}
+          </span>
+          <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            Step {index + 1}
+          </span>
+        </div>
+        <div className="flex items-center gap-1">
+          {canRemove && (
+            <button
+              type="button"
+              onClick={onRemove}
+              disabled={disabled}
+              className="rounded p-0.5 text-zinc-400 hover:text-red-500 disabled:opacity-50 dark:text-zinc-500 dark:hover:text-red-400"
+            >
+              <Trash2 className="h-3 w-3" />
+            </button>
+          )}
           <button
             type="button"
-            onClick={onRemove}
-            disabled={disabled}
-            className="text-zinc-400 hover:text-red-500 disabled:opacity-50 dark:text-zinc-500 dark:hover:text-red-400"
+            onClick={onClose}
+            className="rounded p-0.5 text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-200"
           >
-            <X className="h-3.5 w-3.5" />
+            <Check className="h-3 w-3" />
           </button>
-        ) : null}
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -238,9 +385,9 @@ function StepEditor({
   );
 }
 
-// ─── Single Sequence Card ───────────────────────────────────────
+// ─── Sequence Row (replaces SequenceCard) ───────────────────────
 
-function SequenceCard({
+function SequenceRow({
   sequence,
   availableStatuses,
   usedLabels,
@@ -255,7 +402,13 @@ function SequenceCard({
   onDelete: () => void;
   disabled?: boolean;
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [editingStepIndex, setEditingStepIndex] = useState<number | null>(null);
+
+  // Reset editing when collapsed
+  useEffect(() => {
+    if (!open) setEditingStepIndex(null);
+  }, [open]);
 
   function updateStep(stepIndex: number, updated: StatusTriggerStep) {
     const steps = [...sequence.steps];
@@ -268,14 +421,20 @@ function SequenceCard({
       ...sequence,
       steps: sequence.steps.filter((_, i) => i !== stepIndex),
     });
+    if (editingStepIndex === stepIndex) {
+      setEditingStepIndex(null);
+    } else if (editingStepIndex !== null && editingStepIndex > stepIndex) {
+      setEditingStepIndex(editingStepIndex - 1);
+    }
   }
 
   function addStep() {
     if (sequence.steps.length >= MAX_STEPS_PER_SEQUENCE) return;
-    onChange({ ...sequence, steps: [...sequence.steps, createEmptyStep()] });
+    const newSteps = [...sequence.steps, createEmptyStep()];
+    onChange({ ...sequence, steps: newSteps });
+    setEditingStepIndex(newSteps.length - 1);
   }
 
-  // Filter out statuses already used by other sequences
   const availableForThis = availableStatuses.filter(
     (s) =>
       s.label.toLowerCase() === sequence.statusLabel.toLowerCase() ||
@@ -283,114 +442,142 @@ function SequenceCard({
   );
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-      {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2">
-        <button
-          type="button"
-          onClick={() => setCollapsed(!collapsed)}
-          className="text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
-        >
-          {collapsed ? (
-            <ChevronRight className="h-3.5 w-3.5" />
-          ) : (
-            <ChevronDown className="h-3.5 w-3.5" />
-          )}
-        </button>
+    <Collapsible open={open} onOpenChange={setOpen}>
+      <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+        {/* Header row */}
+        <div className="flex items-center gap-1.5 px-2 py-1.5">
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="shrink-0 rounded p-0.5 text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+            >
+              {open ? (
+                <ChevronDown className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronRight className="h-3.5 w-3.5" />
+              )}
+            </button>
+          </CollapsibleTrigger>
 
-        <div className="min-w-0 flex-1">
-          <Select
-            value={sequence.statusLabel}
-            onValueChange={(label) =>
-              onChange({ ...sequence, statusLabel: label })
-            }
-            disabled={disabled}
-          >
-            <SelectTrigger className="h-7 text-[11px]">
-              <SelectValue placeholder="Select status..." />
-            </SelectTrigger>
-            <SelectContent>
-              {availableForThis.map((s) => (
-                <SelectItem key={s.id} value={s.label} className="text-[11px]">
-                  {s.label}
-                </SelectItem>
-              ))}
-              {/* Allow custom entry if the current label isn't in the list */}
-              {sequence.statusLabel &&
-                !availableStatuses.some(
-                  (s) =>
-                    s.label.toLowerCase() ===
-                    sequence.statusLabel.toLowerCase(),
-                ) && (
-                  <SelectItem
-                    value={sequence.statusLabel}
-                    className="text-[11px]"
-                  >
-                    {sequence.statusLabel} (custom)
-                  </SelectItem>
-                )}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
-            {sequence.enabled ? "On" : "Off"}
-          </span>
-          <Switch
-            variant="success"
-            size="sm"
-            checked={sequence.enabled}
-            onCheckedChange={(enabled) => onChange({ ...sequence, enabled })}
-            disabled={disabled}
-          />
-          <button
-            type="button"
-            onClick={onDelete}
-            disabled={disabled}
-            className="ml-1 text-zinc-400 hover:text-red-500 disabled:opacity-50 dark:text-zinc-500 dark:hover:text-red-400"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </div>
-
-      {/* Steps (collapsible) */}
-      {!collapsed && (
-        <div className="border-t border-zinc-100 px-3 pb-3 pt-2 dark:border-zinc-800">
-          <div className="space-y-2">
-            {sequence.steps.map((step, stepIdx) => (
-              <StepEditor
-                key={stepIdx}
-                step={step}
-                index={stepIdx}
-                canRemove={sequence.steps.length > 1}
-                onChange={(updated) => updateStep(stepIdx, updated)}
-                onRemove={() => removeStep(stepIdx)}
-                disabled={disabled}
-              />
-            ))}
-          </div>
-
-          {sequence.steps.length < MAX_STEPS_PER_SEQUENCE && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="mt-2 h-7 gap-1 text-[10px] text-zinc-500"
-              onClick={addStep}
+          <div className="shrink-0">
+            <Select
+              value={sequence.statusLabel}
+              onValueChange={(label) =>
+                onChange({ ...sequence, statusLabel: label })
+              }
               disabled={disabled}
             >
-              <Plus className="h-3 w-3" />
-              Add Step
-            </Button>
-          )}
+              <SelectTrigger className="h-7 text-[11px]">
+                <SelectValue placeholder="Select status..." />
+              </SelectTrigger>
+              <SelectContent>
+                {availableForThis.map((s) => (
+                  <SelectItem
+                    key={s.id}
+                    value={s.label}
+                    className="text-[11px]"
+                  >
+                    {s.label}
+                  </SelectItem>
+                ))}
+                {sequence.statusLabel &&
+                  !availableStatuses.some(
+                    (s) =>
+                      s.label.toLowerCase() ===
+                      sequence.statusLabel.toLowerCase(),
+                  ) && (
+                    <SelectItem
+                      value={sequence.statusLabel}
+                      className="text-[11px]"
+                    >
+                      {sequence.statusLabel} (custom)
+                    </SelectItem>
+                  )}
+              </SelectContent>
+            </Select>
+          </div>
 
-          <p className="mt-1 text-[9px] text-zinc-400 dark:text-zinc-500">
-            {sequence.steps.length}/{MAX_STEPS_PER_SEQUENCE} steps
-          </p>
+          {/* Delay badges — color-coded summary of step timings */}
+          <div className="flex items-center gap-1">
+            {sequence.steps.map((step, i) => {
+              const c = STEP_COLORS[i] ?? STEP_COLORS[0];
+              return (
+                <Badge key={i} variant="ghost" size="sm" className={c.badge}>
+                  {formatDelay(step.delayMinutes)}
+                </Badge>
+              );
+            })}
+          </div>
+
+          <div className="ml-auto flex items-center gap-1.5">
+            <Switch
+              variant="success"
+              size="sm"
+              checked={sequence.enabled}
+              onCheckedChange={(enabled) => onChange({ ...sequence, enabled })}
+              disabled={disabled}
+            />
+            <button
+              type="button"
+              onClick={onDelete}
+              disabled={disabled}
+              className="text-zinc-400 hover:text-red-500 disabled:opacity-50 dark:text-zinc-500 dark:hover:text-red-400"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
-      )}
-    </div>
+
+        {/* Collapsible steps area */}
+        <CollapsibleContent>
+          <div className="border-t border-zinc-100 bg-zinc-50/50 px-2 pb-2 pt-1.5 dark:border-zinc-800 dark:bg-zinc-800/30">
+            <div className="space-y-0.5">
+              {sequence.steps.map((step, stepIdx) =>
+                editingStepIndex === stepIdx ? (
+                  <StepEditForm
+                    key={stepIdx}
+                    step={step}
+                    index={stepIdx}
+                    canRemove={sequence.steps.length > 1}
+                    onChange={(updated) => updateStep(stepIdx, updated)}
+                    onRemove={() => removeStep(stepIdx)}
+                    onClose={() => setEditingStepIndex(null)}
+                    disabled={disabled}
+                  />
+                ) : (
+                  <StepSummaryRow
+                    key={stepIdx}
+                    step={step}
+                    index={stepIdx}
+                    canRemove={sequence.steps.length > 1}
+                    onEdit={() => setEditingStepIndex(stepIdx)}
+                    onRemove={() => removeStep(stepIdx)}
+                    disabled={disabled}
+                  />
+                ),
+              )}
+            </div>
+
+            {sequence.steps.length < MAX_STEPS_PER_SEQUENCE && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-1 h-6 gap-1 text-[10px] text-zinc-500"
+                onClick={addStep}
+                disabled={disabled}
+              >
+                <Plus className="h-3 w-3" />
+                Add Step
+              </Button>
+            )}
+
+            <p className="mt-0.5 text-[9px] text-zinc-400 dark:text-zinc-500">
+              {sequence.steps.length}/{MAX_STEPS_PER_SEQUENCE} steps
+            </p>
+          </div>
+        </CollapsibleContent>
+      </div>
+    </Collapsible>
   );
 }
 
@@ -408,7 +595,6 @@ export function StatusTriggerSequenceEditor() {
   const { data: statuses = [] } = useChatBotCloseLeadStatuses(closeConnected);
   const updateConfig = useUpdateBotConfig();
 
-  // Local form state (null = not dirty, using server data)
   const [localSequences, setLocalSequences] = useState<
     StatusTriggerSequence[] | null
   >(null);
@@ -417,7 +603,6 @@ export function StatusTriggerSequenceEditor() {
   const displayedSequences =
     localSequences ?? agent?.statusTriggerSequences ?? [];
 
-  // Reset local state when server data arrives and user hasn't edited
   useEffect(() => {
     if (!dirty) {
       setLocalSequences(null);
@@ -426,7 +611,6 @@ export function StatusTriggerSequenceEditor() {
 
   const errors = validateSequences(displayedSequences);
 
-  // Build set of used labels (lowercase) for duplicate detection in dropdowns
   const usedLabels = new Set(
     displayedSequences.map((s) => s.statusLabel.toLowerCase()).filter(Boolean),
   );
@@ -524,9 +708,9 @@ export function StatusTriggerSequenceEditor() {
         )}
 
         {/* Sequence list */}
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {displayedSequences.map((seq, idx) => (
-            <SequenceCard
+            <SequenceRow
               key={idx}
               sequence={seq}
               availableStatuses={statuses}
