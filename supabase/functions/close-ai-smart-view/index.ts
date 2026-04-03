@@ -387,6 +387,45 @@ serve(async (req: Request) => {
       return jsonResponse(result, 200, req);
     }
 
+    if (action === "provision_agent_pipelines") {
+      // Service-role only — provisions opportunity statuses, lead statuses, and workflows for all agents
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      const authHeader3 = req.headers.get("authorization") || "";
+      const token3 = authHeader3.replace(/^Bearer\s*/i, "").trim();
+      if (!serviceKey || !token3 || token3 !== serviceKey) {
+        return jsonResponse(
+          { error: "Forbidden: service_role only" },
+          403,
+          req,
+        );
+      }
+
+      const { data: configs } = await dataClient
+        .from("close_config")
+        .select("user_id, api_key_encrypted")
+        .eq("is_active", true);
+
+      if (!configs?.length) {
+        return jsonResponse({ error: "No active configs" }, 400, req);
+      }
+
+      const results = [];
+      for (const cfg of configs) {
+        try {
+          const key = await decrypt(cfg.api_key_encrypted);
+          const result = await provisionAgentPipeline(key, cfg.user_id);
+          results.push(result);
+        } catch (err) {
+          results.push({
+            userId: cfg.user_id,
+            error: (err as Error).message,
+          });
+        }
+      }
+
+      return jsonResponse({ results }, 200, req);
+    }
+
     return jsonResponse({ error: `Unknown action: ${action}` }, 400, req);
   } catch (err) {
     console.error("[ai-smart-view] Unhandled error:", err);
@@ -397,3 +436,258 @@ serve(async (req: Request) => {
     );
   }
 });
+
+// ─── Agent Pipeline Provisioning ──────────────────────────────────
+
+// Required lead statuses that trigger workflows
+const REQUIRED_LEAD_STATUSES = [
+  "Appointment Scheduled By Me",
+  "Appointment By Bot",
+  "Appointment Scheduled By Lead",
+  "Contacted/Missed Appointment",
+  "Disqualified/Declined",
+  "PENDING UNDERWRITING",
+  "Contacted/Quoted",
+];
+
+// Required opportunity statuses in order
+const REQUIRED_OPP_STATUSES: {
+  label: string;
+  type: "active" | "won" | "lost";
+}[] = [
+  { label: "Appointment Set", type: "active" },
+  { label: "No Show", type: "active" },
+  { label: "Quoted", type: "active" },
+  { label: "Application", type: "active" },
+  { label: "Underwriting", type: "active" },
+  { label: "Sold", type: "won" },
+  { label: "Lost", type: "lost" },
+];
+
+async function provisionAgentPipeline(apiKey: string, userId: string) {
+  const log: string[] = [];
+
+  // 1. Ensure lead statuses exist
+  // deno-lint-ignore no-explicit-any
+  const leadStatusRes = (await closeGet(apiKey, "/status/lead/")) as any;
+  const existingLeadStatuses = (leadStatusRes.data ?? []) as {
+    id: string;
+    label: string;
+  }[];
+  const leadStatusMap = new Map(
+    existingLeadStatuses.map((s) => [s.label.toLowerCase(), s.id]),
+  );
+
+  for (const required of REQUIRED_LEAD_STATUSES) {
+    if (!leadStatusMap.has(required.toLowerCase())) {
+      // deno-lint-ignore no-explicit-any
+      const created = (await closePost(apiKey, "/status/lead/", {
+        label: required,
+      })) as any;
+      leadStatusMap.set(required.toLowerCase(), created.id);
+      log.push(`Created lead status: ${required} (${created.id})`);
+    }
+  }
+
+  // 2. Ensure opportunity pipeline + statuses exist
+  // deno-lint-ignore no-explicit-any
+  const pipeRes = (await closeGet(apiKey, "/pipeline/")) as any;
+  const pipelines = (pipeRes.data ?? []) as { id: string; name: string }[];
+  let pipelineId = pipelines[0]?.id;
+
+  if (!pipelineId) {
+    // deno-lint-ignore no-explicit-any
+    const newPipe = (await closePost(apiKey, "/pipeline/", {
+      name: "Sales",
+    })) as any;
+    pipelineId = newPipe.id;
+    log.push(`Created pipeline: Sales (${pipelineId})`);
+  }
+
+  // Get existing opportunity statuses
+  // deno-lint-ignore no-explicit-any
+  const oppStatusRes = (await closeGet(apiKey, "/status/opportunity/")) as any;
+  const existingOppStatuses = (oppStatusRes.data ?? []) as {
+    id: string;
+    label: string;
+    type: string;
+    pipeline_id: string;
+  }[];
+  const oppStatusMap = new Map(
+    existingOppStatuses
+      .filter((s) => s.pipeline_id === pipelineId)
+      .map((s) => [s.label.toLowerCase(), s.id]),
+  );
+
+  for (const required of REQUIRED_OPP_STATUSES) {
+    if (!oppStatusMap.has(required.label.toLowerCase())) {
+      // deno-lint-ignore no-explicit-any
+      const created = (await closePost(apiKey, "/status/opportunity/", {
+        label: required.label,
+        type: required.type,
+        pipeline_id: pipelineId,
+      })) as any;
+      oppStatusMap.set(required.label.toLowerCase(), created.id);
+      log.push(`Created opp status: ${required.label} (${created.id})`);
+    }
+  }
+
+  // 3. Resolve all status IDs
+  const getLeadStatusId = (name: string) =>
+    leadStatusMap.get(name.toLowerCase());
+  const getOppStatusId = (name: string) => oppStatusMap.get(name.toLowerCase());
+
+  const appointmentSetOpp = getOppStatusId("Appointment Set");
+  const noShowOpp = getOppStatusId("No Show");
+  const quotedOpp = getOppStatusId("Quoted");
+  const underwritingOpp = getOppStatusId("Underwriting");
+  const lostOpp = getOppStatusId("Lost");
+
+  const appointByMe = getLeadStatusId("Appointment Scheduled By Me");
+  const appointByBot = getLeadStatusId("Appointment By Bot");
+  const appointByLead = getLeadStatusId("Appointment Scheduled By Lead");
+  const missedAppt = getLeadStatusId("Contacted/Missed Appointment");
+  const disqualified = getLeadStatusId("Disqualified/Declined");
+  const pendingUw = getLeadStatusId("PENDING UNDERWRITING");
+  const contactedQuoted = getLeadStatusId("Contacted/Quoted");
+
+  // 4. Check existing workflows to avoid duplicates
+  // deno-lint-ignore no-explicit-any
+  const wfRes = (await closeGet(apiKey, "/sequence/?_limit=100")) as any;
+  const existingWorkflows = (wfRes.data ?? []) as {
+    id: string;
+    name: string;
+  }[];
+  const wfNames = new Set(existingWorkflows.map((w) => w.name.toLowerCase()));
+
+  // 5. Create workflows
+  const workflowsToCreate: {
+    name: string;
+    triggerStatusIds: string[];
+    step:
+      | { type: "create-opportunity"; statusId: string; confidence?: number }
+      | { type: "update-opportunity"; statusId: string; confidence?: number };
+  }[] = [
+    {
+      name: "Auto: Create Opportunity on Appointment",
+      triggerStatusIds: [appointByMe, appointByBot, appointByLead].filter(
+        Boolean,
+      ) as string[],
+      step: {
+        type: "create-opportunity",
+        statusId: appointmentSetOpp!,
+      },
+    },
+    {
+      name: "Auto: Update Opp → Lost",
+      triggerStatusIds: disqualified ? [disqualified] : [],
+      step: { type: "update-opportunity", statusId: lostOpp!, confidence: 1 },
+    },
+    {
+      name: "Auto: Update Opp → No Show",
+      triggerStatusIds: missedAppt ? [missedAppt] : [],
+      step: {
+        type: "update-opportunity",
+        statusId: noShowOpp!,
+        confidence: 20,
+      },
+    },
+    {
+      name: "Auto: Update Opp → Underwriting",
+      triggerStatusIds: pendingUw ? [pendingUw] : [],
+      step: {
+        type: "update-opportunity",
+        statusId: underwritingOpp!,
+        confidence: 90,
+      },
+    },
+    {
+      name: "Auto: Update Opp → Quoted",
+      triggerStatusIds: contactedQuoted ? [contactedQuoted] : [],
+      step: {
+        type: "update-opportunity",
+        statusId: quotedOpp!,
+        confidence: 75,
+      },
+    },
+  ];
+
+  const createdWorkflows: string[] = [];
+  const skippedWorkflows: string[] = [];
+
+  for (const wf of workflowsToCreate) {
+    if (wfNames.has(wf.name.toLowerCase())) {
+      skippedWorkflows.push(wf.name);
+      continue;
+    }
+    if (wf.triggerStatusIds.length === 0 || !wf.step.statusId) {
+      log.push(`Skipped ${wf.name}: missing status IDs`);
+      continue;
+    }
+
+    // Build the workflow payload matching Close's native sequence API format
+    // (discovered from existing workflows via the Close MCP tool)
+    // deno-lint-ignore no-explicit-any
+    const steps: any[] = [];
+    if (wf.step.type === "create-opportunity") {
+      steps.push({
+        step_type: "create-opportunity",
+        delay: "PT0S",
+        field_mappings: {
+          lead_id: { value: "{{trigger.subject.id}}" },
+          contact_id: { value: "{{trigger.subject.primary_contact_id}}" },
+          status_id: { value: wf.step.statusId },
+          confidence: { value: 20 },
+          value_period: { value: "one_time" },
+        },
+      });
+    } else {
+      steps.push({
+        step_type: "update-opportunity",
+        delay: "PT0S",
+        field_mappings: {
+          status_id: { value: wf.step.statusId },
+          confidence: { value: wf.step.confidence ?? 50 },
+        },
+      });
+    }
+
+    const payload = {
+      name: wf.name,
+      status: "active",
+      timezone: "America/New_York",
+      trigger: {
+        type: "lead-event",
+        event_types: "created_and_updated",
+        filters: [
+          {
+            filter_type: "status_id-any_of",
+            values: wf.triggerStatusIds,
+          },
+        ],
+      },
+      steps,
+    };
+
+    try {
+      // deno-lint-ignore no-explicit-any
+      const created = (await closePost(apiKey, "/sequence/", payload)) as any;
+      createdWorkflows.push(`${wf.name} (${created.id})`);
+      log.push(`Created workflow: ${wf.name} (${created.id})`);
+    } catch (err) {
+      log.push(
+        `Failed to create workflow ${wf.name}: ${(err as Error).message}`,
+      );
+    }
+  }
+
+  return {
+    userId,
+    pipelineId,
+    leadStatusesEnsured: REQUIRED_LEAD_STATUSES.length,
+    oppStatusesEnsured: REQUIRED_OPP_STATUSES.length,
+    workflowsCreated: createdWorkflows,
+    workflowsSkipped: skippedWorkflows,
+    log,
+  };
+}
