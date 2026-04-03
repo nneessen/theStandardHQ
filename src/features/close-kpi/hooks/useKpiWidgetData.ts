@@ -143,6 +143,11 @@ async function fetchStatCard(config: StatCardConfig): Promise<StatCardResult> {
   let value = 0;
   let label = metricDef?.label ?? "Total";
   let unit = metricDef?.unit;
+  let subMetrics: {
+    label: string;
+    value: number | string;
+    color?: "success" | "warning" | "destructive" | "muted";
+  }[] = [];
 
   const metric = config.metric;
 
@@ -169,15 +174,37 @@ async function fetchStatCard(config: StatCardConfig): Promise<StatCardResult> {
       switch (metric) {
         case "calls_total":
           value = res.call.total;
+          subMetrics = [
+            { label: "Answered", value: res.call.answered, color: "success" },
+            { label: "VM", value: res.call.voicemail },
+            { label: "Missed", value: res.call.missed, color: "warning" },
+          ];
           break;
         case "calls_inbound":
           value = res.call.inbound;
+          subMetrics = [{ label: "Outbound", value: res.call.outbound }];
           break;
         case "calls_outbound":
           value = res.call.outbound;
+          subMetrics = [
+            {
+              label: "Connect",
+              value: `${res.call.connectRate}%`,
+              color: "success",
+            },
+            { label: "Avg", value: `${res.call.avgDurationMin} min` },
+            { label: "Total", value: `${res.call.totalDurationMin} min` },
+          ];
           break;
         case "calls_answered":
           value = res.call.answered;
+          subMetrics = [
+            {
+              label: "Connect Rate",
+              value: `${res.call.connectRate}%`,
+              color: "success",
+            },
+          ];
           break;
         case "calls_voicemail":
           value = res.call.voicemail;
@@ -188,14 +215,31 @@ async function fetchStatCard(config: StatCardConfig): Promise<StatCardResult> {
         case "call_duration_total":
           value = res.call.totalDurationMin;
           unit = "minutes";
+          subMetrics = [
+            { label: "Calls", value: res.call.total },
+            { label: "Avg", value: `${res.call.avgDurationMin} min` },
+          ];
           break;
         case "call_duration_avg":
           value = res.call.avgDurationMin;
           unit = "minutes";
+          subMetrics = [
+            { label: "Total", value: `${res.call.totalDurationMin} min` },
+            { label: "Calls", value: res.call.total },
+            {
+              label: "Connect",
+              value: `${res.call.connectRate}%`,
+              color: "success",
+            },
+          ];
           break;
         case "call_connect_rate":
           value = res.call.connectRate;
           unit = "percent";
+          subMetrics = [
+            { label: "Answered", value: res.call.answered, color: "success" },
+            { label: "Total", value: res.call.total },
+          ];
           break;
         default:
           value = res.call.total;
@@ -213,13 +257,22 @@ async function fetchStatCard(config: StatCardConfig): Promise<StatCardResult> {
       switch (metric) {
         case "emails_sent":
           value = res.email.sent;
+          subMetrics = [
+            { label: "Received", value: res.email.received, color: "success" },
+            { label: "Total", value: res.email.total },
+          ];
           break;
         case "emails_received":
           value = res.email.received;
+          subMetrics = [{ label: "Sent", value: res.email.sent }];
           break;
         case "emails_total":
         default:
           value = res.email.total;
+          subMetrics = [
+            { label: "Sent", value: res.email.sent },
+            { label: "Received", value: res.email.received, color: "success" },
+          ];
       }
     }
   }
@@ -234,13 +287,22 @@ async function fetchStatCard(config: StatCardConfig): Promise<StatCardResult> {
       switch (metric) {
         case "sms_sent":
           value = res.sms.sent;
+          subMetrics = [
+            { label: "Received", value: res.sms.received, color: "success" },
+            { label: "Total", value: res.sms.total },
+          ];
           break;
         case "sms_received":
           value = res.sms.received;
+          subMetrics = [{ label: "Sent", value: res.sms.sent }];
           break;
         case "sms_total":
         default:
           value = res.sms.total;
+          subMetrics = [
+            { label: "Sent", value: res.sms.sent },
+            { label: "Received", value: res.sms.received, color: "success" },
+          ];
       }
     }
   }
@@ -272,34 +334,82 @@ async function fetchStatCard(config: StatCardConfig): Promise<StatCardResult> {
       case "pipeline_value":
         value = res.totalValue;
         unit = "currency";
+        subMetrics = [
+          { label: "Active", value: res.activeCount },
+          {
+            label: "Won",
+            value: `$${res.wonValue.toLocaleString()}`,
+            color: "success",
+          },
+          { label: "WR", value: `${res.winRate}%` },
+        ];
         break;
       case "pipeline_count":
         value = res.activeCount;
+        subMetrics = [
+          { label: "Value", value: `$${res.totalValue.toLocaleString()}` },
+          { label: "Avg", value: `$${res.avgDealSize.toLocaleString()}` },
+        ];
         break;
       case "win_rate":
         value = res.winRate;
         unit = "percent";
+        subMetrics = [
+          { label: "Won", value: res.wonCount, color: "success" },
+          { label: "Lost", value: res.lostCount, color: "destructive" },
+          { label: "Active", value: res.activeCount },
+        ];
         break;
       case "avg_deal_size":
         value = res.avgDealSize;
         unit = "currency";
+        subMetrics = [
+          { label: "Pipeline", value: `$${res.totalValue.toLocaleString()}` },
+          { label: "Deals", value: res.total },
+          {
+            label: "Won $",
+            value: `$${res.wonValue.toLocaleString()}`,
+            color: "success",
+          },
+        ];
         break;
       case "avg_time_to_close":
         value = res.avgTimeToCloseDays;
         unit = "duration_days";
+        subMetrics = [{ label: "Won", value: res.wonCount, color: "success" }];
         break;
       case "deals_won":
         value = res.wonCount;
+        subMetrics = [
+          {
+            label: "Revenue",
+            value: `$${res.wonValue.toLocaleString()}`,
+            color: "success",
+          },
+          { label: "Lost", value: res.lostCount, color: "destructive" },
+          { label: "WR", value: `${res.winRate}%` },
+        ];
         break;
       case "deals_lost":
         value = res.lostCount;
+        subMetrics = [
+          { label: "Won", value: res.wonCount, color: "success" },
+          { label: "WR", value: `${res.winRate}%` },
+        ];
         break;
       case "deals_won_value":
         value = res.wonValue;
         unit = "currency";
+        subMetrics = [
+          { label: "Deals", value: res.wonCount, color: "success" },
+          { label: "Avg Deal", value: `$${res.avgDealSize.toLocaleString()}` },
+          {
+            label: "Pipeline",
+            value: `$${(res.totalValue - res.wonValue).toLocaleString()}`,
+          },
+        ];
         break;
       case "sales_velocity": {
-        // Sales velocity = (# opps × avg deal × win rate) / avg time to win
         const velocity =
           res.avgTimeToCloseDays > 0
             ? (res.wonCount * res.avgDealSize * (res.winRate / 100)) /
@@ -307,6 +417,10 @@ async function fetchStatCard(config: StatCardConfig): Promise<StatCardResult> {
             : 0;
         value = Math.round(velocity * 100) / 100;
         unit = "currency";
+        subMetrics = [
+          { label: "Cycle", value: `${res.avgTimeToCloseDays}d` },
+          { label: "WR", value: `${res.winRate}%` },
+        ];
         break;
       }
       default:
@@ -342,6 +456,7 @@ async function fetchStatCard(config: StatCardConfig): Promise<StatCardResult> {
     changePercent,
     label,
     unit,
+    subMetrics: subMetrics.length > 0 ? subMetrics : undefined,
   };
 }
 
