@@ -19,6 +19,10 @@ const POSITIVE_STATUS_PATTERNS = [
   "quoted",
   "appointment",
   "scheduled",
+  "application",
+  "underwriting",
+  "sold",
+  "won",
 ];
 
 const NEGATIVE_STATUS_PATTERNS = [
@@ -30,9 +34,13 @@ const NEGATIVE_STATUS_PATTERNS = [
   "not in service",
   "hung up",
   "missed appointment",
+  "no show",
+  "no-show",
+  "noshow",
   "dead",
   "dnc",
   "do not contact",
+  "lost",
 ];
 
 function classifyStatus(
