@@ -681,6 +681,35 @@ async function provisionAgentPipeline(apiKey: string, userId: string) {
     }
   }
 
+  // 6. Register webhook for lead status changes (if not already registered)
+  const WEBHOOK_URL =
+    "https://pcyaqwodnyrpkaiojnpz.supabase.co/functions/v1/close-webhook-handler";
+  let webhookStatus = "skipped";
+  try {
+    // deno-lint-ignore no-explicit-any
+    const whRes = (await closeGet(apiKey, "/webhook/?_limit=100")) as any;
+    const existingWebhooks = (whRes.data ?? []) as {
+      id: string;
+      url: string;
+    }[];
+    const hasWebhook = existingWebhooks.some((wh) => wh.url === WEBHOOK_URL);
+
+    if (!hasWebhook) {
+      await closePost(apiKey, "/webhook/", {
+        url: WEBHOOK_URL,
+        events: [{ object_type: "lead", action: "updated" }],
+      });
+      webhookStatus = "created";
+      log.push("Registered webhook for lead status changes");
+    } else {
+      webhookStatus = "already_exists";
+      log.push("Webhook already registered");
+    }
+  } catch (err) {
+    webhookStatus = "failed";
+    log.push(`Failed to register webhook: ${(err as Error).message}`);
+  }
+
   return {
     userId,
     pipelineId,
@@ -688,6 +717,7 @@ async function provisionAgentPipeline(apiKey: string, userId: string) {
     oppStatusesEnsured: REQUIRED_OPP_STATUSES.length,
     workflowsCreated: createdWorkflows,
     workflowsSkipped: skippedWorkflows,
+    webhookStatus,
     log,
   };
 }
