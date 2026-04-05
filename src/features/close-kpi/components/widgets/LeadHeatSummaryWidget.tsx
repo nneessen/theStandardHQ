@@ -3,6 +3,7 @@
 
 import React from "react";
 import { Flame, RefreshCw, Loader2 } from "lucide-react";
+import { formatTimeAgo } from "../../lib/format-time";
 import { Button } from "@/components/ui/button";
 import type {
   LeadHeatSummaryResult,
@@ -153,7 +154,7 @@ export const LeadHeatSummaryWidget: React.FC<LeadHeatSummaryWidgetProps> = ({
               ))}
           </div>
           <span className="text-[10px] text-muted-foreground">
-            {formatTimeAgo(lastScoredAt)}
+            {formatTimeAgo(lastScoredAt, { nullFallback: "Not scored yet" })}
             {isPersonalized && (
               <span className="ml-1 rounded bg-emerald-100 px-1 py-px text-[9px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
                 Personalized
@@ -170,13 +171,3 @@ export const LeadHeatSummaryWidget: React.FC<LeadHeatSummaryWidgetProps> = ({
     </div>
   );
 };
-
-function formatTimeAgo(ts: string | null): string {
-  if (!ts) return "Not scored yet";
-  const mins = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.round(hrs / 24)}d ago`;
-}

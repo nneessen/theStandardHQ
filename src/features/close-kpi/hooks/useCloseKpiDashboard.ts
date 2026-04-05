@@ -141,6 +141,8 @@ export function useLeadHeatDashboardStatus(enabled = true) {
     staleTime: 60_000,
     gcTime: 10 * 60_000,
     refetchOnWindowFocus: false,
+    refetchInterval: (query) =>
+      query.state.data?.state === "running" ? 5_000 : false,
   });
 }
 

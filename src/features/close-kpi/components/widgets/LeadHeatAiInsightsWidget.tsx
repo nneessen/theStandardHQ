@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import type { LeadHeatAiInsightsResult } from "../../types/close-kpi.types";
 import { useLeadHeatRescore } from "../../hooks/useCloseKpiDashboard";
+import { formatTimeAgo } from "../../lib/format-time";
 
 interface LeadHeatAiInsightsWidgetProps {
   data: LeadHeatAiInsightsResult;
@@ -161,12 +162,3 @@ export const LeadHeatAiInsightsWidget: React.FC<
     </div>
   );
 };
-
-function formatTimeAgo(ts: string): string {
-  const mins = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.round(hrs / 24)}d ago`;
-}

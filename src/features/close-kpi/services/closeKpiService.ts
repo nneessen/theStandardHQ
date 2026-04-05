@@ -18,20 +18,10 @@ async function closeKpiApi<T>(
   action: string,
   params?: Record<string, unknown>,
 ): Promise<T> {
-  let accessToken = (await supabase.auth.getSession()).data.session
-    ?.access_token;
-
-  if (!accessToken) {
-    const {
-      data: { session },
-    } = await supabase.auth.refreshSession();
-    accessToken = session?.access_token;
-  }
+  const accessToken = await getAccessToken();
 
   const { data, error } = await supabase.functions.invoke("close-kpi-data", {
-    headers: accessToken
-      ? { Authorization: `Bearer ${accessToken}` }
-      : undefined,
+    headers: { Authorization: `Bearer ${accessToken}` },
     body: {
       action,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -451,6 +441,46 @@ export const closeKpiService = {
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
+    // Patterns kept in sync with EXCLUDED_STATUS_PATTERNS in lead-heat.ts,
+    // close-lead-heat-score/index.ts, and close-ai-smart-view/index.ts.
+    const excludedPatterns = [
+      "sold",
+      "won",
+      "policy pending",
+      "policy issued",
+      "issued and paid",
+      "bound",
+      "in force",
+      "active policy",
+      "appointment",
+      "not interested",
+      "do not contact",
+      "dnc",
+      "disqualified",
+      "declined",
+      "contacted",
+      "spoke",
+      "texting",
+      "call back",
+      "callback",
+      "voicemail",
+      "no answer",
+      "straight to vm",
+      "hung up",
+      "bad number",
+      "wrong number",
+      "doesn't ring",
+      "doesnt ring",
+      "blocked",
+      "not in service",
+      "dead",
+      "lost",
+      "no show",
+      "quoted",
+      "application",
+      "underwriting",
+    ];
+
     let query = supabase
       .from("lead_heat_scores")
       .select(
@@ -458,15 +488,15 @@ export const closeKpiService = {
         { count: "exact" },
       )
       .eq("user_id", userId)
-      .not("signals->>hasWonOpportunity", "eq", "true")
-      .not("signals->>currentStatusLabel", "ilike", "%sold%")
-      .not("signals->>currentStatusLabel", "ilike", "%won%")
-      .not("signals->>currentStatusLabel", "ilike", "%policy pending%")
-      .not("signals->>currentStatusLabel", "ilike", "%policy issued%")
-      .not("signals->>currentStatusLabel", "ilike", "%issued%")
-      .not("signals->>currentStatusLabel", "ilike", "%bound%")
-      .not("signals->>currentStatusLabel", "ilike", "%in force%")
-      .not("signals->>currentStatusLabel", "ilike", "%active policy%");
+      .not("signals->>hasWonOpportunity", "eq", "true");
+
+    for (const pattern of excludedPatterns) {
+      query = query.not(
+        "signals->>currentStatusLabel",
+        "ilike",
+        `%${pattern}%`,
+      );
+    }
 
     if (filterLevel && filterLevel !== "all") {
       query = query.eq("heat_level", filterLevel);
@@ -486,7 +516,7 @@ export const closeKpiService = {
         query = query.order("score", { ascending: false });
     }
 
-    const { data, count, error } = await query.range(from, to);
+    const { data, error } = await query.range(from, to);
 
     if (error) throw new Error(error.message);
 
@@ -530,7 +560,7 @@ export const closeKpiService = {
 
     return {
       leads,
-      total: count ?? leads.length,
+      total: leads.length,
       page,
       pageSize,
     };

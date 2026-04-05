@@ -80,11 +80,11 @@ describe("scoreLastInteractionRecency", () => {
   it("returns 0 for null", () => {
     expect(scoreLastInteractionRecency(null)).toBe(0);
   });
-  it("returns 7 for very recent (<=4h)", () => {
-    expect(scoreLastInteractionRecency(2)).toBe(7);
+  it("returns 9 for very recent (<=4h)", () => {
+    expect(scoreLastInteractionRecency(2)).toBe(9);
   });
-  it("returns 5 for 24h", () => {
-    expect(scoreLastInteractionRecency(24)).toBe(5);
+  it("returns 7 for 24h", () => {
+    expect(scoreLastInteractionRecency(24)).toBe(7);
   });
   it("returns 0 for very stale (>2 weeks)", () => {
     expect(scoreLastInteractionRecency(500)).toBe(0);
@@ -96,12 +96,12 @@ describe("scoreLastInteractionRecency", () => {
 // ═══════════════════════════════════════════════════════════════════════
 
 describe("scoreInboundCalls", () => {
-  it("returns 10 for 3+ inbound calls", () => {
-    expect(scoreInboundCalls(3)).toBe(10);
-    expect(scoreInboundCalls(10)).toBe(10);
+  it("returns 13 for 3+ inbound calls", () => {
+    expect(scoreInboundCalls(3)).toBe(13);
+    expect(scoreInboundCalls(10)).toBe(13);
   });
-  it("returns 6 for 1 inbound call", () => {
-    expect(scoreInboundCalls(1)).toBe(6);
+  it("returns 7 for 1 inbound call", () => {
+    expect(scoreInboundCalls(1)).toBe(7);
   });
   it("returns 0 for no inbound calls", () => {
     expect(scoreInboundCalls(0)).toBe(0);
@@ -109,11 +109,11 @@ describe("scoreInboundCalls", () => {
 });
 
 describe("scoreQuoteRequested", () => {
-  it("returns 5 for quoted status", () => {
-    expect(scoreQuoteRequested(true, 0)).toBe(5);
+  it("returns 7 for quoted status", () => {
+    expect(scoreQuoteRequested(true, 0)).toBe(7);
   });
-  it("returns 4 for 2+ positive advances without quote", () => {
-    expect(scoreQuoteRequested(false, 2)).toBe(4);
+  it("returns 5 for 2+ positive advances without quote", () => {
+    expect(scoreQuoteRequested(false, 2)).toBe(5);
   });
   it("returns 0 for no signals", () => {
     expect(scoreQuoteRequested(false, 0)).toBe(0);
@@ -195,11 +195,11 @@ describe("scoreStatusVelocity", () => {
 // ═══════════════════════════════════════════════════════════════════════
 
 describe("scoreHasOpportunity", () => {
-  it("returns 6 for active opportunity", () => {
-    expect(scoreHasOpportunity(true, true)).toBe(6);
+  it("returns 9 for active opportunity", () => {
+    expect(scoreHasOpportunity(true, true)).toBe(9);
   });
-  it("returns 2 for closed opportunity only", () => {
-    expect(scoreHasOpportunity(false, true)).toBe(2);
+  it("returns 3 for closed opportunity only", () => {
+    expect(scoreHasOpportunity(false, true)).toBe(3);
   });
   it("returns 0 for no opportunity", () => {
     expect(scoreHasOpportunity(false, false)).toBe(0);

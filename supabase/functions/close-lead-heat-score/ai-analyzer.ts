@@ -14,8 +14,8 @@ import type {
 
 // ─── Config ───────────────────────────────────────────────────────────
 
-const PORTFOLIO_MODEL = "claude-haiku-4-5-20251001";
-const DEEP_DIVE_MODEL = "claude-sonnet-4-20250514";
+const PORTFOLIO_MODEL = "claude-sonnet-4-6-20250627";
+const DEEP_DIVE_MODEL = "claude-sonnet-4-6-20250627";
 const MAX_PORTFOLIO_TOKENS = 4096;
 const MAX_DEEP_DIVE_TOKENS = 1024;
 
@@ -173,13 +173,21 @@ export async function analyzePortfolio(
 
   const parsed = parseStructuredJson<PortfolioAnalysisResult>(text);
 
+  // Runtime validation: ensure expected shapes (LLM output is untrusted)
+  if (!Array.isArray(parsed.weightAdjustments)) parsed.weightAdjustments = [];
+  if (!Array.isArray(parsed.insights)) parsed.insights = [];
+  if (!Array.isArray(parsed.anomalies)) parsed.anomalies = [];
+  if (!Array.isArray(parsed.recommendations)) parsed.recommendations = [];
+  if (typeof parsed.overallAssessment !== "string")
+    parsed.overallAssessment = "";
+
   // Validate weight adjustments are bounded
-  if (parsed.weightAdjustments) {
-    parsed.weightAdjustments = parsed.weightAdjustments.filter(
-      (wa) =>
-        wa.recommendedMultiplier >= 0.3 && wa.recommendedMultiplier <= 2.0,
-    );
-  }
+  parsed.weightAdjustments = parsed.weightAdjustments.filter(
+    (wa) =>
+      typeof wa?.recommendedMultiplier === "number" &&
+      wa.recommendedMultiplier >= 0.3 &&
+      wa.recommendedMultiplier <= 2.0,
+  );
 
   return { result: parsed, tokensUsed };
 }
@@ -238,7 +246,7 @@ Return JSON matching this exact schema:
 {
   "adjustedScore": number,
   "confidence": number,
-  "heatLevel": "hot|warm|neutral|cool|cold",
+  "heatLevel": "hot|warming|neutral|cooling|cold",
   "narrative": "string (2-4 sentences)",
   "keySignals": [{ "signal": "string", "impact": "positive|negative|neutral", "detail": "string" }],
   "recommendedAction": { "action": "string", "timing": "string", "reasoning": "string" },
@@ -272,6 +280,23 @@ export async function analyzeLeadDeepDive(
     (response.usage?.input_tokens ?? 0) + (response.usage?.output_tokens ?? 0);
 
   const parsed = parseStructuredJson<LeadDeepDiveResult>(text);
+
+  // Runtime validation: ensure expected shapes (LLM output is untrusted)
+  const VALID_HEAT = new Set(["hot", "warming", "neutral", "cooling", "cold"]);
+  if (!VALID_HEAT.has(parsed.heatLevel))
+    parsed.heatLevel = "neutral" as HeatLevel;
+  if (typeof parsed.adjustedScore !== "number" || isNaN(parsed.adjustedScore))
+    parsed.adjustedScore = input.score;
+  if (typeof parsed.confidence !== "number" || isNaN(parsed.confidence))
+    parsed.confidence = 0.5;
+  if (typeof parsed.narrative !== "string") parsed.narrative = "";
+  if (!Array.isArray(parsed.keySignals)) parsed.keySignals = [];
+  if (!parsed.recommendedAction || typeof parsed.recommendedAction !== "object")
+    parsed.recommendedAction = { action: "", timing: "", reasoning: "" };
+  if (!Array.isArray(parsed.riskFactors)) parsed.riskFactors = [];
+  const VALID_PROB = new Set(["high", "medium", "low", "very_low"]);
+  if (!VALID_PROB.has(parsed.conversionProbability))
+    parsed.conversionProbability = "medium";
 
   // Clamp adjusted score to valid range
   parsed.adjustedScore = Math.max(
@@ -417,13 +442,15 @@ export function buildPortfolioSummary(
 
   // Top hot and cold leads for anomaly checks
   const sorted = [...scoredLeads].sort((a, b) => b.score - a.score);
-  const topHotLeads = sorted.slice(0, 10).map((l) => ({
-    name: l.signals.displayName,
+  // Anonymize lead names in the portfolio prompt to avoid sending PII to the LLM.
+  // The LLM sees "Lead #1", "Lead #2", etc. Real names are mapped back via closeLeadId.
+  const topHotLeads = sorted.slice(0, 10).map((l, i) => ({
+    name: `Lead #${i + 1}`,
     score: l.score,
     lastTouch: l.signals.lastActivityAt,
   }));
-  const topColdLeads = sorted.slice(-10).map((l) => ({
-    name: l.signals.displayName,
+  const topColdLeads = sorted.slice(-10).map((l, i) => ({
+    name: `Cold Lead #${i + 1}`,
     score: l.score,
     lastTouch: l.signals.lastActivityAt,
   }));

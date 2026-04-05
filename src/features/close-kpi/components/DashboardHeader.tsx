@@ -4,6 +4,7 @@
 
 import React from "react";
 import { RefreshCw } from "lucide-react";
+import { formatTimeAgo } from "../lib/format-time";
 import { Button } from "@/components/ui/button";
 import { GlobalDateRange } from "./GlobalDateRange";
 import type { DateRangePreset } from "../types/close-kpi.types";
@@ -16,16 +17,6 @@ interface DashboardHeaderProps {
   onRescore?: () => void;
   isRescoring?: boolean;
   lastUpdated: string | null;
-}
-
-function formatTimeAgo(ts: string | null): string {
-  if (!ts) return "";
-  const mins = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.round(hrs / 24)}d ago`;
 }
 
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({

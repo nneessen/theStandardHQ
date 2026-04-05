@@ -52,7 +52,24 @@ export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
   };
 
   const handleRowClick = async (lead: LeadHeatScoreRow) => {
-    if (expandedLeadId === lead.closeLeadId) {
+    // If clicking the expanded lead with an error, retry instead of collapsing
+    if (
+      expandedLeadId === lead.closeLeadId &&
+      deepDiveErrors[lead.closeLeadId]
+    ) {
+      // Clear error + cached data to trigger a fresh fetch below
+      setDeepDiveErrors((prev) => {
+        const next = { ...prev };
+        delete next[lead.closeLeadId];
+        return next;
+      });
+      setDeepDiveData((prev) => {
+        const next = { ...prev };
+        delete next[lead.closeLeadId];
+        return next;
+      });
+      // Fall through to the fetch logic (don't return)
+    } else if (expandedLeadId === lead.closeLeadId) {
       setExpandedLeadId(null);
       return;
     }
@@ -307,7 +324,7 @@ const DeepDivePanel: React.FC<DeepDivePanelProps> = ({
           <span
             className={`font-semibold ${probColors[data.conversionProbability] ?? ""}`}
           >
-            {data.conversionProbability.replace("_", " ")}
+            {(data.conversionProbability ?? "unknown").replace("_", " ")}
           </span>
         </span>
         <span className="text-muted-foreground">

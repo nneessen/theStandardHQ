@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { MetricTooltip } from "@/components/ui/MetricTooltip";
 import { LeadHeatBadge } from "./LeadHeatBadge";
 import { SECTION_TOOLTIPS } from "../config/prebuilt-layout";
+import { formatTimeAgo } from "../lib/format-time";
 import type {
   LeadHeatSummaryResult,
   LeadHeatListResult,
@@ -106,9 +107,11 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
     1,
     Math.ceil(sourceLeads.length / LEADS_PER_PAGE),
   );
+  // Clamp page to valid range when data changes (e.g., rescore reduces lead count)
+  const effectiveLeadPage = Math.min(leadPage, Math.max(0, totalPages - 1));
   const visibleLeads = sourceLeads.slice(
-    leadPage * LEADS_PER_PAGE,
-    (leadPage + 1) * LEADS_PER_PAGE,
+    effectiveLeadPage * LEADS_PER_PAGE,
+    (effectiveLeadPage + 1) * LEADS_PER_PAGE,
   );
 
   // Score health
@@ -389,7 +392,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                     className="flex items-center gap-2 rounded px-2 py-1.5 hover:bg-muted/40 transition-colors"
                   >
                     <span className="text-[10px] text-muted-foreground/50 w-4 shrink-0 text-right font-mono">
-                      {leadPage * LEADS_PER_PAGE + i + 1}
+                      {effectiveLeadPage * LEADS_PER_PAGE + i + 1}
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1.5">
@@ -427,9 +430,9 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
             {totalPages > 1 && (
               <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-border/30">
                 <span className="text-[9px] text-muted-foreground">
-                  {leadPage * LEADS_PER_PAGE + 1}–
+                  {effectiveLeadPage * LEADS_PER_PAGE + 1}–
                   {Math.min(
-                    (leadPage + 1) * LEADS_PER_PAGE,
+                    (effectiveLeadPage + 1) * LEADS_PER_PAGE,
                     sourceLeads.length,
                   )}{" "}
                   of {sourceLeads.length}
@@ -437,7 +440,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => setLeadPage((p) => Math.max(0, p - 1))}
-                    disabled={leadPage === 0}
+                    disabled={effectiveLeadPage === 0}
                     className="px-1.5 py-0.5 rounded text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 disabled:opacity-30 disabled:cursor-default transition-colors"
                   >
                     Prev
@@ -447,7 +450,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                       key={i}
                       onClick={() => setLeadPage(i)}
                       className={`w-5 h-5 rounded text-[10px] font-mono transition-colors ${
-                        i === leadPage
+                        i === effectiveLeadPage
                           ? "bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 font-semibold"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                       }`}
@@ -464,7 +467,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                     onClick={() =>
                       setLeadPage((p) => Math.min(totalPages - 1, p + 1))
                     }
-                    disabled={leadPage === totalPages - 1}
+                    disabled={effectiveLeadPage === totalPages - 1}
                     className="px-1.5 py-0.5 rounded text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 disabled:opacity-30 disabled:cursor-default transition-colors"
                   >
                     Next
@@ -569,12 +572,3 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
     </div>
   );
 };
-
-function formatTimeAgo(ts: string): string {
-  const mins = Math.round((Date.now() - new Date(ts).getTime()) / 60000);
-  if (mins < 1) return "Just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.round(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.round(hrs / 24)}d ago`;
-}

@@ -201,11 +201,61 @@ async function syncSmartViewForUser(
   // deno-lint-ignore no-explicit-any
   dataClient: any,
 ): Promise<SyncResult> {
-  // 1. Fetch top N leads by AI score
-  const { data: topLeads, error: queryError } = await dataClient
+  // 1. Fetch top N leads by AI score — only untouched/initial leads
+  // Patterns kept in sync with EXCLUDED_STATUS_PATTERNS in lead-heat.ts
+  const excludedPatterns = [
+    "sold",
+    "won",
+    "policy pending",
+    "policy issued",
+    "issued and paid",
+    "bound",
+    "in force",
+    "active policy",
+    "appointment",
+    "not interested",
+    "do not contact",
+    "dnc",
+    "disqualified",
+    "declined",
+    "contacted",
+    "spoke",
+    "texting",
+    "call back",
+    "callback",
+    "voicemail",
+    "no answer",
+    "straight to vm",
+    "hung up",
+    "bad number",
+    "wrong number",
+    "doesn't ring",
+    "doesnt ring",
+    "blocked",
+    "not in service",
+    "dead",
+    "lost",
+    "no show",
+    "quoted",
+    "application",
+    "underwriting",
+  ];
+
+  let topLeadsQuery = dataClient
     .from("lead_heat_scores")
     .select("close_lead_id, score, display_name")
     .eq("user_id", userId)
+    .not("signals->>hasWonOpportunity", "eq", "true");
+
+  for (const pattern of excludedPatterns) {
+    topLeadsQuery = topLeadsQuery.not(
+      "signals->>currentStatusLabel",
+      "ilike",
+      `%${pattern}%`,
+    );
+  }
+
+  const { data: topLeads, error: queryError } = await topLeadsQuery
     .order("score", { ascending: false })
     .limit(TOP_N);
 

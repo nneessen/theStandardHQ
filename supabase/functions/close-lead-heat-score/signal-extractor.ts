@@ -47,10 +47,12 @@ function classifyStatus(
   statusLabel: string,
 ): "positive" | "neutral" | "negative" {
   const lower = statusLabel.toLowerCase();
-  if (POSITIVE_STATUS_PATTERNS.some((p) => lower.includes(p)))
-    return "positive";
+  // Check negative patterns FIRST — they are stronger signals.
+  // Prevents "callback no show" from matching "callback" (positive) before "no show" (negative).
   if (NEGATIVE_STATUS_PATTERNS.some((p) => lower.includes(p)))
     return "negative";
+  if (POSITIVE_STATUS_PATTERNS.some((p) => lower.includes(p)))
+    return "positive";
   return "neutral";
 }
 
@@ -83,6 +85,7 @@ function isCallbackStatus(statusLabel: string): boolean {
 
 function hoursBetween(from: string | Date, to: Date): number {
   const fromDate = typeof from === "string" ? new Date(from) : from;
+  if (isNaN(fromDate.getTime())) return 0;
   return Math.max(0, (to.getTime() - fromDate.getTime()) / (1000 * 60 * 60));
 }
 
@@ -237,14 +240,13 @@ export function extractSignals(
   const currentStatusLabel =
     lead.status_label ?? statusLabels.get(lead.status_id) ?? "Unknown";
 
-  // Filter activities for this lead
-  const leadCalls = calls.filter((c) => c.lead_id === lead.id);
-  const leadEmails = emails.filter((e) => e.lead_id === lead.id);
-  const leadSms = sms.filter((s) => s.lead_id === lead.id);
-  const leadStatusChanges = statusChanges.filter(
-    (sc) => sc.lead_id === lead.id,
-  );
-  const leadOpps = opportunities.filter((o) => o.lead_id === lead.id);
+  // Activities are expected to be pre-filtered for this lead by the caller.
+  // This avoids O(N*M) filtering when scoring large portfolios.
+  const leadCalls = calls;
+  const leadEmails = emails;
+  const leadSms = sms;
+  const leadStatusChanges = statusChanges;
+  const leadOpps = opportunities;
 
   // Call metrics
   const callsOutbound = leadCalls.filter((c) => isOutbound(c.direction)).length;
@@ -252,11 +254,18 @@ export function extractSignals(
   const callsAnswered = leadCalls.filter(
     (c) => isOutbound(c.direction) && c.disposition === "answered",
   ).length;
-  const straightToVmCount = leadCalls.filter(
-    (c) =>
-      c.disposition === "vm-answer" ||
-      currentStatusLabel.toLowerCase().includes("straight to vm"),
+  // Count only outbound calls that hit voicemail by disposition.
+  // If the lead's status itself says "straight to vm" but no calls have that
+  // disposition, treat as 1 (the status is evidence of at least one VM event).
+  const vmAnswerCount = leadCalls.filter(
+    (c) => isOutbound(c.direction) && c.disposition === "vm-answer",
   ).length;
+  const straightToVmCount =
+    vmAnswerCount > 0
+      ? vmAnswerCount
+      : currentStatusLabel.toLowerCase().includes("straight to vm")
+        ? 1
+        : 0;
   const consecutiveNoAnswers = countConsecutiveNoAnswers(leadCalls);
 
   // Email metrics
@@ -270,10 +279,12 @@ export function extractSignals(
   const smsInbound = leadSms.filter((s) => isInbound(s.direction)).length;
 
   // Find most recent activity across all channels
+  // Include status changes so leads with only status activity aren't seen as stale
   const allActivityDates = [
     ...leadCalls.map((c) => c.date_created),
     ...leadEmails.map((e) => e.date_created),
     ...leadSms.map((s) => s.date_created),
+    ...leadStatusChanges.map((sc) => sc.date_created),
   ].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
   const lastActivityAt = allActivityDates[0] ?? null;

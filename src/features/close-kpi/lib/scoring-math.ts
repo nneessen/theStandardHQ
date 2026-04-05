@@ -56,11 +56,11 @@ export function scoreLastInteractionRecency(
   hoursSinceLastTouch: number | null,
 ): number {
   if (hoursSinceLastTouch === null) return 0;
-  if (hoursSinceLastTouch <= 4) return 7;
-  if (hoursSinceLastTouch <= 12) return 6;
-  if (hoursSinceLastTouch <= 24) return 5;
-  if (hoursSinceLastTouch <= 48) return 4;
-  if (hoursSinceLastTouch <= 72) return 3;
+  if (hoursSinceLastTouch <= 4) return 9;
+  if (hoursSinceLastTouch <= 12) return 8;
+  if (hoursSinceLastTouch <= 24) return 7;
+  if (hoursSinceLastTouch <= 48) return 5;
+  if (hoursSinceLastTouch <= 72) return 4;
   if (hoursSinceLastTouch <= 168) return 2;
   if (hoursSinceLastTouch <= 336) return 1;
   return 0;
@@ -69,9 +69,9 @@ export function scoreLastInteractionRecency(
 // ─── Behavioral Signals (25 pts max) ─────────────────────────────────
 
 export function scoreInboundCalls(inboundCallCount: number): number {
-  if (inboundCallCount >= 3) return 10;
-  if (inboundCallCount === 2) return 8;
-  if (inboundCallCount === 1) return 6;
+  if (inboundCallCount >= 3) return 13;
+  if (inboundCallCount === 2) return 10;
+  if (inboundCallCount === 1) return 7;
   return 0;
 }
 
@@ -79,9 +79,9 @@ export function scoreQuoteRequested(
   hasQuoted: boolean,
   positiveAdvances: number,
 ): number {
-  if (hasQuoted) return 5;
-  if (positiveAdvances >= 2) return 4;
-  if (positiveAdvances === 1) return 2;
+  if (hasQuoted) return 7;
+  if (positiveAdvances >= 2) return 5;
+  if (positiveAdvances === 1) return 3;
   return 0;
 }
 
@@ -152,8 +152,8 @@ export function scoreHasOpportunity(
   hasActiveOpp: boolean,
   hasAnyOpp: boolean,
 ): number {
-  if (hasActiveOpp) return 6;
-  if (hasAnyOpp) return 2;
+  if (hasActiveOpp) return 9;
+  if (hasAnyOpp) return 3;
   return 0;
 }
 

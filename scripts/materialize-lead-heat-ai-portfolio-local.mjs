@@ -14,7 +14,7 @@ const LOCAL_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY;
 const DEFAULT_USER_EMAIL =
   process.env.CLOSE_KPI_AI_PORTFOLIO_EMAIL || "nickneessen@thestandardhq.com";
-const PORTFOLIO_MODEL = "claude-haiku-4-5-20251001";
+const PORTFOLIO_MODEL = "claude-sonnet-4-6-20250627";
 const DEFAULT_WEIGHTS = {
   callAnswerRate: { multiplier: 1.0 },
   emailReplyRate: { multiplier: 1.0 },
@@ -34,15 +34,49 @@ const DEFAULT_WEIGHTS = {
   sourceQuality: { multiplier: 1.0 },
   similarLeadPattern: { multiplier: 1.0 },
 };
-const CLOSED_WON_STATUS_PATTERNS = [
+const EXCLUDED_STATUS_PATTERNS = [
+  // Closed-won / post-sale
   "sold",
-  "won -",
+  "won",
   "policy pending",
   "policy issued",
   "issued and paid",
   "bound",
   "in force",
   "active policy",
+  // Appointment-stage
+  "appointment",
+  // Terminal / disqualified
+  "not interested",
+  "do not contact",
+  "dnc",
+  "disqualified",
+  "declined",
+  // Contacted / worked
+  "contacted",
+  "spoke",
+  "texting",
+  "call back",
+  "callback",
+  // Negative contact outcomes
+  "voicemail",
+  "no answer",
+  "straight to vm",
+  "hung up",
+  "bad number",
+  "wrong number",
+  "doesn't ring",
+  "doesnt ring",
+  "blocked",
+  "not in service",
+  // Dead / lost
+  "dead",
+  "lost",
+  "no show",
+  // Progressed past initial stage
+  "quoted",
+  "application",
+  "underwriting",
 ];
 const PORTFOLIO_SYSTEM_PROMPT = `You are an insurance sales analytics engine. You analyze an insurance agent's Close CRM lead portfolio metrics and return structured JSON recommendations.
 
@@ -187,7 +221,7 @@ function isRankableLead(signals) {
 
   return (
     !hasWonOpportunity &&
-    !CLOSED_WON_STATUS_PATTERNS.some((pattern) =>
+    !EXCLUDED_STATUS_PATTERNS.some((pattern) =>
       currentStatusLabel.includes(pattern),
     )
   );

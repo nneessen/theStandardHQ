@@ -77,6 +77,51 @@ function jsonResponse(data: any, status = 200, req?: Request) {
   });
 }
 
+// ─── API Key Resolution ──────────────────────────────────────────────
+
+/** Resolve Close API key for a user: local dev env var fallback OR per-user encrypted key. */
+// deno-lint-ignore no-explicit-any
+async function resolveCloseApiKey(
+  userId: string,
+  dataClient: any,
+): Promise<string> {
+  const envApiKey = Deno.env.get("CLOSE_API_KEY");
+  const isLocalEnv = Deno.env.get("ENVIRONMENT") === "local";
+
+  if (envApiKey && isLocalEnv) {
+    console.warn(
+      "[lead-heat-score] Using shared CLOSE_API_KEY (local dev mode)",
+    );
+    return envApiKey;
+  }
+
+  const { data: encryptedKey, error: rpcError } = await dataClient.rpc(
+    "get_close_api_key",
+    { p_user_id: userId },
+  );
+
+  if (rpcError || !encryptedKey) {
+    throw Object.assign(new Error("Close CRM not connected."), {
+      code: "CLOSE_NOT_CONNECTED",
+    });
+  }
+
+  try {
+    return await decrypt(encryptedKey);
+  } catch (decryptErr) {
+    console.error("[lead-heat-score] Failed to decrypt Close API key:", {
+      userId,
+      error: (decryptErr as Error).message,
+    });
+    throw Object.assign(
+      new Error(
+        "Close CRM configuration error. Please reconnect your Close account or contact your agency admin.",
+      ),
+      { code: "CLOSE_DECRYPT_ERROR" },
+    );
+  }
+}
+
 // ─── Close API v1 Client (matches close-kpi-data) ────────────────────
 
 const CLOSE_API_BASE = "https://api.close.com/api/v1";
@@ -170,17 +215,51 @@ async function fetchStatusLabels(apiKey: string): Promise<Map<string, string>> {
   return map;
 }
 
-const PORTFOLIO_ANALYSIS_MODEL = "claude-haiku-4-5-20251001";
+const PORTFOLIO_ANALYSIS_MODEL = "claude-sonnet-4-6-20250627";
 const PORTFOLIO_ANALYSIS_TTL_MS = 4 * 60 * 60 * 1000;
-const CLOSED_WON_STATUS_PATTERNS = [
+const EXCLUDED_STATUS_PATTERNS = [
+  // Closed-won / post-sale
   "sold",
-  "won -",
+  "won",
   "policy pending",
   "policy issued",
   "issued and paid",
   "bound",
   "in force",
   "active policy",
+  // Appointment-stage
+  "appointment",
+  // Terminal / disqualified
+  "not interested",
+  "do not contact",
+  "dnc",
+  "disqualified",
+  "declined",
+  // Contacted / worked
+  "contacted",
+  "spoke",
+  "texting",
+  "call back",
+  "callback",
+  // Negative contact outcomes
+  "voicemail",
+  "no answer",
+  "straight to vm",
+  "hung up",
+  "bad number",
+  "wrong number",
+  "doesn't ring",
+  "doesnt ring",
+  "blocked",
+  "not in service",
+  // Dead / lost
+  "dead",
+  "lost",
+  "no show",
+  // Progressed past initial stage
+  "quoted",
+  "application",
+  "underwriting",
 ];
 
 function isRankablePortfolioLead(signals: LeadSignals | null | undefined) {
@@ -192,7 +271,7 @@ function isRankablePortfolioLead(signals: LeadSignals | null | undefined) {
 
   return (
     !hasWonOpportunity &&
-    !CLOSED_WON_STATUS_PATTERNS.some((pattern) =>
+    !EXCLUDED_STATUS_PATTERNS.some((pattern) =>
       currentStatusLabel.includes(pattern),
     )
   );
@@ -478,12 +557,26 @@ async function handleScoreAll(
     .eq("status", "running")
     .lt("started_at", new Date(Date.now() - 25 * 60 * 1000).toISOString());
 
-  // Create scoring run record
-  const { data: run } = await dataClient
+  // Create scoring run record (partial unique index prevents concurrent runs)
+  const { data: run, error: runInsertErr } = await dataClient
     .from("lead_heat_scoring_runs")
     .insert({ user_id: userId, run_type: "manual", status: "running" })
     .select("id")
     .single();
+
+  if (runInsertErr) {
+    // Unique index violation means another run is already active
+    if (runInsertErr.code === "23505") {
+      return {
+        runId: null,
+        leadsScored: 0,
+        leadsTotal: 0,
+        skipped: true,
+        reason: "Already running (concurrent attempt blocked)",
+      };
+    }
+    throw runInsertErr;
+  }
   const runId = run?.id;
 
   try {
@@ -502,7 +595,9 @@ async function handleScoreAll(
     // 3. Load previous scores for trend + outcome detection
     const { data: previousScores } = await dataClient
       .from("lead_heat_scores")
-      .select("close_lead_id, score, breakdown, signals")
+      .select(
+        "close_lead_id, score, breakdown, signals, opp_snapshot, last_activity_at",
+      )
       .eq("user_id", userId);
 
     const prevMap = new Map<
@@ -512,19 +607,23 @@ async function handleScoreAll(
         breakdown: ScoreBreakdown;
         signals: LeadSignals;
         oppSnapshot: { id: string; statusType: string }[];
+        lastActivityAt: string | null;
       }
     >();
     for (const ps of previousScores ?? []) {
-      // Extract opportunity snapshot stored from previous scoring run
-      // deno-lint-ignore no-explicit-any
-      const rawSignals = ps.signals as Record<string, any>;
+      // Read opp_snapshot from dedicated column (Migration A).
+      // null = pre-migration row (skip outcome detection), [] = no previous opps.
+      const oppSnapshot = Array.isArray(ps.opp_snapshot)
+        ? ps.opp_snapshot
+        : ps.opp_snapshot === null
+          ? null // sentinel: pre-migration, skip outcome detection
+          : [];
       prevMap.set(ps.close_lead_id, {
         score: ps.score,
         breakdown: ps.breakdown,
         signals: ps.signals,
-        oppSnapshot: Array.isArray(rawSignals?._oppSnapshot)
-          ? rawSignals._oppSnapshot
-          : [],
+        oppSnapshot: oppSnapshot ?? [],
+        lastActivityAt: ps.last_activity_at ?? null,
       });
     }
 
@@ -635,46 +734,96 @@ async function handleScoreAll(
       occurred_at: string;
     }[] = [];
 
+    // Pre-index activities by lead_id for O(1) lookup (avoids O(N*M) per-lead filtering)
+    function indexByLeadId<T extends { lead_id: string }>(
+      items: T[],
+    ): Map<string, T[]> {
+      const map = new Map<string, T[]>();
+      for (const item of items) {
+        const arr = map.get(item.lead_id);
+        if (arr) arr.push(item);
+        else map.set(item.lead_id, [item]);
+      }
+      return map;
+    }
+    const callsByLead = indexByLeadId(calls);
+    const emailsByLead = indexByLeadId(emails);
+    const smsByLead = indexByLeadId(sms);
+    const statusChangesByLead = indexByLeadId(statusChanges);
+    const oppsByLead = indexByLeadId(opportunities);
+
     for (const lead of leads) {
+      const leadCalls = callsByLead.get(lead.id) ?? [];
+      const leadEmails = emailsByLead.get(lead.id) ?? [];
+      const leadSms = smsByLead.get(lead.id) ?? [];
+      const leadStatusChanges = statusChangesByLead.get(lead.id) ?? [];
+      const leadOpps = oppsByLead.get(lead.id) ?? [];
+
       const signals = extractSignals(
         lead,
-        calls,
-        emails,
-        sms,
-        statusChanges,
-        opportunities,
+        leadCalls,
+        leadEmails,
+        leadSms,
+        leadStatusChanges,
+        leadOpps,
         sourceConversionRates,
         statusLabels,
         now,
       );
 
+      // Stale-lead fallback: if no activities were found in the 30-day Close API
+      // window, use the persisted last_activity_at from the previous scoring run
+      // to correctly compute stagnation penalties.
       const prev = prevMap.get(lead.id);
+      if (signals.daysSinceAnyActivity === null && prev?.lastActivityAt) {
+        const fallbackHours =
+          (now.getTime() - new Date(prev.lastActivityAt).getTime()) /
+          (1000 * 60 * 60);
+        signals.daysSinceAnyActivity = fallbackHours / 24;
+        // Also backfill related temporal signals for consistency
+        if (signals.daysSinceLastTouch === null) {
+          signals.daysSinceLastTouch = signals.daysSinceAnyActivity;
+        }
+        if (signals.hoursSinceLastTouch === null) {
+          signals.hoursSinceLastTouch = fallbackHours;
+        }
+        if (signals.lastActivityAt === null) {
+          signals.lastActivityAt = prev.lastActivityAt;
+        }
+      }
+
       const scored = scoreLead(signals, weights, prev?.score ?? null);
       scoredLeads.push(scored);
 
       // Detect outcomes for learning
-      const leadOpps = opportunities.filter((o) => o.lead_id === lead.id);
       oppSnapshotMap.set(
         lead.id,
         leadOpps.map((o) => ({ id: o.id, statusType: o.status_type })),
       );
-      const outcomes = detectOutcomes(
-        signals,
-        scored.score,
-        scored.breakdown,
-        leadOpps,
-        prev
-          ? {
-              closeLeadId: lead.id,
-              score: prev.score,
-              breakdown: prev.breakdown,
-              signals: prev.signals,
-              previousOpps: prev.oppSnapshot,
-            }
-          : null,
-      );
+
+      // Skip outcome detection for pre-migration rows (opp_snapshot was null
+      // before Migration A, so we can't distinguish new vs existing opps)
+      const prevOppSnapshot = prev?.oppSnapshot;
+      const hasPreviousState =
+        prev !== undefined && prevOppSnapshot !== undefined;
+      const outcomes = hasPreviousState
+        ? detectOutcomes(signals, scored.score, scored.breakdown, leadOpps, {
+            closeLeadId: lead.id,
+            score: prev.score,
+            breakdown: prev.breakdown,
+            signals: prev.signals,
+            previousOpps: prevOppSnapshot,
+          })
+        : [];
 
       for (const outcome of outcomes) {
+        // Use actual event timestamps for opportunity outcomes
+        const matchedOpp = outcome.closeOppId
+          ? leadOpps.find((o) => o.id === outcome.closeOppId)
+          : null;
+        const eventTime =
+          matchedOpp?.date_won ?? matchedOpp?.date_lost ?? now.toISOString();
+
         allOutcomeEvents.push({
           user_id: userId,
           close_lead_id: outcome.closeLeadId,
@@ -684,7 +833,7 @@ async function handleScoreAll(
           signals_at_outcome: outcome.signalsAtOutcome,
           close_opp_id: outcome.closeOppId,
           opp_value: outcome.oppValue,
-          occurred_at: now.toISOString(),
+          occurred_at: eventTime,
         });
       }
     }
@@ -724,10 +873,9 @@ async function handleScoreAll(
         trend: s.trend,
         previous_score: s.previousScore,
         breakdown: s.breakdown,
-        signals: {
-          ...s.signals,
-          _oppSnapshot: oppSnapshotMap.get(s.closeLeadId) ?? [],
-        },
+        signals: s.signals,
+        opp_snapshot: oppSnapshotMap.get(s.closeLeadId) ?? [],
+        last_activity_at: s.signals.lastActivityAt ?? null,
         percentile_rank: cal?.percentileRank ?? null,
         scoring_model_version: "heuristic_v1",
         scored_at: now.toISOString(),
@@ -736,11 +884,35 @@ async function handleScoreAll(
     });
 
     // Batch upsert in chunks of 500
+    let upsertFailures = 0;
     for (let i = 0; i < upsertRows.length; i += 500) {
       const chunk = upsertRows.slice(i, i + 500);
-      await dataClient
+      const { error: upsertErr } = await dataClient
         .from("lead_heat_scores")
         .upsert(chunk, { onConflict: "user_id,close_lead_id" });
+      if (upsertErr) {
+        console.error(
+          `[lead-heat-score] Upsert chunk failed (rows ${i}-${i + chunk.length}):`,
+          upsertErr.message,
+        );
+        upsertFailures += chunk.length;
+      }
+    }
+
+    // 8b. Clean up stale scores for leads deleted in Close CRM
+    const currentLeadIds = scoredLeads.map((s) => s.closeLeadId);
+    if (currentLeadIds.length > 0) {
+      const { error: cleanupErr } = await dataClient
+        .from("lead_heat_scores")
+        .delete()
+        .eq("user_id", userId)
+        .not("close_lead_id", "in", `(${currentLeadIds.join(",")})`);
+      if (cleanupErr) {
+        console.error(
+          "[lead-heat-score] Stale score cleanup failed:",
+          cleanupErr.message,
+        );
+      }
     }
 
     // 9. Insert outcome events
@@ -789,11 +961,11 @@ async function handleScoreAll(
         .from("lead_heat_scoring_runs")
         .update({
           status: "completed",
-          leads_scored: scoredLeads.length,
+          leads_scored: scoredLeads.length - upsertFailures,
           leads_total: leads.length,
           ai_calls_made: aiCallsMade,
           duration_ms: durationMs,
-          completed_at: now.toISOString(),
+          completed_at: new Date().toISOString(),
           is_truncated: leadsTruncated || activitiesTruncated,
         })
         .eq("id", runId);
@@ -976,27 +1148,39 @@ async function handleScoreAllUsers(dataClient: any) {
 
   const results: { userId: string; leadsScored: number; error?: string }[] = [];
 
-  for (const config of activeConfigs) {
-    try {
-      const apiKey = await decrypt(config.api_key_encrypted);
-      const result = await handleScoreAll(
-        apiKey,
-        config.user_id,
-        dataClient,
-        {},
-      );
-      results.push({ userId: config.user_id, leadsScored: result.leadsScored });
-    } catch (err) {
-      console.error(
-        `[lead-heat-score] Failed for user ${config.user_id}:`,
-        (err as Error).message,
-      );
-      results.push({
-        userId: config.user_id,
-        leadsScored: 0,
-        error: (err as Error).message,
-      });
-    }
+  // Process users in parallel batches of 3 to avoid edge function timeouts
+  // while not overwhelming the Close API rate limit.
+  const CONCURRENCY_LIMIT = 3;
+  for (let i = 0; i < activeConfigs.length; i += CONCURRENCY_LIMIT) {
+    const batch = activeConfigs.slice(i, i + CONCURRENCY_LIMIT);
+    const batchResults = await Promise.all(
+      batch.map(async (config) => {
+        try {
+          const apiKey = await decrypt(config.api_key_encrypted);
+          const result = await handleScoreAll(
+            apiKey,
+            config.user_id,
+            dataClient,
+            {},
+          );
+          return {
+            userId: config.user_id,
+            leadsScored: result.leadsScored,
+          };
+        } catch (err) {
+          console.error(
+            `[lead-heat-score] Failed for user ${config.user_id}:`,
+            (err as Error).message,
+          );
+          return {
+            userId: config.user_id,
+            leadsScored: 0,
+            error: (err as Error).message,
+          };
+        }
+      }),
+    );
+    results.push(...batchResults);
   }
 
   return {
@@ -1074,7 +1258,16 @@ serve(async (req) => {
       const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
       const authHeader = req.headers.get("authorization") || "";
       const token = authHeader.replace(/^Bearer\s*/i, "").trim();
-      if (!serviceKey || !token || token !== serviceKey) {
+      // Use constant-time comparison to prevent timing attacks on the service key
+      const encoder = new TextEncoder();
+      const tokenBytes = encoder.encode(token);
+      const keyBytes = encoder.encode(serviceKey || "");
+      const isValid =
+        serviceKey &&
+        token &&
+        tokenBytes.byteLength === keyBytes.byteLength &&
+        crypto.subtle.timingSafeEqual(tokenBytes, keyBytes);
+      if (!isValid) {
         console.warn(
           "[score_all_users] Rejected: missing or invalid service_role key",
         );
@@ -1108,89 +1301,23 @@ serve(async (req) => {
 
     switch (action) {
       case "score_all": {
-        const envApiKey = Deno.env.get("CLOSE_API_KEY");
         let apiKey: string;
-
-        if (envApiKey) {
-          apiKey = envApiKey;
-        } else {
-          const { data: encryptedKey, error: rpcError } = await dataClient.rpc(
-            "get_close_api_key",
-            { p_user_id: user.id },
-          );
-
-          if (rpcError || !encryptedKey) {
-            return jsonResponse(
-              {
-                error: "Close CRM not connected.",
-                code: "CLOSE_NOT_CONNECTED",
-              },
-              400,
-              req,
-            );
-          }
-
-          try {
-            apiKey = await decrypt(encryptedKey);
-          } catch (decryptErr) {
-            console.error(
-              "[lead-heat-score] Failed to decrypt Close API key:",
-              { userId: user.id, error: (decryptErr as Error).message },
-            );
-            return jsonResponse(
-              {
-                error:
-                  "Close CRM configuration error. Please reconnect your Close account or contact your agency admin.",
-                code: "CLOSE_DECRYPT_ERROR",
-              },
-              400,
-              req,
-            );
-          }
+        try {
+          apiKey = await resolveCloseApiKey(user.id, dataClient);
+        } catch (keyErr) {
+          const e = keyErr as Error & { code?: string };
+          return jsonResponse({ error: e.message, code: e.code }, 400, req);
         }
         result = await handleScoreAll(apiKey, user.id, dataClient, params);
         break;
       }
       case "analyze_lead": {
-        const envApiKey = Deno.env.get("CLOSE_API_KEY");
         let apiKey: string;
-
-        if (envApiKey) {
-          apiKey = envApiKey;
-        } else {
-          const { data: encryptedKey, error: rpcError } = await dataClient.rpc(
-            "get_close_api_key",
-            { p_user_id: user.id },
-          );
-
-          if (rpcError || !encryptedKey) {
-            return jsonResponse(
-              {
-                error: "Close CRM not connected.",
-                code: "CLOSE_NOT_CONNECTED",
-              },
-              400,
-              req,
-            );
-          }
-
-          try {
-            apiKey = await decrypt(encryptedKey);
-          } catch (decryptErr) {
-            console.error(
-              "[lead-heat-score] Failed to decrypt Close API key:",
-              { userId: user.id, error: (decryptErr as Error).message },
-            );
-            return jsonResponse(
-              {
-                error:
-                  "Close CRM configuration error. Please reconnect your Close account or contact your agency admin.",
-                code: "CLOSE_DECRYPT_ERROR",
-              },
-              400,
-              req,
-            );
-          }
+        try {
+          apiKey = await resolveCloseApiKey(user.id, dataClient);
+        } catch (keyErr) {
+          const e = keyErr as Error & { code?: string };
+          return jsonResponse({ error: e.message, code: e.code }, 400, req);
         }
         result = await handleAnalyzeLead(apiKey, user.id, dataClient, params);
         break;

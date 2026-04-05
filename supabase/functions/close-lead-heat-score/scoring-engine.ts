@@ -50,16 +50,19 @@ function scoreSmsResponseRate(inbound: number, outbound: number): number {
   return 0;
 }
 
-/** Last interaction recency: hours since last touch from either side (0-7 pts) */
+/** Last interaction recency: hours since last touch from either side (0-9 pts)
+ *  NOTE: This signal overlaps with timeSinceTouch — both derive from lastActivityAt.
+ *  Combined they allocate 14 pts for one data point. Consider differentiating in the
+ *  supervised model revamp (Phase 3 of CLOSE-KPI-AI-REVAMP.md). */
 function scoreLastInteractionRecency(
   hoursSinceLastTouch: number | null,
 ): number {
   if (hoursSinceLastTouch === null) return 0;
-  if (hoursSinceLastTouch <= 4) return 7;
-  if (hoursSinceLastTouch <= 12) return 6;
-  if (hoursSinceLastTouch <= 24) return 5;
-  if (hoursSinceLastTouch <= 48) return 4;
-  if (hoursSinceLastTouch <= 72) return 3;
+  if (hoursSinceLastTouch <= 4) return 9;
+  if (hoursSinceLastTouch <= 12) return 8;
+  if (hoursSinceLastTouch <= 24) return 7;
+  if (hoursSinceLastTouch <= 48) return 5;
+  if (hoursSinceLastTouch <= 72) return 4;
   if (hoursSinceLastTouch <= 168) return 2; // 1 week
   if (hoursSinceLastTouch <= 336) return 1; // 2 weeks
   return 0;
@@ -69,22 +72,22 @@ function scoreLastInteractionRecency(
 // BEHAVIORAL SIGNALS (25 pts max)
 // ═══════════════════════════════════════════════════════════════════════
 
-/** Inbound call from lead: strongest buying signal (0-10 pts) */
+/** Inbound call from lead: strongest buying signal (0-13 pts) */
 function scoreInboundCalls(inboundCallCount: number): number {
-  if (inboundCallCount >= 3) return 10;
-  if (inboundCallCount === 2) return 8;
-  if (inboundCallCount === 1) return 6;
+  if (inboundCallCount >= 3) return 13;
+  if (inboundCallCount === 2) return 10;
+  if (inboundCallCount === 1) return 7;
   return 0;
 }
 
-/** Quote requested / positive status advance (0-5 pts) */
+/** Quote requested / positive status advance (0-7 pts) */
 function scoreQuoteRequested(
   hasQuoted: boolean,
   positiveAdvances: number,
 ): number {
-  if (hasQuoted) return 5;
-  if (positiveAdvances >= 2) return 4;
-  if (positiveAdvances === 1) return 2;
+  if (hasQuoted) return 7;
+  if (positiveAdvances >= 2) return 5;
+  if (positiveAdvances === 1) return 3;
   return 0;
 }
 
@@ -116,7 +119,8 @@ function scoreLeadAge(daysSinceCreation: number): number {
   return 0;
 }
 
-/** Time since last touch: stale leads lose points (0-5 pts) */
+/** Time since last touch: stale leads lose points (0-5 pts)
+ *  NOTE: Overlaps with engagementRecency — see comment on scoreLastInteractionRecency. */
 function scoreTimeSinceTouch(daysSinceTouch: number | null): number {
   if (daysSinceTouch === null) return 0;
   if (daysSinceTouch <= 1) return 5;
@@ -165,13 +169,13 @@ function scoreStatusVelocity(
 // PIPELINE SIGNALS (13 pts max)
 // ═══════════════════════════════════════════════════════════════════════
 
-/** Has active opportunity (0-6 pts) */
+/** Has active opportunity (0-9 pts) */
 function scoreHasOpportunity(
   hasActiveOpp: boolean,
   hasAnyOpp: boolean,
 ): number {
-  if (hasActiveOpp) return 6;
-  if (hasAnyOpp) return 2;
+  if (hasActiveOpp) return 9;
+  if (hasAnyOpp) return 3;
   return 0;
 }
 
