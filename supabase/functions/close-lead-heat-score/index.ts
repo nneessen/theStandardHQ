@@ -14,6 +14,7 @@ import {
   buildPortfolioSummary,
 } from "./ai-analyzer.ts";
 import { detectOutcomes } from "./outcome-detector.ts";
+import { ensureStatusClassifications } from "./status-classification.ts";
 import type {
   AgentWeights,
   CloseLead,
@@ -217,64 +218,30 @@ async function fetchStatusLabels(apiKey: string): Promise<Map<string, string>> {
 
 const PORTFOLIO_ANALYSIS_MODEL = "claude-sonnet-4-6-20250627";
 const PORTFOLIO_ANALYSIS_TTL_MS = 4 * 60 * 60 * 1000;
-const EXCLUDED_STATUS_PATTERNS = [
-  // Closed-won / post-sale
-  "sold",
-  "won",
-  "policy pending",
-  "policy issued",
-  "issued and paid",
-  "bound",
-  "in force",
-  "active policy",
-  // Appointment-stage
-  "appointment",
-  // Terminal / disqualified
-  "not interested",
-  "do not contact",
-  "dnc",
-  "disqualified",
-  "declined",
-  // Contacted / worked
-  "contacted",
-  "spoke",
-  "texting",
-  "call back",
-  "callback",
-  // Negative contact outcomes
-  "voicemail",
-  "no answer",
-  "straight to vm",
-  "hung up",
-  "bad number",
-  "wrong number",
-  "doesn't ring",
-  "doesnt ring",
-  "blocked",
-  "not in service",
-  // Dead / lost
-  "dead",
-  "lost",
-  "no show",
-  // Progressed past initial stage
-  "quoted",
-  "application",
-  "underwriting",
-];
 
-function isRankablePortfolioLead(signals: LeadSignals | null | undefined) {
-  if (!signals) return true;
-
-  const currentStatusLabel =
-    signals.currentStatusLabel?.trim().toLowerCase() ?? "";
-  const hasWonOpportunity = signals.hasWonOpportunity === true;
-
-  return (
-    !hasWonOpportunity &&
-    !EXCLUDED_STATUS_PATTERNS.some((pattern) =>
-      currentStatusLabel.includes(pattern),
-    )
-  );
+/**
+ * A lead is rankable for the AI Hot 100 if:
+ *   1. signals exist (a missing signals object means the lead was never scored
+ *      properly — exclude it)
+ *   2. It has not won an opportunity (closed-won leads are done)
+ *   3. It has a non-null currentStatusId (stale rows from before the
+ *      status_config rollout have null here — exclude them rather than
+ *      pretending they're rankable)
+ *   4. The user's per-tenant rankable set is provided AND contains this lead's
+ *      currentStatusId. If the caller forgot to pass the set, we DEFAULT DENY
+ *      rather than default allow — this matches the cross-tenant safety stance
+ *      and prevents accidental dead-lead leakage on any code path that omits
+ *      the rankable Set (e.g. on-demand get_portfolio_insights).
+ */
+function isRankablePortfolioLead(
+  signals: LeadSignals | null | undefined,
+  rankableStatusIds?: Set<string>,
+) {
+  if (!signals) return false;
+  if (signals.hasWonOpportunity === true) return false;
+  if (signals.currentStatusId == null) return false;
+  if (!rankableStatusIds) return false;
+  return rankableStatusIds.has(signals.currentStatusId);
 }
 
 function emptyPortfolioInsightsRow() {
@@ -305,6 +272,7 @@ async function materializePortfolioInsights(
       outcome_type: string;
       signals_at_outcome: LeadSignals | null;
     }[];
+    rankableStatusIds?: Set<string>;
   },
 ) {
   const now = options?.now ?? new Date();
@@ -380,12 +348,39 @@ async function materializePortfolioInsights(
     ) ??
     [];
 
+  // If the caller didn't pass a pre-computed rankable Set (e.g. on-demand
+  // get_portfolio_insights from the UI rather than the cron path), fetch the
+  // user's classified rankable status_ids directly from lead_heat_status_config.
+  // This guarantees both the cron path and the on-demand path filter dead
+  // statuses identically — no path can accidentally include "Bad Contact Info"
+  // or "Missed Payment" leads in the AI portfolio analysis input.
+  let rankableStatusIds = options?.rankableStatusIds;
+  if (!rankableStatusIds) {
+    const { data: statusConfigRows, error: statusConfigError } =
+      await dataClient
+        .from("lead_heat_status_config")
+        .select("close_status_id")
+        .eq("user_id", userId)
+        .eq("is_rankable", true);
+    if (statusConfigError) {
+      console.warn(
+        "[lead-heat-score] Failed to load lead_heat_status_config for portfolio insights:",
+        statusConfigError.message,
+      );
+    }
+    rankableStatusIds = new Set(
+      (statusConfigRows ?? []).map(
+        (r: { close_status_id: string }) => r.close_status_id,
+      ),
+    );
+  }
+
   const rankableScoredLeads = scoredLeads.filter(
     (lead: {
       score: number;
       signals: LeadSignals;
       breakdown: ScoreBreakdown;
-    }) => isRankablePortfolioLead(lead.signals),
+    }) => isRankablePortfolioLead(lead.signals, rankableStatusIds),
   );
 
   if (rankableScoredLeads.length < 10) {
@@ -582,6 +577,16 @@ async function handleScoreAll(
   try {
     // 1. Fetch status labels for resolution
     const statusLabels = await fetchStatusLabels(apiKey);
+
+    // 1b. Ensure per-user status classification config exists, then capture
+    // the set of status_ids classified as rankable for downstream Hot 100
+    // filtering. New statuses are auto-classified via the heuristic
+    // (blacklist → whitelist → default deny). See status-classification.ts.
+    const rankableStatusIds = await ensureStatusClassifications(
+      dataClient,
+      userId,
+      statusLabels,
+    );
 
     // 2. Fetch all leads
     const leadsResult = await closeGetAll(
@@ -942,6 +947,7 @@ async function handleScoreAll(
           scoredLeads,
           weightsRow,
           outcomeRows: outcomeRows ?? [],
+          rankableStatusIds,
         },
       );
       aiCallsMade = portfolioAnalysis.aiCallsMade;
@@ -1258,16 +1264,26 @@ serve(async (req) => {
       const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
       const authHeader = req.headers.get("authorization") || "";
       const token = authHeader.replace(/^Bearer\s*/i, "").trim();
-      // Use constant-time comparison to prevent timing attacks on the service key
+      // Constant-time comparison to prevent timing attacks on the service key.
+      // Note: crypto.subtle.timingSafeEqual is NOT a real Web Crypto API method
+      // (it's Node.js-only via crypto.timingSafeEqual). This manual byte-by-byte
+      // XOR loop is the portable Deno-safe equivalent.
       const encoder = new TextEncoder();
       const tokenBytes = encoder.encode(token);
       const keyBytes = encoder.encode(serviceKey || "");
-      const isValid =
+      let bytesEqual = false;
+      if (
         serviceKey &&
         token &&
-        tokenBytes.byteLength === keyBytes.byteLength &&
-        crypto.subtle.timingSafeEqual(tokenBytes, keyBytes);
-      if (!isValid) {
+        tokenBytes.byteLength === keyBytes.byteLength
+      ) {
+        let diff = 0;
+        for (let i = 0; i < tokenBytes.byteLength; i++) {
+          diff |= tokenBytes[i] ^ keyBytes[i];
+        }
+        bytesEqual = diff === 0;
+      }
+      if (!bytesEqual) {
         console.warn(
           "[score_all_users] Rejected: missing or invalid service_role key",
         );

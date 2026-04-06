@@ -1,85 +1,14 @@
 import type { LeadHeatAiInsightsResult } from "../types/close-kpi.types";
 
-// EXCLUDED_STATUS_PATTERNS: kept in sync with server-side patterns in
-// supabase/functions/close-lead-heat-score/index.ts EXCLUDED_STATUS_PATTERNS,
-// the Supabase query filters in closeKpiService.ts getLeadHeatList,
-// and supabase/functions/close-ai-smart-view/index.ts syncSmartViewForUser.
-// Any lead with an agent-assigned status is excluded — only untouched/initial
-// leads (e.g. "Potential") should appear in the AI Top 100 Hot Leads.
-const EXCLUDED_STATUS_PATTERNS = [
-  // Closed-won / post-sale
-  "sold",
-  "won",
-  "policy pending",
-  "policy issued",
-  "issued and paid",
-  "bound",
-  "in force",
-  "active policy",
-  // Appointment-stage
-  "appointment",
-  // Terminal / disqualified
-  "not interested",
-  "do not contact",
-  "dnc",
-  "disqualified",
-  "declined",
-  // Contacted / worked
-  "contacted",
-  "spoke",
-  "texting",
-  "call back",
-  "callback",
-  // Negative contact outcomes
-  "voicemail",
-  "no answer",
-  "straight to vm",
-  "hung up",
-  "bad number",
-  "wrong number",
-  "doesn't ring",
-  "doesnt ring",
-  "blocked",
-  "not in service",
-  // Dead / lost
-  "dead",
-  "lost",
-  "no show",
-  // Progressed past initial stage
-  "quoted",
-  "application",
-  "underwriting",
-];
-
-export function isExcludedLeadHeatStatusLabel(
-  statusLabel: string | null | undefined,
-): boolean {
-  if (!statusLabel) return false;
-
-  const normalized = statusLabel.trim().toLowerCase();
-  return EXCLUDED_STATUS_PATTERNS.some((pattern) =>
-    normalized.includes(pattern),
-  );
-}
-
-/** @deprecated Use isExcludedLeadHeatStatusLabel */
-export const isClosedWonLeadHeatStatusLabel = isExcludedLeadHeatStatusLabel;
-
-export function isRankableLeadHeatSignals(
-  signals: Record<string, unknown> | null | undefined,
-): boolean {
-  if (!signals) return true;
-
-  const hasWonOpportunity = signals.hasWonOpportunity === true;
-  const currentStatusLabel =
-    typeof signals.currentStatusLabel === "string"
-      ? signals.currentStatusLabel
-      : null;
-
-  return (
-    !hasWonOpportunity && !isExcludedLeadHeatStatusLabel(currentStatusLabel)
-  );
-}
+// Lead heat status filtering is now handled DB-side via the
+// `lead_heat_status_config` table (per-user, status_id-based). The previous
+// label-substring helpers were removed because:
+//   1. They duplicated patterns across 5 files (drift-prone)
+//   2. They couldn't keep up with multi-tenant custom status names
+//   3. Filtering by mutable label strings broke when users renamed statuses
+//
+// See supabase/functions/close-lead-heat-score/status-classification.ts for
+// the canonical heuristic that auto-populates lead_heat_status_config.
 
 interface LeadHeatPortfolioAnalysisRow {
   analysis?: Record<string, unknown> | null;

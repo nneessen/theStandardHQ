@@ -18,6 +18,15 @@
 .env.development.local
 .env.test.local
 .env.production.local
+# Backup / temp env files (created by migration tooling, scripts, editors).
+# Must be excluded so credentials never accidentally land in git history.
+.env.backup
+.env.backup*
+.env.bak
+.env.bak*
+.env.tmp*
+.env.swap*
+.env.*.backup
 
 npm-debug.log*
 yarn-debug.log*

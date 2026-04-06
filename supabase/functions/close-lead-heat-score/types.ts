@@ -64,6 +64,9 @@ export interface LeadSignals {
   daysSinceAnyActivity: number | null;
 
   // Metadata
+  // Nullable because rows persisted before the status_config rollout don't
+  // carry this field; the runtime null is preferred over a type lie.
+  currentStatusId: string | null;
   currentStatusLabel: string;
   leadSource: string | null;
   dateCreated: string;

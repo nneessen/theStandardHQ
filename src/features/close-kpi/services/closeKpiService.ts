@@ -7,10 +7,7 @@ import type {
   LeadHeatDashboardStatus,
   PrebuiltDashboardRollupResponse,
 } from "../types/close-kpi.types";
-import {
-  isRankableLeadHeatSignals,
-  mapLeadHeatAiInsightsRow,
-} from "../lib/lead-heat";
+import { mapLeadHeatAiInsightsRow } from "../lib/lead-heat";
 
 // ─── Edge Function Caller ──────────────────────────────────────────
 
@@ -441,45 +438,28 @@ export const closeKpiService = {
     const from = (page - 1) * pageSize;
     const to = from + pageSize - 1;
 
-    // Patterns kept in sync with EXCLUDED_STATUS_PATTERNS in lead-heat.ts,
-    // close-lead-heat-score/index.ts, and close-ai-smart-view/index.ts.
-    const excludedPatterns = [
-      "sold",
-      "won",
-      "policy pending",
-      "policy issued",
-      "issued and paid",
-      "bound",
-      "in force",
-      "active policy",
-      "appointment",
-      "not interested",
-      "do not contact",
-      "dnc",
-      "disqualified",
-      "declined",
-      "contacted",
-      "spoke",
-      "texting",
-      "call back",
-      "callback",
-      "voicemail",
-      "no answer",
-      "straight to vm",
-      "hung up",
-      "bad number",
-      "wrong number",
-      "doesn't ring",
-      "doesnt ring",
-      "blocked",
-      "not in service",
-      "dead",
-      "lost",
-      "no show",
-      "quoted",
-      "application",
-      "underwriting",
-    ];
+    // Fetch the user's rankable Close status IDs from the per-user
+    // classification table. Populated by close-lead-heat-score on each scoring
+    // run via a hybrid heuristic (blacklist → whitelist → default deny).
+    // Filtering on the immutable status_id (not the mutable label) means a
+    // status rename in Close cannot silently break the filter.
+    const { data: rankableStatusRows, error: statusError } = await supabase
+      .from("lead_heat_status_config")
+      .select("close_status_id")
+      .eq("user_id", userId)
+      .eq("is_rankable", true);
+
+    if (statusError) throw new Error(statusError.message);
+
+    const rankableStatusIds = (rankableStatusRows ?? []).map(
+      (r) => r.close_status_id,
+    );
+
+    // If the user has no rankable statuses configured yet (first run hasn't
+    // classified them), return an empty list rather than the entire portfolio.
+    if (rankableStatusIds.length === 0) {
+      return { leads: [], total: 0, page, pageSize };
+    }
 
     let query = supabase
       .from("lead_heat_scores")
@@ -488,15 +468,8 @@ export const closeKpiService = {
         { count: "exact" },
       )
       .eq("user_id", userId)
-      .not("signals->>hasWonOpportunity", "eq", "true");
-
-    for (const pattern of excludedPatterns) {
-      query = query.not(
-        "signals->>currentStatusLabel",
-        "ilike",
-        `%${pattern}%`,
-      );
-    }
+      .not("signals->>hasWonOpportunity", "eq", "true")
+      .in("signals->>currentStatusId", rankableStatusIds);
 
     if (filterLevel && filterLevel !== "all") {
       query = query.eq("heat_level", filterLevel);
@@ -516,51 +489,49 @@ export const closeKpiService = {
         query = query.order("score", { ascending: false });
     }
 
-    const { data, error } = await query.range(from, to);
+    const { data, error, count } = await query.range(from, to);
 
     if (error) throw new Error(error.message);
 
-    const leads = (data ?? [])
-      .filter((row) =>
-        isRankableLeadHeatSignals(
-          row.signals as Record<string, unknown> | null | undefined,
-        ),
-      )
-      .map((row) => {
-        // Determine the top contributing signal from breakdown
-        const breakdown = row.breakdown as Record<string, number> | null;
-        let topSignal = "";
-        if (breakdown) {
-          const entries = Object.entries(breakdown)
-            .filter(([key]) => key !== "penalties")
-            .sort(([, a], [, b]) => b - a);
-          if (entries.length > 0) {
-            topSignal = formatSignalName(entries[0][0]);
-          }
+    const leads = (data ?? []).map((row) => {
+      // Determine the top contributing signal from breakdown
+      const breakdown = row.breakdown as Record<string, number> | null;
+      let topSignal = "";
+      if (breakdown) {
+        const entries = Object.entries(breakdown)
+          .filter(([key]) => key !== "penalties")
+          .sort(([, a], [, b]) => b - a);
+        if (entries.length > 0) {
+          topSignal = formatSignalName(entries[0][0]);
         }
+      }
 
-        return {
-          closeLeadId: row.close_lead_id,
-          displayName: row.display_name ?? "Unknown",
-          score: row.score,
-          heatLevel: row.heat_level,
-          trend: row.trend,
-          previousScore: row.previous_score,
-          lastTouchAt:
-            ((row.signals as Record<string, unknown>)?.lastActivityAt as
-              | string
-              | null) ?? null,
-          currentStatus:
-            ((row.signals as Record<string, unknown>)
-              ?.currentStatusLabel as string) ?? "Unknown",
-          topSignal,
-          aiInsight: row.ai_insights ?? null,
-        };
-      });
+      return {
+        closeLeadId: row.close_lead_id,
+        displayName: row.display_name ?? "Unknown",
+        score: row.score,
+        heatLevel: row.heat_level,
+        trend: row.trend,
+        previousScore: row.previous_score,
+        lastTouchAt:
+          ((row.signals as Record<string, unknown>)?.lastActivityAt as
+            | string
+            | null) ?? null,
+        currentStatus:
+          ((row.signals as Record<string, unknown>)
+            ?.currentStatusLabel as string) ?? "Unknown",
+        topSignal,
+        aiInsight: row.ai_insights ?? null,
+      };
+    });
 
     return {
       leads,
-      total: leads.length,
+      // Use PostgREST's exact count (requested via { count: "exact" }) so the
+      // pagination UI can compute total pages correctly. Falling back to
+      // leads.length would only ever return the current page size, breaking
+      // page navigation past page 1.
+      total: count ?? 0,
       page,
       pageSize,
     };

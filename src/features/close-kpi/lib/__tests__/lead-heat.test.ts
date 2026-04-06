@@ -1,123 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  isExcludedLeadHeatStatusLabel,
-  isClosedWonLeadHeatStatusLabel,
-  isRankableLeadHeatSignals,
-  mapLeadHeatAiInsightsRow,
-} from "../lead-heat";
+import { mapLeadHeatAiInsightsRow } from "../lead-heat";
+
+// Note: status filtering tests previously lived here (isExcludedLeadHeatStatusLabel
+// and isRankableLeadHeatSignals). They were removed alongside those helpers
+// because filtering is now DB-side via the lead_heat_status_config table.
+// The canonical heuristic lives in
+// supabase/functions/close-lead-heat-score/status-classification.ts.
 
 describe("lead heat helpers", () => {
-  it("excludes post-sale statuses", () => {
-    expect(isExcludedLeadHeatStatusLabel("Sold")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Policy Pending")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Won - Cross Sell")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Issued And Paid")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("In Force")).toBe(true);
-  });
-
-  it("deprecated alias still works", () => {
-    expect(isClosedWonLeadHeatStatusLabel("Sold")).toBe(true);
-  });
-
-  it("excludes appointment-stage statuses", () => {
-    expect(isExcludedLeadHeatStatusLabel("Appointment Scheduled By Me")).toBe(
-      true,
-    );
-    expect(isExcludedLeadHeatStatusLabel("Appointment By Bot")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Appointment Scheduled By Lead")).toBe(
-      true,
-    );
-    expect(isExcludedLeadHeatStatusLabel("Contacted/Missed Appointment")).toBe(
-      true,
-    );
-  });
-
-  it("excludes terminal / disqualified statuses", () => {
-    expect(isExcludedLeadHeatStatusLabel("Not Interested")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Do Not Contact")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("DNC")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Disqualified/Declined")).toBe(true);
-  });
-
-  it("excludes contacted / worked statuses", () => {
-    expect(isExcludedLeadHeatStatusLabel("Contacted")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Contacted/Quoted")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Spoke - Call Back")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Texting")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Call Back")).toBe(true);
-  });
-
-  it("excludes negative contact outcomes", () => {
-    expect(isExcludedLeadHeatStatusLabel("Voicemail")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("No Answer")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("No Answer 3")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Straight to VM")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Hung Up")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Bad Number")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Blocked")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Not In Service")).toBe(true);
-  });
-
-  it("excludes dead / lost / no show", () => {
-    expect(isExcludedLeadHeatStatusLabel("Dead")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Lost")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("No Show")).toBe(true);
-  });
-
-  it("excludes progressed statuses", () => {
-    expect(isExcludedLeadHeatStatusLabel("Quoted")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("Application")).toBe(true);
-    expect(isExcludedLeadHeatStatusLabel("PENDING UNDERWRITING")).toBe(true);
-  });
-
-  it("keeps untouched / initial statuses", () => {
-    expect(isExcludedLeadHeatStatusLabel("Potential")).toBe(false);
-    expect(isExcludedLeadHeatStatusLabel("New Lead")).toBe(false);
-    expect(isExcludedLeadHeatStatusLabel("Open")).toBe(false);
-  });
-
-  it("filters out won opportunities even when status text is neutral", () => {
-    expect(
-      isRankableLeadHeatSignals({
-        currentStatusLabel: "Potential",
-        hasWonOpportunity: true,
-      }),
-    ).toBe(false);
-  });
-
-  it("filters all agent-assigned leads as non-rankable", () => {
-    expect(
-      isRankableLeadHeatSignals({
-        currentStatusLabel: "Contacted",
-        hasWonOpportunity: false,
-      }),
-    ).toBe(false);
-
-    expect(
-      isRankableLeadHeatSignals({
-        currentStatusLabel: "No Answer",
-        hasWonOpportunity: false,
-      }),
-    ).toBe(false);
-
-    expect(
-      isRankableLeadHeatSignals({
-        currentStatusLabel: "Appointment Scheduled By Me",
-        hasWonOpportunity: false,
-      }),
-    ).toBe(false);
-  });
-
-  it("keeps untouched leads as rankable", () => {
-    expect(
-      isRankableLeadHeatSignals({
-        currentStatusLabel: "Potential",
-        hasWonOpportunity: false,
-      }),
-    ).toBe(true);
-  });
-
   it("maps persisted AI analysis payload into widget data", () => {
     expect(
       mapLeadHeatAiInsightsRow(

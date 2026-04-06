@@ -5299,6 +5299,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      lead_heat_status_config: {
+        Row: {
+          classification_source: string;
+          classified_at: string;
+          close_status_id: string;
+          close_status_label: string;
+          is_rankable: boolean;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          classification_source: string;
+          classified_at?: string;
+          close_status_id: string;
+          close_status_label: string;
+          is_rankable: boolean;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          classification_source?: string;
+          classified_at?: string;
+          close_status_id?: string;
+          close_status_label?: string;
+          is_rankable?: boolean;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       lead_purchases: {
         Row: {
           agency_id: string | null;

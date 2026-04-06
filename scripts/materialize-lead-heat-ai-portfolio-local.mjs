@@ -34,50 +34,9 @@ const DEFAULT_WEIGHTS = {
   sourceQuality: { multiplier: 1.0 },
   similarLeadPattern: { multiplier: 1.0 },
 };
-const EXCLUDED_STATUS_PATTERNS = [
-  // Closed-won / post-sale
-  "sold",
-  "won",
-  "policy pending",
-  "policy issued",
-  "issued and paid",
-  "bound",
-  "in force",
-  "active policy",
-  // Appointment-stage
-  "appointment",
-  // Terminal / disqualified
-  "not interested",
-  "do not contact",
-  "dnc",
-  "disqualified",
-  "declined",
-  // Contacted / worked
-  "contacted",
-  "spoke",
-  "texting",
-  "call back",
-  "callback",
-  // Negative contact outcomes
-  "voicemail",
-  "no answer",
-  "straight to vm",
-  "hung up",
-  "bad number",
-  "wrong number",
-  "doesn't ring",
-  "doesnt ring",
-  "blocked",
-  "not in service",
-  // Dead / lost
-  "dead",
-  "lost",
-  "no show",
-  // Progressed past initial stage
-  "quoted",
-  "application",
-  "underwriting",
-];
+// Note: status exclusion is now DB-side via lead_heat_status_config (per-user
+// rankable status_id list, populated by close-lead-heat-score on each scoring
+// run). This script queries that table instead of pattern-matching labels.
 const PORTFOLIO_SYSTEM_PROMPT = `You are an insurance sales analytics engine. You analyze an insurance agent's Close CRM lead portfolio metrics and return structured JSON recommendations.
 
 You understand insurance sales dynamics:
@@ -122,26 +81,37 @@ const outcomesSince = new Date(
   now.getTime() - 90 * 24 * 60 * 60 * 1000,
 ).toISOString();
 
-const [scoresResult, outcomesResult, weightsResult] = await Promise.all([
-  supabase
-    .from("lead_heat_scores")
-    .select("close_lead_id, display_name, score, breakdown, signals")
-    .eq("user_id", user.id),
-  supabase
-    .from("lead_heat_outcomes")
-    .select("outcome_type, signals_at_outcome, breakdown_at_outcome")
-    .eq("user_id", user.id)
-    .gte("occurred_at", outcomesSince),
-  supabase
-    .from("lead_heat_agent_weights")
-    .select("weights, version, sample_size")
-    .eq("user_id", user.id)
-    .maybeSingle(),
-]);
+const [scoresResult, outcomesResult, weightsResult, statusConfigResult] =
+  await Promise.all([
+    supabase
+      .from("lead_heat_scores")
+      .select("close_lead_id, display_name, score, breakdown, signals")
+      .eq("user_id", user.id),
+    supabase
+      .from("lead_heat_outcomes")
+      .select("outcome_type, signals_at_outcome, breakdown_at_outcome")
+      .eq("user_id", user.id)
+      .gte("occurred_at", outcomesSince),
+    supabase
+      .from("lead_heat_agent_weights")
+      .select("weights, version, sample_size")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    supabase
+      .from("lead_heat_status_config")
+      .select("close_status_id")
+      .eq("user_id", user.id)
+      .eq("is_rankable", true),
+  ]);
 
 if (scoresResult.error) throw scoresResult.error;
 if (outcomesResult.error) throw outcomesResult.error;
 if (weightsResult.error) throw weightsResult.error;
+if (statusConfigResult.error) throw statusConfigResult.error;
+
+const rankableStatusIds = new Set(
+  (statusConfigResult.data ?? []).map((r) => r.close_status_id),
+);
 
 const weights = weightsResult.data?.weights ?? DEFAULT_WEIGHTS;
 const scoredLeads = (scoresResult.data ?? [])
@@ -152,7 +122,7 @@ const scoredLeads = (scoresResult.data ?? [])
     breakdown: row.breakdown ?? {},
     signals: row.signals ?? {},
   }))
-  .filter((row) => isRankableLead(row.signals));
+  .filter((row) => isRankableLead(row.signals, rankableStatusIds));
 
 if (scoredLeads.length < 10) {
   throw new Error(
@@ -211,20 +181,11 @@ console.log(
   ),
 );
 
-function isRankableLead(signals) {
-  if (!signals || typeof signals !== "object") return true;
-  const currentStatusLabel =
-    typeof signals.currentStatusLabel === "string"
-      ? signals.currentStatusLabel.trim().toLowerCase()
-      : "";
-  const hasWonOpportunity = signals.hasWonOpportunity === true;
-
-  return (
-    !hasWonOpportunity &&
-    !EXCLUDED_STATUS_PATTERNS.some((pattern) =>
-      currentStatusLabel.includes(pattern),
-    )
-  );
+function isRankableLead(signals, rankableStatusIds) {
+  if (!signals || typeof signals !== "object") return false;
+  if (signals.hasWonOpportunity === true) return false;
+  if (!rankableStatusIds || rankableStatusIds.size === 0) return false;
+  return rankableStatusIds.has(signals.currentStatusId);
 }
 
 function buildPortfolioSummary(scoredLeads, outcomes, currentWeights) {

@@ -359,6 +359,7 @@ export function extractSignals(
     daysSinceAnyActivity,
 
     // Metadata
+    currentStatusId: lead.status_id,
     currentStatusLabel,
     leadSource,
     dateCreated: lead.date_created,

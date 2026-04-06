@@ -201,61 +201,42 @@ async function syncSmartViewForUser(
   // deno-lint-ignore no-explicit-any
   dataClient: any,
 ): Promise<SyncResult> {
-  // 1. Fetch top N leads by AI score — only untouched/initial leads
-  // Patterns kept in sync with EXCLUDED_STATUS_PATTERNS in lead-heat.ts
-  const excludedPatterns = [
-    "sold",
-    "won",
-    "policy pending",
-    "policy issued",
-    "issued and paid",
-    "bound",
-    "in force",
-    "active policy",
-    "appointment",
-    "not interested",
-    "do not contact",
-    "dnc",
-    "disqualified",
-    "declined",
-    "contacted",
-    "spoke",
-    "texting",
-    "call back",
-    "callback",
-    "voicemail",
-    "no answer",
-    "straight to vm",
-    "hung up",
-    "bad number",
-    "wrong number",
-    "doesn't ring",
-    "doesnt ring",
-    "blocked",
-    "not in service",
-    "dead",
-    "lost",
-    "no show",
-    "quoted",
-    "application",
-    "underwriting",
-  ];
+  // 1. Fetch the user's rankable Close status IDs from the per-user
+  // classification table. Populated by close-lead-heat-score on each scoring
+  // run via the hybrid heuristic (blacklist → whitelist → default deny).
+  // See supabase/functions/close-lead-heat-score/status-classification.ts
+  const { data: rankableStatusRows, error: statusError } = await dataClient
+    .from("lead_heat_status_config")
+    .select("close_status_id")
+    .eq("user_id", userId)
+    .eq("is_rankable", true);
 
-  let topLeadsQuery = dataClient
+  if (statusError) {
+    throw new Error(`Status config query failed: ${statusError.message}`);
+  }
+
+  const rankableStatusIds = (rankableStatusRows ?? []).map(
+    (r: { close_status_id: string }) => r.close_status_id,
+  );
+
+  // If the user has no rankable statuses configured yet (e.g. first run hasn't
+  // classified them, or all statuses are excluded), there's nothing to sync.
+  if (rankableStatusIds.length === 0) {
+    console.log(
+      `[ai-smart-view] No rankable statuses configured for user ${userId}, skipping`,
+    );
+    return { userId, leadsInView: 0, smartViewId: null, action: "skipped" };
+  }
+
+  // 2. Fetch top N scored leads whose currentStatusId is in the rankable set.
+  // Filtering happens on the immutable Close status_id (not the mutable label),
+  // so a status rename in Close cannot silently break the filter.
+  const { data: topLeads, error: queryError } = await dataClient
     .from("lead_heat_scores")
     .select("close_lead_id, score, display_name")
     .eq("user_id", userId)
-    .not("signals->>hasWonOpportunity", "eq", "true");
-
-  for (const pattern of excludedPatterns) {
-    topLeadsQuery = topLeadsQuery.not(
-      "signals->>currentStatusLabel",
-      "ilike",
-      `%${pattern}%`,
-    );
-  }
-
-  const { data: topLeads, error: queryError } = await topLeadsQuery
+    .not("signals->>hasWonOpportunity", "eq", "true")
+    .in("signals->>currentStatusId", rankableStatusIds)
     .order("score", { ascending: false })
     .limit(TOP_N);
 
