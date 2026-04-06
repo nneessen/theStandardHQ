@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { MetricTooltip } from "@/components/ui/MetricTooltip";
 import { LeadHeatBadge } from "./LeadHeatBadge";
+import { ManageWeightsPanel } from "./ManageWeightsPanel";
 import { SECTION_TOOLTIPS } from "../config/prebuilt-layout";
 import { formatTimeAgo } from "../lib/format-time";
 import type {
@@ -544,7 +545,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
 
             {/* Additional recommendations list */}
             {insightsData && insightsData.recommendations.length > 1 && (
-              <div className="space-y-1 mt-auto">
+              <div className="space-y-1">
                 <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
                   More Actions
                 </span>
@@ -557,6 +558,17 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                     <span>{rec.text}</span>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Manage Signal Weights — inline expandable panel.
+                Lets the user adopt AI weight suggestions or manually tune
+                multipliers without leaving the dashboard. Only renders when
+                we actually have insights data — no point showing it on the
+                empty state. */}
+            {insightsData && (
+              <div className="mt-auto">
+                <ManageWeightsPanel data={insightsData} variant="hero" />
               </div>
             )}
 
