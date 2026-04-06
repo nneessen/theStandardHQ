@@ -36,14 +36,34 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Load environment
+# IMPORTANT: preserve a caller-provided DATABASE_URL across the source so that
+#   DATABASE_URL=$REMOTE_DATABASE_URL ./run-migration.sh ...
+# actually targets remote prod. Without this, sourcing .env silently overwrites
+# the override with the local URL — and the runner happily reports "applied"
+# against the wrong database. This is a real footgun that has caused production
+# migration drift twice; see memory/feedback_remote_migration_drift.md.
+PRESET_DATABASE_URL="${DATABASE_URL:-}"
 if [ -f "$PROJECT_ROOT/.env" ]; then
     source "$PROJECT_ROOT/.env"
+fi
+if [ -n "$PRESET_DATABASE_URL" ]; then
+    DATABASE_URL="$PRESET_DATABASE_URL"
 fi
 
 if [ -z "$DATABASE_URL" ]; then
     echo -e "${RED}ERROR: DATABASE_URL not set. Check your .env file.${NC}"
     exit 1
 fi
+
+# Surface which database we're targeting so the operator can see at a glance
+# whether they're on local or remote. Hostname only, no credentials.
+TARGET_HOST=$(echo "$DATABASE_URL" | sed -E 's#^[a-z]+://[^@]+@([^/]+).*#\1#')
+if echo "$TARGET_HOST" | grep -qE '(127\.0\.0\.1|localhost)'; then
+    echo -e "${BLUE}Target DB:${NC} ${GREEN}LOCAL${NC} ($TARGET_HOST)"
+else
+    echo -e "${BLUE}Target DB:${NC} ${YELLOW}REMOTE${NC} ($TARGET_HOST)"
+fi
+echo ""
 
 # Skip SSL for local Supabase (127.0.0.1 / localhost)
 if echo "$DATABASE_URL" | grep -qE '(127\.0\.0\.1|localhost)'; then
