@@ -590,11 +590,44 @@ export const closeKpiService = {
 
     const { data: weightsRow } = await supabase
       .from("lead_heat_agent_weights")
-      .select("version, sample_size")
+      .select("version, sample_size, weights")
       .eq("user_id", userId)
       .maybeSingle();
 
     return mapLeadHeatAiInsightsRow(analysis ?? null, weightsRow);
+  },
+
+  /**
+   * Apply a partial signal-weights update. The server merges the partial into
+   * the user's existing `lead_heat_agent_weights.weights` row, validates each
+   * multiplier is in [0.3, 2.0], and bumps `version`. Returns the updated
+   * weights so the UI can reflect the new state immediately. The caller is
+   * responsible for separately triggering a rescore if they want the new
+   * weights to apply to existing scores — this function does NOT block on
+   * scoring 6800+ leads.
+   *
+   * RLS-bypass note: this MUST go through the edge function. The user
+   * `lead_heat_agent_weights` RLS policy is SELECT-only; INSERT/UPDATE are
+   * service-role only. The edge function uses the service role internally.
+   */
+  applyLeadHeatWeightUpdate: async (
+    weights: Record<string, { multiplier: number }>,
+  ) => {
+    const accessToken = await getAccessToken();
+    const { data, error } = await supabase.functions.invoke(
+      "close-lead-heat-score",
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        body: { action: "apply_weight_update", weights },
+      },
+    );
+
+    if (error) throw new Error(await getFunctionsInvokeErrorMessage(error));
+    return data as {
+      weights: Record<string, { multiplier: number }>;
+      version: number;
+      updatedSignals: string[];
+    };
   },
 
   /** Trigger a lead heat rescore — calls the lead heat scoring edge function */

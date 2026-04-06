@@ -21,12 +21,26 @@ interface LeadHeatPortfolioAnalysisRow {
 interface LeadHeatWeightsRow {
   version?: number | null;
   sample_size?: number | null;
+  weights?: Record<string, { multiplier?: unknown }> | null;
 }
 
 export function mapLeadHeatAiInsightsRow(
   analysis: LeadHeatPortfolioAnalysisRow | null,
   weightsRow: LeadHeatWeightsRow | null,
 ): LeadHeatAiInsightsResult {
+  // Defensively normalize the weights JSON. The DB column is JSONB and could
+  // contain anything if a future migration changes the shape — coerce each
+  // entry to { multiplier: number } and drop anything that doesn't fit.
+  const currentWeights: Record<string, { multiplier: number }> = {};
+  if (weightsRow?.weights && typeof weightsRow.weights === "object") {
+    for (const [key, value] of Object.entries(weightsRow.weights)) {
+      const m = value?.multiplier;
+      if (typeof m === "number" && Number.isFinite(m)) {
+        currentWeights[key] = { multiplier: m };
+      }
+    }
+  }
+
   const analysisPayload =
     analysis?.analysis && typeof analysis.analysis === "object"
       ? analysis.analysis
@@ -79,6 +93,7 @@ export function mapLeadHeatAiInsightsRow(
             : 1.0,
         reason: typeof w.reason === "string" ? w.reason : "",
       })),
+    currentWeights,
     modelVersion: weightsRow?.version ?? 1,
     sampleSize: weightsRow?.sample_size ?? 0,
     analyzedAt: analysis?.analyzed_at ?? null,

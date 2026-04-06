@@ -616,6 +616,11 @@ export interface LeadHeatAiInsightsResult {
     recommendedMultiplier: number;
     reason: string;
   }[];
+  // Current per-signal multipliers from `lead_heat_agent_weights.weights`.
+  // Surfaced so the Manage Weights panel can show "current vs recommended"
+  // for each signal without a separate query. Empty object means the user
+  // has never edited weights — the panel falls back to 1.0 for every signal.
+  currentWeights: Record<string, { multiplier: number }>;
   modelVersion: number;
   sampleSize: number;
   analyzedAt: string | null;

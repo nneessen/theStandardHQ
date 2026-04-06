@@ -14,10 +14,17 @@ import type {
 
 // ─── Config ───────────────────────────────────────────────────────────
 
-const PORTFOLIO_MODEL = "claude-sonnet-4-6-20250627";
-const DEEP_DIVE_MODEL = "claude-sonnet-4-6-20250627";
+const PORTFOLIO_MODEL = "claude-sonnet-4-6";
+const DEEP_DIVE_MODEL = "claude-sonnet-4-6";
 const MAX_PORTFOLIO_TOKENS = 4096;
 const MAX_DEEP_DIVE_TOKENS = 1024;
+
+// A lead source is considered "active" if at least one lead from that source
+// has been imported within this many days. Sources without recent imports are
+// excluded from AI portfolio analysis so the AI doesn't recommend strategy
+// around sources the user has retired (e.g., stopped buying lead lists from).
+// Shared with index.ts so the per-lead sourceQuality signal uses the same definition.
+export const SOURCE_ACTIVE_WINDOW_DAYS = 90;
 
 // ─── Anthropic Client ─────────────────────────────────────────────────
 
@@ -53,6 +60,10 @@ interface PortfolioSummary {
     avgScore: number;
     count: number;
   }[];
+  // Sources with at least one lead imported in the last SOURCE_ACTIVE_WINDOW_DAYS.
+  // The AI is told to only recommend strategy around these — anything else is
+  // historical context for sources the user has stopped using.
+  activeSources: string[];
   currentWeights: AgentWeights;
   topHotLeads: { name: string; score: number; lastTouch: string | null }[];
   topColdLeads: { name: string; score: number; lastTouch: string | null }[];
@@ -94,13 +105,27 @@ ${Object.entries(summary.signalCorrelations)
   )
   .join("\n")}
 
-## Lead Source Performance
-${summary.leadSourcePerformance
-  .map(
-    (s) =>
-      `- ${s.source}: ${(s.conversionRate * 100).toFixed(1)}% conversion, avg score ${s.avgScore.toFixed(0)}, ${s.count} leads`,
-  )
-  .join("\n")}
+## Active Lead Sources (last ${SOURCE_ACTIVE_WINDOW_DAYS} days)
+${summary.activeSources.length > 0 ? summary.activeSources.join(", ") : "None detected"}
+
+IMPORTANT: Only make strategic recommendations about sources listed above as active.
+Sources NOT in the active list are historical context — the user has stopped
+importing leads from them. Do not recommend doubling down on, focusing on, or
+pausing sources the user has already retired. If the active list is empty or
+contains only one source, focus your recommendations on signal weights and
+per-lead actions, not source allocation.
+
+## Lead Source Performance (active sources only)
+${
+  summary.leadSourcePerformance.length > 0
+    ? summary.leadSourcePerformance
+        .map(
+          (s) =>
+            `- ${s.source}: ${(s.conversionRate * 100).toFixed(1)}% conversion, avg score ${s.avgScore.toFixed(0)}, ${s.count} leads`,
+        )
+        .join("\n")
+    : "- (no active sources with sufficient data)"
+}
 
 ## Current Weight Profile
 ${Object.entries(summary.currentWeights)
@@ -400,13 +425,31 @@ export function buildPortfolioSummary(
     signalCorrelations[key] = { convertedAvg: wonAvg, lostAvg, lift };
   }
 
-  // Lead source performance
+  // Lead source performance — only count sources that are still actively
+  // being imported. A source is "active" if at least one of its leads has
+  // been created within SOURCE_ACTIVE_WINDOW_DAYS. This auto-retires sources
+  // when the user stops buying lists from them, without requiring any UI or
+  // manual lifecycle management. Old leads from retired sources stay in the
+  // scores table (they may still convert) but they no longer pollute the
+  // AI's strategic recommendations about which source to focus on.
+  const activeSourceSet = new Set<string>();
+  for (const lead of scoredLeads) {
+    const source = lead.signals.leadSource;
+    if (!source) continue;
+    if (lead.signals.daysSinceCreation <= SOURCE_ACTIVE_WINDOW_DAYS) {
+      activeSourceSet.add(source);
+    }
+  }
+
   const sourceMap = new Map<
     string,
     { won: number; lost: number; totalScore: number; count: number }
   >();
   for (const lead of scoredLeads) {
     const source = lead.signals.leadSource ?? "Unknown";
+    // Skip sources the user has retired. "Unknown" is always included so
+    // leads with no source label still show up in the breakdown.
+    if (source !== "Unknown" && !activeSourceSet.has(source)) continue;
     const existing = sourceMap.get(source) ?? {
       won: 0,
       lost: 0,
@@ -417,7 +460,9 @@ export function buildPortfolioSummary(
     existing.count++;
     sourceMap.set(source, existing);
   }
-  // Merge outcome data
+  // Merge outcome data — but only for sources we kept above. Won/lost from
+  // retired sources is historical noise and would inflate the AI's confidence
+  // in recommending strategy around dead inventory.
   for (const outcome of outcomes) {
     if (outcome.signals_at_outcome) {
       const source = outcome.signals_at_outcome.leadSource ?? "Unknown";
@@ -439,6 +484,8 @@ export function buildPortfolioSummary(
     }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
+
+  const activeSources = Array.from(activeSourceSet).sort();
 
   // Top hot and cold leads for anomaly checks
   const sorted = [...scoredLeads].sort((a, b) => b.score - a.score);
@@ -465,6 +512,7 @@ export function buildPortfolioSummary(
     outcomes90d: { won: won90d, lost: lost90d, stagnant: stagnant90d },
     signalCorrelations,
     leadSourcePerformance,
+    activeSources,
     currentWeights,
     topHotLeads,
     topColdLeads,

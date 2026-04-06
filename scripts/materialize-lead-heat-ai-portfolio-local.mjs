@@ -14,7 +14,12 @@ const LOCAL_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY;
 const DEFAULT_USER_EMAIL =
   process.env.CLOSE_KPI_AI_PORTFOLIO_EMAIL || "nickneessen@thestandardhq.com";
-const PORTFOLIO_MODEL = "claude-sonnet-4-6-20250627";
+const PORTFOLIO_MODEL = "claude-sonnet-4-6";
+// MUST stay in sync with SOURCE_ACTIVE_WINDOW_DAYS in
+// supabase/functions/close-lead-heat-score/ai-analyzer.ts. Filters out lead
+// sources the user has stopped importing from so the AI doesn't recommend
+// strategy around retired sources.
+const SOURCE_ACTIVE_WINDOW_DAYS = 90;
 const DEFAULT_WEIGHTS = {
   callAnswerRate: { multiplier: 1.0 },
   emailReplyRate: { multiplier: 1.0 },
@@ -262,9 +267,26 @@ function buildPortfolioSummary(scoredLeads, outcomes, currentWeights) {
     };
   }
 
+  // Source recency filter — see ai-analyzer.ts buildPortfolioSummary for the
+  // production implementation this mirrors. Sources with no leads imported in
+  // the last SOURCE_ACTIVE_WINDOW_DAYS are excluded so retired lead lists
+  // don't pollute AI recommendations.
+  const activeSourceSet = new Set();
+  for (const lead of scoredLeads) {
+    const source = lead.signals.leadSource;
+    if (!source) continue;
+    if (
+      typeof lead.signals.daysSinceCreation === "number" &&
+      lead.signals.daysSinceCreation <= SOURCE_ACTIVE_WINDOW_DAYS
+    ) {
+      activeSourceSet.add(source);
+    }
+  }
+
   const sourceMap = new Map();
   for (const lead of scoredLeads) {
     const source = lead.signals.leadSource ?? "Unknown";
+    if (source !== "Unknown" && !activeSourceSet.has(source)) continue;
     const current = sourceMap.get(source) ?? {
       won: 0,
       lost: 0,
@@ -294,6 +316,8 @@ function buildPortfolioSummary(scoredLeads, outcomes, currentWeights) {
     .sort((a, b) => b.count - a.count)
     .slice(0, 10);
 
+  const activeSources = Array.from(activeSourceSet).sort();
+
   const byScore = [...scoredLeads].sort((a, b) => b.score - a.score);
   const topHotLeads = byScore.slice(0, 10).map((lead) => ({
     name: lead.signals.displayName ?? lead.displayName ?? "Unknown",
@@ -320,6 +344,7 @@ function buildPortfolioSummary(scoredLeads, outcomes, currentWeights) {
     },
     signalCorrelations,
     leadSourcePerformance,
+    activeSources,
     currentWeights,
     topHotLeads,
     topColdLeads,
@@ -358,13 +383,25 @@ ${Object.entries(summary.signalCorrelations)
   )
   .join("\n")}
 
-## Lead Source Performance
-${summary.leadSourcePerformance
-  .map(
-    (source) =>
-      `- ${source.source}: ${(source.conversionRate * 100).toFixed(1)}% conversion, avg score ${source.avgScore.toFixed(0)}, ${source.count} leads`,
-  )
-  .join("\n")}
+## Active Lead Sources (last ${SOURCE_ACTIVE_WINDOW_DAYS} days)
+${summary.activeSources.length > 0 ? summary.activeSources.join(", ") : "None detected"}
+
+IMPORTANT: Only make strategic recommendations about sources listed above as active.
+Sources NOT in the active list are historical context — the user has stopped
+importing leads from them. Do not recommend doubling down on, focusing on, or
+pausing sources the user has already retired.
+
+## Lead Source Performance (active sources only)
+${
+  summary.leadSourcePerformance.length > 0
+    ? summary.leadSourcePerformance
+        .map(
+          (source) =>
+            `- ${source.source}: ${(source.conversionRate * 100).toFixed(1)}% conversion, avg score ${source.avgScore.toFixed(0)}, ${source.count} leads`,
+        )
+        .join("\n")
+    : "- (no active sources with sufficient data)"
+}
 
 ## Current Weight Profile
 ${Object.entries(summary.currentWeights)

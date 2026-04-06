@@ -151,6 +151,75 @@ export function useLeadHeatDashboardStatus(enabled = true) {
   });
 }
 
+/**
+ * Apply a partial weight update + immediately trigger a rescore so the user
+ * sees scoring impact within ~30s instead of waiting for the next cron tick.
+ *
+ * Two-step server interaction:
+ *   1. apply_weight_update — merges the partial, bumps version, returns
+ *      the new weights immediately (cheap, no Anthropic call)
+ *   2. score_all — kicks off rescoring all leads with the new weights
+ *      (slow, Close API + Anthropic — runs in background)
+ *
+ * The hook resolves after step 1 so the dialog can close. Step 2 happens
+ * in the background and the dashboard auto-refreshes when scoring runs
+ * complete (the existing useLeadHeatDashboardStatus polling handles this).
+ *
+ * Optimistic update: we eagerly update the cached LeadHeatAiInsightsResult
+ * `currentWeights` field so sliders snap to the new value before the
+ * server round-trip lands. This prevents the slider from jumping back to
+ * the old value during the request.
+ */
+export function useApplyLeadHeatWeights() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const userId = user?.id ?? "";
+
+  return useMutation({
+    mutationFn: async (
+      partialWeights: Record<string, { multiplier: number }>,
+    ) => {
+      const result =
+        await closeKpiService.applyLeadHeatWeightUpdate(partialWeights);
+      // Fire-and-forget rescore — don't block the Apply button on it.
+      // Errors are surfaced via the global toast handler in triggerRescore.
+      void closeKpiService.triggerRescore().catch(() => {
+        // Already toasted by the service layer; swallowing prevents an
+        // unhandled rejection in the background fire-and-forget path.
+      });
+      return result;
+    },
+    onSuccess: async (result) => {
+      toast.success(
+        `Saved weights v${result.version} · rescoring in background`,
+      );
+      if (!userId) return;
+      // Invalidate the lead-heat tree so the AI insights widget picks up the
+      // new currentWeights, and the leadHeatStatus poller flips to "running"
+      // when the rescore actually starts.
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: closeKpiKeys.leadHeat(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: closeKpiKeys.leadHeatStatus(userId),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: closeKpiKeys.widgetCacheGroup("lead-heat"),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: closeKpiKeys.leadHeatWidgets(),
+        }),
+      ]);
+    },
+    onError: (error) => {
+      const msg =
+        error instanceof Error ? error.message : "Failed to save weights";
+      toast.error(msg);
+    },
+  });
+}
+
 export function useLeadHeatRescore() {
   const { user } = useAuth();
   const queryClient = useQueryClient();

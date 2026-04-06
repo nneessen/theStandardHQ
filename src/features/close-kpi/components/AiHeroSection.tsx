@@ -488,7 +488,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
               </div>
               {insightsData?.modelVersion && (
                 <span className="text-[9px] text-muted-foreground/50">
-                  v{insightsData.modelVersion}
+                  weights v{insightsData.modelVersion}
                   {insightsData.analyzedAt &&
                     ` · ${formatTimeAgo(insightsData.analyzedAt)}`}
                 </span>

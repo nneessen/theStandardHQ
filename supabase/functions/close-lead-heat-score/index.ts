@@ -12,6 +12,7 @@ import {
   analyzePortfolio,
   analyzeLeadDeepDive,
   buildPortfolioSummary,
+  SOURCE_ACTIVE_WINDOW_DAYS,
 } from "./ai-analyzer.ts";
 import { detectOutcomes } from "./outcome-detector.ts";
 import { ensureStatusClassifications } from "./status-classification.ts";
@@ -216,7 +217,7 @@ async function fetchStatusLabels(apiKey: string): Promise<Map<string, string>> {
   return map;
 }
 
-const PORTFOLIO_ANALYSIS_MODEL = "claude-sonnet-4-6-20250627";
+const PORTFOLIO_ANALYSIS_MODEL = "claude-sonnet-4-6";
 const PORTFOLIO_ANALYSIS_TTL_MS = 4 * 60 * 60 * 1000;
 
 /**
@@ -641,7 +642,30 @@ async function handleScoreAll(
 
     const weights: AgentWeights = weightsRow?.weights ?? DEFAULTS;
 
-    // 5. Build source conversion rate map from outcomes
+    // 5. Build source conversion rate map from outcomes — but only for sources
+    // the user is still actively importing from. We compute the active source
+    // set from the freshly-fetched leads array (which has date_created + the
+    // custom-field source label) so that conversion rates from retired sources
+    // (e.g., Sitka Life that the user stopped importing 5 months ago) don't
+    // inflate sourceQuality scores for stale leads still in the table.
+    // Same SOURCE_ACTIVE_WINDOW_DAYS constant used by buildPortfolioSummary,
+    // so the AI prompt and the per-lead signal stay in lockstep.
+    const sourceActiveCutoffMs =
+      Date.now() - SOURCE_ACTIVE_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+    const activeSourceSet = new Set<string>();
+    for (const lead of leads) {
+      const source =
+        (lead.custom?.["Lead Source"] as string) ??
+        (lead.custom?.["lead_source"] as string) ??
+        (lead.custom?.["Source"] as string) ??
+        null;
+      if (!source) continue;
+      const createdMs = new Date(lead.date_created).getTime();
+      if (Number.isFinite(createdMs) && createdMs >= sourceActiveCutoffMs) {
+        activeSourceSet.add(source);
+      }
+    }
+
     const { data: outcomeRows } = await dataClient
       .from("lead_heat_outcomes")
       .select("close_lead_id, outcome_type, signals_at_outcome")
@@ -654,6 +678,7 @@ async function handleScoreAll(
 
     const sourceConversionRates = computeSourceConversionRates(
       outcomeRows ?? [],
+      activeSourceSet,
     );
 
     // 6. Batch-fetch activities for all leads
@@ -1136,6 +1161,127 @@ async function handleAnalyzeLead(
 }
 
 // ═══════════════════════════════════════════════════════════════════════
+// ACTION: apply_weight_update — user manually adjusts signal weights
+// ═══════════════════════════════════════════════════════════════════════
+//
+// User-facing path for adopting AI weight recommendations or manually tuning
+// scoring signal multipliers. Goes through the edge function (not direct
+// supabase.from().update()) because the lead_heat_agent_weights RLS policy
+// only grants users SELECT — INSERT/UPDATE are service-role only. That's a
+// deliberate boundary so all weight changes flow through validation +
+// version-bump in one place.
+//
+// Contract: client sends a PARTIAL weights object. Server merges into the
+// existing row, validates each multiplier is in [0.3, 2.0] (matches the
+// bound the AI uses), bumps `version`, saves. Caller separately invokes
+// score_all to immediately rescore with the new weights — that's done by
+// the React hook so the Apply button can resolve quickly without waiting
+// for ~6800 leads to rescore.
+
+async function handleApplyWeightUpdate(
+  userId: string,
+  // deno-lint-ignore no-explicit-any
+  dataClient: any,
+  // deno-lint-ignore no-explicit-any
+  params: any,
+) {
+  const partialWeights = params?.weights;
+  if (
+    !partialWeights ||
+    typeof partialWeights !== "object" ||
+    Array.isArray(partialWeights)
+  ) {
+    throw Object.assign(new Error("weights object is required"), {
+      code: "INVALID_INPUT",
+      status: 400,
+    });
+  }
+
+  // Validate each entry: known signal key + multiplier in [0.3, 2.0].
+  // Reject unknown keys to prevent typos from silently no-op'ing the scorer
+  // (the scorer would just default the multiplier to 1.0 and hide the bug).
+  const knownSignalKeys = new Set(Object.keys(DEFAULTS));
+  const validatedUpdates: Record<string, { multiplier: number }> = {};
+  for (const [key, value] of Object.entries(
+    partialWeights as Record<string, unknown>,
+  )) {
+    if (!knownSignalKeys.has(key)) {
+      throw Object.assign(new Error(`Unknown signal key: ${key}`), {
+        code: "UNKNOWN_SIGNAL",
+        status: 400,
+      });
+    }
+    const multiplier = (value as { multiplier?: unknown })?.multiplier;
+    if (typeof multiplier !== "number" || !Number.isFinite(multiplier)) {
+      throw Object.assign(
+        new Error(`Invalid multiplier for ${key}: must be a finite number`),
+        { code: "INVALID_MULTIPLIER", status: 400 },
+      );
+    }
+    if (multiplier < 0.3 || multiplier > 2.0) {
+      throw Object.assign(
+        new Error(
+          `Multiplier for ${key} must be between 0.3 and 2.0 (got ${multiplier})`,
+        ),
+        { code: "OUT_OF_BOUNDS", status: 400 },
+      );
+    }
+    validatedUpdates[key] = { multiplier };
+  }
+
+  if (Object.keys(validatedUpdates).length === 0) {
+    throw Object.assign(new Error("No weight updates provided"), {
+      code: "EMPTY_UPDATE",
+      status: 400,
+    });
+  }
+
+  // Load existing row (or default if first edit). The .maybeSingle() is
+  // important: a brand-new user may have never had weights persisted, in
+  // which case we initialize from DEFAULTS.
+  const { data: existingRow } = await dataClient
+    .from("lead_heat_agent_weights")
+    .select("weights, version")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  const existingWeights: AgentWeights = existingRow?.weights ?? DEFAULTS;
+  const existingVersion: number = existingRow?.version ?? 0;
+
+  // Merge partial → existing. Object spread keeps untouched signals at their
+  // current multipliers; only the keys in validatedUpdates are overwritten.
+  const mergedWeights: AgentWeights = {
+    ...DEFAULTS, // ensures any new signal added later still has a baseline
+    ...existingWeights,
+    ...validatedUpdates,
+  };
+
+  const newVersion = existingVersion + 1;
+
+  const { error: upsertErr } = await dataClient
+    .from("lead_heat_agent_weights")
+    .upsert(
+      {
+        user_id: userId,
+        weights: mergedWeights,
+        version: newVersion,
+        last_trained_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" },
+    );
+
+  if (upsertErr) {
+    throw new Error(`Failed to save weights: ${upsertErr.message}`);
+  }
+
+  return {
+    weights: mergedWeights,
+    version: newVersion,
+    updatedSignals: Object.keys(validatedUpdates),
+  };
+}
+
+// ═══════════════════════════════════════════════════════════════════════
 // ACTION: score_all_users — cron entry point
 // ═══════════════════════════════════════════════════════════════════════
 
@@ -1199,12 +1345,17 @@ async function handleScoreAllUsers(dataClient: any) {
 
 function computeSourceConversionRates(
   outcomes: { outcome_type: string; signals_at_outcome: LeadSignals | null }[],
+  activeSourceSet: Set<string>,
 ): Map<string, number> {
   const sourceMap = new Map<string, { won: number; total: number }>();
 
   for (const o of outcomes) {
     const source = o.signals_at_outcome?.leadSource;
     if (!source) continue;
+    // Skip outcomes from sources the user has retired. Their historical
+    // conversion rate is no longer meaningful and would inflate sourceQuality
+    // scores for stale leads still in the table.
+    if (!activeSourceSet.has(source)) continue;
     const existing = sourceMap.get(source) ?? { won: 0, total: 0 };
     existing.total++;
     if (o.outcome_type === "won") existing.won++;
@@ -1344,6 +1495,10 @@ serve(async (req) => {
           dataClient,
         );
         result = portfolioAnalysis.analysis ?? emptyPortfolioInsightsRow();
+        break;
+      }
+      case "apply_weight_update": {
+        result = await handleApplyWeightUpdate(user.id, dataClient, params);
         break;
       }
       default:
