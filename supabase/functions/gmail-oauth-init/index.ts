@@ -102,8 +102,14 @@ serve(async (req) => {
     authUrl.searchParams.set("access_type", "offline");
     // prompt=consent forces consent screen and ensures refresh token is returned
     authUrl.searchParams.set("prompt", "consent");
-    // Include granted scopes in response
-    authUrl.searchParams.set("include_granted_scopes", "true");
+    // NOTE: include_granted_scopes was REMOVED in April 2026 to pass Google
+    // OAuth verification. With incremental authorization enabled, any test
+    // account that had previously granted gmail.modify (from earlier dev work
+    // before the March 11 removal) would carry that scope forward forever on
+    // the consent screen — even though the codebase no longer requests it.
+    // Google's reviewer was seeing the leaked scope and rejecting verification.
+    // Without this flag, the consent screen shows ONLY the 4 scopes above:
+    // gmail.send, gmail.readonly, userinfo.email, userinfo.profile.
 
     console.log(`[gmail-oauth-init] Generated OAuth URL for user ${userId}`);
 
