@@ -126,7 +126,10 @@ function getReportingWindow(): ReportingWindow {
     sunday.setDate(currentMonday.getDate() - 1);
   }
 
-  const monthStart = new Date(monday);
+  // Anchor MTD to the report end date (sunday), not monday.
+  // When a week crosses month boundaries (e.g. Mar 30 – Apr 5),
+  // MTD should reflect the current calendar month (April 1–5).
+  const monthStart = new Date(sunday);
   monthStart.setDate(1);
   const monthEnd = new Date(
     monthStart.getFullYear(),
@@ -835,19 +838,25 @@ serve(async (req) => {
     // Get reporting window
     const reportingWindow = getReportingWindow();
 
-    // Fetch all data
+    // Fetch all data — use the earlier of monthStart/weekStart so cross-month
+    // weeks (e.g. week starts Mar 30, month starts Apr 1) don't lose WTD data.
+    const fetchStart =
+      reportingWindow.monthStart < reportingWindow.weekStart
+        ? reportingWindow.monthStart
+        : reportingWindow.weekStart;
+
     const [ipPolicies, submitPolicies, activeAgencies, allUsers] =
       await Promise.all([
         fetchPoliciesForRange(
           supabase,
           imoId,
-          reportingWindow.monthStart,
+          fetchStart,
           reportingWindow.weekEnd,
         ),
         fetchSubmittedPoliciesForRange(
           supabase,
           imoId,
-          reportingWindow.monthStart,
+          fetchStart,
           reportingWindow.weekEnd,
         ),
         fetchActiveAgencies(supabase, imoId),
