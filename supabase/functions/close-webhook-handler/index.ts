@@ -269,6 +269,62 @@ async function handleLeadStatusChange(
   };
 }
 
+// ─── Webhook Audit Logging ────────────────────────────────────────
+
+interface WebhookLogRow {
+  organization_id: string | null;
+  lead_id: string | null;
+  user_id: string | null;
+  event_action: string | null;
+  status_label: string | null;
+  changed_fields: string[] | null;
+  outcome: string;
+  outcome_reason: string | null;
+  opportunity_id: string | null;
+  error_message: string | null;
+  raw_payload: unknown;
+}
+
+// deno-lint-ignore no-explicit-any
+async function persistWebhookLog(client: any, row: WebhookLogRow) {
+  try {
+    const { error } = await client.from("close_webhook_logs").insert(row);
+    if (error) {
+      console.error("[close-webhook-handler] Failed to log:", error.message);
+    }
+  } catch (err) {
+    console.error("[close-webhook-handler] Logging threw:", err);
+  }
+}
+
+function buildResponseAndLog(
+  // deno-lint-ignore no-explicit-any
+  client: any,
+  base: Omit<WebhookLogRow, "outcome">,
+  // deno-lint-ignore no-explicit-any
+  result: Record<string, any> & { action?: string; reason?: string },
+): Response {
+  const action = result.action ?? "unknown";
+  const row: WebhookLogRow = {
+    ...base,
+    outcome: action,
+    outcome_reason: result.reason ?? null,
+    opportunity_id: result.opportunityId ?? null,
+    error_message: action === "error" ? (result.reason ?? null) : null,
+  };
+  // Fire-and-forget: don't await; we'll still get logs but never delay the
+  // 200 OK that prevents Close from retrying.
+  persistWebhookLog(client, row);
+
+  console.log(
+    `[webhook] ${base.organization_id ?? "?"} lead ${base.lead_id ?? "?"} → ${
+      base.status_label ?? "?"
+    }: ${JSON.stringify(result)}`,
+  );
+
+  return jsonResponse({ ok: true, ...result }, 200);
+}
+
 // ─── Main Handler ─────────────────────────────────────────────────
 
 serve(async (req: Request) => {
@@ -276,14 +332,55 @@ serve(async (req: Request) => {
     return new Response("ok", { headers: corsHeaders() });
   }
 
+  // Build clients up front so even early-return paths can be logged.
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+  const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const REMOTE_URL = Deno.env.get("REMOTE_SUPABASE_URL");
+  const REMOTE_KEY = Deno.env.get("REMOTE_SUPABASE_SERVICE_ROLE_KEY");
+
+  const authClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const dataClient =
+    REMOTE_URL && REMOTE_KEY
+      ? createClient(REMOTE_URL, REMOTE_KEY)
+      : authClient;
+
+  // Logs always go to authClient (the local supabase that hosts this
+  // function), never to the remote data client.
+  const logClient = authClient;
+
+  let baseLog: Omit<WebhookLogRow, "outcome"> = {
+    organization_id: null,
+    lead_id: null,
+    user_id: null,
+    event_action: null,
+    status_label: null,
+    changed_fields: null,
+    outcome_reason: null,
+    opportunity_id: null,
+    error_message: null,
+    raw_payload: null,
+  };
+
   try {
     const rawBody = await req.text();
     const payload = JSON.parse(rawBody);
     const event = payload.event;
 
+    // Truncate raw payload to keep log rows reasonable
+    baseLog.raw_payload = event ?? payload;
+
     if (!event) {
-      return jsonResponse({ ok: true, action: "no_event" }, 200);
+      return buildResponseAndLog(logClient, baseLog, { action: "no_event" });
     }
+
+    baseLog = {
+      ...baseLog,
+      organization_id: event.organization_id ?? null,
+      lead_id: event.object_id ?? null,
+      event_action: event.action ?? null,
+      changed_fields: event.changed_fields ?? null,
+      status_label: event.data?.status_label ?? null,
+    };
 
     // Only handle lead updates with status_id changes
     if (
@@ -291,29 +388,18 @@ serve(async (req: Request) => {
       event.action !== "updated" ||
       !event.changed_fields?.includes("status_id")
     ) {
-      return jsonResponse({ ok: true, action: "ignored" }, 200);
+      return buildResponseAndLog(logClient, baseLog, {
+        action: "ignored",
+        reason: `object_type=${event.object_type} action=${event.action} changed_fields=${JSON.stringify(event.changed_fields ?? [])}`,
+      });
     }
 
     const leadId = event.object_id;
     const orgId = event.organization_id;
 
     if (!leadId || !orgId) {
-      return jsonResponse({ ok: true, action: "missing_ids" }, 200);
+      return buildResponseAndLog(logClient, baseLog, { action: "missing_ids" });
     }
-
-    // Find the agent whose Close org matches this webhook
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get(
-      "SUPABASE_SERVICE_ROLE_KEY",
-    )!;
-    const REMOTE_URL = Deno.env.get("REMOTE_SUPABASE_URL");
-    const REMOTE_KEY = Deno.env.get("REMOTE_SUPABASE_SERVICE_ROLE_KEY");
-
-    const authClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    const dataClient =
-      REMOTE_URL && REMOTE_KEY
-        ? createClient(REMOTE_URL, REMOTE_KEY)
-        : authClient;
 
     // Look up the agent by organization_id
     const { data: configs } = await dataClient
@@ -331,7 +417,10 @@ serve(async (req: Request) => {
         .eq("is_active", true);
 
       if (!allConfigs?.length) {
-        return jsonResponse({ ok: true, action: "no_matching_config" }, 200);
+        return buildResponseAndLog(logClient, baseLog, {
+          action: "no_matching_config",
+          reason: "no active close_config rows",
+        });
       }
 
       // Try each config to find the one whose API key works for this org
@@ -341,34 +430,18 @@ serve(async (req: Request) => {
           // deno-lint-ignore no-explicit-any
           const meRes = (await closeGet(apiKey, "/me/")) as any;
           if (meRes.organization_id === orgId) {
+            baseLog.user_id = cfg.user_id;
             // Found the right agent — get the new status label
-            const newStatusLabel = event.data?.status_label ?? "";
+            let newStatusLabel = event.data?.status_label ?? "";
             if (!newStatusLabel) {
-              // Fetch lead to get status label
               // deno-lint-ignore no-explicit-any
               const lead = (await closeGet(
                 apiKey,
                 `/lead/${leadId}/?_fields=status_label`,
               )) as any;
-              const label = lead.status_label ?? "";
-              const result = await handleLeadStatusChange(
-                apiKey,
-                leadId,
-                label,
-                cfg.user_id,
-              );
-              console.log(
-                `[webhook] ${orgId} lead ${leadId}: ${JSON.stringify(result)}`,
-              );
-
-              // Update org_id for faster future lookups
-              await dataClient
-                .from("close_config")
-                .update({ organization_id: orgId })
-                .eq("user_id", cfg.user_id);
-
-              return jsonResponse({ ok: true, ...result }, 200);
+              newStatusLabel = lead.status_label ?? "";
             }
+            baseLog.status_label = newStatusLabel;
 
             const result = await handleLeadStatusChange(
               apiKey,
@@ -376,27 +449,29 @@ serve(async (req: Request) => {
               newStatusLabel,
               cfg.user_id,
             );
-            console.log(
-              `[webhook] ${orgId} lead ${leadId}: ${JSON.stringify(result)}`,
-            );
 
+            // Update org_id for faster future lookups
             await dataClient
               .from("close_config")
               .update({ organization_id: orgId })
               .eq("user_id", cfg.user_id);
 
-            return jsonResponse({ ok: true, ...result }, 200);
+            return buildResponseAndLog(logClient, baseLog, result);
           }
         } catch {
           continue;
         }
       }
 
-      return jsonResponse({ ok: true, action: "no_matching_config" }, 200);
+      return buildResponseAndLog(logClient, baseLog, {
+        action: "no_matching_config",
+        reason: "no api key matched org via /me/",
+      });
     }
 
     // Direct match on org_id
     const cfg = configs[0];
+    baseLog.user_id = cfg.user_id;
     const apiKey = await decrypt(cfg.api_key_encrypted);
 
     // Get the new status label from the event data or fetch it
@@ -409,6 +484,7 @@ serve(async (req: Request) => {
       )) as any;
       newStatusLabel = lead.status_label ?? "";
     }
+    baseLog.status_label = newStatusLabel;
 
     const result = await handleLeadStatusChange(
       apiKey,
@@ -417,14 +493,17 @@ serve(async (req: Request) => {
       cfg.user_id,
     );
 
-    console.log(
-      `[webhook] ${orgId} lead ${leadId} → ${newStatusLabel}: ${JSON.stringify(result)}`,
-    );
-
-    return jsonResponse({ ok: true, ...result }, 200);
+    return buildResponseAndLog(logClient, baseLog, result);
   } catch (err) {
     console.error("[close-webhook-handler] Error:", err);
+    const message = (err as Error).message;
+    // Best-effort error log; never block the 200 OK to Close.
+    persistWebhookLog(logClient, {
+      ...baseLog,
+      outcome: "error",
+      error_message: message,
+    });
     // Always return 200 to prevent Close from retrying
-    return jsonResponse({ ok: false, error: (err as Error).message }, 200);
+    return jsonResponse({ ok: false, error: message }, 200);
   }
 });

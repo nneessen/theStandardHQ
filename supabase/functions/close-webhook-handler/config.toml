@@ -1,0 +1,4 @@
+# Close.com sends raw POST requests without Supabase JWT.
+# Webhook authenticity should be verified via the Close-Sig-Hash signature header
+# (not yet implemented — see APPOINTMENT_PATTERNS in index.ts).
+verify_jwt = false
