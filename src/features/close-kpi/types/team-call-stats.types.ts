@@ -32,7 +32,10 @@ export interface TeamCallStatsRow {
   connectRate: number | null;
   talkTimeSeconds: number;
   voicemails: number;
-  lastCallAt: string | null;
+  /** ISO 8601 timestamp of the most recent OUTBOUND dial. Null if no dials. */
+  lastDialAt: string | null;
+  /** True when the agent has more calls than the response includes (pagination cap hit). */
+  truncated: boolean;
   /** Per-agent error so one bad API key doesn't break the whole table */
   error: string | null;
 }

@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import {
   TEAM_CALL_PRESETS,
   buildTeamCallRange,
+  toLocalIso,
 } from "../../lib/team-call-range";
 import type {
   TeamCallRange,
@@ -27,18 +28,12 @@ function isoToInputDate(iso: string): string {
 }
 
 function inputDateToLocalIso(date: string, endOfDay: boolean): string {
-  // YYYY-MM-DD → local-tz Date at start or end of that day
+  // YYYY-MM-DD (from <input type="date">) → local-tz Date at start or end of day
   const [y, m, d] = date.split("-").map((x) => parseInt(x, 10));
   const out = new Date(y, m - 1, d);
   if (endOfDay) out.setHours(23, 59, 59, 999);
   else out.setHours(0, 0, 0, 0);
-  // Reuse the local-iso formatter from buildTeamCallRange via a one-day custom range
-  const range = buildTeamCallRange(
-    "custom",
-    out.toISOString(),
-    out.toISOString(),
-  );
-  return endOfDay ? range.to : range.from;
+  return toLocalIso(out);
 }
 
 export const TeamDateRangeSelector: React.FC<TeamDateRangeSelectorProps> = ({

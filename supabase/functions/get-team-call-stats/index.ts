@@ -17,36 +17,29 @@
 //   - Date-range queries: same `date_created__gte/lte` Close API pattern as
 //     close-kpi-data/fetchActivityGroups.
 //
-// Why an edge function instead of an SQL aggregation:
-//   - lead_heat_scores.signals stores PER-LEAD frozen counts, not time-series
-//     call records. There is no SQL way to ask "calls on April 6 by agent X"
-//     from existing tables. The authoritative source is the Close API itself.
-//   - Each agent has their own Close account with their own API key. To
-//     aggregate across a team, we MUST fan out per-agent — no single API key
-//     sees the team's data.
-//   - Persisting daily rollups in a new table is the long-term option but
-//     would need backfill + a new cron. Live fan-out ships today, gives
-//     real-time data for any date range, and matches the existing pattern.
+// Hardening (V2 review remediation):
+//   - Per-call AbortController timeout (10s) so a single slow Close API
+//     response can't hang the whole batch and trip the edge function's
+//     hard timeout.
+//   - In-memory per-user response cache with 60s TTL to mitigate DoS via
+//     Close API quota exhaustion. Hot V8 isolates absorb spam requests
+//     without re-fetching from Close.
+//   - `truncated` boolean per row when the pagination cap is hit, so the
+//     UI can warn the user that the count is incomplete.
+//   - 401 instead of 500 for auth-related RPC errors.
+//   - Local JWT sub decode instead of round-tripping to /auth/v1/user.
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
 import { decrypt } from "../_shared/encryption.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { aggregateCalls, type CloseCall } from "./aggregate.ts";
 
 // ─── Types ────────────────────────────────────────────────────────────
 
 interface RequestBody {
   from: string; // ISO 8601 timestamp (frontend computes from preset + tz)
   to: string; // ISO 8601 timestamp (inclusive end)
-}
-
-interface CloseCall {
-  id: string;
-  lead_id: string;
-  direction?: string; // "outbound" | "outgoing" | "inbound" | "incoming"
-  duration?: number; // seconds
-  disposition?: string; // "answered" | "no-answer" | "busy" | "vm-answer" | ...
-  date_created: string;
 }
 
 interface TeamCallStatsRow {
@@ -61,7 +54,11 @@ interface TeamCallStatsRow {
   connectRate: number | null;
   talkTimeSeconds: number;
   voicemails: number;
-  lastCallAt: string | null;
+  /** ISO 8601 timestamp of the most recent OUTBOUND dial. */
+  lastDialAt: string | null;
+  /** True when pagination cap was hit — agent has more calls than the response includes. */
+  truncated: boolean;
+  /** Per-agent error so one bad API key doesn't break the batch. */
   error: string | null;
 }
 
@@ -75,20 +72,91 @@ interface ResponseBody {
 
 const CONCURRENCY_LIMIT = 3;
 const CALLS_PER_PAGE = 100;
-const MAX_PAGES_PER_AGENT = 50; // 5,000 calls per agent in the requested window — sane cap
+const MAX_PAGES_PER_AGENT = 50; // 5,000 calls per agent in the requested window
+const PER_FETCH_TIMEOUT_MS = 10_000;
+const CACHE_TTL_MS = 60_000;
+const CACHE_MAX_ENTRIES = 200;
+
+// ─── In-memory response cache ─────────────────────────────────────────
+//
+// Keyed by `${callerId}|${from}|${to}`. Hot V8 isolates persist this Map
+// across requests; cold starts get an empty cache (which is fine — the
+// next legitimate request just populates it). 60s TTL matches the
+// frontend's TanStack Query staleTime.
+//
+// LRU-ish eviction: when we exceed CACHE_MAX_ENTRIES, drop the oldest by
+// insertion order (Map preserves insertion order in JS).
+
+interface CacheEntry {
+  body: ResponseBody;
+  expiresAt: number;
+}
+
+const responseCache = new Map<string, CacheEntry>();
+
+function cacheGet(key: string): ResponseBody | null {
+  const entry = responseCache.get(key);
+  if (!entry) return null;
+  if (entry.expiresAt < Date.now()) {
+    responseCache.delete(key);
+    return null;
+  }
+  // LRU touch — re-insert to move to end
+  responseCache.delete(key);
+  responseCache.set(key, entry);
+  return entry.body;
+}
+
+function cacheSet(key: string, body: ResponseBody): void {
+  responseCache.set(key, { body, expiresAt: Date.now() + CACHE_TTL_MS });
+  // Evict oldest entries beyond the cap
+  while (responseCache.size > CACHE_MAX_ENTRIES) {
+    const oldestKey = responseCache.keys().next().value;
+    if (oldestKey === undefined) break;
+    responseCache.delete(oldestKey);
+  }
+}
+
+// ─── JWT helper ────────────────────────────────────────────────────────
+//
+// Decodes the `sub` claim from the Authorization header WITHOUT validating
+// the signature. The Supabase Functions gateway has already validated the
+// JWT before our code runs, so we trust the signature; we just need the
+// subject UUID for the is_self flag and the cache key.
+
+function decodeJwtSub(authHeader: string): string | null {
+  try {
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    // JWT uses base64url encoding — replace url-safe chars before atob
+    const payloadB64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = payloadB64 + "=".repeat((4 - (payloadB64.length % 4)) % 4);
+    const payload = JSON.parse(atob(padded));
+    return typeof payload?.sub === "string" ? payload.sub : null;
+  } catch {
+    return null;
+  }
+}
 
 // ─── Close API helper ─────────────────────────────────────────────────
+
+interface FetchCallsResult {
+  calls: CloseCall[];
+  truncated: boolean;
+}
 
 async function fetchCallsForAgent(
   apiKey: string,
   from: string,
   to: string,
-): Promise<CloseCall[]> {
+): Promise<FetchCallsResult> {
   // Close API uses HTTP Basic auth with the API key as username and empty password.
   const authHeader = "Basic " + btoa(`${apiKey}:`);
   const all: CloseCall[] = [];
   let skip = 0;
   let page = 0;
+  let truncated = false;
 
   while (page < MAX_PAGES_PER_AGENT) {
     const qs = new URLSearchParams({
@@ -99,12 +167,32 @@ async function fetchCallsForAgent(
       date_created__lte: to,
     });
 
-    const res = await fetch(
-      `https://api.close.com/api/v1/activity/call/?${qs.toString()}`,
-      {
-        headers: { Authorization: authHeader },
-      },
+    // Per-fetch timeout. Without this, a hung Close API call would keep the
+    // entire concurrency batch waiting until the edge function's hard 60s
+    // limit, then ALL agents in the batch would error. With it, only the
+    // slow agent errors and the others continue normally.
+    const controller = new AbortController();
+    const timeoutId = setTimeout(
+      () => controller.abort(),
+      PER_FETCH_TIMEOUT_MS,
     );
+
+    let res: Response;
+    try {
+      res = await fetch(
+        `https://api.close.com/api/v1/activity/call/?${qs.toString()}`,
+        { headers: { Authorization: authHeader }, signal: controller.signal },
+      );
+    } catch (err) {
+      const isAbort = (err as Error)?.name === "AbortError";
+      throw new Error(
+        isAbort
+          ? `Close API timeout after ${PER_FETCH_TIMEOUT_MS}ms`
+          : `Close API fetch failed: ${(err as Error).message}`,
+      );
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!res.ok) {
       const body = await res.text();
@@ -122,43 +210,30 @@ async function fetchCallsForAgent(
     page += 1;
   }
 
-  return all;
-}
-
-// ─── Aggregation ──────────────────────────────────────────────────────
-
-function isOutbound(direction?: string): boolean {
-  return direction === "outbound" || direction === "outgoing";
-}
-
-function aggregateCalls(calls: CloseCall[]): {
-  dials: number;
-  connects: number;
-  talkTimeSeconds: number;
-  voicemails: number;
-  lastCallAt: string | null;
-} {
-  let dials = 0;
-  let connects = 0;
-  let talkTimeSeconds = 0;
-  let voicemails = 0;
-  let lastCallAt: string | null = null;
-
-  for (const c of calls) {
-    if (!isOutbound(c.direction)) continue;
-    dials += 1;
-    if (c.disposition === "answered") {
-      connects += 1;
-      talkTimeSeconds += c.duration ?? 0;
-    } else if (c.disposition === "vm-answer") {
-      voicemails += 1;
-    }
-    if (lastCallAt === null || c.date_created > lastCallAt) {
-      lastCallAt = c.date_created;
-    }
+  // If we exited the loop because we hit MAX_PAGES_PER_AGENT (not because
+  // has_more was false), the agent has more calls than we fetched.
+  if (page >= MAX_PAGES_PER_AGENT) {
+    truncated = true;
   }
 
-  return { dials, connects, talkTimeSeconds, voicemails, lastCallAt };
+  return { calls: all, truncated };
+}
+
+// ─── Auth-error classification ────────────────────────────────────────
+//
+// PostgREST returns auth errors with PGRST301 (JWT expired) or PGRST302
+// (JWT invalid). The error message often includes "JWT" or "permission".
+// Treat any of these as 401 instead of 500 so clients can re-auth cleanly.
+
+function isAuthError(message: string): boolean {
+  const lower = message.toLowerCase();
+  return (
+    lower.includes("jwt") ||
+    lower.includes("not authenticated") ||
+    lower.includes("authentication") ||
+    lower.includes("pgrst301") ||
+    lower.includes("pgrst302")
+  );
 }
 
 // ─── Main handler ─────────────────────────────────────────────────────
@@ -187,6 +262,16 @@ serve(async (req) => {
       });
     }
 
+    // Decode the JWT subject locally — gateway already validated signature.
+    // Used for is_self flag and the per-user cache key.
+    const callerId = decodeJwtSub(authHeader);
+    if (!callerId) {
+      return new Response(JSON.stringify({ error: "invalid bearer token" }), {
+        status: 401,
+        headers: { ...cors, "Content-Type": "application/json" },
+      });
+    }
+
     // ── 2. Parse body ─────────────────────────────────────────────────
     const body = (await req.json()) as RequestBody;
     if (!body.from || !body.to) {
@@ -199,7 +284,24 @@ serve(async (req) => {
       );
     }
 
-    // ── 3. Resolve team member set via the user-context RPC ──────────
+    // ── 3. Cache check ────────────────────────────────────────────────
+    // Mitigates DoS-via-Close-API-quota: hot V8 isolates serve cached
+    // responses for the same (caller, range) tuple within 60s without
+    // re-hitting Close API.
+    const cacheKey = `${callerId}|${body.from}|${body.to}`;
+    const cached = cacheGet(cacheKey);
+    if (cached) {
+      return new Response(JSON.stringify(cached), {
+        status: 200,
+        headers: {
+          ...cors,
+          "Content-Type": "application/json",
+          "X-Cache": "HIT",
+        },
+      });
+    }
+
+    // ── 4. Resolve team member set via the user-context RPC ──────────
     // Using the caller's JWT means get_team_member_ids() sees auth.uid() as
     // the actual caller and applies hierarchy_path access checks. This is
     // the security boundary — non-uplines get an empty array.
@@ -214,12 +316,13 @@ serve(async (req) => {
     );
 
     if (memberErr) {
+      const status = isAuthError(memberErr.message) ? 401 : 500;
       return new Response(
         JSON.stringify({
           error: `get_team_member_ids failed: ${memberErr.message}`,
         }),
         {
-          status: 500,
+          status,
           headers: { ...cors, "Content-Type": "application/json" },
         },
       );
@@ -229,15 +332,12 @@ serve(async (req) => {
 
     if (teamUuids.length === 0) {
       const empty: ResponseBody = { from: body.from, to: body.to, rows: [] };
+      cacheSet(cacheKey, empty);
       return new Response(JSON.stringify(empty), {
         status: 200,
         headers: { ...cors, "Content-Type": "application/json" },
       });
     }
-
-    // ── 4. Identify caller (for is_self flag) ────────────────────────
-    const { data: callerData } = await userClient.auth.getUser();
-    const callerId = callerData?.user?.id ?? null;
 
     // ── 5. Read encrypted keys + profile data via service role ───────
     // Service-role bypasses RLS (lead-heat cron uses the same pattern). The
@@ -315,13 +415,18 @@ serve(async (req) => {
             connectRate: null,
             talkTimeSeconds: 0,
             voicemails: 0,
-            lastCallAt: null,
+            lastDialAt: null,
+            truncated: false,
             error: null,
           };
 
           try {
             const apiKey = await decrypt(cfg.api_key_encrypted as string);
-            const calls = await fetchCallsForAgent(apiKey, body.from, body.to);
+            const { calls, truncated } = await fetchCallsForAgent(
+              apiKey,
+              body.from,
+              body.to,
+            );
             const agg = aggregateCalls(calls);
             return {
               ...baseRow,
@@ -330,7 +435,8 @@ serve(async (req) => {
               connectRate: agg.dials > 0 ? agg.connects / agg.dials : null,
               talkTimeSeconds: agg.talkTimeSeconds,
               voicemails: agg.voicemails,
-              lastCallAt: agg.lastCallAt,
+              lastDialAt: agg.lastDialAt,
+              truncated,
             };
           } catch (err) {
             console.error(
@@ -365,7 +471,8 @@ serve(async (req) => {
         connectRate: null,
         talkTimeSeconds: 0,
         voicemails: 0,
-        lastCallAt: null,
+        lastDialAt: null,
+        truncated: false,
         error: "Close not connected",
       });
     }
@@ -383,9 +490,15 @@ serve(async (req) => {
       rows,
     };
 
+    cacheSet(cacheKey, response);
+
     return new Response(JSON.stringify(response), {
       status: 200,
-      headers: { ...cors, "Content-Type": "application/json" },
+      headers: {
+        ...cors,
+        "Content-Type": "application/json",
+        "X-Cache": "MISS",
+      },
     });
   } catch (err) {
     console.error("[get-team-call-stats] unexpected error:", err);

@@ -49,8 +49,11 @@ function endOfLocalDay(d: Date): Date {
  * Format a Date as a local-timezone ISO 8601 string with offset, e.g.
  * `2026-04-06T00:00:00-04:00`. Standard `.toISOString()` returns UTC, which
  * is wrong for "today in user's tz" because it'd shift the boundary.
+ *
+ * Exported so other helpers (e.g. TeamDateRangeSelector's custom-date input
+ * handlers) can format Dates without going through buildTeamCallRange.
  */
-function toLocalIso(d: Date): string {
+export function toLocalIso(d: Date): string {
   const pad = (n: number) => String(n).padStart(2, "0");
   const year = d.getFullYear();
   const month = pad(d.getMonth() + 1);

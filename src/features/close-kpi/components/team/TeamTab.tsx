@@ -8,7 +8,7 @@
 //      30-day rolling window. Hot leads, stale leads, opportunity value, etc.
 //      Slower-changing context that complements the daily activity view.
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AlertTriangle, Phone, RefreshCw, Users } from "lucide-react";
 import { useTeamPipelineSnapshot } from "../../hooks/useTeamPipelineSnapshot";
 import { useTeamCallStats } from "../../hooks/useTeamCallStats";
@@ -35,10 +35,28 @@ function relativeTime(iso: string | null): string {
 
 const DailyCallsSection: React.FC = () => {
   // Default to "today" — this is the manager's primary daily check-in.
-  // useMemo so the initial range is captured once at mount, not recomputed
-  // on every render (which would cause the query key to flap).
-  const initialRange = useMemo(() => buildTeamCallRange("today"), []);
-  const [range, setRange] = useState(initialRange);
+  // Lazy initializer so buildTeamCallRange runs exactly once on mount.
+  const [range, setRange] = useState(() => buildTeamCallRange("today"));
+
+  // Midnight rollover: if the user keeps the dashboard open across midnight
+  // and the preset is "today", the cached range still points at yesterday.
+  // Poll once per minute and re-compute "today" if the local calendar day
+  // has advanced. Only active while the preset is "today" — picking any
+  // other preset stops the interval (the effect re-runs and the early
+  // return cleans up).
+  useEffect(() => {
+    if (range.preset !== "today") return;
+    const checkRollover = () => {
+      const fresh = buildTeamCallRange("today");
+      // The from string carries the local-tz date; if it changed, the day
+      // rolled over and we need to refetch with the new bounds.
+      if (fresh.from !== range.from) {
+        setRange(fresh);
+      }
+    };
+    const interval = setInterval(checkRollover, 60_000);
+    return () => clearInterval(interval);
+  }, [range.preset, range.from]);
 
   const { data, isLoading, isError, error, refetch, isFetching } =
     useTeamCallStats({ from: range.from, to: range.to });

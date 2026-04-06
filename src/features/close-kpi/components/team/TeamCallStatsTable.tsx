@@ -20,7 +20,7 @@ type SortKey =
   | "connectRate"
   | "talkTimeSeconds"
   | "voicemails"
-  | "lastCallAt";
+  | "lastDialAt";
 
 type SortDir = "asc" | "desc";
 
@@ -59,9 +59,9 @@ function compareRows(
   switch (key) {
     case "name":
       return displayName(a).localeCompare(displayName(b));
-    case "lastCallAt": {
-      const ax = a.lastCallAt ? new Date(a.lastCallAt).getTime() : 0;
-      const bx = b.lastCallAt ? new Date(b.lastCallAt).getTime() : 0;
+    case "lastDialAt": {
+      const ax = a.lastDialAt ? new Date(a.lastDialAt).getTime() : 0;
+      const bx = b.lastDialAt ? new Date(b.lastDialAt).getTime() : 0;
       return ax - bx;
     }
     case "connectRate": {
@@ -199,8 +199,8 @@ export const TeamCallStatsTable: React.FC<TeamCallStatsTableProps> = ({
               onSort={handleSort}
             />
             <SortableHeader
-              label="Last Call"
-              sortKey="lastCallAt"
+              label="Last Dial"
+              sortKey="lastDialAt"
               currentKey={sortKey}
               direction={sortDir}
               onSort={handleSort}
@@ -260,6 +260,14 @@ export const TeamCallStatsTable: React.FC<TeamCallStatsTableProps> = ({
                         <AlertCircle className="h-3 w-3 text-amber-500" />
                       </span>
                     )}
+                    {!hasError && r.truncated && (
+                      <span
+                        className="inline-flex items-center"
+                        title="Some calls not counted — pagination limit hit. Numbers below are a lower bound."
+                      >
+                        <AlertCircle className="h-3 w-3 text-amber-500" />
+                      </span>
+                    )}
                   </div>
                 </td>
 
@@ -299,7 +307,7 @@ export const TeamCallStatsTable: React.FC<TeamCallStatsTableProps> = ({
 
                 {/* Last Call */}
                 <td className="px-2 py-1.5 text-right text-[10px] text-muted-foreground">
-                  {relativeTime(r.lastCallAt)}
+                  {relativeTime(r.lastDialAt)}
                 </td>
               </tr>
             );
