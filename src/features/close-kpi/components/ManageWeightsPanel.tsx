@@ -34,6 +34,43 @@ const SIGNAL_LABELS: Record<string, string> = {
   sourceQuality: "Source Quality",
 };
 
+// Plain-English explanation of what each signal measures and why it matters.
+// Shown in the tooltip on hover so the user knows what they're tuning.
+// Source of truth: src/features/close-kpi/lib/scoring-math.ts (the actual
+// scoring functions). Keep these in sync with the point caps in MAX_POINTS.
+const SIGNAL_DESCRIPTIONS: Record<string, string> = {
+  callAnswerRate:
+    "% of your outbound calls the lead actually picks up. 50%+ answer rate = max points (8). Suggests they're reachable.",
+  emailReplyRate:
+    "% of your emails the lead replies to. 40%+ reply rate = max points (5). Strong intent signal.",
+  smsResponseRate:
+    "% of your SMS messages the lead responds to. 40%+ = max points (5). High-intent buyers respond fast.",
+  engagementRecency:
+    "How recently the lead interacted. Last 4 hours = max points (9). Decays over 14 days. Hot leads = recent leads.",
+  inboundCalls:
+    "How many times the lead called YOU. The single strongest buying signal in insurance. 3+ inbound calls = max points (13).",
+  quoteRequested:
+    "Lead reached a 'Quoted' status or had positive status changes. 7 points if quoted; partial credit for status advances.",
+  emailEngagement:
+    "How many emails the lead has received from you (read, not necessarily replied). 3+ emails = max points (3).",
+  appointment:
+    "Lead has a callback or appointment status set. Worth 2 points. Lower importance than buying signals.",
+  leadAge:
+    "How long since the lead was created. Fresh = high points (5 max for 0-3 days). Decays to 0 after 60 days.",
+  timeSinceTouch:
+    "Days since you last contacted the lead. <1 day = max points (5). Decays to 0 after 30 days.",
+  timeInStatus:
+    "How long the lead has been in their current status. Stale = bad. Fast advancement through positive statuses = good.",
+  statusVelocity:
+    "Net positive status changes in the last 30 days. 3+ net positive moves = max points (5). Tracks momentum.",
+  hasOpportunity:
+    "Lead has an active opportunity in your pipeline. 9 points active, 3 points for any opportunity. Pure pipeline signal.",
+  opportunityValue:
+    "Dollar value of the opportunity. $5000+ = max points (4). Bigger deals get more attention in the ranking.",
+  sourceQuality:
+    "Historical conversion rate of the lead's source. 15%+ source conversion = max points (5). Rewards quality lead sources.",
+};
+
 const ALL_SIGNAL_KEYS = Object.keys(MAX_POINTS);
 
 function clampMultiplier(value: number): number {
@@ -57,7 +94,11 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
   variant = "compact",
 }) => {
   const applyWeights = useApplyLeadHeatWeights();
-  const { weightAdjustments, currentWeights } = data;
+  // Defensive defaults — older cached query data may not have these fields
+  // populated yet (the type was added after the cache was warmed). Without
+  // the defaults, currentWeights[signalKey] would crash on first render.
+  const weightAdjustments = data.weightAdjustments ?? [];
+  const currentWeights = data.currentWeights ?? {};
 
   // Map signalKey → AI recommended multiplier for fast lookup
   const aiRecMap = React.useMemo(() => {
@@ -154,6 +195,22 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
 
       {panelOpen && (
         <div className="mt-1.5 space-y-1">
+          {/* Help banner — explains what tuning weights actually does so the
+              user isn't dragging sliders blindly. Compact enough not to
+              dominate the panel. */}
+          <div className="rounded border border-violet-200/40 dark:border-violet-800/30 bg-violet-50/30 dark:bg-violet-950/20 px-2 py-1.5 text-[10px] text-foreground/80 leading-snug">
+            <span className="font-semibold text-violet-700 dark:text-violet-300">
+              How this works:
+            </span>{" "}
+            Each signal contributes points to a lead&apos;s 0–100 heat score.
+            The multiplier scales that contribution.{" "}
+            <span className="font-mono">1.0x</span> = default,{" "}
+            <span className="font-mono">2.0x</span> = double impact,{" "}
+            <span className="font-mono">0.3x</span> = barely counts. Hover any
+            signal name for what it measures. Saving triggers an automatic
+            rescore of all leads with the new weights.
+          </div>
+
           {/* Signal table */}
           <div
             className={
@@ -179,11 +236,17 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
                   <div className="min-w-0">
                     <div className="flex items-center gap-1">
                       <span
-                        className="text-[10px] text-foreground truncate"
+                        className="text-[10px] text-foreground truncate cursor-help"
                         title={
+                          // Two-line tooltip: signal description first, then
+                          // AI reason if present. Native title attribute
+                          // doesn't render newlines reliably, so we use a
+                          // bullet separator.
                           aiRec?.reason
-                            ? `AI: ${aiRec.reason}`
-                            : (SIGNAL_LABELS[signalKey] ?? signalKey)
+                            ? `${SIGNAL_DESCRIPTIONS[signalKey] ?? SIGNAL_LABELS[signalKey] ?? signalKey}\n\n• AI suggestion: ${aiRec.reason}`
+                            : (SIGNAL_DESCRIPTIONS[signalKey] ??
+                              SIGNAL_LABELS[signalKey] ??
+                              signalKey)
                         }
                       >
                         {SIGNAL_LABELS[signalKey] ?? signalKey}
