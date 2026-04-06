@@ -87,6 +87,11 @@ export const closeKpiKeys = {
   leadStatuses: () => [...closeKpiKeys.all, "lead-statuses"] as const,
   leadSources: () => [...closeKpiKeys.all, "lead-sources"] as const,
   smartViews: () => [...closeKpiKeys.all, "smart-views"] as const,
+  team: () => [...closeKpiKeys.all, "team"] as const,
+  teamSnapshot: (userId: string, scope: readonly string[] | null) =>
+    [...closeKpiKeys.team(), "snapshot", userId, scope] as const,
+  teamVisibility: (userId: string) =>
+    [...closeKpiKeys.team(), "visibility", userId] as const,
 };
 
 // ─── Shared Status Queries ────────────────────────────────────────
@@ -211,6 +216,9 @@ export function useLeadHeatRescore() {
         }),
         queryClient.invalidateQueries({
           queryKey: closeKpiKeys.leadHeat(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: closeKpiKeys.team(),
         }),
       ]);
     },

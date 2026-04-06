@@ -163,8 +163,12 @@ echo -e "${BLUE}[2/5] Scanning migration for function definitions...${NC}"
 
 # Extract function names from CREATE [OR REPLACE] FUNCTION statements.
 # Supports schema-qualified names like public.my_function and stores only the function name.
-FUNCTIONS_IN_MIGRATION=$(grep -oiE 'CREATE\s+(OR\s+REPLACE\s+)?FUNCTION\s+([a-zA-Z_][a-zA-Z0-9_]*\.)?[a-zA-Z_][a-zA-Z0-9_]*' "$MIGRATION_FILE" | \
-    sed -E 's/CREATE\s+(OR\s+REPLACE\s+)?FUNCTION\s+//i' | \
+#
+# IMPORTANT: BSD grep (macOS) does not support `\s` shorthand inside `-oE`. Use
+# the POSIX class `[[:space:]]` for portability. Without this, the alternation
+# breaks and `CREATE OR REPLACE FUNCTION foo` matches as four separate words.
+FUNCTIONS_IN_MIGRATION=$(grep -oiE 'CREATE[[:space:]]+(OR[[:space:]]+REPLACE[[:space:]]+)?FUNCTION[[:space:]]+([a-zA-Z_][a-zA-Z0-9_]*\.)?[a-zA-Z_][a-zA-Z0-9_]*' "$MIGRATION_FILE" | \
+    sed -E 's/CREATE[[:space:]]+(OR[[:space:]]+REPLACE[[:space:]]+)?FUNCTION[[:space:]]+//i' | \
     sed -E 's/^[^.]+\.//' | \
     tr '[:upper:]' '[:lower:]' | \
     sort -u || true)
@@ -268,10 +272,20 @@ psql -v ON_ERROR_STOP=1 "$CONN_STR" -c "INSERT INTO supabase_migrations.schema_m
 echo -e "  ${GREEN}✓ schema_migrations updated${NC}"
 
 # Update function versions
-for func in $FUNCTIONS_IN_MIGRATION; do
-    psql -v ON_ERROR_STOP=1 "$CONN_STR" -c "INSERT INTO supabase_migrations.function_versions (function_name, current_version) VALUES ('$func', '$VERSION') ON CONFLICT (function_name) DO UPDATE SET current_version = EXCLUDED.current_version, updated_at = NOW();" 2>/dev/null
-    echo -e "  ${GREEN}✓ function_versions: $func → $VERSION${NC}"
-done
+# Skip gracefully if the tracking table doesn't exist (fresh local DBs typically
+# don't have it initialized — only production environments where downgrade
+# protection is enforced).
+FUNCTION_VERSIONS_EXISTS=$(psql "$CONN_STR" -t -A -c "SELECT to_regclass('supabase_migrations.function_versions') IS NOT NULL;" 2>/dev/null || echo "f")
+
+if [ "$FUNCTION_VERSIONS_EXISTS" = "t" ]; then
+    for func in $FUNCTIONS_IN_MIGRATION; do
+        psql -v ON_ERROR_STOP=1 "$CONN_STR" -c "INSERT INTO supabase_migrations.function_versions (function_name, current_version) VALUES ('$func', '$VERSION') ON CONFLICT (function_name) DO UPDATE SET current_version = EXCLUDED.current_version, updated_at = NOW();" >/dev/null
+        echo -e "  ${GREEN}✓ function_versions: $func → $VERSION${NC}"
+    done
+elif [ -n "$FUNCTIONS_IN_MIGRATION" ]; then
+    echo -e "  ${YELLOW}⚠ function_versions table not initialized — skipping version tracking${NC}"
+    echo -e "  ${YELLOW}  (downgrade protection is inactive on this DB)${NC}"
+fi
 
 # ============================================================================
 # SUCCESS

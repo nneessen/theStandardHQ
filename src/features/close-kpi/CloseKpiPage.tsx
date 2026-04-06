@@ -4,7 +4,13 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, BarChart3, Settings, Wrench } from "lucide-react";
+import {
+  AlertTriangle,
+  BarChart3,
+  Settings,
+  Users,
+  Wrench,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { CloseLogo } from "@/features/chat-bot";
@@ -13,6 +19,7 @@ import { PrebuiltDashboard } from "./components/PrebuiltDashboard";
 import { CustomDashboard } from "./components/CustomDashboard";
 import { SetupGuide } from "./components/SetupGuide";
 import { CloseSettings } from "./components/CloseSettings";
+import { TeamTab } from "./components/team/TeamTab";
 import {
   closeKpiKeys,
   useCloseConnectionStatus,
@@ -20,9 +27,10 @@ import {
   useLeadHeatRescore,
   useLeadHeatScoreCount,
 } from "./hooks/useCloseKpiDashboard";
+import { useCanViewTeamTab } from "./hooks/useTeamPipelineSnapshot";
 import type { DateRangePreset } from "./types/close-kpi.types";
 
-type TabId = "dashboard" | "setup" | "settings";
+type TabId = "dashboard" | "team" | "setup" | "settings";
 type DashboardMode = "prebuilt" | "custom";
 
 const ACCENT = "#4EC375";
@@ -41,6 +49,9 @@ export const CloseKpiPage: React.FC = () => {
   // Check close connection
   const { data: closeConfig } = useCloseConnectionStatus();
 
+  // Team tab visibility (super-admin OR has downlines)
+  const { data: canViewTeam = false } = useCanViewTeamTab();
+
   // Check if any scores exist (for setup guide status)
   const { data: scoreCount } = useLeadHeatScoreCount(isSetupTabActive);
 
@@ -57,6 +68,14 @@ export const CloseKpiPage: React.FC = () => {
       setActiveTab(closeConfig ? "dashboard" : "setup");
     }
   }, [closeConfig, hasResolvedInitialTab]);
+
+  // Defensive: if visibility flips off (e.g. session change), bounce off team tab.
+  // The RPC is the real gate; this just prevents an empty render.
+  useEffect(() => {
+    if (activeTab === "team" && !canViewTeam) {
+      setActiveTab("dashboard");
+    }
+  }, [activeTab, canViewTeam]);
 
   // Dashboard state
   const [dateRange, setDateRange] = useState<DateRangePreset>("last_30_days");
@@ -99,6 +118,9 @@ export const CloseKpiPage: React.FC = () => {
   // ─── Tabs ─────────────────────────────────────────────────────
   const tabs: { id: TabId; label: string; icon: React.ElementType }[] = [
     { id: "dashboard", label: "Dashboard", icon: BarChart3 },
+    ...(canViewTeam
+      ? [{ id: "team" as const, label: "Team", icon: Users }]
+      : []),
     { id: "setup", label: "Setup", icon: Settings },
     { id: "settings", label: "Connection", icon: Wrench },
   ];
@@ -253,6 +275,8 @@ export const CloseKpiPage: React.FC = () => {
             {dashboardMode === "custom" && <CustomDashboard />}
           </>
         )}
+
+        {activeTab === "team" && <TeamTab />}
 
         {activeTab === "setup" && (
           <SetupGuide
