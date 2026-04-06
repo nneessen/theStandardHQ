@@ -238,8 +238,36 @@ function isAuthError(message: string): boolean {
 
 // ─── Main handler ─────────────────────────────────────────────────────
 
+// ─── Structured logging helpers ───────────────────────────────────────
+//
+// Every request gets an 8-char request ID. All logs from a single request
+// are prefixed `[get-team-call-stats][rid][caller]` so Supabase log triage
+// can correlate "Agent X has zero dials" reports back to specific requests.
+
+function makeRequestId(): string {
+  // 8 hex chars from a random Uint8 array — short enough to scan, long
+  // enough to disambiguate concurrent requests within a busy minute.
+  const bytes = crypto.getRandomValues(new Uint8Array(4));
+  return Array.from(bytes)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function makeLogger(rid: string, callerId: string | null) {
+  const prefix = `[get-team-call-stats][${rid}][${callerId ?? "anon"}]`;
+  return {
+    info: (msg: string, ...args: unknown[]) =>
+      console.log(`${prefix} ${msg}`, ...args),
+    warn: (msg: string, ...args: unknown[]) =>
+      console.warn(`${prefix} ${msg}`, ...args),
+    error: (msg: string, ...args: unknown[]) =>
+      console.error(`${prefix} ${msg}`, ...args),
+  };
+}
+
 serve(async (req) => {
   const cors = getCorsHeaders(req.headers.get("origin"));
+  const rid = makeRequestId();
 
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: cors });
@@ -251,6 +279,10 @@ serve(async (req) => {
       headers: { ...cors, "Content-Type": "application/json" },
     });
   }
+
+  // Logger is initialized with null callerId until the JWT is decoded.
+  // After we decode, we re-create with the real callerId for downstream logs.
+  let log = makeLogger(rid, null);
 
   try {
     // ── 1. Auth: get caller's JWT ─────────────────────────────────────
@@ -271,6 +303,7 @@ serve(async (req) => {
         headers: { ...cors, "Content-Type": "application/json" },
       });
     }
+    log = makeLogger(rid, callerId);
 
     // ── 2. Parse body ─────────────────────────────────────────────────
     const body = (await req.json()) as RequestBody;
@@ -328,7 +361,9 @@ serve(async (req) => {
       );
     }
 
-    const teamUuids: string[] = (memberIds as string[] | null) ?? [];
+    // get_team_member_ids returns string[] (never null — the SQL function uses
+    // COALESCE to return an empty array). Types regenerated 2026-04-06.
+    const teamUuids: string[] = memberIds ?? [];
 
     if (teamUuids.length === 0) {
       const empty: ResponseBody = { from: body.from, to: body.to, rows: [] };
@@ -340,6 +375,8 @@ serve(async (req) => {
     }
 
     // ── 5. Read encrypted keys + profile data via service role ───────
+    // Single PostgREST query with FK-join. Replaces the previous two
+    // parallel selects (close_config + user_profiles) with one round trip.
     // Service-role bypasses RLS (lead-heat cron uses the same pattern). The
     // teamUuids are already filtered to authorized agents via the user-context
     // RPC above, so this is not a privilege escalation — we're only reading
@@ -349,26 +386,30 @@ serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    const [
-      { data: configs, error: cfgErr },
-      { data: profiles, error: profErr },
-    ] = await Promise.all([
-      adminClient
-        .from("close_config")
-        .select("user_id, api_key_encrypted")
-        .in("user_id", teamUuids)
-        .eq("is_active", true),
-      adminClient
-        .from("user_profiles")
-        .select("id, first_name, last_name, email, profile_photo_url")
-        .in("id", teamUuids),
-    ]);
+    interface JoinedRow {
+      user_id: string;
+      api_key_encrypted: string;
+      user_profiles: {
+        first_name: string | null;
+        last_name: string | null;
+        email: string;
+        profile_photo_url: string | null;
+      } | null;
+    }
 
-    if (cfgErr || profErr) {
+    const { data: joined, error: joinErr } = await adminClient
+      .from("close_config")
+      .select(
+        "user_id, api_key_encrypted, user_profiles!inner(first_name, last_name, email, profile_photo_url)",
+      )
+      .in("user_id", teamUuids)
+      .eq("is_active", true)
+      .returns<JoinedRow[]>();
+
+    if (joinErr) {
+      log.error("close_config FK-join failed:", joinErr.message);
       return new Response(
-        JSON.stringify({
-          error: `lookup failed: ${cfgErr?.message ?? profErr?.message}`,
-        }),
+        JSON.stringify({ error: `lookup failed: ${joinErr.message}` }),
         {
           status: 500,
           headers: { ...cors, "Content-Type": "application/json" },
@@ -376,39 +417,48 @@ serve(async (req) => {
       );
     }
 
-    const profileById = new Map(
-      (profiles ?? []).map((p) => [
-        p.id as string,
-        {
-          firstName: (p.first_name as string | null) ?? null,
-          lastName: (p.last_name as string | null) ?? null,
-          email: p.email as string,
-          profilePhotoUrl: (p.profile_photo_url as string | null) ?? null,
-        },
-      ]),
+    const joinedRows = joined ?? [];
+
+    // Audit any orphan UUIDs: in teamUuids but not in joinedRows (most likely
+    // close_config was deactivated between the RPC call and this query —
+    // a small consistency window). These surface in the UI as "Close not
+    // connected" rows in step 7. Logging them turns a silent edge case
+    // into an observable event we can grep for in production.
+    const joinedUserIds = new Set(joinedRows.map((r) => r.user_id));
+    for (const uuid of teamUuids) {
+      if (!joinedUserIds.has(uuid)) {
+        log.warn(
+          `team member ${uuid} returned by RPC but no active close_config found (race or recently disconnected)`,
+        );
+      }
+    }
+
+    log.info(
+      `team_size=${teamUuids.length} connected=${joinedRows.length} from=${body.from} to=${body.to}`,
     );
 
     // ── 6. Fan out: fetch + aggregate per agent in batches of 3 ──────
     const rows: TeamCallStatsRow[] = [];
-    const configList = configs ?? [];
 
-    for (let i = 0; i < configList.length; i += CONCURRENCY_LIMIT) {
-      const batch = configList.slice(i, i + CONCURRENCY_LIMIT);
+    for (let i = 0; i < joinedRows.length; i += CONCURRENCY_LIMIT) {
+      const batch = joinedRows.slice(i, i + CONCURRENCY_LIMIT);
       const batchRows = await Promise.all(
-        batch.map(async (cfg): Promise<TeamCallStatsRow> => {
-          const userId = cfg.user_id as string;
-          const profile = profileById.get(userId) ?? {
-            firstName: null,
-            lastName: null,
+        batch.map(async (row): Promise<TeamCallStatsRow> => {
+          const userId = row.user_id;
+          // user_profiles!inner means this is never null in practice, but
+          // we defend against the type permitting null anyway.
+          const profile = row.user_profiles ?? {
+            first_name: null,
+            last_name: null,
             email: "",
-            profilePhotoUrl: null,
+            profile_photo_url: null,
           };
           const baseRow: TeamCallStatsRow = {
             userId,
-            firstName: profile.firstName,
-            lastName: profile.lastName,
+            firstName: profile.first_name,
+            lastName: profile.last_name,
             email: profile.email,
-            profilePhotoUrl: profile.profilePhotoUrl,
+            profilePhotoUrl: profile.profile_photo_url,
             isSelf: userId === callerId,
             dials: 0,
             connects: 0,
@@ -421,7 +471,7 @@ serve(async (req) => {
           };
 
           try {
-            const apiKey = await decrypt(cfg.api_key_encrypted as string);
+            const apiKey = await decrypt(row.api_key_encrypted);
             const { calls, truncated } = await fetchCallsForAgent(
               apiKey,
               body.from,
@@ -439,8 +489,8 @@ serve(async (req) => {
               truncated,
             };
           } catch (err) {
-            console.error(
-              `[get-team-call-stats] failed for user ${userId}:`,
+            log.error(
+              `fetch failed for user ${userId}:`,
               (err as Error).message,
             );
             return { ...baseRow, error: (err as Error).message };
@@ -450,21 +500,19 @@ serve(async (req) => {
       rows.push(...batchRows);
     }
 
-    // Add empty rows for any team member who doesn't have an active close_config
-    // (so the table still shows them as "not connected"). Only matters when the
-    // RPC returned a UUID but close_config got deactivated between the RPC call
-    // and the close_config select.
+    // Surface the orphan UUIDs (audited above) as "Close not connected" rows
+    // so the table doesn't silently drop them. The display name is a UUID
+    // prefix since we don't have profile data for orphans (they weren't in
+    // the FK-join result). The error column shows the AlertCircle icon.
     const seen = new Set(rows.map((r) => r.userId));
     for (const uuid of teamUuids) {
       if (seen.has(uuid)) continue;
-      const profile = profileById.get(uuid);
-      if (!profile) continue;
       rows.push({
         userId: uuid,
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        email: profile.email,
-        profilePhotoUrl: profile.profilePhotoUrl,
+        firstName: null,
+        lastName: null,
+        email: `agent-${uuid.slice(0, 8)}`,
+        profilePhotoUrl: null,
         isSelf: uuid === callerId,
         dials: 0,
         connects: 0,
@@ -501,7 +549,7 @@ serve(async (req) => {
       },
     });
   } catch (err) {
-    console.error("[get-team-call-stats] unexpected error:", err);
+    log.error("unexpected error:", err);
     return new Response(
       JSON.stringify({ error: (err as Error).message ?? "unknown error" }),
       { status: 500, headers: { ...cors, "Content-Type": "application/json" } },

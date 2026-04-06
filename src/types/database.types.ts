@@ -16797,6 +16797,7 @@ export type Database = {
           name: string;
         }[];
       };
+      get_team_member_ids: { Args: never; Returns: string[] };
       get_team_pipeline_snapshot: {
         Args: { p_target_user_ids?: string[] };
         Returns: {

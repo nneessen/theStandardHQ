@@ -4,7 +4,7 @@
 // Presets: Today (default), Yesterday, Last 7 days, Last 30 days, Custom.
 // Custom mode shows two date inputs that the user can pick from.
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   TEAM_CALL_PRESETS,
@@ -40,10 +40,21 @@ export const TeamDateRangeSelector: React.FC<TeamDateRangeSelectorProps> = ({
   value,
   onChange,
 }) => {
+  // Local state for the <input type="date"> elements. Initialized from the
+  // current value prop, then resynced via useEffect when the parent passes
+  // a new value (e.g. midnight rollover bumps `today` to the next calendar
+  // day, or a future feature loads the range from a URL query param). Without
+  // the resync, useState's initializer-runs-once behavior would leave the
+  // inputs showing yesterday's date forever after a rollover.
   const [customFrom, setCustomFrom] = useState<string>(
     isoToInputDate(value.from),
   );
   const [customTo, setCustomTo] = useState<string>(isoToInputDate(value.to));
+
+  useEffect(() => {
+    setCustomFrom(isoToInputDate(value.from));
+    setCustomTo(isoToInputDate(value.to));
+  }, [value.from, value.to]);
 
   const handlePreset = (preset: TeamCallRangePreset) => {
     if (preset === "custom") {
