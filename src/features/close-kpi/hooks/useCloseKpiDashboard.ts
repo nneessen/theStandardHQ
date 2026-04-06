@@ -92,6 +92,8 @@ export const closeKpiKeys = {
     [...closeKpiKeys.team(), "snapshot", userId, scope] as const,
   teamVisibility: (userId: string) =>
     [...closeKpiKeys.team(), "visibility", userId] as const,
+  teamCallStats: (userId: string, from: string, to: string) =>
+    [...closeKpiKeys.team(), "call-stats", userId, from, to] as const,
 };
 
 // ─── Shared Status Queries ────────────────────────────────────────

@@ -1,11 +1,21 @@
 // src/features/close-kpi/components/team/TeamTab.tsx
-// Container for the Close KPIs Team tab.
-// Owns loading / empty / error / partial-empty states.
+//
+// Container for the Close KPIs Team tab. Two sections:
+//   1. Daily Calls (primary) — fetched live from Close API per agent via the
+//      get-team-call-stats edge function. Date selector defaults to "Today".
+//      This is what the manager actively monitors throughout the day.
+//   2. Pipeline Snapshot (secondary) — aggregated from lead_heat_scores,
+//      30-day rolling window. Hot leads, stale leads, opportunity value, etc.
+//      Slower-changing context that complements the daily activity view.
 
-import React from "react";
-import { AlertTriangle, RefreshCw, Users } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { AlertTriangle, Phone, RefreshCw, Users } from "lucide-react";
 import { useTeamPipelineSnapshot } from "../../hooks/useTeamPipelineSnapshot";
+import { useTeamCallStats } from "../../hooks/useTeamCallStats";
+import { buildTeamCallRange } from "../../lib/team-call-range";
 import { TeamAgentsTable } from "./TeamAgentsTable";
+import { TeamCallStatsTable } from "./TeamCallStatsTable";
+import { TeamDateRangeSelector } from "./TeamDateRangeSelector";
 import { TeamSummaryCards } from "./TeamSummaryCards";
 
 function relativeTime(iso: string | null): string {
@@ -21,14 +31,115 @@ function relativeTime(iso: string | null): string {
   return `${days}d ago`;
 }
 
-export const TeamTab: React.FC = () => {
+// ─── Daily Calls Section (primary) ───────────────────────────────────
+
+const DailyCallsSection: React.FC = () => {
+  // Default to "today" — this is the manager's primary daily check-in.
+  // useMemo so the initial range is captured once at mount, not recomputed
+  // on every render (which would cause the query key to flap).
+  const initialRange = useMemo(() => buildTeamCallRange("today"), []);
+  const [range, setRange] = useState(initialRange);
+
   const { data, isLoading, isError, error, refetch, isFetching } =
+    useTeamCallStats({ from: range.from, to: range.to });
+
+  const rows = data?.rows ?? [];
+
+  return (
+    <section className="space-y-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-[11px] font-medium text-foreground">
+            Daily Calls
+          </span>
+          <span className="text-[10px] text-muted-foreground">
+            · {range.label.toLowerCase()}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <TeamDateRangeSelector value={range} onChange={setRange} />
+          <button
+            type="button"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="inline-flex items-center gap-1 h-7 px-2 text-[10px] font-medium rounded border border-border bg-background hover:bg-muted transition-colors disabled:opacity-50"
+            aria-label="Refresh call stats"
+          >
+            <RefreshCw
+              className={`h-3 w-3 ${isFetching ? "animate-spin" : ""}`}
+            />
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      {isLoading && (
+        <div className="rounded-md border border-border bg-background overflow-hidden">
+          <div className="h-8 bg-muted/40 border-b border-border" />
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="h-7 border-b border-border last:border-b-0 bg-muted/10 animate-pulse"
+            />
+          ))}
+        </div>
+      )}
+
+      {isError && (
+        <div className="rounded-md border border-border bg-background p-4 flex flex-col items-center text-center">
+          <AlertTriangle className="h-5 w-5 text-amber-500 mb-2" />
+          <p className="text-[11px] font-medium text-foreground mb-1">
+            Couldn't load call stats
+          </p>
+          <p className="text-[10px] text-muted-foreground mb-3 max-w-md">
+            {error instanceof Error ? error.message : "Unknown error"}
+          </p>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="inline-flex items-center gap-1.5 h-7 px-2.5 text-[10px] font-medium rounded border border-border bg-background hover:bg-muted transition-colors"
+          >
+            <RefreshCw className="h-3 w-3" />
+            Retry
+          </button>
+        </div>
+      )}
+
+      {!isLoading && !isError && rows.length === 0 && (
+        <div className="rounded-md border border-border bg-background p-4 flex flex-col items-center text-center">
+          <Phone className="h-5 w-5 text-muted-foreground mb-2" />
+          <p className="text-[11px] font-medium text-foreground">
+            No team members with Close connected yet
+          </p>
+        </div>
+      )}
+
+      {!isLoading && !isError && rows.length > 0 && (
+        <TeamCallStatsTable rows={rows} />
+      )}
+    </section>
+  );
+};
+
+// ─── Pipeline Snapshot Section (secondary) ───────────────────────────
+
+const PipelineSnapshotSection: React.FC = () => {
+  const { data, isLoading, isError, error, refetch } =
     useTeamPipelineSnapshot();
 
-  // ─── Loading skeleton ────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="space-y-3">
+      <section className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Users className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-[11px] font-medium text-foreground">
+            Pipeline Snapshot
+          </span>
+          <span className="text-[10px] text-muted-foreground">
+            · last 30 days
+          </span>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {[0, 1, 2, 3].map((i) => (
             <div
@@ -39,59 +150,55 @@ export const TeamTab: React.FC = () => {
         </div>
         <div className="rounded-md border border-border bg-background overflow-hidden">
           <div className="h-8 bg-muted/40 border-b border-border" />
-          {[0, 1, 2, 3, 4, 5].map((i) => (
+          {[0, 1, 2, 3].map((i) => (
             <div
               key={i}
               className="h-7 border-b border-border last:border-b-0 bg-muted/10 animate-pulse"
             />
           ))}
         </div>
-      </div>
+      </section>
     );
   }
 
-  // ─── Error state ─────────────────────────────────────────────────
   if (isError) {
     return (
-      <div className="rounded-md border border-border bg-background p-6 flex flex-col items-center text-center">
-        <AlertTriangle className="h-6 w-6 text-amber-500 mb-2" />
-        <p className="text-[12px] font-medium text-foreground mb-1">
-          Couldn't load team snapshot
-        </p>
-        <p className="text-[10px] text-muted-foreground mb-3 max-w-md">
-          {error instanceof Error ? error.message : "Unknown error"}
-        </p>
-        <button
-          type="button"
-          onClick={() => refetch()}
-          className="inline-flex items-center gap-1.5 h-7 px-2.5 text-[10px] font-medium rounded border border-border bg-background hover:bg-muted transition-colors"
-        >
-          <RefreshCw className="h-3 w-3" />
-          Retry
-        </button>
-      </div>
+      <section className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Users className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-[11px] font-medium text-foreground">
+            Pipeline Snapshot
+          </span>
+        </div>
+        <div className="rounded-md border border-border bg-background p-4 flex flex-col items-center text-center">
+          <AlertTriangle className="h-5 w-5 text-amber-500 mb-2" />
+          <p className="text-[11px] font-medium text-foreground mb-1">
+            Couldn't load pipeline snapshot
+          </p>
+          <p className="text-[10px] text-muted-foreground mb-3 max-w-md">
+            {error instanceof Error ? error.message : "Unknown error"}
+          </p>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="inline-flex items-center gap-1.5 h-7 px-2.5 text-[10px] font-medium rounded border border-border bg-background hover:bg-muted transition-colors"
+          >
+            <RefreshCw className="h-3 w-3" />
+            Retry
+          </button>
+        </div>
+      </section>
     );
   }
 
   const rows = data ?? [];
 
-  // ─── Empty state ─────────────────────────────────────────────────
   if (rows.length === 0) {
-    return (
-      <div className="rounded-md border border-border bg-background p-6 flex flex-col items-center text-center">
-        <Users className="h-6 w-6 text-muted-foreground mb-2" />
-        <p className="text-[12px] font-medium text-foreground mb-1">
-          No team members with Close connected yet
-        </p>
-        <p className="text-[10px] text-muted-foreground max-w-md">
-          Agents appear here once they connect Close and complete their first
-          scoring run.
-        </p>
-      </div>
-    );
+    // Pipeline snapshot empty state — daily calls section already shows the
+    // "no team connected" message, so we can stay quiet here.
+    return null;
   }
 
-  // ─── Partial empty: rows exist but everyone has 0 leads ──────────
   const hasAnyLeads = rows.some((r) => r.totalLeads > 0);
   const lastRun = rows
     .map((r) => r.lastScoredAt)
@@ -99,39 +206,24 @@ export const TeamTab: React.FC = () => {
     .sort()
     .pop();
 
-  // ─── Header bar ──────────────────────────────────────────────────
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 flex-wrap">
-          <Users className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-[11px] font-medium text-foreground">
-            Team Pipeline ({rows.length}{" "}
-            {rows.length === 1 ? "agent" : "agents"})
-          </span>
-          <span
-            className="text-[10px] text-muted-foreground"
-            title="Call & engagement signals reflect activity in the last 30 days, refreshed every 30 minutes by the lead heat scoring cron."
-          >
-            · last 30 days
-          </span>
-          {lastRun && (
-            <span className="text-[10px] text-muted-foreground">
-              · scored {relativeTime(lastRun)}
-            </span>
-          )}
-        </div>
-        <button
-          type="button"
-          onClick={() => refetch()}
-          disabled={isFetching}
-          className="inline-flex items-center gap-1 h-7 px-2 text-[10px] font-medium rounded border border-border bg-background hover:bg-muted transition-colors disabled:opacity-50"
+    <section className="space-y-2">
+      <div className="flex items-center gap-2 flex-wrap">
+        <Users className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-[11px] font-medium text-foreground">
+          Pipeline Snapshot
+        </span>
+        <span
+          className="text-[10px] text-muted-foreground"
+          title="Lead heat scores reflect activity in the last 30 days, refreshed every 30 minutes by the lead heat scoring cron."
         >
-          <RefreshCw
-            className={`h-3 w-3 ${isFetching ? "animate-spin" : ""}`}
-          />
-          Refresh
-        </button>
+          · last 30 days
+        </span>
+        {lastRun && (
+          <span className="text-[10px] text-muted-foreground">
+            · scored {relativeTime(lastRun)}
+          </span>
+        )}
       </div>
 
       {!hasAnyLeads && (
@@ -146,6 +238,17 @@ export const TeamTab: React.FC = () => {
 
       <TeamSummaryCards rows={rows} />
       <TeamAgentsTable rows={rows} />
+    </section>
+  );
+};
+
+// ─── Top-level Team Tab ──────────────────────────────────────────────
+
+export const TeamTab: React.FC = () => {
+  return (
+    <div className="space-y-5">
+      <DailyCallsSection />
+      <PipelineSnapshotSection />
     </div>
   );
 };
