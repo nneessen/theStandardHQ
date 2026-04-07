@@ -25,9 +25,9 @@ import {
   deleteEmailTemplate,
   deleteSequence,
   deleteSmsTemplate,
-  listEmailTemplates,
-  listSequences,
-  listSmsTemplates,
+  listAllEmailTemplates,
+  listAllSequences,
+  listAllSmsTemplates,
   updateEmailTemplate,
   updateSmsTemplate,
 } from "./close/endpoints.ts";
@@ -139,9 +139,7 @@ function sanitizeCloseErrorBody(body: any): unknown {
 
 const SUPER_ADMIN_EMAIL = "nickneessen@thestandardhq.com";
 
-async function verifyAndGate(
-  req: Request,
-): Promise<
+async function verifyAndGate(req: Request): Promise<
   | {
       ok: true;
       user: { id: string; email: string };
@@ -756,28 +754,58 @@ async function handleSaveSequence(ctx: ActionContext): Promise<Response> {
   }
 }
 
+// Library tab list handlers — auto-paginate ALL pages and return the full
+// combined list. Client no longer sends limit/skip; if we ever add server-
+// side pagination back, wire the single-page helpers instead (they remain
+// exported from close/endpoints.ts).
+//
+// The Close API has inconsistent per-page caps (SMS goes ≥357, email ~61,
+// sequences ~49 in Nick's workspace as of 2026-04-07), so hardcoding a
+// client-side limit caused real data loss. Auto-paginate by default.
+
 async function handleListEmail(ctx: ActionContext): Promise<Response> {
   const apiKey = await getUserCloseApiKey(ctx.userClient, ctx.user.id);
-  const limit = Number(ctx.body.limit ?? 50);
-  const skip = Number(ctx.body.skip ?? 0);
-  const data = await listEmailTemplates(apiKey, { limit, skip });
-  return json(data, 200, ctx.req);
+  const result = await listAllEmailTemplates(apiKey);
+  return json(
+    {
+      data: result.data,
+      total: result.data.length,
+      truncated: result.truncated,
+      pages_fetched: result.pagesFetched,
+    },
+    200,
+    ctx.req,
+  );
 }
 
 async function handleListSms(ctx: ActionContext): Promise<Response> {
   const apiKey = await getUserCloseApiKey(ctx.userClient, ctx.user.id);
-  const limit = Number(ctx.body.limit ?? 50);
-  const skip = Number(ctx.body.skip ?? 0);
-  const data = await listSmsTemplates(apiKey, { limit, skip });
-  return json(data, 200, ctx.req);
+  const result = await listAllSmsTemplates(apiKey);
+  return json(
+    {
+      data: result.data,
+      total: result.data.length,
+      truncated: result.truncated,
+      pages_fetched: result.pagesFetched,
+    },
+    200,
+    ctx.req,
+  );
 }
 
 async function handleListSequences(ctx: ActionContext): Promise<Response> {
   const apiKey = await getUserCloseApiKey(ctx.userClient, ctx.user.id);
-  const limit = Number(ctx.body.limit ?? 50);
-  const skip = Number(ctx.body.skip ?? 0);
-  const data = await listSequences(apiKey, { limit, skip });
-  return json(data, 200, ctx.req);
+  const result = await listAllSequences(apiKey);
+  return json(
+    {
+      data: result.data,
+      total: result.data.length,
+      truncated: result.truncated,
+      pages_fetched: result.pagesFetched,
+    },
+    200,
+    ctx.req,
+  );
 }
 
 async function handleUpdateEmail(ctx: ActionContext): Promise<Response> {

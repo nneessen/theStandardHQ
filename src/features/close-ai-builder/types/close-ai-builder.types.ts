@@ -169,10 +169,25 @@ export interface SaveSequenceResponse {
 }
 
 // ─── List responses ───────────────────────────────────────────────
+//
+// Note: the Library tab endpoints return a ListAllResponse (auto-paginated
+// server-side). The older ListResponse shape with has_more is kept for
+// future cursor-based UIs but not currently consumed.
 
 export interface ListResponse<T> {
   data: T[];
   has_more: boolean;
+}
+
+export interface ListAllResponse<T> {
+  /** Every item across all pages (up to safety cap of 2000). */
+  data: T[];
+  /** Number of items actually returned (equal to data.length). */
+  total: number;
+  /** True if the safety cap was hit — list is larger than what's shown. */
+  truncated: boolean;
+  /** How many pages the edge function walked to get here. */
+  pages_fetched: number;
 }
 
 // ─── Connection ───────────────────────────────────────────────────

@@ -53,7 +53,7 @@ import type {
   GeneratedSequence,
   GeneratedSmsTemplate,
   GenerationsListResponse,
-  ListResponse,
+  ListAllResponse,
   SaveEmailTemplateResponse,
   SaveSequenceResponse,
   SaveSmsTemplateResponse,
@@ -171,18 +171,16 @@ export const closeAiBuilderService = {
       generation_id: generationId,
     }),
 
-  // List
-  listEmailTemplates: (params: { limit?: number; skip?: number } = {}) =>
-    invokeBuilder<ListResponse<CloseEmailTemplate>>(
-      "list_email_templates",
-      params,
-    ),
+  // List — auto-paginated server-side. Params kept for future use but
+  // currently ignored by the edge function (full list always returned).
+  listEmailTemplates: (_params: { limit?: number; skip?: number } = {}) =>
+    invokeBuilder<ListAllResponse<CloseEmailTemplate>>("list_email_templates"),
 
-  listSmsTemplates: (params: { limit?: number; skip?: number } = {}) =>
-    invokeBuilder<ListResponse<CloseSmsTemplate>>("list_sms_templates", params),
+  listSmsTemplates: (_params: { limit?: number; skip?: number } = {}) =>
+    invokeBuilder<ListAllResponse<CloseSmsTemplate>>("list_sms_templates"),
 
-  listSequences: (params: { limit?: number; skip?: number } = {}) =>
-    invokeBuilder<ListResponse<CloseSequence>>("list_sequences", params),
+  listSequences: (_params: { limit?: number; skip?: number } = {}) =>
+    invokeBuilder<ListAllResponse<CloseSequence>>("list_sequences"),
 
   // Update
   updateEmailTemplate: (id: string, patch: Partial<GeneratedEmailTemplate>) =>

@@ -6,6 +6,62 @@
 
 import { closeDelete, closeGet, closePost, closePut } from "./client.ts";
 
+// ─── Shared pagination ─────────────────────────────────────────────
+//
+// Close's v1 list endpoints return { data: T[], has_more: boolean } with a
+// per-page cap (usually 100). `total_results` is null on email_template and
+// unreliable on others, so the only reliable way to exhaust a list is to
+// loop until has_more === false.
+//
+// WHY AUTO-PAGINATE IN THE EDGE FUNCTION:
+// The Library tab is a "show me everything" view. Surfacing pagination in the
+// UI would require either infinite scroll or page controls, both of which
+// add complexity for a user-facing experience that should "just work". We
+// instead fetch all pages server-side in the proxy and return one combined
+// array. Safety cap of 2000 items prevents runaway requests if a user has
+// tens of thousands of templates (10-20 seconds of cold fetch at most).
+
+interface PaginatedListResponse<T> {
+  data: T[];
+  has_more: boolean;
+}
+
+/** Safety cap — halt auto-pagination at this many items regardless of has_more. */
+const MAX_AUTO_PAGINATE_ITEMS = 2000;
+const DEFAULT_PAGE_SIZE = 100;
+
+/**
+ * Fetch every page of a Close list endpoint and return a single combined
+ * array. Stops at has_more: false, at MAX_AUTO_PAGINATE_ITEMS, or at 50
+ * pages (whichever comes first). Also returns a `truncated` flag so callers
+ * can tell the user "your library is bigger than we're showing here".
+ */
+async function fetchAllPages<T>(
+  apiKey: string,
+  basePath: string,
+): Promise<{ data: T[]; truncated: boolean; pagesFetched: number }> {
+  const all: T[] = [];
+  let skip = 0;
+  let pagesFetched = 0;
+  const MAX_PAGES = 50; // 50 × 100 = 5000 items upper bound
+  while (pagesFetched < MAX_PAGES) {
+    const sep = basePath.includes("?") ? "&" : "?";
+    const path = `${basePath}${sep}_limit=${DEFAULT_PAGE_SIZE}&_skip=${skip}`;
+    const page = await closeGet<PaginatedListResponse<T>>(apiKey, path);
+    pagesFetched++;
+    const items = Array.isArray(page?.data) ? page.data : [];
+    all.push(...items);
+    if (!page?.has_more || items.length === 0) {
+      return { data: all, truncated: false, pagesFetched };
+    }
+    if (all.length >= MAX_AUTO_PAGINATE_ITEMS) {
+      return { data: all, truncated: true, pagesFetched };
+    }
+    skip += DEFAULT_PAGE_SIZE;
+  }
+  return { data: all, truncated: true, pagesFetched };
+}
+
 // ─── Email Template ────────────────────────────────────────────────
 
 export interface CloseEmailTemplate {
@@ -55,6 +111,10 @@ export function getEmailTemplate(
   return closeGet<CloseEmailTemplate>(apiKey, `/email_template/${id}/`);
 }
 
+/**
+ * Single-page listing — exposed for future cursor-based UI if we ever need
+ * it. Most callers should use listAllEmailTemplates instead.
+ */
 export function listEmailTemplates(
   apiKey: string,
   params?: { limit?: number; skip?: number },
@@ -64,6 +124,21 @@ export function listEmailTemplates(
   if (params?.skip) qs.set("_skip", String(params.skip));
   const suffix = qs.toString() ? `?${qs.toString()}` : "";
   return closeGet(apiKey, `/email_template/${suffix}`);
+}
+
+/**
+ * Fetch EVERY email template in the user's Close workspace by walking all
+ * pages. Returns up to MAX_AUTO_PAGINATE_ITEMS with a truncated flag if the
+ * list exceeds that. This is what the Library tab uses.
+ */
+export function listAllEmailTemplates(
+  apiKey: string,
+): Promise<{
+  data: CloseEmailTemplate[];
+  truncated: boolean;
+  pagesFetched: number;
+}> {
+  return fetchAllPages<CloseEmailTemplate>(apiKey, "/email_template/");
 }
 
 export function updateEmailTemplate(
@@ -126,6 +201,7 @@ export function getSmsTemplate(
   return closeGet<CloseSmsTemplate>(apiKey, `/sms_template/${id}/`);
 }
 
+/** Single-page SMS listing — use listAllSmsTemplates for the Library tab. */
 export function listSmsTemplates(
   apiKey: string,
   params?: { limit?: number; skip?: number },
@@ -135,6 +211,21 @@ export function listSmsTemplates(
   if (params?.skip) qs.set("_skip", String(params.skip));
   const suffix = qs.toString() ? `?${qs.toString()}` : "";
   return closeGet(apiKey, `/sms_template/${suffix}`);
+}
+
+/**
+ * Fetch EVERY SMS template. This is the one that was broken — Nick has 357
+ * SMS templates and the old code capped at the first 100 via the hardcoded
+ * limit in LibraryTab + single-page listSmsTemplates.
+ */
+export function listAllSmsTemplates(
+  apiKey: string,
+): Promise<{
+  data: CloseSmsTemplate[];
+  truncated: boolean;
+  pagesFetched: number;
+}> {
+  return fetchAllPages<CloseSmsTemplate>(apiKey, "/sms_template/");
 }
 
 export function updateSmsTemplate(
@@ -263,6 +354,7 @@ export function getSequence(
   return closeGet<CloseSequence>(apiKey, `/sequence/${id}/`);
 }
 
+/** Single-page sequence listing — use listAllSequences for the Library tab. */
 export function listSequences(
   apiKey: string,
   params?: { limit?: number; skip?: number },
@@ -272,6 +364,17 @@ export function listSequences(
   if (params?.skip) qs.set("_skip", String(params.skip));
   const suffix = qs.toString() ? `?${qs.toString()}` : "";
   return closeGet(apiKey, `/sequence/${suffix}`);
+}
+
+/** Fetch EVERY sequence (Close UI calls these "Workflows"). */
+export function listAllSequences(
+  apiKey: string,
+): Promise<{
+  data: CloseSequence[];
+  truncated: boolean;
+  pagesFetched: number;
+}> {
+  return fetchAllPages<CloseSequence>(apiKey, "/sequence/");
 }
 
 export function deleteSequence(apiKey: string, id: string): Promise<void> {
