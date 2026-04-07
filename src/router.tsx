@@ -77,6 +77,11 @@ const CloseKpiPage = lazy(() =>
     default: m.CloseKpiPage,
   })),
 );
+const CloseAiBuilderPage = lazy(() =>
+  import("./features/close-ai-builder").then((m) => ({
+    default: m.CloseAiBuilderPage,
+  })),
+);
 
 // Lazy-loaded underwriting pages
 const UnderwritingWizardPage = lazy(
@@ -599,6 +604,17 @@ const closeKpiRoute = createRoute({
   ),
 });
 
+// Close AI Builder - AI-generated email/SMS templates + workflows for Close CRM
+const closeAiBuilderRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "close-ai-builder",
+  component: () => (
+    <RouteGuard noRecruits noStaffRoles subscriptionFeature="close_ai_builder">
+      <CloseAiBuilderPage />
+    </RouteGuard>
+  ),
+});
+
 // Business Tools route - Financial statement processing, page handles upsell internally
 const businessToolsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -1014,6 +1030,7 @@ const routeTree = rootRoute.addChildren([
   voiceAgentRoute,
   channelOrchestrationRoute,
   closeKpiRoute,
+  closeAiBuilderRoute,
   businessToolsRoute,
   publicJoinAltRoute, // Catch-all for /join-* pattern - must be last
 ]);

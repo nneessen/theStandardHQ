@@ -51,6 +51,8 @@ export interface SubscriptionFeatures {
   recruiting_basic: boolean;
   recruiting_custom_pipeline: boolean;
   custom_branding: boolean;
+  // Tools
+  close_ai_builder: boolean;
 }
 
 // Entity types

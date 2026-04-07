@@ -187,6 +187,15 @@ export const FEATURE_REGISTRY: Record<string, FeatureDefinition> = {
     category: "team",
   },
 
+  // Tools
+  close_ai_builder: {
+    key: "close_ai_builder",
+    displayName: "Close AI Template Builder",
+    description:
+      "Generate Close CRM email templates, SMS templates, and sequences from AI prompts",
+    category: "tools",
+  },
+
   // Premium Branding Features
   recruiting_basic: {
     key: "recruiting_basic",

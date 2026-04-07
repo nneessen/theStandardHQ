@@ -89,6 +89,8 @@ export const FEATURE_DISPLAY_NAMES: Record<FeatureKey, string> = {
   recruiting_basic: "Basic Recruiting",
   recruiting_custom_pipeline: "Custom Recruiting Pipeline",
   custom_branding: "Custom Branding",
+  // Tools
+  close_ai_builder: "Close AI Template Builder",
 };
 
 export interface UseFeatureAccessResult {

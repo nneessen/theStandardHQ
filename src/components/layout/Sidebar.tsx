@@ -33,6 +33,7 @@ import {
   Briefcase,
   PhoneCall,
   Network,
+  Sparkles,
 } from "lucide-react";
 import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
 import { SupportDialog } from "./SupportDialog";
@@ -381,6 +382,14 @@ export default function Sidebar({
           label: "Close KPIs",
           href: "/close-kpi",
           public: true,
+        },
+        // AI Template Builder — gated by close_ai_builder feature flag
+        // (Team plan + Nick's downlines via OWNER_DOWNLINE_GRANTED_FEATURES)
+        {
+          icon: Sparkles,
+          label: "AI Template Builder",
+          href: "/close-ai-builder",
+          subscriptionFeature: "close_ai_builder",
         },
         // Business Tools — restricted to The Standard agency
         {

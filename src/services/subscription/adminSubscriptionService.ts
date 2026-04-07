@@ -928,6 +928,8 @@ class AdminSubscriptionService {
         recruiting_basic: false,
         recruiting_custom_pipeline: false,
         custom_branding: false,
+        // Tools
+        close_ai_builder: false,
       };
 
       const { data, error } = await supabase
