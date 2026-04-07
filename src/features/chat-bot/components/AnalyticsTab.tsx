@@ -112,11 +112,14 @@ export function AnalyticsTab() {
         </div>
       ) : analytics.data ? (
         (() => {
-          const openCount = analytics.data.conversations?.byStatus?.open ?? 0;
-          const engagedConversations = Math.max(
-            0,
-            (analytics.data.conversations?.total ?? 0) - openCount,
-          );
+          // Total conversations in window — used as the denominator for
+          // conversion rate and revenue-per-conversation in ConversionMetrics
+          // and BotROI. The backend no longer exposes raw "open" counts in
+          // byStatus (it now groups into {active, completed, stale} buckets),
+          // so we use the full total. If you want a tighter "engaged only"
+          // denominator later, engagement.responseRate × total is the right
+          // substitute — see docs/external-api-reference.md.
+          const totalConversations = analytics.data.conversations?.total ?? 0;
           return (
             <>
               {/* Metric Cards Grid */}
@@ -135,7 +138,7 @@ export function AnalyticsTab() {
                 />
                 <ConversionMetrics
                   attributions={attributions.data || []}
-                  totalConversations={engagedConversations}
+                  totalConversations={totalConversations}
                 />
               </div>
 
@@ -143,7 +146,7 @@ export function AnalyticsTab() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
                 <BotROI
                   attributions={attributions.data || []}
-                  totalConversations={engagedConversations}
+                  totalConversations={totalConversations}
                   monthlyCost={BOT_MONTHLY_COST}
                 />
                 <TimelineChart data={analytics.data.timeline ?? []} />

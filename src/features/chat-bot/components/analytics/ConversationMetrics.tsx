@@ -9,8 +9,9 @@ export function ConversationMetrics({
 }: {
   data: ChatBotAnalytics["conversations"];
 }) {
-  const openCount = data.byStatus?.open ?? 0;
-  const total = Math.max(0, (data.total ?? 0) - openCount);
+  // Backend now buckets raw statuses into {active, completed, stale} —
+  // there is no raw "open" key to subtract, so we display the full total.
+  const total = data.total ?? 0;
   const avgMsgs = data.avgMessagesPerConvo ?? 0;
   const suppression = Math.min(data.suppressionRate ?? 0, 1);
   const stale = Math.min(data.staleRate ?? 0, 1);
