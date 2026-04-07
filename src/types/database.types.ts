@@ -1984,7 +1984,29 @@ export type Database = {
           updated_at?: string;
           user_id?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "close_config_user_profiles_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "close_config_user_profiles_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "close_config_user_profiles_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       close_kpi_cache: {
         Row: {
