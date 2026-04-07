@@ -37,6 +37,10 @@ export const chatBotKeys = {
   appointments: (params: { page: number; limit: number }) =>
     [...chatBotKeys.all, "appointments", params] as const,
   usage: () => [...chatBotKeys.all, "usage"] as const,
+  playgroundRuns: (options?: { closeLeadId?: string; limit?: number }) =>
+    [...chatBotKeys.all, "playground-runs", options ?? {}] as const,
+  playgroundRun: (runId: string | null) =>
+    [...chatBotKeys.all, "playground-run", runId] as const,
   voiceEntitlement: () => [...chatBotKeys.all, "voice-entitlement"] as const,
   voiceUsage: () => [...chatBotKeys.all, "voice-usage"] as const,
   voiceCloneStatus: () => [...chatBotKeys.all, "voice-clone-status"] as const,
@@ -843,6 +847,143 @@ export function useChatBotUsage(options?: { enabled?: boolean }) {
     queryFn: () => chatBotApi<ChatBotUsage>("get_usage"),
     staleTime: 60_000,
     enabled: options?.enabled ?? true,
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// Bot Playground — dry-run bot replies without sending SMS or touching DB
+// ══════════════════════════════════════════════════════════════════════════
+
+export type PlaygroundMode = "ai-reply" | "re-engage";
+
+export interface DryRunReplyMetadata {
+  leadId: string;
+  leadName: string | null;
+  leadStatusLabel: string | null;
+  leadSource: string | null;
+  productType: "mortgage_protection" | "veteran" | "general";
+  conversationId: string;
+  conversationStatus: string;
+  messageCount: number;
+  inboundCount: number;
+  askedTopics: string[];
+  answeredTopics: string[];
+  declineState: "none" | "soft" | "hard";
+  objectionCount: number;
+  hardNoCount: number;
+  effectiveTimezone: string;
+  mode: PlaygroundMode;
+  usedInbound: string;
+  usedInboundSource: "actual" | "simulated";
+  generationMs: number;
+  promptTokens: number | null;
+  completionTokens: number | null;
+  model: string;
+}
+
+export interface DryRunReplyResult {
+  rawReply: string;
+  strippedReply: string;
+  finalReply: string;
+  guardrailViolations: string[];
+  wouldSend: boolean;
+  systemPrompt: string | null;
+  metadata: DryRunReplyMetadata;
+}
+
+export type DryRunReplyParams = {
+  closeLeadId: string;
+  inboundOverride?: string;
+  mode?: PlaygroundMode;
+  systemPromptOverride?: string;
+} & Record<string, unknown>;
+
+/**
+ * Fires a dry-run bot reply simulation. No SMS sent, no DB writes in
+ * standard-chat-bot. The edge function persists the result in
+ * chat_bot_playground_runs for history (visible via useChatBotPlaygroundRuns).
+ */
+export function useChatBotDryRun() {
+  const queryClient = useQueryClient();
+  return useMutation<DryRunReplyResult, ChatBotApiError, DryRunReplyParams>({
+    mutationFn: (params) =>
+      chatBotApi<DryRunReplyResult>("dry_run_reply", params),
+    onSuccess: () => {
+      // Invalidate the history query so the new run appears at the top
+      queryClient.invalidateQueries({ queryKey: chatBotKeys.playgroundRuns() });
+    },
+  });
+}
+
+export interface PlaygroundRunListItem {
+  id: string;
+  chat_bot_agent_id: string;
+  close_lead_id: string;
+  mode: PlaygroundMode;
+  inbound_override: string | null;
+  raw_reply: string;
+  final_reply: string;
+  would_send: boolean;
+  guardrail_violations: string[];
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface PlaygroundRunDetail extends PlaygroundRunListItem {
+  system_prompt: string | null;
+  system_prompt_override: string | null;
+}
+
+/**
+ * Lists playground runs for the current user + agent (newest first).
+ * Optional `closeLeadId` filters to a single lead's history.
+ */
+export function useChatBotPlaygroundRuns(options?: {
+  closeLeadId?: string;
+  limit?: number;
+  enabled?: boolean;
+}) {
+  return useQuery<PlaygroundRunListItem[], ChatBotApiError>({
+    queryKey: chatBotKeys.playgroundRuns(options),
+    queryFn: async () => {
+      const result = await chatBotApi<{ runs: PlaygroundRunListItem[] }>(
+        "list_playground_runs",
+        {
+          ...(options?.closeLeadId ? { closeLeadId: options.closeLeadId } : {}),
+          ...(options?.limit ? { limit: options.limit } : {}),
+        },
+      );
+      return result.runs;
+    },
+    enabled: options?.enabled ?? true,
+    staleTime: 10_000,
+  });
+}
+
+/** Loads the full row (including the large system_prompt field) for one run. */
+export function useChatBotPlaygroundRun(runId: string | null) {
+  return useQuery<PlaygroundRunDetail, ChatBotApiError>({
+    queryKey: chatBotKeys.playgroundRun(runId),
+    queryFn: async () => {
+      const result = await chatBotApi<{ run: PlaygroundRunDetail }>(
+        "get_playground_run",
+        { runId },
+      );
+      return result.run;
+    },
+    enabled: !!runId,
+    staleTime: 60_000,
+  });
+}
+
+export function useDeletePlaygroundRun() {
+  const queryClient = useQueryClient();
+  return useMutation<{ success: boolean }, ChatBotApiError, { runId: string }>({
+    mutationFn: ({ runId }) =>
+      chatBotApi<{ success: boolean }>("delete_playground_run", { runId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: chatBotKeys.playgroundRuns() });
+    },
   });
 }
 

@@ -2441,6 +2441,224 @@ serve(async (req) => {
       // ──────────────────────────────────────────────
       // ANALYTICS & ATTRIBUTION
       // ──────────────────────────────────────────────
+      case "dry_run_reply": {
+        // Bot Playground — simulates a bot reply without sending an SMS or
+        // writing to the DB. Proxies to standard-chat-bot and persists the
+        // result in chat_bot_playground_runs for history/comparison.
+        //
+        // Params:
+        //   closeLeadId (required)
+        //   inboundOverride (optional)
+        //   mode (optional, default 'ai-reply')
+        //   systemPromptOverride (optional)
+        //
+        // Note: the dry-run endpoint can take 3-15s because it makes an AI
+        // call. The default callChatBotApi 15s timeout is cutting it close;
+        // we use a custom fetch with a 30s timeout for this path only.
+
+        const closeLeadId =
+          typeof params.closeLeadId === "string"
+            ? params.closeLeadId.trim()
+            : "";
+        if (!closeLeadId) {
+          return jsonResponse({ error: "closeLeadId is required" }, 400);
+        }
+
+        const mode = params.mode === "re-engage" ? "re-engage" : "ai-reply";
+        const inboundOverride =
+          typeof params.inboundOverride === "string" &&
+          params.inboundOverride.trim()
+            ? params.inboundOverride.trim().slice(0, 2000)
+            : undefined;
+        const systemPromptOverride =
+          typeof params.systemPromptOverride === "string" &&
+          params.systemPromptOverride.trim()
+            ? params.systemPromptOverride.slice(0, 20_000)
+            : undefined;
+
+        // Direct fetch with a longer timeout than the default 15s because
+        // Anthropic calls can take 3-15s and we don't want to cut them off.
+        const CHAT_BOT_API_URL =
+          Deno.env.get("STANDARD_CHAT_BOT_API_URL") ||
+          Deno.env.get("CHAT_BOT_API_URL");
+        const CHAT_BOT_API_KEY =
+          Deno.env.get("STANDARD_CHAT_BOT_EXTERNAL_API_KEY") ||
+          Deno.env.get("CHAT_BOT_API_KEY");
+        if (!CHAT_BOT_API_URL || !CHAT_BOT_API_KEY) {
+          return jsonResponse({ error: "Chat bot API not configured" }, 500);
+        }
+
+        const body: Record<string, unknown> = { closeLeadId, mode };
+        if (inboundOverride !== undefined)
+          body.inboundOverride = inboundOverride;
+        if (systemPromptOverride !== undefined)
+          body.systemPromptOverride = systemPromptOverride;
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30_000);
+        let upstreamRes: Response;
+        let dryRunData: {
+          success?: boolean;
+          data?: {
+            rawReply?: string;
+            strippedReply?: string;
+            finalReply?: string;
+            guardrailViolations?: string[];
+            wouldSend?: boolean;
+            systemPrompt?: string | null;
+            metadata?: Record<string, unknown>;
+          };
+          error?: { code?: string; message?: string };
+        };
+        try {
+          upstreamRes = await fetch(
+            `${CHAT_BOT_API_URL}/api/external/agents/${agentId}/dry-run-reply`,
+            {
+              method: "POST",
+              headers: {
+                "X-API-Key": CHAT_BOT_API_KEY,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(body),
+              signal: controller.signal,
+            },
+          );
+          dryRunData = await upstreamRes.json().catch(() => ({}));
+        } catch (err) {
+          clearTimeout(timeoutId);
+          const msg = err instanceof Error ? err.message : String(err);
+          return jsonResponse({ error: `Dry-run upstream error: ${msg}` }, 502);
+        }
+        clearTimeout(timeoutId);
+
+        if (!upstreamRes.ok || !dryRunData?.success || !dryRunData.data) {
+          return jsonResponse(
+            {
+              error:
+                dryRunData?.error?.message ||
+                "Dry-run upstream returned an error",
+              code: dryRunData?.error?.code,
+            },
+            safeStatus(upstreamRes.status ?? 500),
+          );
+        }
+
+        // Persist the run in chat_bot_playground_runs so the UI history view
+        // can show it. Service-role insert bypasses RLS but we explicitly
+        // set user_id to the authenticated user from the JWT above.
+        try {
+          const result = dryRunData.data;
+          const metadata = result.metadata ?? {};
+          await supabase.from("chat_bot_playground_runs").insert({
+            user_id: effectiveUserId,
+            chat_bot_agent_id: agentId,
+            close_lead_id: closeLeadId,
+            mode,
+            inbound_override: inboundOverride ?? null,
+            system_prompt_override: systemPromptOverride ?? null,
+            raw_reply: result.rawReply ?? "",
+            final_reply: result.finalReply ?? "",
+            would_send: result.wouldSend ?? false,
+            guardrail_violations: result.guardrailViolations ?? [],
+            metadata,
+            system_prompt: result.systemPrompt ?? null,
+          });
+        } catch (persistErr) {
+          // Non-fatal — the user still gets the dry-run result even if
+          // history persistence fails. Log for observability.
+          console.error(
+            "[dry_run_reply] failed to persist playground run:",
+            persistErr,
+          );
+        }
+
+        return jsonResponse(dryRunData.data);
+      }
+
+      case "list_playground_runs": {
+        // Returns the most recent playground runs for this user+agent,
+        // newest first. Optional `leadId` filter.
+        const leadFilter =
+          typeof params.closeLeadId === "string" && params.closeLeadId.trim()
+            ? params.closeLeadId.trim()
+            : null;
+        const limit = Math.max(1, Math.min(100, Number(params.limit) || 20));
+
+        let query = supabase
+          .from("chat_bot_playground_runs")
+          .select(
+            "id, chat_bot_agent_id, close_lead_id, mode, inbound_override, final_reply, raw_reply, would_send, guardrail_violations, metadata, created_at",
+          )
+          .eq("user_id", effectiveUserId)
+          .eq("chat_bot_agent_id", agentId)
+          .order("created_at", { ascending: false })
+          .limit(limit);
+
+        if (leadFilter) {
+          query = query.eq("close_lead_id", leadFilter);
+        }
+
+        const { data: runs, error: runsErr } = await query;
+        if (runsErr) {
+          return jsonResponse(
+            { error: `Failed to load playground runs: ${runsErr.message}` },
+            500,
+          );
+        }
+
+        return jsonResponse({ runs: runs ?? [] });
+      }
+
+      case "get_playground_run": {
+        // Returns the full row (including the 15KB system prompt) for a
+        // single playground run by ID. Used when the user clicks a history
+        // item to expand it.
+        const runId = typeof params.runId === "string" ? params.runId : "";
+        if (!runId) {
+          return jsonResponse({ error: "runId is required" }, 400);
+        }
+
+        const { data: run, error: runErr } = await supabase
+          .from("chat_bot_playground_runs")
+          .select("*")
+          .eq("id", runId)
+          .eq("user_id", effectiveUserId)
+          .maybeSingle();
+        if (runErr) {
+          return jsonResponse(
+            { error: `Failed to load playground run: ${runErr.message}` },
+            500,
+          );
+        }
+        if (!run) {
+          return jsonResponse({ error: "Run not found" }, 404);
+        }
+
+        return jsonResponse({ run });
+      }
+
+      case "delete_playground_run": {
+        const runId = typeof params.runId === "string" ? params.runId : "";
+        if (!runId) {
+          return jsonResponse({ error: "runId is required" }, 400);
+        }
+
+        const { error: delErr } = await supabase
+          .from("chat_bot_playground_runs")
+          .delete()
+          .eq("id", runId)
+          .eq("user_id", effectiveUserId);
+
+        if (delErr) {
+          return jsonResponse(
+            { error: `Failed to delete playground run: ${delErr.message}` },
+            500,
+          );
+        }
+
+        return jsonResponse({ success: true });
+      }
+
       case "get_analytics": {
         const qs = new URLSearchParams();
         if (params.from) qs.set("from", String(params.from));

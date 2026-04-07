@@ -23,6 +23,7 @@ import {
   ShieldCheck,
   Lightbulb,
   Users,
+  FlaskConical,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,7 @@ import { HowItWorksTab } from "./components/HowItWorksTab";
 import { ChatBotOverviewTab } from "./components/ChatBotOverviewTab";
 import { AdminTab } from "./components/AdminTab";
 import { TeamAppointmentsTab } from "./components/TeamAppointmentsTab";
+import { PlaygroundTab } from "./components/PlaygroundTab";
 import { useMyDownlines } from "@/hooks/hierarchy";
 
 type TabId =
@@ -69,6 +71,7 @@ type TabId =
   | "appointments"
   | "usage"
   | "analytics"
+  | "playground"
   | "monitoring"
   | "admin";
 
@@ -89,6 +92,7 @@ function getInitialTab(): TabId {
     tab === "appointments" ||
     tab === "usage" ||
     tab === "analytics" ||
+    tab === "playground" ||
     tab === "monitoring" ||
     tab === "admin"
   ) {
@@ -249,6 +253,7 @@ export function ChatBotPage() {
       { id: "appointments", label: "Appointments", icon: Calendar },
       { id: "usage", label: "Usage", icon: Activity },
       { id: "analytics", label: "My Analytics", icon: BarChart3 },
+      { id: "playground", label: "Playground", icon: FlaskConical },
     );
     if (isSuperAdmin) {
       tabs.push({ id: "monitoring", label: "Monitoring", icon: HeartPulse });
@@ -562,6 +567,7 @@ export function ChatBotPage() {
         {activeTab === "appointments" && <AppointmentsTab />}
         {activeTab === "usage" && <UsageTab />}
         {activeTab === "analytics" && <AnalyticsTab />}
+        {activeTab === "playground" && <PlaygroundTab />}
         {activeTab === "monitoring" && <MonitoringTab />}
         {activeTab === "admin" && <AdminTab />}
       </div>
