@@ -19,7 +19,10 @@ import {
   Trash2,
   Plus,
   GitBranch,
+  AlertTriangle,
+  ExternalLink,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -43,11 +46,7 @@ import type {
   GeneratedSequenceStep,
   SequencePromptOptions,
 } from "../types/close-ai-builder.types";
-import {
-  countStepsByChannel,
-  formatDayLabel,
-  gapFromPrevious,
-} from "../lib/sequence-utils";
+import { countStepsByChannel, gapFromPrevious } from "../lib/sequence-utils";
 
 // Fixed operating window — mirrors FIXED_SEQUENCE_SCHEDULE / FIXED_SEQUENCE_TIMEZONE
 // in supabase/functions/close-ai-builder/close/endpoints.ts. Every generated
@@ -353,8 +352,14 @@ export function SequenceBuilderTab() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="seq-runmode" className="text-xs">
+                <Label
+                  htmlFor="seq-runmode"
+                  className="flex items-center gap-1.5 text-xs"
+                >
                   Run mode
+                  <span className="rounded bg-zinc-100 px-1 py-[1px] text-[9px] font-medium uppercase tracking-wide text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                    copy hint
+                  </span>
                 </Label>
                 <Select
                   value={runMode}
@@ -370,6 +375,10 @@ export function SequenceBuilderTab() {
                     </SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-[10px] leading-tight text-muted-foreground">
+                  Tunes AI copy. Set for real in Close after save (see banner
+                  below).
+                </p>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="seq-thread" className="text-xs">
@@ -476,22 +485,32 @@ export function SequenceBuilderTab() {
                 </div>
 
                 {draft.rationale && (
-                  <div className="rounded-md border bg-muted/40 p-2 text-xs text-muted-foreground">
-                    <span className="font-medium text-foreground">
-                      Strategy:
-                    </span>{" "}
-                    {draft.rationale}
+                  <div className="rounded-md border-l-2 border-emerald-500 bg-zinc-50 px-3 py-2 dark:border-emerald-400 dark:bg-zinc-900/60">
+                    <div className="mb-0.5 text-[9px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                      Strategy
+                    </div>
+                    <div className="text-xs leading-relaxed text-zinc-700 dark:text-zinc-200">
+                      {draft.rationale}
+                    </div>
                   </div>
                 )}
 
-                <div className="space-y-1.5">
-                  <Label className="text-xs">
-                    Steps ({draft.steps.length})
-                  </Label>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
+                      Timeline · {draft.steps.length} step
+                      {draft.steps.length !== 1 ? "s" : ""}
+                    </Label>
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <GitBranch className="h-3 w-3" />
+                      Day 1 = immediate on enrollment
+                    </div>
+                  </div>
                   <div className="space-y-2">
                     {draft.steps.map((step, i) => (
                       <StepCard
                         key={i}
+                        index={i}
                         step={step}
                         previousDay={i > 0 ? draft.steps[i - 1].day : null}
                         onChange={(patch) => updateStep(i, patch)}
@@ -522,40 +541,84 @@ export function SequenceBuilderTab() {
                   </Button>
                 </div>
 
-                <div className="space-y-2 rounded-md border bg-amber-50/40 p-2.5 text-xs dark:bg-amber-950/20">
-                  <div>
-                    <span className="font-medium">Will save to Close:</span>{" "}
-                    {stepCounts.emailCount} email template
-                    {stepCounts.emailCount !== 1 ? "s" : ""} +{" "}
-                    {stepCounts.smsCount} SMS template
-                    {stepCounts.smsCount !== 1 ? "s" : ""} + 1 workflow. Each
-                    template will be named{" "}
-                    <code className="rounded bg-muted px-1 text-[10px]">
-                      [{draft.name || "workflow"}] ...
-                    </code>
+                {/* Save-info banner: split into "auto" vs "manual" so users
+                    know exactly what will and won't happen when they click save.
+                    Run mode + pause-on-meeting-booked both require manual steps
+                    in Close's UI because the public API doesn't expose them. */}
+                <div className="space-y-2">
+                  <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-xs dark:border-zinc-800 dark:bg-zinc-900/60">
+                    <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                      <Check className="h-3 w-3" />
+                      Auto-configured on save
+                    </div>
+                    <ul className="space-y-1 text-zinc-700 dark:text-zinc-200">
+                      <li className="flex gap-2">
+                        <span className="text-zinc-400">→</span>
+                        <span>
+                          {stepCounts.emailCount} email template
+                          {stepCounts.emailCount !== 1 ? "s" : ""} +{" "}
+                          {stepCounts.smsCount} SMS template
+                          {stepCounts.smsCount !== 1 ? "s" : ""}, all prefixed
+                          with{" "}
+                          <code className="rounded bg-zinc-200 px-1 text-[10px] dark:bg-zinc-800">
+                            [{draft.name || "workflow"}]
+                          </code>
+                        </span>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="text-zinc-400">→</span>
+                        <span>1 workflow · {FIXED_SCHEDULE_LABEL}</span>
+                      </li>
+                    </ul>
                   </div>
-                  <div className="border-t border-amber-200/50 pt-2 dark:border-amber-900/30">
-                    <span className="font-medium">Send window:</span>{" "}
-                    {FIXED_SCHEDULE_LABEL}
+
+                  <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs dark:border-amber-900/60 dark:bg-amber-950/30">
+                    <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                      <AlertTriangle className="h-3 w-3" />
+                      Manual setup in Close after save
+                    </div>
+                    <ul className="space-y-1.5 text-amber-900 dark:text-amber-200">
+                      <li className="flex gap-2">
+                        <span className="text-amber-500">•</span>
+                        <span>
+                          <strong className="font-semibold">Run mode</strong> (
+                          {runMode === "once" ? "Run once" : "Run multiple"}) —
+                          open the saved workflow in Close, click{" "}
+                          <em>
+                            Communication Settings → Recipient and schedule
+                          </em>
+                          , set Run Once / Run Multiple. Close's public API
+                          doesn't expose this field, so it can't be set
+                          automatically.
+                        </span>
+                      </li>
+                      <li className="flex gap-2">
+                        <span className="text-amber-500">•</span>
+                        <span>
+                          <strong className="font-semibold">
+                            Pause on meeting booked
+                          </strong>{" "}
+                          — configure a Close Workflow Rule to pause
+                          subscriptions when lead status changes, or unenroll
+                          manually when bookings come in.
+                        </span>
+                      </li>
+                    </ul>
                   </div>
-                  <div>
-                    <span className="font-medium">Run mode:</span>{" "}
-                    {runMode === "once"
-                      ? "Once per lead — don't re-enroll the same contact"
-                      : "Allow re-enrollment — same contact can be subscribed again"}
-                  </div>
-                  <div className="border-t border-amber-200/50 pt-2 text-[11px] text-muted-foreground dark:border-amber-900/30">
-                    <span className="font-medium text-foreground">
-                      ⚠ Pause on meeting booked:
-                    </span>{" "}
-                    Close doesn't have a sequence-level auto-pause field. To
-                    stop this workflow when a lead books a call, configure a
-                    Close Workflow Rule to pause sequence subscriptions when the
-                    lead's status changes to your "meeting booked" status, or
-                    manually remove subscribers when bookings come in. Same goes
-                    for the "run mode" setting above — enforce it in Close when
-                    subscribing contacts.
-                  </div>
+
+                  {savedSeqId && (
+                    <a
+                      href="https://app.close.com/sequences/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800 transition-colors hover:bg-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-950/50"
+                    >
+                      <span>
+                        Open workflow in Close to finish Run mode setup
+                      </span>
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </a>
+                  )}
                 </div>
 
                 <div className="flex gap-2 pt-1">
@@ -600,11 +663,13 @@ export function SequenceBuilderTab() {
 // ─── StepCard (inline editor for a single sequence step) ──────────
 
 function StepCard({
+  index,
   step,
   previousDay,
   onChange,
   onRemove,
 }: {
+  index: number;
   step: GeneratedSequenceStep;
   previousDay: number | null;
   onChange: (patch: Partial<GeneratedSequenceStep>) => void;
@@ -619,120 +684,193 @@ function StepCard({
         ? "same day as previous"
         : `+${gap} day${gap !== 1 ? "s" : ""} after previous`;
 
+  // Channel-specific color accents (kept within the muted zinc aesthetic —
+  // just a single hue per channel for quick visual scanning).
+  const accentBar = isEmail ? "bg-emerald-500" : "bg-sky-500";
+  const iconColor = isEmail
+    ? "text-emerald-600 dark:text-emerald-400"
+    : "text-sky-600 dark:text-sky-400";
+  const channelLabelColor = isEmail
+    ? "text-emerald-700 dark:text-emerald-300"
+    : "text-sky-700 dark:text-sky-300";
+
   return (
-    <div className="space-y-2 rounded-md border p-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {isEmail ? (
-            <Mail className="h-3.5 w-3.5 text-emerald-500" />
-          ) : (
-            <MessageSquare className="h-3.5 w-3.5 text-cyan-500" />
+    <div className="relative overflow-hidden rounded-md border border-zinc-200 bg-card shadow-sm dark:border-zinc-800">
+      {/* Channel accent bar */}
+      <div
+        className={cn("absolute left-0 top-0 h-full w-[3px]", accentBar)}
+        aria-hidden="true"
+      />
+
+      <div className="flex gap-3 p-3 pl-4">
+        {/* Step number badge */}
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold tabular-nums text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+          {index + 1}
+        </div>
+
+        <div className="min-w-0 flex-1 space-y-2">
+          {/* Header row: channel + day + gap + delete */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              {isEmail ? (
+                <Mail className={cn("h-4 w-4 shrink-0", iconColor)} />
+              ) : (
+                <MessageSquare className={cn("h-4 w-4 shrink-0", iconColor)} />
+              )}
+              <span
+                className={cn(
+                  "text-[10px] font-bold uppercase tracking-wider",
+                  channelLabelColor,
+                )}
+              >
+                {isEmail ? "Email" : "SMS"}
+              </span>
+              <span className="text-zinc-300 dark:text-zinc-700">·</span>
+              <div className="flex items-center gap-1">
+                <span className="text-[11px] text-muted-foreground">Day</span>
+                <Input
+                  type="number"
+                  min={1}
+                  max={365}
+                  value={step.day}
+                  onChange={(e) =>
+                    onChange({
+                      day: Math.max(1, Number(e.target.value) || 1),
+                    })
+                  }
+                  className="h-7 w-14 text-xs tabular-nums"
+                  title="Day from sequence start (Day 1 = immediate)"
+                />
+              </div>
+              <span className="truncate text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+                {gapLabel}
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 shrink-0 p-0 text-muted-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+              onClick={onRemove}
+              title="Remove step"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+
+          {/* Body */}
+          {isEmail && step.generated_email && (
+            <div className="space-y-1.5 border-t border-zinc-100 pt-2 dark:border-zinc-800/80">
+              <div className="space-y-0.5">
+                <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Template name
+                </div>
+                <Input
+                  value={step.generated_email.name}
+                  onChange={(e) =>
+                    onChange({
+                      generated_email: {
+                        ...step.generated_email!,
+                        name: e.target.value,
+                      },
+                    })
+                  }
+                  placeholder="e.g. Day 1 intro"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Subject
+                </div>
+                <Input
+                  value={step.generated_email.subject}
+                  onChange={(e) =>
+                    onChange({
+                      generated_email: {
+                        ...step.generated_email!,
+                        subject: e.target.value,
+                      },
+                    })
+                  }
+                  placeholder="Subject line"
+                  className="h-8 text-sm font-medium"
+                />
+              </div>
+              <div className="space-y-0.5">
+                <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Body
+                </div>
+                <Textarea
+                  value={step.generated_email.body}
+                  onChange={(e) =>
+                    onChange({
+                      generated_email: {
+                        ...step.generated_email!,
+                        body: e.target.value,
+                      },
+                    })
+                  }
+                  placeholder="Email body"
+                  className="min-h-[110px] text-xs leading-relaxed"
+                />
+              </div>
+            </div>
           )}
-          <Badge variant="outline" className="text-[10px]">
-            {isEmail ? "EMAIL" : "SMS"}
-          </Badge>
-          <Input
-            type="number"
-            min={1}
-            max={365}
-            value={step.day}
-            onChange={(e) =>
-              onChange({ day: Math.max(1, Number(e.target.value) || 1) })
-            }
-            className="h-7 w-16 text-xs"
-            title="Day from sequence start (Day 1 = immediate)"
-          />
-          <span className="text-[11px] text-muted-foreground">
-            {formatDayLabel(step.day)}
-          </span>
-          <span className="text-[10px] font-medium text-muted-foreground">
-            · {gapLabel}
-          </span>
+
+          {!isEmail && step.generated_sms && (
+            <div className="space-y-1.5 border-t border-zinc-100 pt-2 dark:border-zinc-800/80">
+              <div className="space-y-0.5">
+                <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  Template name
+                </div>
+                <Input
+                  value={step.generated_sms.name}
+                  onChange={(e) =>
+                    onChange({
+                      generated_sms: {
+                        ...step.generated_sms!,
+                        name: e.target.value,
+                      },
+                    })
+                  }
+                  placeholder="e.g. Day 3 SMS nudge"
+                  className="h-8 text-xs"
+                />
+              </div>
+              <div className="space-y-0.5">
+                <div className="flex items-center justify-between">
+                  <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Message
+                  </div>
+                  <div
+                    className={cn(
+                      "text-[10px] tabular-nums",
+                      step.generated_sms.text.length > 320
+                        ? "font-semibold text-red-600 dark:text-red-400"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    {step.generated_sms.text.length}/320
+                  </div>
+                </div>
+                <Textarea
+                  value={step.generated_sms.text}
+                  onChange={(e) =>
+                    onChange({
+                      generated_sms: {
+                        ...step.generated_sms!,
+                        text: e.target.value,
+                      },
+                    })
+                  }
+                  placeholder="SMS text"
+                  className="min-h-[70px] text-xs leading-relaxed"
+                />
+              </div>
+            </div>
+          )}
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500"
-          onClick={onRemove}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </Button>
       </div>
-
-      {isEmail && step.generated_email && (
-        <div className="space-y-1.5">
-          <Input
-            value={step.generated_email.name}
-            onChange={(e) =>
-              onChange({
-                generated_email: {
-                  ...step.generated_email!,
-                  name: e.target.value,
-                },
-              })
-            }
-            placeholder="Template name"
-            className="h-7 text-xs"
-          />
-          <Input
-            value={step.generated_email.subject}
-            onChange={(e) =>
-              onChange({
-                generated_email: {
-                  ...step.generated_email!,
-                  subject: e.target.value,
-                },
-              })
-            }
-            placeholder="Subject"
-            className="h-7 text-xs"
-          />
-          <Textarea
-            value={step.generated_email.body}
-            onChange={(e) =>
-              onChange({
-                generated_email: {
-                  ...step.generated_email!,
-                  body: e.target.value,
-                },
-              })
-            }
-            placeholder="Email body"
-            className="min-h-[100px] font-mono text-[11px]"
-          />
-        </div>
-      )}
-
-      {!isEmail && step.generated_sms && (
-        <div className="space-y-1.5">
-          <Input
-            value={step.generated_sms.name}
-            onChange={(e) =>
-              onChange({
-                generated_sms: {
-                  ...step.generated_sms!,
-                  name: e.target.value,
-                },
-              })
-            }
-            placeholder="Template name"
-            className="h-7 text-xs"
-          />
-          <Textarea
-            value={step.generated_sms.text}
-            onChange={(e) =>
-              onChange({
-                generated_sms: {
-                  ...step.generated_sms!,
-                  text: e.target.value,
-                },
-              })
-            }
-            placeholder="SMS text"
-            className="min-h-[60px] font-mono text-[11px]"
-          />
-        </div>
-      )}
     </div>
   );
 }
