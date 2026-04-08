@@ -204,3 +204,56 @@ export function useDeleteSequence() {
       }),
   });
 }
+
+// ─── Clone-to-teammate mutations ──────────────────────────────────
+//
+// Cross-org clones write to a DIFFERENT Close org than the one the caller is
+// viewing, so we deliberately do NOT invalidate any of the caller's library
+// queries on success — that would trigger a wasted refetch returning identical
+// data. Errors propagate through CloseAiBuilderError so callers can branch on
+// .isCrossOrgForbidden, .isTargetNotConnected, .isSourceChildMissing.
+
+export function useCloneEmailToUser() {
+  return useMutation({
+    mutationFn: (args: {
+      sourceTemplateId: string;
+      targetUserId: string;
+      nameOverride?: string;
+    }) =>
+      closeAiBuilderService.cloneEmailToUser(
+        args.sourceTemplateId,
+        args.targetUserId,
+        args.nameOverride,
+      ),
+  });
+}
+
+export function useCloneSmsToUser() {
+  return useMutation({
+    mutationFn: (args: {
+      sourceTemplateId: string;
+      targetUserId: string;
+      nameOverride?: string;
+    }) =>
+      closeAiBuilderService.cloneSmsToUser(
+        args.sourceTemplateId,
+        args.targetUserId,
+        args.nameOverride,
+      ),
+  });
+}
+
+export function useCloneSequenceToUser() {
+  return useMutation({
+    mutationFn: (args: {
+      sourceSequenceId: string;
+      targetUserId: string;
+      nameOverride?: string;
+    }) =>
+      closeAiBuilderService.cloneSequenceToUser(
+        args.sourceSequenceId,
+        args.targetUserId,
+        args.nameOverride,
+      ),
+  });
+}

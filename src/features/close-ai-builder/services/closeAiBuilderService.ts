@@ -41,8 +41,23 @@ export class CloseAiBuilderError extends Error {
       this.code === "CLOSE_NOT_CONNECTED" || this.code === "CLOSE_INACTIVE"
     );
   }
+  get isCrossOrgForbidden(): boolean {
+    return this.code === "CROSS_ORG_CLONE_FORBIDDEN";
+  }
+  get isTargetNotConnected(): boolean {
+    return this.code === "TARGET_CLOSE_NOT_CONNECTED";
+  }
+  get isSourceChildMissing(): boolean {
+    return this.code === "SOURCE_CHILD_MISSING";
+  }
+  get isInvalidCloneTarget(): boolean {
+    return this.code === "CROSS_ORG_CLONE_INVALID_TARGET";
+  }
 }
 import type {
+  CloneEmailResponse,
+  CloneSequenceResponse,
+  CloneSmsResponse,
   CloseEmailTemplate,
   CloseSequence,
   CloseSmsTemplate,
@@ -204,6 +219,40 @@ export const closeAiBuilderService = {
 
   deleteSequence: (id: string) =>
     invokeBuilder<{ deleted: string }>("delete_sequence", { id }),
+
+  // Clone to teammate (cross-org)
+  cloneEmailToUser: (
+    sourceTemplateId: string,
+    targetUserId: string,
+    nameOverride?: string,
+  ) =>
+    invokeBuilder<CloneEmailResponse>("clone_email_template_to_user", {
+      source_template_id: sourceTemplateId,
+      target_user_id: targetUserId,
+      name_override: nameOverride,
+    }),
+
+  cloneSmsToUser: (
+    sourceTemplateId: string,
+    targetUserId: string,
+    nameOverride?: string,
+  ) =>
+    invokeBuilder<CloneSmsResponse>("clone_sms_template_to_user", {
+      source_template_id: sourceTemplateId,
+      target_user_id: targetUserId,
+      name_override: nameOverride,
+    }),
+
+  cloneSequenceToUser: (
+    sourceSequenceId: string,
+    targetUserId: string,
+    nameOverride?: string,
+  ) =>
+    invokeBuilder<CloneSequenceResponse>("clone_sequence_to_user", {
+      source_sequence_id: sourceSequenceId,
+      target_user_id: targetUserId,
+      name_override: nameOverride,
+    }),
 
   // History
   getGenerations: (

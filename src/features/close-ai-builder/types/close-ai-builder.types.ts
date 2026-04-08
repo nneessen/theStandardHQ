@@ -199,6 +199,35 @@ export interface ConnectionStatus {
   last_verified_at: string | null;
 }
 
+// ─── Clone to teammate ────────────────────────────────────────────
+
+export interface CloneEligibleTeammate {
+  user_id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+  organization_name: string | null;
+}
+
+export interface CloneEmailResponse {
+  template: CloseEmailTemplate;
+  target_organization_name: string | null;
+  warnings: string[];
+}
+
+export interface CloneSmsResponse {
+  template: CloseSmsTemplate;
+  target_organization_name: string | null;
+  warnings: string[];
+}
+
+export interface CloneSequenceResponse {
+  sequence: CloseSequence;
+  created_template_ids: string[];
+  target_organization_name: string | null;
+  warnings: string[];
+}
+
 // ─── Generation history (audit table) ─────────────────────────────
 
 export interface GenerationRecord {

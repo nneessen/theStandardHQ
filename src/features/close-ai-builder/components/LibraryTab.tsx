@@ -19,6 +19,7 @@ import {
   Loader2,
   AlertTriangle,
   Archive,
+  Send,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -40,10 +41,17 @@ import type {
   CloseSequence,
   CloseSmsTemplate,
 } from "../types/close-ai-builder.types";
+import {
+  CloneToTeammateDialog,
+  type CloneTarget,
+} from "./CloneToTeammateDialog";
 
 export function LibraryTab() {
   const [search, setSearch] = useState("");
   const [showArchived, setShowArchived] = useState(true);
+  // Lifted dialog state — only one clone dialog can be open at a time across
+  // the three sub-tabs. Sub-components call onClone() to surface a target.
+  const [cloneTarget, setCloneTarget] = useState<CloneTarget | null>(null);
 
   return (
     <div className="space-y-4">
@@ -86,15 +94,31 @@ export function LibraryTab() {
         </TabsList>
 
         <TabsContent value="email">
-          <EmailLibrary search={search} showArchived={showArchived} />
+          <EmailLibrary
+            search={search}
+            showArchived={showArchived}
+            onClone={(t) => setCloneTarget({ kind: "email", item: t })}
+          />
         </TabsContent>
         <TabsContent value="sms">
-          <SmsLibrary search={search} />
+          <SmsLibrary
+            search={search}
+            onClone={(t) => setCloneTarget({ kind: "sms", item: t })}
+          />
         </TabsContent>
         <TabsContent value="sequences">
-          <SequenceLibrary search={search} />
+          <SequenceLibrary
+            search={search}
+            onClone={(s) => setCloneTarget({ kind: "sequence", item: s })}
+          />
         </TabsContent>
       </Tabs>
+
+      <CloneToTeammateDialog
+        open={!!cloneTarget}
+        onClose={() => setCloneTarget(null)}
+        target={cloneTarget}
+      />
     </div>
   );
 }
@@ -104,9 +128,11 @@ export function LibraryTab() {
 function EmailLibrary({
   search,
   showArchived,
+  onClone,
 }: {
   search: string;
   showArchived: boolean;
+  onClone: (t: CloseEmailTemplate) => void;
 }) {
   const { data, isLoading, isError, error } = useEmailTemplates();
   const del = useDeleteEmailTemplate();
@@ -222,6 +248,15 @@ function EmailLibrary({
                   <Button
                     variant="ghost"
                     size="sm"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-blue-500"
+                    onClick={() => onClone(t)}
+                    title="Clone to teammate"
+                  >
+                    <Send className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500"
                     onClick={() => handleDelete(t.id, t.name)}
                     disabled={del.isPending}
@@ -241,7 +276,13 @@ function EmailLibrary({
 
 // ─── SMS library ──────────────────────────────────────────────────
 
-function SmsLibrary({ search }: { search: string }) {
+function SmsLibrary({
+  search,
+  onClone,
+}: {
+  search: string;
+  onClone: (t: CloseSmsTemplate) => void;
+}) {
   const { data, isLoading, isError, error } = useSmsTemplates();
   const del = useDeleteSmsTemplate();
 
@@ -316,16 +357,27 @@ function SmsLibrary({ search }: { search: string }) {
                     {new Date(t.date_created).toLocaleDateString()}
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500"
-                  onClick={() => handleDelete(t.id, t.name)}
-                  disabled={del.isPending}
-                  title="Delete"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-blue-500"
+                    onClick={() => onClone(t)}
+                    title="Clone to teammate"
+                  >
+                    <Send className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500"
+                    onClick={() => handleDelete(t.id, t.name)}
+                    disabled={del.isPending}
+                    title="Delete"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </div>
             ))}
           </CardContent>
@@ -337,7 +389,13 @@ function SmsLibrary({ search }: { search: string }) {
 
 // ─── Sequence library ─────────────────────────────────────────────
 
-function SequenceLibrary({ search }: { search: string }) {
+function SequenceLibrary({
+  search,
+  onClone,
+}: {
+  search: string;
+  onClone: (s: CloseSequence) => void;
+}) {
   const { data, isLoading, isError, error } = useSequences();
   const del = useDeleteSequence();
 
@@ -412,16 +470,27 @@ function SequenceLibrary({ search }: { search: string }) {
                     {new Date(s.date_created).toLocaleDateString()}
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500"
-                  onClick={() => handleDelete(s.id, s.name)}
-                  disabled={del.isPending}
-                  title="Delete"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-blue-500"
+                    onClick={() => onClone(s)}
+                    title="Clone to teammate"
+                  >
+                    <Send className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500"
+                    onClick={() => handleDelete(s.id, s.name)}
+                    disabled={del.isPending}
+                    title="Delete"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </div>
             ))}
           </CardContent>
