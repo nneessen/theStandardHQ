@@ -131,9 +131,7 @@ export function listEmailTemplates(
  * pages. Returns up to MAX_AUTO_PAGINATE_ITEMS with a truncated flag if the
  * list exceeds that. This is what the Library tab uses.
  */
-export function listAllEmailTemplates(
-  apiKey: string,
-): Promise<{
+export function listAllEmailTemplates(apiKey: string): Promise<{
   data: CloseEmailTemplate[];
   truncated: boolean;
   pagesFetched: number;
@@ -218,9 +216,7 @@ export function listSmsTemplates(
  * SMS templates and the old code capped at the first 100 via the hardcoded
  * limit in LibraryTab + single-page listSmsTemplates.
  */
-export function listAllSmsTemplates(
-  apiKey: string,
-): Promise<{
+export function listAllSmsTemplates(apiKey: string): Promise<{
   data: CloseSmsTemplate[];
   truncated: boolean;
   pagesFetched: number;
@@ -292,9 +288,14 @@ export interface CloseSequence {
   name: string;
   timezone: string;
   status: string;
+  // Close returns schedule as an object ({ ranges: [...] }) on GET; keeping
+  // unknown because the exact shape varies by plan.
   schedule: unknown | null;
   schedule_id: string | null;
-  trigger_query: string | null;
+  // Close returns trigger_query as a nested query object (not a string) on
+  // GET — e.g. { type: "and", queries: [...] }. Typed as unknown so callers
+  // pass it through opaquely during clone.
+  trigger_query: unknown | null;
   allow_manual_enrollment: boolean;
   organization_id: string;
   owner_id: string;
@@ -309,11 +310,32 @@ export interface CreateSequenceInput {
   name: string;
   steps: CloseSequenceStep[];
   /**
-   * IANA timezone. Ignored — we always force FIXED_SEQUENCE_TIMEZONE so
-   * every generated workflow runs on the same operating window. Kept on the
-   * input shape only to match Close's required field for future flexibility.
+   * IANA timezone. If omitted, defaults to FIXED_SEQUENCE_TIMEZONE. Set by
+   * the cross-org clone path to preserve the source workflow's timezone.
    */
   timezone?: string;
+  /**
+   * Inline schedule object ({ ranges: [...] }). If omitted, defaults to
+   * FIXED_SEQUENCE_SCHEDULE (Mon-Sat 8-8 ET). Set by the cross-org clone
+   * path to preserve the source workflow's operating window. Verified
+   * accepts HH:MM:SS and HH:MM range formats.
+   */
+  schedule?: unknown;
+  /**
+   * Whether users can manually enroll leads via the Close UI. If omitted,
+   * Close defaults to true. Close enforces: if no `trigger_query` is sent,
+   * `allow_manual_enrollment` must be true (otherwise the workflow would
+   * have no way to receive leads). Cross-org clone always forces this to
+   * true because trigger_query can't be cleanly translated across orgs.
+   */
+  allow_manual_enrollment?: boolean;
+
+  // NOTE: `trigger_query` is intentionally NOT in this interface. Close's
+  // POST /sequence/ rejects trigger_queries from other orgs with
+  // "The query must be of type Lead" — the GET-returned shape is not 1:1
+  // POST-compatible, and queries often reference org-specific resources
+  // (smart views, custom fields, lead statuses) that don't port. The
+  // cross-org clone path surfaces a warning when the source has a trigger.
 }
 
 export function createSequence(
@@ -321,6 +343,9 @@ export function createSequence(
   input: CreateSequenceInput,
 ): Promise<CloseSequence> {
   // Normalize steps: strip undefined and scrub SMS-step fields that Close nulls anyway.
+  // Note: assumes every step is email or sms — other step types (update-lead,
+  // call, wait, etc.) must be rejected by the caller. See handleCloneSequenceToUser
+  // SUPPORTED_CLONE_STEP_TYPES guard and memory `project_close_ai_clone_step_types.md`.
   const cleanSteps = input.steps.map((s) => {
     if (s.step_type === "email") {
       return {
@@ -337,14 +362,19 @@ export function createSequence(
     };
   });
 
-  return closePost<CloseSequence>(apiKey, "/sequence/", {
+  // Build payload with the caller's overrides (clone path) or fall back to
+  // the hardcoded fixed team operating window (AI-generated workflow path).
+  const payload: Record<string, unknown> = {
     name: input.name,
-    // Hardcoded: always use the fixed team operating window. See FIXED_*
-    // constants above for rationale.
-    timezone: FIXED_SEQUENCE_TIMEZONE,
-    schedule: FIXED_SEQUENCE_SCHEDULE,
+    timezone: input.timezone ?? FIXED_SEQUENCE_TIMEZONE,
+    schedule: input.schedule ?? FIXED_SEQUENCE_SCHEDULE,
     steps: cleanSteps,
-  });
+  };
+  if (typeof input.allow_manual_enrollment === "boolean") {
+    payload.allow_manual_enrollment = input.allow_manual_enrollment;
+  }
+
+  return closePost<CloseSequence>(apiKey, "/sequence/", payload);
 }
 
 export function getSequence(
@@ -367,9 +397,7 @@ export function listSequences(
 }
 
 /** Fetch EVERY sequence (Close UI calls these "Workflows"). */
-export function listAllSequences(
-  apiKey: string,
-): Promise<{
+export function listAllSequences(apiKey: string): Promise<{
   data: CloseSequence[];
   truncated: boolean;
   pagesFetched: number;

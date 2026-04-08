@@ -1208,6 +1208,41 @@ async function handleCloneSequenceToUser(
     );
   }
 
+  // Guard against step types we don't support yet. Close workflows can contain
+  // step types beyond email/sms — `update-lead`, `call`, `wait`, etc. — that
+  // reference org-specific resources (lead status IDs, call dispositions) which
+  // don't port across orgs. Reject the clone BEFORE creating any templates in
+  // the target org so we don't leave orphans behind when the eventual
+  // createSequence call 400s. Repro: scripts/debug/repro-clone-400.mjs.
+  const SUPPORTED_CLONE_STEP_TYPES = new Set(["email", "sms"]);
+  const unsupportedStepTypes = Array.from(
+    new Set(
+      srcSeq.steps
+        .map((s) => String(s.step_type))
+        .filter((t) => !SUPPORTED_CLONE_STEP_TYPES.has(t)),
+    ),
+  );
+  if (unsupportedStepTypes.length > 0) {
+    await logCloneAttempt({
+      callerId: ctx.user.id,
+      targetId: targetUserId,
+      itemType: "sequence",
+      sourceItemId: sourceSequenceId,
+      status: "failed",
+      errorCode: "UNSUPPORTED_STEP_TYPES",
+      errorMessage: `Source workflow contains unsupported step types: ${unsupportedStepTypes.join(", ")}`,
+    });
+    return json(
+      {
+        error: `This workflow can't be cloned yet: it contains step type${unsupportedStepTypes.length > 1 ? "s" : ""} (${unsupportedStepTypes.join(", ")}) that reference org-specific configuration (lead statuses, call settings) which don't port across Close orgs. Only workflows made up entirely of email and SMS steps can be cloned today.`,
+        code: "UNSUPPORTED_STEP_TYPES",
+        unsupported_step_types: unsupportedStepTypes,
+      },
+      400,
+      ctx.req,
+    );
+  }
+
   const uniqueEmailIds = Array.from(
     new Set(
       srcSeq.steps
@@ -1312,6 +1347,16 @@ async function handleCloneSequenceToUser(
       warningSet.add(w);
     }
   }
+  // If the source workflow had an auto-enrollment trigger, surface a warning
+  // because Close's POST endpoint won't accept cross-org trigger_queries
+  // ("The query must be of type Lead" + org-specific refs to smart views,
+  // statuses, etc.). The clone will be manual-enrollment only — teammate
+  // must reconfigure the trigger in Close UI.
+  if (srcSeq.trigger_query != null) {
+    warningSet.add(
+      "Source workflow had an auto-enrollment trigger that wasn't copied. The clone is manual-enrollment only — your teammate will need to reconfigure the trigger in Close.",
+    );
+  }
   const warnings = Array.from(warningSet);
 
   // Phase 2: write children to TARGET org with TARGET key. Track each one
@@ -1399,9 +1444,20 @@ async function handleCloneSequenceToUser(
   }));
 
   try {
+    // Preserve the source sequence's schedule + timezone so the clone runs
+    // on the same operating window. Always force allow_manual_enrollment=true
+    // because: (a) we can't carry over trigger_query cleanly across orgs
+    // (Close's POST endpoint rejects cross-org triggers — see probe results
+    // in commit history), and (b) Close requires manual enrollment to be on
+    // when no trigger is set (error: "Manual enrollment must be allowed when
+    // trigger is disabled"). The source's original trigger is surfaced as a
+    // warning via the warnings[] array.
     const created = await createSequence(targetKey, {
       name: sequenceName,
       steps: finalSteps,
+      timezone: srcSeq.timezone ?? undefined,
+      schedule: srcSeq.schedule ?? undefined,
+      allow_manual_enrollment: true,
     });
 
     await logCloneAttempt({

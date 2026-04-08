@@ -152,11 +152,15 @@ export function CloneToTeammateDialog({
           ? "Your teammate's Close account is not connected or is inactive."
           : e?.isSourceChildMissing
             ? "One of the workflow's templates was deleted from your Close org. Cannot clone."
-            : e?.isInvalidCloneTarget
-              ? "Invalid clone target."
-              : err instanceof Error
-                ? err.message
-                : "Clone failed";
+            : e?.isUnsupportedStepTypes
+              ? // Edge function returns the exact wording — surface it so the user
+                // knows which step types blocked the clone (update-lead, call, etc.)
+                e.message
+              : e?.isInvalidCloneTarget
+                ? "Invalid clone target."
+                : err instanceof Error
+                  ? err.message
+                  : "Clone failed";
       toast.error(msg);
       // Dialog stays open so the user can retry or pick another teammate.
     };

@@ -53,6 +53,9 @@ export class CloseAiBuilderError extends Error {
   get isInvalidCloneTarget(): boolean {
     return this.code === "CROSS_ORG_CLONE_INVALID_TARGET";
   }
+  get isUnsupportedStepTypes(): boolean {
+    return this.code === "UNSUPPORTED_STEP_TYPES";
+  }
 }
 import type {
   CloneEmailResponse,
