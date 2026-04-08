@@ -345,5 +345,17 @@ function normalizeDeepDiveErrorMessage(message: string): string {
     return "AI lead analysis is unavailable locally until ANTHROPIC_API_KEY is set.";
   }
 
+  // Truncation from max_tokens — edge function throws this explicitly.
+  if (message.includes("response was truncated")) {
+    return "AI response was cut short. Click again to retry.";
+  }
+
+  // Parse failure fallback — surface a readable message instead of dumping
+  // the raw JSON fragment. We still log the raw error server-side for
+  // debugging, the user just sees the friendly version.
+  if (message.includes("AI returned invalid JSON")) {
+    return "AI returned an unreadable response. Click again to retry.";
+  }
+
   return message || "AI analysis failed. Click again to retry.";
 }

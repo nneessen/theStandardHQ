@@ -17,7 +17,11 @@ import type {
 const PORTFOLIO_MODEL = "claude-sonnet-4-6";
 const DEEP_DIVE_MODEL = "claude-sonnet-4-6";
 const MAX_PORTFOLIO_TOKENS = 4096;
-const MAX_DEEP_DIVE_TOKENS = 1024;
+// Bumped from 1024 after production truncation: Sonnet was wrapping responses
+// in ```json fences and writing long narratives, blowing past 1024 mid-string
+// and leaving the JSON unterminated. 2048 gives comfortable headroom for the
+// full deep-dive schema even when the narrative is verbose.
+const MAX_DEEP_DIVE_TOKENS = 2048;
 
 // A lead source is considered "active" if at least one lead from that source
 // has been imported within this many days. Sources without recent imports are
@@ -168,7 +172,12 @@ function parseStructuredJson<T>(text: string): T {
   try {
     return JSON.parse(jsonText) as T;
   } catch {
-    throw new Error(`AI returned invalid JSON: ${trimmed.slice(0, 200)}`);
+    // Include BOTH head and tail so truncation (unterminated string/object)
+    // is diagnosable from logs. The old error showed only the first 200 chars
+    // which hid mid-response cutoffs behind what looked like valid JSON.
+    const head = trimmed.slice(0, 200);
+    const tail = trimmed.length > 400 ? ` ... ${trimmed.slice(-200)}` : "";
+    throw new Error(`AI returned invalid JSON: ${head}${tail}`);
   }
 }
 
@@ -242,7 +251,11 @@ You understand:
 - That agents have limited time and need clear prioritization guidance
 - Compliance: never recommend discriminatory prioritization based on protected characteristics
 
-Return ONLY valid JSON matching the requested schema. No markdown, no explanation, no code fences.`;
+CRITICAL OUTPUT RULES:
+- Return ONLY a raw JSON object matching the schema.
+- Do NOT wrap the response in markdown code fences (no \`\`\`json or \`\`\`).
+- Do NOT prefix or suffix the JSON with any explanatory text.
+- Keep the narrative concise (2-4 sentences) to stay within the token budget.`;
 
 function buildDeepDivePrompt(input: LeadDeepDiveInput): string {
   return `Analyze this lead and provide scoring insights and recommended actions.
@@ -267,12 +280,12 @@ ${
     .join("\n") || "No activities recorded"
 }
 
-Return JSON matching this exact schema:
+Return JSON matching this exact schema. Start your response with "{" and nothing else:
 {
-  "adjustedScore": number,
-  "confidence": number,
+  "adjustedScore": number (0-100 integer),
+  "confidence": number (decimal between 0 and 1, e.g. 0.75 means 75% confident — NOT 75),
   "heatLevel": "hot|warming|neutral|cooling|cold",
-  "narrative": "string (2-4 sentences)",
+  "narrative": "string (2-4 sentences max — keep it tight)",
   "keySignals": [{ "signal": "string", "impact": "positive|negative|neutral", "detail": "string" }],
   "recommendedAction": { "action": "string", "timing": "string", "reasoning": "string" },
   "riskFactors": ["string"],
@@ -286,14 +299,22 @@ export async function analyzeLeadDeepDive(
   const client = getAnthropicClient();
   const userPrompt = buildDeepDivePrompt(input);
 
+  // Prefill the assistant turn with "{" to physically prevent Sonnet from
+  // emitting a ```json code fence. The model is forced to continue from the
+  // opening brace, so the first tokens it produces are inside the JSON body.
+  // We have to prepend "{" back onto the response text before parsing since
+  // the prefill itself is not included in content blocks.
   const response = await client.messages.create({
     model: DEEP_DIVE_MODEL,
     max_tokens: MAX_DEEP_DIVE_TOKENS,
     system: DEEP_DIVE_SYSTEM_PROMPT,
-    messages: [{ role: "user", content: userPrompt }],
+    messages: [
+      { role: "user", content: userPrompt },
+      { role: "assistant", content: "{" },
+    ],
   });
 
-  const text = response.content
+  const rawText = response.content
     .filter(
       (block): block is { type: "text"; text: string } =>
         block.type === "text" && "text" in block,
@@ -304,6 +325,16 @@ export async function analyzeLeadDeepDive(
   const tokensUsed =
     (response.usage?.input_tokens ?? 0) + (response.usage?.output_tokens ?? 0);
 
+  // Fail fast with a specific error if Anthropic truncated us at the token
+  // limit. Without this check, the user saw "AI returned invalid JSON: ..."
+  // which was confusing because the fragment looked like valid JSON.
+  if (response.stop_reason === "max_tokens") {
+    throw new Error(
+      "AI response was truncated before completing. Try again, or reduce the lead's activity history if this keeps happening.",
+    );
+  }
+
+  const text = `{${rawText}`;
   const parsed = parseStructuredJson<LeadDeepDiveResult>(text);
 
   // Runtime validation: ensure expected shapes (LLM output is untrusted)
@@ -328,6 +359,14 @@ export async function analyzeLeadDeepDive(
     0,
     Math.min(100, Math.round(parsed.adjustedScore)),
   );
+  // Sonnet sometimes returns confidence as 0-100 instead of 0-1 despite the
+  // schema saying "decimal between 0 and 1". If the value is clearly on a
+  // percentage scale, rescale it before clamping so the UI doesn't silently
+  // render 100% confidence for every lead (which is what happened when the
+  // bare clamp turned 72 → 1).
+  if (parsed.confidence > 1) {
+    parsed.confidence = parsed.confidence / 100;
+  }
   parsed.confidence = Math.max(0, Math.min(1, parsed.confidence));
 
   return { result: parsed, tokensUsed };
