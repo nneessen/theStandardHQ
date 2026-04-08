@@ -930,6 +930,7 @@ class AdminSubscriptionService {
         custom_branding: false,
         // Tools
         close_ai_builder: false,
+        close_kpi: false,
       };
 
       const { data, error } = await supabase

@@ -195,6 +195,13 @@ export const FEATURE_REGISTRY: Record<string, FeatureDefinition> = {
       "Generate Close CRM email templates, SMS templates, and sequences from AI prompts",
     category: "tools",
   },
+  close_kpi: {
+    key: "close_kpi",
+    displayName: "Close KPIs Dashboard",
+    description:
+      "Close CRM analytics dashboard — lead heat scoring, lifecycle velocity, call/SMS performance, and team-wide KPIs",
+    category: "tools",
+  },
 
   // Premium Branding Features
   recruiting_basic: {

@@ -53,6 +53,7 @@ export interface SubscriptionFeatures {
   custom_branding: boolean;
   // Tools
   close_ai_builder: boolean;
+  close_kpi: boolean;
 }
 
 // Entity types

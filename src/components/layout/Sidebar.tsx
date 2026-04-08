@@ -376,12 +376,17 @@ export default function Sidebar({
           public: true,
           allowedAgencyId: THE_STANDARD_AGENCY_ID,
         },
-        // Close KPIs — available to all authenticated users
+        // Close KPIs — gated by close_kpi feature flag.
+        // All plan-tier flags are false (see migration
+        // 20260407200329_restrict_close_kpi_to_owner_team.sql), so the only
+        // paths to access are (1) isAdmin short-circuit for Nick, and
+        // (2) isDirectDownlineOfOwner + OWNER_DOWNLINE_GRANTED_FEATURES for
+        // agents in Nick's downline hierarchy — both handled inside hasFeature().
         {
           icon: CloseCrmIcon,
           label: "Close KPIs",
           href: "/close-kpi",
-          public: true,
+          subscriptionFeature: "close_kpi",
         },
         // AI Template Builder — gated by close_ai_builder feature flag
         // (Team plan + Nick's downlines via OWNER_DOWNLINE_GRANTED_FEATURES)

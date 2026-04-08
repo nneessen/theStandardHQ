@@ -45,6 +45,7 @@ export const OWNER_DOWNLINE_GRANTED_FEATURES = [
   "team_analytics",
   "training",
   "close_ai_builder",
+  "close_kpi",
 ] as const;
 
 export type OwnerDownlineGrantedFeature =

@@ -91,6 +91,7 @@ export const FEATURE_DISPLAY_NAMES: Record<FeatureKey, string> = {
   custom_branding: "Custom Branding",
   // Tools
   close_ai_builder: "Close AI Template Builder",
+  close_kpi: "Close KPIs Dashboard",
 };
 
 export interface UseFeatureAccessResult {
