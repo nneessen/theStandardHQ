@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useQueryClient } from "@tanstack/react-query";
+import { getTodayString } from "@/lib/date";
 import {
   useTeamAppointments,
   teamAppointmentKeys,
@@ -32,19 +33,33 @@ function formatTime(dateStr: string | null): string {
   });
 }
 
+// Returns YYYY-MM-DD for a UTC ISO timestamp, interpreted in the browser's
+// local timezone. Keeps the "Next Appt" filter consistent with the backend's
+// local-date counting (otherwise the count cell and the next-appt cell can
+// disagree on what "today" means near midnight).
+function isoToLocalDay(isoStr: string): string {
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return "";
+  return new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(d);
+}
+
 // ─── Agent row ──────────────────────────────────────────────────
 
 function AgentRow({ agent }: { agent: TeamAgentAppointments }) {
   const hasFetchError = !!agent.fetchError;
 
-  // Find next upcoming appointment (today, status=scheduled, not yet passed)
+  // Find next upcoming appointment (today in local tz, status=scheduled, not yet passed)
   const now = new Date();
-  const todayStr = now.toISOString().slice(0, 10);
+  const todayStr = getTodayString();
   const upcoming = agent.items
     .filter(
       (a) =>
         a.scheduledAt &&
-        a.scheduledAt.slice(0, 10) === todayStr &&
+        isoToLocalDay(a.scheduledAt) === todayStr &&
         a.status === "scheduled" &&
         new Date(a.scheduledAt) > now,
     )
@@ -173,11 +188,12 @@ function AgentRow({ agent }: { agent: TeamAgentAppointments }) {
 export function TeamAppointmentsTab() {
   const { data, isLoading, error } = useTeamAppointments(true);
   const queryClient = useQueryClient();
-  const today = new Date().toISOString().slice(0, 10);
 
   const handleRefresh = () => {
+    // Invalidate the entire team-appointments namespace so we don't have to
+    // reconstruct the exact (date, tz) key pair used inside the hook.
     queryClient.invalidateQueries({
-      queryKey: teamAppointmentKeys.byDate(today),
+      queryKey: teamAppointmentKeys.all,
     });
   };
 

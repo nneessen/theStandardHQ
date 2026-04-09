@@ -65,6 +65,13 @@ function isValidDateStr(d: string): boolean {
 
 // --- External API helper ---
 
+// Appointments endpoint only supports page/limit (no date filter). Max limit = 100
+// per docs/external-api-reference.md:938. We paginate fully so aggregate counts
+// (today/week) are correct regardless of the API's default sort order.
+const APPT_PAGE_LIMIT = 100;
+const APPT_MAX_PAGES = 10; // Hard ceiling: 1000 appts per agent
+const APPT_FETCH_TIMEOUT_MS = 15_000;
+
 function getChatBotApiConfig(): { url: string; key: string } | null {
   const url =
     Deno.env.get("STANDARD_CHAT_BOT_API_URL") ||
@@ -76,37 +83,135 @@ function getChatBotApiConfig(): { url: string; key: string } | null {
   return { url, key };
 }
 
+interface AppointmentPageResult {
+  ok: boolean;
+  items: NormalizedAppointment[];
+  totalPages: number; // 0 if unknown
+  error?: string;
+}
+
+async function fetchAppointmentsPage(
+  apiConfig: { url: string; key: string },
+  externalAgentId: string,
+  page: number,
+  signal: AbortSignal,
+): Promise<AppointmentPageResult> {
+  const res = await fetch(
+    `${apiConfig.url}/api/external/agents/${encodeURIComponent(
+      externalAgentId,
+    )}/appointments?page=${page}&limit=${APPT_PAGE_LIMIT}`,
+    {
+      method: "GET",
+      headers: { "X-API-Key": apiConfig.key },
+      signal,
+    },
+  );
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    // deno-lint-ignore no-explicit-any
+    const errMsg =
+      (data as any)?.error?.message ||
+      (data as any)?.error ||
+      (data as any)?.message ||
+      JSON.stringify(data).slice(0, 200);
+    return {
+      ok: false,
+      items: [],
+      totalPages: 0,
+      error: `HTTP ${res.status}: ${errMsg}`,
+    };
+  }
+  // deno-lint-ignore no-explicit-any
+  const body: any = data;
+  // Standard envelope: { success, data: [...], meta: { pagination: {...} } }
+  // deno-lint-ignore no-explicit-any
+  const rawItems: any[] = Array.isArray(body?.data)
+    ? body.data
+    : Array.isArray(body)
+      ? body
+      : [];
+  const pagination = body?.meta?.pagination ?? {};
+  let totalPages: number = 0;
+  if (typeof pagination.totalPages === "number") {
+    totalPages = pagination.totalPages;
+  } else if (typeof pagination.totalItems === "number") {
+    totalPages = Math.max(
+      1,
+      Math.ceil(pagination.totalItems / APPT_PAGE_LIMIT),
+    );
+  } else if (pagination.hasNext === true) {
+    totalPages = page + 1; // Minimum; we'll keep probing if needed
+  } else {
+    totalPages = page; // Treat this as the last page
+  }
+  return {
+    ok: true,
+    items: rawItems.map(normalizeAppointment),
+    totalPages,
+  };
+}
+
 async function fetchAgentAppointments(
   apiConfig: { url: string; key: string },
   externalAgentId: string,
-): Promise<{ ok: boolean; items: NormalizedAppointment[]; error?: string }> {
+): Promise<{
+  ok: boolean;
+  items: NormalizedAppointment[];
+  error?: string;
+  capped?: boolean;
+}> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15_000);
+  const timeout = setTimeout(() => controller.abort(), APPT_FETCH_TIMEOUT_MS);
 
   try {
-    const res = await fetch(
-      `${apiConfig.url}/api/external/agents/${encodeURIComponent(externalAgentId)}/appointments?page=1&limit=100`,
-      {
-        method: "GET",
-        headers: { "X-API-Key": apiConfig.key },
-        signal: controller.signal,
-      },
+    // Fetch page 1 first to discover totalPages.
+    const firstPage = await fetchAppointmentsPage(
+      apiConfig,
+      externalAgentId,
+      1,
+      controller.signal,
     );
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      // deno-lint-ignore no-explicit-any
-      const errMsg =
-        (data as any)?.error?.message ||
-        (data as any)?.error ||
-        (data as any)?.message ||
-        JSON.stringify(data).slice(0, 200);
-      return { ok: false, items: [], error: `HTTP ${res.status}: ${errMsg}` };
+    if (!firstPage.ok) {
+      return { ok: false, items: [], error: firstPage.error };
     }
-    // deno-lint-ignore no-explicit-any
-    const payload = (data as any)?.data ?? data;
-    // deno-lint-ignore no-explicit-any
-    const rawItems: any[] = Array.isArray(payload) ? payload : [];
-    return { ok: true, items: rawItems.map(normalizeAppointment) };
+
+    const discoveredTotal = firstPage.totalPages || 1;
+    const lastPageToFetch = Math.min(discoveredTotal, APPT_MAX_PAGES);
+    const capped = discoveredTotal > APPT_MAX_PAGES;
+
+    if (lastPageToFetch <= 1) {
+      return {
+        ok: true,
+        items: firstPage.items,
+        ...(capped ? { capped } : {}),
+      };
+    }
+
+    // Fetch pages 2..lastPageToFetch in parallel.
+    const pagePromises: Promise<AppointmentPageResult>[] = [];
+    for (let p = 2; p <= lastPageToFetch; p++) {
+      pagePromises.push(
+        fetchAppointmentsPage(apiConfig, externalAgentId, p, controller.signal),
+      );
+    }
+    const remaining = await Promise.all(pagePromises);
+    const failed = remaining.find((r) => !r.ok);
+    if (failed) {
+      // Any page failure → treat the agent as errored so we don't display
+      // partial data silently. The caller already handles fetchError gracefully.
+      return {
+        ok: false,
+        items: [],
+        error: failed.error ?? "Unknown page fetch error",
+      };
+    }
+
+    const allItems = firstPage.items.concat(...remaining.map((r) => r.items));
+    return {
+      ok: true,
+      items: allItems,
+      ...(capped ? { capped } : {}),
+    };
   } catch (err) {
     return { ok: false, items: [], error: String(err) };
   } finally {
@@ -184,8 +289,48 @@ function normalizeAppointment(item: any): NormalizedAppointment {
 }
 
 // --- Date helpers ---
+//
+// All date math here operates on YYYY-MM-DD strings ("calendar dates") and
+// interprets appointment timestamps in the caller's IANA timezone so that
+// a 9pm-EST appointment (whose UTC ISO rolls into the next day) is still
+// counted as "today" for the EST user viewing the dashboard.
 
+function validateTimezone(tz: unknown): string | null {
+  if (typeof tz !== "string" || tz.length === 0) return null;
+  try {
+    // Throws RangeError for invalid IANA identifiers.
+    new Intl.DateTimeFormat("en-CA", { timeZone: tz });
+    return tz;
+  } catch {
+    return null;
+  }
+}
+
+// Returns YYYY-MM-DD for `date` interpreted in `timeZone`.
+// en-CA locale natively yields ISO-style YYYY-MM-DD output.
+function formatLocalDate(date: Date, timeZone: string): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+// Converts an ISO (UTC) appointment timestamp to YYYY-MM-DD in the caller's TZ.
+function isoToLocalDate(
+  isoStr: string | null,
+  timeZone: string,
+): string | null {
+  if (!isoStr) return null;
+  const d = new Date(isoStr);
+  if (isNaN(d.getTime())) return null;
+  return formatLocalDate(d, timeZone);
+}
+
+// Calendar-date arithmetic on YYYY-MM-DD strings (timezone-agnostic).
 function getStartOfWeek(dateStr: string): string {
+  // Parse using UTC to keep the math pure — we treat dateStr as a calendar date.
   const d = new Date(dateStr + "T00:00:00Z");
   const day = d.getUTCDay();
   const diff = day === 0 ? 6 : day - 1; // Monday = start of week
@@ -193,15 +338,31 @@ function getStartOfWeek(dateStr: string): string {
   return d.toISOString().slice(0, 10);
 }
 
-function isSameDay(isoStr: string | null, dateStr: string): boolean {
-  if (!isoStr) return false;
-  return isoStr.slice(0, 10) === dateStr;
+function getEndOfWeek(dateStr: string): string {
+  // End of week = start of week + 6 days (Sunday).
+  const start = new Date(getStartOfWeek(dateStr) + "T00:00:00Z");
+  start.setUTCDate(start.getUTCDate() + 6);
+  return start.toISOString().slice(0, 10);
 }
 
-function isInRange(isoStr: string | null, from: string, to: string): boolean {
-  if (!isoStr) return false;
-  const d = isoStr.slice(0, 10);
-  return d >= from && d <= to;
+function isSameLocalDay(
+  isoStr: string | null,
+  dateStr: string,
+  timeZone: string,
+): boolean {
+  const local = isoToLocalDate(isoStr, timeZone);
+  return local !== null && local === dateStr;
+}
+
+function isInLocalRange(
+  isoStr: string | null,
+  from: string,
+  to: string,
+  timeZone: string,
+): boolean {
+  const local = isoToLocalDate(isoStr, timeZone);
+  if (local === null) return false;
+  return local >= from && local <= to;
 }
 
 serve(async (req) => {
@@ -216,10 +377,18 @@ serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const rawDate = typeof body.date === "string" ? body.date : "";
+    const tz = validateTimezone(body.timezone) ?? "UTC";
+    if (body.timezone && tz === "UTC" && body.timezone !== "UTC") {
+      console.warn(
+        "[team-appointments] invalid timezone from client, falling back to UTC:",
+        body.timezone,
+      );
+    }
     const today = isValidDateStr(rawDate)
       ? rawDate
-      : new Date().toISOString().slice(0, 10);
+      : formatLocalDate(new Date(), tz);
     const weekStart = getStartOfWeek(today);
+    const weekEnd = getEndOfWeek(today);
 
     // ── Two-client pattern (same as chat-bot-api) ──
     const LOCAL_SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -447,13 +616,18 @@ serve(async (req) => {
         );
       } else {
         appointments = result.value.items;
+        if (result.value.capped) {
+          fetchError = `Over ${APPT_MAX_PAGES * APPT_PAGE_LIMIT} appointments — counts may be incomplete`;
+          errors.push(`${agent.name}: ${fetchError}`);
+          console.warn(`[team-appointments] page cap hit for ${agent.name}`);
+        }
       }
 
       const weekAppts = appointments.filter((a) =>
-        isInRange(a.scheduledAt, weekStart, today),
+        isInLocalRange(a.scheduledAt, weekStart, weekEnd, tz),
       );
       const todayAppts = appointments.filter((a) =>
-        isSameDay(a.scheduledAt, today),
+        isSameLocalDay(a.scheduledAt, today, tz),
       );
 
       const byStatus = { scheduled: 0, completed: 0, cancelled: 0, noShow: 0 };

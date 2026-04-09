@@ -3,6 +3,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/services/base/supabase";
+import { getTodayString } from "@/lib/date";
 import { chatBotKeys } from "./useChatBot";
 
 // ─── Types ──────────────────────────────────────────────────────
@@ -46,20 +47,34 @@ export interface TeamAppointmentsData {
 
 export const teamAppointmentKeys = {
   all: [...chatBotKeys.all, "team-appointments"] as const,
-  byDate: (date: string) => [...teamAppointmentKeys.all, date] as const,
+  byDate: (date: string, tz: string) =>
+    [...teamAppointmentKeys.all, date, tz] as const,
 };
 
 // ─── Hook ───────────────────────────────────────────────────────
 
+// IANA timezone (e.g. "America/New_York") — resolved from the browser so the
+// edge function can interpret appointment ISO timestamps in the caller's local
+// time. Without this, evening appointments crossing the UTC date boundary get
+// miscounted.
+function getLocalTimezone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
+}
+
 export function useTeamAppointments(enabled: boolean) {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayString(); // YYYY-MM-DD in local tz
+  const timezone = getLocalTimezone();
 
   return useQuery<TeamAppointmentsData>({
-    queryKey: teamAppointmentKeys.byDate(today),
+    queryKey: teamAppointmentKeys.byDate(today, timezone),
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke(
         "team-appointments",
-        { body: { date: today } },
+        { body: { date: today, timezone } },
       );
       if (error) throw error;
       return data as TeamAppointmentsData;
