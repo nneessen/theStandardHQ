@@ -317,7 +317,15 @@ async function applyDefaultAgentConfig(agentId: string) {
   try {
     await callChatBotApi("PATCH", `/api/external/agents/${agentId}`, {
       statusTriggerSequences: DEFAULT_STATUS_TRIGGER_SEQUENCES,
-      reEngagementEnabled: true,
+      // reEngagementEnabled defaults to FALSE on provisioning (2026-04-09).
+      // Previously this defaulted to true, which silently re-enabled the
+      // RE-ENGAGE BOT webhook path on standard-chat-bot any time a new agent
+      // was provisioned. A single Close Smart View bulk status flip to
+      // "RE-ENGAGE BOT" then fans out 100+ LLM calls per burst. Operators
+      // who want automated re-engagement can opt in from the chat-bot UI
+      // once they understand the cost profile. The delay/max-attempt values
+      // are still written so they're ready to use the moment the flag flips.
+      reEngagementEnabled: false,
       reEngagementDelayHours: 4,
       reEngagementMaxAttempts: 3,
     });
