@@ -49,6 +49,7 @@ const BOT_CONFIG_ALLOWED_KEYS = new Set([
   "voiceHumanHandoffEnabled",
   "voiceQuotedFollowupEnabled",
   "primaryPhone",
+  "introMessageVariants",
   "statusTriggerSequences",
   "notificationPhone",
   "reEngagementEnabled",

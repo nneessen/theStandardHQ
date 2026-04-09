@@ -42,6 +42,7 @@ import { ConnectionCard } from "./ConnectionCard";
 import { LeadSourceSelector } from "./LeadSourceSelector";
 import { LeadStatusSelector } from "./LeadStatusSelector";
 import { ResponseScheduleSection } from "./ResponseScheduleSection";
+import { IntroMessageVariantsEditor } from "./IntroMessageVariantsEditor";
 import { StatusTriggerSequenceEditor } from "./StatusTriggerSequenceEditor";
 import {
   getConnectionStateLabel,
@@ -1419,7 +1420,10 @@ export function SetupTab() {
         </TabsContent>
 
         <TabsContent value="sequences" className="mt-0">
-          <StatusTriggerSequenceEditor />
+          <div className="space-y-3">
+            <IntroMessageVariantsEditor />
+            <StatusTriggerSequenceEditor />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

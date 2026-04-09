@@ -14,6 +14,7 @@ import type { AgentMonitoringResponse } from "@/types/chat-bot-monitoring";
 import { useAuth } from "@/contexts/AuthContext";
 import type { ResponseSchedule } from "../lib/response-schedule";
 import type { StatusTriggerSequence } from "../lib/status-trigger-sequences";
+import type { IntroMessageVariant } from "../lib/intro-message-variants";
 import type { VoicePhoneNumber } from "../../voice-agent/types/voice-phone-number.types";
 
 // ─── Query Key Factory ──────────────────────────────────────────
@@ -107,6 +108,7 @@ export interface ChatBotAgent {
   voiceHumanHandoffEnabled?: boolean;
   voiceQuotedFollowupEnabled?: boolean;
   primaryPhone?: string | null;
+  introMessageVariants?: IntroMessageVariant[];
   statusTriggerSequences?: StatusTriggerSequence[];
   notificationPhone?: string | null;
   reEngagementEnabled?: boolean;
@@ -1759,6 +1761,7 @@ export function useUpdateBotConfig() {
       voiceHumanHandoffEnabled?: boolean;
       voiceQuotedFollowupEnabled?: boolean;
       primaryPhone?: string | null;
+      introMessageVariants?: IntroMessageVariant[];
       statusTriggerSequences?: StatusTriggerSequence[];
       notificationPhone?: string | null;
       reEngagementEnabled?: boolean;

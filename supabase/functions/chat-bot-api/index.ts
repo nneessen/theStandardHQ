@@ -1467,6 +1467,7 @@ serve(async (req) => {
             agentData.voiceQuotedFollowupEnabled ?? false,
           primaryPhone: agentData.primaryPhone ?? null,
           notificationPhone: agentData.notificationPhone ?? null,
+          introMessageVariants: agentData.introMessageVariants || [],
           statusTriggerSequences: agentData.statusTriggerSequences || [],
           reEngagementEnabled: agentData.reEngagementEnabled ?? false,
           reEngagementDelayHours: agentData.reEngagementDelayHours ?? null,
