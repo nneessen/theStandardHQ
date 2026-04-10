@@ -53,7 +53,7 @@ export function useAnalyticsData(options?: UseAnalyticsDataOptions) {
     !startDate || !endDate
       ? allPolicies
       : allPolicies.filter((p) => {
-          const date = parseLocalDate(p.effectiveDate);
+          const date = parseLocalDate(p.submitDate || p.effectiveDate);
           return date >= startDate && date <= endDate;
         });
 
@@ -62,10 +62,13 @@ export function useAnalyticsData(options?: UseAnalyticsDataOptions) {
       ? allCommissions
       : allCommissions.filter((c) => {
           // Use paymentDate for paid commissions, createdAt as fallback
+          // paymentDate can be string (DATE) or Date; createdAt is always Date
           const date =
             c.status === "paid" && c.paymentDate
-              ? new Date(c.paymentDate as string)
-              : new Date(c.createdAt);
+              ? typeof c.paymentDate === "string"
+                ? parseLocalDate(c.paymentDate)
+                : c.paymentDate
+              : c.createdAt;
           return date >= startDate && date <= endDate;
         });
 
@@ -124,7 +127,7 @@ export function useAnalyticsData(options?: UseAnalyticsDataOptions) {
 
   // Previous period = same-length window before the selected range
   const previousPolicies = allPolicies.filter((p) => {
-    const date = parseLocalDate(p.effectiveDate);
+    const date = parseLocalDate(p.submitDate || p.effectiveDate);
     return date >= prevPeriodStart && date <= prevPeriodEnd;
   });
 

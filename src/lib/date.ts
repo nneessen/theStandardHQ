@@ -25,21 +25,21 @@
  */
 export function parseLocalDate(dateString: string): Date {
   if (!dateString) {
-    return new Date();
+    return new Date(0); // Epoch — won't match any modern date range filter
   }
 
   // Handle ISO timestamp format (YYYY-MM-DDTHH:MM:SS.sssZ) by extracting date part
   let datePart = dateString;
-  if (dateString.includes('T')) {
-    datePart = dateString.split('T')[0];
+  if (dateString.includes("T")) {
+    datePart = dateString.split("T")[0];
   }
 
   // Split the date string to avoid timezone interpretation
-  const [year, month, day] = datePart.split('-').map(Number);
+  const [year, month, day] = datePart.split("-").map(Number);
 
   // Validate the parsed values
   if (isNaN(year) || isNaN(month) || isNaN(day)) {
-    console.warn('Invalid date string format:', dateString);
+    console.warn("Invalid date string format:", dateString);
     return new Date(); // Return current date as fallback
   }
 
@@ -58,17 +58,19 @@ export function parseLocalDate(dateString: string): Date {
  * normalizeDatabaseDate(new Date("2024-10-01T00:00:00Z")) // "2024-10-01"
  * normalizeDatabaseDate("2024-10-01") // "2024-10-01"
  */
-export function normalizeDatabaseDate(date: Date | string | null | undefined): string {
-  if (!date) return '';
+export function normalizeDatabaseDate(
+  date: Date | string | null | undefined,
+): string {
+  if (!date) return "";
 
   // If it's already a string in YYYY-MM-DD format, return as-is
-  if (typeof date === 'string') {
+  if (typeof date === "string") {
     // Check if it's already in YYYY-MM-DD format
     if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return date;
     }
     // If it has time component, parse and format
-    return formatDateForDB(parseLocalDate(date.split('T')[0]));
+    return formatDateForDB(parseLocalDate(date.split("T")[0]));
   }
 
   // For Date objects, format to YYYY-MM-DD in local timezone
@@ -87,7 +89,7 @@ export function normalizeDatabaseDate(date: Date | string | null | undefined): s
  * formatDateForDB("2024-10-01") // "2024-10-01"
  */
 export function formatDateForDB(date: Date | string): string {
-  if (typeof date === 'string') {
+  if (typeof date === "string") {
     // If already a string, validate format and return
     if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return date;
@@ -97,8 +99,8 @@ export function formatDateForDB(date: Date | string): string {
   }
 
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
 }
@@ -125,8 +127,8 @@ export function getTodayString(): string {
  * @returns true if dates are the same day
  */
 export function isSameDay(date1: Date | string, date2: Date | string): boolean {
-  const d1 = typeof date1 === 'string' ? parseLocalDate(date1) : date1;
-  const d2 = typeof date2 === 'string' ? parseLocalDate(date2) : date2;
+  const d1 = typeof date1 === "string" ? parseLocalDate(date1) : date1;
+  const d2 = typeof date2 === "string" ? parseLocalDate(date2) : date2;
 
   return (
     d1.getFullYear() === d2.getFullYear() &&
@@ -142,13 +144,15 @@ export function isSameDay(date1: Date | string, date2: Date | string): boolean {
  * @param date2 - Second date
  * @returns true if dates are in the same month
  */
-export function isSameMonth(date1: Date | string, date2: Date | string): boolean {
-  const d1 = typeof date1 === 'string' ? parseLocalDate(date1) : date1;
-  const d2 = typeof date2 === 'string' ? parseLocalDate(date2) : date2;
+export function isSameMonth(
+  date1: Date | string,
+  date2: Date | string,
+): boolean {
+  const d1 = typeof date1 === "string" ? parseLocalDate(date1) : date1;
+  const d2 = typeof date2 === "string" ? parseLocalDate(date2) : date2;
 
   return (
-    d1.getFullYear() === d2.getFullYear() &&
-    d1.getMonth() === d2.getMonth()
+    d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth()
   );
 }
 
@@ -159,9 +163,12 @@ export function isSameMonth(date1: Date | string, date2: Date | string): boolean
  * @param date2 - Second date
  * @returns true if dates are in the same year
  */
-export function isSameYear(date1: Date | string, date2: Date | string): boolean {
-  const d1 = typeof date1 === 'string' ? parseLocalDate(date1) : date1;
-  const d2 = typeof date2 === 'string' ? parseLocalDate(date2) : date2;
+export function isSameYear(
+  date1: Date | string,
+  date2: Date | string,
+): boolean {
+  const d1 = typeof date1 === "string" ? parseLocalDate(date1) : date1;
+  const d2 = typeof date2 === "string" ? parseLocalDate(date2) : date2;
 
   return d1.getFullYear() === d2.getFullYear();
 }
@@ -214,16 +221,16 @@ export function addYears(dateString: string, years: number): string {
  */
 export function formatDateForDisplay(
   date: Date | string,
-  options?: Intl.DateTimeFormatOptions
+  options?: Intl.DateTimeFormatOptions,
 ): string {
-  const d = typeof date === 'string' ? parseLocalDate(date) : date;
+  const d = typeof date === "string" ? parseLocalDate(date) : date;
 
   const defaultOptions: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    timeZone: undefined // Use browser's local timezone
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    timeZone: undefined, // Use browser's local timezone
   };
 
-  return d.toLocaleDateString('en-US', { ...defaultOptions, ...options });
+  return d.toLocaleDateString("en-US", { ...defaultOptions, ...options });
 }
