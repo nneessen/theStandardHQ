@@ -5,7 +5,6 @@ import type {
   RecruitEntity,
   PhaseProgress,
   RecruitSlackContext,
-  RecruitDiscordContext,
   RecruitActionLoading,
   RecruitActionPolicy,
 } from "../types/recruit-detail.types";
@@ -18,7 +17,6 @@ export interface PolicyInput {
   hasPipelineProgress: boolean;
   recruit: UserProfile;
   slack: RecruitSlackContext;
-  discord: RecruitDiscordContext;
   loading: RecruitActionLoading;
 }
 
@@ -32,7 +30,6 @@ export function getRecruitActionPolicy(
     hasPipelineProgress,
     recruit,
     slack,
-    discord,
     loading,
   } = input;
   const isBlocked = currentPhase?.status === "blocked";
@@ -42,11 +39,6 @@ export function getRecruitActionPolicy(
     !!slack.selfMadeIntegration &&
     !!slack.recruitChannel &&
     !!slack.imoId;
-  const discordVisible =
-    entity.kind === "registered" &&
-    !!discord.integration &&
-    !!discord.recruitChannelId &&
-    !!discord.imoId;
 
   return {
     canAdvance: hasPhase && !isBlocked && !loading.isAdvancing,
@@ -65,12 +57,5 @@ export function getRecruitActionPolicy(
       !!slack.notificationStatus?.newRecruitSent || loading.isSendingSlack,
     npnSlackDisabled:
       !!slack.notificationStatus?.npnReceivedSent || loading.isSendingSlack,
-    showNewRecruitDiscord:
-      discordVisible && recruit.agent_status === "unlicensed",
-    showNpnDiscord: discordVisible,
-    newRecruitDiscordDisabled:
-      !!discord.notificationStatus?.newRecruitSent || loading.isSendingDiscord,
-    npnDiscordDisabled:
-      !!discord.notificationStatus?.npnReceivedSent || loading.isSendingDiscord,
   };
 }

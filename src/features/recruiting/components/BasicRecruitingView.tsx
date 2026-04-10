@@ -2,7 +2,6 @@
 // Simplified recruiting view for free tier users with recruiting_basic feature
 
 import React, { useState, useEffect, useMemo } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -63,7 +62,6 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
-  Check,
   Loader2,
   Pencil,
   Trash2,
@@ -87,15 +85,6 @@ import {
 } from "../hooks";
 import { useResendInvite } from "../hooks/useAuthUser";
 import { useAuth } from "@/contexts/AuthContext";
-// eslint-disable-next-line no-restricted-imports -- RecruitDiscordActions uses raw service fns
-import {
-  findDiscordRecruitIntegration,
-  buildNewRecruitEmbed,
-  buildNpnReceivedEmbed,
-  checkDiscordNotificationSent,
-  sendDiscordRecruitNotification,
-} from "@/services/discord/discordRecruitNotificationService";
-import { useRecruitDiscordNotificationStatus } from "@/hooks/discord";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -188,9 +177,6 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
     setSelectedRecruit(recruit);
     setDetailSheetOpen(true);
   };
-
-  // Discord uses imo_id check; RecruitDiscordActions resolves integration internally
-  const discordAvailable = !!user?.imo_id;
 
   // Simple status badge mapping
   const getStatusBadge = (status: string | null) => {
@@ -431,7 +417,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                 </span>{" "}
                 — If the recruit is <em>not already licensed</em>, they are
                 added as "unlicensed" and their details can be posted to the
-                Discord recruit channel.
+                Slack recruit channel.
               </li>
               <li>
                 <span className="font-medium text-zinc-800 dark:text-zinc-200">
@@ -445,7 +431,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                   NPN received triggers a second notification
                 </span>{" "}
                 — When the recruit's NPN (National Producer Number) is entered,
-                a second Discord notification is posted requesting email #2 be
+                a second Slack notification is posted requesting email #2 be
                 sent.
               </li>
               <li>
@@ -609,12 +595,6 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="flex items-center gap-1">
-                      {discordAvailable && (
-                        <RecruitDiscordActions
-                          recruit={recruit}
-                          imoId={user!.imo_id!}
-                        />
-                      )}
                       {recruit.email && (
                         <TooltipProvider delayDuration={200}>
                           <Tooltip>
@@ -726,176 +706,6 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
         />
       )}
     </div>
-  );
-}
-
-// Per-recruit Discord notification action buttons
-// Self-contained per row — resolves integration internally
-interface RecruitDiscordActionsProps {
-  recruit: UserProfile;
-  imoId: string;
-}
-
-function RecruitDiscordActions({ recruit, imoId }: RecruitDiscordActionsProps) {
-  const queryClient = useQueryClient();
-  const { data: notificationStatus } = useRecruitDiscordNotificationStatus(
-    recruit.id,
-  );
-  const [sendingType, setSendingType] = useState<
-    "new_recruit" | "npn_received" | null
-  >(null);
-  const [integration, setIntegration] = useState<{
-    id: string;
-    recruit_channel_id: string | null;
-    recruit_channel_name: string | null;
-  } | null>(undefined as unknown as null);
-  const [integrationChecked, setIntegrationChecked] = useState(false);
-
-  // Resolve Discord integration once on mount
-  useEffect(() => {
-    let cancelled = false;
-    findDiscordRecruitIntegration(imoId).then((result) => {
-      if (!cancelled) {
-        setIntegration(result);
-        setIntegrationChecked(true);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [imoId]);
-
-  // Don't render until we know if integration exists; hide if no integration/channel
-  if (!integrationChecked) return null;
-  if (!integration?.recruit_channel_id) return null;
-
-  const channelLabel = integration.recruit_channel_name
-    ? `#${integration.recruit_channel_name}`
-    : "Discord recruit channel";
-
-  const showNewRecruit =
-    recruit.agent_status === "unlicensed" || !recruit.agent_status;
-
-  const handleSend = async (type: "new_recruit" | "npn_received") => {
-    if (type === "npn_received" && !recruit.npn) {
-      toast.error("Set the recruit's NPN first (edit recruit), then post.");
-      return;
-    }
-
-    setSendingType(type);
-    try {
-      const alreadySent = await checkDiscordNotificationSent(recruit.id, type);
-      if (alreadySent) {
-        toast.error("This Discord notification has already been sent.");
-        return;
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- upline joined by RecruitRepository
-      const upline = (recruit as any).upline as
-        | { first_name?: string; last_name?: string; email?: string }
-        | undefined;
-      const uplineName =
-        upline?.first_name && upline?.last_name
-          ? `${upline.first_name} ${upline.last_name}`
-          : upline?.email || null;
-
-      const recruitWithUpline = { ...recruit, upline_name: uplineName };
-      const embed =
-        type === "new_recruit"
-          ? buildNewRecruitEmbed(recruitWithUpline)
-          : buildNpnReceivedEmbed(recruitWithUpline);
-
-      await sendDiscordRecruitNotification({
-        integrationId: integration.id,
-        channelId: integration.recruit_channel_id!,
-        embed,
-        notificationType: type,
-        recruitId: recruit.id,
-        imoId,
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["discord", "recruit-notification-status", recruit.id],
-      });
-      toast.success("Discord notification sent");
-    } catch {
-      toast.error("Failed to send Discord notification");
-    } finally {
-      setSendingType(null);
-    }
-  };
-
-  return (
-    <>
-      {showNewRecruit && (
-        <TooltipProvider delayDuration={200}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={notificationStatus?.newRecruitSent || !!sendingType}
-                onClick={() => handleSend("new_recruit")}
-                className={cn(
-                  "h-5 text-[9px] px-1.5",
-                  notificationStatus?.newRecruitSent &&
-                    "text-emerald-600 border-emerald-300",
-                )}
-              >
-                {sendingType === "new_recruit" ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : notificationStatus?.newRecruitSent ? (
-                  <Check className="h-3 w-3" />
-                ) : (
-                  <MessageSquare className="h-3 w-3 mr-0.5" />
-                )}
-                {notificationStatus?.newRecruitSent ? "Sent" : "New"}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="text-[10px]">
-                {notificationStatus?.newRecruitSent
-                  ? "New recruit notification already sent to Discord"
-                  : `Post to ${channelLabel}`}
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
-      <TooltipProvider delayDuration={200}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={notificationStatus?.npnReceivedSent || !!sendingType}
-              onClick={() => handleSend("npn_received")}
-              className={cn(
-                "h-5 text-[9px] px-1.5",
-                notificationStatus?.npnReceivedSent &&
-                  "text-emerald-600 border-emerald-300",
-              )}
-            >
-              {sendingType === "npn_received" ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : notificationStatus?.npnReceivedSent ? (
-                <Check className="h-3 w-3" />
-              ) : (
-                <MessageSquare className="h-3 w-3 mr-0.5" />
-              )}
-              {notificationStatus?.npnReceivedSent ? "Sent" : "NPN"}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="text-[10px]">
-              {notificationStatus?.npnReceivedSent
-                ? "NPN received notification already sent to Discord"
-                : `Post NPN received to ${channelLabel}`}
-            </p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </>
   );
 }
 

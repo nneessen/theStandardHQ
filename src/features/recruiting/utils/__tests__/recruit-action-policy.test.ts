@@ -33,7 +33,6 @@ const noLoadingStates: RecruitActionLoading = {
   isResendingInvite: false,
   isCancellingInvitation: false,
   isSendingSlack: false,
-  isSendingDiscord: false,
 };
 
 const activePhase: PhaseProgress = {
@@ -54,13 +53,6 @@ function buildInput(overrides: Partial<PolicyInput> = {}): PolicyInput {
     hasPipelineProgress: true,
     recruit: baseRecruit as UserProfile,
     slack: baseSlack,
-    discord: {
-      integration: null,
-      recruitChannelId: null,
-      recruitChannelName: null,
-      imoId: null,
-      notificationStatus: undefined,
-    },
     loading: noLoadingStates,
   };
   return { ...base, ...overrides };

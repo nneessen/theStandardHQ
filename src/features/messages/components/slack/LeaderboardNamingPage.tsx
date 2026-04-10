@@ -23,7 +23,6 @@ interface DailyLog {
   id: string;
   imo_id: string;
   slack_integration_id: string | null;
-  discord_integration_id: string | null;
   channel_id: string;
   log_date: string;
   title: string | null;
@@ -99,24 +98,15 @@ export function LeaderboardNamingPage({ logId }: LeaderboardNamingPageProps) {
       setSuccess(true);
       queryClient.invalidateQueries({ queryKey: ["daily-sales-logs"] });
 
-      // Trigger refresh of the leaderboard message (Slack or Discord)
+      // Trigger refresh of the leaderboard message in Slack
       if (targetLog) {
         try {
-          if (targetLog.discord_integration_id) {
-            await supabase.functions.invoke("discord-policy-notification", {
-              body: {
-                action: "update-leaderboard",
-                logId: targetLog.id,
-              },
-            });
-          } else {
-            await supabase.functions.invoke("slack-refresh-leaderboard", {
-              body: {
-                logId: targetLog.id,
-                title: title,
-              },
-            });
-          }
+          await supabase.functions.invoke("slack-refresh-leaderboard", {
+            body: {
+              logId: targetLog.id,
+              title: title,
+            },
+          });
         } catch (err) {
           console.error("Failed to refresh leaderboard:", err);
         }

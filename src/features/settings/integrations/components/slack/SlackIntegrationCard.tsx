@@ -64,6 +64,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 // eslint-disable-next-line no-restricted-imports
 import { supabase } from "@/services/base/supabase";
 import { useImo } from "@/contexts/ImoContext";
+import { useAuth } from "@/contexts/AuthContext";
 import type {
   SlackIntegration,
   SlackChannel,
@@ -1359,9 +1360,15 @@ export function SlackIntegrationCard() {
   const deleteWebhook = useDeleteSlackWebhook();
 
   const { imo, isSuperAdmin } = useImo();
+  const { user } = useAuth();
 
-  // Only super admin can manage Slack integrations (re-authorize, delete, etc.)
-  const canManageSlack = isSuperAdmin;
+  // Super admins can manage Slack. Kerry Glass (Self Made Financial workspace
+  // owner) is explicitly allowlisted so he can authorize the Slack bot for his
+  // workspace without being granted full super-admin privileges.
+  const SLACK_ADMIN_ALLOWLIST = ["kerryglass.ffl@gmail.com"];
+  const canManageSlack =
+    isSuperAdmin ||
+    (!!user?.email && SLACK_ADMIN_ALLOWLIST.includes(user.email.toLowerCase()));
 
   const [showUserPrefs, setShowUserPrefs] = useState(false);
   const [showAddWebhook, setShowAddWebhook] = useState(false);

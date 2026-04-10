@@ -109,8 +109,6 @@ export function FirstSellerNamingDialog({
       }
 
       // Step 2: Complete the first sale batch - posts to ALL channels with the same title
-      // Call both Slack and Discord edge functions in parallel — each only processes
-      // its own integration type's logs, so the other is a safe no-op.
       try {
         const batchBody = {
           action: "complete-first-sale-batch",
@@ -118,31 +116,13 @@ export function FirstSellerNamingDialog({
           title: title.trim(),
         };
 
-        const [slackResult, discordResult] = await Promise.allSettled([
-          supabase.functions.invoke("slack-policy-notification", {
-            body: batchBody,
-          }),
-          supabase.functions.invoke("discord-policy-notification", {
-            body: batchBody,
-          }),
-        ]);
+        const { error: slackError } = await supabase.functions.invoke(
+          "slack-policy-notification",
+          { body: batchBody },
+        );
 
-        const slackOk =
-          slackResult.status === "fulfilled" && !slackResult.value.error;
-        const discordOk =
-          discordResult.status === "fulfilled" && !discordResult.value.error;
-
-        if (!slackOk && !discordOk) {
-          console.error("Both notification channels failed:", {
-            slack:
-              slackResult.status === "rejected"
-                ? slackResult.reason
-                : slackResult.value.error,
-            discord:
-              discordResult.status === "rejected"
-                ? discordResult.reason
-                : discordResult.value.error,
-          });
+        if (slackError) {
+          console.error("Slack notification failed:", slackError);
           toast.error("Leaderboard named but failed to post notifications");
         } else {
           const channelText =
@@ -174,31 +154,13 @@ export function FirstSellerNamingDialog({
         // No title = use default
       };
 
-      const [slackResult, discordResult] = await Promise.allSettled([
-        supabase.functions.invoke("slack-policy-notification", {
-          body: batchBody,
-        }),
-        supabase.functions.invoke("discord-policy-notification", {
-          body: batchBody,
-        }),
-      ]);
+      const { error: slackError } = await supabase.functions.invoke(
+        "slack-policy-notification",
+        { body: batchBody },
+      );
 
-      const slackOk =
-        slackResult.status === "fulfilled" && !slackResult.value.error;
-      const discordOk =
-        discordResult.status === "fulfilled" && !discordResult.value.error;
-
-      if (!slackOk && !discordOk) {
-        console.error("Both notification channels failed:", {
-          slack:
-            slackResult.status === "rejected"
-              ? slackResult.reason
-              : slackResult.value.error,
-          discord:
-            discordResult.status === "rejected"
-              ? discordResult.reason
-              : discordResult.value.error,
-        });
+      if (slackError) {
+        console.error("Slack notification failed:", slackError);
         return false;
       }
       return true;

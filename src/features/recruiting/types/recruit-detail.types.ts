@@ -59,9 +59,6 @@ export interface RecruitActionCallbacks {
   onSendSlackNotification: (
     type: "new_recruit" | "npn_received",
   ) => Promise<void>;
-  onSendDiscordNotification: (
-    type: "new_recruit" | "npn_received",
-  ) => Promise<void>;
 }
 
 export interface RecruitActionLoading {
@@ -72,20 +69,11 @@ export interface RecruitActionLoading {
   isResendingInvite: boolean;
   isCancellingInvitation: boolean;
   isSendingSlack: boolean;
-  isSendingDiscord: boolean;
 }
 
 export interface RecruitSlackContext {
   selfMadeIntegration: { id: string } | null;
   recruitChannel: { id: string; name?: string } | null;
-  imoId: string | null;
-  notificationStatus: RecruitNotificationStatus | undefined;
-}
-
-export interface RecruitDiscordContext {
-  integration: { id: string } | null;
-  recruitChannelId: string | null;
-  recruitChannelName: string | null;
   imoId: string | null;
   notificationStatus: RecruitNotificationStatus | undefined;
 }
@@ -102,8 +90,4 @@ export interface RecruitActionPolicy {
   showNpnSlack: boolean;
   newRecruitSlackDisabled: boolean;
   npnSlackDisabled: boolean;
-  showNewRecruitDiscord: boolean;
-  showNpnDiscord: boolean;
-  newRecruitDiscordDisabled: boolean;
-  npnDiscordDisabled: boolean;
 }

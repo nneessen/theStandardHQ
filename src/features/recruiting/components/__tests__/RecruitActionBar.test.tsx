@@ -63,7 +63,6 @@ const noLoadingStates: RecruitActionLoading = {
   isResendingInvite: false,
   isCancellingInvitation: false,
   isSendingSlack: false,
-  isSendingDiscord: false,
 };
 
 const noSlack: RecruitSlackContext = {
@@ -80,14 +79,6 @@ const activeSlack: RecruitSlackContext = {
   notificationStatus: { newRecruitSent: false, npnReceivedSent: false },
 };
 
-const noDiscord = {
-  integration: null,
-  recruitChannelId: null,
-  recruitChannelName: null,
-  imoId: null,
-  notificationStatus: undefined,
-};
-
 function makeActions(
   overrides: Partial<RecruitActionCallbacks> = {},
 ): RecruitActionCallbacks {
@@ -102,7 +93,6 @@ function makeActions(
     onCancelInvitation: vi.fn().mockResolvedValue(undefined),
     onDeleteOpen: vi.fn(),
     onSendSlackNotification: vi.fn().mockResolvedValue(undefined),
-    onSendDiscordNotification: vi.fn().mockResolvedValue(undefined),
   };
   return { ...base, ...overrides };
 }
@@ -130,7 +120,6 @@ function renderBar(props: RenderProps = {}) {
         currentPhase={props.currentPhase ?? activePhase}
         canRevert={props.canRevert ?? false}
         slack={props.slack ?? noSlack}
-        discord={noDiscord}
         actions={actions}
         loading={props.loading ?? noLoadingStates}
       />,
@@ -394,7 +383,6 @@ describe("Slack buttons", () => {
         currentPhase={activePhase}
         canRevert={false}
         slack={activeSlack}
-        discord={noDiscord}
         actions={makeActions()}
         loading={noLoadingStates}
       />,
@@ -413,7 +401,6 @@ describe("Slack buttons", () => {
         currentPhase={activePhase}
         canRevert={false}
         slack={activeSlack}
-        discord={noDiscord}
         actions={makeActions()}
         loading={noLoadingStates}
       />,
