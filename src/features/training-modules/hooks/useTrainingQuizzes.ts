@@ -131,6 +131,13 @@ export function useUpdateQuiz() {
       queryClient.invalidateQueries({
         queryKey: quizKeys.byLesson(lessonId),
       });
+      // Learner viewer reads quiz data via `useTrainingLessonWithContent`,
+      // which joins the quiz into its own cached payload. Invalidate here
+      // so admin edits show up immediately when the learner opens the
+      // lesson, instead of waiting out the 5-minute staleTime.
+      queryClient.invalidateQueries({
+        queryKey: trainingLessonKeys.withContent(lessonId),
+      });
     },
   });
 }
@@ -154,6 +161,11 @@ export function useCreateQuestion() {
     onSuccess: ({ lessonId }) => {
       queryClient.invalidateQueries({
         queryKey: quizKeys.byLesson(lessonId),
+      });
+      // Keep learner-side `useTrainingLessonWithContent` in sync since it
+      // embeds the quiz inside its cached payload.
+      queryClient.invalidateQueries({
+        queryKey: trainingLessonKeys.withContent(lessonId),
       });
     },
     onError: (error: Error) => {
@@ -196,6 +208,13 @@ export function useUpdateQuestion() {
       queryClient.invalidateQueries({
         queryKey: quizKeys.byLesson(lessonId),
       });
+      // Learner viewer reads quiz data via `useTrainingLessonWithContent`,
+      // which joins the quiz into its own cached payload. Invalidate here
+      // so admin edits show up immediately when the learner opens the
+      // lesson, instead of waiting out the 5-minute staleTime.
+      queryClient.invalidateQueries({
+        queryKey: trainingLessonKeys.withContent(lessonId),
+      });
     },
   });
 }
@@ -209,6 +228,13 @@ export function useDeleteQuestion() {
     onSuccess: (lessonId) => {
       queryClient.invalidateQueries({
         queryKey: quizKeys.byLesson(lessonId),
+      });
+      // Learner viewer reads quiz data via `useTrainingLessonWithContent`,
+      // which joins the quiz into its own cached payload. Invalidate here
+      // so admin edits show up immediately when the learner opens the
+      // lesson, instead of waiting out the 5-minute staleTime.
+      queryClient.invalidateQueries({
+        queryKey: trainingLessonKeys.withContent(lessonId),
       });
     },
     onError: (error: Error) => {
@@ -235,6 +261,11 @@ export function useCreateOption() {
     onSuccess: ({ lessonId }) => {
       queryClient.invalidateQueries({
         queryKey: quizKeys.byLesson(lessonId),
+      });
+      // Keep learner-side `useTrainingLessonWithContent` in sync since it
+      // embeds the quiz inside its cached payload.
+      queryClient.invalidateQueries({
+        queryKey: trainingLessonKeys.withContent(lessonId),
       });
     },
     onError: (error: Error) => {
@@ -277,6 +308,13 @@ export function useUpdateOption() {
       queryClient.invalidateQueries({
         queryKey: quizKeys.byLesson(lessonId),
       });
+      // Learner viewer reads quiz data via `useTrainingLessonWithContent`,
+      // which joins the quiz into its own cached payload. Invalidate here
+      // so admin edits show up immediately when the learner opens the
+      // lesson, instead of waiting out the 5-minute staleTime.
+      queryClient.invalidateQueries({
+        queryKey: trainingLessonKeys.withContent(lessonId),
+      });
     },
   });
 }
@@ -290,6 +328,13 @@ export function useDeleteOption() {
     onSuccess: (lessonId) => {
       queryClient.invalidateQueries({
         queryKey: quizKeys.byLesson(lessonId),
+      });
+      // Learner viewer reads quiz data via `useTrainingLessonWithContent`,
+      // which joins the quiz into its own cached payload. Invalidate here
+      // so admin edits show up immediately when the learner opens the
+      // lesson, instead of waiting out the 5-minute staleTime.
+      queryClient.invalidateQueries({
+        queryKey: trainingLessonKeys.withContent(lessonId),
       });
     },
     onError: (error: Error) => {

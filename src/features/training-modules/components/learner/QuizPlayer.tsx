@@ -81,6 +81,21 @@ export function QuizPlayer({ quiz, lessonId: _lessonId }: QuizPlayerProps) {
     );
   }
 
+  // Quiz has no questions yet — show a placeholder instead of a blank page.
+  if (questions.length === 0) {
+    return (
+      <div className="max-w-2xl mx-auto p-6 text-center space-y-2">
+        <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+          Quiz not ready
+        </h3>
+        <p className="text-xs text-zinc-500">
+          This quiz doesn't have any questions yet. Please check back later or
+          contact your trainer.
+        </p>
+      </div>
+    );
+  }
+
   if (!question) return null;
 
   const selectedForQ = selectedAnswers[question.id] || [];

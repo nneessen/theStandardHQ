@@ -18,8 +18,24 @@ export function LessonViewer({ lessonId }: LessonViewerProps) {
     );
   }
 
-  // Quiz lesson
-  if (lesson.lesson_type === "quiz" && lesson.quiz) {
+  // Quiz lesson — always take this branch for quiz-type lessons.
+  // If the quiz row hasn't been created yet (e.g., admin created the lesson
+  // but never clicked "Create Quiz" in the builder), show a placeholder so
+  // the page isn't silently empty.
+  if (lesson.lesson_type === "quiz") {
+    if (!lesson.quiz) {
+      return (
+        <div className="max-w-2xl mx-auto p-6 text-center space-y-2">
+          <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+            {lesson.title}
+          </h2>
+          <p className="text-xs text-zinc-500">
+            This quiz hasn't been set up yet. Please check back later or contact
+            your trainer.
+          </p>
+        </div>
+      );
+    }
     return (
       <QuizPlayer
         quiz={lesson.quiz}
