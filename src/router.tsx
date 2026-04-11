@@ -347,6 +347,24 @@ const authDiagnosticRoute = createRoute({
   },
 });
 
+// Bot Health monitoring route - admin-only live dashboard for
+// standard-chat-bot queue depth, throughput, DB latency, and agent counts.
+// Lazy-loaded so the monitoring page never bloats the main bundle.
+const BotHealthPageLazy = lazy(() =>
+  import("./features/admin/components/BotHealthPage").then((m) => ({
+    default: m.BotHealthPage,
+  })),
+);
+const botHealthRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "admin/bot-health",
+  component: () => (
+    <RouteGuard permission="nav.user_management" noRecruits noStaffRoles>
+      <BotHealthPageLazy />
+    </RouteGuard>
+  ),
+});
+
 // Hierarchy routes - Agency hierarchy and override commissions
 // All hierarchy routes require approval, block recruits and staff roles, and require hierarchy subscription feature
 const hierarchyIndexRoute = createRoute({
@@ -977,6 +995,7 @@ const routeTree = rootRoute.addChildren([
   deniedAccessRoute,
   adminRoute,
   authDiagnosticRoute,
+  botHealthRoute,
   policiesRoute,
   analyticsRoute,
   leaderboardRoute,

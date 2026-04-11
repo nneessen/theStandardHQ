@@ -84,3 +84,17 @@ export type {
   PurchasePhoneNumberParams,
   UpdatePhoneNumberParams,
 } from "../voice-agent/types/voice-phone-number.types";
+
+// Bot health monitoring — used by the /admin/bot-health page
+export { useBotSystemHealth, botHealthKeys } from "./hooks/useBotSystemHealth";
+export {
+  evaluateThreshold,
+  getQueueThreshold,
+  worstLevel,
+  DB_LATENCY_MS_THRESHOLD,
+  TOTAL_FAILED_24H_THRESHOLD,
+  QUEUE_PENDING_THRESHOLDS,
+  UNKNOWN_QUEUE_THRESHOLD,
+  type Threshold,
+  type ThresholdLevel,
+} from "./lib/monitoring-thresholds";
