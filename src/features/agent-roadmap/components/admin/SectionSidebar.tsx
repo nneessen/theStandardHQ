@@ -21,7 +21,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Plus, Trash2 } from "lucide-react";
+import { GripVertical, Plus, Trash2, ListTree } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -33,6 +33,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+  EmptyDescription,
+} from "@/components/ui/empty";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -123,21 +130,62 @@ export function SectionSidebar({
 
   return (
     <aside className="w-64 shrink-0 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 flex flex-col">
-      <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            Sections
-          </span>
-          <span className="text-xs text-zinc-500 dark:text-zinc-400">
-            {roadmap.sections.length}
-          </span>
+      {/* Header: always-visible "+ Add section" button lives here. When the
+          list is empty, the header button is the user's entry point. When
+          the list is long, it's still visible at the top. */}
+      <div className="px-3 py-2.5 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              Sections
+            </span>
+            <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+              · {roadmap.sections.length}
+            </span>
+          </div>
+          <Button
+            type="button"
+            variant="primary"
+            size="sm"
+            onClick={handleAddSection}
+            disabled={createMutation.isPending}
+            className="h-7 px-2 gap-1 text-xs"
+            aria-label="Add section"
+          >
+            <Plus className="h-3 w-3" />
+            Add
+          </Button>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto py-2">
         {roadmap.sections.length === 0 ? (
-          <div className="px-3 py-4 text-xs text-zinc-500 dark:text-zinc-400 text-center">
-            No sections yet. Add one to get started.
+          <div className="px-4 py-6">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <ListTree className="h-6 w-6 text-zinc-400" />
+                </EmptyMedia>
+                <EmptyTitle className="text-sm">No sections yet</EmptyTitle>
+                <EmptyDescription className="text-xs">
+                  Sections group related items (e.g. "Week 1: Setup", "Week 2:
+                  CRM").
+                </EmptyDescription>
+              </EmptyHeader>
+              <div className="mt-3">
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={handleAddSection}
+                  disabled={createMutation.isPending}
+                  className="gap-1.5"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Create first section
+                </Button>
+              </div>
+            </Empty>
           </div>
         ) : (
           <DndContext
@@ -165,18 +213,22 @@ export function SectionSidebar({
         )}
       </div>
 
-      <div className="px-3 py-2 border-t border-zinc-200 dark:border-zinc-800">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleAddSection}
-          disabled={createMutation.isPending}
-          className="w-full gap-1.5"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          Add section
-        </Button>
-      </div>
+      {/* Bottom footer button — only shown when we have sections, so the
+          user can add another one without scrolling back to the top. */}
+      {roadmap.sections.length > 0 && (
+        <div className="px-3 py-2 border-t border-zinc-200 dark:border-zinc-800">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleAddSection}
+            disabled={createMutation.isPending}
+            className="w-full gap-1.5"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add section
+          </Button>
+        </div>
+      )}
 
       <AlertDialog
         open={!!deleteTarget}

@@ -12,10 +12,22 @@ import {
   MAX_CONTENT_BLOCKS_PAYLOAD_BYTES,
 } from "../constants";
 
+// --------------------------------------------------------------------------
+// The validator intentionally accepts "empty" block payloads. Blocks are
+// authored live — users add a new block (which starts with blank text/URL
+// fields) and fill it in afterwards. Rejecting empty strings here would
+// block the editor from persisting the just-created block. We only enforce
+// (a) valid types, (b) max lengths, (c) valid URL format WHEN a URL is
+// actually present.
+// --------------------------------------------------------------------------
+
 const baseBlockShape = {
   id: z.string().min(1),
   order: z.number().int().nonnegative(),
 };
+
+/** Accept either an empty string or a valid URL. */
+const optionalUrl = z.string().url().or(z.literal(""));
 
 const richTextBlockSchema = z.object({
   ...baseBlockShape,
@@ -31,8 +43,8 @@ const imageBlockSchema = z.object({
   ...baseBlockShape,
   type: z.literal("image"),
   data: z.object({
-    url: z.string().url(),
-    storagePath: z.string().min(1),
+    url: optionalUrl,
+    storagePath: z.string(),
     alt: z.string().max(500),
     caption: z.string().max(1000).optional(),
     width: z.number().int().positive().optional(),
@@ -44,10 +56,10 @@ const videoBlockSchema = z.object({
   ...baseBlockShape,
   type: z.literal("video"),
   data: z.object({
-    url: z.string().url(),
+    url: optionalUrl,
     platform: z.enum(["youtube", "vimeo", "loom", "other"]),
     title: z.string().max(300).optional(),
-    thumbnailUrl: z.string().url().optional(),
+    thumbnailUrl: optionalUrl.optional(),
   }),
 });
 
@@ -55,10 +67,10 @@ const externalLinkBlockSchema = z.object({
   ...baseBlockShape,
   type: z.literal("external_link"),
   data: z.object({
-    url: z.string().url(),
-    label: z.string().min(1).max(300),
+    url: optionalUrl,
+    label: z.string().max(300),
     description: z.string().max(1000).optional(),
-    favicon: z.string().url().optional(),
+    favicon: optionalUrl.optional(),
   }),
 });
 
@@ -68,7 +80,7 @@ const calloutBlockSchema = z.object({
   data: z.object({
     variant: z.enum(["info", "warning", "tip", "success"]),
     title: z.string().max(200).optional(),
-    body: z.string().min(1).max(2000),
+    body: z.string().max(2000),
   }),
 });
 
@@ -76,7 +88,7 @@ const codeSnippetBlockSchema = z.object({
   ...baseBlockShape,
   type: z.literal("code_snippet"),
   data: z.object({
-    code: z.string().min(1).max(10_000),
+    code: z.string().max(10_000),
     language: z.string().max(50).optional(),
     label: z.string().max(200).optional(),
   }),
