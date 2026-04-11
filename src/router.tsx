@@ -53,7 +53,10 @@ import {
   RoadmapListPage,
   RoadmapEditorPage,
   TeamProgressPanel,
+  RoadmapLandingPage,
+  RoadmapRunnerPage,
 } from "./features/agent-roadmap";
+import { THE_STANDARD_AGENCY_ID } from "./hooks/subscription";
 import PresentationRecordPage from "./features/training-modules/components/presentations/PresentationRecordPage";
 import PresentationDetailPage from "./features/training-modules/components/presentations/PresentationDetailPage";
 import { ContractingPage } from "./features/contracting/ContractingPage";
@@ -1031,6 +1034,31 @@ const roadmapTeamRoute = createRoute({
   },
 });
 
+// Agent: landing page showing all published roadmaps in the agent's agency
+const agentRoadmapLandingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "agent-roadmap",
+  component: () => (
+    <RouteGuard allowedAgencyId={THE_STANDARD_AGENCY_ID}>
+      <RoadmapLandingPage />
+    </RouteGuard>
+  ),
+});
+
+// Agent: runner page for a specific roadmap (the checklist they work through)
+const agentRoadmapRunnerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "agent-roadmap/$roadmapId",
+  component: () => {
+    const { roadmapId } = agentRoadmapRunnerRoute.useParams();
+    return (
+      <RouteGuard allowedAgencyId={THE_STANDARD_AGENCY_ID}>
+        <RoadmapRunnerPage roadmapId={roadmapId} />
+      </RouteGuard>
+    );
+  },
+});
+
 // Create the route tree - all routes are already linked via getParentRoute
 // Note: publicJoinAltRoute is at the end as a catch-all for /join-* URLs
 const routeTree = rootRoute.addChildren([
@@ -1103,6 +1131,8 @@ const routeTree = rootRoute.addChildren([
   roadmapListRoute,
   roadmapEditorRoute,
   roadmapTeamRoute,
+  agentRoadmapLandingRoute,
+  agentRoadmapRunnerRoute,
   publicJoinAltRoute, // Catch-all for /join-* pattern - must be last
 ]);
 

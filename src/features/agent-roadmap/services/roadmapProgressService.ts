@@ -8,7 +8,6 @@ import { supabase } from "@/services/base";
 import type {
   RoadmapItemProgressRow,
   RoadmapProgressMap,
-  RoadmapProgressStatus,
   RoadmapTeamProgressRow,
   UpsertProgressInput,
 } from "../types/roadmap";
@@ -39,92 +38,53 @@ export const roadmapProgressService = {
   },
 
   /**
-   * Upsert a progress row. Handles state-transition timestamp logic:
-   *   - started_at is set the first time we see the item
-   *   - completed_at is set when status=completed
-   *   - Both are cleared on status=not_started
-   *   - Rows are never deleted
+   * Transition progress status on an item. Delegates to the
+   * `roadmap_upsert_progress` RPC which:
+   *   - Preserves the earliest `started_at` across state changes
+   *     (so "how long did this take?" stays accurate)
+   *   - Sets completed_at only when transitioning to 'completed'
+   *   - Reads auth.uid() server-side so the caller can't forge user_id
+   *
+   * Pass notes=null to avoid touching the notes field at all.
+   * Use `updateNotes()` for notes-only updates.
    */
   async upsertProgress(
-    userId: string,
+    _userId: string,
     input: UpsertProgressInput,
   ): Promise<RoadmapItemProgressRow> {
-    const now = new Date().toISOString();
-
-    // Timestamp rules based on new status
-    const timestamps: {
-      started_at?: string | null;
-      completed_at?: string | null;
-    } = {};
-
-    switch (input.status) {
-      case "in_progress":
-        timestamps.started_at = now;
-        timestamps.completed_at = null;
-        break;
-      case "completed":
-        timestamps.started_at = now; // we'll preserve older started_at via conflict merge
-        timestamps.completed_at = now;
-        break;
-      case "skipped":
-        timestamps.completed_at = null;
-        break;
-      case "not_started":
-        timestamps.started_at = null;
-        timestamps.completed_at = null;
-        break;
-    }
-
-    // Upsert on (user_id, item_id). The trigger populates roadmap_id + agency_id.
-    const { data, error } = await supabase
-      .from("roadmap_item_progress")
-      .upsert(
-        {
-          user_id: userId,
-          item_id: input.item_id,
-          status: input.status,
-          notes: input.notes ?? null,
-          ...timestamps,
-          // Placeholders — trigger overrides these from the target item
-          roadmap_id: "00000000-0000-0000-0000-000000000000",
-          agency_id: "00000000-0000-0000-0000-000000000000",
-        },
-        { onConflict: "user_id,item_id" },
-      )
-      .select("*")
-      .single();
+    const { data, error } = await supabase.rpc("roadmap_upsert_progress", {
+      p_item_id: input.item_id,
+      p_status: input.status,
+      p_notes: input.notes ?? undefined,
+    });
 
     if (error) throw new Error(`upsertProgress failed: ${error.message}`);
-    return data;
+    if (!data) throw new Error("upsertProgress returned no row");
+    return data as RoadmapItemProgressRow;
   },
 
   /**
-   * Update just the notes field on an existing progress row (or create
-   * a not_started row if one doesn't exist yet).
+   * Update just the notes field on a progress row. Delegates to the
+   * `roadmap_update_progress_notes` RPC which is notes-only — it NEVER
+   * touches status, started_at, or completed_at, so typing a note on a
+   * completed item can't clobber its completion state.
    */
   async updateNotes(
-    userId: string,
+    _userId: string,
     itemId: string,
     notes: string | null,
   ): Promise<RoadmapItemProgressRow> {
-    const { data, error } = await supabase
-      .from("roadmap_item_progress")
-      .upsert(
-        {
-          user_id: userId,
-          item_id: itemId,
-          notes,
-          status: "not_started" as RoadmapProgressStatus,
-          roadmap_id: "00000000-0000-0000-0000-000000000000",
-          agency_id: "00000000-0000-0000-0000-000000000000",
-        },
-        { onConflict: "user_id,item_id", ignoreDuplicates: false },
-      )
-      .select("*")
-      .single();
+    const { data, error } = await supabase.rpc(
+      "roadmap_update_progress_notes",
+      {
+        p_item_id: itemId,
+        p_notes: notes,
+      },
+    );
 
     if (error) throw new Error(`updateNotes failed: ${error.message}`);
-    return data;
+    if (!data) throw new Error("updateNotes returned no row");
+    return data as RoadmapItemProgressRow;
   },
 
   /**

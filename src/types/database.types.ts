@@ -18116,6 +18116,54 @@ export type Database = {
         Args: { p_roadmap_id: string };
         Returns: undefined;
       };
+      roadmap_update_progress_notes: {
+        Args: { p_item_id: string; p_notes: string };
+        Returns: {
+          agency_id: string;
+          completed_at: string | null;
+          created_at: string;
+          id: string;
+          item_id: string;
+          notes: string | null;
+          roadmap_id: string;
+          started_at: string | null;
+          status: Database["public"]["Enums"]["roadmap_progress_status"];
+          updated_at: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "roadmap_item_progress";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      roadmap_upsert_progress: {
+        Args: {
+          p_item_id: string;
+          p_notes?: string;
+          p_status: Database["public"]["Enums"]["roadmap_progress_status"];
+        };
+        Returns: {
+          agency_id: string;
+          completed_at: string | null;
+          created_at: string;
+          id: string;
+          item_id: string;
+          notes: string | null;
+          roadmap_id: string;
+          started_at: string | null;
+          status: Database["public"]["Enums"]["roadmap_progress_status"];
+          updated_at: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "roadmap_item_progress";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       safe_uuid_from_text: { Args: { input: string }; Returns: string };
       save_underwriting_session_v2: {
         Args: { p_payload: Json };

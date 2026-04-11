@@ -93,3 +93,5 @@ export {
 export { RoadmapListPage } from "./components/admin/RoadmapListPage";
 export { RoadmapEditorPage } from "./components/admin/RoadmapEditorPage";
 export { TeamProgressPanel } from "./components/admin/TeamProgressPanel";
+export { RoadmapLandingPage } from "./components/user/RoadmapLandingPage";
+export { RoadmapRunnerPage } from "./components/user/RoadmapRunnerPage";
