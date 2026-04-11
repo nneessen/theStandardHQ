@@ -251,8 +251,19 @@ function buildSimplePolicyText(
 }
 
 /**
- * Post a message to Slack and return the response
- * Optionally post as a specific user (shows their name/avatar)
+ * Post a message to Slack and return the response.
+ * Optionally post as a specific user (shows their name/avatar).
+ *
+ * Self-healing: if Slack returns `not_in_channel`, the bot tries to
+ * `conversations.join` the channel and retries the post once. This means a
+ * fresh workspace install or an admin kicking the bot out mid-day no longer
+ * silently drops messages — as long as the bot has the `channels:join` scope
+ * and the channel is public, delivery recovers automatically. Private
+ * channels still require an explicit `/invite` because `conversations.join`
+ * doesn't work on them.
+ *
+ * See memory/project_slack_bot_channel_membership.md for the incident that
+ * drove this fix.
  */
 async function postSlackMessage(
   botToken: string,
@@ -264,30 +275,61 @@ async function postSlackMessage(
     blocks?: unknown[];
   },
 ): Promise<{ ok: boolean; ts?: string; error?: string }> {
-  try {
+  const buildPayload = (): Record<string, unknown> => {
     const payload: Record<string, unknown> = { channel: channelId, text };
+    if (options?.username) payload.username = options.username;
+    if (options?.icon_url) payload.icon_url = options.icon_url;
+    if (options?.blocks) payload.blocks = options.blocks;
+    return payload;
+  };
 
-    // If username/icon provided, post as that user (still shows APP label but uses their name/avatar)
-    if (options?.username) {
-      payload.username = options.username;
-    }
-    if (options?.icon_url) {
-      payload.icon_url = options.icon_url;
-    }
-    // Add blocks for rich formatting
-    if (options?.blocks) {
-      payload.blocks = options.blocks;
-    }
-
+  const postOnce = async (): Promise<{
+    ok: boolean;
+    ts?: string;
+    error?: string;
+  }> => {
     const response = await fetch("https://slack.com/api/chat.postMessage", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${botToken}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(buildPayload()),
     });
     return await response.json();
+  };
+
+  try {
+    const first = await postOnce();
+    if (first.ok || first.error !== "not_in_channel") {
+      return first;
+    }
+
+    // Bot isn't in the channel — try to join and retry exactly once.
+    console.log(
+      `[slack-policy-notification] not_in_channel on ${channelId}; attempting self-join`,
+    );
+    const joinRes = await fetch("https://slack.com/api/conversations.join", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${botToken}`,
+        "Content-Type": "application/json; charset=utf-8",
+      },
+      body: JSON.stringify({ channel: channelId }),
+    });
+    const joinJson = await joinRes.json();
+    if (!joinJson.ok) {
+      console.error(
+        `[slack-policy-notification] Self-join failed for ${channelId}: ${joinJson.error}`,
+      );
+      // Return the ORIGINAL error so upstream telemetry still sees not_in_channel
+      return first;
+    }
+
+    console.log(
+      `[slack-policy-notification] Joined ${channelId}, retrying post`,
+    );
+    return await postOnce();
   } catch (err) {
     console.error("[slack-policy-notification] Failed to post message:", err);
     return { ok: false, error: err instanceof Error ? err.message : "Unknown" };
@@ -1215,6 +1257,7 @@ async function handleCompleteFirstSale(
   // Only post leaderboard if the integration has it enabled
   let leaderboardOk = false;
   let leaderboardMessageTs: string | null = null;
+  let leaderboardError: string | null = null;
 
   if (integration.include_leaderboard_with_policy) {
     // Get today's production for leaderboard with WTD/MTD data
@@ -1272,25 +1315,46 @@ async function handleCompleteFirstSale(
 
     leaderboardOk = leaderboardResult.ok;
     leaderboardMessageTs = leaderboardResult.ts || null;
+    leaderboardError = leaderboardResult.ok
+      ? null
+      : leaderboardResult.error || "unknown";
   }
 
-  // Update the log with leaderboard message_ts if we have one
+  // Persist post result + error for visibility/monitoring.
   // (pending_policy_data was already cleared at the start of this function)
-  if (leaderboardMessageTs) {
-    const { error: updateError } = await supabase
-      .from("daily_sales_logs")
-      .update({
-        leaderboard_message_ts: leaderboardMessageTs,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", logId);
+  //
+  // last_post_error captures the raw Slack error code (e.g. "not_in_channel",
+  // "token_revoked", "is_archived") so ops can query
+  //   SELECT id FROM daily_sales_logs WHERE last_post_error IS NOT NULL
+  // to surface delivery failures that the UI otherwise hides. On success the
+  // column is explicitly cleared.
+  const postError =
+    !policyOk || (integration.include_leaderboard_with_policy && !leaderboardOk)
+      ? [
+          !policyOk ? `policy:${policyResult.error || "unknown"}` : null,
+          integration.include_leaderboard_with_policy && !leaderboardOk
+            ? `leaderboard:${leaderboardError || "unknown"}`
+            : null,
+        ]
+          .filter(Boolean)
+          .join(" | ")
+      : null;
 
-    if (updateError) {
-      console.error(
-        "[slack-policy-notification] Failed to update leaderboard_message_ts:",
-        updateError,
-      );
-    }
+  const { error: updateError } = await supabase
+    .from("daily_sales_logs")
+    .update({
+      leaderboard_message_ts: leaderboardMessageTs ?? undefined,
+      last_post_error: postError,
+      last_post_attempted_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", logId);
+
+  if (updateError) {
+    console.error(
+      "[slack-policy-notification] Failed to update log after post:",
+      updateError,
+    );
   }
 
   // =====================================================================
@@ -2243,23 +2307,42 @@ serve(async (req) => {
           );
           leaderboardOk = leaderboardData.ok;
 
-          // Update the log with new message_ts
-          if (leaderboardData.ok && leaderboardData.ts) {
-            const { error: updateLogError } = await supabase
-              .from("daily_sales_logs")
-              .update({
-                leaderboard_message_ts: leaderboardData.ts,
-                updated_at: new Date().toISOString(),
-              })
-              .eq("id", existingLog.id);
+          // Persist post result + error for visibility/monitoring.
+          // See handleCompleteFirstSale for rationale; identical instrumentation.
+          const subsequentPostError =
+            !policyData.ok || !leaderboardData.ok
+              ? [
+                  !policyData.ok
+                    ? `policy:${policyData.error || "unknown"}`
+                    : null,
+                  !leaderboardData.ok
+                    ? `leaderboard:${leaderboardData.error || "unknown"}`
+                    : null,
+                ]
+                  .filter(Boolean)
+                  .join(" | ")
+              : null;
 
-            if (updateLogError) {
-              console.error(
-                "[slack-policy-notification] Failed to update log with new message_ts:",
-                updateLogError,
-              );
-            }
-          } else if (!leaderboardData.ok) {
+          const { error: updateLogError } = await supabase
+            .from("daily_sales_logs")
+            .update({
+              leaderboard_message_ts:
+                leaderboardData.ok && leaderboardData.ts
+                  ? leaderboardData.ts
+                  : undefined,
+              last_post_error: subsequentPostError,
+              last_post_attempted_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", existingLog.id);
+
+          if (updateLogError) {
+            console.error(
+              "[slack-policy-notification] Failed to update log after post:",
+              updateLogError,
+            );
+          }
+          if (!leaderboardData.ok) {
             console.error(
               "[slack-policy-notification] Failed to post new leaderboard:",
               leaderboardData.error,

@@ -3015,6 +3015,8 @@ export type Database = {
           imo_id: string;
           last_ap_milestone: number | null;
           last_policy_milestone: number | null;
+          last_post_attempted_at: string | null;
+          last_post_error: string | null;
           last_sms_milestone_date: string | null;
           leaderboard_message_ts: string | null;
           log_date: string;
@@ -3034,6 +3036,8 @@ export type Database = {
           imo_id: string;
           last_ap_milestone?: number | null;
           last_policy_milestone?: number | null;
+          last_post_attempted_at?: string | null;
+          last_post_error?: string | null;
           last_sms_milestone_date?: string | null;
           leaderboard_message_ts?: string | null;
           log_date?: string;
@@ -3053,6 +3057,8 @@ export type Database = {
           imo_id?: string;
           last_ap_milestone?: number | null;
           last_policy_milestone?: number | null;
+          last_post_attempted_at?: string | null;
+          last_post_error?: string | null;
           last_sms_milestone_date?: string | null;
           leaderboard_message_ts?: string | null;
           log_date?: string;
