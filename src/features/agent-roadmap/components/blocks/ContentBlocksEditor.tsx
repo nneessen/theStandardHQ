@@ -208,14 +208,17 @@ function SortableBlockRow({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="group/block flex items-start gap-3 rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:border-ring hover:shadow-md"
+      className={`group/block flex items-start gap-3 rounded-lg border bg-card p-4 transition-all ${
+        isDragging
+          ? "border-ring shadow-xl ring-2 ring-ring/40 z-10 relative"
+          : "border-border shadow-sm hover:border-ring hover:shadow-md"
+      }`}
     >
       {/* Drag handle — always visible but subtle at rest */}
       <button

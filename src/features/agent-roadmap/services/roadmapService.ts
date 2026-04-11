@@ -309,6 +309,72 @@ export const roadmapService = {
     return rowToItem(data);
   },
 
+  /**
+   * Clone an existing item — title becomes "{old title} (copy)", all other
+   * fields (summary, content_blocks, flags, estimated_minutes) carry over.
+   * The clone is appended to the same section.
+   *
+   * Content blocks are deep-cloned with NEW ids so drag-reorder and edit
+   * operations on the original don't affect the clone (block ids are the
+   * identity keys for @dnd-kit and the zod validator).
+   *
+   * Image blocks intentionally reuse the storage URL — the same image is
+   * referenced, not re-uploaded. Deleting the clone won't orphan the file
+   * as long as the original still references it.
+   */
+  async duplicateItem(itemId: string): Promise<RoadmapItem> {
+    // 1. Load the source item
+    const { data: source, error: loadErr } = await supabase
+      .from("roadmap_items")
+      .select("*")
+      .eq("id", itemId)
+      .maybeSingle();
+
+    if (loadErr)
+      throw new Error(`duplicateItem (load) failed: ${loadErr.message}`);
+    if (!source) throw new Error(`duplicateItem: item ${itemId} not found`);
+
+    // 2. Compute next sort_order in the same section
+    const { data: existing, error: countErr } = await supabase
+      .from("roadmap_items")
+      .select("sort_order")
+      .eq("section_id", source.section_id)
+      .order("sort_order", { ascending: false })
+      .limit(1);
+
+    if (countErr)
+      throw new Error(`duplicateItem (count) failed: ${countErr.message}`);
+    const nextOrder =
+      existing && existing.length > 0 ? existing[0].sort_order + 1 : 0;
+
+    // 3. Deep-clone content_blocks with new ids so drag-reorder stays
+    //    deterministic (dnd-kit uses block.id as the sortable key)
+    const clonedBlocks = (
+      (source.content_blocks as unknown as RoadmapContentBlock[]) ?? []
+    ).map((block) => ({ ...block, id: crypto.randomUUID() }));
+
+    const { data, error } = await supabase
+      .from("roadmap_items")
+      .insert({
+        section_id: source.section_id,
+        title: `${source.title} (copy)`,
+        summary: source.summary,
+        is_required: source.is_required,
+        is_published: source.is_published,
+        estimated_minutes: source.estimated_minutes,
+        sort_order: nextOrder,
+        content_blocks: clonedBlocks as unknown as never,
+        // Placeholders — trigger overrides
+        roadmap_id: "00000000-0000-0000-0000-000000000000",
+        agency_id: "00000000-0000-0000-0000-000000000000",
+      })
+      .select("*")
+      .single();
+
+    if (error) throw new Error(`duplicateItem failed: ${error.message}`);
+    return rowToItem(data);
+  },
+
   async updateItem(
     itemId: string,
     patch: UpdateItemInput,

@@ -94,6 +94,7 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
         />
         <ItemListPanel
           roadmapId={roadmap.id}
+          roadmap={roadmap}
           section={selectedSection}
           selectedItemId={selectedItemId}
           onSelectItem={(id) => setSelectedItemId(id || null)}

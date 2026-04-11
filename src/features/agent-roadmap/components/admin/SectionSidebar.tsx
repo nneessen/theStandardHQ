@@ -291,7 +291,6 @@ function SortableSectionRow({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
   };
 
   return (
@@ -299,9 +298,11 @@ function SortableSectionRow({
       ref={setNodeRef}
       style={style}
       className={`group flex items-center gap-2 rounded-md px-2 py-2 transition-colors ${
-        isSelected
-          ? "bg-card border border-border shadow-sm"
-          : "border border-transparent hover:bg-card hover:border-border"
+        isDragging
+          ? "bg-card border border-ring shadow-lg ring-2 ring-ring/30 z-10 relative"
+          : isSelected
+            ? "bg-card border border-border shadow-sm"
+            : "border border-transparent hover:bg-card hover:border-border"
       }`}
     >
       <button

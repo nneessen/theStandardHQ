@@ -82,6 +82,7 @@ export {
 } from "./hooks/useUpsertSection";
 export {
   useCreateItem,
+  useDuplicateItem,
   useUpdateItem,
   useDeleteItem,
   useReorderItems,

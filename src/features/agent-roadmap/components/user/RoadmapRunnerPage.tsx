@@ -7,7 +7,7 @@
 
 import { useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Loader2, MapIcon } from "lucide-react";
+import { Loader2, MapIcon, Sparkles, Trophy } from "lucide-react";
 import {
   Empty,
   EmptyHeader,
@@ -122,9 +122,36 @@ export function RoadmapRunnerPage({ roadmapId }: RoadmapRunnerPageProps) {
     s.items.some((i) => i.is_published),
   );
 
+  const allDone = stats.requiredTotal > 0 && stats.percent === 100;
+
   return (
     <div className="min-h-screen bg-muted/30">
       <RoadmapProgressHeader roadmap={roadmap} stats={stats} />
+
+      {allDone && (
+        <div className="border-b border-success/20 bg-gradient-to-r from-success/10 via-success/5 to-success/10">
+          <div className="max-w-3xl mx-auto px-6 py-6">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-success/15 border border-success/30 shadow-sm">
+                <Trophy className="h-6 w-6 text-success" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <h2 className="text-lg font-bold text-foreground tracking-tight">
+                    You did it — roadmap complete
+                  </h2>
+                  <Sparkles className="h-4 w-4 text-success" />
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Every required item is done. Your progress is saved and
+                  visible to your manager. If there are optional items below,
+                  feel free to come back and pick them off when you have time.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-3xl mx-auto px-6 py-6 space-y-6 pb-16">
         {visibleSections.length === 0 ? (

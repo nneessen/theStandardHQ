@@ -30,6 +30,27 @@ export function useCreateItem() {
 }
 
 /**
+ * Duplicate an item. Clones title, content blocks, flags, and estimated
+ * minutes into a new row appended to the same section. Used by the
+ * item row's "Duplicate" dropdown action.
+ */
+export function useDuplicateItem() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ itemId }: { itemId: string; roadmapId: string }) =>
+      roadmapService.duplicateItem(itemId),
+    onSuccess: (_item, { roadmapId }) => {
+      queryClient.invalidateQueries({ queryKey: roadmapKeys.tree(roadmapId) });
+      toast.success("Item duplicated");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+}
+
+/**
  * Update an item. Optimistic in the tree cache so debounced text edits
  * feel instant and don't fight with query-cache refetches.
  */

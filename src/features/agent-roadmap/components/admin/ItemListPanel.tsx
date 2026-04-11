@@ -29,6 +29,9 @@ import {
   EyeOff,
   Trash2,
   ChevronRight,
+  MoreHorizontal,
+  Copy,
+  ArrowRightLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,18 +54,33 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ListChecks } from "lucide-react";
 import { useDebouncedField } from "@/features/training-modules";
 import {
   useCreateItem,
   useDeleteItem,
+  useDuplicateItem,
+  useMoveItem,
   useReorderItems,
   useUpdateSection,
 } from "../../index";
-import type { RoadmapItem, RoadmapSectionWithItems } from "../../types/roadmap";
+import type {
+  RoadmapItem,
+  RoadmapSectionWithItems,
+  RoadmapTree,
+} from "../../types/roadmap";
 
 interface ItemListPanelProps {
   roadmapId: string;
+  roadmap: RoadmapTree;
   section: RoadmapSectionWithItems | null;
   selectedItemId: string | null;
   onSelectItem: (itemId: string) => void;
@@ -70,12 +88,15 @@ interface ItemListPanelProps {
 
 export function ItemListPanel({
   roadmapId,
+  roadmap,
   section,
   selectedItemId,
   onSelectItem,
 }: ItemListPanelProps) {
   const createMutation = useCreateItem();
   const deleteMutation = useDeleteItem();
+  const duplicateMutation = useDuplicateItem();
+  const moveMutation = useMoveItem();
   const reorderMutation = useReorderItems();
   const updateSectionMutation = useUpdateSection();
 
@@ -173,6 +194,41 @@ export function ItemListPanel({
     );
   }, [deleteMutation, deleteTarget, roadmapId, selectedItemId, onSelectItem]);
 
+  const handleDuplicate = useCallback(
+    (itemId: string) => {
+      duplicateMutation.mutate(
+        { itemId, roadmapId },
+        {
+          onSuccess: (newItem) => {
+            onSelectItem(newItem.id);
+          },
+        },
+      );
+    },
+    [duplicateMutation, roadmapId, onSelectItem],
+  );
+
+  /**
+   * Move an item to a different section, appending at the end.
+   * Uses the existing roadmap_move_item RPC — no DnD refactor needed.
+   */
+  const handleMoveToSection = useCallback(
+    (itemId: string, targetSectionId: string) => {
+      // Resolve the target section's current item count so we append at the end
+      const targetSection = roadmap.sections.find(
+        (s) => s.id === targetSectionId,
+      );
+      const newIndex = targetSection?.items.length ?? 0;
+      moveMutation.mutate({
+        itemId,
+        targetSectionId,
+        newIndex,
+        roadmapId,
+      });
+    },
+    [moveMutation, roadmap.sections, roadmapId],
+  );
+
   if (!section) {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
@@ -254,6 +310,12 @@ export function ItemListPanel({
                     isSelected={item.id === selectedItemId}
                     onSelect={() => onSelectItem(item.id)}
                     onDelete={() => setDeleteTarget(item)}
+                    onDuplicate={() => handleDuplicate(item.id)}
+                    onMoveToSection={(targetSectionId) =>
+                      handleMoveToSection(item.id, targetSectionId)
+                    }
+                    allSections={roadmap.sections}
+                    currentSectionId={section.id}
                   />
                 ))}
               </div>
@@ -316,6 +378,10 @@ interface SortableItemRowProps {
   isSelected: boolean;
   onSelect: () => void;
   onDelete: () => void;
+  onDuplicate: () => void;
+  onMoveToSection: (targetSectionId: string) => void;
+  allSections: RoadmapSectionWithItems[];
+  currentSectionId: string;
 }
 
 function SortableItemRow({
@@ -323,6 +389,10 @@ function SortableItemRow({
   isSelected,
   onSelect,
   onDelete,
+  onDuplicate,
+  onMoveToSection,
+  allSections,
+  currentSectionId,
 }: SortableItemRowProps) {
   const {
     attributes,
@@ -336,7 +406,6 @@ function SortableItemRow({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
   };
 
   return (
@@ -344,9 +413,11 @@ function SortableItemRow({
       ref={setNodeRef}
       style={style}
       className={`group flex items-start gap-3 rounded-lg border px-4 py-3 transition-all cursor-pointer ${
-        isSelected
-          ? "border-ring bg-card shadow-md ring-1 ring-ring/20"
-          : "border-border bg-card shadow-sm hover:border-ring hover:shadow-md"
+        isDragging
+          ? "border-ring bg-card shadow-xl ring-2 ring-ring/40 z-10 relative"
+          : isSelected
+            ? "border-ring bg-card shadow-md ring-1 ring-ring/20"
+            : "border-border bg-card shadow-sm hover:border-ring hover:shadow-md"
       }`}
     >
       <button
@@ -393,18 +464,73 @@ function SortableItemRow({
         )}
       </button>
 
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={(e) => {
-          e.stopPropagation();
-          onDelete();
-        }}
-        className="h-7 w-7 p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-        aria-label="Delete item"
-      >
-        <Trash2 className="h-3.5 w-3.5" />
-      </Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => e.stopPropagation()}
+            className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+            aria-label="More actions"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          className="w-56"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <DropdownMenuItem
+            onSelect={(e) => {
+              e.preventDefault();
+              onDuplicate();
+            }}
+            className="gap-2"
+          >
+            <Copy className="h-3.5 w-3.5" />
+            Duplicate item
+          </DropdownMenuItem>
+
+          {allSections.filter((s) => s.id !== currentSectionId).length > 0 && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">
+                Move to section
+              </DropdownMenuLabel>
+              {allSections
+                .filter((s) => s.id !== currentSectionId)
+                .map((s) => (
+                  <DropdownMenuItem
+                    key={s.id}
+                    onSelect={(e) => {
+                      e.preventDefault();
+                      onMoveToSection(s.id);
+                    }}
+                    className="gap-2"
+                  >
+                    <ArrowRightLeft className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="truncate">
+                      {s.title || "Untitled section"}
+                    </span>
+                  </DropdownMenuItem>
+                ))}
+            </>
+          )}
+
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onSelect={(e) => {
+              e.preventDefault();
+              onDelete();
+            }}
+            className="gap-2 text-destructive focus:text-destructive"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Delete item
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <ChevronRight className="h-4 w-4 text-muted-foreground/50 mt-1 shrink-0 opacity-0 group-hover:opacity-100 group-hover:text-foreground transition-all" />
     </div>
