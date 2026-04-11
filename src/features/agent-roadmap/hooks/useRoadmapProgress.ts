@@ -6,6 +6,13 @@ import { roadmapKeys } from "./queryKeys";
 /**
  * Load per-user progress for a roadmap. Returns a Map<itemId, progress>
  * for O(1) lookups during render.
+ *
+ * staleTime rationale: 10s. Progress is mutated frequently (every checkbox
+ * click, every note keystroke). Optimistic updates via useUpsertProgress
+ * keep the cache fresh without refetching; the 10s window just caps how
+ * long stale cache can serve a component that remounts without a mutation
+ * in between (e.g., tab switch). 10s is the sweet spot between "snappy
+ * refetch" and "thrash the network on rapid navigation."
  */
 export function useRoadmapProgress(
   userId: string | null | undefined,

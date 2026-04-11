@@ -39,6 +39,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useRoadmapTree, useTeamProgressOverview } from "../../index";
 import type { RoadmapTeamProgressRow } from "../../types/roadmap";
 
+/** Inactivity threshold (hours) that tags an agent as "Stuck" in the
+ *  monitoring panel. 72 = 3 days of no activity on a required item. If this
+ *  ever needs to be per-agency, promote to a settings column. */
+const STUCK_THRESHOLD_HOURS = 72;
+
 interface TeamProgressPanelProps {
   roadmapId: string;
 }
@@ -86,7 +91,7 @@ export function TeamProgressPanel({ roadmapId }: TeamProgressPanelProps) {
       const hoursSinceActivity =
         (Date.now() - new Date(r.last_activity_at).getTime()) /
         (1000 * 60 * 60);
-      return hoursSinceActivity > 72; // no activity in 3+ days
+      return hoursSinceActivity > STUCK_THRESHOLD_HOURS;
     }).length;
     return {
       avg: Math.round(avg),
@@ -203,7 +208,7 @@ export function TeamProgressPanel({ roadmapId }: TeamProgressPanelProps) {
                   row.percent < 100 &&
                   (Date.now() - new Date(row.last_activity_at).getTime()) /
                     (1000 * 60 * 60) >
-                    72;
+                    STUCK_THRESHOLD_HOURS;
                 return (
                   <TableRow key={row.user_id}>
                     <TableCell>

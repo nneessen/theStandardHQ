@@ -17,8 +17,14 @@ import {
 // authored live — users add a new block (which starts with blank text/URL
 // fields) and fill it in afterwards. Rejecting empty strings here would
 // block the editor from persisting the just-created block. We only enforce
-// (a) valid types, (b) max lengths, (c) valid URL format WHEN a URL is
-// actually present.
+// (a) valid types, (b) max lengths, (c) valid http(s) URL format WHEN a URL
+// is actually present.
+//
+// SECURITY: URLs are restricted to http(s) schemes. `z.string().url()` alone
+// accepts `javascript:`, `data:`, and `file:` URIs because WHATWG treats them
+// as valid URLs. Those schemes become stored XSS vectors the moment a block
+// renderer drops the string into an <a href>. The scheme check below is
+// load-bearing — do not relax it without updating ExternalLinkBlockView.
 // --------------------------------------------------------------------------
 
 const baseBlockShape = {
@@ -26,8 +32,19 @@ const baseBlockShape = {
   order: z.number().int().nonnegative(),
 };
 
-/** Accept either an empty string or a valid URL. */
-const optionalUrl = z.string().url().or(z.literal(""));
+/** Allowed URL protocol prefixes — http(s) only. Empty string is also accepted
+ *  for fields in "just-created, not yet filled in" state. */
+const HTTP_URL_RE = /^https?:\/\//i;
+
+/** Check that a stored URL is safe to render as an href. Use this both in the
+ *  validator AND at render time as defense-in-depth. */
+export function isSafeExternalUrl(url: string): boolean {
+  return url === "" || HTTP_URL_RE.test(url);
+}
+
+const optionalUrl = z.string().max(2048).refine(isSafeExternalUrl, {
+  message: "URL must start with http:// or https:// (or be empty).",
+});
 
 const richTextBlockSchema = z.object({
   ...baseBlockShape,
@@ -110,11 +127,52 @@ export const roadmapContentBlocksSchema = z
   });
 
 /**
+ * Translate a zod error into a user-readable sentence (L-8). Zod's default
+ * `error.message` is a JSON string of ZodIssue objects, which is unusable
+ * in a toast. We pluck the first issue and map common codes to friendly
+ * text. If the issue can't be translated, we fall back to zod's own message.
+ */
+function friendlyZodError(err: z.ZodError): string {
+  const issue = err.issues[0];
+  if (!issue) return "Content block is invalid.";
+
+  // Path: [blockIndex, "data", "fieldName"] — extract the field name
+  const field = issue.path[issue.path.length - 1];
+  const fieldLabel = typeof field === "string" ? field : "field";
+
+  switch (issue.code) {
+    case "invalid_type":
+      return `${fieldLabel} has the wrong type.`;
+    case "invalid_enum_value":
+      return `${fieldLabel} has an invalid value.`;
+    case "too_big":
+      return `${fieldLabel} is too long.`;
+    case "too_small":
+      return `${fieldLabel} is required.`;
+    case "invalid_union_discriminator":
+      return `Unknown content block type.`;
+    case "custom":
+      // Our .refine() calls produce "custom" issues with a readable message
+      return issue.message || `${fieldLabel} is not valid.`;
+    default:
+      return issue.message || "Content block is invalid.";
+  }
+}
+
+/**
  * Validate a content_blocks array. Throws with a readable message on failure.
  * Call this before any mutation that writes content_blocks to the DB.
  */
 export function validateContentBlocks(blocks: unknown): RoadmapContentBlock[] {
-  const parsed = roadmapContentBlocksSchema.parse(blocks);
+  let parsed: RoadmapContentBlock[];
+  try {
+    parsed = roadmapContentBlocksSchema.parse(blocks) as RoadmapContentBlock[];
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      throw new Error(friendlyZodError(err));
+    }
+    throw err;
+  }
 
   // Defense-in-depth: reject payloads over ~500KB. The DB has no limit but
   // bloated tree queries degrade the editor and runner UX. Nick will never
@@ -128,5 +186,5 @@ export function validateContentBlocks(blocks: unknown): RoadmapContentBlock[] {
     );
   }
 
-  return parsed as RoadmapContentBlock[];
+  return parsed;
 }

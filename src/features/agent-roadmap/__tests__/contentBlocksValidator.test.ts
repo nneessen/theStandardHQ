@@ -134,3 +134,92 @@ describe("validateContentBlocks — rejects malformed input", () => {
     expect(() => validateContentBlocks([block])).toThrow();
   });
 });
+
+// ---------------------------------------------------------------------------
+// B-1 regression suite: URL scheme whitelist
+// ---------------------------------------------------------------------------
+// z.string().url() accepts ANY valid WHATWG URL including javascript:, data:,
+// and file:. These schemes become stored XSS vectors the moment a renderer
+// uses them as an <a href>. The validator must reject them at write time.
+// If this suite ever fails, review ExternalLinkBlockView.tsx and the
+// contentBlocksValidator.ts `optionalUrl` definition at the same time.
+
+describe("validateContentBlocks — URL scheme whitelist (B-1)", () => {
+  const malicious: Array<{ scheme: string; url: string }> = [
+    { scheme: "javascript:", url: "javascript:alert('xss')" },
+    { scheme: "javascript: (mixed case)", url: "JavaScript:alert(1)" },
+    { scheme: "data:", url: "data:text/html,<script>alert('xss')</script>" },
+    { scheme: "file:", url: "file:///etc/passwd" },
+    { scheme: "vbscript:", url: "vbscript:msgbox('xss')" },
+    { scheme: "ftp:", url: "ftp://example.com/file" },
+  ];
+
+  it.each(malicious)(
+    "rejects an external_link block with a $scheme URL",
+    ({ url }) => {
+      const block = {
+        id: "a",
+        order: 0,
+        type: "external_link",
+        data: { url, label: "click me" },
+      };
+      expect(() =>
+        validateContentBlocks([block as unknown as RoadmapContentBlock]),
+      ).toThrow(/http/i);
+    },
+  );
+
+  it.each(malicious)("rejects an image block with a $scheme URL", ({ url }) => {
+    const block = {
+      id: "a",
+      order: 0,
+      type: "image",
+      data: { url, storagePath: "x", alt: "" },
+    };
+    expect(() =>
+      validateContentBlocks([block as unknown as RoadmapContentBlock]),
+    ).toThrow(/http/i);
+  });
+
+  it.each(malicious)("rejects a video block with a $scheme URL", ({ url }) => {
+    const block = {
+      id: "a",
+      order: 0,
+      type: "video",
+      data: { url, platform: "other" },
+    };
+    expect(() =>
+      validateContentBlocks([block as unknown as RoadmapContentBlock]),
+    ).toThrow(/http/i);
+  });
+
+  it("accepts an http:// URL", () => {
+    const block: RoadmapContentBlock = {
+      id: "a",
+      order: 0,
+      type: "external_link",
+      data: { url: "http://example.com", label: "Example" },
+    };
+    expect(() => validateContentBlocks([block])).not.toThrow();
+  });
+
+  it("accepts an https:// URL", () => {
+    const block: RoadmapContentBlock = {
+      id: "a",
+      order: 0,
+      type: "external_link",
+      data: { url: "https://app.close.com/leads/abc123", label: "Close" },
+    };
+    expect(() => validateContentBlocks([block])).not.toThrow();
+  });
+
+  it("still accepts an empty string (fresh-create state)", () => {
+    const block: RoadmapContentBlock = {
+      id: "a",
+      order: 0,
+      type: "external_link",
+      data: { url: "", label: "" },
+    };
+    expect(() => validateContentBlocks([block])).not.toThrow();
+  });
+});

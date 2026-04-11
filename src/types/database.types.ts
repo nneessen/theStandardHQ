@@ -8022,10 +8022,24 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "roadmap_item_progress_agency_id_fkey";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "roadmap_item_progress_item_id_fkey";
             columns: ["item_id"];
             isOneToOne: false;
             referencedRelation: "roadmap_items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "roadmap_item_progress_roadmap_id_fkey";
+            columns: ["roadmap_id"];
+            isOneToOne: false;
+            referencedRelation: "roadmap_templates";
             referencedColumns: ["id"];
           },
           {
@@ -8099,6 +8113,20 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "roadmap_items_agency_id_fkey";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "roadmap_items_roadmap_id_fkey";
+            columns: ["roadmap_id"];
+            isOneToOne: false;
+            referencedRelation: "roadmap_templates";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "roadmap_items_section_id_fkey";
             columns: ["section_id"];
             isOneToOne: false;
@@ -8139,6 +8167,13 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "roadmap_sections_agency_id_fkey";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "roadmap_sections_roadmap_id_fkey";
             columns: ["roadmap_id"];

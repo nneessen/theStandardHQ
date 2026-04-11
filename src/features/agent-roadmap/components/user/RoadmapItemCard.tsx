@@ -7,7 +7,7 @@
 //   - Private notes textarea (debounced save)
 //   - Status badge (in_progress / completed / skipped)
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Check,
   Circle,
@@ -48,6 +48,19 @@ export function RoadmapItemCard({
 }: RoadmapItemCardProps) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const [showNotes, setShowNotes] = useState(!!progress?.notes);
+
+  // M-4 fix: useState(defaultExpanded) only uses the initializer on first
+  // mount. When the parent recomputes "first unfinished item" after a
+  // completion, the new first-unfinished card receives defaultExpanded=true
+  // via props — but its state was already false from mount. Without this
+  // effect, the "auto-expand next item after completing one" flow silently
+  // breaks after the first completion. We deliberately only promote to
+  // true (never demote) so user clicks to collapse aren't overridden.
+  useEffect(() => {
+    if (defaultExpanded) {
+      setExpanded(true);
+    }
+  }, [defaultExpanded]);
 
   const upsertProgress = useUpsertProgress();
   const updateNotes = useUpdateProgressNotes();

@@ -14,6 +14,32 @@
 -- RPCs:
 --   roadmap_reorder_sections, roadmap_reorder_items,
 --   roadmap_move_item, roadmap_set_default
+--
+-- ============================================================================
+-- L-9 NOTE: SECURITY INVOKER / SECURITY DEFINER asymmetry
+-- ============================================================================
+-- Every function defined in this feature is SECURITY INVOKER, which means
+-- RLS is enforced when the function runs. This is deliberate: we WANT the
+-- reorder/move/set_default RPCs to fail when called by a non-super-admin,
+-- and we rely on the RLS policies (rt_write, rs_write, ri_write) to do the
+-- actual blocking — augmented by an explicit `is_super_admin()` guard at
+-- the top of each RPC for fast-fail and clearer error messages.
+--
+-- The helper function `is_super_admin()` is SECURITY DEFINER (defined in
+-- 20251221_001_super_admin_policies.sql, NOT in this feature's migrations).
+-- It has to be DEFINER because it reads user_profiles under RLS — without
+-- elevated privileges it couldn't see the caller's own row in the common
+-- case where user_profiles has RLS restricting it to the caller's IMO.
+--
+-- The asymmetry is intentional: INVOKER RPCs + DEFINER auth helpers. If you
+-- add a new RPC to this feature, follow the same pattern:
+--   - CREATE FUNCTION ... SECURITY INVOKER
+--   - Put `IF NOT is_super_admin() THEN RAISE EXCEPTION ... END IF;` at the
+--     top for fast-fail (M-2 / review hardening pattern)
+--   - Rely on RLS as the second layer of defense
+-- Do NOT standardize the RPCs to DEFINER "for consistency" with the helper —
+-- that would bypass RLS on the tables themselves, which is the thing we
+-- most want to enforce.
 
 -- ============================================================================
 -- 1. ENUM

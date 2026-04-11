@@ -11,14 +11,10 @@ interface ExternalLinkBlockEditorProps {
   onChange: (updated: ExternalLinkBlock) => void;
 }
 
-/** Extract hostname for favicon fetch. Returns empty string for invalid URLs. */
-function extractHostname(url: string): string {
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return "";
-  }
-}
+// L-3: We deliberately do NOT fetch favicons from google.com/s2/favicons
+// anymore. That URL leaked every external link an admin published to Google
+// Analytics — a privacy regression for confidential partner URLs. The
+// view component uses a lucide icon fallback instead.
 
 export function ExternalLinkBlockEditor({
   block,
@@ -26,13 +22,9 @@ export function ExternalLinkBlockEditor({
 }: ExternalLinkBlockEditorProps) {
   const commitUrl = useCallback(
     (url: string) => {
-      const hostname = extractHostname(url);
-      const favicon = hostname
-        ? `https://www.google.com/s2/favicons?domain=${hostname}&sz=32`
-        : undefined;
       onChange({
         ...block,
-        data: { ...block.data, url, favicon },
+        data: { ...block.data, url, favicon: undefined },
       });
     },
     [block, onChange],

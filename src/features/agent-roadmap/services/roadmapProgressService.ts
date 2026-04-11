@@ -44,12 +44,12 @@ export const roadmapProgressService = {
    *     (so "how long did this take?" stays accurate)
    *   - Sets completed_at only when transitioning to 'completed'
    *   - Reads auth.uid() server-side so the caller can't forge user_id
+   *   - Verifies the item is visible to the caller (B-3 fix)
    *
    * Pass notes=null to avoid touching the notes field at all.
    * Use `updateNotes()` for notes-only updates.
    */
   async upsertProgress(
-    _userId: string,
     input: UpsertProgressInput,
   ): Promise<RoadmapItemProgressRow> {
     const { data, error } = await supabase.rpc("roadmap_upsert_progress", {
@@ -70,7 +70,6 @@ export const roadmapProgressService = {
    * completed item can't clobber its completion state.
    */
   async updateNotes(
-    _userId: string,
     itemId: string,
     notes: string | null,
   ): Promise<RoadmapItemProgressRow> {

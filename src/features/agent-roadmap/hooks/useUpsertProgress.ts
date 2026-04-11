@@ -18,13 +18,12 @@ export function useUpsertProgress() {
 
   return useMutation({
     mutationFn: async ({
-      userId,
       input,
     }: {
       userId: string;
       input: UpsertProgressInput;
       roadmapId: string;
-    }) => roadmapProgressService.upsertProgress(userId, input),
+    }) => roadmapProgressService.upsertProgress(input),
     onMutate: async ({ userId, input, roadmapId }) => {
       const key = roadmapKeys.progress(userId, roadmapId);
       await queryClient.cancelQueries({ queryKey: key });
@@ -98,7 +97,6 @@ export function useUpdateProgressNotes() {
 
   return useMutation({
     mutationFn: async ({
-      userId,
       itemId,
       notes,
     }: {
@@ -106,7 +104,7 @@ export function useUpdateProgressNotes() {
       itemId: string;
       notes: string | null;
       roadmapId: string;
-    }) => roadmapProgressService.updateNotes(userId, itemId, notes),
+    }) => roadmapProgressService.updateNotes(itemId, notes),
     onMutate: async ({ userId, itemId, notes, roadmapId }) => {
       const key = roadmapKeys.progress(userId, roadmapId);
       await queryClient.cancelQueries({ queryKey: key });

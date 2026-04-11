@@ -72,53 +72,75 @@ export const roadmapService = {
   /**
    * Load a complete roadmap tree: template + sections + items, all ordered.
    * Used by both the admin editor and the agent runner.
+   *
+   * M-1 fix: uses a single PostgREST nested embed so the whole tree loads
+   * in one round-trip. The old three-query version had a race window where
+   * a section could be cascade-deleted between the sections query and the
+   * items query, producing a "ghost section" with items: [] in the tree.
+   * PostgREST now executes the joined query as one statement, so either the
+   * whole thing succeeds pre-delete or the whole thing reflects post-delete.
    */
   async getRoadmapTree(roadmapId: string): Promise<RoadmapTree | null> {
-    const { data: template, error: tplErr } = await supabase
+    const { data, error } = await supabase
       .from("roadmap_templates")
-      .select("*")
+      .select(
+        `
+        *,
+        roadmap_sections(
+          *,
+          roadmap_items(*)
+        )
+        `,
+      )
       .eq("id", roadmapId)
       .maybeSingle();
 
-    if (tplErr)
-      throw new Error(`getRoadmapTree (template) failed: ${tplErr.message}`);
-    if (!template) return null;
+    if (error) throw new Error(`getRoadmapTree failed: ${error.message}`);
+    if (!data) return null;
 
-    const { data: sections, error: secErr } = await supabase
-      .from("roadmap_sections")
-      .select("*")
-      .eq("roadmap_id", roadmapId)
-      .order("sort_order", { ascending: true });
+    // PostgREST doesn't guarantee ordering on embedded rows, so we sort
+    // client-side by sort_order (the DB indexes still keep this O(n log n)).
+    // Narrow the embed to our domain types in the process.
+    const rawSections =
+      (data as unknown as { roadmap_sections?: unknown[] }).roadmap_sections ??
+      [];
 
-    if (secErr)
-      throw new Error(`getRoadmapTree (sections) failed: ${secErr.message}`);
+    const sectionsWithItems: RoadmapSectionWithItems[] = (
+      rawSections as Array<
+        Record<string, unknown> & { roadmap_items?: unknown[] }
+      >
+    )
+      .map((section) => {
+        const rawItems = (section.roadmap_items ?? []) as Array<
+          Record<string, unknown>
+        >;
+        const typedItems: RoadmapItem[] = rawItems
+          .map((raw) =>
+            rowToItem(raw as unknown as Parameters<typeof rowToItem>[0]),
+          )
+          .sort((a, b) => a.sort_order - b.sort_order);
 
-    const { data: items, error: itemErr } = await supabase
-      .from("roadmap_items")
-      .select("*")
-      .eq("roadmap_id", roadmapId)
-      .order("sort_order", { ascending: true });
+        // Strip the embed key from the section before spreading so we don't
+        // leak the raw rows into the typed result.
+        const { roadmap_items: _drop, ...sectionRest } = section;
+        void _drop;
+        return {
+          ...(sectionRest as unknown as RoadmapSectionWithItems),
+          items: typedItems,
+        };
+      })
+      .sort((a, b) => a.sort_order - b.sort_order);
 
-    if (itemErr)
-      throw new Error(`getRoadmapTree (items) failed: ${itemErr.message}`);
-
-    const itemsBySection = new Map<string, RoadmapItem[]>();
-    for (const row of items ?? []) {
-      const typed = rowToItem(row);
-      const arr = itemsBySection.get(typed.section_id) ?? [];
-      arr.push(typed);
-      itemsBySection.set(typed.section_id, arr);
-    }
-
-    const sectionsWithItems: RoadmapSectionWithItems[] = (sections ?? []).map(
-      (section) => ({
-        ...section,
-        items: itemsBySection.get(section.id) ?? [],
-      }),
-    );
+    // Same strip for the template — remove the embed key and return a clean
+    // RoadmapTree shape.
+    const { roadmap_sections: _sectionsEmbed, ...templateRest } =
+      data as unknown as Record<string, unknown> & {
+        roadmap_sections: unknown;
+      };
+    void _sectionsEmbed;
 
     return {
-      ...template,
+      ...(templateRest as unknown as RoadmapTree),
       sections: sectionsWithItems,
     };
   },

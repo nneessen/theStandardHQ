@@ -51,13 +51,16 @@ export {
   AUTOSAVE_DEBOUNCE_MS,
 } from "./constants";
 
-// Services (re-exported for convenience; prefer hooks in components)
-export { roadmapService } from "./services/roadmapService";
-export { roadmapProgressService } from "./services/roadmapProgressService";
-export { roadmapStorage } from "./services/roadmapStorage";
+// Pure helpers (safe to use from components — no side effects)
 export { parseVideoUrl } from "./services/videoUrlParser";
 export { computeRoadmapStats } from "./services/completionCalc";
 export { validateContentBlocks } from "./services/contentBlocksValidator";
+
+// NOTE: roadmapService, roadmapProgressService, and roadmapStorage are
+// deliberately NOT exported from the barrel. Components MUST use the hooks
+// (useRoadmapList, useUpsertItem, etc.) which include optimistic updates,
+// cache invalidation, and error handling. If a future caller needs the raw
+// service, import it directly from ./services/* to make the bypass explicit.
 
 // Hooks
 export { roadmapKeys } from "./hooks/queryKeys";
