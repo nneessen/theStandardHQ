@@ -49,6 +49,11 @@ import { TrainingHubPage, TrainerDashboard } from "./features/training-hub";
 import MyTrainingPage from "./features/training-modules/components/learner/MyTrainingPage";
 import ModulePlayer from "./features/training-modules/components/learner/ModulePlayer";
 import ModuleBuilderPage from "./features/training-modules/components/admin/ModuleBuilderPage";
+import {
+  RoadmapListPage,
+  RoadmapEditorPage,
+  TeamProgressPanel,
+} from "./features/agent-roadmap";
 import PresentationRecordPage from "./features/training-modules/components/presentations/PresentationRecordPage";
 import PresentationDetailPage from "./features/training-modules/components/presentations/PresentationDetailPage";
 import { ContractingPage } from "./features/contracting/ContractingPage";
@@ -982,6 +987,50 @@ const marketingTemplateEditRoute = createRoute({
   },
 });
 
+// ============================================================================
+// Agent Roadmap routes (super-admin only at launch; agency-gated for agents
+// once the runner page lands in Commit 6)
+// ============================================================================
+
+// Admin: list of all roadmaps in the current agency
+const roadmapListRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "admin/agent-roadmap",
+  component: () => (
+    <RouteGuard superAdminOnly>
+      <RoadmapListPage />
+    </RouteGuard>
+  ),
+});
+
+// Admin: edit a specific roadmap (sections + items + content blocks)
+const roadmapEditorRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "admin/agent-roadmap/$roadmapId",
+  component: () => {
+    const { roadmapId } = roadmapEditorRoute.useParams();
+    return (
+      <RouteGuard superAdminOnly>
+        <RoadmapEditorPage roadmapId={roadmapId} />
+      </RouteGuard>
+    );
+  },
+});
+
+// Admin: team progress monitoring view for a specific roadmap
+const roadmapTeamRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "admin/agent-roadmap/$roadmapId/team",
+  component: () => {
+    const { roadmapId } = roadmapTeamRoute.useParams();
+    return (
+      <RouteGuard superAdminOnly>
+        <TeamProgressPanel roadmapId={roadmapId} />
+      </RouteGuard>
+    );
+  },
+});
+
 // Create the route tree - all routes are already linked via getParentRoute
 // Note: publicJoinAltRoute is at the end as a catch-all for /join-* URLs
 const routeTree = rootRoute.addChildren([
@@ -1051,6 +1100,9 @@ const routeTree = rootRoute.addChildren([
   closeKpiRoute,
   closeAiBuilderRoute,
   businessToolsRoute,
+  roadmapListRoute,
+  roadmapEditorRoute,
+  roadmapTeamRoute,
   publicJoinAltRoute, // Catch-all for /join-* pattern - must be last
 ]);
 

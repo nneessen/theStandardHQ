@@ -7980,6 +7980,255 @@ export type Database = {
           },
         ];
       };
+      roadmap_item_progress: {
+        Row: {
+          agency_id: string;
+          completed_at: string | null;
+          created_at: string;
+          id: string;
+          item_id: string;
+          notes: string | null;
+          roadmap_id: string;
+          started_at: string | null;
+          status: Database["public"]["Enums"]["roadmap_progress_status"];
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          agency_id: string;
+          completed_at?: string | null;
+          created_at?: string;
+          id?: string;
+          item_id: string;
+          notes?: string | null;
+          roadmap_id: string;
+          started_at?: string | null;
+          status?: Database["public"]["Enums"]["roadmap_progress_status"];
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          agency_id?: string;
+          completed_at?: string | null;
+          created_at?: string;
+          id?: string;
+          item_id?: string;
+          notes?: string | null;
+          roadmap_id?: string;
+          started_at?: string | null;
+          status?: Database["public"]["Enums"]["roadmap_progress_status"];
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_item_progress_item_id_fkey";
+            columns: ["item_id"];
+            isOneToOne: false;
+            referencedRelation: "roadmap_items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "roadmap_item_progress_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "roadmap_item_progress_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "roadmap_item_progress_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      roadmap_items: {
+        Row: {
+          agency_id: string;
+          content_blocks: Json;
+          created_at: string;
+          estimated_minutes: number | null;
+          id: string;
+          is_published: boolean;
+          is_required: boolean;
+          roadmap_id: string;
+          section_id: string;
+          sort_order: number;
+          summary: string | null;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          agency_id: string;
+          content_blocks?: Json;
+          created_at?: string;
+          estimated_minutes?: number | null;
+          id?: string;
+          is_published?: boolean;
+          is_required?: boolean;
+          roadmap_id: string;
+          section_id: string;
+          sort_order: number;
+          summary?: string | null;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string;
+          content_blocks?: Json;
+          created_at?: string;
+          estimated_minutes?: number | null;
+          id?: string;
+          is_published?: boolean;
+          is_required?: boolean;
+          roadmap_id?: string;
+          section_id?: string;
+          sort_order?: number;
+          summary?: string | null;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_items_section_id_fkey";
+            columns: ["section_id"];
+            isOneToOne: false;
+            referencedRelation: "roadmap_sections";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      roadmap_sections: {
+        Row: {
+          agency_id: string;
+          created_at: string;
+          description: string | null;
+          id: string;
+          roadmap_id: string;
+          sort_order: number;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          agency_id: string;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          roadmap_id: string;
+          sort_order: number;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          roadmap_id?: string;
+          sort_order?: number;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_sections_roadmap_id_fkey";
+            columns: ["roadmap_id"];
+            isOneToOne: false;
+            referencedRelation: "roadmap_templates";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      roadmap_templates: {
+        Row: {
+          agency_id: string;
+          created_at: string;
+          created_by: string;
+          description: string | null;
+          icon: string | null;
+          id: string;
+          imo_id: string | null;
+          is_default: boolean;
+          is_published: boolean;
+          sort_order: number;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          agency_id: string;
+          created_at?: string;
+          created_by: string;
+          description?: string | null;
+          icon?: string | null;
+          id?: string;
+          imo_id?: string | null;
+          is_default?: boolean;
+          is_published?: boolean;
+          sort_order?: number;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          agency_id?: string;
+          created_at?: string;
+          created_by?: string;
+          description?: string | null;
+          icon?: string | null;
+          id?: string;
+          imo_id?: string | null;
+          is_default?: boolean;
+          is_published?: boolean;
+          sort_order?: number;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "roadmap_templates_agency_id_fkey";
+            columns: ["agency_id"];
+            isOneToOne: false;
+            referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "roadmap_templates_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "roadmap_templates_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "roadmap_templates_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "roadmap_templates_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       role_permissions: {
         Row: {
           created_at: string | null;
@@ -17847,6 +18096,26 @@ export type Database = {
         Args: { p_rule_set_id: string };
         Returns: Json;
       };
+      roadmap_move_item: {
+        Args: {
+          p_item_id: string;
+          p_new_index: number;
+          p_target_section_id: string;
+        };
+        Returns: undefined;
+      };
+      roadmap_reorder_items: {
+        Args: { p_ordered_ids: string[]; p_section_id: string };
+        Returns: undefined;
+      };
+      roadmap_reorder_sections: {
+        Args: { p_ordered_ids: string[]; p_roadmap_id: string };
+        Returns: undefined;
+      };
+      roadmap_set_default: {
+        Args: { p_roadmap_id: string };
+        Returns: undefined;
+      };
       safe_uuid_from_text: { Args: { input: string }; Returns: string };
       save_underwriting_session_v2: {
         Args: { p_payload: Json };
@@ -18341,6 +18610,11 @@ export type Database = {
         | "indexed_universal_life"
         | "participating_whole_life";
       report_frequency: "weekly" | "monthly" | "quarterly";
+      roadmap_progress_status:
+        | "not_started"
+        | "in_progress"
+        | "completed"
+        | "skipped";
       rule_review_status: "draft" | "pending_review" | "approved" | "rejected";
       rule_set_scope: "condition" | "global";
       rule_source_type: "generic_template" | "carrier_document" | "manual";
@@ -18680,6 +18954,12 @@ export const Constants = {
         "participating_whole_life",
       ],
       report_frequency: ["weekly", "monthly", "quarterly"],
+      roadmap_progress_status: [
+        "not_started",
+        "in_progress",
+        "completed",
+        "skipped",
+      ],
       rule_review_status: ["draft", "pending_review", "approved", "rejected"],
       rule_set_scope: ["condition", "global"],
       rule_source_type: ["generic_template", "carrier_document", "manual"],
