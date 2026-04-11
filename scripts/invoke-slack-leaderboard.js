@@ -10,15 +10,35 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Slack leaderboards only exist in production — local Supabase has no real
+// workspace integrations. Prefer REMOTE_* env vars; fall back to VITE_* only
+// if a remote target isn't configured (e.g. running from a prod CI env).
+const SUPABASE_URL =
+  process.env.REMOTE_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const SUPABASE_SERVICE_KEY =
+  process.env.REMOTE_SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 async function main() {
   console.log("📊 Slack Leaderboard Manager\n");
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-    console.error("❌ Missing VITE_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env");
+    console.error(
+      "❌ Missing REMOTE_SUPABASE_URL/REMOTE_SUPABASE_SERVICE_ROLE_KEY (or VITE_ fallback) in .env",
+    );
     process.exit(1);
+  }
+
+  const isLocal = /127\.0\.0\.1|localhost/.test(SUPABASE_URL);
+  console.log(`Target: ${SUPABASE_URL}${isLocal ? " (LOCAL)" : " (REMOTE)"}`);
+  if (isLocal) {
+    console.log(
+      "⚠️  Pointing at local Supabase — there is almost certainly no real",
+    );
+    console.log(
+      "   Slack integration data here. Set REMOTE_SUPABASE_URL in .env to",
+    );
+    console.log("   debug production Slack posts.\n");
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
