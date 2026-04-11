@@ -4,11 +4,32 @@ import { trainingLessonService } from "../services/trainingLessonService";
 import type {
   CreateLessonInput,
   CreateContentBlockInput,
+  TrainingLessonContent,
+  TrainingLessonWithContent,
 } from "../types/training-module.types";
 import { useImo } from "@/contexts/ImoContext";
 import { toast } from "sonner";
 import { trainingModuleKeys } from "./useTrainingModules";
 import { quizKeys } from "./useTrainingQuizzes";
+
+// Optimistic patch helper: shallowly merges the input into the matching block
+// inside a cached TrainingLessonWithContent payload. Used by
+// useUpdateContentBlock's onMutate so the query cache reflects the user's
+// in-flight edits before the mutation round-trips, which is what prevents the
+// rich-text cursor from resetting while typing.
+function patchContentBlock(
+  cache: TrainingLessonWithContent | null | undefined,
+  blockId: string,
+  patch: Partial<CreateContentBlockInput>,
+): TrainingLessonWithContent | null | undefined {
+  if (!cache) return cache;
+  return {
+    ...cache,
+    content_blocks: cache.content_blocks.map((b) =>
+      b.id === blockId ? ({ ...b, ...patch } as TrainingLessonContent) : b,
+    ),
+  };
+}
 
 export const trainingLessonKeys = {
   all: ["training-lessons"] as const,
@@ -150,14 +171,34 @@ export function useUpdateContentBlock() {
       input: Partial<CreateContentBlockInput>;
     }) =>
       trainingLessonService.updateContentBlock(id, input).then(() => lessonId),
-    onSuccess: (lessonId) => {
-      queryClient.invalidateQueries({
-        queryKey: trainingLessonKeys.withContent(lessonId),
-      });
+    // Optimistic update — keeps the cache in sync with what the user just
+    // typed while the mutation is in flight. Without this, onSuccess
+    // invalidation would refetch stale-relative-to-typing data and reset the
+    // TipTap cursor mid-keystroke (see memory: Typing Glitch Pattern).
+    onMutate: async ({ id, lessonId, input }) => {
+      const key = trainingLessonKeys.withContent(lessonId);
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous =
+        queryClient.getQueryData<TrainingLessonWithContent | null>(key);
+      queryClient.setQueryData<TrainingLessonWithContent | null>(
+        key,
+        (old) => patchContentBlock(old, id, input) ?? null,
+      );
+      return { previous };
     },
-    onError: (error: Error) => {
+    onError: (error: Error, { lessonId }, context) => {
+      if (context && "previous" in context) {
+        queryClient.setQueryData(
+          trainingLessonKeys.withContent(lessonId),
+          context.previous,
+        );
+      }
       toast.error(error.message);
     },
+    // NOTE: Intentionally no onSuccess invalidation. The optimistic patch
+    // above already puts the new content in the cache. Invalidating here
+    // would trigger a refetch that can race with fast typing and overwrite
+    // in-flight edits.
   });
 }
 
@@ -171,7 +212,10 @@ export function useDuplicateTrainingLesson() {
     }: {
       lessonId: string;
       moduleId: string;
-    }) => trainingLessonService.duplicate(lessonId).then((data) => ({ data, moduleId })),
+    }) =>
+      trainingLessonService
+        .duplicate(lessonId)
+        .then((data) => ({ data, moduleId })),
     onSuccess: ({ moduleId }) => {
       queryClient.invalidateQueries({
         queryKey: trainingLessonKeys.byModule(moduleId),

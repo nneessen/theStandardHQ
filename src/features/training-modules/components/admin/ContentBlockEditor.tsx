@@ -85,6 +85,13 @@ function RichTextBlock({
   block: TrainingLessonContent;
   onUpdate: (input: Record<string, unknown>) => void;
 }) {
+  // TipTap owns its own editor state once mounted. We capture the initial
+  // content on first render via a ref and never resync from props, so any
+  // query-cache churn during typing cannot reset the cursor. The parent
+  // SortableContentBlock is keyed on `block.id`, so switching to a different
+  // block remounts this component and re-initializes the ref naturally.
+  const initialContentRef = useRef(block.rich_text_content || "");
+
   // Debounce rich text saves (TipTap fires onChange frequently)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleChange = useCallback(
@@ -109,7 +116,7 @@ function RichTextBlock({
         Rich Text
       </div>
       <TipTapEditor
-        content={block.rich_text_content || ""}
+        content={initialContentRef.current}
         onChange={handleChange}
         placeholder="Write your content here..."
         minHeight="120px"

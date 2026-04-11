@@ -5,9 +5,72 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "@/lib/pdf-setup";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 
 interface SlidesPresentationProps {
   url: string;
+}
+
+interface SlideNavigatorProps {
+  currentPage: number;
+  numPages: number | null;
+  onPageChange: (page: number) => void;
+  onPrev: () => void;
+  onNext: () => void;
+}
+
+/**
+ * Seekable slider + prev/next navigator used at both top and bottom of the
+ * PDF container so the user can navigate quickly without scrolling below
+ * the fold. The slider supports drag-to-jump through any number of pages.
+ */
+function SlideNavigator({
+  currentPage,
+  numPages,
+  onPageChange,
+  onPrev,
+  onNext,
+}: SlideNavigatorProps) {
+  const disabled = !numPages;
+  const max = numPages ?? 1;
+  return (
+    <div className="flex items-center gap-2 px-1">
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-7 w-7 flex-shrink-0"
+        onClick={onPrev}
+        disabled={disabled || currentPage <= 1}
+        aria-label="Previous slide"
+      >
+        <ChevronLeft className="h-3.5 w-3.5" />
+      </Button>
+      <div className="flex-1 min-w-0">
+        <Slider
+          min={1}
+          max={max}
+          step={1}
+          value={[currentPage]}
+          onValueChange={([v]) => onPageChange(v)}
+          disabled={disabled}
+          aria-label="Slide navigator"
+        />
+      </div>
+      <span className="text-[11px] text-zinc-500 min-w-[56px] text-right tabular-nums flex-shrink-0">
+        {numPages ? `${currentPage} / ${numPages}` : `${currentPage}`}
+      </span>
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-7 w-7 flex-shrink-0"
+        onClick={onNext}
+        disabled={disabled || currentPage >= max}
+        aria-label="Next slide"
+      >
+        <ChevronRight className="h-3.5 w-3.5" />
+      </Button>
+    </div>
+  );
 }
 
 export function SlidesPresentation({ url }: SlidesPresentationProps) {
@@ -28,6 +91,13 @@ export function SlidesPresentation({ url }: SlidesPresentationProps) {
   const goPrev = useCallback(
     () => setCurrentPage((p) => Math.max(1, p - 1)),
     [],
+  );
+  const goToPage = useCallback(
+    (page: number) => {
+      if (!numPages) return;
+      setCurrentPage(Math.max(1, Math.min(page, numPages)));
+    },
+    [numPages],
   );
 
   useEffect(() => {
@@ -51,6 +121,15 @@ export function SlidesPresentation({ url }: SlidesPresentationProps) {
 
   return (
     <div className="space-y-2">
+      {/* Top navigator — always visible on initial render */}
+      <SlideNavigator
+        currentPage={currentPage}
+        numPages={numPages}
+        onPageChange={goToPage}
+        onPrev={goPrev}
+        onNext={goNext}
+      />
+
       <div
         ref={containerRef}
         className="rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-slate-800 flex items-center justify-center"
@@ -83,33 +162,14 @@ export function SlidesPresentation({ url }: SlidesPresentationProps) {
         </Document>
       </div>
 
-      <div className="flex items-center justify-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 text-[11px]"
-          onClick={goPrev}
-          disabled={currentPage <= 1}
-        >
-          <ChevronLeft className="h-3 w-3 mr-0.5" />
-          Prev
-        </Button>
-        <span className="text-[11px] text-zinc-500 min-w-[80px] text-center">
-          {numPages
-            ? `Slide ${currentPage} of ${numPages}`
-            : `Slide ${currentPage}`}
-        </span>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 text-[11px]"
-          onClick={goNext}
-          disabled={numPages !== null && currentPage >= numPages}
-        >
-          Next
-          <ChevronRight className="h-3 w-3 ml-0.5" />
-        </Button>
-      </div>
+      {/* Bottom navigator — mirrors the top so users don't have to scroll up */}
+      <SlideNavigator
+        currentPage={currentPage}
+        numPages={numPages}
+        onPageChange={goToPage}
+        onPrev={goPrev}
+        onNext={goNext}
+      />
     </div>
   );
 }
