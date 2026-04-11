@@ -5,6 +5,8 @@ import type {
   CreateQuizInput,
   CreateQuestionInput,
   CreateOptionInput,
+  TrainingQuizWithQuestions,
+  TrainingQuizQuestion,
 } from "../types/training-module.types";
 import { useImo } from "@/contexts/ImoContext";
 import { toast } from "sonner";
@@ -17,6 +19,54 @@ export const quizKeys = {
   attempts: (quizId: string, userId: string) =>
     [...quizKeys.all, "attempts", quizId, userId] as const,
 };
+
+// ----------------------------------------------------------------------------
+// Optimistic patch helpers (local, pure). Each returns a shallowly-cloned
+// TrainingQuizWithQuestions with the requested patch applied at the right
+// nesting level. Used by the three update mutations' onMutate handlers to
+// keep the query cache in sync with user input while the server catches up.
+// ----------------------------------------------------------------------------
+
+type QuizCache = TrainingQuizWithQuestions | null | undefined;
+
+function patchQuiz(
+  cache: QuizCache,
+  patch: Partial<CreateQuizInput>,
+): QuizCache {
+  if (!cache) return cache;
+  return { ...cache, ...patch } as TrainingQuizWithQuestions;
+}
+
+function patchQuestion(
+  cache: QuizCache,
+  questionId: string,
+  patch: Partial<Omit<CreateQuestionInput, "quiz_id">>,
+): QuizCache {
+  if (!cache) return cache;
+  return {
+    ...cache,
+    questions: cache.questions.map((q) =>
+      q.id === questionId ? ({ ...q, ...patch } as TrainingQuizQuestion) : q,
+    ),
+  };
+}
+
+function patchOption(
+  cache: QuizCache,
+  optionId: string,
+  patch: Partial<Omit<CreateOptionInput, "question_id">>,
+): QuizCache {
+  if (!cache) return cache;
+  return {
+    ...cache,
+    questions: cache.questions.map((q) => ({
+      ...q,
+      options: (q.options ?? []).map((o) =>
+        o.id === optionId ? { ...o, ...patch } : o,
+      ),
+    })),
+  };
+}
 
 export function useTrainingQuiz(lessonId: string | undefined) {
   return useQuery({
@@ -60,13 +110,27 @@ export function useUpdateQuiz() {
       lessonId: string;
       input: Partial<CreateQuizInput>;
     }) => trainingQuizService.updateQuiz(id, input).then(() => lessonId),
+    onMutate: async ({ lessonId, input }) => {
+      const key = quizKeys.byLesson(lessonId);
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous =
+        queryClient.getQueryData<TrainingQuizWithQuestions | null>(key);
+      queryClient.setQueryData<TrainingQuizWithQuestions | null>(
+        key,
+        (old) => patchQuiz(old, input) ?? null,
+      );
+      return { previous };
+    },
+    onError: (error: Error, { lessonId }, context) => {
+      if (context && "previous" in context) {
+        queryClient.setQueryData(quizKeys.byLesson(lessonId), context.previous);
+      }
+      toast.error(error.message);
+    },
     onSuccess: (lessonId) => {
       queryClient.invalidateQueries({
         queryKey: quizKeys.byLesson(lessonId),
       });
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
     },
   });
 }
@@ -111,13 +175,27 @@ export function useUpdateQuestion() {
       lessonId: string;
       input: Partial<Omit<CreateQuestionInput, "quiz_id">>;
     }) => trainingQuizService.updateQuestion(id, input).then(() => lessonId),
+    onMutate: async ({ id, lessonId, input }) => {
+      const key = quizKeys.byLesson(lessonId);
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous =
+        queryClient.getQueryData<TrainingQuizWithQuestions | null>(key);
+      queryClient.setQueryData<TrainingQuizWithQuestions | null>(
+        key,
+        (old) => patchQuestion(old, id, input) ?? null,
+      );
+      return { previous };
+    },
+    onError: (error: Error, { lessonId }, context) => {
+      if (context && "previous" in context) {
+        queryClient.setQueryData(quizKeys.byLesson(lessonId), context.previous);
+      }
+      toast.error(error.message);
+    },
     onSuccess: (lessonId) => {
       queryClient.invalidateQueries({
         queryKey: quizKeys.byLesson(lessonId),
       });
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
     },
   });
 }
@@ -178,13 +256,27 @@ export function useUpdateOption() {
       lessonId: string;
       input: Partial<Omit<CreateOptionInput, "question_id">>;
     }) => trainingQuizService.updateOption(id, input).then(() => lessonId),
+    onMutate: async ({ id, lessonId, input }) => {
+      const key = quizKeys.byLesson(lessonId);
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous =
+        queryClient.getQueryData<TrainingQuizWithQuestions | null>(key);
+      queryClient.setQueryData<TrainingQuizWithQuestions | null>(
+        key,
+        (old) => patchOption(old, id, input) ?? null,
+      );
+      return { previous };
+    },
+    onError: (error: Error, { lessonId }, context) => {
+      if (context && "previous" in context) {
+        queryClient.setQueryData(quizKeys.byLesson(lessonId), context.previous);
+      }
+      toast.error(error.message);
+    },
     onSuccess: (lessonId) => {
       queryClient.invalidateQueries({
         queryKey: quizKeys.byLesson(lessonId),
       });
-    },
-    onError: (error: Error) => {
-      toast.error(error.message);
     },
   });
 }

@@ -1,5 +1,5 @@
 // src/features/training-modules/components/admin/QuizBuilder.tsx
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Plus,
   Loader2,
@@ -21,11 +21,16 @@ import {
   useUpdateOption,
   useDeleteOption,
 } from "../../hooks/useTrainingQuizzes";
+import { useDebouncedField } from "../../hooks/useDebouncedField";
 import { QUESTION_TYPES } from "../../types/training-module.types";
 import type {
+  TrainingQuiz,
+  TrainingQuizWithQuestions,
   TrainingQuizQuestion,
   TrainingQuizOption,
   QuestionType,
+  CreateQuizInput,
+  CreateQuestionInput,
 } from "../../types/training-module.types";
 
 const QUESTION_TYPE_LABELS: Record<QuestionType, string> = {
@@ -40,7 +45,6 @@ interface QuizBuilderProps {
 export function QuizBuilder({ lessonId }: QuizBuilderProps) {
   const { data: quiz, isLoading } = useTrainingQuiz(lessonId);
   const createQuiz = useCreateQuiz();
-  const updateQuiz = useUpdateQuiz();
 
   if (isLoading) {
     return (
@@ -59,9 +63,7 @@ export function QuizBuilder({ lessonId }: QuizBuilderProps) {
         <Button
           size="sm"
           className="h-7 text-xs"
-          onClick={() =>
-            createQuiz.mutate({ lesson_id: lessonId })
-          }
+          onClick={() => createQuiz.mutate({ lesson_id: lessonId })}
           disabled={createQuiz.isPending}
         >
           {createQuiz.isPending ? (
@@ -75,121 +77,12 @@ export function QuizBuilder({ lessonId }: QuizBuilderProps) {
     );
   }
 
-  const updateField = (field: string, value: unknown) => {
-    updateQuiz.mutate({
-      id: quiz.id,
-      lessonId,
-      input: { [field]: value },
-    });
-  };
-
   return (
     <div className="space-y-4">
-      {/* Quiz Settings */}
-      <div className="space-y-2">
-        <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-          Quiz Settings
-        </h3>
-        <div className="grid grid-cols-3 gap-2">
-          <div className="space-y-1">
-            <label className="text-[10px] text-zinc-500">
-              Pass Threshold (%)
-            </label>
-            <Input
-              type="number"
-              min={0}
-              max={100}
-              value={quiz.pass_threshold}
-              onChange={(e) =>
-                updateField("pass_threshold", Number(e.target.value) || 70)
-              }
-              className="h-7 text-xs"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-zinc-500">Max Attempts</label>
-            <Input
-              type="number"
-              min={1}
-              value={quiz.max_attempts}
-              onChange={(e) =>
-                updateField("max_attempts", Number(e.target.value) || 3)
-              }
-              className="h-7 text-xs"
-            />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-zinc-500">
-              Time Limit (min)
-            </label>
-            <Input
-              type="number"
-              value={quiz.time_limit_minutes || ""}
-              onChange={(e) =>
-                updateField(
-                  "time_limit_minutes",
-                  e.target.value ? Number(e.target.value) : null,
-                )
-              }
-              className="h-7 text-xs"
-              placeholder="None"
-            />
-          </div>
-        </div>
-        <div className="grid grid-cols-4 gap-2">
-          <label className="flex items-center gap-1.5 text-[10px] text-zinc-600 dark:text-zinc-400">
-            <input
-              type="checkbox"
-              checked={quiz.shuffle_questions}
-              onChange={(e) =>
-                updateField("shuffle_questions", e.target.checked)
-              }
-              className="h-3 w-3 rounded"
-            />
-            Shuffle Questions
-          </label>
-          <label className="flex items-center gap-1.5 text-[10px] text-zinc-600 dark:text-zinc-400">
-            <input
-              type="checkbox"
-              checked={quiz.shuffle_options}
-              onChange={(e) =>
-                updateField("shuffle_options", e.target.checked)
-              }
-              className="h-3 w-3 rounded"
-            />
-            Shuffle Options
-          </label>
-          <label className="flex items-center gap-1.5 text-[10px] text-zinc-600 dark:text-zinc-400">
-            <input
-              type="checkbox"
-              checked={quiz.show_correct_answers}
-              onChange={(e) =>
-                updateField("show_correct_answers", e.target.checked)
-              }
-              className="h-3 w-3 rounded"
-            />
-            Show Answers
-          </label>
-          <div className="space-y-1">
-            <label className="text-[10px] text-zinc-500">
-              Perfect Score XP
-            </label>
-            <Input
-              type="number"
-              value={quiz.xp_bonus_perfect}
-              onChange={(e) =>
-                updateField("xp_bonus_perfect", Number(e.target.value) || 0)
-              }
-              className="h-7 text-xs"
-            />
-          </div>
-        </div>
-      </div>
+      <QuizSettingsEditor quiz={quiz} lessonId={lessonId} />
 
-      {/* Divider */}
       <div className="border-t border-zinc-200 dark:border-zinc-800" />
 
-      {/* Questions */}
       <QuestionList
         quizId={quiz.id}
         lessonId={lessonId}
@@ -198,6 +91,154 @@ export function QuizBuilder({ lessonId }: QuizBuilderProps) {
     </div>
   );
 }
+
+// ----------------------------------------------------------------------------
+// Quiz settings — each typable field owns its own useDebouncedField so the
+// input is locally-authoritative and only saves ~500ms after the user pauses.
+// Checkboxes stay direct (single-click mutations can't produce typing glitches).
+// ----------------------------------------------------------------------------
+
+function QuizSettingsEditor({
+  quiz,
+  lessonId,
+}: {
+  quiz: TrainingQuiz | TrainingQuizWithQuestions;
+  lessonId: string;
+}) {
+  const updateQuiz = useUpdateQuiz();
+
+  // Loose-typed patch — widens the Partial<CreateQuizInput> mutation input
+  // so we can pass `null` to clear nullable columns (e.g., time_limit_minutes).
+  const save = useCallback(
+    (patch: Record<string, unknown>) => {
+      updateQuiz.mutate({
+        id: quiz.id,
+        lessonId,
+        input: patch as Partial<CreateQuizInput>,
+      });
+    },
+    [updateQuiz, quiz.id, lessonId],
+  );
+
+  const savePassThreshold = useCallback(
+    (v: string) => save({ pass_threshold: Number(v) || 70 }),
+    [save],
+  );
+  const saveMaxAttempts = useCallback(
+    (v: string) => save({ max_attempts: Number(v) || 3 }),
+    [save],
+  );
+  const saveTimeLimit = useCallback(
+    (v: string) => save({ time_limit_minutes: v ? Number(v) : null }),
+    [save],
+  );
+  const saveXpBonus = useCallback(
+    (v: string) => save({ xp_bonus_perfect: Number(v) || 0 }),
+    [save],
+  );
+
+  const [passThreshold, setPassThreshold] = useDebouncedField(
+    String(quiz.pass_threshold),
+    savePassThreshold,
+  );
+  const [maxAttempts, setMaxAttempts] = useDebouncedField(
+    String(quiz.max_attempts),
+    saveMaxAttempts,
+  );
+  const [timeLimit, setTimeLimit] = useDebouncedField(
+    quiz.time_limit_minutes != null ? String(quiz.time_limit_minutes) : "",
+    saveTimeLimit,
+  );
+  const [xpBonus, setXpBonus] = useDebouncedField(
+    String(quiz.xp_bonus_perfect),
+    saveXpBonus,
+  );
+
+  return (
+    <div className="space-y-2">
+      <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+        Quiz Settings
+      </h3>
+      <div className="grid grid-cols-3 gap-2">
+        <div className="space-y-1">
+          <label className="text-[10px] text-zinc-500">
+            Pass Threshold (%)
+          </label>
+          <Input
+            type="number"
+            min={0}
+            max={100}
+            value={passThreshold}
+            onChange={(e) => setPassThreshold(e.target.value)}
+            className="h-7 text-xs"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-[10px] text-zinc-500">Max Attempts</label>
+          <Input
+            type="number"
+            min={1}
+            value={maxAttempts}
+            onChange={(e) => setMaxAttempts(e.target.value)}
+            className="h-7 text-xs"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-[10px] text-zinc-500">Time Limit (min)</label>
+          <Input
+            type="number"
+            value={timeLimit}
+            onChange={(e) => setTimeLimit(e.target.value)}
+            className="h-7 text-xs"
+            placeholder="None"
+          />
+        </div>
+      </div>
+      <div className="grid grid-cols-4 gap-2">
+        <label className="flex items-center gap-1.5 text-[10px] text-zinc-600 dark:text-zinc-400">
+          <input
+            type="checkbox"
+            checked={quiz.shuffle_questions}
+            onChange={(e) => save({ shuffle_questions: e.target.checked })}
+            className="h-3 w-3 rounded"
+          />
+          Shuffle Questions
+        </label>
+        <label className="flex items-center gap-1.5 text-[10px] text-zinc-600 dark:text-zinc-400">
+          <input
+            type="checkbox"
+            checked={quiz.shuffle_options}
+            onChange={(e) => save({ shuffle_options: e.target.checked })}
+            className="h-3 w-3 rounded"
+          />
+          Shuffle Options
+        </label>
+        <label className="flex items-center gap-1.5 text-[10px] text-zinc-600 dark:text-zinc-400">
+          <input
+            type="checkbox"
+            checked={quiz.show_correct_answers}
+            onChange={(e) => save({ show_correct_answers: e.target.checked })}
+            className="h-3 w-3 rounded"
+          />
+          Show Answers
+        </label>
+        <div className="space-y-1">
+          <label className="text-[10px] text-zinc-500">Perfect Score XP</label>
+          <Input
+            type="number"
+            value={xpBonus}
+            onChange={(e) => setXpBonus(e.target.value)}
+            className="h-7 text-xs"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------------
+// Questions
+// ----------------------------------------------------------------------------
 
 function QuestionList({
   quizId,
@@ -252,6 +293,7 @@ function QuestionList({
       ) : (
         <div className="space-y-2">
           {questions
+            .slice()
             .sort((a, b) => a.sort_order - b.sort_order)
             .map((question, index) => (
               <QuestionEditor
@@ -280,13 +322,44 @@ function QuestionEditor({
   const deleteQuestion = useDeleteQuestion();
   const [expanded, setExpanded] = useState(true);
 
-  const update = (field: string, value: unknown) => {
-    updateQuestion.mutate({
-      id: question.id,
-      lessonId,
-      input: { [field]: value },
-    });
-  };
+  // Loose-typed patch for same reason as QuizSettingsEditor — allows `null`
+  // for nullable columns like `explanation`.
+  const save = useCallback(
+    (patch: Record<string, unknown>) => {
+      updateQuestion.mutate({
+        id: question.id,
+        lessonId,
+        input: patch as Partial<Omit<CreateQuestionInput, "quiz_id">>,
+      });
+    },
+    [updateQuestion, question.id, lessonId],
+  );
+
+  const saveQuestionText = useCallback(
+    (v: string) => save({ question_text: v }),
+    [save],
+  );
+  const savePoints = useCallback(
+    (v: string) => save({ points: Number(v) || 1 }),
+    [save],
+  );
+  const saveExplanation = useCallback(
+    (v: string) => save({ explanation: v ? v : null }),
+    [save],
+  );
+
+  const [questionText, setQuestionText] = useDebouncedField(
+    question.question_text,
+    saveQuestionText,
+  );
+  const [points, setPoints] = useDebouncedField(
+    String(question.points),
+    savePoints,
+  );
+  const [explanation, setExplanation] = useDebouncedField(
+    question.explanation ?? "",
+    saveExplanation,
+  );
 
   const handleDelete = () => {
     if (!window.confirm("Delete this question and all its options?")) return;
@@ -305,7 +378,7 @@ function QuestionEditor({
           Q{index + 1}
         </span>
         <span className="text-[11px] text-zinc-700 dark:text-zinc-300 truncate flex-1">
-          {question.question_text}
+          {questionText || question.question_text}
         </span>
         <span className="text-[9px] text-zinc-400">
           {question.points}pt{question.points !== 1 ? "s" : ""}
@@ -324,8 +397,8 @@ function QuestionEditor({
         <div className="px-2 pb-2 space-y-2 border-t border-zinc-100 dark:border-zinc-800 pt-2">
           {/* Question text */}
           <Input
-            value={question.question_text}
-            onChange={(e) => update("question_text", e.target.value)}
+            value={questionText}
+            onChange={(e) => setQuestionText(e.target.value)}
             className="h-7 text-xs"
             placeholder="Question text"
           />
@@ -335,7 +408,9 @@ function QuestionEditor({
               <label className="text-[10px] text-zinc-500">Type</label>
               <select
                 value={question.question_type}
-                onChange={(e) => update("question_type", e.target.value)}
+                onChange={(e) =>
+                  save({ question_type: e.target.value as QuestionType })
+                }
                 className="w-full h-7 text-xs border border-zinc-200 dark:border-zinc-700 rounded-md px-2 bg-white dark:bg-zinc-900"
               >
                 {QUESTION_TYPES.map((type) => (
@@ -350,20 +425,16 @@ function QuestionEditor({
               <Input
                 type="number"
                 min={1}
-                value={question.points}
-                onChange={(e) =>
-                  update("points", Number(e.target.value) || 1)
-                }
+                value={points}
+                onChange={(e) => setPoints(e.target.value)}
                 className="h-7 text-xs"
               />
             </div>
             <div className="space-y-1">
               <label className="text-[10px] text-zinc-500">Explanation</label>
               <Input
-                value={question.explanation || ""}
-                onChange={(e) =>
-                  update("explanation", e.target.value || null)
-                }
+                value={explanation}
+                onChange={(e) => setExplanation(e.target.value)}
                 className="h-7 text-xs"
                 placeholder="Shown after answer"
               />
@@ -383,6 +454,11 @@ function QuestionEditor({
   );
 }
 
+// ----------------------------------------------------------------------------
+// Options — each row is extracted into its own subcomponent so it can host
+// a per-row useDebouncedField (hooks cannot be called inside .map()).
+// ----------------------------------------------------------------------------
+
 function OptionList({
   questionId,
   lessonId,
@@ -395,7 +471,6 @@ function OptionList({
   questionType: QuestionType;
 }) {
   const createOption = useCreateOption();
-  const updateOption = useUpdateOption();
   const deleteOption = useDeleteOption();
 
   const handleAddOption = () => {
@@ -415,22 +490,6 @@ function OptionList({
     });
   };
 
-  const handleToggleCorrect = (option: TrainingQuizOption) => {
-    updateOption.mutate({
-      id: option.id,
-      lessonId,
-      input: { is_correct: !option.is_correct },
-    });
-  };
-
-  const handleUpdateText = (optionId: string, text: string) => {
-    updateOption.mutate({
-      id: optionId,
-      lessonId,
-      input: { option_text: text },
-    });
-  };
-
   const handleDelete = (optionId: string) => {
     deleteOption.mutate({ id: optionId, lessonId });
   };
@@ -440,9 +499,7 @@ function OptionList({
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <label className="text-[10px] font-medium text-zinc-500">
-          Options
-        </label>
+        <label className="text-[10px] font-medium text-zinc-500">Options</label>
         {questionType !== "true_false" && (
           <Button
             variant="ghost"
@@ -462,30 +519,13 @@ function OptionList({
       </div>
 
       {sorted.map((option) => (
-        <div key={option.id} className="flex items-center gap-1.5">
-          <button
-            onClick={() => handleToggleCorrect(option)}
-            className="flex-shrink-0"
-            title={option.is_correct ? "Correct answer" : "Mark as correct"}
-          >
-            {option.is_correct ? (
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-            ) : (
-              <Circle className="h-3.5 w-3.5 text-zinc-300" />
-            )}
-          </button>
-          <Input
-            value={option.option_text}
-            onChange={(e) => handleUpdateText(option.id, e.target.value)}
-            className="h-6 text-[11px] flex-1"
-            placeholder="Option text"
-          />
-          {questionType !== "true_false" && (
-            <button onClick={() => handleDelete(option.id)}>
-              <Trash2 className="h-3 w-3 text-zinc-400 hover:text-red-500" />
-            </button>
-          )}
-        </div>
+        <OptionRow
+          key={option.id}
+          option={option}
+          lessonId={lessonId}
+          questionType={questionType}
+          onDelete={handleDelete}
+        />
       ))}
 
       {/* Auto-create True/False options if missing */}
@@ -518,6 +558,68 @@ function OptionList({
         >
           Create True/False Options
         </Button>
+      )}
+    </div>
+  );
+}
+
+function OptionRow({
+  option,
+  lessonId,
+  questionType,
+  onDelete,
+}: {
+  option: TrainingQuizOption;
+  lessonId: string;
+  questionType: QuestionType;
+  onDelete: (optionId: string) => void;
+}) {
+  const updateOption = useUpdateOption();
+
+  const saveText = useCallback(
+    (v: string) => {
+      updateOption.mutate({
+        id: option.id,
+        lessonId,
+        input: { option_text: v },
+      });
+    },
+    [updateOption, option.id, lessonId],
+  );
+
+  const [text, setText] = useDebouncedField(option.option_text, saveText);
+
+  const toggleCorrect = () => {
+    updateOption.mutate({
+      id: option.id,
+      lessonId,
+      input: { is_correct: !option.is_correct },
+    });
+  };
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <button
+        onClick={toggleCorrect}
+        className="flex-shrink-0"
+        title={option.is_correct ? "Correct answer" : "Mark as correct"}
+      >
+        {option.is_correct ? (
+          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+        ) : (
+          <Circle className="h-3.5 w-3.5 text-zinc-300" />
+        )}
+      </button>
+      <Input
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        className="h-6 text-[11px] flex-1"
+        placeholder="Option text"
+      />
+      {questionType !== "true_false" && (
+        <button onClick={() => onDelete(option.id)}>
+          <Trash2 className="h-3 w-3 text-zinc-400 hover:text-red-500" />
+        </button>
       )}
     </div>
   );
