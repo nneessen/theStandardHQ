@@ -205,8 +205,9 @@ export class PolicyRepository extends BaseRepository<
       status?: string;
       carrierId?: string;
       product?: string;
-      effectiveDateFrom?: string; // YYYY-MM-DD format
-      effectiveDateTo?: string; // YYYY-MM-DD format
+      dateFrom?: string; // YYYY-MM-DD format
+      dateTo?: string; // YYYY-MM-DD format
+      dateField?: "submit_date" | "effective_date";
       searchTerm?: string;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DB record has dynamic schema
       [key: string]: any;
@@ -235,12 +236,8 @@ export class PolicyRepository extends BaseRepository<
       // Apply filters
       if (filters) {
         // Handle standard equality filters
-        const {
-          effectiveDateFrom,
-          effectiveDateTo,
-          searchTerm,
-          ...equalityFilters
-        } = filters;
+        const { dateFrom, dateTo, dateField, searchTerm, ...equalityFilters } =
+          filters;
 
         Object.entries(equalityFilters).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
@@ -256,12 +253,16 @@ export class PolicyRepository extends BaseRepository<
           }
         });
 
-        // Apply date range filters
-        if (effectiveDateFrom) {
-          query = query.gte("effective_date", effectiveDateFrom);
+        // Apply date range filters against the caller-selected column.
+        // Default to submit_date because it's non-nullable — effective_date is
+        // null for freshly submitted policies and silently drops them.
+        const dateColumn: "submit_date" | "effective_date" =
+          dateField === "effective_date" ? "effective_date" : "submit_date";
+        if (dateFrom) {
+          query = query.gte(dateColumn, dateFrom);
         }
-        if (effectiveDateTo) {
-          query = query.lte("effective_date", effectiveDateTo);
+        if (dateTo) {
+          query = query.lte(dateColumn, dateTo);
         }
 
         // Apply search term filter (searches policy_number and client name)
@@ -780,8 +781,9 @@ export class PolicyRepository extends BaseRepository<
       productId?: string;
       product?: string;
       userId?: string;
-      effectiveDateFrom?: string; // YYYY-MM-DD format
-      effectiveDateTo?: string; // YYYY-MM-DD format
+      dateFrom?: string; // YYYY-MM-DD format
+      dateTo?: string; // YYYY-MM-DD format
+      dateField?: "submit_date" | "effective_date";
       searchTerm?: string;
     },
     currentUserId?: string,
@@ -806,12 +808,16 @@ export class PolicyRepository extends BaseRepository<
         if (filters.product) query = query.eq("product", filters.product);
         if (filters.userId) query = query.eq("user_id", filters.userId);
 
-        // Date range filters
-        if (filters.effectiveDateFrom) {
-          query = query.gte("effective_date", filters.effectiveDateFrom);
+        // Date range filters — target column chosen by caller (default submit_date)
+        const dateColumn: "submit_date" | "effective_date" =
+          filters.dateField === "effective_date"
+            ? "effective_date"
+            : "submit_date";
+        if (filters.dateFrom) {
+          query = query.gte(dateColumn, filters.dateFrom);
         }
-        if (filters.effectiveDateTo) {
-          query = query.lte("effective_date", filters.effectiveDateTo);
+        if (filters.dateTo) {
+          query = query.lte(dateColumn, filters.dateTo);
         }
 
         // Search term filter (searches policy_number and client name)
@@ -950,8 +956,9 @@ export class PolicyRepository extends BaseRepository<
       status?: string;
       carrierId?: string;
       product?: string;
-      effectiveDateFrom?: string;
-      effectiveDateTo?: string;
+      dateFrom?: string;
+      dateTo?: string;
+      dateField?: "submit_date" | "effective_date";
       searchTerm?: string;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DB record has dynamic schema
       [key: string]: any;
@@ -983,12 +990,8 @@ export class PolicyRepository extends BaseRepository<
 
       // Apply filters (same logic as findAll)
       if (filters) {
-        const {
-          effectiveDateFrom,
-          effectiveDateTo,
-          searchTerm,
-          ...equalityFilters
-        } = filters;
+        const { dateFrom, dateTo, dateField, searchTerm, ...equalityFilters } =
+          filters;
 
         Object.entries(equalityFilters).forEach(([key, value]) => {
           if (value !== undefined && value !== null) {
@@ -1002,12 +1005,14 @@ export class PolicyRepository extends BaseRepository<
           }
         });
 
-        // Date range filters
-        if (effectiveDateFrom) {
-          query = query.gte("effective_date", effectiveDateFrom);
+        // Date range filters — target column chosen by caller (default submit_date)
+        const dateColumn: "submit_date" | "effective_date" =
+          dateField === "effective_date" ? "effective_date" : "submit_date";
+        if (dateFrom) {
+          query = query.gte(dateColumn, dateFrom);
         }
-        if (effectiveDateTo) {
-          query = query.lte("effective_date", effectiveDateTo);
+        if (dateTo) {
+          query = query.lte(dateColumn, dateTo);
         }
 
         // Apply search term filter (searches policy_number and client name)

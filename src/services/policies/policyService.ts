@@ -342,28 +342,32 @@ class PolicyService {
   async getFiltered(filters: PolicyFilters): Promise<Policy[]> {
     const userId = await getCurrentUserId();
 
-    // Convert PolicyFilters to repository filter format for server-side filtering
-    const effectiveDateFrom =
-      filters.effectiveDateFrom ??
+    // Convert PolicyFilters to repository filter format for server-side filtering.
+    // Legacy startDate/endDate fall back to dateFrom/dateTo so older callers
+    // continue to work; they filter on the dateField (default submit_date).
+    const dateFrom =
+      filters.dateFrom ??
       (filters.startDate ? formatDateForDB(filters.startDate) : undefined);
-    const effectiveDateTo =
-      filters.effectiveDateTo ??
+    const dateTo =
+      filters.dateTo ??
       (filters.endDate ? formatDateForDB(filters.endDate) : undefined);
 
     const repoFilters: {
       status?: string;
       carrierId?: string;
       product?: string;
-      effectiveDateFrom?: string;
-      effectiveDateTo?: string;
+      dateFrom?: string;
+      dateTo?: string;
+      dateField?: "submit_date" | "effective_date";
       searchTerm?: string;
     } = {};
 
     if (filters.status) repoFilters.status = filters.status;
     if (filters.carrierId) repoFilters.carrierId = filters.carrierId;
     if (filters.product) repoFilters.product = filters.product;
-    if (effectiveDateFrom) repoFilters.effectiveDateFrom = effectiveDateFrom;
-    if (effectiveDateTo) repoFilters.effectiveDateTo = effectiveDateTo;
+    if (dateFrom) repoFilters.dateFrom = dateFrom;
+    if (dateTo) repoFilters.dateTo = dateTo;
+    if (filters.dateField) repoFilters.dateField = filters.dateField;
     if (filters.searchTerm) repoFilters.searchTerm = filters.searchTerm;
 
     const policies = await this.repository.findAll(
@@ -410,8 +414,9 @@ class PolicyService {
           status: filters.status,
           carrierId: filters.carrierId,
           product: filters.product,
-          effectiveDateFrom: filters.effectiveDateFrom,
-          effectiveDateTo: filters.effectiveDateTo,
+          dateFrom: filters.dateFrom,
+          dateTo: filters.dateTo,
+          dateField: filters.dateField,
           searchTerm: filters.searchTerm,
         }
       : undefined;
@@ -443,8 +448,9 @@ class PolicyService {
           status: filters.status,
           carrierId: filters.carrierId,
           product: filters.product,
-          effectiveDateFrom: filters.effectiveDateFrom,
-          effectiveDateTo: filters.effectiveDateTo,
+          dateFrom: filters.dateFrom,
+          dateTo: filters.dateTo,
+          dateField: filters.dateField,
           searchTerm: filters.searchTerm,
         }
       : undefined;
@@ -479,8 +485,9 @@ class PolicyService {
           status: filters.status,
           carrierId: filters.carrierId,
           product: filters.product,
-          effectiveDateFrom: filters.effectiveDateFrom,
-          effectiveDateTo: filters.effectiveDateTo,
+          dateFrom: filters.dateFrom,
+          dateTo: filters.dateTo,
+          dateField: filters.dateField,
           searchTerm: filters.searchTerm,
         }
       : undefined;

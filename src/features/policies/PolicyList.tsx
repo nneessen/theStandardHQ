@@ -1,6 +1,6 @@
 // src/features/policies/PolicyList.tsx
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
 import {
   Edit,
@@ -135,6 +135,18 @@ export const PolicyList: React.FC<PolicyListProps> = ({
   const getDateSortField = () =>
     dateColumnType === "effective" ? "effective_date" : "submit_date";
 
+  // Thread dateColumnType into the filters so the custom date range picker
+  // filters on whichever column the user is currently viewing. Memoized so
+  // the query hook's cache key only changes when something meaningful flips.
+  const queryFilters = useMemo<PolicyFilters>(
+    () => ({
+      ...filters,
+      dateField:
+        dateColumnType === "effective" ? "effective_date" : "submit_date",
+    }),
+    [filters, dateColumnType],
+  );
+
   const {
     policies,
     isLoading,
@@ -146,7 +158,7 @@ export const PolicyList: React.FC<PolicyListProps> = ({
   } = usePoliciesPaginated({
     page: currentPage,
     pageSize,
-    filters,
+    filters: queryFilters,
     sortConfig,
   });
 
@@ -707,25 +719,23 @@ export const PolicyList: React.FC<PolicyListProps> = ({
 
           <DateRangePicker
             value={{
-              from: filters.effectiveDateFrom
-                ? parseLocalDate(filters.effectiveDateFrom)
+              from: filters.dateFrom
+                ? parseLocalDate(filters.dateFrom)
                 : undefined,
-              to: filters.effectiveDateTo
-                ? parseLocalDate(filters.effectiveDateTo)
-                : undefined,
+              to: filters.dateTo ? parseLocalDate(filters.dateTo) : undefined,
             }}
             onChange={(range) => {
               setFilters({
                 ...filters,
-                effectiveDateFrom: range.from
-                  ? formatDateForDB(range.from)
-                  : undefined,
-                effectiveDateTo: range.to
-                  ? formatDateForDB(range.to)
-                  : undefined,
+                dateFrom: range.from ? formatDateForDB(range.from) : undefined,
+                dateTo: range.to ? formatDateForDB(range.to) : undefined,
               });
             }}
-            placeholder="Date Range"
+            placeholder={
+              dateColumnType === "effective"
+                ? "Effective Date Range"
+                : "Submit Date Range"
+            }
             className="h-6"
           />
         </div>

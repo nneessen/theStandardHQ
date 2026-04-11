@@ -30,11 +30,7 @@ export type LeadSourceType = Database["public"]["Enums"]["lead_source_type"];
 // =============================================================================
 
 /** Policy status - application/underwriting outcome */
-export type PolicyStatus =
-  | "pending"
-  | "approved"
-  | "denied"
-  | "withdrawn";
+export type PolicyStatus = "pending" | "approved" | "denied" | "withdrawn";
 
 /** Policy lifecycle status - state after approval */
 export type PolicyLifecycleStatus =
@@ -168,8 +164,12 @@ export interface PolicyFilters {
   searchTerm?: string;
   startDate?: Date;
   endDate?: Date;
-  effectiveDateFrom?: string;
-  effectiveDateTo?: string;
+  /** Date range lower bound (YYYY-MM-DD). Applied to whichever column dateField points at. */
+  dateFrom?: string;
+  /** Date range upper bound (YYYY-MM-DD). Applied to whichever column dateField points at. */
+  dateTo?: string;
+  /** Which date column the range filter should target. Defaults to submit_date. */
+  dateField?: "submit_date" | "effective_date";
   minPremium?: number;
   maxPremium?: number;
 }
