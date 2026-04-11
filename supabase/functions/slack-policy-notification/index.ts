@@ -1167,11 +1167,11 @@ async function handleCompleteFirstSale(
     );
   }
 
-  // Get the Slack integration (including workspace logo for leaderboard posts)
+  // Get the Slack integration (including workspace identity for leaderboard posts)
   const { data: integration, error: intError } = await supabase
     .from("slack_integrations")
     .select(
-      "id, bot_token_encrypted, agency_id, include_leaderboard_with_policy, workspace_logo_url",
+      "id, bot_token_encrypted, agency_id, include_leaderboard_with_policy, workspace_logo_url, display_name, team_name",
     )
     .eq("id", log.slack_integration_id)
     .single();
@@ -1254,13 +1254,18 @@ async function handleCompleteFirstSale(
         imoTotals,
       );
 
-    // Post the leaderboard with Block Kit (use workspace logo if configured)
+    // Post the leaderboard with Block Kit
+    // Post as the workspace identity (e.g. "💎 SELF MADE 💎") with their logo,
+    // NOT as the bot's default name ("The Standard HQ"). Policies still post
+    // as the agent — this only affects the leaderboard message.
     const leaderboardResult = await postSlackMessage(
       botToken,
       log.channel_id,
       leaderboardText,
       {
         blocks: leaderboardBlocks,
+        username:
+          integration.display_name || integration.team_name || undefined,
         icon_url: integration.workspace_logo_url || undefined,
       },
     );
@@ -2222,13 +2227,17 @@ serve(async (req) => {
           }
 
           // Always post fresh leaderboard after the policy notification with Block Kit
-          // Use workspace logo as bot icon if configured
+          // Post as the workspace identity (e.g. "💎 SELF MADE 💎") with their
+          // logo, NOT as the bot's default name ("The Standard HQ"). Policies
+          // still post as the agent — this only affects the leaderboard message.
           const leaderboardData = await postSlackMessage(
             botToken,
             integration.policy_channel_id,
             leaderboardText,
             {
               blocks: leaderboardBlocks,
+              username:
+                integration.display_name || integration.team_name || undefined,
               icon_url: fullIntegration?.workspace_logo_url || undefined,
             },
           );
