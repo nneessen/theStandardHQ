@@ -122,11 +122,11 @@ export function TeamProgressPanel({ roadmapId }: TeamProgressPanelProps) {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+          <h1 className="text-xl font-semibold text-foreground">
             Team progress
           </h1>
           {roadmap && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 truncate">
+            <p className="text-sm text-muted-foreground truncate">
               {roadmap.title}
             </p>
           )}
@@ -176,10 +176,10 @@ export function TeamProgressPanel({ roadmapId }: TeamProgressPanelProps) {
           <Skeleton className="h-10 w-full" />
         </div>
       ) : sortedRows.length === 0 ? (
-        <Empty className="py-16 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg">
+        <Empty className="py-16 border-2 border-dashed border-border rounded-xl bg-card shadow-sm">
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <Users className="h-6 w-6 text-zinc-400" />
+              <Users className="h-6 w-6 text-muted-foreground" />
             </EmptyMedia>
             <EmptyTitle>No agent activity yet</EmptyTitle>
             <EmptyDescription>
@@ -189,7 +189,7 @@ export function TeamProgressPanel({ roadmapId }: TeamProgressPanelProps) {
           </EmptyHeader>
         </Empty>
       ) : (
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-white dark:bg-zinc-950">
+        <div className="rounded-lg border border-border overflow-hidden bg-card shadow-sm">
           <Table>
             <TableHeader>
               <TableRow>
@@ -212,11 +212,11 @@ export function TeamProgressPanel({ roadmapId }: TeamProgressPanelProps) {
                 return (
                   <TableRow key={row.user_id}>
                     <TableCell>
-                      <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                      <div className="text-sm font-medium text-foreground">
                         {displayName(row)}
                       </div>
                       {row.user_email && (
-                        <div className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                        <div className="text-xs text-muted-foreground truncate">
                           {row.user_email}
                         </div>
                       )}
@@ -227,25 +227,25 @@ export function TeamProgressPanel({ roadmapId }: TeamProgressPanelProps) {
                           value={row.percent}
                           className="h-1.5 flex-1"
                         />
-                        <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300 w-10 text-right">
+                        <span className="text-xs font-medium text-foreground w-10 text-right">
                           {row.percent}%
                         </span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <span className="inline-flex items-center gap-1 text-sm">
-                        <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                        <CheckCircle2 className="h-3 w-3 text-success" />
                         {row.completed_count}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <span className="inline-flex items-center gap-1 text-sm text-zinc-600 dark:text-zinc-400">
+                      <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
                         <Circle className="h-3 w-3" />
                         {row.in_progress_count}
                       </span>
                     </TableCell>
                     <TableCell className="text-right">
-                      <span className="inline-flex items-center gap-1 text-sm text-zinc-500 dark:text-zinc-500">
+                      <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
                         <SkipForward className="h-3 w-3" />
                         {row.skipped_count}
                       </span>
@@ -253,7 +253,7 @@ export function TeamProgressPanel({ roadmapId }: TeamProgressPanelProps) {
                     <TableCell>
                       {row.last_activity_at ? (
                         <div className="flex items-center gap-1.5">
-                          <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                          <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(
                               new Date(row.last_activity_at),
                               {
@@ -268,7 +268,7 @@ export function TeamProgressPanel({ roadmapId }: TeamProgressPanelProps) {
                           )}
                         </div>
                       ) : (
-                        <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                        <span className="text-xs text-muted-foreground/60">
                           No activity
                         </span>
                       )}
@@ -282,7 +282,7 @@ export function TeamProgressPanel({ roadmapId }: TeamProgressPanelProps) {
       )}
 
       {overviewLoading && overview && (
-        <div className="mt-3 text-xs text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+        <div className="mt-3 text-xs text-muted-foreground flex items-center gap-1.5">
           <Loader2 className="h-3 w-3 animate-spin" />
           Updating…
         </div>
@@ -304,18 +304,18 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon: Icon, accent }: StatCardProps) {
   const accentClasses = {
-    success: "text-emerald-600 dark:text-emerald-400",
-    warning: "text-amber-600 dark:text-amber-400",
+    success: "text-success",
+    warning: "text-warning",
   };
   return (
-    <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-3">
-      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide font-semibold text-zinc-500 dark:text-zinc-400 mb-1">
+    <div className="rounded-lg border border-border bg-card shadow-sm p-3">
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide font-semibold text-muted-foreground mb-1">
         {Icon && <Icon className="h-3 w-3" />}
         {label}
       </div>
       <div
         className={`text-2xl font-semibold ${
-          accent ? accentClasses[accent] : "text-zinc-900 dark:text-zinc-100"
+          accent ? accentClasses[accent] : "text-foreground"
         }`}
       >
         {value}

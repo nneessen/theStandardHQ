@@ -110,7 +110,7 @@ export function ImageBlockEditor({
           <img
             src={block.data.url}
             alt={block.data.alt}
-            className="max-w-full max-h-64 rounded-md border border-zinc-200 dark:border-zinc-800"
+            className="max-w-full max-h-64 rounded-lg border border-border shadow-sm"
           />
           <Button
             type="button"
@@ -128,19 +128,23 @@ export function ImageBlockEditor({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-md hover:border-zinc-400 dark:hover:border-zinc-600 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+          className="group flex flex-col items-center justify-center w-full h-36 border-2 border-dashed border-border rounded-lg bg-muted/30 text-muted-foreground transition-all hover:border-ring hover:bg-accent hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {uploading ? (
             <>
-              <Loader2 className="h-5 w-5 mb-2 animate-spin" />
-              <span className="text-sm">Uploading...</span>
+              <Loader2 className="h-6 w-6 mb-2 animate-spin text-foreground" />
+              <span className="text-sm font-medium">Uploading…</span>
             </>
           ) : (
             <>
-              <Upload className="h-5 w-5 mb-2" />
-              <span className="text-sm">Click to upload an image</span>
-              <span className="text-xs mt-0.5">
-                PNG, JPG, GIF, WEBP up to 10MB
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-background border border-border mb-2 group-hover:border-ring transition-colors">
+                <Upload className="h-4 w-4" />
+              </div>
+              <span className="text-sm font-medium">
+                Click to upload an image
+              </span>
+              <span className="text-xs mt-1 text-muted-foreground">
+                PNG, JPG, GIF, WEBP, SVG up to 10 MB
               </span>
             </>
           )}

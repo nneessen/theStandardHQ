@@ -79,25 +79,30 @@ export function RoadmapSectionAccordion({
         className="flex items-center gap-2 w-full text-left py-1 group"
       >
         {collapsed ? (
-          <ChevronRight className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
         ) : (
-          <ChevronDown className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+          <ChevronDown className="h-4 w-4 text-muted-foreground" />
         )}
         <h2
-          className={`text-sm font-semibold ${
+          className={`text-base font-bold tracking-tight transition-colors ${
             sectionComplete
-              ? "text-zinc-500 dark:text-zinc-500"
-              : "text-zinc-900 dark:text-zinc-100"
+              ? "text-muted-foreground"
+              : "text-foreground group-hover:text-foreground"
           }`}
         >
           {section.title}
         </h2>
-        <span className="text-xs text-zinc-500 dark:text-zinc-400 ml-auto">
+        {sectionComplete && (
+          <span className="inline-flex items-center rounded-full bg-success/10 text-success text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 border border-success/20">
+            Done
+          </span>
+        )}
+        <span className="text-sm font-semibold text-muted-foreground tabular-nums ml-auto">
           {sectionStats.requiredDone} / {sectionStats.requiredTotal}
           {sectionStats.optionalTotal > 0 && (
             <>
               {" "}
-              <span className="text-zinc-400">
+              <span className="text-muted-foreground/60 font-normal">
                 (+ {sectionStats.optionalDone}/{sectionStats.optionalTotal}{" "}
                 bonus)
               </span>
@@ -107,7 +112,7 @@ export function RoadmapSectionAccordion({
       </button>
 
       {section.description && !collapsed && (
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 ml-6">
+        <p className="text-xs text-muted-foreground ml-6 leading-relaxed">
           {section.description}
         </p>
       )}

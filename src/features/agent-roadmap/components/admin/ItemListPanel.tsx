@@ -179,7 +179,7 @@ export function ItemListPanel({
         <Empty>
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <ListChecks className="h-6 w-6 text-zinc-400" />
+              <ListChecks className="h-6 w-6 text-muted-foreground" />
             </EmptyMedia>
             <EmptyTitle>Select a section</EmptyTitle>
             <EmptyDescription>
@@ -195,21 +195,24 @@ export function ItemListPanel({
   const itemIds = section.items.map((i) => i.id);
 
   return (
-    <section className="flex-1 min-w-0 flex flex-col bg-white dark:bg-zinc-950">
+    <section className="flex-1 min-w-0 flex flex-col bg-background">
       {/* Section metadata editor */}
-      <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="px-8 py-5 border-b border-border bg-card">
+        <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
+          Section
+        </div>
         <Input
           value={titleLocal}
           onChange={(e) => setTitleLocal(e.target.value)}
           placeholder="Section title"
-          className="h-9 text-base font-semibold border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 focus:border-zinc-300 dark:focus:border-zinc-700 px-2 -mx-2 bg-transparent"
+          className="h-10 text-lg font-bold border-transparent hover:border-border focus:border-ring px-2 -mx-2 bg-transparent shadow-none"
         />
         <Textarea
           value={descLocal}
           onChange={(e) => setDescLocal(e.target.value)}
           placeholder="Optional description for this section"
           rows={1}
-          className="mt-1 text-sm resize-none border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 focus:border-zinc-300 dark:focus:border-zinc-700 px-2 -mx-2 bg-transparent min-h-[32px]"
+          className="mt-1 text-sm text-muted-foreground resize-none border-transparent hover:border-border focus:border-ring px-2 -mx-2 bg-transparent min-h-[32px] shadow-none"
         />
       </div>
 
@@ -219,7 +222,7 @@ export function ItemListPanel({
           <Empty className="py-12">
             <EmptyHeader>
               <EmptyMedia variant="icon">
-                <ListChecks className="h-6 w-6 text-zinc-400" />
+                <ListChecks className="h-6 w-6 text-muted-foreground" />
               </EmptyMedia>
               <EmptyTitle>No items in this section</EmptyTitle>
               <EmptyDescription>
@@ -293,7 +296,7 @@ export function ItemListPanel({
                 e.preventDefault();
                 handleDelete();
               }}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive text-destructive-foreground hover:opacity-90"
             >
               Delete permanently
             </AlertDialogAction>
@@ -340,20 +343,20 @@ function SortableItemRow({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex items-start gap-2 rounded-md border ${
+      className={`group flex items-start gap-3 rounded-lg border px-4 py-3 transition-all cursor-pointer ${
         isSelected
-          ? "border-zinc-400 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900"
-          : "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-950"
-      } px-3 py-2.5 transition-colors`}
+          ? "border-ring bg-card shadow-md ring-1 ring-ring/20"
+          : "border-border bg-card shadow-sm hover:border-ring hover:shadow-md"
+      }`}
     >
       <button
         type="button"
         {...attributes}
         {...listeners}
-        className="flex items-center justify-center h-5 w-5 mt-0.5 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+        className="flex items-center justify-center h-6 w-6 mt-0.5 rounded text-muted-foreground/40 transition-all hover:text-foreground hover:bg-accent cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100"
         aria-label="Drag to reorder item"
       >
-        <GripVertical className="h-3 w-3" />
+        <GripVertical className="h-4 w-4" />
       </button>
 
       <button
@@ -361,8 +364,8 @@ function SortableItemRow({
         onClick={onSelect}
         className="flex-1 min-w-0 text-left"
       >
-        <div className="flex items-center gap-2 mb-0.5">
-          <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
+          <span className="text-sm font-semibold text-foreground truncate">
             {item.title || "Untitled item"}
           </span>
           {!item.is_published && (
@@ -377,14 +380,14 @@ function SortableItemRow({
             </Badge>
           )}
           {item.estimated_minutes && (
-            <span className="inline-flex items-center gap-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
               <Clock className="h-2.5 w-2.5" />
               {item.estimated_minutes}m
             </span>
           )}
         </div>
         {item.summary && (
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-1">
+          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
             {item.summary}
           </p>
         )}
@@ -397,13 +400,13 @@ function SortableItemRow({
           e.stopPropagation();
           onDelete();
         }}
-        className="h-6 w-6 p-0 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="h-7 w-7 p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
         aria-label="Delete item"
       >
-        <Trash2 className="h-3 w-3" />
+        <Trash2 className="h-3.5 w-3.5" />
       </Button>
 
-      <ChevronRight className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+      <ChevronRight className="h-4 w-4 text-muted-foreground/50 mt-1 shrink-0 opacity-0 group-hover:opacity-100 group-hover:text-foreground transition-all" />
     </div>
   );
 }

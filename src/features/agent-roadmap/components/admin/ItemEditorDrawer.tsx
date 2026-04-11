@@ -55,7 +55,7 @@ export function ItemEditorDrawer({
             agencyId={agencyId}
           />
         ) : (
-          <div className="p-6 text-sm text-zinc-500">Loading…</div>
+          <div className="p-6 text-sm text-muted-foreground">Loading…</div>
         )}
       </SheetContent>
     </Sheet>
@@ -208,8 +208,8 @@ function ItemEditorDrawerInner({
 
   return (
     <div className="flex flex-col h-full">
-      <SheetHeader className="px-6 pt-6 pb-4 border-b border-zinc-200 dark:border-zinc-800">
-        <SheetTitle className="text-sm font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+      <SheetHeader className="px-6 pt-6 pb-4 border-b border-border">
+        <SheetTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
           Edit item
         </SheetTitle>
         <SheetDescription className="sr-only">
@@ -219,25 +219,25 @@ function ItemEditorDrawerInner({
           value={titleLocal}
           onChange={(e) => setTitleLocal(e.target.value)}
           placeholder="Item title"
-          className="h-9 text-base font-semibold border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 focus:border-zinc-300 dark:focus:border-zinc-700 px-2 -mx-2 bg-transparent"
+          className="h-9 text-base font-semibold border-transparent hover:border-border focus:border-ring px-2 -mx-2 bg-transparent"
         />
         <Textarea
           value={summaryLocal}
           onChange={(e) => setSummaryLocal(e.target.value)}
           placeholder="Optional 1-line summary shown in the list"
           rows={1}
-          className="mt-1 text-sm resize-none border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 focus:border-zinc-300 dark:focus:border-zinc-700 px-2 -mx-2 bg-transparent min-h-[32px]"
+          className="mt-1 text-sm resize-none border-transparent hover:border-border focus:border-ring px-2 -mx-2 bg-transparent min-h-[32px]"
         />
       </SheetHeader>
 
       {/* Metadata toggles */}
-      <div className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 space-y-3 bg-zinc-50/50 dark:bg-zinc-900/30">
+      <div className="px-6 py-4 border-b border-border space-y-3 bg-muted/30">
         <div className="grid grid-cols-[1fr_auto] items-center gap-2">
           <div>
-            <Label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            <Label className="text-sm font-medium text-foreground">
               Required
             </Label>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-muted-foreground">
               Counts toward completion %
             </p>
           </div>
@@ -252,10 +252,10 @@ function ItemEditorDrawerInner({
 
         <div className="grid grid-cols-[1fr_auto] items-center gap-2">
           <div>
-            <Label className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            <Label className="text-sm font-medium text-foreground">
               Published
             </Label>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-muted-foreground">
               Unpublish to hide from agents while you work
             </p>
           </div>
@@ -272,11 +272,11 @@ function ItemEditorDrawerInner({
           <div>
             <Label
               htmlFor={`est-${item.id}`}
-              className="text-sm font-medium text-zinc-900 dark:text-zinc-100"
+              className="text-sm font-medium text-foreground"
             >
               Estimated time
             </Label>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-muted-foreground">
               Shown as a small "~15m" badge
             </p>
           </div>
@@ -290,9 +290,7 @@ function ItemEditorDrawerInner({
               placeholder="—"
               className="h-8 w-20 text-sm text-right"
             />
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">
-              min
-            </span>
+            <span className="text-xs text-muted-foreground">min</span>
           </div>
         </div>
       </div>
@@ -300,10 +298,10 @@ function ItemEditorDrawerInner({
       {/* Content blocks */}
       <div className="flex-1 px-6 py-5">
         <div className="mb-3">
-          <div className="text-[10px] uppercase tracking-wide font-semibold text-zinc-500 dark:text-zinc-400">
+          <div className="text-[10px] uppercase tracking-wide font-semibold text-muted-foreground">
             Instructions
           </div>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             Build step-by-step content for agents. Mix text, images, videos,
             links, and callouts.
           </p>

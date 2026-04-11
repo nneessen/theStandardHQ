@@ -78,7 +78,7 @@ export function RoadmapRunnerPage({ roadmapId }: RoadmapRunnerPageProps) {
   if (treeLoading || progressLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -86,10 +86,10 @@ export function RoadmapRunnerPage({ roadmapId }: RoadmapRunnerPageProps) {
   if (treeError || !roadmap) {
     return (
       <div className="p-6 max-w-3xl mx-auto">
-        <Empty className="py-16 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg">
+        <Empty className="py-16 border-2 border-dashed border-border rounded-xl bg-card shadow-sm">
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <MapIcon className="h-6 w-6 text-zinc-400" />
+              <MapIcon className="h-6 w-6 text-muted-foreground" />
             </EmptyMedia>
             <EmptyTitle>Roadmap not found</EmptyTitle>
             <EmptyDescription>
@@ -112,7 +112,7 @@ export function RoadmapRunnerPage({ roadmapId }: RoadmapRunnerPageProps) {
 
   if (!userId) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-zinc-500">
+      <div className="min-h-screen flex items-center justify-center text-sm text-muted-foreground">
         Authenticating…
       </div>
     );
@@ -123,15 +123,15 @@ export function RoadmapRunnerPage({ roadmapId }: RoadmapRunnerPageProps) {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
+    <div className="min-h-screen bg-muted/30">
       <RoadmapProgressHeader roadmap={roadmap} stats={stats} />
 
       <div className="max-w-3xl mx-auto px-6 py-6 space-y-6 pb-16">
         {visibleSections.length === 0 ? (
-          <Empty className="py-16 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg">
+          <Empty className="py-16 border-2 border-dashed border-border rounded-xl bg-card shadow-sm">
             <EmptyHeader>
               <EmptyMedia variant="icon">
-                <MapIcon className="h-6 w-6 text-zinc-400" />
+                <MapIcon className="h-6 w-6 text-muted-foreground" />
               </EmptyMedia>
               <EmptyTitle>This roadmap is still being built</EmptyTitle>
               <EmptyDescription>

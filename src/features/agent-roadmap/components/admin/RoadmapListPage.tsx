@@ -135,7 +135,7 @@ export function RoadmapListPage() {
   if (!agencyId) {
     return (
       <div className="p-6">
-        <p className="text-sm text-zinc-500">Loading agency context…</p>
+        <p className="text-sm text-muted-foreground">Loading agency context…</p>
       </div>
     );
   }
@@ -144,10 +144,10 @@ export function RoadmapListPage() {
     <div className="p-6 max-w-5xl mx-auto">
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+          <h1 className="text-2xl font-bold text-foreground tracking-tight">
             Agent Roadmaps
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
+          <p className="text-sm text-muted-foreground mt-1 max-w-xl">
             Build checkoff-as-you-go roadmaps for new agents. One can be marked
             as the default "START HERE" for new hires.
           </p>
@@ -169,10 +169,10 @@ export function RoadmapListPage() {
           <Skeleton className="h-16 w-full rounded-md" />
         </div>
       ) : !roadmaps || roadmaps.length === 0 ? (
-        <Empty className="py-12 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg">
+        <Empty className="py-16 border-2 border-dashed border-border rounded-xl bg-card shadow-sm">
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <ListChecks className="h-6 w-6 text-zinc-400" />
+              <ListChecks className="h-6 w-6 text-muted-foreground" />
             </EmptyMedia>
             <EmptyTitle>No roadmaps yet</EmptyTitle>
             <EmptyDescription>
@@ -192,12 +192,12 @@ export function RoadmapListPage() {
           </div>
         </Empty>
       ) : (
-        <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden">
-          <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+          <div className="divide-y divide-border">
             {roadmaps.map((roadmap) => (
               <div
                 key={roadmap.id}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition-colors group"
+                className="flex items-center gap-3 px-5 py-4 transition-colors hover:bg-accent/50 group"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-0.5">
@@ -215,7 +215,7 @@ export function RoadmapListPage() {
                           params: { roadmapId: roadmap.id },
                         })
                       }
-                      className="font-medium text-sm text-zinc-900 dark:text-zinc-100 hover:underline truncate text-left"
+                      className="font-semibold text-base text-foreground hover:underline underline-offset-2 truncate text-left"
                     >
                       {roadmap.title}
                     </button>
@@ -226,7 +226,7 @@ export function RoadmapListPage() {
                     )}
                   </div>
                   {roadmap.description && (
-                    <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
                       {roadmap.description}
                     </p>
                   )}
@@ -299,7 +299,7 @@ export function RoadmapListPage() {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => setDeleteTarget(roadmap)}
-                      className="text-red-600 dark:text-red-400 focus:text-red-600"
+                      className="text-destructive focus:text-destructive"
                     >
                       <Trash2 className="h-3.5 w-3.5 mr-2" />
                       Delete
@@ -387,7 +387,7 @@ export function RoadmapListPage() {
                 e.preventDefault();
                 handleDelete();
               }}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive text-destructive-foreground hover:opacity-90"
             >
               {deleteMutation.isPending ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />

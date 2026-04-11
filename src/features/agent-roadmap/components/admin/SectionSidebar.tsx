@@ -129,18 +129,18 @@ export function SectionSidebar({
   ]);
 
   return (
-    <aside className="w-64 shrink-0 border-r border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 flex flex-col">
+    <aside className="w-72 shrink-0 border-r border-border bg-muted/30 flex flex-col">
       {/* Header: always-visible "+ Add section" button lives here. When the
           list is empty, the header button is the user's entry point. When
           the list is long, it's still visible at the top. */}
-      <div className="px-3 py-2.5 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="px-4 py-3 border-b border-border bg-card/50">
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-baseline gap-2 min-w-0">
+            <span className="text-xs font-bold uppercase tracking-widest text-foreground">
               Sections
             </span>
-            <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
-              · {roadmap.sections.length}
+            <span className="text-xs font-medium text-muted-foreground">
+              {roadmap.sections.length}
             </span>
           </div>
           <Button
@@ -164,7 +164,7 @@ export function SectionSidebar({
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
-                  <ListTree className="h-6 w-6 text-zinc-400" />
+                  <ListTree className="h-6 w-6 text-muted-foreground" />
                 </EmptyMedia>
                 <EmptyTitle className="text-sm">No sections yet</EmptyTitle>
                 <EmptyDescription className="text-xs">
@@ -216,7 +216,7 @@ export function SectionSidebar({
       {/* Bottom footer button — only shown when we have sections, so the
           user can add another one without scrolling back to the top. */}
       {roadmap.sections.length > 0 && (
-        <div className="px-3 py-2 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="px-3 py-2 border-t border-border">
           <Button
             variant="outline"
             size="sm"
@@ -251,7 +251,7 @@ export function SectionSidebar({
                 e.preventDefault();
                 handleDelete();
               }}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive text-destructive-foreground hover:opacity-90"
             >
               Delete permanently
             </AlertDialogAction>
@@ -298,31 +298,37 @@ function SortableSectionRow({
     <div
       ref={setNodeRef}
       style={style}
-      className={`group flex items-center gap-1 rounded-md px-1.5 py-1.5 ${
+      className={`group flex items-center gap-2 rounded-md px-2 py-2 transition-colors ${
         isSelected
-          ? "bg-zinc-200 dark:bg-zinc-800"
-          : "hover:bg-zinc-100 dark:hover:bg-zinc-900"
+          ? "bg-card border border-border shadow-sm"
+          : "border border-transparent hover:bg-card hover:border-border"
       }`}
     >
       <button
         type="button"
         {...attributes}
         {...listeners}
-        className="flex items-center justify-center h-5 w-5 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+        className="flex items-center justify-center h-6 w-6 rounded text-muted-foreground/50 transition-all hover:text-foreground hover:bg-accent cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100"
         aria-label="Drag to reorder section"
       >
-        <GripVertical className="h-3 w-3" />
+        <GripVertical className="h-3.5 w-3.5" />
       </button>
 
       <button
         type="button"
         onClick={onSelect}
-        className="flex-1 min-w-0 text-left px-1 py-0.5"
+        className="flex-1 min-w-0 text-left py-0.5"
       >
-        <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100 truncate">
+        <div
+          className={`text-sm truncate ${
+            isSelected
+              ? "font-semibold text-foreground"
+              : "font-medium text-foreground"
+          }`}
+        >
           {section.title || "Untitled section"}
         </div>
-        <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+        <div className="text-[11px] text-muted-foreground mt-0.5">
           {section.items.length} item{section.items.length === 1 ? "" : "s"}
         </div>
       </button>
@@ -334,10 +340,10 @@ function SortableSectionRow({
           e.stopPropagation();
           onDelete();
         }}
-        className="h-5 w-5 p-0 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+        className="h-6 w-6 p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
         aria-label="Delete section"
       >
-        <Trash2 className="h-3 w-3" />
+        <Trash2 className="h-3.5 w-3.5" />
       </Button>
     </div>
   );

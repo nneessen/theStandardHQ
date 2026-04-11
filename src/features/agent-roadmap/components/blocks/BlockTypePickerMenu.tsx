@@ -135,14 +135,14 @@ export function BlockTypePickerMenu({
             onClick={() => onPick(type)}
             className="gap-2 py-2 cursor-pointer"
           >
-            <Icon className="h-4 w-4 text-zinc-500 dark:text-zinc-400 shrink-0 mt-0.5" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+              <Icon className="h-4 w-4" />
+            </div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+              <div className="text-sm font-semibold text-foreground">
                 {label}
               </div>
-              <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                {description}
-              </div>
+              <div className="text-xs text-muted-foreground">{description}</div>
             </div>
           </DropdownMenuItem>
         ))}

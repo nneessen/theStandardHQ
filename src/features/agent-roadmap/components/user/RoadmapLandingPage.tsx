@@ -30,7 +30,7 @@ export function RoadmapLandingPage() {
   if (!agencyId) {
     return (
       <div className="p-6 max-w-3xl mx-auto flex items-center justify-center min-h-[50vh]">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -45,10 +45,10 @@ export function RoadmapLandingPage() {
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
+        <h1 className="text-2xl font-bold text-foreground tracking-tight">
           Agent Roadmap
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
+        <p className="text-sm text-muted-foreground mt-1 max-w-xl">
           Work through these checklists at your own pace. Your progress saves
           automatically.
         </p>
@@ -61,10 +61,10 @@ export function RoadmapLandingPage() {
           <Skeleton className="h-20 w-full rounded-lg" />
         </div>
       ) : visibleRoadmaps.length === 0 ? (
-        <Empty className="py-16 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg">
+        <Empty className="py-16 border-2 border-dashed border-border rounded-xl bg-card shadow-sm">
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <Map className="h-6 w-6 text-zinc-400" />
+              <Map className="h-6 w-6 text-muted-foreground" />
             </EmptyMedia>
             <EmptyTitle>No roadmaps yet</EmptyTitle>
             <EmptyDescription>
@@ -92,7 +92,7 @@ export function RoadmapLandingPage() {
             <>
               {defaultRoadmap && (
                 <div className="pt-2 pb-1">
-                  <div className="text-[10px] uppercase tracking-wide font-semibold text-zinc-500 dark:text-zinc-400">
+                  <div className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">
                     Other roadmaps
                   </div>
                 </div>
@@ -136,30 +136,30 @@ function RoadmapCard({ roadmap, isDefault, onClick }: RoadmapCardProps) {
     <button
       type="button"
       onClick={onClick}
-      className={`group w-full text-left rounded-lg border px-5 py-4 transition-colors ${
+      className={`group w-full text-left rounded-xl border px-6 py-5 shadow-sm transition-all ${
         isDefault
-          ? "border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20 hover:border-amber-300 dark:hover:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/40"
-          : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900"
+          ? "border-l-[6px] border-l-warning border-border bg-warning/[0.04] hover:bg-warning/[0.08] hover:shadow-md"
+          : "border-border bg-card hover:border-ring hover:shadow-md"
       }`}
     >
       <div className="flex items-start gap-4">
         <div className="flex-1 min-w-0">
           {isDefault && (
-            <Badge variant="warning" size="sm" className="gap-1 mb-1.5">
+            <Badge variant="warning" size="sm" className="gap-1 mb-2 font-bold">
               <Star className="h-3 w-3 fill-current" />
               START HERE
             </Badge>
           )}
-          <div className="text-base font-semibold text-zinc-900 dark:text-zinc-100 mb-0.5">
+          <div className="text-lg font-bold text-foreground leading-tight mb-1">
             {roadmap.title}
           </div>
           {roadmap.description && (
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2">
+            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
               {roadmap.description}
             </p>
           )}
         </div>
-        <ChevronRight className="h-4 w-4 text-zinc-400 dark:text-zinc-500 mt-1 group-hover:text-zinc-700 dark:group-hover:text-zinc-200 transition-colors shrink-0" />
+        <ChevronRight className="h-5 w-5 text-muted-foreground mt-1 group-hover:text-foreground group-hover:translate-x-0.5 transition-all shrink-0" />
       </div>
     </button>
   );

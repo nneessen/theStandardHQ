@@ -58,11 +58,11 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
   if (isLoading) {
     return (
       <div className="h-screen flex flex-col">
-        <div className="border-b border-zinc-200 dark:border-zinc-800 px-4 py-3">
+        <div className="border-b border-border bg-card px-4 py-3">
           <Skeleton className="h-6 w-60" />
         </div>
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <div className="flex-1 flex items-center justify-center bg-background">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       </div>
     );
@@ -70,9 +70,9 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
 
   if (error || !roadmap) {
     return (
-      <div className="h-screen flex items-center justify-center">
+      <div className="h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-muted-foreground">
             {error ? error.message : "Roadmap not found"}
           </p>
         </div>
@@ -81,7 +81,7 @@ export function RoadmapEditorPage({ roadmapId }: RoadmapEditorPageProps) {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-white dark:bg-zinc-950">
+    <div className="h-screen flex flex-col bg-background">
       <RoadmapEditorHeader roadmap={roadmap} />
       <div className="flex-1 flex min-h-0">
         <SectionSidebar

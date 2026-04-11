@@ -6,48 +6,51 @@ interface CalloutBlockViewProps {
   block: CalloutBlock;
 }
 
+/**
+ * Callout variants are the most visually prominent elements in the whole
+ * feature — they're how Nick draws attention to critical steps. Each variant
+ * uses a full-color left border + tinted background + matching icon color
+ * so they stand out from surrounding content. Tokens are from
+ * tailwind.config.js semantic colors. Tip uses info tone since there's no
+ * distinct "tip" token in the palette.
+ */
 const VARIANT_CONFIG: Record<
   CalloutVariant,
   {
     icon: typeof Info;
-    border: string;
-    bg: string;
+    container: string;
+    iconBg: string;
     iconColor: string;
-    titleColor: string;
-    bodyColor: string;
+    label: string;
   }
 > = {
   info: {
     icon: Info,
-    border: "border-blue-200 dark:border-blue-900",
-    bg: "bg-blue-50 dark:bg-blue-950/30",
-    iconColor: "text-blue-600 dark:text-blue-400",
-    titleColor: "text-blue-900 dark:text-blue-100",
-    bodyColor: "text-blue-800 dark:text-blue-200",
+    container: "border-l-info bg-info/[0.07]",
+    iconBg: "bg-info/15",
+    iconColor: "text-info",
+    label: "INFO",
   },
   warning: {
     icon: AlertTriangle,
-    border: "border-amber-200 dark:border-amber-900",
-    bg: "bg-amber-50 dark:bg-amber-950/30",
-    iconColor: "text-amber-600 dark:text-amber-400",
-    titleColor: "text-amber-900 dark:text-amber-100",
-    bodyColor: "text-amber-800 dark:text-amber-200",
+    container: "border-l-warning bg-warning/[0.07]",
+    iconBg: "bg-warning/15",
+    iconColor: "text-warning",
+    label: "WARNING",
   },
   tip: {
     icon: Lightbulb,
-    border: "border-purple-200 dark:border-purple-900",
-    bg: "bg-purple-50 dark:bg-purple-950/30",
-    iconColor: "text-purple-600 dark:text-purple-400",
-    titleColor: "text-purple-900 dark:text-purple-100",
-    bodyColor: "text-purple-800 dark:text-purple-200",
+    container: "border-l-info bg-info/[0.07]",
+    iconBg: "bg-info/15",
+    iconColor: "text-info",
+    label: "TIP",
   },
   success: {
     icon: CheckCircle2,
-    border: "border-emerald-200 dark:border-emerald-900",
-    bg: "bg-emerald-50 dark:bg-emerald-950/30",
-    iconColor: "text-emerald-600 dark:text-emerald-400",
-    titleColor: "text-emerald-900 dark:text-emerald-100",
-    bodyColor: "text-emerald-800 dark:text-emerald-200",
+    container: "border-l-success bg-success/[0.07]",
+    iconBg: "bg-success/15",
+    iconColor: "text-success",
+    label: "SUCCESS",
   },
 };
 
@@ -58,16 +61,25 @@ export function CalloutBlockView({ block }: CalloutBlockViewProps) {
 
   return (
     <div
-      className={`flex items-start gap-3 rounded-md border-l-4 ${config.border} ${config.bg} px-4 py-3`}
+      className={`flex items-start gap-4 rounded-lg border border-border border-l-[6px] ${config.container} px-5 py-4 shadow-sm`}
     >
-      <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${config.iconColor}`} />
-      <div className="flex-1 min-w-0">
+      <div
+        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${config.iconBg}`}
+      >
+        <Icon className={`h-4 w-4 ${config.iconColor}`} />
+      </div>
+      <div className="flex-1 min-w-0 pt-0.5">
+        <div
+          className={`text-[10px] font-bold uppercase tracking-widest ${config.iconColor} mb-1`}
+        >
+          {config.label}
+        </div>
         {title && (
-          <div className={`text-sm font-semibold ${config.titleColor} mb-1`}>
+          <div className="text-base font-semibold text-foreground mb-1 leading-snug">
             {title}
           </div>
         )}
-        <div className={`text-sm ${config.bodyColor} whitespace-pre-wrap`}>
+        <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
           {body}
         </div>
       </div>

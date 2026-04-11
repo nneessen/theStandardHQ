@@ -18,9 +18,9 @@ export function VideoBlockView({ block }: VideoBlockViewProps) {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+        className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground shadow-sm transition-all hover:border-ring hover:bg-accent hover:shadow-md active:shadow-sm"
       >
-        <ExternalLink className="h-3.5 w-3.5" />
+        <ExternalLink className="h-4 w-4 text-muted-foreground" />
         {title || "Watch video"}
       </a>
     );
@@ -32,13 +32,13 @@ export function VideoBlockView({ block }: VideoBlockViewProps) {
 
   if (!embedUrl) {
     return (
-      <div className="rounded-md border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
+      <div className="rounded-md border-l-4 border-l-warning border border-border bg-warning/5 px-4 py-3 text-sm text-foreground shadow-sm">
         Unable to embed video.{" "}
         <a
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="underline"
+          className="font-medium text-info underline underline-offset-2 hover:opacity-80"
         >
           Open externally
         </a>
@@ -47,8 +47,8 @@ export function VideoBlockView({ block }: VideoBlockViewProps) {
   }
 
   return (
-    <div className="my-1 rounded-md overflow-hidden border border-zinc-200 dark:border-zinc-800">
-      <div className="relative aspect-video bg-zinc-100 dark:bg-zinc-900">
+    <div className="my-2 rounded-lg overflow-hidden border border-border bg-card shadow-sm">
+      <div className="relative aspect-video bg-muted">
         <iframe
           src={embedUrl}
           title={title || "Embedded video"}
@@ -58,7 +58,7 @@ export function VideoBlockView({ block }: VideoBlockViewProps) {
         />
       </div>
       {title && (
-        <div className="px-3 py-2 text-xs text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-900/50 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="px-4 py-2.5 text-sm font-medium text-foreground bg-muted/50 border-t border-border">
           {title}
         </div>
       )}

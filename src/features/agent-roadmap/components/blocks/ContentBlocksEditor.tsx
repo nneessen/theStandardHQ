@@ -127,7 +127,7 @@ export function ContentBlocksEditor({
         <Empty className="py-8">
           <EmptyHeader>
             <EmptyMedia variant="icon">
-              <Blocks className="h-6 w-6 text-zinc-400" />
+              <Blocks className="h-6 w-6 text-muted-foreground" />
             </EmptyMedia>
             <EmptyTitle>No content yet</EmptyTitle>
             <EmptyDescription>
@@ -166,7 +166,7 @@ export function ContentBlocksEditor({
       <div className="flex items-center justify-between">
         <BlockTypePickerMenu onPick={handleAddBlock} disabled={atMax} />
         {atMax && (
-          <span className="text-xs text-amber-600 dark:text-amber-400">
+          <span className="text-xs font-medium text-warning">
             Max {MAX_CONTENT_BLOCKS_PER_ITEM} blocks reached
           </span>
         )}
@@ -215,22 +215,22 @@ function SortableBlockRow({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-start gap-2 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-3"
+      className="group/block flex items-start gap-3 rounded-lg border border-border bg-card p-4 shadow-sm transition-all hover:border-ring hover:shadow-md"
     >
-      {/* Drag handle */}
+      {/* Drag handle — always visible but subtle at rest */}
       <button
         type="button"
         {...attributes}
         {...listeners}
-        className="flex items-center justify-center h-6 w-6 mt-1 rounded text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-grab active:cursor-grabbing"
+        className="flex items-center justify-center h-7 w-7 mt-0.5 rounded-md text-muted-foreground/50 transition-colors hover:text-foreground hover:bg-accent cursor-grab active:cursor-grabbing group-hover/block:text-muted-foreground"
         aria-label="Drag to reorder"
       >
-        <GripVertical className="h-3.5 w-3.5" />
+        <GripVertical className="h-4 w-4" />
       </button>
 
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] uppercase tracking-wide font-semibold text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center justify-between mb-3 pb-2 border-b border-border">
+          <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">
             {CONTENT_BLOCK_LABELS[block.type]}
           </span>
           <Button
@@ -238,7 +238,7 @@ function SortableBlockRow({
             variant="ghost"
             size="sm"
             onClick={() => onDelete(block.id)}
-            className="h-6 w-6 p-0 text-zinc-400 hover:text-red-600 dark:hover:text-red-400"
+            className="h-7 w-7 p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
             aria-label="Delete block"
           >
             <Trash2 className="h-3.5 w-3.5" />

@@ -124,28 +124,28 @@ export function RoadmapItemCard({
 
   return (
     <div
-      className={`rounded-lg border transition-colors ${
+      className={`rounded-xl border shadow-sm transition-all ${
         isCompleted
-          ? "border-emerald-200 dark:border-emerald-900 bg-emerald-50/40 dark:bg-emerald-950/10"
+          ? "border-success/30 bg-success/[0.04]"
           : isSkipped
-            ? "border-zinc-200 dark:border-zinc-800 bg-zinc-50/60 dark:bg-zinc-900/30 opacity-75"
-            : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950"
+            ? "border-border bg-muted/40 opacity-75"
+            : "border-border bg-card hover:border-ring hover:shadow-md"
       }`}
     >
       {/* Top row: checkbox + title + meta + chevron */}
-      <div className="flex items-start gap-3 px-4 py-3">
+      <div className="flex items-start gap-4 px-5 py-4">
         <button
           type="button"
           onClick={handleToggleComplete}
           disabled={upsertProgress.isPending}
-          className={`mt-0.5 shrink-0 h-5 w-5 rounded-full flex items-center justify-center border-2 transition-colors ${
+          className={`mt-0.5 shrink-0 h-6 w-6 rounded-full flex items-center justify-center border-2 transition-all ${
             isCompleted
-              ? "bg-emerald-500 border-emerald-500 text-white hover:bg-emerald-600"
-              : "border-zinc-300 dark:border-zinc-600 hover:border-emerald-500 dark:hover:border-emerald-500"
+              ? "bg-success border-success text-success-foreground shadow-sm hover:opacity-90 active:scale-95"
+              : "border-border bg-card hover:border-success hover:bg-success/5 active:scale-95"
           }`}
           aria-label={isCompleted ? "Mark as not complete" : "Mark as complete"}
         >
-          {isCompleted && <Check className="h-3 w-3" strokeWidth={3} />}
+          {isCompleted && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
         </button>
 
         <button
@@ -153,14 +153,14 @@ export function RoadmapItemCard({
           onClick={() => setExpanded(!expanded)}
           className="flex-1 min-w-0 text-left"
         >
-          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span
-              className={`text-sm font-medium ${
+              className={`text-base font-semibold leading-snug ${
                 isCompleted
-                  ? "text-zinc-500 dark:text-zinc-500 line-through"
+                  ? "text-muted-foreground line-through"
                   : isSkipped
-                    ? "text-zinc-500 dark:text-zinc-500"
-                    : "text-zinc-900 dark:text-zinc-100"
+                    ? "text-muted-foreground"
+                    : "text-foreground"
               }`}
             >
               {item.title}
@@ -181,17 +181,17 @@ export function RoadmapItemCard({
               </Badge>
             )}
             {item.estimated_minutes && !isResolved && (
-              <span className="inline-flex items-center gap-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                 <Clock className="h-2.5 w-2.5" />~{item.estimated_minutes}m
               </span>
             )}
           </div>
           {item.summary && !expanded && (
             <p
-              className={`text-xs ${
+              className={`text-sm leading-relaxed ${
                 isResolved
-                  ? "text-zinc-500 dark:text-zinc-500"
-                  : "text-zinc-600 dark:text-zinc-400"
+                  ? "text-muted-foreground/70"
+                  : "text-muted-foreground"
               } line-clamp-1`}
             >
               {item.summary}
@@ -200,17 +200,17 @@ export function RoadmapItemCard({
         </button>
 
         {expanded ? (
-          <ChevronDown className="h-4 w-4 text-zinc-400 dark:text-zinc-500 mt-1 shrink-0" />
+          <ChevronDown className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
         ) : (
-          <ChevronRight className="h-4 w-4 text-zinc-400 dark:text-zinc-500 mt-1 shrink-0" />
+          <ChevronRight className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
         )}
       </div>
 
       {/* Expanded body: content blocks + notes + actions */}
       {expanded && (
-        <div className="border-t border-zinc-200 dark:border-zinc-800 px-4 py-4 space-y-4">
+        <div className="border-t border-border px-5 py-5 space-y-5 bg-background/30">
           {item.summary && (
-            <p className="text-sm text-zinc-700 dark:text-zinc-300">
+            <p className="text-sm text-foreground leading-relaxed font-medium">
               {item.summary}
             </p>
           )}
@@ -218,7 +218,7 @@ export function RoadmapItemCard({
           {item.content_blocks.length > 0 ? (
             <ContentBlockListView blocks={item.content_blocks} />
           ) : (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 italic">
+            <p className="text-sm text-muted-foreground italic">
               No instructions for this item — ask Nick if you get stuck.
             </p>
           )}
@@ -228,8 +228,8 @@ export function RoadmapItemCard({
           {/* Notes toggle + textarea */}
           <div>
             {showNotes || notesLocal ? (
-              <div className="space-y-1.5">
-                <label className="text-[10px] uppercase tracking-wide font-semibold text-zinc-500 dark:text-zinc-400">
+              <div className="space-y-2">
+                <label className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground">
                   My notes (private)
                 </label>
                 <Textarea
@@ -237,7 +237,7 @@ export function RoadmapItemCard({
                   onChange={(e) => setNotesLocal(e.target.value)}
                   placeholder="Jot down your own notes on this item — only you and Nick can see them"
                   rows={2}
-                  className="text-sm resize-y min-h-[60px]"
+                  className="text-sm resize-y min-h-[64px] bg-card"
                 />
               </div>
             ) : (
@@ -246,9 +246,9 @@ export function RoadmapItemCard({
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowNotes(true)}
-                className="h-7 text-xs text-zinc-500 hover:text-zinc-700"
+                className="h-8 text-xs text-muted-foreground hover:text-foreground"
               >
-                <MessageSquare className="h-3 w-3 mr-1.5" />
+                <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
                 Add a note
               </Button>
             )}

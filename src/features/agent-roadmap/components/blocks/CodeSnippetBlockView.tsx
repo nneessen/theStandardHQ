@@ -24,26 +24,29 @@ export function CodeSnippetBlockView({ block }: CodeSnippetBlockViewProps) {
   }
 
   return (
-    <div className="my-1 rounded-md border border-zinc-200 dark:border-zinc-800 bg-zinc-950 overflow-hidden">
+    <div className="my-2 rounded-lg border border-border overflow-hidden shadow-sm bg-[#0d1117]">
       {label && (
-        <div className="flex items-center justify-between px-3 py-1.5 text-[11px] font-medium text-zinc-400 bg-zinc-900 border-b border-zinc-800">
+        <div className="flex items-center justify-between px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-300 bg-[#161b22] border-b border-zinc-800">
           <span>{label}</span>
+          <span className="text-[9px] text-zinc-500 font-normal normal-case tracking-normal">
+            Click to copy
+          </span>
         </div>
       )}
-      <div className="relative">
-        <pre className="overflow-x-auto p-3 text-xs text-zinc-100 font-mono leading-relaxed">
+      <div className="relative group">
+        <pre className="overflow-x-auto p-4 text-sm text-zinc-100 font-mono leading-relaxed">
           <code>{code}</code>
         </pre>
         <button
           type="button"
           onClick={handleCopy}
-          className="absolute top-2 right-2 h-6 w-6 flex items-center justify-center rounded bg-zinc-800/80 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-colors"
+          className="absolute top-3 right-3 h-7 w-7 flex items-center justify-center rounded-md bg-zinc-800 text-zinc-400 opacity-0 shadow-sm transition-all hover:bg-zinc-700 hover:text-zinc-100 group-hover:opacity-100 active:scale-95"
           aria-label="Copy to clipboard"
         >
           {copied ? (
-            <Check className="h-3 w-3" />
+            <Check className="h-3.5 w-3.5 text-success" />
           ) : (
-            <Copy className="h-3 w-3" />
+            <Copy className="h-3.5 w-3.5" />
           )}
         </button>
       </div>

@@ -44,7 +44,7 @@ export function RichTextBlockView({ block }: RichTextBlockViewProps) {
 
   return (
     <div
-      className="prose prose-sm dark:prose-invert max-w-none text-zinc-900 dark:text-zinc-100 [&_a]:text-blue-600 [&_a]:underline dark:[&_a]:text-blue-400 [&_ul]:my-2 [&_ol]:my-2 [&_p]:my-2"
+      className="prose prose-sm dark:prose-invert max-w-none text-foreground leading-relaxed [&_a]:text-info [&_a]:underline [&_a]:underline-offset-2 hover:[&_a]:opacity-80 [&_ul]:my-2 [&_ol]:my-2 [&_p]:my-2 [&_strong]:text-foreground [&_strong]:font-semibold [&_code]:rounded [&_code]:bg-muted [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[0.875em] [&_code]:font-mono"
       dangerouslySetInnerHTML={{ __html: safeHtml }}
     />
   );

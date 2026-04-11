@@ -9,17 +9,19 @@ export function ImageBlockView({ block }: ImageBlockViewProps) {
   const { url, alt, caption, width, height } = block.data;
 
   return (
-    <figure className="my-1">
-      <img
-        src={url}
-        alt={alt}
-        width={width}
-        height={height}
-        loading="lazy"
-        className="rounded-md border border-zinc-200 dark:border-zinc-800 max-w-full h-auto"
-      />
+    <figure className="my-2">
+      <div className="overflow-hidden rounded-lg border border-border bg-muted shadow-sm">
+        <img
+          src={url}
+          alt={alt}
+          width={width}
+          height={height}
+          loading="lazy"
+          className="max-w-full h-auto block"
+        />
+      </div>
       {caption && (
-        <figcaption className="mt-1.5 text-xs text-zinc-500 dark:text-zinc-400 italic">
+        <figcaption className="mt-2 text-xs text-muted-foreground italic text-center">
           {caption}
         </figcaption>
       )}

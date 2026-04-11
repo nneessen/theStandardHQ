@@ -113,7 +113,7 @@ export function ExternalLinkBlockEditor({
 
       {urlLocal && (
         <div>
-          <div className="text-[10px] uppercase tracking-wide text-zinc-500 mb-1">
+          <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">
             Preview
           </div>
           <ExternalLinkBlockView block={previewBlock} />

@@ -59,7 +59,7 @@ export function RoadmapEditorHeader({ roadmap }: RoadmapEditorHeaderProps) {
   }
 
   return (
-    <div className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
+    <div className="border-b border-border bg-card shadow-sm">
       <div className="flex items-center gap-3 px-4 py-3">
         <Button
           variant="ghost"
@@ -76,7 +76,7 @@ export function RoadmapEditorHeader({ roadmap }: RoadmapEditorHeaderProps) {
             value={titleLocal}
             onChange={(e) => setTitleLocal(e.target.value)}
             placeholder="Roadmap title"
-            className="h-8 text-base font-semibold border-transparent hover:border-zinc-200 dark:hover:border-zinc-800 focus:border-zinc-300 dark:focus:border-zinc-700 px-2 -mx-2 bg-transparent"
+            className="h-9 text-base font-bold border-transparent hover:border-border focus:border-ring px-2 -mx-2 bg-transparent shadow-none"
           />
         </div>
 
@@ -115,8 +115,8 @@ export function RoadmapEditorHeader({ roadmap }: RoadmapEditorHeaderProps) {
           </Button>
         )}
 
-        <div className="flex items-center gap-2 pl-2 border-l border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400">
+        <div className="flex items-center gap-2 pl-3 ml-1 border-l border-border">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
             {roadmap.is_published ? (
               <Eye className="h-3.5 w-3.5" />
             ) : (
