@@ -22,7 +22,9 @@ export function RoadmapSectionAccordion({
   userId,
   autoExpandInProgress = false,
 }: RoadmapSectionAccordionProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  // Sections start COLLAPSED by default. The only section that auto-opens
+  // is the one containing the first unfinished item (autoExpandInProgress).
+  const [collapsed, setCollapsed] = useState(!autoExpandInProgress);
 
   const visibleItems = useMemo(
     () => section.items.filter((i) => i.is_published),
