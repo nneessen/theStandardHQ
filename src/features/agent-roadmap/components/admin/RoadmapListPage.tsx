@@ -3,8 +3,25 @@
 // Super-admin index of all roadmaps in the current agency.
 // Create, delete, set-default, toggle publish, navigate to editor.
 
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   Plus,
   Star,
@@ -16,6 +33,7 @@ import {
   Loader2,
   ListChecks,
   Users,
+  GripVertical,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -63,6 +81,7 @@ import {
   useDeleteRoadmap,
   useSetDefaultRoadmap,
   useUpdateRoadmap,
+  useReorderRoadmaps,
 } from "../../index";
 import type { RoadmapTemplateRow } from "../../types/roadmap";
 
@@ -78,6 +97,7 @@ export function RoadmapListPage() {
   const deleteMutation = useDeleteRoadmap();
   const setDefaultMutation = useSetDefaultRoadmap();
   const updateMutation = useUpdateRoadmap();
+  const reorderMutation = useReorderRoadmaps();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<RoadmapTemplateRow | null>(
@@ -85,6 +105,55 @@ export function RoadmapListPage() {
   );
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
+
+  // Split default from non-defaults so we can pin the default at the top
+  // (non-draggable) and wrap only the rest in a SortableContext. The default
+  // roadmap's sort_order still gets updated — it's always at position 0 in
+  // the orderedIds array — but the list query's `is_default DESC` ordering
+  // pins it visually regardless of sort_order.
+  const defaultRoadmap = useMemo(
+    () => roadmaps?.find((r) => r.is_default) ?? null,
+    [roadmaps],
+  );
+  const nonDefaultRoadmaps = useMemo(
+    () => (roadmaps ?? []).filter((r) => !r.is_default),
+    [roadmaps],
+  );
+  const nonDefaultIds = useMemo(
+    () => nonDefaultRoadmaps.map((r) => r.id),
+    [nonDefaultRoadmaps],
+  );
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      if (!agencyId) return;
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
+
+      const oldIndex = nonDefaultRoadmaps.findIndex((r) => r.id === active.id);
+      const newIndex = nonDefaultRoadmaps.findIndex((r) => r.id === over.id);
+      if (oldIndex === -1 || newIndex === -1) return;
+
+      const reordered = arrayMove(nonDefaultRoadmaps, oldIndex, newIndex);
+      // Default always goes first in orderedIds so the RPC's "must pass all"
+      // validation passes. Its sort_order becomes 0, but `is_default DESC`
+      // still pins it at the top of the rendered list.
+      const orderedIds = [
+        ...(defaultRoadmap ? [defaultRoadmap.id] : []),
+        ...reordered.map((r) => r.id),
+      ];
+
+      reorderMutation.mutate({ agencyId, orderedIds });
+    },
+    [agencyId, defaultRoadmap, nonDefaultRoadmaps, reorderMutation],
+  );
 
   function handleCreate() {
     if (!agencyId || !user?.id || !newTitle.trim()) return;
@@ -194,120 +263,73 @@ export function RoadmapListPage() {
       ) : (
         <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
           <div className="divide-y divide-border">
-            {roadmaps.map((roadmap) => (
-              <div
-                key={roadmap.id}
-                className="flex items-center gap-3 px-5 py-4 transition-colors hover:bg-accent/50 group"
+            {/* Pinned default — rendered outside the DndContext so it can't
+                be dragged. Changing which roadmap is default still works
+                via the "Set as default" dropdown action. */}
+            {defaultRoadmap && (
+              <RoadmapRowContent
+                roadmap={defaultRoadmap}
+                leftSlot={
+                  <div className="flex items-center justify-center h-6 w-6 text-warning shrink-0">
+                    <Star className="h-4 w-4 fill-current" />
+                  </div>
+                }
+                onNavigateEditor={() =>
+                  navigate({
+                    to: "/admin/agent-roadmap/$roadmapId",
+                    params: { roadmapId: defaultRoadmap.id },
+                  })
+                }
+                onNavigateTeam={() =>
+                  navigate({
+                    to: "/admin/agent-roadmap/$roadmapId/team",
+                    params: { roadmapId: defaultRoadmap.id },
+                  })
+                }
+                onTogglePublish={() => handleTogglePublish(defaultRoadmap)}
+                onSetDefault={() => handleSetDefault(defaultRoadmap)}
+                onDelete={() => setDeleteTarget(defaultRoadmap)}
+              />
+            )}
+
+            {/* Sortable non-defaults. Dragging reorders sort_order via
+                useReorderRoadmaps. The default (if any) is included in
+                orderedIds at position 0 so the RPC's "must pass all"
+                check succeeds. */}
+            {nonDefaultRoadmaps.length > 0 && (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
               >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5">
-                    {roadmap.is_default && (
-                      <Badge variant="warning" size="sm" className="gap-1">
-                        <Star className="h-3 w-3 fill-current" />
-                        START HERE
-                      </Badge>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() =>
+                <SortableContext
+                  items={nonDefaultIds}
+                  strategy={verticalListSortingStrategy}
+                >
+                  {nonDefaultRoadmaps.map((roadmap) => (
+                    <SortableRoadmapRow
+                      key={roadmap.id}
+                      roadmap={roadmap}
+                      onNavigateEditor={() =>
                         navigate({
                           to: "/admin/agent-roadmap/$roadmapId",
                           params: { roadmapId: roadmap.id },
                         })
                       }
-                      className="font-semibold text-base text-foreground hover:underline underline-offset-2 truncate text-left"
-                    >
-                      {roadmap.title}
-                    </button>
-                    {!roadmap.is_published && (
-                      <Badge variant="outline" size="sm">
-                        Draft
-                      </Badge>
-                    )}
-                  </div>
-                  {roadmap.description && (
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">
-                      {roadmap.description}
-                    </p>
-                  )}
-                </div>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-1.5 text-xs"
-                  onClick={() =>
-                    navigate({
-                      to: "/admin/agent-roadmap/$roadmapId/team",
-                      params: { roadmapId: roadmap.id },
-                    })
-                  }
-                >
-                  <Users className="h-3.5 w-3.5" />
-                  Team progress
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-1.5 text-xs"
-                  onClick={() =>
-                    navigate({
-                      to: "/admin/agent-roadmap/$roadmapId",
-                      params: { roadmapId: roadmap.id },
-                    })
-                  }
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                  Edit
-                </Button>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 w-7 p-0"
-                      aria-label="More actions"
-                    >
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => handleTogglePublish(roadmap)}
-                    >
-                      {roadmap.is_published ? (
-                        <>
-                          <EyeOff className="h-3.5 w-3.5 mr-2" />
-                          Unpublish
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="h-3.5 w-3.5 mr-2" />
-                          Publish
-                        </>
-                      )}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => handleSetDefault(roadmap)}
-                      disabled={roadmap.is_default}
-                    >
-                      <Star className="h-3.5 w-3.5 mr-2" />
-                      Set as default
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => setDeleteTarget(roadmap)}
-                      className="text-destructive focus:text-destructive"
-                    >
-                      <Trash2 className="h-3.5 w-3.5 mr-2" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            ))}
+                      onNavigateTeam={() =>
+                        navigate({
+                          to: "/admin/agent-roadmap/$roadmapId/team",
+                          params: { roadmapId: roadmap.id },
+                        })
+                      }
+                      onTogglePublish={() => handleTogglePublish(roadmap)}
+                      onSetDefault={() => handleSetDefault(roadmap)}
+                      onDelete={() => setDeleteTarget(roadmap)}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
+            )}
           </div>
         </div>
       )}
@@ -397,6 +419,202 @@ export function RoadmapListPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
+  );
+}
+
+// ============================================================================
+// Row components
+// ============================================================================
+
+interface RoadmapRowContentProps {
+  roadmap: RoadmapTemplateRow;
+  /** Slot for the far-left element — either a Star (pinned default) or a
+   *  drag handle button (sortable non-default). */
+  leftSlot: React.ReactNode;
+  onNavigateEditor: () => void;
+  onNavigateTeam: () => void;
+  onTogglePublish: () => void;
+  onSetDefault: () => void;
+  onDelete: () => void;
+}
+
+/**
+ * Shared row content rendered by both the pinned default row and each
+ * sortable non-default row. Everything except the left-side slot (star vs
+ * drag handle) is identical, so extracting the markup here keeps the two
+ * variants structurally in sync.
+ */
+function RoadmapRowContent({
+  roadmap,
+  leftSlot,
+  onNavigateEditor,
+  onNavigateTeam,
+  onTogglePublish,
+  onSetDefault,
+  onDelete,
+}: RoadmapRowContentProps) {
+  return (
+    <div className="flex items-center gap-3 px-5 py-4 transition-colors hover:bg-accent/50 group">
+      {leftSlot}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+          {roadmap.is_default && (
+            <Badge variant="warning" size="sm" className="gap-1">
+              <Star className="h-3 w-3 fill-current" />
+              START HERE
+            </Badge>
+          )}
+          <button
+            type="button"
+            onClick={onNavigateEditor}
+            className="font-semibold text-base text-foreground hover:underline underline-offset-2 truncate text-left"
+          >
+            {roadmap.title}
+          </button>
+          {!roadmap.is_published && (
+            <Badge variant="outline" size="sm">
+              Draft
+            </Badge>
+          )}
+        </div>
+        {roadmap.description && (
+          <p className="text-xs text-muted-foreground truncate mt-0.5">
+            {roadmap.description}
+          </p>
+        )}
+      </div>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-1.5 text-xs"
+        onClick={onNavigateTeam}
+      >
+        <Users className="h-3.5 w-3.5" />
+        Team progress
+      </Button>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-1.5 text-xs"
+        onClick={onNavigateEditor}
+      >
+        <Pencil className="h-3.5 w-3.5" />
+        Edit
+      </Button>
+
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 w-7 p-0"
+            aria-label="More actions"
+          >
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={onTogglePublish}>
+            {roadmap.is_published ? (
+              <>
+                <EyeOff className="h-3.5 w-3.5 mr-2" />
+                Unpublish
+              </>
+            ) : (
+              <>
+                <Eye className="h-3.5 w-3.5 mr-2" />
+                Publish
+              </>
+            )}
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={onSetDefault}
+            disabled={roadmap.is_default}
+          >
+            <Star className="h-3.5 w-3.5 mr-2" />
+            Set as default
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={onDelete}
+            className="text-destructive focus:text-destructive"
+          >
+            <Trash2 className="h-3.5 w-3.5 mr-2" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  );
+}
+
+// ----------------------------------------------------------------------------
+// Sortable wrapper for non-default rows
+// ----------------------------------------------------------------------------
+
+interface SortableRoadmapRowProps {
+  roadmap: RoadmapTemplateRow;
+  onNavigateEditor: () => void;
+  onNavigateTeam: () => void;
+  onTogglePublish: () => void;
+  onSetDefault: () => void;
+  onDelete: () => void;
+}
+
+function SortableRoadmapRow({
+  roadmap,
+  onNavigateEditor,
+  onNavigateTeam,
+  onTogglePublish,
+  onSetDefault,
+  onDelete,
+}: SortableRoadmapRowProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: roadmap.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={
+        isDragging
+          ? "bg-card border border-ring shadow-xl ring-2 ring-ring/40 z-10 relative rounded-md"
+          : ""
+      }
+    >
+      <RoadmapRowContent
+        roadmap={roadmap}
+        leftSlot={
+          <button
+            type="button"
+            {...attributes}
+            {...listeners}
+            className="flex items-center justify-center h-6 w-6 rounded text-muted-foreground/40 transition-all hover:text-foreground hover:bg-accent cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 shrink-0"
+            aria-label={`Drag ${roadmap.title} to reorder`}
+          >
+            <GripVertical className="h-4 w-4" />
+          </button>
+        }
+        onNavigateEditor={onNavigateEditor}
+        onNavigateTeam={onNavigateTeam}
+        onTogglePublish={onTogglePublish}
+        onSetDefault={onSetDefault}
+        onDelete={onDelete}
+      />
     </div>
   );
 }

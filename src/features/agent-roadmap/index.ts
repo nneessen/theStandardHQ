@@ -73,6 +73,7 @@ export {
   useUpdateRoadmap,
   useDeleteRoadmap,
   useSetDefaultRoadmap,
+  useReorderRoadmaps,
 } from "./hooks/useUpsertRoadmap";
 export {
   useCreateSection,

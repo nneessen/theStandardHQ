@@ -564,4 +564,157 @@ describeDb("Agent Roadmap RLS integration (B-4)", () => {
       expect(res.rows[0].row).toBeTruthy();
     });
   });
+
+  // -----------------------------------------------------------------------
+  // 7. M-1 expansion: RPC super-admin guards
+  //
+  // The review flagged that the reorder / move / set_default RPCs added
+  // explicit is_super_admin() guards in the RPC hardening migration, but
+  // had zero integration test coverage. Each test below proves the guard
+  // actually rejects a non-super-admin caller at the RPC layer before any
+  // UPDATE runs — belt-and-suspenders on top of the rt_write / rs_write /
+  // ri_write RLS policies.
+  // -----------------------------------------------------------------------
+
+  describe("RPC super-admin guards (M-1)", () => {
+    it("roadmap_reorder_templates rejects a non-super-admin", async () => {
+      await setAuthUser(fixture.agentAId);
+      await expect(
+        getClient().query("SELECT public.roadmap_reorder_templates($1, $2)", [
+          fixture.agencyAId,
+          [fixture.roadmapAId],
+        ]),
+      ).rejects.toThrow(/super-admin required/i);
+    });
+
+    it("roadmap_reorder_sections rejects a non-super-admin", async () => {
+      await setAuthUser(fixture.agentAId);
+      await expect(
+        getClient().query("SELECT public.roadmap_reorder_sections($1, $2)", [
+          fixture.roadmapAId,
+          [fixture.sectionAId],
+        ]),
+      ).rejects.toThrow(/super-admin required/i);
+    });
+
+    it("roadmap_reorder_items rejects a non-super-admin", async () => {
+      await setAuthUser(fixture.agentAId);
+      await expect(
+        getClient().query("SELECT public.roadmap_reorder_items($1, $2)", [
+          fixture.sectionAId,
+          [fixture.itemAPublishedId],
+        ]),
+      ).rejects.toThrow(/super-admin required/i);
+    });
+
+    it("roadmap_move_item rejects a non-super-admin", async () => {
+      await setAuthUser(fixture.agentAId);
+      await expect(
+        getClient().query("SELECT public.roadmap_move_item($1, $2, 0)", [
+          fixture.itemAPublishedId,
+          fixture.sectionAId,
+        ]),
+      ).rejects.toThrow(/super-admin required/i);
+    });
+
+    it("roadmap_set_default rejects a non-super-admin", async () => {
+      await setAuthUser(fixture.agentAId);
+      await expect(
+        getClient().query("SELECT public.roadmap_set_default($1)", [
+          fixture.roadmapAId,
+        ]),
+      ).rejects.toThrow(/super-admin required/i);
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // 8. roadmap_reorder_templates correctness
+  // -----------------------------------------------------------------------
+
+  describe("roadmap_reorder_templates correctness", () => {
+    it("rejects an empty array", async () => {
+      await setAuthUser(fixture.superAdminId);
+      await expect(
+        getClient().query(
+          "SELECT public.roadmap_reorder_templates($1, $2::uuid[])",
+          [fixture.agencyAId, []],
+        ),
+      ).rejects.toThrow(/must not be empty/i);
+    });
+
+    it("rejects ids belonging to another agency", async () => {
+      await setAuthUser(fixture.superAdminId);
+      await expect(
+        getClient().query("SELECT public.roadmap_reorder_templates($1, $2)", [
+          fixture.agencyAId,
+          [fixture.roadmapBId],
+        ]),
+      ).rejects.toThrow(/do not belong to agency/i);
+    });
+
+    it("rejects a subset of the agency's templates (must pass ALL)", async () => {
+      await setAuthUser(fixture.superAdminId);
+      // Fixture creates 2 roadmaps in Agency A (roadmapAId = published +
+      // one draft roadmap with itemInDraftRoadmapId). Passing only one id
+      // should be rejected because the RPC requires the caller to pass
+      // every template in the agency.
+      await expect(
+        getClient().query("SELECT public.roadmap_reorder_templates($1, $2)", [
+          fixture.agencyAId,
+          [fixture.roadmapAId],
+        ]),
+      ).rejects.toThrow(/passed 1 ids but agency has 2/i);
+    });
+
+    it("accepts a valid reorder from super-admin and updates sort_order", async () => {
+      await setAuthUser(fixture.superAdminId);
+      // Fetch the 2 Agency A roadmap ids in their current order
+      const { rows: before } = await getClient().query(
+        `SELECT id FROM public.roadmap_templates
+         WHERE agency_id = $1
+         ORDER BY sort_order, created_at`,
+        [fixture.agencyAId],
+      );
+      expect(before.length).toBe(2);
+
+      // Reorder by swapping
+      const reversed = [before[1].id, before[0].id];
+      await getClient().query(
+        "SELECT public.roadmap_reorder_templates($1, $2)",
+        [fixture.agencyAId, reversed],
+      );
+
+      // Verify sort_order updated
+      await getClient().query("RESET ROLE");
+      const { rows: after } = await getClient().query(
+        `SELECT id, sort_order FROM public.roadmap_templates
+         WHERE agency_id = $1
+         ORDER BY sort_order`,
+        [fixture.agencyAId],
+      );
+      expect(after[0].id).toBe(reversed[0]);
+      expect(after[0].sort_order).toBe(0);
+      expect(after[1].id).toBe(reversed[1]);
+      expect(after[1].sort_order).toBe(1);
+    });
+  });
+
+  // -----------------------------------------------------------------------
+  // 9. roadmap_move_item cross-roadmap rejection
+  // -----------------------------------------------------------------------
+
+  describe("roadmap_move_item cross-roadmap enforcement", () => {
+    it("rejects moving an item to a section in a different roadmap", async () => {
+      await setAuthUser(fixture.superAdminId);
+      // Try to move Agency A's published item into Agency B's section.
+      // The agencies are different, so the sections belong to different
+      // roadmaps, so the RPC's cross-roadmap check should fire.
+      await expect(
+        getClient().query("SELECT public.roadmap_move_item($1, $2, 0)", [
+          fixture.itemAPublishedId,
+          fixture.sectionBId,
+        ]),
+      ).rejects.toThrow(/cannot move item across roadmaps/i);
+    });
+  });
 });

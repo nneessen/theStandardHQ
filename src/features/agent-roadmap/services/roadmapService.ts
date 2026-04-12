@@ -197,6 +197,21 @@ export const roadmapService = {
     if (error) throw new Error(`setDefaultRoadmap failed: ${error.message}`);
   },
 
+  /**
+   * Reorder roadmap templates within an agency. Caller must pass ALL
+   * templates in the agency — partial reorders are rejected by the RPC.
+   * The default roadmap (if any) should be at position 0 in orderedIds;
+   * its sort_order becomes 0 but the list query still pins it via
+   * `is_default DESC` regardless of sort_order.
+   */
+  async reorderRoadmaps(agencyId: string, orderedIds: string[]): Promise<void> {
+    const { error } = await supabase.rpc("roadmap_reorder_templates", {
+      p_agency_id: agencyId,
+      p_ordered_ids: orderedIds,
+    });
+    if (error) throw new Error(`reorderRoadmaps failed: ${error.message}`);
+  },
+
   // ==========================================================================
   // Sections
   // ==========================================================================
@@ -348,22 +363,44 @@ export const roadmapService = {
       existing && existing.length > 0 ? existing[0].sort_order + 1 : 0;
 
     // 3. Deep-clone content_blocks with new ids so drag-reorder stays
-    //    deterministic (dnd-kit uses block.id as the sortable key)
+    //    deterministic (dnd-kit uses block.id as the sortable key).
+    //
+    //    H-1 fix: re-validate the cloned blocks through zod before INSERT.
+    //    The source item's content_blocks was validated at its original
+    //    write time, but re-validating on duplicate is defense-in-depth
+    //    against (a) pre-B-1 data that was stored before the URL scheme
+    //    whitelist was in place, and (b) any future service-role write
+    //    that bypasses the validator. `updateItem` already re-validates
+    //    on every write; duplicateItem was the one inconsistency.
     const clonedBlocks = (
       (source.content_blocks as unknown as RoadmapContentBlock[]) ?? []
     ).map((block) => ({ ...block, id: crypto.randomUUID() }));
+    const validatedBlocks = validateContentBlocks(clonedBlocks);
+
+    // M-3 fix: truncate the title if "{source} (copy)" would exceed the
+    // 300-char DB check constraint. Leaves room for the 7-char suffix.
+    const TITLE_SUFFIX = " (copy)";
+    const MAX_TITLE_LENGTH = 300;
+    const titleBudget = MAX_TITLE_LENGTH - TITLE_SUFFIX.length;
+    const duplicateTitle =
+      source.title.length > titleBudget
+        ? `${source.title.slice(0, titleBudget - 1).trimEnd()}…${TITLE_SUFFIX}`
+        : `${source.title}${TITLE_SUFFIX}`;
 
     const { data, error } = await supabase
       .from("roadmap_items")
       .insert({
         section_id: source.section_id,
-        title: `${source.title} (copy)`,
+        title: duplicateTitle,
         summary: source.summary,
         is_required: source.is_required,
-        is_published: source.is_published,
+        // M-2 fix: duplicates land as drafts so super-admin can edit
+        // before agents see them. Prevents "two nearly-identical titles
+        // appear in the runner" confusion.
+        is_published: false,
         estimated_minutes: source.estimated_minutes,
         sort_order: nextOrder,
-        content_blocks: clonedBlocks as unknown as never,
+        content_blocks: validatedBlocks as unknown as never,
         // Placeholders — trigger overrides
         roadmap_id: "00000000-0000-0000-0000-000000000000",
         agency_id: "00000000-0000-0000-0000-000000000000",

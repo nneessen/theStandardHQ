@@ -18147,6 +18147,10 @@ export type Database = {
         Args: { p_ordered_ids: string[]; p_roadmap_id: string };
         Returns: undefined;
       };
+      roadmap_reorder_templates: {
+        Args: { p_agency_id: string; p_ordered_ids: string[] };
+        Returns: undefined;
+      };
       roadmap_set_default: {
         Args: { p_roadmap_id: string };
         Returns: undefined;

@@ -131,3 +131,59 @@ export function useSetDefaultRoadmap() {
     },
   });
 }
+
+/**
+ * Reorder roadmap templates in the admin list. Optimistic update rewrites
+ * the listByAgency cache immediately so the drag feels instant; onError
+ * rolls back; onSettled invalidates to converge on server truth.
+ *
+ * The default roadmap (is_default=true) is always placed first in the
+ * orderedIds array by the caller — its sort_order ends up as 0, but the
+ * list query's `is_default DESC` ordering still pins it at the top of
+ * the render.
+ */
+export function useReorderRoadmaps() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      agencyId,
+      orderedIds,
+    }: {
+      agencyId: string;
+      orderedIds: string[];
+    }) => roadmapService.reorderRoadmaps(agencyId, orderedIds),
+    onMutate: async ({ agencyId, orderedIds }) => {
+      const key = roadmapKeys.listByAgency(agencyId);
+      await queryClient.cancelQueries({ queryKey: key });
+      const previous = queryClient.getQueryData<RoadmapTemplateRow[]>(key);
+
+      queryClient.setQueryData<RoadmapTemplateRow[]>(key, (old) => {
+        if (!old) return old;
+        const byId = new Map(old.map((r) => [r.id, r]));
+        return orderedIds
+          .map((id, idx) => {
+            const r = byId.get(id);
+            return r ? { ...r, sort_order: idx } : null;
+          })
+          .filter((r): r is RoadmapTemplateRow => r !== null);
+      });
+
+      return { previous, agencyId };
+    },
+    onError: (error: Error, _vars, context) => {
+      if (context?.previous && context.agencyId) {
+        queryClient.setQueryData(
+          roadmapKeys.listByAgency(context.agencyId),
+          context.previous,
+        );
+      }
+      toast.error(error.message);
+    },
+    onSettled: (_data, _error, { agencyId }) => {
+      queryClient.invalidateQueries({
+        queryKey: roadmapKeys.listByAgency(agencyId),
+      });
+    },
+  });
+}
