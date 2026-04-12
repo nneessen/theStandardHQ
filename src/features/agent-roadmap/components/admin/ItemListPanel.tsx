@@ -4,7 +4,7 @@
 // items as a sortable list. Clicking an item opens the editor drawer (handled
 // by the parent via onSelectItem).
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -127,14 +127,27 @@ export function ItemListPanel({
     [section, updateSectionMutation, roadmapId],
   );
 
-  const [titleLocal, setTitleLocal] = useDebouncedField(
+  const [titleLocal, setTitleLocal, flushTitle] = useDebouncedField(
     section?.title ?? "",
     commitTitle,
   );
-  const [descLocal, setDescLocal] = useDebouncedField(
+  const [descLocal, setDescLocal, flushDesc] = useDebouncedField(
     section?.description ?? "",
     commitDescription,
   );
+
+  // M-1 fix: flush pending debounced saves when the user switches sections.
+  // Without this, typing in section A's title then clicking section B could
+  // save the typed text to the wrong section (because the debounce fires
+  // after the callback ref updates to section B's context).
+  const prevSectionIdRef = useRef(section?.id);
+  useEffect(() => {
+    if (prevSectionIdRef.current && prevSectionIdRef.current !== section?.id) {
+      flushTitle();
+      flushDesc();
+    }
+    prevSectionIdRef.current = section?.id;
+  }, [section?.id, flushTitle, flushDesc]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),

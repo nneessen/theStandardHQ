@@ -219,7 +219,7 @@ export function RoadmapItemCard({
             <ContentBlockListView blocks={item.content_blocks} />
           ) : (
             <p className="text-sm text-muted-foreground italic">
-              No instructions for this item — ask Nick if you get stuck.
+              No instructions for this item — ask your manager if you get stuck.
             </p>
           )}
 
@@ -235,7 +235,7 @@ export function RoadmapItemCard({
                 <Textarea
                   value={notesLocal}
                   onChange={(e) => setNotesLocal(e.target.value)}
-                  placeholder="Jot down your own notes on this item — only you and Nick can see them"
+                  placeholder="Jot down your own notes on this item — only you and your manager can see them"
                   rows={2}
                   className="text-sm resize-y min-h-[64px] bg-card"
                 />

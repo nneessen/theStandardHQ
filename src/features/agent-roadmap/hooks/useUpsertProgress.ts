@@ -145,5 +145,13 @@ export function useUpdateProgressNotes() {
       }
       toast.error(error.message);
     },
+    // B-4 fix: converge cache with server truth after the mutation settles.
+    // Without this, the optimistic row (with fake id "optimistic-..." and
+    // empty agency_id) persists until staleTime expires.
+    onSettled: (_data, _error, { userId, roadmapId }) => {
+      queryClient.invalidateQueries({
+        queryKey: roadmapKeys.progress(userId, roadmapId),
+      });
+    },
   });
 }
