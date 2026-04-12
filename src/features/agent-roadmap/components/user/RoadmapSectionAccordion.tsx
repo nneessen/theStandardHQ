@@ -72,11 +72,12 @@ export function RoadmapSectionAccordion({
   if (visibleItems.length === 0) return null;
 
   return (
-    <section className="space-y-2">
+    <section>
+      {/* Section header — card-style with visual weight */}
       <button
         type="button"
         onClick={() => setCollapsed(!collapsed)}
-        className="flex items-center gap-2 w-full text-left py-1 group"
+        className="flex items-center gap-2 w-full text-left bg-card rounded-lg px-3 py-2.5 border border-border shadow-sm hover:shadow-md transition-all group"
       >
         {collapsed ? (
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -84,27 +85,24 @@ export function RoadmapSectionAccordion({
           <ChevronDown className="h-4 w-4 text-muted-foreground" />
         )}
         <h2
-          className={`text-base font-bold tracking-tight transition-colors ${
-            sectionComplete
-              ? "text-muted-foreground"
-              : "text-foreground group-hover:text-foreground"
+          className={`text-sm font-semibold tracking-tight transition-colors ${
+            sectionComplete ? "text-muted-foreground" : "text-foreground"
           }`}
         >
           {section.title}
         </h2>
         {sectionComplete && (
-          <span className="inline-flex items-center rounded-full bg-success/10 text-success text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 border border-success/20">
+          <span className="inline-flex items-center rounded-full bg-success/10 text-success text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 border border-success/20">
             Done
           </span>
         )}
-        <span className="text-sm font-semibold text-muted-foreground tabular-nums ml-auto">
-          {sectionStats.requiredDone} / {sectionStats.requiredTotal}
+        <span className="text-[11px] font-semibold text-muted-foreground tabular-nums ml-auto">
+          {sectionStats.requiredDone}/{sectionStats.requiredTotal}
           {sectionStats.optionalTotal > 0 && (
             <>
               {" "}
               <span className="text-muted-foreground/60 font-normal">
-                (+ {sectionStats.optionalDone}/{sectionStats.optionalTotal}{" "}
-                bonus)
+                +{sectionStats.optionalDone}/{sectionStats.optionalTotal}
               </span>
             </>
           )}
@@ -112,13 +110,13 @@ export function RoadmapSectionAccordion({
       </button>
 
       {section.description && !collapsed && (
-        <p className="text-xs text-muted-foreground ml-6 leading-relaxed">
+        <p className="text-[11px] text-muted-foreground ml-9 mt-1 leading-relaxed">
           {section.description}
         </p>
       )}
 
       {!collapsed && (
-        <div className="space-y-2">
+        <div className="space-y-1.5 mt-2 ml-2 pl-4 border-l-2 border-border">
           {visibleItems.map((item) => (
             <RoadmapItemCard
               key={item.id}

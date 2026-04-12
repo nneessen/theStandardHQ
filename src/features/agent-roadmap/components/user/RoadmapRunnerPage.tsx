@@ -125,35 +125,32 @@ export function RoadmapRunnerPage({ roadmapId }: RoadmapRunnerPageProps) {
   const allDone = stats.requiredTotal > 0 && stats.percent === 100;
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
       <RoadmapProgressHeader roadmap={roadmap} stats={stats} />
 
       {allDone && (
-        <div className="border-b border-success/20 bg-gradient-to-r from-success/10 via-success/5 to-success/10">
-          <div className="max-w-3xl mx-auto px-6 py-6">
-            <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-success/15 border border-success/30 shadow-sm">
-                <Trophy className="h-6 w-6 text-success" />
+        <div className="rounded-lg border border-success/30 bg-success/[0.06] px-4 py-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-success/15">
+              <Trophy className="h-4 w-4 text-success" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-bold text-foreground">
+                  Roadmap complete
+                </span>
+                <Sparkles className="h-3 w-3 text-success" />
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 className="text-lg font-bold text-foreground tracking-tight">
-                    You did it — roadmap complete
-                  </h2>
-                  <Sparkles className="h-4 w-4 text-success" />
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Every required item is done. Your progress is saved and
-                  visible to your manager. If there are optional items below,
-                  feel free to come back and pick them off when you have time.
-                </p>
-              </div>
+              <p className="text-[11px] text-muted-foreground">
+                All required items done. Your progress is visible to your
+                manager.
+              </p>
             </div>
           </div>
         </div>
       )}
 
-      <div className="max-w-3xl mx-auto px-6 py-6 space-y-6 pb-16">
+      <div className="flex-1 overflow-auto space-y-3">
         {visibleSections.length === 0 ? (
           <Empty className="py-16 border-2 border-dashed border-border rounded-xl bg-card shadow-sm">
             <EmptyHeader>
