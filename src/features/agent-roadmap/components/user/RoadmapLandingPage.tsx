@@ -59,24 +59,12 @@ export function RoadmapLandingPage() {
     [roadmaps],
   );
 
-  // Sort: ★ default first, then in-progress, then not-started, then completed
-  const sortedRoadmaps = useMemo(() => {
-    return [...visibleRoadmaps].sort((a, b) => {
-      if (a.is_default && !b.is_default) return -1;
-      if (!a.is_default && b.is_default) return 1;
-      const statusOrder: Record<string, number> = {
-        in_progress: 0,
-        not_started: 1,
-        completed: 2,
-      };
-      const sa = summaries?.get(a.id);
-      const sb = summaries?.get(b.id);
-      const aOrder = statusOrder[sa?.status ?? "not_started"] ?? 1;
-      const bOrder = statusOrder[sb?.status ?? "not_started"] ?? 1;
-      if (aOrder !== bOrder) return aOrder - bOrder;
-      return a.sort_order - b.sort_order;
-    });
-  }, [visibleRoadmaps, summaries]);
+  // Match the admin-defined order exactly. The list query already returns
+  // roadmaps in `is_default DESC, sort_order ASC, created_at ASC` — the
+  // same order the admin sees in the Manage Roadmaps page. Agents should
+  // see the roadmaps in the order Nick arranged them, not reshuffled by
+  // completion status.
+  const sortedRoadmaps = visibleRoadmaps;
 
   // Stats for the header
   const stats = useMemo(() => {
