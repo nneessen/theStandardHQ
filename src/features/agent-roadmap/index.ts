@@ -96,6 +96,7 @@ export {
 } from "./hooks/useUpsertProgress";
 
 // Pages (consumed by router.tsx)
+export { RoadmapLandingOrAdmin } from "./components/RoadmapLandingOrAdmin";
 export { RoadmapListPage } from "./components/admin/RoadmapListPage";
 export { RoadmapEditorPage } from "./components/admin/RoadmapEditorPage";
 export { TeamProgressPanel } from "./components/admin/TeamProgressPanel";

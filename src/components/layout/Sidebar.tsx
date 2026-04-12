@@ -35,7 +35,6 @@ import {
   Network,
   Sparkles,
   Compass,
-  ListChecks,
 } from "lucide-react";
 import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
 import { SupportDialog } from "./SupportDialog";
@@ -449,13 +448,6 @@ export default function Sidebar({
           icon: Workflow,
           label: "Workflows",
           href: "/system/workflows",
-          public: true,
-          superAdminOnly: true,
-        },
-        {
-          icon: ListChecks,
-          label: "Manage Roadmaps",
-          href: "/admin/agent-roadmap",
           public: true,
           superAdminOnly: true,
         },

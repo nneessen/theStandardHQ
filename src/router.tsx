@@ -50,11 +50,11 @@ import MyTrainingPage from "./features/training-modules/components/learner/MyTra
 import ModulePlayer from "./features/training-modules/components/learner/ModulePlayer";
 import ModuleBuilderPage from "./features/training-modules/components/admin/ModuleBuilderPage";
 import {
+  RoadmapLandingOrAdmin,
   RoadmapListPage,
   RoadmapEditorPage,
   TeamProgressPanel,
   TeamOverviewPage,
-  RoadmapLandingPage,
   RoadmapRunnerPage,
 } from "./features/agent-roadmap";
 import { THE_STANDARD_AGENCY_ID } from "./hooks/subscription";
@@ -1046,15 +1046,26 @@ const roadmapTeamOverviewRoute = createRoute({
   ),
 });
 
-// Agent: landing page showing all published roadmaps in the agent's agency
+// Agent Roadmap: single entry point for both super-admin and agents.
+// Super-admin sees the admin list (manage roadmaps) unless ?preview=true
+// is in the URL, in which case they see the agent landing page so they
+// can preview what their agents see.
+// Regular agents always see the landing page.
 const agentRoadmapLandingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "agent-roadmap",
-  component: () => (
-    <RouteGuard allowedAgencyId={THE_STANDARD_AGENCY_ID}>
-      <RoadmapLandingPage />
-    </RouteGuard>
-  ),
+  validateSearch: (search: Record<string, unknown>): { preview?: boolean } => ({
+    preview:
+      search.preview === "true" || search.preview === true ? true : undefined,
+  }),
+  component: () => {
+    const { preview } = agentRoadmapLandingRoute.useSearch();
+    return (
+      <RouteGuard allowedAgencyId={THE_STANDARD_AGENCY_ID}>
+        <RoadmapLandingOrAdmin preview={!!preview} />
+      </RouteGuard>
+    );
+  },
 });
 
 // Agent: runner page for a specific roadmap (the checklist they work through)

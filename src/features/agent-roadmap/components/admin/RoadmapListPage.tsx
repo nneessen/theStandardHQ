@@ -220,15 +220,28 @@ export function RoadmapListPage() {
             Build checkoff-as-you-go roadmaps for new agents. One can be marked
             as the default "START HERE" for new hires.
           </p>
-          <Button
-            variant="link"
-            size="sm"
-            className="px-0 mt-1 gap-1.5 text-xs"
-            onClick={() => navigate({ to: "/admin/agent-roadmap/team" })}
-          >
-            <Users className="h-3.5 w-3.5" />
-            View all agents' progress
-          </Button>
+          <div className="flex items-center gap-3 mt-1">
+            <Button
+              variant="link"
+              size="sm"
+              className="px-0 gap-1.5 text-xs"
+              onClick={() => navigate({ to: "/admin/agent-roadmap/team" })}
+            >
+              <Users className="h-3.5 w-3.5" />
+              Team progress
+            </Button>
+            <Button
+              variant="link"
+              size="sm"
+              className="px-0 gap-1.5 text-xs"
+              onClick={() =>
+                navigate({ to: "/agent-roadmap", search: { preview: true } })
+              }
+            >
+              <Eye className="h-3.5 w-3.5" />
+              Preview as agent
+            </Button>
+          </div>
         </div>
         <Button
           onClick={() => setCreateOpen(true)}
