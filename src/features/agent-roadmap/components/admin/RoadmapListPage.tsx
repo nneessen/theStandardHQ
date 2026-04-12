@@ -1,7 +1,8 @@
 // src/features/agent-roadmap/components/admin/RoadmapListPage.tsx
 //
-// Super-admin index of all roadmaps in the current agency.
-// Create, delete, set-default, toggle publish, navigate to editor.
+// Super-admin roadmap management page. This is the view Nick sees when he
+// clicks "Agent Roadmap" in the sidebar. Designed for frequent use —
+// fast navigation, clear status at a glance, drag-to-reorder.
 
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
@@ -72,7 +73,6 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useImo } from "@/contexts/ImoContext";
 import {
@@ -106,11 +106,6 @@ export function RoadmapListPage() {
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
 
-  // Split default from non-defaults so we can pin the default at the top
-  // (non-draggable) and wrap only the rest in a SortableContext. The default
-  // roadmap's sort_order still gets updated — it's always at position 0 in
-  // the orderedIds array — but the list query's `is_default DESC` ordering
-  // pins it visually regardless of sort_order.
   const defaultRoadmap = useMemo(
     () => roadmaps?.find((r) => r.is_default) ?? null,
     [roadmaps],
@@ -136,20 +131,14 @@ export function RoadmapListPage() {
       if (!agencyId) return;
       const { active, over } = event;
       if (!over || active.id === over.id) return;
-
       const oldIndex = nonDefaultRoadmaps.findIndex((r) => r.id === active.id);
       const newIndex = nonDefaultRoadmaps.findIndex((r) => r.id === over.id);
       if (oldIndex === -1 || newIndex === -1) return;
-
       const reordered = arrayMove(nonDefaultRoadmaps, oldIndex, newIndex);
-      // Default always goes first in orderedIds so the RPC's "must pass all"
-      // validation passes. Its sort_order becomes 0, but `is_default DESC`
-      // still pins it at the top of the rendered list.
       const orderedIds = [
         ...(defaultRoadmap ? [defaultRoadmap.id] : []),
         ...reordered.map((r) => r.id),
       ];
-
       reorderMutation.mutate({ agencyId, orderedIds });
     },
     [agencyId, defaultRoadmap, nonDefaultRoadmaps, reorderMutation],
@@ -203,106 +192,136 @@ export function RoadmapListPage() {
 
   if (!agencyId) {
     return (
-      <div className="p-6">
-        <p className="text-sm text-muted-foreground">Loading agency context…</p>
+      <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
+        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
       </div>
     );
   }
 
+  // Stats for the header
+  const publishedCount = (roadmaps ?? []).filter((r) => r.is_published).length;
+  const draftCount = (roadmaps ?? []).length - publishedCount;
+
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">
-            Agent Roadmaps
+    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
+      {/* ── Header bar ─────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+        <div className="flex items-center gap-2">
+          <ListChecks className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
+          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            Manage Roadmaps
           </h1>
-          <p className="text-sm text-muted-foreground mt-1 max-w-xl">
-            Build checkoff-as-you-go roadmaps for new agents. One can be marked
-            as the default "START HERE" for new hires.
-          </p>
-          <div className="flex items-center gap-3 mt-1">
-            <Button
-              variant="link"
-              size="sm"
-              className="px-0 gap-1.5 text-xs"
-              onClick={() => navigate({ to: "/admin/agent-roadmap/team" })}
-            >
-              <Users className="h-3.5 w-3.5" />
-              Team progress
-            </Button>
-            <Button
-              variant="link"
-              size="sm"
-              className="px-0 gap-1.5 text-xs"
-              onClick={() =>
-                navigate({ to: "/agent-roadmap", search: { preview: true } })
-              }
-            >
-              <Eye className="h-3.5 w-3.5" />
-              Preview as agent
-            </Button>
-          </div>
+          <span className="text-[10px] text-zinc-500 dark:text-zinc-400 hidden sm:inline">
+            Build and manage onboarding checklists
+          </span>
         </div>
-        <Button
-          onClick={() => setCreateOpen(true)}
-          variant="primary"
-          size="sm"
-          className="gap-1.5"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          New roadmap
-        </Button>
+
+        <div className="flex items-center gap-2">
+          {(roadmaps ?? []).length > 0 && (
+            <div className="flex items-center gap-3 text-[11px] mr-2">
+              <span>
+                <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                  {publishedCount}
+                </span>{" "}
+                <span className="text-zinc-500 dark:text-zinc-400">
+                  published
+                </span>
+              </span>
+              {draftCount > 0 && (
+                <span>
+                  <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                    {draftCount}
+                  </span>{" "}
+                  <span className="text-zinc-500 dark:text-zinc-400">
+                    draft
+                  </span>
+                </span>
+              )}
+              <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+            </div>
+          )}
+
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-[11px] gap-1"
+            onClick={() => navigate({ to: "/admin/agent-roadmap/team" })}
+          >
+            <Users className="h-3 w-3" />
+            Team
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 text-[11px] gap-1"
+            onClick={() =>
+              navigate({ to: "/agent-roadmap", search: { preview: true } })
+            }
+          >
+            <Eye className="h-3 w-3" />
+            Preview
+          </Button>
+          <Button
+            onClick={() => setCreateOpen(true)}
+            size="sm"
+            className="h-7 text-[11px] gap-1"
+          >
+            <Plus className="h-3 w-3" />
+            New
+          </Button>
+        </div>
       </div>
 
-      {isLoading ? (
-        <div className="space-y-2">
-          <Skeleton className="h-16 w-full rounded-md" />
-          <Skeleton className="h-16 w-full rounded-md" />
-        </div>
-      ) : !roadmaps || roadmaps.length === 0 ? (
-        <Empty className="py-16 border-2 border-dashed border-border rounded-xl bg-card shadow-sm">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <ListChecks className="h-6 w-6 text-muted-foreground" />
-            </EmptyMedia>
-            <EmptyTitle>No roadmaps yet</EmptyTitle>
-            <EmptyDescription>
-              Create your first roadmap to start building your onboarding
-              checklist.
-            </EmptyDescription>
-          </EmptyHeader>
-          <div className="mt-4">
-            <Button
-              onClick={() => setCreateOpen(true)}
-              variant="primary"
-              size="sm"
-            >
-              <Plus className="h-3.5 w-3.5 mr-1.5" />
-              Create your first roadmap
-            </Button>
+      {/* ── Content ────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-auto">
+        {isLoading ? (
+          <div className="space-y-2">
+            {[1, 2, 3].map((n) => (
+              <div
+                key={n}
+                className="h-20 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 animate-pulse"
+              />
+            ))}
           </div>
-        </Empty>
-      ) : (
-        <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-          <div className="divide-y divide-border">
-            {/* Pinned default — rendered outside the DndContext so it can't
-                be dragged. Changing which roadmap is default still works
-                via the "Set as default" dropdown action. */}
+        ) : !roadmaps || roadmaps.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <ListChecks className="h-5 w-5 text-zinc-400" />
+                </EmptyMedia>
+                <EmptyTitle>No roadmaps yet</EmptyTitle>
+                <EmptyDescription>
+                  Create your first roadmap to start building your onboarding
+                  checklist.
+                </EmptyDescription>
+              </EmptyHeader>
+              <div className="mt-3">
+                <Button onClick={() => setCreateOpen(true)} size="sm">
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />
+                  Create your first roadmap
+                </Button>
+              </div>
+            </Empty>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {/* Pinned default */}
             {defaultRoadmap && (
-              <RoadmapRowContent
+              <AdminRoadmapCard
                 roadmap={defaultRoadmap}
                 leftSlot={
-                  <div className="flex items-center justify-center h-6 w-6 text-warning shrink-0">
+                  <div className="flex items-center justify-center h-6 w-6 text-amber-500 shrink-0">
                     <Star className="h-4 w-4 fill-current" />
                   </div>
                 }
-                onNavigateEditor={() =>
+                onEdit={() =>
                   navigate({
                     to: "/admin/agent-roadmap/$roadmapId",
                     params: { roadmapId: defaultRoadmap.id },
                   })
                 }
-                onNavigateTeam={() =>
+                onTeam={() =>
                   navigate({
                     to: "/admin/agent-roadmap/$roadmapId/team",
                     params: { roadmapId: defaultRoadmap.id },
@@ -314,10 +333,7 @@ export function RoadmapListPage() {
               />
             )}
 
-            {/* Sortable non-defaults. Dragging reorders sort_order via
-                useReorderRoadmaps. The default (if any) is included in
-                orderedIds at position 0 so the RPC's "must pass all"
-                check succeeds. */}
+            {/* Sortable non-defaults */}
             {nonDefaultRoadmaps.length > 0 && (
               <DndContext
                 sensors={sensors}
@@ -329,16 +345,16 @@ export function RoadmapListPage() {
                   strategy={verticalListSortingStrategy}
                 >
                   {nonDefaultRoadmaps.map((roadmap) => (
-                    <SortableRoadmapRow
+                    <SortableAdminRoadmapCard
                       key={roadmap.id}
                       roadmap={roadmap}
-                      onNavigateEditor={() =>
+                      onEdit={() =>
                         navigate({
                           to: "/admin/agent-roadmap/$roadmapId",
                           params: { roadmapId: roadmap.id },
                         })
                       }
-                      onNavigateTeam={() =>
+                      onTeam={() =>
                         navigate({
                           to: "/admin/agent-roadmap/$roadmapId/team",
                           params: { roadmapId: roadmap.id },
@@ -353,10 +369,10 @@ export function RoadmapListPage() {
               </DndContext>
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Create dialog */}
+      {/* ── Create dialog ──────────────────────────────────────────── */}
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
           <DialogHeader>
@@ -400,7 +416,6 @@ export function RoadmapListPage() {
             <Button
               onClick={handleCreate}
               disabled={!newTitle.trim() || createMutation.isPending}
-              variant="primary"
             >
               {createMutation.isPending && (
                 <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
@@ -411,7 +426,7 @@ export function RoadmapListPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirmation */}
+      {/* ── Delete confirmation ────────────────────────────────────── */}
       <AlertDialog
         open={!!deleteTarget}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
@@ -446,154 +461,160 @@ export function RoadmapListPage() {
 }
 
 // ============================================================================
-// Row components
+// Admin roadmap card — white bg, zinc border, clear visual hierarchy
 // ============================================================================
 
-interface RoadmapRowContentProps {
+interface AdminRoadmapCardProps {
   roadmap: RoadmapTemplateRow;
-  /** Slot for the far-left element — either a Star (pinned default) or a
-   *  drag handle button (sortable non-default). */
   leftSlot: React.ReactNode;
-  onNavigateEditor: () => void;
-  onNavigateTeam: () => void;
+  onEdit: () => void;
+  onTeam: () => void;
   onTogglePublish: () => void;
   onSetDefault: () => void;
   onDelete: () => void;
 }
 
-/**
- * Shared row content rendered by both the pinned default row and each
- * sortable non-default row. Everything except the left-side slot (star vs
- * drag handle) is identical, so extracting the markup here keeps the two
- * variants structurally in sync.
- */
-function RoadmapRowContent({
+function AdminRoadmapCard({
   roadmap,
   leftSlot,
-  onNavigateEditor,
-  onNavigateTeam,
+  onEdit,
+  onTeam,
   onTogglePublish,
   onSetDefault,
   onDelete,
-}: RoadmapRowContentProps) {
+}: AdminRoadmapCardProps) {
   return (
-    <div className="flex items-center gap-3 px-5 py-4 transition-colors hover:bg-accent/50 group">
+    <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 rounded-lg px-3 py-3 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group">
       {leftSlot}
+
+      {/* Info section */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+        <div className="flex items-center gap-2 mb-0.5">
           {roadmap.is_default && (
-            <Badge variant="warning" size="sm" className="gap-1">
-              <Star className="h-3 w-3 fill-current" />
-              START HERE
+            <Badge variant="warning" size="sm" className="gap-0.5 text-[10px]">
+              <Star className="h-2.5 w-2.5 fill-current" />
+              DEFAULT
             </Badge>
           )}
           <button
             type="button"
-            onClick={onNavigateEditor}
-            className="font-semibold text-base text-foreground hover:underline underline-offset-2 truncate text-left"
+            onClick={onEdit}
+            className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 hover:underline underline-offset-2 truncate text-left"
           >
             {roadmap.title}
           </button>
-          {!roadmap.is_published && (
-            <Badge variant="outline" size="sm">
-              Draft
-            </Badge>
-          )}
         </div>
         {roadmap.description && (
-          <p className="text-xs text-muted-foreground truncate mt-0.5">
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
             {roadmap.description}
           </p>
         )}
       </div>
 
-      <Button
-        variant="ghost"
-        size="sm"
-        className="gap-1.5 text-xs"
-        onClick={onNavigateTeam}
-      >
-        <Users className="h-3.5 w-3.5" />
-        Team progress
-      </Button>
+      {/* Status */}
+      <div className="shrink-0">
+        {roadmap.is_published ? (
+          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            Published
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
+            <div className="h-1.5 w-1.5 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+            Draft
+          </span>
+        )}
+      </div>
 
-      <Button
-        variant="ghost"
-        size="sm"
-        className="gap-1.5 text-xs"
-        onClick={onNavigateEditor}
-      >
-        <Pencil className="h-3.5 w-3.5" />
-        Edit
-      </Button>
+      {/* Actions */}
+      <div className="flex items-center gap-1 shrink-0">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 text-[11px] gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+          onClick={onTeam}
+        >
+          <Users className="h-3 w-3" />
+          Team
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-7 text-[11px] gap-1"
+          onClick={onEdit}
+        >
+          <Pencil className="h-3 w-3" />
+          Edit
+        </Button>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0"
-            aria-label="More actions"
-          >
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={onTogglePublish}>
-            {roadmap.is_published ? (
-              <>
-                <EyeOff className="h-3.5 w-3.5 mr-2" />
-                Unpublish
-              </>
-            ) : (
-              <>
-                <Eye className="h-3.5 w-3.5 mr-2" />
-                Publish
-              </>
-            )}
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={onSetDefault}
-            disabled={roadmap.is_default}
-          >
-            <Star className="h-3.5 w-3.5 mr-2" />
-            Set as default
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={onDelete}
-            className="text-destructive focus:text-destructive"
-          >
-            <Trash2 className="h-3.5 w-3.5 mr-2" />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0"
+              aria-label="More actions"
+            >
+              <MoreHorizontal className="h-3.5 w-3.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={onTogglePublish}>
+              {roadmap.is_published ? (
+                <>
+                  <EyeOff className="h-3.5 w-3.5 mr-2" />
+                  Unpublish
+                </>
+              ) : (
+                <>
+                  <Eye className="h-3.5 w-3.5 mr-2" />
+                  Publish
+                </>
+              )}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={onSetDefault}
+              disabled={roadmap.is_default}
+            >
+              <Star className="h-3.5 w-3.5 mr-2" />
+              Set as default
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={onDelete}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-2" />
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 }
 
-// ----------------------------------------------------------------------------
-// Sortable wrapper for non-default rows
-// ----------------------------------------------------------------------------
+// ============================================================================
+// Sortable wrapper
+// ============================================================================
 
-interface SortableRoadmapRowProps {
+interface SortableAdminRoadmapCardProps {
   roadmap: RoadmapTemplateRow;
-  onNavigateEditor: () => void;
-  onNavigateTeam: () => void;
+  onEdit: () => void;
+  onTeam: () => void;
   onTogglePublish: () => void;
   onSetDefault: () => void;
   onDelete: () => void;
 }
 
-function SortableRoadmapRow({
+function SortableAdminRoadmapCard({
   roadmap,
-  onNavigateEditor,
-  onNavigateTeam,
+  onEdit,
+  onTeam,
   onTogglePublish,
   onSetDefault,
   onDelete,
-}: SortableRoadmapRowProps) {
+}: SortableAdminRoadmapCardProps) {
   const {
     attributes,
     listeners,
@@ -614,25 +635,25 @@ function SortableRoadmapRow({
       style={style}
       className={
         isDragging
-          ? "bg-card border border-ring shadow-xl ring-2 ring-ring/40 z-10 relative rounded-md"
+          ? "rounded-lg ring-2 ring-blue-400/40 shadow-xl z-10 relative"
           : ""
       }
     >
-      <RoadmapRowContent
+      <AdminRoadmapCard
         roadmap={roadmap}
         leftSlot={
           <button
             type="button"
             {...attributes}
             {...listeners}
-            className="flex items-center justify-center h-6 w-6 rounded text-muted-foreground/40 transition-all hover:text-foreground hover:bg-accent cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 shrink-0"
+            className="flex items-center justify-center h-6 w-6 rounded text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 dark:hover:text-zinc-400 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
             aria-label={`Drag ${roadmap.title} to reorder`}
           >
-            <GripVertical className="h-4 w-4" />
+            <GripVertical className="h-3.5 w-3.5" />
           </button>
         }
-        onNavigateEditor={onNavigateEditor}
-        onNavigateTeam={onNavigateTeam}
+        onEdit={onEdit}
+        onTeam={onTeam}
         onTogglePublish={onTogglePublish}
         onSetDefault={onSetDefault}
         onDelete={onDelete}
