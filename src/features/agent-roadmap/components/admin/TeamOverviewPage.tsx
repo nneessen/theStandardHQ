@@ -1,12 +1,7 @@
 // src/features/agent-roadmap/components/admin/TeamOverviewPage.tsx
 //
-// Super-admin cross-roadmap team dashboard. Shows every agent in the agency
-// with their progress across all published roadmaps — the "manage and check
-// on all my agents" view Nick asked for.
-//
-// Each agent row shows: name, email, overall %, and a mini progress cell
-// per roadmap. Sorted by lowest overall % first so agents who need the
-// most attention float to the top.
+// Cross-roadmap team dashboard — shows every agent's progress across
+// all published roadmaps. Agents who need the most help sort to the top.
 
 import { useMemo } from "react";
 import { useNavigate } from "@tanstack/react-router";
@@ -37,7 +32,6 @@ import {
   EmptyTitle,
   EmptyDescription,
 } from "@/components/ui/empty";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
@@ -74,13 +68,11 @@ export function TeamOverviewPage() {
 
   const isLoading = roadmapsLoading || overviewLoading;
 
-  // Published roadmaps in display order (for table columns)
   const publishedRoadmaps = useMemo(
     () => (roadmaps ?? []).filter((r) => r.is_published),
     [roadmaps],
   );
 
-  // Summary stats
   const stats = useMemo(() => {
     if (!overview || overview.length === 0) return null;
     const total = overview.length;
@@ -93,205 +85,221 @@ export function TeamOverviewPage() {
     }).length;
     const avgPercent =
       overview.reduce((sum, a) => sum + a.overallPercent, 0) / total;
-    return {
-      total,
-      allDone,
-      stuck,
-      avgPercent: Math.round(avgPercent),
-    };
+    return { total, allDone, stuck, avgPercent: Math.round(avgPercent) };
   }, [overview]);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
+    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
+      {/* ── Header bar ─────────────────────────────────────────────── */}
+      <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
         <Button
           variant="ghost"
           size="sm"
-          className="h-9 w-9 p-0"
-          onClick={() => navigate({ to: "/admin/agent-roadmap" })}
-          aria-label="Back to roadmap list"
+          className="h-8 w-8 p-0 shrink-0"
+          onClick={() => navigate({ to: "/agent-roadmap" })}
+          aria-label="Back"
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">
-            Team Progress Overview
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
+          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            Team Progress
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Every agent's progress across all published roadmaps. Agents who
-            need the most attention sort to the top.
-          </p>
+          <span className="text-[10px] text-zinc-500 dark:text-zinc-400 hidden sm:inline">
+            All agents across all roadmaps
+          </span>
         </div>
+
+        <div className="flex-1" />
+
+        {stats && (
+          <div className="flex items-center gap-3 text-[11px]">
+            <div className="flex items-center gap-1">
+              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                {stats.total}
+              </span>
+              <span className="text-zinc-500 dark:text-zinc-400">agents</span>
+            </div>
+            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+            <div className="flex items-center gap-1">
+              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                {stats.avgPercent}%
+              </span>
+              <span className="text-zinc-500 dark:text-zinc-400">avg</span>
+            </div>
+            {stats.allDone > 0 && (
+              <>
+                <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+                <div className="flex items-center gap-1">
+                  <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                  <span className="font-medium">{stats.allDone}</span>
+                  <span className="text-zinc-500 dark:text-zinc-400">done</span>
+                </div>
+              </>
+            )}
+            {stats.stuck > 0 && (
+              <>
+                <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+                <div className="flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3 text-amber-500" />
+                  <span className="font-medium">{stats.stuck}</span>
+                  <span className="text-zinc-500 dark:text-zinc-400">
+                    stuck
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* Summary cards */}
-      {!isLoading && stats && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-          <StatCard
-            label="Agents"
-            value={stats.total.toString()}
-            icon={Users}
-          />
-          <StatCard
-            label="Average progress"
-            value={`${stats.avgPercent}%`}
-            accent={stats.avgPercent >= 80 ? "success" : undefined}
-          />
-          <StatCard
-            label="All done"
-            value={stats.allDone.toString()}
-            accent="success"
-            icon={CheckCircle2}
-          />
-          <StatCard
-            label={`Stuck (${STUCK_THRESHOLD_HOURS}h+ inactive)`}
-            value={stats.stuck.toString()}
-            accent={stats.stuck > 0 ? "warning" : undefined}
-            icon={AlertTriangle}
-          />
-        </div>
-      )}
-
-      {/* Matrix table */}
-      {isLoading ? (
-        <div className="space-y-2">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-        </div>
-      ) : !overview || overview.length === 0 ? (
-        <Empty className="py-16 border-2 border-dashed border-border rounded-xl bg-card shadow-sm">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <Users className="h-6 w-6 text-muted-foreground" />
-            </EmptyMedia>
-            <EmptyTitle>No agent activity yet</EmptyTitle>
-            <EmptyDescription>
-              Once agents start working through roadmaps, their progress will
-              appear here.
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <div className="rounded-xl border border-border bg-card shadow-sm overflow-x-auto">
-          <TooltipProvider delayDuration={200}>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[200px] sticky left-0 bg-card z-10">
-                    Agent
-                  </TableHead>
-                  <TableHead className="w-[120px]">Overall</TableHead>
-                  {publishedRoadmaps.map((rm) => (
-                    <TableHead
-                      key={rm.id}
-                      className="min-w-[140px] text-center"
-                    >
-                      <button
-                        type="button"
-                        onClick={() =>
-                          navigate({
-                            to: "/admin/agent-roadmap/$roadmapId/team",
-                            params: { roadmapId: rm.id },
-                          })
-                        }
-                        className="text-xs font-semibold hover:underline underline-offset-2 truncate max-w-[130px] inline-block"
-                      >
-                        {rm.title}
-                      </button>
+      {/* ── Table ──────────────────────────────────────────────────── */}
+      <div className="flex-1 overflow-auto">
+        {isLoading ? (
+          <div className="space-y-1.5">
+            {[1, 2, 3, 4].map((n) => (
+              <div
+                key={n}
+                className="h-14 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 animate-pulse"
+              />
+            ))}
+          </div>
+        ) : !overview || overview.length === 0 ? (
+          <div className="flex items-center justify-center h-full">
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <Users className="h-5 w-5 text-zinc-400" />
+                </EmptyMedia>
+                <EmptyTitle>No agent activity yet</EmptyTitle>
+                <EmptyDescription>
+                  Once agents start working through roadmaps, their progress
+                  will appear here.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-x-auto">
+            <TooltipProvider delayDuration={200}>
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b border-zinc-200 dark:border-zinc-800">
+                    <TableHead className="w-[200px] sticky left-0 bg-white dark:bg-zinc-900 z-10 text-[10px] uppercase tracking-wider font-bold text-zinc-500 dark:text-zinc-400">
+                      Agent
                     </TableHead>
-                  ))}
-                  <TableHead>Last activity</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {overview.map((agent) => {
-                  const isStuck =
-                    agent.lastActivityAt &&
-                    agent.overallPercent < 100 &&
-                    (Date.now() - new Date(agent.lastActivityAt).getTime()) /
-                      (1000 * 60 * 60) >
-                      STUCK_THRESHOLD_HOURS;
+                    <TableHead className="w-[120px] text-[10px] uppercase tracking-wider font-bold text-zinc-500 dark:text-zinc-400">
+                      Overall
+                    </TableHead>
+                    {publishedRoadmaps.map((rm) => (
+                      <TableHead
+                        key={rm.id}
+                        className="min-w-[130px] text-center"
+                      >
+                        <button
+                          type="button"
+                          onClick={() =>
+                            navigate({
+                              to: "/admin/agent-roadmap/$roadmapId/team",
+                              params: { roadmapId: rm.id },
+                            })
+                          }
+                          className="text-[10px] uppercase tracking-wider font-bold text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:underline underline-offset-2 truncate max-w-[120px] inline-block"
+                        >
+                          {rm.title}
+                        </button>
+                      </TableHead>
+                    ))}
+                    <TableHead className="text-[10px] uppercase tracking-wider font-bold text-zinc-500 dark:text-zinc-400">
+                      Last active
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {overview.map((agent) => {
+                    const isStuck =
+                      agent.lastActivityAt &&
+                      agent.overallPercent < 100 &&
+                      (Date.now() - new Date(agent.lastActivityAt).getTime()) /
+                        (1000 * 60 * 60) >
+                        STUCK_THRESHOLD_HOURS;
 
-                  return (
-                    <TableRow key={agent.userId}>
-                      {/* Agent name */}
-                      <TableCell className="sticky left-0 bg-card z-10">
-                        <div className="text-sm font-semibold text-foreground truncate max-w-[180px]">
-                          {displayName(agent)}
-                        </div>
-                        {agent.email && (
-                          <div className="text-[11px] text-muted-foreground truncate max-w-[180px]">
-                            {agent.email}
+                    return (
+                      <TableRow
+                        key={agent.userId}
+                        className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/30"
+                      >
+                        <TableCell className="sticky left-0 bg-white dark:bg-zinc-900 z-10">
+                          <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate max-w-[180px]">
+                            {displayName(agent)}
                           </div>
-                        )}
-                      </TableCell>
+                          {agent.email && (
+                            <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate max-w-[180px]">
+                              {agent.email}
+                            </div>
+                          )}
+                        </TableCell>
 
-                      {/* Overall % */}
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Progress
-                            value={agent.overallPercent}
-                            className="h-2 w-16"
-                          />
-                          <span className="text-xs font-bold text-foreground tabular-nums w-8 text-right">
-                            {agent.overallPercent}%
-                          </span>
-                        </div>
-                      </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Progress
+                              value={agent.overallPercent}
+                              className="h-1.5 w-14"
+                            />
+                            <span className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100 tabular-nums w-8 text-right">
+                              {agent.overallPercent}%
+                            </span>
+                          </div>
+                        </TableCell>
 
-                      {/* Per-roadmap cells */}
-                      {publishedRoadmaps.map((rm) => {
-                        const summary = agent.roadmaps.get(rm.id);
-                        return (
+                        {publishedRoadmaps.map((rm) => (
                           <TableCell key={rm.id} className="text-center">
-                            <RoadmapCell summary={summary} />
+                            <RoadmapCell summary={agent.roadmaps.get(rm.id)} />
                           </TableCell>
-                        );
-                      })}
+                        ))}
 
-                      {/* Last activity */}
-                      <TableCell>
-                        <div className="flex items-center gap-1.5">
-                          {agent.lastActivityAt ? (
-                            <span className="text-xs text-muted-foreground">
-                              {formatDistanceToNow(
-                                new Date(agent.lastActivityAt),
-                                { addSuffix: true },
-                              )}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-muted-foreground/60">
-                              Never
-                            </span>
-                          )}
-                          {isStuck && (
-                            <Badge variant="warning" size="sm">
-                              Stuck
-                            </Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TooltipProvider>
-        </div>
-      )}
+                        <TableCell>
+                          <div className="flex items-center gap-1.5">
+                            {agent.lastActivityAt ? (
+                              <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                                {formatDistanceToNow(
+                                  new Date(agent.lastActivityAt),
+                                  { addSuffix: true },
+                                )}
+                              </span>
+                            ) : (
+                              <span className="text-[11px] text-zinc-400 dark:text-zinc-600">
+                                Never
+                              </span>
+                            )}
+                            {isStuck && (
+                              <Badge variant="warning" size="sm">
+                                Stuck
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TooltipProvider>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 // ============================================================================
-// Per-roadmap cell in the matrix
+// Per-roadmap cell
 // ============================================================================
 
 function RoadmapCell({ summary }: { summary?: RoadmapProgressSummary }) {
   if (!summary || summary.totalItems === 0) {
-    return <span className="text-muted-foreground/40">—</span>;
+    return <span className="text-zinc-300 dark:text-zinc-700">—</span>;
   }
 
   const { percent, status, requiredDone, requiredTotal } = summary;
@@ -305,10 +313,10 @@ function RoadmapCell({ summary }: { summary?: RoadmapProgressSummary }) {
 
   const iconColor =
     status === "completed"
-      ? "text-success"
+      ? "text-emerald-500"
       : status === "in_progress"
-        ? "text-info"
-        : "text-muted-foreground/40";
+        ? "text-blue-500"
+        : "text-zinc-300 dark:text-zinc-600";
 
   return (
     <Tooltip>
@@ -316,12 +324,12 @@ function RoadmapCell({ summary }: { summary?: RoadmapProgressSummary }) {
         <div className="inline-flex items-center gap-1.5 cursor-default">
           <StatusIcon className={`h-3.5 w-3.5 ${iconColor}`} />
           <span
-            className={`text-xs font-semibold tabular-nums ${
+            className={`text-[11px] font-semibold tabular-nums ${
               status === "completed"
-                ? "text-success"
+                ? "text-emerald-600 dark:text-emerald-400"
                 : status === "in_progress"
-                  ? "text-foreground"
-                  : "text-muted-foreground"
+                  ? "text-zinc-900 dark:text-zinc-100"
+                  : "text-zinc-400 dark:text-zinc-500"
             }`}
           >
             {percent}%
@@ -332,41 +340,5 @@ function RoadmapCell({ summary }: { summary?: RoadmapProgressSummary }) {
         {requiredDone} of {requiredTotal} required items done
       </TooltipContent>
     </Tooltip>
-  );
-}
-
-// ============================================================================
-// Stat card
-// ============================================================================
-
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  accent,
-}: {
-  label: string;
-  value: string;
-  icon?: React.ComponentType<{ className?: string }>;
-  accent?: "success" | "warning";
-}) {
-  const accentClasses = {
-    success: "text-success",
-    warning: "text-warning",
-  };
-  return (
-    <div className="rounded-lg border border-border bg-card shadow-sm p-4">
-      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-muted-foreground mb-1">
-        {Icon && <Icon className="h-3 w-3" />}
-        {label}
-      </div>
-      <div
-        className={`text-2xl font-bold ${
-          accent ? accentClasses[accent] : "text-foreground"
-        }`}
-      >
-        {value}
-      </div>
-    </div>
   );
 }
