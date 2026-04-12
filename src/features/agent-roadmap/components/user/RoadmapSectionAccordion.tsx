@@ -1,8 +1,4 @@
 // src/features/agent-roadmap/components/user/RoadmapSectionAccordion.tsx
-//
-// Collapsible section wrapper showing per-section progress. Items are
-// rendered via RoadmapItemCard (expanded inline, not through a drawer).
-
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { RoadmapItemCard } from "./RoadmapItemCard";
@@ -16,7 +12,6 @@ interface RoadmapSectionAccordionProps {
   roadmapId: string;
   progress: RoadmapProgressMap;
   userId: string;
-  /** If true, auto-expand any item whose status is not_started or in_progress */
   autoExpandInProgress?: boolean;
 }
 
@@ -29,94 +24,80 @@ export function RoadmapSectionAccordion({
 }: RoadmapSectionAccordionProps) {
   const [collapsed, setCollapsed] = useState(false);
 
-  // Only show published items
   const visibleItems = useMemo(
     () => section.items.filter((i) => i.is_published),
     [section.items],
   );
 
-  // Per-section stats for the header
   const sectionStats = useMemo(() => {
     let requiredTotal = 0;
     let requiredDone = 0;
-    let optionalTotal = 0;
-    let optionalDone = 0;
     for (const item of visibleItems) {
+      if (!item.is_required) continue;
+      requiredTotal += 1;
       const p = progress.get(item.id);
-      const resolved = p?.status === "completed" || p?.status === "skipped";
-      if (item.is_required) {
-        requiredTotal += 1;
-        if (resolved) requiredDone += 1;
-      } else {
-        optionalTotal += 1;
-        if (resolved) optionalDone += 1;
+      if (p?.status === "completed" || p?.status === "skipped") {
+        requiredDone += 1;
       }
     }
-    return { requiredTotal, requiredDone, optionalTotal, optionalDone };
+    return { requiredTotal, requiredDone };
   }, [visibleItems, progress]);
-
-  // Find the first not-yet-done item so we can auto-expand it
-  const firstOpenItemId = useMemo(() => {
-    if (!autoExpandInProgress) return null;
-    const firstIncomplete = visibleItems.find((item) => {
-      const p = progress.get(item.id);
-      return !p || p.status === "not_started" || p.status === "in_progress";
-    });
-    return firstIncomplete?.id ?? null;
-  }, [autoExpandInProgress, visibleItems, progress]);
 
   const sectionComplete =
     sectionStats.requiredTotal > 0 &&
     sectionStats.requiredDone === sectionStats.requiredTotal;
 
+  const firstOpenItemId = useMemo(() => {
+    if (!autoExpandInProgress) return null;
+    const first = visibleItems.find((item) => {
+      const p = progress.get(item.id);
+      return !p || p.status === "not_started" || p.status === "in_progress";
+    });
+    return first?.id ?? null;
+  }, [autoExpandInProgress, visibleItems, progress]);
+
   if (visibleItems.length === 0) return null;
 
   return (
     <section>
-      {/* Section header — card-style with visual weight */}
+      {/* Section header — white card with border for contrast */}
       <button
         type="button"
         onClick={() => setCollapsed(!collapsed)}
-        className="flex items-center gap-2 w-full text-left bg-card rounded-lg px-3 py-2.5 border border-border shadow-sm hover:shadow-md transition-all group"
+        className="flex items-center gap-2 w-full text-left bg-white dark:bg-zinc-900 rounded-lg px-3 py-2.5 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all group"
       >
         {collapsed ? (
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          <ChevronRight className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
         ) : (
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          <ChevronDown className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
         )}
         <h2
-          className={`text-sm font-semibold tracking-tight transition-colors ${
-            sectionComplete ? "text-muted-foreground" : "text-foreground"
+          className={`text-sm font-semibold ${
+            sectionComplete
+              ? "text-zinc-500 dark:text-zinc-400"
+              : "text-zinc-900 dark:text-zinc-100"
           }`}
         >
           {section.title}
         </h2>
         {sectionComplete && (
-          <span className="inline-flex items-center rounded-full bg-success/10 text-success text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 border border-success/20">
+          <span className="inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 border border-emerald-200 dark:border-emerald-800">
             Done
           </span>
         )}
-        <span className="text-[11px] font-semibold text-muted-foreground tabular-nums ml-auto">
+        <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 tabular-nums ml-auto">
           {sectionStats.requiredDone}/{sectionStats.requiredTotal}
-          {sectionStats.optionalTotal > 0 && (
-            <>
-              {" "}
-              <span className="text-muted-foreground/60 font-normal">
-                +{sectionStats.optionalDone}/{sectionStats.optionalTotal}
-              </span>
-            </>
-          )}
         </span>
       </button>
 
       {section.description && !collapsed && (
-        <p className="text-[11px] text-muted-foreground ml-9 mt-1 leading-relaxed">
+        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 ml-8 mt-1">
           {section.description}
         </p>
       )}
 
       {!collapsed && (
-        <div className="space-y-1.5 mt-2 ml-2 pl-4 border-l-2 border-border">
+        <div className="space-y-1.5 mt-2 ml-3 pl-3 border-l-2 border-zinc-200 dark:border-zinc-700">
           {visibleItems.map((item) => (
             <RoadmapItemCard
               key={item.id}

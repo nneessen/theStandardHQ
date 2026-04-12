@@ -92,7 +92,7 @@ export function RoadmapLandingPage() {
   if (!agencyId) {
     return (
       <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        <Loader2 className="h-5 w-5 animate-spin text-zinc-500 dark:text-zinc-400" />
       </div>
     );
   }
@@ -100,13 +100,13 @@ export function RoadmapLandingPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
       {/* ── Header bar ───────────────────��─────────────────────────── */}
-      <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border shadow-sm">
+      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
         <div className="flex items-center gap-2">
-          <Compass className="h-4 w-4 text-foreground" />
-          <h1 className="text-sm font-semibold text-foreground">
+          <Compass className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
+          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
             Agent Roadmap
           </h1>
-          <span className="text-[10px] text-muted-foreground hidden sm:inline">
+          <span className="text-[10px] text-zinc-500 dark:text-zinc-400 hidden sm:inline">
             Work through these at your own pace
           </span>
         </div>
@@ -116,28 +116,30 @@ export function RoadmapLandingPage() {
             {stats.completed > 0 && (
               <div className="flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3 text-success" />
-                <span className="font-medium text-foreground">
+                <span className="font-medium text-zinc-900 dark:text-zinc-100">
                   {stats.completed}
                 </span>
-                <span className="text-muted-foreground">done</span>
+                <span className="text-zinc-500 dark:text-zinc-400">done</span>
               </div>
             )}
             {stats.inProgress > 0 && (
               <div className="flex items-center gap-1">
                 <Clock className="h-3 w-3 text-info" />
-                <span className="font-medium text-foreground">
+                <span className="font-medium text-zinc-900 dark:text-zinc-100">
                   {stats.inProgress}
                 </span>
-                <span className="text-muted-foreground">in progress</span>
+                <span className="text-zinc-500 dark:text-zinc-400">
+                  in progress
+                </span>
               </div>
             )}
             {stats.notStarted > 0 && (
               <div className="flex items-center gap-1">
-                <Circle className="h-3 w-3 text-muted-foreground" />
-                <span className="font-medium text-foreground">
+                <Circle className="h-3 w-3 text-zinc-500 dark:text-zinc-400" />
+                <span className="font-medium text-zinc-900 dark:text-zinc-100">
                   {stats.notStarted}
                 </span>
-                <span className="text-muted-foreground">to do</span>
+                <span className="text-zinc-500 dark:text-zinc-400">to do</span>
               </div>
             )}
           </div>
@@ -160,7 +162,7 @@ export function RoadmapLandingPage() {
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
-                  <Compass className="h-5 w-5 text-muted-foreground" />
+                  <Compass className="h-5 w-5 text-zinc-500 dark:text-zinc-400" />
                 </EmptyMedia>
                 <EmptyTitle>No roadmaps yet</EmptyTitle>
                 <EmptyDescription>
@@ -212,12 +214,12 @@ function RoadmapCard({ roadmap, summary, onClick }: RoadmapCardProps) {
     <button
       type="button"
       onClick={onClick}
-      className={`group w-full text-left rounded-lg border transition-all hover:shadow-md active:shadow-sm ${
+      className={`group w-full text-left rounded-lg border transition-all hover:border-zinc-300 dark:hover:border-zinc-600 ${
         roadmap.is_default
-          ? "border-l-4 border-l-warning border-border bg-card shadow-sm"
+          ? "border-l-4 border-l-amber-400 border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
           : isComplete
-            ? "border-success/30 bg-card shadow-sm"
-            : "border-border bg-card shadow-sm hover:border-ring"
+            ? "border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20"
+            : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
       }`}
     >
       <div className="px-4 py-3">
@@ -240,19 +242,19 @@ function RoadmapCard({ roadmap, summary, onClick }: RoadmapCardProps) {
               In progress
             </Badge>
           )}
-          <span className="text-sm font-semibold text-foreground truncate flex-1 group-hover:underline underline-offset-2">
+          <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate flex-1 group-hover:underline underline-offset-2">
             {roadmap.title}
           </span>
           {isComplete ? (
             <Sparkles className="h-3.5 w-3.5 text-success shrink-0" />
           ) : (
-            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0 group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
+            <ChevronRight className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400 shrink-0 group-hover:text-zinc-900 dark:text-zinc-100 group-hover:translate-x-0.5 transition-all" />
           )}
         </div>
 
         {/* Row 2: description (if any) */}
         {roadmap.description && (
-          <p className="text-[11px] text-muted-foreground line-clamp-1 mb-1.5">
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-1 mb-1.5">
             {roadmap.description}
           </p>
         )}
@@ -262,11 +264,11 @@ function RoadmapCard({ roadmap, summary, onClick }: RoadmapCardProps) {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <Progress value={percent} className="h-1.5 flex-1" />
-              <span className="text-[11px] font-bold text-foreground tabular-nums w-8 text-right">
+              <span className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100 tabular-nums w-8 text-right">
                 {percent}%
               </span>
             </div>
-            <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+            <div className="flex items-center gap-3 text-[10px] text-zinc-500 dark:text-zinc-400">
               <span>
                 {summary!.requiredDone}/{summary!.requiredTotal} required
               </span>
@@ -285,7 +287,7 @@ function RoadmapCard({ roadmap, summary, onClick }: RoadmapCardProps) {
             </div>
           </div>
         ) : (
-          <p className="text-[10px] text-muted-foreground italic">
+          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 italic">
             Still being built — check back soon
           </p>
         )}

@@ -124,28 +124,28 @@ export function RoadmapItemCard({
 
   return (
     <div
-      className={`rounded-xl border shadow-sm transition-all ${
+      className={`rounded-lg border transition-all ${
         isCompleted
-          ? "border-success/30 bg-success/[0.04]"
+          ? "border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20"
           : isSkipped
-            ? "border-border bg-muted/40 opacity-75"
-            : "border-border bg-card hover:border-ring hover:shadow-md"
+            ? "border-zinc-200 dark:border-zinc-800 bg-zinc-100/50 dark:bg-zinc-800/30 opacity-75"
+            : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700"
       }`}
     >
       {/* Top row: checkbox + title + meta + chevron */}
-      <div className="flex items-start gap-4 px-5 py-4">
+      <div className="flex items-start gap-3 px-3 py-2.5">
         <button
           type="button"
           onClick={handleToggleComplete}
           disabled={upsertProgress.isPending}
-          className={`mt-0.5 shrink-0 h-6 w-6 rounded-full flex items-center justify-center border-2 transition-all ${
+          className={`mt-0.5 shrink-0 h-5 w-5 rounded-full flex items-center justify-center border-2 transition-all ${
             isCompleted
-              ? "bg-success border-success text-success-foreground shadow-sm hover:opacity-90 active:scale-95"
-              : "border-border bg-card hover:border-success hover:bg-success/5 active:scale-95"
+              ? "bg-emerald-500 border-emerald-500 text-white hover:bg-emerald-600 active:scale-95"
+              : "border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 hover:border-emerald-500 active:scale-95"
           }`}
           aria-label={isCompleted ? "Mark as not complete" : "Mark as complete"}
         >
-          {isCompleted && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+          {isCompleted && <Check className="h-3 w-3" strokeWidth={3} />}
         </button>
 
         <button
@@ -153,14 +153,14 @@ export function RoadmapItemCard({
           onClick={() => setExpanded(!expanded)}
           className="flex-1 min-w-0 text-left"
         >
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
+          <div className="flex items-center gap-2 mb-0.5 flex-wrap">
             <span
-              className={`text-base font-semibold leading-snug ${
+              className={`text-sm font-semibold ${
                 isCompleted
-                  ? "text-muted-foreground line-through"
+                  ? "text-zinc-400 dark:text-zinc-500 line-through"
                   : isSkipped
-                    ? "text-muted-foreground"
-                    : "text-foreground"
+                    ? "text-zinc-400 dark:text-zinc-500"
+                    : "text-zinc-900 dark:text-zinc-100"
               }`}
             >
               {item.title}
@@ -200,17 +200,17 @@ export function RoadmapItemCard({
         </button>
 
         {expanded ? (
-          <ChevronDown className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
+          <ChevronDown className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500 mt-0.5 shrink-0" />
         ) : (
-          <ChevronRight className="h-5 w-5 text-muted-foreground mt-1 shrink-0" />
+          <ChevronRight className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500 mt-0.5 shrink-0" />
         )}
       </div>
 
       {/* Expanded body: content blocks + notes + actions */}
       {expanded && (
-        <div className="border-t border-border px-5 py-5 space-y-5 bg-background/30">
+        <div className="border-t border-zinc-200 dark:border-zinc-800 px-3 py-3 space-y-3 bg-zinc-50/50 dark:bg-zinc-800/20">
           {item.summary && (
-            <p className="text-sm text-foreground leading-relaxed font-medium">
+            <p className="text-[11px] text-zinc-700 dark:text-zinc-300 font-medium">
               {item.summary}
             </p>
           )}
