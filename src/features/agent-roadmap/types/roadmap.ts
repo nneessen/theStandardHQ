@@ -150,6 +150,23 @@ export interface RoadmapCompletionStats {
 }
 
 /**
+ * Per-roadmap progress summary for the current user. Used by the
+ * RoadmapLandingPage to show progress bars + status badges on each
+ * roadmap card without fetching the full tree for every roadmap.
+ */
+export interface RoadmapProgressSummary {
+  roadmapId: string;
+  requiredTotal: number;
+  requiredDone: number;
+  percent: number;
+  optionalTotal: number;
+  optionalDone: number;
+  totalItems: number;
+  lastActivityAt: string | null;
+  status: "not_started" | "in_progress" | "completed";
+}
+
+/**
  * Team progress overview row — one per user in the agency for a given roadmap.
  * Used by the super-admin monitoring panel.
  */

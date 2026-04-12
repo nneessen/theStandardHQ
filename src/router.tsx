@@ -53,6 +53,7 @@ import {
   RoadmapListPage,
   RoadmapEditorPage,
   TeamProgressPanel,
+  TeamOverviewPage,
   RoadmapLandingPage,
   RoadmapRunnerPage,
 } from "./features/agent-roadmap";
@@ -1034,6 +1035,17 @@ const roadmapTeamRoute = createRoute({
   },
 });
 
+// Admin: cross-roadmap team overview — "check on all my agents" dashboard
+const roadmapTeamOverviewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "admin/agent-roadmap/team",
+  component: () => (
+    <RouteGuard superAdminOnly>
+      <TeamOverviewPage />
+    </RouteGuard>
+  ),
+});
+
 // Agent: landing page showing all published roadmaps in the agent's agency
 const agentRoadmapLandingRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -1130,6 +1142,7 @@ const routeTree = rootRoute.addChildren([
   businessToolsRoute,
   roadmapListRoute,
   roadmapEditorRoute,
+  roadmapTeamOverviewRoute,
   roadmapTeamRoute,
   agentRoadmapLandingRoute,
   agentRoadmapRunnerRoute,

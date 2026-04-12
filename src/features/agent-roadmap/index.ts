@@ -34,6 +34,7 @@ export type {
   RoadmapProgressMap,
   RoadmapProgressStatus,
   RoadmapCompletionStats,
+  RoadmapProgressSummary,
   RoadmapTeamProgressRow,
   CreateRoadmapInput,
   UpdateRoadmapInput,
@@ -98,5 +99,6 @@ export {
 export { RoadmapListPage } from "./components/admin/RoadmapListPage";
 export { RoadmapEditorPage } from "./components/admin/RoadmapEditorPage";
 export { TeamProgressPanel } from "./components/admin/TeamProgressPanel";
+export { TeamOverviewPage } from "./components/admin/TeamOverviewPage";
 export { RoadmapLandingPage } from "./components/user/RoadmapLandingPage";
 export { RoadmapRunnerPage } from "./components/user/RoadmapRunnerPage";
