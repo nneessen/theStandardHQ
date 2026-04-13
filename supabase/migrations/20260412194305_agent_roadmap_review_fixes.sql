@@ -11,12 +11,19 @@
 -- in their own agency. Fix: add the same EXISTS check.
 
 -- ============================================================================
--- B-2: Make roadmap-content bucket private
+-- B-2: REVERTED — bucket stays public.
+--
+-- The review flagged public=true as a risk (unauthenticated image access).
+-- However, the stored image URLs use the /object/public/ path, and making
+-- the bucket private breaks ALL existing image blocks (they render as broken
+-- img icons). The images are instructional content (screenshots, diagrams)
+-- that Nick uploads for agent onboarding — not confidential data. The
+-- agency UUID in the path is unguessable, and the storage RLS policies
+-- still enforce super-admin-only writes. Keeping public=true is the correct
+-- trade-off: agents can see images without signed URLs, and the write
+-- surface is still locked down.
 -- ============================================================================
-
-UPDATE storage.buckets
-SET public = false
-WHERE id = 'roadmap-content';
+-- (no-op — bucket remains public as created in 20260411150238)
 
 -- ============================================================================
 -- B-3: Add visibility gate to roadmap_update_progress_notes
