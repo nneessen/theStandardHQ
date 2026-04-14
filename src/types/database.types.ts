@@ -7,10 +7,30 @@ export type Json =
   | Json[];
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.5";
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
   public: {
     Tables: {
@@ -1812,163 +1832,6 @@ export type Database = {
           },
         ];
       };
-      chat_bot_conversation_reviews: {
-        Row: {
-          agent_snapshot: Json | null;
-          close_lead_id: string | null;
-          conversation_snapshot: Json | null;
-          conversation_status: string | null;
-          created_at: string;
-          external_agent_id: string;
-          external_conversation_id: string | null;
-          findings: Json;
-          found_conversation: boolean;
-          gaps: Json;
-          human_verdict: string | null;
-          id: string;
-          improvement_brief: string | null;
-          inbound_count: number;
-          outbound_count: number;
-          primary_reason: string;
-          primary_reason_code: string;
-          prompt_version: string | null;
-          resolution_status: string;
-          review_mode: string;
-          review_payload: Json;
-          target_payload: Json;
-          timeline: Json;
-          updated_at: string;
-          user_id: string;
-        };
-        Insert: {
-          agent_snapshot?: Json | null;
-          close_lead_id?: string | null;
-          conversation_snapshot?: Json | null;
-          conversation_status?: string | null;
-          created_at?: string;
-          external_agent_id: string;
-          external_conversation_id?: string | null;
-          findings?: Json;
-          found_conversation?: boolean;
-          gaps?: Json;
-          human_verdict?: string | null;
-          id?: string;
-          improvement_brief?: string | null;
-          inbound_count?: number;
-          outbound_count?: number;
-          primary_reason: string;
-          primary_reason_code: string;
-          prompt_version?: string | null;
-          resolution_status?: string;
-          review_mode: string;
-          review_payload?: Json;
-          target_payload?: Json;
-          timeline?: Json;
-          updated_at?: string;
-          user_id: string;
-        };
-        Update: {
-          agent_snapshot?: Json | null;
-          close_lead_id?: string | null;
-          conversation_snapshot?: Json | null;
-          conversation_status?: string | null;
-          created_at?: string;
-          external_agent_id?: string;
-          external_conversation_id?: string | null;
-          findings?: Json;
-          found_conversation?: boolean;
-          gaps?: Json;
-          human_verdict?: string | null;
-          id?: string;
-          improvement_brief?: string | null;
-          inbound_count?: number;
-          outbound_count?: number;
-          primary_reason?: string;
-          primary_reason_code?: string;
-          prompt_version?: string | null;
-          resolution_status?: string;
-          review_mode?: string;
-          review_payload?: Json;
-          target_payload?: Json;
-          timeline?: Json;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "active_user_profiles";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "user_management_view";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "chat_bot_conversation_reviews_user_id_fkey";
-            columns: ["user_id"];
-            isOneToOne: false;
-            referencedRelation: "user_profiles";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      chat_bot_playground_runs: {
-        Row: {
-          chat_bot_agent_id: string;
-          close_lead_id: string;
-          created_at: string;
-          final_reply: string;
-          guardrail_violations: Json;
-          id: string;
-          inbound_override: string | null;
-          metadata: Json;
-          mode: string;
-          raw_reply: string;
-          system_prompt: string | null;
-          system_prompt_override: string | null;
-          user_id: string;
-          would_send: boolean;
-        };
-        Insert: {
-          chat_bot_agent_id: string;
-          close_lead_id: string;
-          created_at?: string;
-          final_reply: string;
-          guardrail_violations?: Json;
-          id?: string;
-          inbound_override?: string | null;
-          metadata?: Json;
-          mode: string;
-          raw_reply: string;
-          system_prompt?: string | null;
-          system_prompt_override?: string | null;
-          user_id: string;
-          would_send: boolean;
-        };
-        Update: {
-          chat_bot_agent_id?: string;
-          close_lead_id?: string;
-          created_at?: string;
-          final_reply?: string;
-          guardrail_violations?: Json;
-          id?: string;
-          inbound_override?: string | null;
-          metadata?: Json;
-          mode?: string;
-          raw_reply?: string;
-          system_prompt?: string | null;
-          system_prompt_override?: string | null;
-          user_id?: string;
-          would_send?: boolean;
-        };
-        Relationships: [];
-      };
       chat_bot_team_overrides: {
         Row: {
           created_at: string;
@@ -2349,54 +2212,6 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
-      };
-      close_webhook_logs: {
-        Row: {
-          changed_fields: string[] | null;
-          error_message: string | null;
-          event_action: string | null;
-          id: string;
-          lead_id: string | null;
-          opportunity_id: string | null;
-          organization_id: string | null;
-          outcome: string;
-          outcome_reason: string | null;
-          raw_payload: Json | null;
-          received_at: string;
-          status_label: string | null;
-          user_id: string | null;
-        };
-        Insert: {
-          changed_fields?: string[] | null;
-          error_message?: string | null;
-          event_action?: string | null;
-          id?: string;
-          lead_id?: string | null;
-          opportunity_id?: string | null;
-          organization_id?: string | null;
-          outcome: string;
-          outcome_reason?: string | null;
-          raw_payload?: Json | null;
-          received_at?: string;
-          status_label?: string | null;
-          user_id?: string | null;
-        };
-        Update: {
-          changed_fields?: string[] | null;
-          error_message?: string | null;
-          event_action?: string | null;
-          id?: string;
-          lead_id?: string | null;
-          opportunity_id?: string | null;
-          organization_id?: string | null;
-          outcome?: string;
-          outcome_reason?: string | null;
-          raw_payload?: Json | null;
-          received_at?: string;
-          status_label?: string | null;
-          user_id?: string | null;
-        };
-        Relationships: [];
       };
       commissions: {
         Row: {
@@ -17769,6 +17584,7 @@ export type Database = {
         Returns: Json;
       };
       invoke_ai_smart_view_sync: { Args: never; Returns: undefined };
+      invoke_lead_heat_scoring: { Args: never; Returns: undefined };
       invoke_slack_auto_complete_first_sale: {
         Args: never;
         Returns: undefined;
@@ -18900,6 +18716,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       agent_status: ["unlicensed", "licensed", "not_applicable"],
