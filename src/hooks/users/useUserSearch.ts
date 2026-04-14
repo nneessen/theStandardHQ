@@ -1,6 +1,6 @@
 // src/hooks/users/useUserSearch.ts
 // React Query hooks for server-side user search
-// Follows patterns from docs/TANSTACK_QUERY_IMPLEMENTATION_GUIDE.md
+// Follows patterns from docs/guides/tanstack-query.md
 
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -37,7 +37,7 @@ export const userSearchKeys = {
  * Search users for assignment (upline selection, recruiter assignment, etc.)
  *
  * Uses 200ms debounce to prevent excessive API calls while typing.
- * Follows patterns from docs/TANSTACK_QUERY_IMPLEMENTATION_GUIDE.md
+ * Follows patterns from docs/guides/tanstack-query.md
  *
  * @param query - Search term (name or email)
  * @param options - Additional filter options (roles, approval status, exclusions)

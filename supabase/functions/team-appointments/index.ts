@@ -66,7 +66,7 @@ function isValidDateStr(d: string): boolean {
 // --- External API helper ---
 
 // Appointments endpoint only supports page/limit (no date filter). Max limit = 100
-// per docs/external-api-reference.md:938. We paginate fully so aggregate counts
+// per docs/reference/external-api-reference.md:938. We paginate fully so aggregate counts
 // (today/week) are correct regardless of the API's default sort order.
 const APPT_PAGE_LIMIT = 100;
 const APPT_MAX_PAGES = 10; // Hard ceiling: 1000 appts per agent

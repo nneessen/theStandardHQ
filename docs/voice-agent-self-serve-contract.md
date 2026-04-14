@@ -242,7 +242,7 @@ The existing voice entitlement types already support minute caps:
 
 Reference:
 
-- [useChatBot.ts](/Users/nickneessen/projects/commissionTracker/src/features/chat-bot/hooks/useChatBot.ts#L159)
+- [useChatBot.ts](src/features/chat-bot/hooks/useChatBot.ts#L159)
 
 ## Shared Workspace Dependencies
 
@@ -675,7 +675,7 @@ The current external voice routes are editor-only:
 
 Reference:
 
-- [chat-bot-api index.ts](/Users/nickneessen/projects/commissionTracker/supabase/functions/chat-bot-api/index.ts#L522)
+- [chat-bot-api index.ts](supabase/functions/chat-bot-api/index.ts#L522)
 
 Add product-level external API routes that do not leak Retell into the main UI:
 

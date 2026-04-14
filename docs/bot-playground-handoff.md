@@ -35,16 +35,16 @@ A new **"Playground"** tab inside Bot Configuration that lets agents test what t
 
 | File | Purpose |
 |---|---|
-| `/Users/nickneessen/projects/commissionTracker/supabase/migrations/20260407181354_chat_bot_playground_runs.sql` | DB migration — creates `chat_bot_playground_runs` table, 2 indexes, 3 RLS policies. Already applied to prod. |
-| `/Users/nickneessen/projects/commissionTracker/src/features/chat-bot/components/PlaygroundTab.tsx` | The main UI component. ~480 lines. Contains the form, result panel, history sidebar, and all sub-components (CopyButton, RelativeTime, ResultPanel, HistoryItem). |
+| `supabase/migrations/20260407181354_chat_bot_playground_runs.sql` | DB migration — creates `chat_bot_playground_runs` table, 2 indexes, 3 RLS policies. Already applied to prod. |
+| `src/features/chat-bot/components/PlaygroundTab.tsx` | The main UI component. ~480 lines. Contains the form, result panel, history sidebar, and all sub-components (CopyButton, RelativeTime, ResultPanel, HistoryItem). |
 
 ### Modified files
 
 | File | Changes |
 |---|---|
-| `/Users/nickneessen/projects/commissionTracker/src/features/chat-bot/ChatBotPage.tsx` | Added `"playground"` to the `TabId` union, imported `PlaygroundTab` + the `FlaskConical` lucide icon, added the tab to the `tabs` array (right after Analytics, gated behind `setupComplete`), added the render branch `{activeTab === "playground" && <PlaygroundTab />}`, updated `getInitialTab()` to accept `?tab=playground` URL params. |
-| `/Users/nickneessen/projects/commissionTracker/src/features/chat-bot/hooks/useChatBot.ts` | Added 4 new hooks: `useChatBotDryRun` (mutation), `useChatBotPlaygroundRuns` (list query), `useChatBotPlaygroundRun` (detail query), `useDeletePlaygroundRun` (mutation). Added TypeScript types: `PlaygroundMode`, `DryRunReplyResult`, `DryRunReplyParams`, `DryRunReplyMetadata`, `PlaygroundRunListItem`, `PlaygroundRunDetail`. Added 2 new entries to `chatBotKeys`: `playgroundRuns` and `playgroundRun`. |
-| `/Users/nickneessen/projects/commissionTracker/supabase/functions/chat-bot-api/index.ts` | Added 4 new action cases to the big switch statement, inserted right before `case "get_analytics"`: `dry_run_reply` (proxies to standard-chat-bot with a 30-second timeout for Anthropic calls, persists the result on success), `list_playground_runs`, `get_playground_run`, `delete_playground_run`. |
+| `src/features/chat-bot/ChatBotPage.tsx` | Added `"playground"` to the `TabId` union, imported `PlaygroundTab` + the `FlaskConical` lucide icon, added the tab to the `tabs` array (right after Analytics, gated behind `setupComplete`), added the render branch `{activeTab === "playground" && <PlaygroundTab />}`, updated `getInitialTab()` to accept `?tab=playground` URL params. |
+| `src/features/chat-bot/hooks/useChatBot.ts` | Added 4 new hooks: `useChatBotDryRun` (mutation), `useChatBotPlaygroundRuns` (list query), `useChatBotPlaygroundRun` (detail query), `useDeletePlaygroundRun` (mutation). Added TypeScript types: `PlaygroundMode`, `DryRunReplyResult`, `DryRunReplyParams`, `DryRunReplyMetadata`, `PlaygroundRunListItem`, `PlaygroundRunDetail`. Added 2 new entries to `chatBotKeys`: `playgroundRuns` and `playgroundRun`. |
+| `supabase/functions/chat-bot-api/index.ts` | Added 4 new action cases to the big switch statement, inserted right before `case "get_analytics"`: `dry_run_reply` (proxies to standard-chat-bot with a 30-second timeout for Anthropic calls, persists the result on success), `list_playground_runs`, `get_playground_run`, `delete_playground_run`. |
 
 ---
 
@@ -55,7 +55,7 @@ A new **"Playground"** tab inside Bot Configuration that lets agents test what t
 - Log in to commissionTracker as yourself (Nick Neessen) or as a team member (Andrew, James)
 - Navigate to **Bot Configuration**
 - You should see a new **"Playground"** tab in the tab row, with a flask icon, positioned right after **"My Analytics"**
-- The tab should only appear once Close is connected and the bot is set up. If it's missing, check that `setupComplete || wizardDone` is true for your agent (see `/Users/nickneessen/projects/commissionTracker/src/features/chat-bot/ChatBotPage.tsx:246-256`).
+- The tab should only appear once Close is connected and the bot is set up. If it's missing, check that `setupComplete || wizardDone` is true for your agent (see `src/features/chat-bot/ChatBotPage.tsx:246-256`).
 
 ### 2. Smoke test: run it against Michael Kefauver
 
@@ -218,7 +218,7 @@ These were already set when the chat-bot-api edge function was created for the C
 
 ### Symptom: Playground tab doesn't appear
 
-- Check `/Users/nickneessen/projects/commissionTracker/src/features/chat-bot/ChatBotPage.tsx` line 246 — the tab is gated behind `hasAccess && agent && (setupComplete || wizardDone)`. Make sure all four are true.
+- Check `src/features/chat-bot/ChatBotPage.tsx` line 246 — the tab is gated behind `hasAccess && agent && (setupComplete || wizardDone)`. Make sure all four are true.
 
 ### Symptom: "Simulate reply" hangs forever / 502 error
 

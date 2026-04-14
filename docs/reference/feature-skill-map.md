@@ -128,8 +128,8 @@ Good prompt examples:
 This guide complements the existing repo instructions:
 
 - `AGENTS.md`
-- `docs/BUILDER_MODE_IMPLEMENTATION_PROMPT.md`
-- `docs/ADD_TO_PROMPT.md`
-- `docs/CONTINUATION_MODE.md`
+- `docs/system-prompts/BUILDER_MODE_IMPLEMENTATION_PROMPT.md`
+- `docs/system-prompts/ADD_TO_PROMPT.md`
+- `docs/system-prompts/CONTINUATION_MODE.md`
 
 Those documents define the broader implementation, review, and continuation rules. This file is narrower: it helps decide which Codex capability is the best first fit for a given feature area.

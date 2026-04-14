@@ -14,7 +14,7 @@ There are bugs in **both** projects. This document covers both.
 
 ### Bug 1: `invalidateVoiceAgentQueries` doesn't invalidate `voiceSetupState`
 
-**File:** `/Users/nickneessen/projects/commissionTracker/src/features/chat-bot/hooks/useChatBot.ts`
+**File:** `src/features/chat-bot/hooks/useChatBot.ts`
 **Line:** ~465
 
 ```typescript
@@ -40,7 +40,7 @@ void queryClient.invalidateQueries({ queryKey: chatBotKeys.voiceSetupState() });
 
 ### Bug 2: `useStartVoiceTrial.onSuccess` invalidates wrong query key for addons
 
-**File:** `/Users/nickneessen/projects/commissionTracker/src/features/chat-bot/hooks/useChatBot.ts`
+**File:** `src/features/chat-bot/hooks/useChatBot.ts`
 **Line:** ~1048
 
 ```typescript
@@ -64,7 +64,7 @@ This matches both `subscriptionKeys.all` and `userAddonKeys.activeAddons(...)` s
 
 ### Bug 3: `voiceAccessActive` doesn't check addon status directly
 
-**File:** `/Users/nickneessen/projects/commissionTracker/src/features/voice-agent/VoiceAgentPage.tsx`
+**File:** `src/features/voice-agent/VoiceAgentPage.tsx`
 **Line:** ~608
 
 ```typescript
@@ -90,7 +90,7 @@ const voiceAccessActive =
 
 ### Bug 4: Synthetic `get_voice_setup_state` needs to check addon status properly
 
-**File:** `/Users/nickneessen/projects/commissionTracker/supabase/functions/chat-bot-api/index.ts`
+**File:** `supabase/functions/chat-bot-api/index.ts`
 
 The synthetic response for `get_voice_setup_state` when no agent exists does:
 ```typescript
@@ -176,7 +176,7 @@ curl -s -X POST "${CHAT_BOT_API_URL}/api/external/agents" \
 
 5. **Sync voice entitlement:**
    Uses `createStandardChatBotVoiceClient().upsertVoiceEntitlement(agentId, ...)`
-   (defined in `/Users/nickneessen/projects/commissionTracker/supabase/functions/_shared/standard-chat-bot-voice.ts`)
+   (defined in `supabase/functions/_shared/standard-chat-bot-voice.ts`)
 
 ### Files to review in standard-chat-bot
 
@@ -233,7 +233,7 @@ handler uses) should generate a prompt with these sections:
 ### Full Template
 
 The complete recommended template is in the commissionTracker project at:
-`/Users/nickneessen/projects/commissionTracker/docs/voice-agent-prompt-template.md`
+`docs/reference/voice-agent-prompt-template.md`
 
 Copy the content of that file as the `default_sales` template body in the
 voice agent create handler. The template should be set as the `general_prompt`

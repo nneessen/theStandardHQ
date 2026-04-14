@@ -1,5 +1,12 @@
 # Query Performance Audit — 2026-02-17
 
+> **STATUS: CRITICAL finding RESOLVED 2026-02-17.** The `get_premium_matrices_for_imo`
+> issue (1,166 ms avg, 9,546 calls — rank #1 worst query) was addressed in migration
+> `supabase/migrations/20260217103400_optimize_get_premium_matrices_for_imo.sql` the
+> same day as this audit. Overload cleanup followed in `20260217104622_drop_old_get_premium_matrices_overload.sql`.
+> Other findings (HIGH/MEDIUM/LOW) may still be open — re-audit recommended before
+> relying on this doc.
+
 Data source: `pg_stat_statements` + `pg_stat_user_tables` on Supabase project `pcyaqwodnyrpkaiojnpz`.
 
 ---

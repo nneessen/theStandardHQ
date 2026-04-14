@@ -648,7 +648,7 @@ If any of the following are not provided:
 - Relevant `chat_bot_agents` schema and RLS policies
 - `voice-agent-contract.ts` allowlist definitions
 - `retell-config.ts` allowlist definitions
-- External API contract docs (e.g., `docs/external-api-reference.md`)
+- External API contract docs (e.g., `docs/reference/external-api-reference.md`)
 - Edge function diff for proxy changes
 - Voice entitlement/billing configuration
 - Orchestration type definitions

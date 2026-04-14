@@ -118,7 +118,7 @@ export function AnalyticsTab() {
           // byStatus (it now groups into {active, completed, stale} buckets),
           // so we use the full total. If you want a tighter "engaged only"
           // denominator later, engagement.responseRate × total is the right
-          // substitute — see docs/external-api-reference.md.
+          // substitute — see docs/reference/external-api-reference.md.
           const totalConversations = analytics.data.conversations?.total ?? 0;
           return (
             <>

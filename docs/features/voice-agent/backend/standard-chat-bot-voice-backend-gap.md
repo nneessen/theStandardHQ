@@ -41,7 +41,7 @@ The clearest example:
 
 Reference in this repo:
 
-- [chat-bot-api/index.ts](/Users/nickneessen/projects/commissionTracker/supabase/functions/chat-bot-api/index.ts)
+- [chat-bot-api/index.ts](../../../../supabase/functions/chat-bot-api/index.ts)
 
 ## Decision
 
@@ -71,10 +71,10 @@ handoff docs:
 
 Existing docs that already describe part of the intended system:
 
-- [standard-hq-voice-agent-retell-handoff.md](/Users/nickneessen/projects/commissionTracker/docs/standard-hq-voice-agent-retell-handoff.md)
-- [voice-agent-self-serve-contract.md](/Users/nickneessen/projects/commissionTracker/docs/voice-agent-self-serve-contract.md)
-- [voice-agent-implementation-guide.md](/Users/nickneessen/projects/commissionTracker/docs/voice-agent-implementation-guide.md)
-- [external-api-reference.md](/Users/nickneessen/projects/commissionTracker/docs/external-api-reference.md)
+- [standard-hq-voice-agent-retell-handoff.md](../../../standard-hq-voice-agent-retell-handoff.md)
+- [voice-agent-self-serve-contract.md](../../../voice-agent-self-serve-contract.md)
+- [voice-agent-implementation-guide.md](../../../voice-agent-implementation-guide.md)
+- [external-api-reference.md](../../../reference/external-api-reference.md)
 
 ## What Is Missing
 

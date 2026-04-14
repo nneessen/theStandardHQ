@@ -39,7 +39,7 @@ npm run bot:review:recent -- --since-hours 24 --save --mode improve
   prompt/policy/state handling
 - `--json`: machine-readable output
 - `--save`: persist the structured review into `chat_bot_conversation_reviews`
-  after applying [20260318102000_add_chat_bot_conversation_reviews.sql](/Users/nickneessen/projects/commissionTracker/supabase/migrations/20260318102000_add_chat_bot_conversation_reviews.sql)
+  after applying [20260318102000_add_chat_bot_conversation_reviews.sql](supabase/migrations/20260318102000_add_chat_bot_conversation_reviews.sql)
 
 ## Batch Review
 

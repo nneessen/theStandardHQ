@@ -30,17 +30,17 @@ Authoritative UW runs persist into:
 
 The following migrations must be present in production:
 
-- [20260309143000_harden_underwriting_session_persistence.sql](/Users/nickneessen/projects/commissionTracker/supabase/migrations/20260309143000_harden_underwriting_session_persistence.sql)
-- [20260309174500_backend_authoritative_underwriting_run.sql](/Users/nickneessen/projects/commissionTracker/supabase/migrations/20260309174500_backend_authoritative_underwriting_run.sql)
-- [20260309190500_lock_down_authoritative_underwriting_persist.sql](/Users/nickneessen/projects/commissionTracker/supabase/migrations/20260309190500_lock_down_authoritative_underwriting_persist.sql)
-- [20260309201500_disable_direct_underwriting_audit_rpc.sql](/Users/nickneessen/projects/commissionTracker/supabase/migrations/20260309201500_disable_direct_underwriting_audit_rpc.sql)
-- [20260310113000_underwriting_session_history_read_models.sql](/Users/nickneessen/projects/commissionTracker/supabase/migrations/20260310113000_underwriting_session_history_read_models.sql)
-- [20260310152000_harden_underwriting_runtime_access.sql](/Users/nickneessen/projects/commissionTracker/supabase/migrations/20260310152000_harden_underwriting_runtime_access.sql)
+- [20260309143000_harden_underwriting_session_persistence.sql](supabase/migrations/20260309143000_harden_underwriting_session_persistence.sql)
+- [20260309174500_backend_authoritative_underwriting_run.sql](supabase/migrations/20260309174500_backend_authoritative_underwriting_run.sql)
+- [20260309190500_lock_down_authoritative_underwriting_persist.sql](supabase/migrations/20260309190500_lock_down_authoritative_underwriting_persist.sql)
+- [20260309201500_disable_direct_underwriting_audit_rpc.sql](supabase/migrations/20260309201500_disable_direct_underwriting_audit_rpc.sql)
+- [20260310113000_underwriting_session_history_read_models.sql](supabase/migrations/20260310113000_underwriting_session_history_read_models.sql)
+- [20260310152000_harden_underwriting_runtime_access.sql](supabase/migrations/20260310152000_harden_underwriting_runtime_access.sql)
 
 Expected deployed functions:
 
-- [run-underwriting-session/index.ts](/Users/nickneessen/projects/commissionTracker/supabase/functions/run-underwriting-session/index.ts)
-- [save-underwriting-session/index.ts](/Users/nickneessen/projects/commissionTracker/supabase/functions/save-underwriting-session/index.ts)
+- [run-underwriting-session/index.ts](supabase/functions/run-underwriting-session/index.ts)
+- [save-underwriting-session/index.ts](supabase/functions/save-underwriting-session/index.ts)
 
 ## Request Tracing
 
@@ -51,9 +51,9 @@ Both authoritative edge functions emit and return a request id.
 
 Frontend surfaces the request id through:
 
-- [useDecisionEngineRecommendations.ts](/Users/nickneessen/projects/commissionTracker/src/features/underwriting/hooks/wizard/useDecisionEngineRecommendations.ts)
-- [useUnderwritingSessions.ts](/Users/nickneessen/projects/commissionTracker/src/features/underwriting/hooks/sessions/useUnderwritingSessions.ts)
-- [UnderwritingWizard.tsx](/Users/nickneessen/projects/commissionTracker/src/features/underwriting/components/Wizard/UnderwritingWizard.tsx)
+- [useDecisionEngineRecommendations.ts](src/features/underwriting/hooks/wizard/useDecisionEngineRecommendations.ts)
+- [useUnderwritingSessions.ts](src/features/underwriting/hooks/sessions/useUnderwritingSessions.ts)
+- [UnderwritingWizard.tsx](src/features/underwriting/components/Wizard/UnderwritingWizard.tsx)
 
 Structured edge-function log markers:
 
@@ -131,7 +131,7 @@ order by evaluated_at asc;
 
 ## Expected Security Surface
 
-After [20260310152000_harden_underwriting_runtime_access.sql](/Users/nickneessen/projects/commissionTracker/supabase/migrations/20260310152000_harden_underwriting_runtime_access.sql):
+After [20260310152000_harden_underwriting_runtime_access.sql](supabase/migrations/20260310152000_harden_underwriting_runtime_access.sql):
 
 - `persist_underwriting_run_v1`:
   - `service_role` execute only

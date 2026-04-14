@@ -2,6 +2,12 @@
 
 Date: 2026-02-14
 
+> **STATUS: PARTIAL — ARCHIVED 2026-04-14.** Only Batch 00 (12 functions) was
+> executed on 2026-02-27 via migration `20260227155357_drop_dead_functions.sql`
+> (commit `4c190118`). Batches 01–07 (65 functions) were never processed. If
+> resuming, re-run the preflight SQL below — this plan is 2+ months stale and
+> the DB has drifted. See `STATUS.md` in this folder for details.
+
 No DB drops were executed. This is the execution plan only.
 
 ## Guardrails

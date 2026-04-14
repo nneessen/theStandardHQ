@@ -23,7 +23,7 @@ This guide assumes:
 
 Reference:
 
-- [voice-agent-self-serve-contract.md](/Users/nickneessen/projects/commissionTracker/docs/voice-agent-self-serve-contract.md)
+- [voice-agent-self-serve-contract.md](voice-agent-self-serve-contract.md)
 
 ## Product Roles
 
