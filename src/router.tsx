@@ -91,6 +91,11 @@ const CloseAiBuilderPage = lazy(() =>
     default: m.CloseAiBuilderPage,
   })),
 );
+const LeadDropPage = lazy(() =>
+  import("./features/close-lead-drop/LeadDropPage").then((m) => ({
+    default: m.LeadDropPage,
+  })),
+);
 
 // Lazy-loaded underwriting pages
 const UnderwritingWizardPage = lazy(
@@ -642,6 +647,17 @@ const closeAiBuilderRoute = createRoute({
   ),
 });
 
+// Lead Drop - bulk lead transfer between Close CRM accounts
+const leadDropRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "lead-drop",
+  component: () => (
+    <RouteGuard noRecruits noStaffRoles>
+      <LeadDropPage />
+    </RouteGuard>
+  ),
+});
+
 // Business Tools route - Financial statement processing, page handles upsell internally
 const businessToolsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -1150,6 +1166,7 @@ const routeTree = rootRoute.addChildren([
   channelOrchestrationRoute,
   closeKpiRoute,
   closeAiBuilderRoute,
+  leadDropRoute,
   businessToolsRoute,
   roadmapListRoute,
   roadmapEditorRoute,

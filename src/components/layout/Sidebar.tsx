@@ -35,6 +35,7 @@ import {
   Network,
   Sparkles,
   Compass,
+  Zap,
 } from "lucide-react";
 import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
 import { SupportDialog } from "./SupportDialog";
@@ -396,6 +397,13 @@ export default function Sidebar({
           label: "AI Template Builder",
           href: "/close-ai-builder",
           subscriptionFeature: "close_ai_builder",
+        },
+        // Lead Drop — bulk lead transfer between Close CRM accounts
+        {
+          icon: Zap,
+          label: "Lead Drop",
+          href: "/lead-drop",
+          subscriptionFeature: "close_kpi",
         },
         // Business Tools — restricted to The Standard agency
         {
