@@ -21,6 +21,7 @@ interface ConfirmStepProps {
   selectedCount: number;
   recipient: DropRecipient;
   leadSourceLabel: string;
+  recipientSmartViewName: string;
   sequence: RecipientSequence | null;
   isDropping: boolean;
   onConfirm: () => void;
@@ -32,13 +33,12 @@ export function ConfirmStep({
   selectedCount,
   recipient,
   leadSourceLabel,
+  recipientSmartViewName,
   sequence,
   isDropping,
   onConfirm,
   onBack,
 }: ConfirmStepProps) {
-  const todayStr = new Date().toISOString().slice(0, 10);
-
   return (
     <div className="space-y-4">
       <div>
@@ -90,7 +90,7 @@ export function ConfirmStep({
         <SummaryRow
           icon={<ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />}
           label="Smart View in recipient's CRM"
-          value={`Lead Drop from You – ${todayStr}`}
+          value={recipientSmartViewName}
         />
       </div>
 

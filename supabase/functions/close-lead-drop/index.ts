@@ -236,6 +236,7 @@ async function processDropJob(opts: {
   leadSourceLabel: string;
   sequenceId: string | null;
   senderName: string;
+  recipientSmartViewName: string;
 }): Promise<void> {
   const svc = getServiceClient();
 
@@ -398,7 +399,7 @@ async function processDropJob(opts: {
 
     if (leadSourceFieldId) {
       try {
-        const svName = `Lead Drop from ${opts.senderName} – ${new Date().toISOString().slice(0, 10)}`;
+        const svName = opts.recipientSmartViewName;
         const sv = await closePost<{ id: string }>(
           recipientKey,
           "/saved_search/",
@@ -789,6 +790,9 @@ serve(async (req: Request) => {
         const rawLeadIds = body.lead_ids as string[];
         const recipientUserId = body.recipient_user_id as string;
         const leadSourceLabel = (body.lead_source_label as string)?.trim();
+        const recipientSmartViewName = (
+          body.recipient_smart_view_name as string
+        )?.trim();
         const sequenceId = (body.sequence_id as string | null) ?? null;
         const sequenceName = (body.sequence_name as string | null) ?? null;
 
@@ -797,12 +801,13 @@ serve(async (req: Request) => {
           !smartViewName ||
           !rawLeadIds?.length ||
           !recipientUserId ||
-          !leadSourceLabel
+          !leadSourceLabel ||
+          !recipientSmartViewName
         ) {
           return jsonResponse(
             {
               error:
-                "Missing required fields: smart_view_id, smart_view_name, lead_ids, recipient_user_id, lead_source_label",
+                "Missing required fields: smart_view_id, smart_view_name, lead_ids, recipient_user_id, lead_source_label, recipient_smart_view_name",
             },
             400,
             req,
@@ -818,6 +823,16 @@ serve(async (req: Request) => {
         if (leadSourceLabel.length > 200) {
           return jsonResponse(
             { error: "lead_source_label must be 200 characters or fewer" },
+            400,
+            req,
+          );
+        }
+        if (recipientSmartViewName.length > 100) {
+          return jsonResponse(
+            {
+              error:
+                "recipient_smart_view_name must be 100 characters or fewer",
+            },
             400,
             req,
           );
@@ -841,7 +856,10 @@ serve(async (req: Request) => {
         // predicate requires cc.is_active = TRUE).
         await authorizeRecipient(userClient, recipientUserId);
 
-        // Create the job record
+        // Create the job record. Pre-populating recipient_smart_view_name
+        // with the sender-requested name makes the audit trail immediate —
+        // if the Smart View creation fails later, history still shows what
+        // the sender asked for.
         const { data: job, error: insertErr } = await svc
           .from("lead_drop_jobs")
           .insert({
@@ -850,6 +868,7 @@ serve(async (req: Request) => {
             smart_view_id: smartViewId,
             smart_view_name: smartViewName,
             lead_source_label: leadSourceLabel,
+            recipient_smart_view_name: recipientSmartViewName,
             sequence_id: sequenceId,
             sequence_name: sequenceName,
             status: "running",
@@ -873,6 +892,7 @@ serve(async (req: Request) => {
             leadSourceLabel,
             sequenceId,
             senderName: callerName,
+            recipientSmartViewName,
           }),
         );
 

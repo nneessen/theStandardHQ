@@ -1,6 +1,6 @@
-// Step 3: Choose recipient, lead source label, and optional sequence.
+// Step 3: Choose recipient, lead source label, smart view name, and optional sequence.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ChevronRight,
   ChevronLeft,
@@ -23,10 +23,12 @@ import type {
 interface ConfigureStepProps {
   recipient: DropRecipient | null;
   leadSourceLabel: string;
+  recipientSmartViewName: string;
   sequence: RecipientSequence | null;
   selectedCount: number;
   onRecipientChange: (r: DropRecipient) => void;
   onLeadSourceChange: (label: string) => void;
+  onRecipientSmartViewNameChange: (name: string) => void;
   onSequenceChange: (s: RecipientSequence | null) => void;
   onNext: () => void;
   onBack: () => void;
@@ -35,10 +37,12 @@ interface ConfigureStepProps {
 export function ConfigureStep({
   recipient,
   leadSourceLabel,
+  recipientSmartViewName,
   sequence,
   selectedCount,
   onRecipientChange,
   onLeadSourceChange,
+  onRecipientSmartViewNameChange,
   onSequenceChange,
   onNext,
   onBack,
@@ -61,12 +65,21 @@ export function ConfigureStep({
   );
 
   const sequences = seqData?.sequences ?? [];
-  const canNext = !!recipient && leadSourceLabel.trim().length > 0;
+  const canNext =
+    !!recipient &&
+    leadSourceLabel.trim().length > 0 &&
+    recipientSmartViewName.trim().length > 0;
 
   const todayStr = new Date().toISOString().slice(0, 10);
-  const smartViewPreview = recipient
-    ? `Lead Drop from You – ${todayStr}`
-    : "Lead Drop from You – (date)";
+
+  // When the sender hasn't chosen a Smart View name yet, offer a sensible
+  // default the moment they pick a lead source label. They can still edit it.
+  useEffect(() => {
+    if (!recipientSmartViewName && leadSourceLabel.trim()) {
+      onRecipientSmartViewNameChange(`${leadSourceLabel.trim()} – ${todayStr}`);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leadSourceLabel]);
 
   return (
     <div className="space-y-5">
@@ -165,6 +178,25 @@ export function ConfigureStep({
         </p>
       </div>
 
+      {/* Smart View name — what the recipient will see in their Close CRM */}
+      <div className="space-y-1.5">
+        <Label htmlFor="recipient-sv-name" className="text-xs font-medium">
+          Smart View Name
+        </Label>
+        <Input
+          id="recipient-sv-name"
+          placeholder="e.g. Aged Internet – April 2026"
+          value={recipientSmartViewName}
+          onChange={(e) => onRecipientSmartViewNameChange(e.target.value)}
+          className="h-8 text-xs"
+          maxLength={100}
+        />
+        <p className="text-xs text-muted-foreground">
+          The Smart View created in {recipient?.full_name ?? "the recipient"}'s
+          Close CRM will use this exact name.
+        </p>
+      </div>
+
       {/* Sequence picker */}
       <div className="space-y-1.5">
         <Label className="text-xs font-medium">
@@ -240,13 +272,13 @@ export function ConfigureStep({
       </div>
 
       {/* Smart View note */}
-      {recipient && (
+      {recipient && recipientSmartViewName.trim() && (
         <div className="flex items-start gap-2 rounded-md border border-blue-500/20 bg-blue-500/5 px-3 py-2">
           <Info className="h-3.5 w-3.5 text-blue-500 shrink-0 mt-0.5" />
           <p className="text-xs text-muted-foreground">
             A Smart View named{" "}
             <span className="font-medium text-foreground">
-              "{smartViewPreview}"
+              "{recipientSmartViewName.trim()}"
             </span>{" "}
             will be created in{" "}
             <span className="font-medium text-foreground">

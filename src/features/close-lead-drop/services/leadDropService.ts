@@ -93,6 +93,7 @@ export const leadDropService = {
     leadIds: string[];
     recipientUserId: string;
     leadSourceLabel: string;
+    recipientSmartViewName: string;
     sequenceId?: string;
     sequenceName?: string;
   }): Promise<{ job_id: string }> {
@@ -102,6 +103,7 @@ export const leadDropService = {
       lead_ids: params.leadIds,
       recipient_user_id: params.recipientUserId,
       lead_source_label: params.leadSourceLabel,
+      recipient_smart_view_name: params.recipientSmartViewName,
       sequence_id: params.sequenceId ?? null,
       sequence_name: params.sequenceName ?? null,
     });

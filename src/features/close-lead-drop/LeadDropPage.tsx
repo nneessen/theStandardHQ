@@ -62,6 +62,7 @@ export function LeadDropPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [recipient, setRecipient] = useState<DropRecipient | null>(null);
   const [leadSourceLabel, setLeadSourceLabel] = useState("");
+  const [recipientSmartViewName, setRecipientSmartViewName] = useState("");
   const [sequence, setSequence] = useState<RecipientSequence | null>(null);
   const [jobId, setJobId] = useState<string | null>(null);
   const [completedJob, setCompletedJob] = useState<DropJob | null>(null);
@@ -111,7 +112,14 @@ export function LeadDropPage() {
   // ── Drop submission ─────────────────────────────────────────────────────────
 
   async function handleConfirmDrop() {
-    if (!smartView || !recipient || !leadSourceLabel.trim()) return;
+    if (
+      !smartView ||
+      !recipient ||
+      !leadSourceLabel.trim() ||
+      !recipientSmartViewName.trim()
+    ) {
+      return;
+    }
 
     try {
       const { job_id } = await createDrop.mutateAsync({
@@ -120,6 +128,7 @@ export function LeadDropPage() {
         leadIds: Array.from(selectedIds),
         recipientUserId: recipient.id,
         leadSourceLabel: leadSourceLabel.trim(),
+        recipientSmartViewName: recipientSmartViewName.trim(),
         sequenceId: sequence?.id,
         sequenceName: sequence?.name,
       });
@@ -151,6 +160,7 @@ export function LeadDropPage() {
     setSelectedIds(new Set());
     setRecipient(null);
     setLeadSourceLabel("");
+    setRecipientSmartViewName("");
     setSequence(null);
     setJobId(null);
     setCompletedJob(null);
@@ -252,10 +262,12 @@ export function LeadDropPage() {
                 <ConfigureStep
                   recipient={recipient}
                   leadSourceLabel={leadSourceLabel}
+                  recipientSmartViewName={recipientSmartViewName}
                   sequence={sequence}
                   selectedCount={selectedIds.size}
                   onRecipientChange={setRecipient}
                   onLeadSourceChange={setLeadSourceLabel}
+                  onRecipientSmartViewNameChange={setRecipientSmartViewName}
                   onSequenceChange={setSequence}
                   onNext={() => setStep("confirm")}
                   onBack={() => setStep("preview")}
@@ -269,6 +281,7 @@ export function LeadDropPage() {
                   selectedCount={selectedIds.size}
                   recipient={recipient}
                   leadSourceLabel={leadSourceLabel}
+                  recipientSmartViewName={recipientSmartViewName}
                   sequence={sequence}
                   isDropping={createDrop.isPending}
                   onConfirm={handleConfirmDrop}
