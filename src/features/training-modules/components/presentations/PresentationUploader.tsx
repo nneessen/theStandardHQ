@@ -1,9 +1,17 @@
 // src/features/training-modules/components/presentations/PresentationUploader.tsx
 import { useCallback, useRef, useState } from "react";
-import { Upload, X, FileVideo } from "lucide-react";
+import { Upload, X, FileVideo, FileAudio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const ALLOWED_TYPES = ["video/webm", "video/mp4", "video/quicktime"];
+const AUDIO_TYPES = [
+  "audio/mpeg",
+  "audio/mp4",
+  "audio/wav",
+  "audio/ogg",
+  "audio/webm",
+];
+const VIDEO_TYPES = ["video/webm", "video/mp4", "video/quicktime"];
+const ALLOWED_TYPES = [...AUDIO_TYPES, ...VIDEO_TYPES];
 const MAX_SIZE_BYTES = 500 * 1024 * 1024; // 500MB
 
 interface PresentationUploaderProps {
@@ -17,7 +25,11 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function PresentationUploader({ onFileSelected, selectedFile, onClear }: PresentationUploaderProps) {
+export function PresentationUploader({
+  onFileSelected,
+  selectedFile,
+  onClear,
+}: PresentationUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,11 +37,13 @@ export function PresentationUploader({ onFileSelected, selectedFile, onClear }: 
   const validate = useCallback((file: File): boolean => {
     setError(null);
     if (!ALLOWED_TYPES.includes(file.type)) {
-      setError("Unsupported file type. Use MP4, WebM, or MOV.");
+      setError("Unsupported file type. Use MP3, WAV, MP4, WebM, or MOV.");
       return false;
     }
     if (file.size > MAX_SIZE_BYTES) {
-      setError(`File too large. Maximum size is ${formatSize(MAX_SIZE_BYTES)}.`);
+      setError(
+        `File too large. Maximum size is ${formatSize(MAX_SIZE_BYTES)}.`,
+      );
       return false;
     }
     return true;
@@ -55,14 +69,26 @@ export function PresentationUploader({ onFileSelected, selectedFile, onClear }: 
   );
 
   if (selectedFile) {
+    const isAudio = AUDIO_TYPES.includes(selectedFile.type);
     return (
       <div className="flex items-center gap-2 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
-        <FileVideo className="h-4 w-4 text-blue-500 flex-shrink-0" />
+        {isAudio ? (
+          <FileAudio className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+        ) : (
+          <FileVideo className="h-4 w-4 text-blue-500 flex-shrink-0" />
+        )}
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium truncate">{selectedFile.name}</p>
-          <p className="text-[10px] text-zinc-500">{formatSize(selectedFile.size)}</p>
+          <p className="text-[10px] text-zinc-500">
+            {formatSize(selectedFile.size)}
+          </p>
         </div>
-        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onClear}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6"
+          onClick={onClear}
+        >
           <X className="h-3 w-3" />
         </Button>
       </div>
@@ -72,7 +98,10 @@ export function PresentationUploader({ onFileSelected, selectedFile, onClear }: 
   return (
     <div>
       <div
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
@@ -84,10 +113,10 @@ export function PresentationUploader({ onFileSelected, selectedFile, onClear }: 
       >
         <Upload className="h-5 w-5 mx-auto mb-2 text-zinc-400" />
         <p className="text-xs text-zinc-600 dark:text-zinc-400">
-          Drop a video file here or click to browse
+          Drop an audio or video file here or click to browse
         </p>
         <p className="text-[10px] text-zinc-400 mt-1">
-          MP4, WebM, or MOV &middot; Max 500MB
+          MP3, WAV, OGG &middot; MP4, WebM, MOV &middot; Max 500MB
         </p>
       </div>
       <input

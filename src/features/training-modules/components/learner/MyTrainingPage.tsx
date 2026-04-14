@@ -15,7 +15,10 @@ import { ModulesManagementTab } from "../admin/ModulesManagementTab";
 import { BadgesManagementTab } from "../admin/BadgesManagementTab";
 import { PresentationSubmissionList } from "../presentations/PresentationSubmissionList";
 import { PresentationComplianceTable } from "../presentations/PresentationComplianceTable";
-import { PresentationWeekPicker, getCurrentWeekStart } from "../presentations/PresentationWeekPicker";
+import {
+  PresentationWeekPicker,
+  getCurrentWeekStart,
+} from "../presentations/PresentationWeekPicker";
 import { useAuth } from "@/contexts/AuthContext";
 import { useImo } from "@/contexts/ImoContext";
 import { useQueryClient } from "@tanstack/react-query";
@@ -23,7 +26,12 @@ import { assignmentKeys } from "../../hooks/useTrainingAssignments";
 import { presentationKeys } from "../../hooks/usePresentationSubmissions";
 import { trainingModuleKeys } from "../../hooks/useTrainingModules";
 
-type TabId = "assignments" | "presentations" | "leaderboard" | "badges" | "modules";
+type TabId =
+  | "assignments"
+  | "presentations"
+  | "leaderboard"
+  | "badges"
+  | "modules";
 
 export default function MyTrainingPage() {
   const { data: assignments = [], isLoading } = useMyTrainingAssignments();
@@ -60,9 +68,7 @@ export default function MyTrainingPage() {
     { id: "presentations", label: "Presentations" },
     { id: "leaderboard", label: "Leaderboard" },
     { id: "badges", label: "Badges" },
-    ...(canManage
-      ? [{ id: "modules" as const, label: "Modules" }]
-      : []),
+    ...(canManage ? [{ id: "modules" as const, label: "Modules" }] : []),
   ];
 
   return (
@@ -126,22 +132,28 @@ export default function MyTrainingPage() {
           <div className="space-y-3">
             {/* Toolbar: week picker + new submission button */}
             <div className="flex items-center justify-between">
-              <PresentationWeekPicker weekStart={weekStart} onChange={setWeekStart} />
-              {!canManage && (
-                <Button
-                  size="sm"
-                  className="h-7 text-[11px]"
-                  onClick={() => navigate({ to: "/my-training/presentations/record" })}
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  New Submission
-                </Button>
-              )}
+              <PresentationWeekPicker
+                weekStart={weekStart}
+                onChange={setWeekStart}
+              />
+              <Button
+                size="sm"
+                className="h-7 text-[11px]"
+                onClick={() =>
+                  navigate({ to: "/my-training/presentations/record" })
+                }
+              >
+                <Plus className="h-3 w-3 mr-1" />
+                New Submission
+              </Button>
             </div>
 
             {/* Manager compliance table */}
             {canManage && agency && (
-              <PresentationComplianceTable agencyId={agency.id} weekStart={weekStart} />
+              <PresentationComplianceTable
+                agencyId={agency.id}
+                weekStart={weekStart}
+              />
             )}
 
             {/* Submissions list */}

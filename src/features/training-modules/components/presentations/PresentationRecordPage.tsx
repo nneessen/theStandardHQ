@@ -31,7 +31,8 @@ export default function PresentationRecordPage() {
   const [recordedDuration, setRecordedDuration] = useState(0);
 
   const hasContent = !!(selectedFile || recordedBlob);
-  const canSubmit = hasContent && title.trim().length > 0 && !submitMutation.isPending;
+  const canSubmit =
+    hasContent && title.trim().length > 0 && !submitMutation.isPending;
 
   const handleRecordingComplete = useCallback(
     (blob: Blob, mimeType: string, durationSeconds: number) => {
@@ -51,9 +52,7 @@ export default function PresentationRecordPage() {
     const fileName = isRecording
       ? `recording_${Date.now()}.webm`
       : selectedFile!.name;
-    const mimeType = isRecording
-      ? recordedMimeType
-      : selectedFile!.type;
+    const mimeType = isRecording ? recordedMimeType : selectedFile!.type;
 
     submitMutation.mutate(
       {
@@ -108,16 +107,24 @@ export default function PresentationRecordPage() {
                 className="p-4 rounded-lg border-2 border-zinc-200 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-600 transition-colors text-center space-y-2"
               >
                 <Video className="h-6 w-6 mx-auto text-blue-500" />
-                <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200">Record</p>
-                <p className="text-[10px] text-zinc-500">Use your webcam to record a presentation</p>
+                <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200">
+                  Record
+                </p>
+                <p className="text-[10px] text-zinc-500">
+                  Use your webcam to record a presentation
+                </p>
               </button>
               <button
                 onClick={() => setMode("upload")}
                 className="p-4 rounded-lg border-2 border-zinc-200 dark:border-zinc-700 hover:border-blue-400 dark:hover:border-blue-600 transition-colors text-center space-y-2"
               >
                 <Upload className="h-6 w-6 mx-auto text-emerald-500" />
-                <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200">Upload</p>
-                <p className="text-[10px] text-zinc-500">Upload a pre-recorded video file</p>
+                <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200">
+                  Upload
+                </p>
+                <p className="text-[10px] text-zinc-500">
+                  Upload an audio or video file
+                </p>
               </button>
             </div>
           )}
@@ -129,11 +136,16 @@ export default function PresentationRecordPage() {
                 variant="ghost"
                 size="sm"
                 className="h-6 text-[11px] text-zinc-500"
-                onClick={() => { setMode("choose"); setRecordedBlob(null); }}
+                onClick={() => {
+                  setMode("choose");
+                  setRecordedBlob(null);
+                }}
               >
                 &larr; Back to options
               </Button>
-              <PresentationRecorder onRecordingComplete={handleRecordingComplete} />
+              <PresentationRecorder
+                onRecordingComplete={handleRecordingComplete}
+              />
             </div>
           )}
 
@@ -144,7 +156,10 @@ export default function PresentationRecordPage() {
                 variant="ghost"
                 size="sm"
                 className="h-6 text-[11px] text-zinc-500"
-                onClick={() => { setMode("choose"); setSelectedFile(null); }}
+                onClick={() => {
+                  setMode("choose");
+                  setSelectedFile(null);
+                }}
               >
                 &larr; Back to options
               </Button>
