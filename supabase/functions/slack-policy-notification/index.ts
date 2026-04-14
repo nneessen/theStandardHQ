@@ -1858,7 +1858,9 @@ serve(async (req) => {
         .maybeSingle(),
       supabase
         .from("user_profiles")
-        .select("first_name, last_name, email, slack_member_overrides")
+        .select(
+          "first_name, last_name, email, slack_member_overrides, profile_photo_url",
+        )
         .eq("id", agentId)
         .maybeSingle(),
       carrierId
@@ -1888,6 +1890,7 @@ serve(async (req) => {
         agentResult.data.email
       : "Unknown";
     const agentEmail = agentResult.data?.email || null;
+    const agentProfilePhotoUrl = agentResult.data?.profile_photo_url || null;
     const slackMemberOverrides = (agentResult.data?.slack_member_overrides ||
       {}) as Record<
       string,
@@ -2052,13 +2055,13 @@ serve(async (req) => {
           effectiveDate || fallbackDate,
         );
 
-        // Options for posting as the agent (shows their name/avatar)
-        const postAsUserOptions = workspaceSlackUser
-          ? {
-              username: workspaceSlackUser.displayName,
-              icon_url: workspaceSlackUser.avatarUrl || undefined,
-            }
-          : { username: agentName };
+        // Options for posting as the agent (shows their name/avatar).
+        // Priority: Slack workspace avatar → app profile photo → no icon (bot default)
+        const postAsUserOptions = {
+          username: workspaceSlackUser?.displayName || agentName,
+          icon_url:
+            workspaceSlackUser?.avatarUrl || agentProfilePhotoUrl || undefined,
+        };
 
         // =====================================================================
         // Check FIRST if this is a first sale - before posting anything
@@ -2152,7 +2155,8 @@ serve(async (req) => {
             agentName,
             agentSlackMemberId: workspaceSlackUser?.id || null, // Store workspace-specific ID
             agentDisplayName: workspaceSlackUser?.displayName || agentName,
-            agentAvatarUrl: workspaceSlackUser?.avatarUrl || null,
+            agentAvatarUrl:
+              workspaceSlackUser?.avatarUrl || agentProfilePhotoUrl || null,
             annualPremium,
             effectiveDate: effectiveDate || fallbackDate,
             agentId,

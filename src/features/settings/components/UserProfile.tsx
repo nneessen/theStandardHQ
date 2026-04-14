@@ -1,7 +1,7 @@
 // src/features/settings/components/UserProfile.tsx
 // Redesigned with zinc palette and compact design patterns
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link as RouterLink } from "@tanstack/react-router";
 import {
   User,
@@ -15,7 +15,9 @@ import {
   Mail,
   Loader2,
   Sparkles,
+  Camera,
 } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -85,6 +87,12 @@ export function UserProfile() {
   const [showSlugSuccess, setShowSlugSuccess] = useState(false);
   const [slugCopied, setSlugCopied] = useState(false);
 
+  // Profile photo state
+  const [profilePhotoUrl, setProfilePhotoUrl] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState<string>("");
+  const photoInputRef = useRef<HTMLInputElement>(null);
+
   // Email change state
   type EmailChangeStatus = "idle" | "sending" | "sent" | "error";
   const [emailChangeStatus, setEmailChangeStatus] =
@@ -133,6 +141,58 @@ export function UserProfile() {
     }
   };
 
+  const handlePhotoUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file || !user?.id) return;
+
+    if (!file.type.startsWith("image/")) {
+      setPhotoError("Please upload an image file");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setPhotoError("File size must be less than 5MB");
+      return;
+    }
+
+    setPhotoError("");
+    setUploadingPhoto(true);
+
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `${user.id}/avatar_${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("recruiting-assets")
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from("recruiting-assets")
+        .getPublicUrl(fileName);
+
+      const { error: updateError } = await supabase
+        .from("user_profiles")
+        .update({ profile_photo_url: urlData.publicUrl })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+
+      setProfilePhotoUrl(urlData.publicUrl);
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      toast.success("Profile photo updated");
+    } catch (err) {
+      console.error("Error uploading photo:", err);
+      setPhotoError("Failed to upload photo. Please try again.");
+    } finally {
+      setUploadingPhoto(false);
+      if (photoInputRef.current) photoInputRef.current.value = "";
+    }
+  };
+
   // Load current user profile data on mount
   useEffect(() => {
     const loadUserInfo = async () => {
@@ -140,9 +200,13 @@ export function UserProfile() {
 
       const { data: profile } = await supabase
         .from("user_profiles")
-        .select("upline_id, recruiter_slug, contract_level")
+        .select("upline_id, recruiter_slug, contract_level, profile_photo_url")
         .eq("id", user.id)
         .single();
+
+      if (profile?.profile_photo_url) {
+        setProfilePhotoUrl(profile.profile_photo_url);
+      }
 
       // Load contract level from DB (source of truth)
       if (
@@ -430,6 +494,66 @@ export function UserProfile() {
                 View Pro/Team Plans
               </Button>
             </RouterLink>
+          </div>
+        </div>
+      </div>
+
+      {/* Profile Photo Card */}
+      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
+          <Camera className="h-3.5 w-3.5 text-zinc-400" />
+          <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+            Profile Photo
+          </h3>
+        </div>
+        <div className="p-3">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-14 w-14 border border-zinc-200 dark:border-zinc-700 flex-shrink-0">
+              <AvatarImage src={profilePhotoUrl || undefined} />
+              <AvatarFallback className="text-[13px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
+                {user.first_name?.[0]}
+                {user.last_name?.[0]}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoUpload}
+                disabled={uploadingPhoto}
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={uploadingPhoto}
+                onClick={() => photoInputRef.current?.click()}
+                className="h-7 px-2 text-[10px] border-zinc-200 dark:border-zinc-700"
+              >
+                {uploadingPhoto ? (
+                  <>
+                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Camera className="h-3 w-3 mr-1" />
+                    {profilePhotoUrl ? "Change Photo" : "Upload Photo"}
+                  </>
+                )}
+              </Button>
+              <p className="mt-1 text-[9px] text-zinc-400 dark:text-zinc-500">
+                JPG, PNG, or GIF · Max 5MB · Used in Slack leaderboard posts
+              </p>
+              {photoError && (
+                <div className="mt-1 flex items-center gap-1 text-[10px] text-red-600 dark:text-red-400">
+                  <AlertCircle className="h-3 w-3" />
+                  {photoError}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
