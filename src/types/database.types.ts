@@ -5171,6 +5171,150 @@ export type Database = {
           },
         ];
       };
+      lead_drop_jobs: {
+        Row: {
+          completed_at: string | null;
+          created_at: string;
+          created_leads: number;
+          error_message: string | null;
+          failed_leads: number;
+          id: string;
+          lead_source_label: string;
+          recipient_smart_view_id: string | null;
+          recipient_smart_view_name: string | null;
+          recipient_user_id: string;
+          sender_user_id: string;
+          sequence_id: string | null;
+          sequence_name: string | null;
+          smart_view_id: string;
+          smart_view_name: string;
+          status: string;
+          total_leads: number;
+        };
+        Insert: {
+          completed_at?: string | null;
+          created_at?: string;
+          created_leads?: number;
+          error_message?: string | null;
+          failed_leads?: number;
+          id?: string;
+          lead_source_label: string;
+          recipient_smart_view_id?: string | null;
+          recipient_smart_view_name?: string | null;
+          recipient_user_id: string;
+          sender_user_id: string;
+          sequence_id?: string | null;
+          sequence_name?: string | null;
+          smart_view_id: string;
+          smart_view_name: string;
+          status?: string;
+          total_leads?: number;
+        };
+        Update: {
+          completed_at?: string | null;
+          created_at?: string;
+          created_leads?: number;
+          error_message?: string | null;
+          failed_leads?: number;
+          id?: string;
+          lead_source_label?: string;
+          recipient_smart_view_id?: string | null;
+          recipient_smart_view_name?: string | null;
+          recipient_user_id?: string;
+          sender_user_id?: string;
+          sequence_id?: string | null;
+          sequence_name?: string | null;
+          smart_view_id?: string;
+          smart_view_name?: string;
+          status?: string;
+          total_leads?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lead_drop_jobs_recipient_user_id_fkey";
+            columns: ["recipient_user_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lead_drop_jobs_recipient_user_id_fkey";
+            columns: ["recipient_user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lead_drop_jobs_recipient_user_id_fkey";
+            columns: ["recipient_user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lead_drop_jobs_sender_user_id_fkey";
+            columns: ["sender_user_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lead_drop_jobs_sender_user_id_fkey";
+            columns: ["sender_user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lead_drop_jobs_sender_user_id_fkey";
+            columns: ["sender_user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      lead_drop_results: {
+        Row: {
+          created_at: string;
+          dest_lead_id: string | null;
+          error_message: string | null;
+          id: string;
+          job_id: string;
+          source_lead_id: string;
+          source_lead_name: string | null;
+          status: string;
+        };
+        Insert: {
+          created_at?: string;
+          dest_lead_id?: string | null;
+          error_message?: string | null;
+          id?: string;
+          job_id: string;
+          source_lead_id: string;
+          source_lead_name?: string | null;
+          status: string;
+        };
+        Update: {
+          created_at?: string;
+          dest_lead_id?: string | null;
+          error_message?: string | null;
+          id?: string;
+          job_id?: string;
+          source_lead_id?: string;
+          source_lead_name?: string | null;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lead_drop_results_job_id_fkey";
+            columns: ["job_id"];
+            isOneToOne: false;
+            referencedRelation: "lead_drop_jobs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       lead_heat_agent_weights: {
         Row: {
           created_at: string;
@@ -6852,6 +6996,71 @@ export type Database = {
             columns: ["product_id"];
             isOneToOne: false;
             referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      presentation_markers: {
+        Row: {
+          created_at: string;
+          created_by: string;
+          description: string | null;
+          id: string;
+          label: string;
+          marker_type: string;
+          submission_id: string;
+          timestamp_seconds: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by: string;
+          description?: string | null;
+          id?: string;
+          label: string;
+          marker_type?: string;
+          submission_id: string;
+          timestamp_seconds: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string;
+          description?: string | null;
+          id?: string;
+          label?: string;
+          marker_type?: string;
+          submission_id?: string;
+          timestamp_seconds?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "presentation_markers_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "presentation_markers_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "presentation_markers_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "presentation_markers_submission_id_fkey";
+            columns: ["submission_id"];
+            isOneToOne: false;
+            referencedRelation: "presentation_submissions";
             referencedColumns: ["id"];
           },
         ];
