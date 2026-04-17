@@ -466,37 +466,49 @@ async function handlePreviewLeads(
   cursor: string | null,
   limit: number,
 ): Promise<unknown> {
-  // Fetch smart view — Close stores the search query under s_query.query.
-  // Only needed on the first page; subsequent pages use the cursor alone.
-  // We still fetch it per call because the cursor embeds the query state.
-  const sv = await closeGet<{
-    id: string;
-    name: string;
-    s_query?: { query?: unknown };
-  }>(apiKey, `/saved_search/${smartViewId}/`);
-
-  const searchQuery = sv?.s_query?.query;
-  if (!searchQuery) {
-    return { leads: [], has_more: false, cursor: null, total: null };
+  // Uses GET /lead/?saved_search_id= — the same endpoint the Close UI calls
+  // for its sidebar count. Earlier versions used POST /data/search/ with the
+  // smart view's `s_query`, but tracing (see trace_preview) proved cursor
+  // pagination there was unstable on smart views with `sort: []` — pages
+  // 5-7 returned overlapping windows AND the walk terminated at ~600 leads
+  // when the real total was 7,473. /lead/ is stable because it paginates by
+  // _skip and exposes `total_results`.
+  //
+  // `cursor` is a stringified _skip offset so the frontend contract is
+  // unchanged — state still advances by reading `data.cursor` and sending
+  // it back on the next request.
+  const skip = cursor ? parseInt(cursor, 10) : 0;
+  if (!Number.isFinite(skip) || skip < 0) {
+    throw Object.assign(new Error("Invalid cursor"), { status: 400 });
   }
 
-  // /data/search/ is cursor-based (NOT _skip-based). See close-kpi-data for
-  // the canonical usage. Pass `cursor` on subsequent pages.
-  const body: Record<string, unknown> = {
-    _limit: limit,
-    query: searchQuery,
-    _fields: { lead: ["id", "display_name", "status_label", "contacts"] },
-  };
-  if (cursor) body.cursor = cursor;
+  const qs = new URLSearchParams({
+    saved_search_id: smartViewId,
+    _skip: String(skip),
+    _limit: String(limit),
+    _fields: "id,display_name,status_label,contacts",
+  });
 
-  const searchResp = await closePost<{
+  const resp = await closeGet<{
     data: LeadPreview[];
-    total_results: number | null;
-    cursor?: string;
-  }>(apiKey, "/data/search/", body);
+    total_results?: number | null;
+    has_more?: boolean;
+  }>(apiKey, `/lead/?${qs.toString()}`);
 
-  const leads = searchResp?.data ?? [];
-  const nextCursor = searchResp?.cursor ?? null;
+  const rawLeads = resp?.data ?? [];
+  // Defense-in-depth: /lead/ should only return leads, but if Close ever
+  // returns anything else we drop it rather than shipping it to the recipient.
+  const leads = rawLeads.filter(
+    (l) => typeof l.id === "string" && l.id.startsWith("lead_"),
+  );
+  const total = resp?.total_results ?? null;
+  const nextSkip = skip + rawLeads.length;
+  // Trust Close's own has_more when present; fall back to skip < total.
+  // Final guard: a short page means we've hit the tail even if Close lies.
+  const hasMore =
+    rawLeads.length >= limit &&
+    (resp?.has_more === true || (total != null && nextSkip < total));
+
   return {
     leads: leads.map((l) => ({
       id: l.id,
@@ -505,9 +517,167 @@ async function handlePreviewLeads(
       primary_email: l.contacts?.[0]?.emails?.[0]?.email ?? null,
       primary_phone: l.contacts?.[0]?.phones?.[0]?.phone ?? null,
     })),
-    has_more: !!nextCursor,
-    cursor: nextCursor,
-    total: searchResp?.total_results ?? null,
+    has_more: hasMore,
+    cursor: hasMore ? String(nextSkip) : null,
+    total,
+  };
+}
+
+/**
+ * Unwrap a saved search's `s_query` into a Query object /data/search/ accepts.
+ *
+ * Shapes we've seen in the wild:
+ *   a) `{ query: {...} }`           — wrapper form used by our AI-created views
+ *   b) `{ type: "and", queries: [...] }` — raw Query object (UI-created views)
+ *   c) `undefined`                   — smart view without a stored query
+ */
+function resolveSmartViewQuery(
+  sq: unknown,
+): Record<string, unknown> | undefined {
+  if (!sq || typeof sq !== "object") return undefined;
+  const obj = sq as Record<string, unknown>;
+  if (obj.query && typeof obj.query === "object") {
+    return obj.query as Record<string, unknown>;
+  }
+  if (typeof obj.type === "string") {
+    return obj;
+  }
+  return undefined;
+}
+
+async function handleDebugSmartView(
+  apiKey: string,
+  smartViewId: string,
+): Promise<unknown> {
+  const sv = await closeGet<Record<string, unknown>>(
+    apiKey,
+    `/saved_search/${smartViewId}/`,
+  );
+  return {
+    id: sv?.id ?? null,
+    name: sv?.name ?? null,
+    s_query: sv?.s_query ?? null,
+    resolved_query: resolveSmartViewQuery(sv?.s_query),
+    note: "Paste this into the chat so we can confirm the query shape.",
+  };
+}
+
+/**
+ * Exhaustive pagination trace for a smart view. Compares /data/search/ (what
+ * we currently use) against /lead/?saved_search_id=... (what the Close UI
+ * uses to show the smart view's lead count). Caps at MAX_PAGES to avoid
+ * runaway loops if the cursor is unstable.
+ */
+async function handleTracePreview(
+  apiKey: string,
+  smartViewId: string,
+): Promise<unknown> {
+  const MAX_PAGES = 20;
+  const PAGE_SIZE = 100;
+
+  const sv = await closeGet<{ name: string; s_query?: unknown }>(
+    apiKey,
+    `/saved_search/${smartViewId}/`,
+  );
+  const searchQuery = resolveSmartViewQuery(sv?.s_query);
+
+  // A) authoritative count via /lead/?saved_search_id=...
+  let leadEndpointTotal: number | null = null;
+  let leadEndpointError: string | null = null;
+  try {
+    const r = await closeGet<{ total_results?: number }>(
+      apiKey,
+      `/lead/?saved_search_id=${smartViewId}&_limit=1&_fields=id`,
+    );
+    leadEndpointTotal = r?.total_results ?? null;
+  } catch (e) {
+    leadEndpointError = (e as Error).message;
+  }
+
+  // B) exhaustive /data/search/ walk, tracking dup vs new per page
+  const seen = new Set<string>();
+  const pages: Array<{
+    page: number;
+    fetched: number;
+    new: number;
+    duplicates: number;
+    has_cursor: boolean;
+  }> = [];
+  let cursor: string | null = null;
+  let pageNum = 0;
+  let stoppedReason = "completed";
+
+  if (!searchQuery) {
+    stoppedReason = "no_search_query";
+  } else {
+    while (pageNum < MAX_PAGES) {
+      const body: Record<string, unknown> = {
+        _limit: PAGE_SIZE,
+        query: searchQuery,
+        _fields: { lead: ["id"] },
+      };
+      if (cursor) body.cursor = cursor;
+
+      const resp = await closePost<{
+        data: Array<{ id: string }>;
+        cursor?: string;
+        total_results?: number | null;
+      }>(apiKey, "/data/search/", body);
+
+      const rows = resp?.data ?? [];
+      let dup = 0;
+      let fresh = 0;
+      for (const row of rows) {
+        if (!row?.id) continue;
+        if (seen.has(row.id)) dup++;
+        else {
+          seen.add(row.id);
+          fresh++;
+        }
+      }
+      pageNum++;
+      pages.push({
+        page: pageNum,
+        fetched: rows.length,
+        new: fresh,
+        duplicates: dup,
+        has_cursor: !!resp?.cursor,
+      });
+
+      if (!resp?.cursor) {
+        stoppedReason = "no_cursor";
+        break;
+      }
+      if (rows.length < PAGE_SIZE) {
+        stoppedReason = "short_page";
+        break;
+      }
+      cursor = resp.cursor;
+    }
+    if (pageNum >= MAX_PAGES && stoppedReason === "completed") {
+      stoppedReason = "hit_max_pages_cap";
+    }
+  }
+
+  return {
+    smart_view: { id: smartViewId, name: sv?.name ?? null },
+    lead_endpoint: {
+      total_results: leadEndpointTotal,
+      error: leadEndpointError,
+      note: "Authoritative count matching Close UI sidebar",
+    },
+    data_search: {
+      unique_ids_returned: seen.size,
+      pages_fetched: pageNum,
+      stopped_reason: stoppedReason,
+      pages,
+    },
+    verdict:
+      leadEndpointTotal != null && seen.size > leadEndpointTotal
+        ? "data_search_returns_more_than_ui"
+        : leadEndpointTotal != null && seen.size < leadEndpointTotal
+          ? "data_search_returns_fewer"
+          : "match_or_unknown",
   };
 }
 
@@ -730,6 +900,34 @@ serve(async (req: Request) => {
       case "get_smart_views": {
         const apiKey = await getCallerApiKey(user.id);
         const result = await handleGetSmartViews(apiKey);
+        return jsonResponse(result, 200, req);
+      }
+
+      // ── debug_smart_view ──────────────────────────────────────────
+      // One-off diagnostic: returns the raw s_query for a smart view so we
+      // can confirm whether its object_type scope is being stripped. Safe to
+      // keep in place — it only exposes data the caller's own Close API key
+      // can already read.
+      case "debug_smart_view": {
+        const smartViewId = body.smart_view_id as string;
+        if (!smartViewId) {
+          return jsonResponse({ error: "smart_view_id is required" }, 400, req);
+        }
+        const apiKey = await getCallerApiKey(user.id);
+        const result = await handleDebugSmartView(apiKey, smartViewId);
+        return jsonResponse(result, 200, req);
+      }
+
+      // ── trace_preview ─────────────────────────────────────────────
+      // Exhaustive pagination trace: exhausts /data/search/ cursor-pagination
+      // and compares to /lead/?saved_search_id= (the UI's source of truth).
+      case "trace_preview": {
+        const smartViewId = body.smart_view_id as string;
+        if (!smartViewId) {
+          return jsonResponse({ error: "smart_view_id is required" }, 400, req);
+        }
+        const apiKey = await getCallerApiKey(user.id);
+        const result = await handleTracePreview(apiKey, smartViewId);
         return jsonResponse(result, 200, req);
       }
 

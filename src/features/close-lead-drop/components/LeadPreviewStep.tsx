@@ -64,6 +64,11 @@ export function LeadPreviewStep({
   const hasMore = data?.has_more ?? false;
   const nextCursor = data?.cursor ?? null;
   const loadedOnce = !!data;
+  // Close returns total_results for most /data/search/ responses. When it's
+  // null we fall back to just "Showing N" — the Load more pill still guards
+  // against over-fetching via the has_more flag from the backend.
+  const totalFromApi = data?.total ?? null;
+  const overLoaded = totalFromApi != null && allLeads.length > totalFromApi;
 
   return (
     <div className="space-y-3">
@@ -201,11 +206,21 @@ export function LeadPreviewStep({
             </tbody>
           </table>
 
-          {hasMore && (
-            <div className="border-t px-3 py-2 flex items-center justify-between bg-muted/30">
-              <span className="text-xs text-muted-foreground">
-                Showing {allLeads.length} leads — more available
-              </span>
+          <div className="border-t px-3 py-2 flex items-center justify-between bg-muted/30">
+            <span
+              className={[
+                "text-xs",
+                overLoaded ? "text-amber-600" : "text-muted-foreground",
+              ].join(" ")}
+            >
+              {totalFromApi != null
+                ? `Showing ${allLeads.length} of ${totalFromApi}`
+                : `Showing ${allLeads.length} leads`}
+              {hasMore && " — more available"}
+              {overLoaded &&
+                " — Close returned more leads than the smart view advertises"}
+            </span>
+            {hasMore && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -219,8 +234,8 @@ export function LeadPreviewStep({
                   "Load more"
                 )}
               </Button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
 
