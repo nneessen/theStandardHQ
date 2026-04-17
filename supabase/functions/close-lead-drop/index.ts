@@ -463,51 +463,90 @@ async function handleGetSmartViews(apiKey: string): Promise<unknown> {
 async function handlePreviewLeads(
   apiKey: string,
   smartViewId: string,
-  cursor: string | null,
-  limit: number,
+  _cursor: string | null,
+  _limit: number,
 ): Promise<unknown> {
-  // Uses GET /lead/?saved_search_id= — the same endpoint the Close UI calls
-  // for its sidebar count. Earlier versions used POST /data/search/ with the
-  // smart view's `s_query`, but tracing (see trace_preview) proved cursor
-  // pagination there was unstable on smart views with `sort: []` — pages
-  // 5-7 returned overlapping windows AND the walk terminated at ~600 leads
-  // when the real total was 7,473. /lead/ is stable because it paginates by
-  // _skip and exposes `total_results`.
+  // Exhaustive, server-side pagination. We use POST /data/search/ with the
+  // smart view's s_query — the only endpoint that honors the filter (we
+  // tried /lead/?saved_search_id= and Close silently ignores that param,
+  // returning the whole org). The critical piece is forwarding s_query.sort
+  // so Close's cursor pagination is stable — without a stable sort, the
+  // cursor returns overlapping windows and we see duplicate IDs across
+  // pages. When the smart view has an empty sort, we inject a default
+  // (date_created desc) to stabilize pagination.
   //
-  // `cursor` is a stringified _skip offset so the frontend contract is
-  // unchanged — state still advances by reading `data.cursor` and sending
-  // it back on the next request.
-  const skip = cursor ? parseInt(cursor, 10) : 0;
-  if (!Number.isFinite(skip) || skip < 0) {
-    throw Object.assign(new Error("Invalid cursor"), { status: 400 });
+  // Auto-paginates up to MAX_LEADS_PER_DROP so the UI gets one consistent
+  // result list instead of a "Load more" button. Anything past that cap
+  // can't be dropped anyway.
+  const sv = await closeGet<{
+    id: string;
+    name: string;
+    s_query?: unknown;
+  }>(apiKey, `/saved_search/${smartViewId}/`);
+
+  const searchQuery = resolveSmartViewQuery(sv?.s_query);
+  if (!searchQuery) {
+    return { leads: [], has_more: false, cursor: null, total: 0 };
   }
 
-  const qs = new URLSearchParams({
-    saved_search_id: smartViewId,
-    _skip: String(skip),
-    _limit: String(limit),
-    _fields: "id,display_name,status_label,contacts",
-  });
+  // Pull sort from s_query if present. Empty arrays aren't a stable sort
+  // (Close falls back to relevance/score), so we inject date_created desc.
+  const rawSort = (sv?.s_query as { sort?: unknown } | undefined)?.sort;
+  const hasExplicitSort = Array.isArray(rawSort) && rawSort.length > 0;
+  const sort: unknown = hasExplicitSort
+    ? rawSort
+    : [
+        {
+          direction: "desc",
+          field: {
+            field_name: "date_created",
+            object_type: "lead",
+            type: "regular_field",
+          },
+        },
+      ];
 
-  const resp = await closeGet<{
-    data: LeadPreview[];
-    total_results?: number | null;
-    has_more?: boolean;
-  }>(apiKey, `/lead/?${qs.toString()}`);
+  const PAGE_SIZE = 100;
+  const MAX_PAGES = Math.ceil(MAX_LEADS_PER_DROP / PAGE_SIZE) + 2; // small headroom
+  const seen = new Map<string, LeadPreview>();
+  let cursor: string | undefined;
+  let pagesFetched = 0;
+  let truncated = false;
+  let rawTotalFetched = 0;
 
-  const rawLeads = resp?.data ?? [];
-  // Defense-in-depth: /lead/ should only return leads, but if Close ever
-  // returns anything else we drop it rather than shipping it to the recipient.
-  const leads = rawLeads.filter(
-    (l) => typeof l.id === "string" && l.id.startsWith("lead_"),
-  );
-  const total = resp?.total_results ?? null;
-  const nextSkip = skip + rawLeads.length;
-  // Trust Close's own has_more when present; fall back to skip < total.
-  // Final guard: a short page means we've hit the tail even if Close lies.
-  const hasMore =
-    rawLeads.length >= limit &&
-    (resp?.has_more === true || (total != null && nextSkip < total));
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const body: Record<string, unknown> = {
+      _limit: PAGE_SIZE,
+      query: searchQuery,
+      sort,
+      _fields: { lead: ["id", "display_name", "status_label", "contacts"] },
+    };
+    if (cursor) body.cursor = cursor;
+
+    const resp = await closePost<{
+      data: LeadPreview[];
+      cursor?: string;
+    }>(apiKey, "/data/search/", body);
+
+    const rows = resp?.data ?? [];
+    rawTotalFetched += rows.length;
+    pagesFetched++;
+
+    for (const row of rows) {
+      if (!row?.id || !row.id.startsWith("lead_")) continue;
+      if (!seen.has(row.id)) seen.set(row.id, row);
+    }
+
+    if (seen.size >= MAX_LEADS_PER_DROP) {
+      truncated = true;
+      break;
+    }
+    if (!resp?.cursor) break;
+    if (rows.length < PAGE_SIZE) break;
+    cursor = resp.cursor;
+  }
+
+  const leads = Array.from(seen.values()).slice(0, MAX_LEADS_PER_DROP);
 
   return {
     leads: leads.map((l) => ({
@@ -517,9 +556,18 @@ async function handlePreviewLeads(
       primary_email: l.contacts?.[0]?.emails?.[0]?.email ?? null,
       primary_phone: l.contacts?.[0]?.phones?.[0]?.phone ?? null,
     })),
-    has_more: hasMore,
-    cursor: hasMore ? String(nextSkip) : null,
-    total,
+    // Frontend no longer paginates — `has_more` stays false and `cursor`
+    // is always null. `total` is the unique lead count we actually found.
+    has_more: false,
+    cursor: null,
+    total: leads.length,
+    // Diagnostic metadata. `raw_fetched` is the sum of API rows (including
+    // cursor duplicates). If raw_fetched > total, Close returned duplicates
+    // that we deduped. `truncated` is true when the view has more than
+    // MAX_LEADS_PER_DROP matches and we stopped early.
+    raw_fetched: rawTotalFetched,
+    pages_fetched: pagesFetched,
+    truncated,
   };
 }
 

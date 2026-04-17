@@ -1,6 +1,6 @@
 // Step 2: Preview leads from the selected Smart View and deselect any to exclude.
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   ChevronRight,
   ChevronLeft,
@@ -37,19 +37,14 @@ export function LeadPreviewStep({
   onNext,
   onBack,
 }: LeadPreviewStepProps) {
-  // Close /data/search/ is cursor-based. We track the cursor requested for
-  // the CURRENT page and the next cursor the API returned (for "Load more").
-  const [activeCursor, setActiveCursor] = useState<string | null>(null);
-
+  // Backend auto-paginates and returns the full deduplicated list in a
+  // single call, so there's no per-page state here.
   const { data, isLoading, error } = useLeadDropPreview(
     smartView.id,
-    activeCursor,
+    null,
     true,
   );
 
-  // Merge newly loaded leads into parent state whenever a page arrives.
-  // Using `data` itself as the sole dep is intentional — `onLeadsLoaded`
-  // should not trigger re-merges when its identity changes.
   useEffect(() => {
     if (data) {
       onLeadsLoaded(data.leads);
@@ -61,14 +56,8 @@ export function LeadPreviewStep({
     allLeads.length > 0 && allLeads.every((l) => selectedIds.has(l.id));
   const someSelected = allLeads.some((l) => selectedIds.has(l.id));
   const selectedCount = selectedIds.size;
-  const hasMore = data?.has_more ?? false;
-  const nextCursor = data?.cursor ?? null;
   const loadedOnce = !!data;
-  // Close returns total_results for most /data/search/ responses. When it's
-  // null we fall back to just "Showing N" — the Load more pill still guards
-  // against over-fetching via the has_more flag from the backend.
-  const totalFromApi = data?.total ?? null;
-  const overLoaded = totalFromApi != null && allLeads.length > totalFromApi;
+  const truncated = (data as { truncated?: boolean } | undefined)?.truncated;
 
   return (
     <div className="space-y-3">
@@ -206,35 +195,17 @@ export function LeadPreviewStep({
             </tbody>
           </table>
 
-          <div className="border-t px-3 py-2 flex items-center justify-between bg-muted/30">
+          <div className="border-t px-3 py-2 bg-muted/30">
             <span
               className={[
                 "text-xs",
-                overLoaded ? "text-amber-600" : "text-muted-foreground",
+                truncated ? "text-amber-600" : "text-muted-foreground",
               ].join(" ")}
             >
-              {totalFromApi != null
-                ? `Showing ${allLeads.length} of ${totalFromApi}`
-                : `Showing ${allLeads.length} leads`}
-              {hasMore && " — more available"}
-              {overLoaded &&
-                " — Close returned more leads than the smart view advertises"}
+              {truncated
+                ? `Showing first ${allLeads.length} leads — smart view is larger than the 500-lead drop cap. Narrow it in Close first.`
+                : `${allLeads.length} leads`}
             </span>
-            {hasMore && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs h-7"
-                onClick={() => nextCursor && setActiveCursor(nextCursor)}
-                disabled={isLoading || !nextCursor}
-              >
-                {isLoading ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  "Load more"
-                )}
-              </Button>
-            )}
           </div>
         </div>
       )}
