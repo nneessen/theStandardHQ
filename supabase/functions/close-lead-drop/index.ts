@@ -30,7 +30,7 @@ import {
   SupabaseClient,
 } from "https://esm.sh/@supabase/supabase-js@2.47.10";
 import { decrypt } from "../_shared/encryption.ts";
-import { closeGet, closePost } from "./close/client.ts";
+import { closeDelete, closeGet, closePost } from "./close/client.ts";
 
 // ─── CORS ──────────────────────────────────────────────────────────────────
 
@@ -394,8 +394,14 @@ async function processDropJob(opts: {
     }
 
     // 5. Create Smart View in recipient's CRM
+    //
+    // Close's POST /saved_search/ wants `s_query: { query: {...} }` — NOT
+    // `query` at the top level. Inner queries must be `type: "field_condition"`
+    // with a nested `condition` object. Reference: close-ai-smart-view/index.ts
+    // and the shape of an existing saved_search pulled via GET.
     let recipientSmartViewId: string | null = null;
     let recipientSmartViewName: string | null = null;
+    let recipientSmartViewError: string | null = null;
 
     if (leadSourceFieldId) {
       try {
@@ -405,30 +411,43 @@ async function processDropJob(opts: {
           "/saved_search/",
           {
             name: svName,
-            query: {
-              type: "and",
-              queries: [
-                {
-                  type: "text",
-                  field: {
-                    type: "custom_field",
-                    custom_field_id: leadSourceFieldId,
+            s_query: {
+              query: {
+                type: "and",
+                queries: [
+                  { type: "object_type", object_type: "lead" },
+                  {
+                    type: "field_condition",
+                    field: {
+                      type: "custom_field",
+                      custom_field_id: leadSourceFieldId,
+                    },
+                    condition: {
+                      type: "text",
+                      mode: "exact_value",
+                      value: opts.leadSourceLabel,
+                    },
+                    negate: false,
                   },
-                  query: opts.leadSourceLabel,
-                },
-              ],
+                ],
+              },
             },
           },
         );
         recipientSmartViewId = sv.id;
         recipientSmartViewName = svName;
       } catch (svErr) {
+        const msg = (svErr as Error).message?.slice(0, 500) ?? "unknown";
+        recipientSmartViewError = msg;
         console.warn(
           "[lead-drop] Failed to create Smart View in recipient's CRM:",
-          (svErr as Error).message,
+          msg,
         );
         // Non-fatal: leads were still created
       }
+    } else {
+      recipientSmartViewError =
+        "lead_source custom field not found in recipient's CRM";
     }
 
     // 6. Mark job complete
@@ -438,6 +457,10 @@ async function processDropJob(opts: {
         status: "completed",
         recipient_smart_view_id: recipientSmartViewId,
         recipient_smart_view_name: recipientSmartViewName,
+        // Surface smart view creation failures via error_message so the
+        // results screen can show them. The job itself didn't fail (leads
+        // were created), but the user should know the Smart View wasn't.
+        error_message: recipientSmartViewError,
         completed_at: new Date().toISOString(),
       })
       .eq("id", opts.jobId);
@@ -964,6 +987,91 @@ serve(async (req: Request) => {
         const apiKey = await getCallerApiKey(user.id);
         const result = await handleDebugSmartView(apiKey, smartViewId);
         return jsonResponse(result, 200, req);
+      }
+
+      // ── test_create_saved_search ─────────────────────────────────
+      // Creates a saved_search in the CALLER'S own Close with the same
+      // payload processDropJob uses. Verifies the query shape is valid
+      // without doing a real drop. Returns the saved_search (caller can
+      // delete via Close UI or via ?delete=1 on next call).
+      case "test_create_saved_search": {
+        const label = (body.label as string) ?? "TEST_LEADDROP_DELETE_ME";
+        const apiKey = await getCallerApiKey(user.id);
+        // Find lead_source custom field in caller's CRM
+        const cfResp = await closeGet<{ data: CloseCustomField[] }>(
+          apiKey,
+          "/custom_field/lead/?_limit=100",
+        );
+        const sourceField = (cfResp?.data ?? []).find(
+          (f) => f.name.toLowerCase().replace(/[\s_-]/g, "") === "leadsource",
+        );
+        if (!sourceField) {
+          return jsonResponse(
+            { error: "No 'lead_source' custom field in caller's CRM" },
+            400,
+            req,
+          );
+        }
+        try {
+          const sv = await closePost<{ id: string; name: string }>(
+            apiKey,
+            "/saved_search/",
+            {
+              name: `TEST Lead Drop — ${label} (safe to delete)`,
+              s_query: {
+                query: {
+                  type: "and",
+                  queries: [
+                    { type: "object_type", object_type: "lead" },
+                    {
+                      type: "field_condition",
+                      field: {
+                        type: "custom_field",
+                        custom_field_id: sourceField.id,
+                      },
+                      condition: {
+                        type: "text",
+                        mode: "exact_value",
+                        value: label,
+                      },
+                      negate: false,
+                    },
+                  ],
+                },
+              },
+            },
+          );
+          // Clean up immediately
+          try {
+            await closeDelete(apiKey, `/saved_search/${sv.id}/`);
+          } catch {
+            // leave dangling test view
+          }
+          return jsonResponse(
+            {
+              ok: true,
+              created_id: sv.id,
+              created_name: sv.name,
+              custom_field_id: sourceField.id,
+              cleaned_up: true,
+            },
+            200,
+            req,
+          );
+        } catch (err) {
+          const e = err as Error & { body?: unknown; status?: number };
+          return jsonResponse(
+            {
+              ok: false,
+              status: e.status ?? 500,
+              message: e.message,
+              close_error_body: e.body ?? null,
+              custom_field_id: sourceField.id,
+            },
+            200,
+            req,
+          );
+        }
       }
 
       // ── trace_preview ─────────────────────────────────────────────
