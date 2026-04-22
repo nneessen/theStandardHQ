@@ -3967,63 +3967,6 @@ export type Database = {
           },
         ];
       };
-      feature_spotlights: {
-        Row: {
-          accent_color: string;
-          created_at: string;
-          created_by: string | null;
-          cta_link: string;
-          cta_text: string;
-          description: string | null;
-          hero_icon: string;
-          highlights: Json;
-          id: string;
-          is_active: boolean;
-          logos: Json;
-          priority: number;
-          subtitle: string | null;
-          target_audience: string;
-          title: string;
-          updated_at: string;
-        };
-        Insert: {
-          accent_color?: string;
-          created_at?: string;
-          created_by?: string | null;
-          cta_link?: string;
-          cta_text?: string;
-          description?: string | null;
-          hero_icon?: string;
-          highlights?: Json;
-          id?: string;
-          is_active?: boolean;
-          logos?: Json;
-          priority?: number;
-          subtitle?: string | null;
-          target_audience?: string;
-          title: string;
-          updated_at?: string;
-        };
-        Update: {
-          accent_color?: string;
-          created_at?: string;
-          created_by?: string | null;
-          cta_link?: string;
-          cta_text?: string;
-          description?: string | null;
-          hero_icon?: string;
-          highlights?: Json;
-          id?: string;
-          is_active?: boolean;
-          logos?: Json;
-          priority?: number;
-          subtitle?: string | null;
-          target_audience?: string;
-          title?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
       global_expense_categories: {
         Row: {
           category_type: string;
@@ -13377,35 +13320,6 @@ export type Database = {
             columns: ["imo_id"];
             isOneToOne: false;
             referencedRelation: "imos";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      user_spotlight_views: {
-        Row: {
-          id: string;
-          spotlight_id: string;
-          user_id: string;
-          viewed_at: string;
-        };
-        Insert: {
-          id?: string;
-          spotlight_id: string;
-          user_id: string;
-          viewed_at?: string;
-        };
-        Update: {
-          id?: string;
-          spotlight_id?: string;
-          user_id?: string;
-          viewed_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "user_spotlight_views_spotlight_id_fkey";
-            columns: ["spotlight_id"];
-            isOneToOne: false;
-            referencedRelation: "feature_spotlights";
             referencedColumns: ["id"];
           },
         ];

@@ -9,7 +9,6 @@ import {
   Check,
   Package,
   Clock,
-  Sparkles,
 } from "lucide-react";
 import * as Collapsible from "@radix-ui/react-collapsible";
 import { cn } from "@/lib/utils";
@@ -17,13 +16,12 @@ import { PlansOverview } from "./PlansOverview";
 import { FeatureAssignmentMatrix } from "./FeatureAssignmentMatrix";
 import { AddonsManagementPanel } from "./AddonsManagementPanel";
 import { TemporaryAccessSettings } from "./TemporaryAccessSettings";
-import { SpotlightManager } from "./SpotlightManager";
 import {
   useAdminSubscriptionPlans,
   useAdminSubscriptionAddons,
 } from "@/hooks/admin";
 
-type AdminTab = "plans" | "features" | "addons" | "access" | "spotlights";
+type AdminTab = "plans" | "features" | "addons" | "access";
 
 export function AdminBillingPanel() {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,7 +37,6 @@ export function AdminBillingPanel() {
     { id: "features", label: "Features", icon: Check },
     { id: "addons", label: "Add-ons", icon: Package },
     { id: "access", label: "Temp Access", icon: Clock },
-    { id: "spotlights", label: "Spotlights", icon: Sparkles },
   ];
 
   return (
@@ -101,8 +98,6 @@ export function AdminBillingPanel() {
               )}
 
               {activeTab === "access" && <TemporaryAccessSettings />}
-
-              {activeTab === "spotlights" && <SpotlightManager />}
             </div>
           </div>
         </Collapsible.Content>

@@ -3,4 +3,3 @@
 export { FeatureGate, FeatureButtonGate, withFeatureGate } from "./FeatureGate";
 export { UpgradePrompt, UpgradePromptCompact } from "./UpgradePrompt";
 export { AnalyticsSectionGate } from "./AnalyticsSectionGate";
-export { FeatureSpotlightDialog } from "./FeatureSpotlightDialog";
