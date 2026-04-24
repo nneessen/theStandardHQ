@@ -261,30 +261,3 @@ export function policyRowToPolicy(
     leadSourceType: row.lead_source_type,
   };
 }
-
-/**
- * Transform app-level data to database insert
- */
-export function createPolicyDataToInsert(data: CreatePolicyData): PolicyInsert {
-  return {
-    policy_number: data.policyNumber,
-    client_id: data.clientId,
-    carrier_id: data.carrierId,
-    product_id: data.productId,
-    user_id: data.userId,
-    product: data.product,
-    submit_date: data.submitDate
-      ? data.submitDate.toISOString().split("T")[0]
-      : data.effectiveDate.toISOString().split("T")[0],
-    effective_date: data.effectiveDate.toISOString().split("T")[0],
-    term_length: data.termLength,
-    expiration_date: data.expirationDate?.toISOString().split("T")[0],
-    annual_premium: data.annualPremium,
-    monthly_premium: data.monthlyPremium,
-    payment_frequency: data.paymentFrequency as PaymentFrequencyDB,
-    commission_percentage: data.commissionPercentage,
-    notes: data.notes,
-    status: data.status || "pending",
-    lifecycle_status: data.lifecycleStatus || null,
-  };
-}

@@ -1196,8 +1196,13 @@ export class PolicyRepository extends BaseRepository<
     if (data.policyNumber !== undefined)
       dbData.policy_number = data.policyNumber;
     if (data.status !== undefined) dbData.status = data.status;
-    if (data.lifecycleStatus !== undefined)
+    if (data.lifecycleStatus !== undefined) {
       dbData.lifecycle_status = data.lifecycleStatus;
+    } else if (!_isUpdate && data.status === "approved") {
+      // Invariant: approved policies must have a lifecycle_status.
+      // Defend against forms / callers that omit it on create.
+      dbData.lifecycle_status = "active";
+    }
     if (data.clientId !== undefined) dbData.client_id = data.clientId; // Use client_id foreign key
     if (data.carrierId !== undefined) dbData.carrier_id = data.carrierId;
     if (data.productId !== undefined) dbData.product_id = data.productId; // NEW: Product ID field

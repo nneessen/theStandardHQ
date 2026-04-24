@@ -84,6 +84,7 @@ export function createInitialFormData(
       paymentFrequency: policy.paymentFrequency || "monthly",
       commissionPercentage: (policy.commissionPercentage || 0) * 100,
       status: policy.status || "pending",
+      lifecycleStatus: policy.lifecycleStatus ?? null,
       notes: policy.notes || "",
     };
   }
@@ -108,6 +109,7 @@ export function createInitialFormData(
     paymentFrequency: "monthly" as PaymentFrequency,
     commissionPercentage: 0,
     status: "pending" as PolicyStatus,
+    lifecycleStatus: null,
     notes: "",
   };
 }
@@ -244,6 +246,15 @@ export function usePolicyForm({
         setFormData((prev) => ({
           ...prev,
           termLength: value ? parseInt(value, 10) : undefined,
+        }));
+      } else if (name === "status") {
+        setFormData((prev) => ({
+          ...prev,
+          status: value as PolicyStatus,
+          lifecycleStatus:
+            value === "approved" && !prev.lifecycleStatus
+              ? "active"
+              : prev.lifecycleStatus,
         }));
       } else {
         setFormData((prev) => ({
