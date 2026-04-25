@@ -1,7 +1,7 @@
 // src/features/hierarchy/components/DownlinePerformance.tsx
 
-import React, { useState } from "react";
-import { Edit, Shield } from "lucide-react";
+import { useState } from "react";
+import { Edit, Shield, Trash2 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -37,6 +47,8 @@ import {
   useUpdateAgentHierarchy,
   useCurrentUserProfile,
 } from "@/hooks";
+
+import { useDeleteUser } from "@/hooks/admin";
 import { toast } from "sonner";
 import type {
   UserProfile,
@@ -174,10 +186,25 @@ export function DownlinePerformance({ className }: DownlinePerformanceProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedAgent, setSelectedAgent] = useState<UserProfile | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteAgent, setDeleteAgent] = useState<UserProfile | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const itemsPerPage = 50;
 
   // Check admin status from database profile
   const isAdmin = profile?.is_admin === true;
+
+  // An upline can delete a direct downline whose role is 'recruit' or 'agent'.
+  // Server enforces the same rule via RLS + admin_deleteuser RPC.
+  const canDeleteDownline = (target: UserProfile | undefined): boolean => {
+    if (!target || !profile?.id) return false;
+    if (isAdmin) return true;
+    const isDirectUpline =
+      target.upline_id === profile.id || target.recruiter_id === profile.id;
+    const targetRoles = target.roles ?? [];
+    const isDeletableRole =
+      targetRoles.includes("recruit") || targetRoles.includes("agent");
+    return isDirectUpline && isDeletableRole;
+  };
 
   // Filter by search term
   const filteredData =
@@ -196,6 +223,14 @@ export function DownlinePerformance({ className }: DownlinePerformanceProps) {
     if (agent) {
       setSelectedAgent(agent);
       setDialogOpen(true);
+    }
+  };
+
+  const handleDeleteAgent = (agentEmail: string) => {
+    const agent = downlines?.find((d) => d.email === agentEmail);
+    if (agent) {
+      setDeleteAgent(agent);
+      setDeleteDialogOpen(true);
     }
   };
 
@@ -283,16 +318,14 @@ export function DownlinePerformance({ className }: DownlinePerformanceProps) {
                   <TableHead className="text-right">Avg Premium</TableHead>
                   <TableHead className="text-right">Persistency</TableHead>
                   <TableHead className="text-right">Override Gen.</TableHead>
-                  {isAdmin && (
-                    <TableHead className="text-right">Actions</TableHead>
-                  )}
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedData.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={isAdmin ? 9 : 8}
+                      colSpan={9}
                       className="text-center text-muted-foreground"
                     >
                       No agents found
@@ -327,17 +360,37 @@ export function DownlinePerformance({ className }: DownlinePerformanceProps) {
                       <TableCell className="text-right">
                         {formatCurrency(agent.total_overrides_generated)}
                       </TableCell>
-                      {isAdmin && (
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditAgent(agent.agent_email)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      )}
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          {isAdmin && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditAgent(agent.agent_email)}
+                              aria-label="Edit hierarchy"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {canDeleteDownline(
+                            downlines?.find(
+                              (d) => d.email === agent.agent_email,
+                            ),
+                          ) && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                handleDeleteAgent(agent.agent_email)
+                              }
+                              aria-label="Delete agent"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -381,6 +434,76 @@ export function DownlinePerformance({ className }: DownlinePerformanceProps) {
           onSave={handleSaveHierarchy}
         />
       )}
+
+      <DeleteAgentDialog
+        agent={deleteAgent}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+      />
     </div>
+  );
+}
+
+interface DeleteAgentDialogProps {
+  agent: UserProfile | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+function DeleteAgentDialog({
+  agent,
+  open,
+  onOpenChange,
+}: DeleteAgentDialogProps) {
+  const deleteUser = useDeleteUser();
+
+  const handleDelete = async () => {
+    if (!agent) return;
+    try {
+      await deleteUser.mutateAsync(agent.id);
+      const name =
+        [agent.first_name, agent.last_name].filter(Boolean).join(" ") ||
+        agent.email;
+      toast.success(`${name} has been removed from your team.`);
+      onOpenChange(false);
+    } catch (error) {
+      console.error("[DownlinePerformance] Delete agent failed:", error);
+      const message =
+        error instanceof Error ? error.message : "Please try again.";
+      toast.error(`Failed to delete agent: ${message}`);
+    }
+  };
+
+  const displayName =
+    agent &&
+    ([agent.first_name, agent.last_name].filter(Boolean).join(" ") ||
+      agent.email);
+
+  return (
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete agent?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This permanently removes{" "}
+            <span className="font-semibold">{displayName}</span> and all of
+            their commissions, policies, training progress, and account access.
+            This action cannot be undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={deleteUser.isPending}>
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-red-600 hover:bg-red-700 text-white"
+            onClick={handleDelete}
+            disabled={deleteUser.isPending}
+          >
+            {deleteUser.isPending ? "Deleting..." : "Delete"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
