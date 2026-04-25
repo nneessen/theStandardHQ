@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ChevronRight,
   ChevronDown,
@@ -478,6 +479,7 @@ export function AgentTable({
     null,
   );
   const deleteUser = useDeleteUser();
+  const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -611,6 +613,11 @@ export function AgentTable({
         [agentToDelete.first_name, agentToDelete.last_name]
           .filter(Boolean)
           .join(" ") || agentToDelete.email;
+      // useDeleteUser only invalidates hierarchy queries whose key contains
+      // the deleted user's id. useMyDownlines is keyed off "me", so it's not
+      // matched — invalidate the whole hierarchy family explicitly here so
+      // the row disappears from the table without a page refresh.
+      queryClient.invalidateQueries({ queryKey: ["hierarchy"] });
       toast.success(`${name} has been permanently deleted.`);
       setAgentToDelete(null);
       onRefresh?.();
