@@ -52,6 +52,7 @@ import { policyRepository } from "@/services/policies";
 // eslint-disable-next-line no-restricted-imports
 import type { PolicyMetricRow } from "@/services/policies";
 import { useCurrentUserProfile, useDeleteUser } from "@/hooks/admin";
+import { EditAgentModal } from "./EditAgentModal";
 
 interface AgentWithMetrics extends UserProfile {
   // Real calculated metrics
@@ -202,7 +203,8 @@ function AgentRow({
   uplineContractLevel,
   onRemove,
   onDelete,
-  canDelete,
+  onEdit,
+  canModify,
   metrics,
   isOwner,
 }: {
@@ -214,7 +216,8 @@ function AgentRow({
   uplineContractLevel: number | null;
   onRemove: (agent: AgentWithMetrics) => void;
   onDelete: (agent: AgentWithMetrics) => void;
-  canDelete: boolean;
+  onEdit: (agent: AgentWithMetrics) => void;
+  canModify: boolean;
   metrics?: AgentMetrics;
   isOwner?: boolean;
 }) {
@@ -285,8 +288,7 @@ function AgentRow({
   };
 
   const handleEditAgent = () => {
-    // Will implement edit modal
-    toast.success("Edit functionality coming soon");
+    onEdit(agent);
   };
 
   const handleSendMessage = () => {
@@ -426,10 +428,15 @@ function AgentRow({
               <Eye className="mr-1.5 h-3 w-3" />
               View Details
             </DropdownMenuItem>
-            <DropdownMenuItem className="text-[11px]" onClick={handleEditAgent}>
-              <Edit className="mr-1.5 h-3 w-3" />
-              Edit Agent
-            </DropdownMenuItem>
+            {canModify && (
+              <DropdownMenuItem
+                className="text-[11px]"
+                onClick={handleEditAgent}
+              >
+                <Edit className="mr-1.5 h-3 w-3" />
+                Edit Agent
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="text-[11px]"
@@ -447,7 +454,7 @@ function AgentRow({
                 Remove from Team
               </DropdownMenuItem>
             )}
-            {canDelete && (
+            {canModify && (
               <DropdownMenuItem
                 className="text-destructive text-[11px]"
                 onClick={() => onDelete(agent)}
@@ -478,6 +485,7 @@ export function AgentTable({
   const [agentToDelete, setAgentToDelete] = useState<AgentWithMetrics | null>(
     null,
   );
+  const [agentToEdit, setAgentToEdit] = useState<AgentWithMetrics | null>(null);
   const deleteUser = useDeleteUser();
   const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
@@ -630,18 +638,19 @@ export function AgentTable({
   };
 
   // Direct upline/recruiter of a recruit-or-agent target. Server enforces the
-  // same rule via RLS + admin_deleteuser RPC.
+  // same rule via RLS (UPDATE + DELETE policies) + admin_deleteuser RPC.
+  // Used to gate both Edit and Delete actions in the row dropdown.
   const isAdmin = currentUserProfile?.is_admin === true;
-  const canDeleteAgent = (agent: AgentWithMetrics): boolean => {
+  const canModifyAgent = (agent: AgentWithMetrics): boolean => {
     if (!viewerId) return false;
     if (agent.id === viewerId) return false;
     if (isAdmin) return true;
     const isDirectUpline =
       agent.upline_id === viewerId || agent.recruiter_id === viewerId;
     const targetRoles = agent.roles ?? [];
-    const isDeletableRole =
+    const isModifiableRole =
       targetRoles.includes("recruit") || targetRoles.includes("agent");
-    return isDirectUpline && isDeletableRole;
+    return isDirectUpline && isModifiableRole;
   };
 
   // Pagination calculations
@@ -689,7 +698,8 @@ export function AgentTable({
           uplineContractLevel={parentContractLevel}
           onRemove={setAgentToRemove}
           onDelete={setAgentToDelete}
-          canDelete={canDeleteAgent(agent)}
+          onEdit={setAgentToEdit}
+          canModify={canModifyAgent(agent)}
           metrics={metricsMap.get(agent.id)}
           isOwner={agent.id === viewerId}
         />,
@@ -776,7 +786,8 @@ export function AgentTable({
                       uplineContractLevel={null}
                       onRemove={() => {}}
                       onDelete={() => {}}
-                      canDelete={false}
+                      onEdit={() => {}}
+                      canModify={false}
                       metrics={metricsMap.get(owner.id)}
                       isOwner={true}
                     />
@@ -873,6 +884,13 @@ export function AgentTable({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Agent Modal */}
+      <EditAgentModal
+        agent={agentToEdit}
+        isOpen={!!agentToEdit}
+        onClose={() => setAgentToEdit(null)}
+      />
 
       {/* Delete Agent Permanently Confirmation Dialog */}
       <AlertDialog
