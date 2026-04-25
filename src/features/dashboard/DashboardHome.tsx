@@ -1,4 +1,11 @@
 // src/features/dashboard/DashboardHome.tsx
+//
+// Editorial dashboard. Drops bordered-card-per-section in favor of a
+// publication-style layout: typography, hairline rules, generous whitespace.
+//
+//   Masthead → HeroSummary → SecondaryMetricsRow → PaceLines
+//      → EditorialAlertsActions → DetailsSection
+//      → Org / Team (legacy)
 
 import React, { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
@@ -17,32 +24,33 @@ import { useChargebackSummary } from "../../hooks/commissions/useChargebackSumma
 import { useAuth } from "../../contexts/AuthContext";
 import { useDashboardFeatures } from "../../hooks/dashboard";
 import { TimePeriod } from "../../utils/dateRange";
+import type { DateRange } from "../../utils/dateRange";
 import { toast } from "sonner";
 import type { CreateExpenseData } from "../../types/expense.types";
 import type { NewPolicyForm } from "../../types/policy.types";
 import { transformFormToCreateData } from "../policies/utils/policyFormTransformer";
+import { formatCurrency } from "@/lib/format";
 
-// Components
-import { TimePeriodSwitcher } from "./components/TimePeriodSwitcher";
-import { PeriodNavigator } from "./components/PeriodNavigator";
-import { DateRangeDisplay } from "./components/DateRangeDisplay";
-import { QuickStatsPanel } from "./components/QuickStatsPanel";
-import { PerformanceOverviewCard } from "./components/PerformanceOverviewCard";
-import { AlertsPanel } from "./components/AlertsPanel";
-import { QuickActionsPanel } from "./components/QuickActionsPanel";
-import { KPIGridHeatmap } from "./components/KPIGridHeatmap";
+// New editorial components
+import { Masthead } from "./components/Masthead";
+import { HeroSummary } from "./components/HeroSummary";
+import {
+  SecondaryMetricsRow,
+  type SecondaryMetric,
+} from "./components/SecondaryMetricsRow";
+import { PaceLines, type PaceLine } from "./components/PaceLines";
+import { EditorialAlertsActions } from "./components/EditorialAlertsActions";
+import { DetailsSection } from "./components/DetailsSection";
+import { OrgMetricsSection } from "./components/OrgMetricsSection";
+import { TeamRecruitingSection } from "./components/TeamRecruitingSection";
+
+// Dialogs
 import { ExpenseDialogCompact as ExpenseDialog } from "../expenses/components/ExpenseDialogCompact";
 import { PolicyDialog } from "../policies/components/PolicyDialog";
-import { OrgMetricsSection } from "./components/OrgMetricsSection";
 
 // Configuration
-import { generateStatsConfig } from "./config/statsConfig";
-import { generateMetricsConfig } from "./config/metricsConfig";
 import { generateKPIConfig } from "./config/kpiConfig";
 import { generateAlertsConfig } from "./config/alertsConfig";
-
-// Components
-import { TeamRecruitingSection } from "./components/TeamRecruitingSection";
 
 // Utils
 import {
@@ -54,6 +62,97 @@ import {
 import { useCreateOrFindClient } from "@/hooks/clients";
 import { ValidationError } from "@/errors/ServiceErrors";
 
+/**
+ * Compute calendar-aware "where we are in the period." For MTD/monthly,
+ * uses the actual day-in-month against days-in-month — so day 25 of April
+ * reads as 83%. For weekly/yearly/daily, falls back to dateRange-based
+ * elapsed time.
+ */
+function periodElapsed(
+  period: TimePeriod,
+  dateRange: DateRange,
+  periodOffset: number,
+): { pct: number; daysElapsed: number; daysTotal: number } {
+  const now = new Date();
+  const start = dateRange.startDate;
+
+  if (period === "MTD" || period === "monthly") {
+    const totalDays = new Date(
+      start.getFullYear(),
+      start.getMonth() + 1,
+      0,
+    ).getDate();
+    if (periodOffset === 0) {
+      const elapsed = Math.min(now.getDate(), totalDays);
+      return {
+        pct: elapsed / totalDays,
+        daysElapsed: elapsed,
+        daysTotal: totalDays,
+      };
+    }
+    return { pct: 1, daysElapsed: totalDays, daysTotal: totalDays };
+  }
+
+  if (period === "yearly") {
+    const startOfYear = new Date(start.getFullYear(), 0, 1);
+    const endOfYear = new Date(start.getFullYear(), 11, 31, 23, 59, 59, 999);
+    const totalDays =
+      Math.round((endOfYear.getTime() - startOfYear.getTime()) / 86_400_000) +
+      1;
+    if (periodOffset === 0) {
+      const elapsedDays =
+        Math.floor((now.getTime() - startOfYear.getTime()) / 86_400_000) + 1;
+      const clamped = Math.max(1, Math.min(totalDays, elapsedDays));
+      return {
+        pct: clamped / totalDays,
+        daysElapsed: clamped,
+        daysTotal: totalDays,
+      };
+    }
+    return { pct: 1, daysElapsed: totalDays, daysTotal: totalDays };
+  }
+
+  if (period === "weekly") {
+    if (periodOffset === 0) {
+      const dow = now.getDay() === 0 ? 7 : now.getDay();
+      return { pct: dow / 7, daysElapsed: dow, daysTotal: 7 };
+    }
+    return { pct: 1, daysElapsed: 7, daysTotal: 7 };
+  }
+
+  // daily — period is just one day; treat as fully elapsed.
+  return { pct: 1, daysElapsed: 1, daysTotal: 1 };
+}
+
+/** Format the masthead title from the period and dateRange. */
+function periodTitle(period: TimePeriod, dr: DateRange): string {
+  const start = dr.startDate;
+  const end = dr.endDate;
+  if (period === "daily") {
+    return start.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
+  if (period === "weekly") {
+    const sameMonth = start.getMonth() === end.getMonth();
+    const startStr = start.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+    const endStr = sameMonth
+      ? end.toLocaleDateString("en-US", { day: "numeric" })
+      : end.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return `${startStr} – ${endStr}`;
+  }
+  if (period === "yearly") {
+    return String(start.getFullYear());
+  }
+  // MTD / monthly
+  return start.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+}
+
 export const DashboardHome: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -64,17 +163,15 @@ export const DashboardHome: React.FC = () => {
   const [activeDialog, setActiveDialog] = useState<"policy" | "expense" | null>(
     null,
   );
+  const [policyFormErrors, setPolicyFormErrors] = useState<
+    Record<string, string>
+  >({});
 
-  // Field-level validation errors from service layer (e.g., duplicate policy number)
-  const [policyFormErrors, setPolicyFormErrors] = useState<Record<string, string>>({});
-
-  // Handler to change time period and reset offset to current period
   const handleTimePeriodChange = (newPeriod: TimePeriod) => {
     setTimePeriod(newPeriod);
-    setPeriodOffset(0); // Reset to current period when granularity changes
+    setPeriodOffset(0);
   };
 
-  // Fetch metrics for the selected time period (no scaling needed)
   const {
     periodCommissions,
     periodExpenses,
@@ -86,7 +183,7 @@ export const DashboardHome: React.FC = () => {
   } = useMetricsWithDateRange({
     timePeriod,
     periodOffset,
-    targetAvgPremium: constants?.avgAP || 1500, // Use user's target avg premium
+    targetAvgPremium: constants?.avgAP || 1500,
   });
 
   const createExpense = useCreateExpense();
@@ -94,16 +191,12 @@ export const DashboardHome: React.FC = () => {
   const createOrFindClient = useCreateOrFindClient();
   const { data: chargebackSummary } = useChargebackSummary();
 
-  // Feature access for premium sections
   const { hasAccess: hasTeamAccess } = useFeatureAccess("hierarchy");
   const { hasAccess: hasRecruitingAccess } = useFeatureAccess("recruiting");
   const { hasAccess: hasBasicRecruiting } =
     useFeatureAccess("recruiting_basic");
-
-  // Basic tier users should see prospects in their stats (since they don't have pipeline enrollment)
   const shouldIncludeProspects = hasBasicRecruiting && !hasRecruitingAccess;
 
-  // Team & Recruiting data (only fetch if user has access or is admin)
   const { data: hierarchyStats } = useMyHierarchyStats({
     enabled: hasTeamAccess || dashboardFeatures.isAdmin,
   });
@@ -113,11 +206,9 @@ export const DashboardHome: React.FC = () => {
     includeProspects: shouldIncludeProspects,
   });
 
-  // Notification & messaging counts
   const { data: unreadNotifications } = useUnreadCount();
   const { data: unreadMessages } = useUnreadMessageCount();
 
-  // Calculate derived metrics
   const derivedMetrics = calculateDerivedMetrics(periodPolicies, periodClients);
   const breakevenDisplay = getBreakevenDisplay(
     periodAnalytics.breakevenNeeded,
@@ -129,34 +220,13 @@ export const DashboardHome: React.FC = () => {
     timePeriod,
   );
   const periodSuffix = getPeriodSuffix(timePeriod);
-  const isBreakeven = periodAnalytics.surplusDeficit >= 0;
+  const isAboveBreakeven = periodAnalytics.surplusDeficit >= 0;
   const isCreating = createPolicy.isPending || createExpense.isPending;
 
-  const statsConfig = generateStatsConfig({
-    timePeriod,
-    periodCommissions,
-    periodExpenses,
-    periodPolicies,
-    periodClients,
-    periodAnalytics,
-    currentState,
-    derivedMetrics,
-    breakevenDisplay,
-    policiesNeededDisplay,
-    chargebackSummary,
-    features: dashboardFeatures,
-  });
-
-  const metricsConfig = generateMetricsConfig({
-    timePeriod,
-    periodCommissions,
-    periodPolicies,
-    periodClients,
-    periodExpenses,
-    periodAnalytics,
-    constants,
-    features: dashboardFeatures,
-  });
+  const elapsed = periodElapsed(timePeriod, dateRange, periodOffset);
+  const expectedPct = elapsed.pct;
+  const title = periodTitle(timePeriod, dateRange);
+  const showDaysSubtitle = elapsed.daysTotal > 1;
 
   const kpiConfig = generateKPIConfig({
     timePeriod,
@@ -183,6 +253,76 @@ export const DashboardHome: React.FC = () => {
     policiesNeeded: policiesNeededDisplay,
     periodSuffix,
   });
+  const activeAlertsCount = alertsConfig.filter((a) => a.condition).length;
+
+  // Secondary metrics — 4 inline big numerics following the hero
+  const secondaryMetrics: SecondaryMetric[] = [
+    {
+      label: "Policies",
+      value: periodPolicies.newCount.toLocaleString(),
+      caption:
+        policiesNeededDisplay > 0
+          ? `${Math.ceil(policiesNeededDisplay)} more to pace`
+          : "target hit",
+    },
+    {
+      label: "Premium",
+      value: formatCurrency(periodPolicies.premiumWritten),
+      caption:
+        periodPolicies.averagePremium > 0
+          ? `${formatCurrency(periodPolicies.averagePremium)} avg`
+          : undefined,
+    },
+    {
+      label: "Expenses",
+      value: formatCurrency(periodExpenses.total),
+      caption:
+        periodCommissions.paid > 0
+          ? `${((periodExpenses.total / periodCommissions.paid) * 100).toFixed(0)}% of commissions`
+          : undefined,
+    },
+    {
+      label: "Pipeline",
+      value: formatCurrency(currentState.pendingPipeline),
+      caption: "pending commissions",
+    },
+  ];
+
+  // Pace lines — full-width labelled progress bars
+  const commissionTarget = periodAnalytics.paceMetrics.monthlyTarget || null;
+  const policyTarget =
+    periodPolicies.newCount + Math.max(0, Math.ceil(policiesNeededDisplay));
+  const premiumTarget =
+    constants?.avgAP && policyTarget > 0
+      ? constants.avgAP * policyTarget
+      : null;
+
+  const paceLines: PaceLine[] = [
+    {
+      label: "Commissions",
+      current: periodCommissions.paid,
+      target: commissionTarget,
+      unit: "$",
+    },
+    {
+      label: "Policies",
+      current: periodPolicies.newCount,
+      target: policyTarget > 0 ? policyTarget : null,
+      unit: "#",
+    },
+    {
+      label: "Premium",
+      current: periodPolicies.premiumWritten,
+      target: premiumTarget,
+      unit: "$",
+    },
+    {
+      label: "Avg Premium",
+      current: periodPolicies.averagePremium,
+      target: constants?.avgAP || null,
+      unit: "$",
+    },
+  ];
 
   const quickActions = [
     { label: "Add Policy", action: "Add Policy", hasAccess: true },
@@ -202,7 +342,6 @@ export const DashboardHome: React.FC = () => {
     },
   ];
 
-  // Action handlers
   const handleQuickAction = (action: string) => {
     switch (action) {
       case "Add Policy":
@@ -231,14 +370,11 @@ export const DashboardHome: React.FC = () => {
   };
 
   const handleAddPolicy = async (formData: NewPolicyForm) => {
-    // Clear previous validation errors on new save attempt
     setPolicyFormErrors({});
-
     try {
       if (!user?.id) {
         throw new Error("You must be logged in to create a policy");
       }
-
       const client = await createOrFindClient.mutateAsync({
         clientData: {
           name: formData.clientName,
@@ -254,16 +390,16 @@ export const DashboardHome: React.FC = () => {
         },
         userId: user.id,
       });
-
-      // Use shared transformer for consistent data handling
-      const policyData = transformFormToCreateData(formData, client.id, user.id);
-
+      const policyData = transformFormToCreateData(
+        formData,
+        client.id,
+        user.id,
+      );
       const result = await createPolicy.mutateAsync(policyData);
       toast.success(`Policy ${result.policyNumber} created successfully!`);
       setActiveDialog(null);
       return result;
     } catch (error) {
-      // Extract field-level errors from ValidationError
       if (error instanceof ValidationError && error.validationErrors) {
         const fieldErrors: Record<string, string> = {};
         error.validationErrors.forEach((ve) => {
@@ -271,86 +407,101 @@ export const DashboardHome: React.FC = () => {
         });
         setPolicyFormErrors(fieldErrors);
       } else {
-        // Clear any previous field errors if this is a different type of error
         setPolicyFormErrors({});
       }
-
       const errorMessage =
-        error instanceof Error ? error.message : "Failed to create policy. Please try again.";
+        error instanceof Error
+          ? error.message
+          : "Failed to create policy. Please try again.";
       toast.error(errorMessage);
       console.error("Error creating policy:", error);
       throw error;
     }
   };
 
+  const augmentedAlerts =
+    chargebackSummary && chargebackSummary.totalChargebacks > 0
+      ? [
+          ...alertsConfig,
+          {
+            type: "danger" as const,
+            title: `${chargebackSummary.totalChargebacks} chargeback${chargebackSummary.totalChargebacks === 1 ? "" : "s"}`,
+            message: `${formatCurrency(chargebackSummary.totalChargebackAmount)} clawed back this period`,
+            condition: true,
+          },
+        ]
+      : alertsConfig;
+
+  const showOrg =
+    dashboardFeatures.isAdmin ||
+    dashboardFeatures.isImoAdmin ||
+    dashboardFeatures.isAgencyOwner;
+
   return (
     <>
-      <div className="h-[calc(100vh-4rem)] flex flex-col p-2 sm:p-3 space-y-2 sm:space-y-2.5">
-        {/* Compact Header Card */}
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-zinc-900 rounded-lg px-2 sm:px-3 py-2 border border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center gap-2">
-            <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Dashboard
-            </h1>
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 hidden sm:inline">
-              Performance overview
-            </span>
-          </div>
-          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-            <TimePeriodSwitcher
-              timePeriod={timePeriod}
-              onTimePeriodChange={handleTimePeriodChange}
-            />
-            <PeriodNavigator
-              timePeriod={timePeriod}
-              periodOffset={periodOffset}
-              onOffsetChange={setPeriodOffset}
-              dateRange={dateRange}
-            />
-            <DateRangeDisplay timePeriod={timePeriod} dateRange={dateRange} />
-          </div>
-        </div>
+      <div className="min-h-[calc(100vh-4rem)] bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+        <div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12 py-4 sm:py-6">
+          <Masthead
+            title={title}
+            subtitle={
+              showDaysSubtitle
+                ? `Day ${elapsed.daysElapsed} of ${elapsed.daysTotal}`
+                : undefined
+            }
+            timePeriod={timePeriod}
+            onTimePeriodChange={handleTimePeriodChange}
+            periodOffset={periodOffset}
+            onOffsetChange={setPeriodOffset}
+            elapsedPct={expectedPct}
+          />
 
-        {/* Main Content */}
-        <div className="flex-1 overflow-auto">
-          <div className="space-y-2">
-            {/* Main 3-column layout - stacks on mobile, 2-col on md, 3-col on lg */}
-            <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-[260px_1fr_280px]">
-              <QuickStatsPanel stats={statsConfig} timePeriod={timePeriod} />
+          <HeroSummary
+            periodLabel={title}
+            primaryValue={periodCommissions.paid}
+            net={periodAnalytics.surplusDeficit}
+            policies={periodPolicies.newCount}
+            policiesNeeded={policiesNeededDisplay}
+            alertsCount={activeAlertsCount}
+            isAboveBreakeven={isAboveBreakeven}
+          />
 
-              <PerformanceOverviewCard
-                metrics={metricsConfig}
-                isBreakeven={isBreakeven}
-                timePeriod={timePeriod}
-                surplusDeficit={periodAnalytics.surplusDeficit}
-                breakevenDisplay={breakevenDisplay}
-                policiesNeeded={policiesNeededDisplay}
-                periodSuffix={periodSuffix}
+          <SecondaryMetricsRow metrics={secondaryMetrics} />
+
+          <PaceLines
+            lines={paceLines}
+            daysElapsed={showDaysSubtitle ? elapsed.daysElapsed : undefined}
+            daysTotal={showDaysSubtitle ? elapsed.daysTotal : undefined}
+            expectedPct={expectedPct}
+          />
+
+          <EditorialAlertsActions
+            alerts={augmentedAlerts}
+            actions={quickActions}
+            onActionClick={handleQuickAction}
+            isCreating={isCreating}
+          />
+
+          <DetailsSection sections={kpiConfig} />
+
+          {showOrg && (
+            <section className="py-6 border-t border-zinc-200 dark:border-zinc-800">
+              <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-zinc-500 dark:text-zinc-400 mb-3">
+                Organization
+              </h2>
+              <OrgMetricsSection
+                isImoAdmin={
+                  dashboardFeatures.isAdmin || dashboardFeatures.isImoAdmin
+                }
+                isAgencyOwner={dashboardFeatures.isAgencyOwner}
+                dateRange={dateRange}
               />
+            </section>
+          )}
 
-              <div className="flex flex-col gap-2 md:col-span-2 lg:col-span-1">
-                <AlertsPanel alerts={alertsConfig} />
-                <QuickActionsPanel
-                  actions={quickActions}
-                  onActionClick={handleQuickAction}
-                  isCreating={isCreating}
-                />
-              </div>
-            </div>
-
-            {/* KPI Breakdown */}
-            <KPIGridHeatmap sections={kpiConfig} />
-
-            {/* Organization Metrics (IMO Admin / Agency Owner) */}
-            <OrgMetricsSection
-              isImoAdmin={
-                dashboardFeatures.isAdmin || dashboardFeatures.isImoAdmin
-              }
-              isAgencyOwner={dashboardFeatures.isAgencyOwner}
-              dateRange={dateRange}
-            />
-
-            {/* Team & Recruiting Section (Premium - Team tier) */}
+          <section className="py-6 border-t border-zinc-200 dark:border-zinc-800">
+            <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-zinc-500 dark:text-zinc-400 mb-3">
+              Team & Recruiting
+            </h2>
             <TeamRecruitingSection
               hierarchyStats={hierarchyStats}
               recruitingStats={recruitingStats}
@@ -358,11 +509,10 @@ export const DashboardHome: React.FC = () => {
               unreadMessages={unreadMessages ?? 0}
               hasAccess={hasTeamAccess || dashboardFeatures.isAdmin}
             />
-          </div>
+          </section>
         </div>
       </div>
 
-      {/* Dialogs */}
       <ExpenseDialog
         open={activeDialog === "expense"}
         onOpenChange={(open: boolean) =>
@@ -377,7 +527,7 @@ export const DashboardHome: React.FC = () => {
         onOpenChange={(open) => {
           setActiveDialog(open ? "policy" : null);
           if (!open) {
-            setPolicyFormErrors({}); // Clear validation errors when dialog closes
+            setPolicyFormErrors({});
           }
         }}
         onSave={handleAddPolicy}

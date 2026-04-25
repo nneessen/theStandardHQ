@@ -91,6 +91,11 @@ export function generateKPIConfig(params: KPIConfigParams): KPISection[] {
         {
           label: "Profit Margin",
           value: formatPercent(periodAnalytics.profitMargin),
+          intensity: {
+            numeric: periodAnalytics.profitMargin,
+            direction: "higher_better",
+            target: 30,
+          },
         },
         {
           label: "Recurring Expenses",
@@ -115,12 +120,22 @@ export function generateKPIConfig(params: KPIConfigParams): KPISection[] {
         {
           label: "Retention Rate",
           value: formatPercent(currentState.retentionRate),
+          intensity: {
+            numeric: currentState.retentionRate,
+            direction: "higher_better",
+            target: 90,
+          },
         },
         { label: "Cancelled", value: periodPolicies.cancelled },
         { label: "Lapsed", value: periodPolicies.lapsed },
         {
           label: "Lapse Rate",
           value: formatPercent(derivedMetrics.lapsedRate),
+          intensity: {
+            numeric: derivedMetrics.lapsedRate,
+            direction: "lower_better",
+            target: 5,
+          },
         },
       ],
     },
@@ -136,6 +151,15 @@ export function generateKPIConfig(params: KPIConfigParams): KPISection[] {
                   currentState.totalPolicies / currentState.totalClients
                 ).toFixed(2)
               : "0",
+          intensity:
+            currentState.totalClients > 0
+              ? {
+                  numeric:
+                    currentState.totalPolicies / currentState.totalClients,
+                  direction: "higher_better",
+                  target: 1.5,
+                }
+              : undefined,
         },
         {
           label: "Avg Client Value",

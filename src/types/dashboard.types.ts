@@ -21,29 +21,21 @@ export interface MetricTooltipConfig {
 }
 
 /**
- * Stat item configuration for QuickStatsPanel
+ * Heatmap intensity hint for a single KPI. Drives the cell tint in
+ * KPIGridHeatmap. Optional — when omitted, the cell renders neutral.
+ *
+ * - `numeric`: the raw value to compare (e.g., 62.4 for "62.4%")
+ * - `direction`: "higher_better" tints green when high, red when low.
+ *                "lower_better" inverts (e.g., lapse rate, expenses).
+ *                "neutral" renders without tint.
+ * - `target`: optional reference value. If provided, intensity = value / target
+ *             (clamped 0..1.5). If omitted, falls back to absolute thresholds
+ *             baked into the renderer (works well for percentages 0–100).
  */
-export interface StatItemConfig {
-  label: string;
-  value: string | number;
-  trend?: "up" | "down";
-  color: string;
-  tooltip?: MetricTooltipConfig;
-  /** Whether this stat is gated (user lacks access) */
-  gated?: boolean;
-  /** Tooltip to show when gated */
-  gatedTooltip?: string;
-}
-
-/**
- * Performance metric row for PerformanceOverviewCard table
- */
-export interface PerformanceMetricRow {
-  metric: string;
-  current: number;
-  target: number | null;
-  unit: "$" | "%" | "#";
-  showTarget: boolean;
+export interface KPIIntensity {
+  numeric: number;
+  direction: "higher_better" | "lower_better" | "neutral";
+  target?: number;
 }
 
 /**
@@ -54,6 +46,8 @@ export interface KPISection {
   kpis: Array<{
     label: string;
     value: string | number;
+    /** Optional heatmap hint — drives cell tint when present. */
+    intensity?: KPIIntensity;
   }>;
   /** Whether this section is gated (user lacks access) */
   gated?: boolean;
@@ -146,66 +140,11 @@ export interface DerivedMetrics {
 }
 
 /**
- * Month progress information
- */
-export interface MonthProgressInfo {
-  now: Date;
-  startOfMonth: Date;
-  daysInMonth: number;
-  daysPassed: number;
-  monthProgress: number;
-}
-
-/**
- * Dashboard header props
- */
-export interface DashboardHeaderProps {
-  monthProgress: MonthProgressInfo;
-}
-
-/**
  * Time period switcher props
  */
 export interface TimePeriodSwitcherProps {
   timePeriod: TimePeriod;
   onTimePeriodChange: (period: TimePeriod) => void;
-}
-
-/**
- * Quick stats panel props
- */
-export interface QuickStatsPanelProps {
-  stats: StatItemConfig[];
-  timePeriod: TimePeriod;
-}
-
-/**
- * Performance overview card props
- */
-export interface PerformanceOverviewCardProps {
-  metrics: PerformanceMetricRow[];
-  isBreakeven: boolean;
-  timePeriod: TimePeriod;
-  surplusDeficit: number;
-  breakevenDisplay: number;
-  policiesNeeded: number;
-  periodSuffix: string;
-}
-
-/**
- * Alerts panel props
- */
-export interface AlertsPanelProps {
-  alerts: AlertConfig[];
-}
-
-/**
- * Quick actions panel props
- */
-export interface QuickActionsPanelProps {
-  actions: QuickAction[];
-  onActionClick: (action: string) => void;
-  isCreating: boolean;
 }
 
 /**
