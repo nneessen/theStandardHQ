@@ -13,6 +13,7 @@ import {
   UserX,
   MessageCircle,
   UserMinus,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -49,7 +50,7 @@ import { hierarchyService } from "@/services/hierarchy/hierarchyService";
 import { policyRepository } from "@/services/policies";
 // eslint-disable-next-line no-restricted-imports
 import type { PolicyMetricRow } from "@/services/policies";
-import { useCurrentUserProfile } from "@/hooks/admin";
+import { useCurrentUserProfile, useDeleteUser } from "@/hooks/admin";
 
 interface AgentWithMetrics extends UserProfile {
   // Real calculated metrics
@@ -199,6 +200,8 @@ function AgentRow({
   hasChildren,
   uplineContractLevel,
   onRemove,
+  onDelete,
+  canDelete,
   metrics,
   isOwner,
 }: {
@@ -209,6 +212,8 @@ function AgentRow({
   hasChildren: boolean;
   uplineContractLevel: number | null;
   onRemove: (agent: AgentWithMetrics) => void;
+  onDelete: (agent: AgentWithMetrics) => void;
+  canDelete: boolean;
   metrics?: AgentMetrics;
   isOwner?: boolean;
 }) {
@@ -441,6 +446,15 @@ function AgentRow({
                 Remove from Team
               </DropdownMenuItem>
             )}
+            {canDelete && (
+              <DropdownMenuItem
+                className="text-destructive text-[11px]"
+                onClick={() => onDelete(agent)}
+              >
+                <Trash2 className="mr-1.5 h-3 w-3" />
+                Delete Permanently
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </td>
@@ -460,6 +474,10 @@ export function AgentTable({
   const [agentToRemove, setAgentToRemove] = useState<AgentWithMetrics | null>(
     null,
   );
+  const [agentToDelete, setAgentToDelete] = useState<AgentWithMetrics | null>(
+    null,
+  );
+  const deleteUser = useDeleteUser();
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
@@ -585,6 +603,40 @@ export function AgentTable({
     }
   };
 
+  const handleDeleteAgent = async () => {
+    if (!agentToDelete) return;
+    try {
+      await deleteUser.mutateAsync(agentToDelete.id);
+      const name =
+        [agentToDelete.first_name, agentToDelete.last_name]
+          .filter(Boolean)
+          .join(" ") || agentToDelete.email;
+      toast.success(`${name} has been permanently deleted.`);
+      setAgentToDelete(null);
+      onRefresh?.();
+    } catch (error) {
+      console.error("Error deleting agent:", error);
+      const message =
+        error instanceof Error ? error.message : "Please try again.";
+      toast.error(`Failed to delete agent: ${message}`);
+    }
+  };
+
+  // Direct upline/recruiter of a recruit-or-agent target. Server enforces the
+  // same rule via RLS + admin_deleteuser RPC.
+  const isAdmin = currentUserProfile?.is_admin === true;
+  const canDeleteAgent = (agent: AgentWithMetrics): boolean => {
+    if (!viewerId) return false;
+    if (agent.id === viewerId) return false;
+    if (isAdmin) return true;
+    const isDirectUpline =
+      agent.upline_id === viewerId || agent.recruiter_id === viewerId;
+    const targetRoles = agent.roles ?? [];
+    const isDeletableRole =
+      targetRoles.includes("recruit") || targetRoles.includes("agent");
+    return isDirectUpline && isDeletableRole;
+  };
+
   // Pagination calculations
   const totalRootAgents = rootAgents.length;
   const totalPages = Math.ceil(totalRootAgents / rowsPerPage);
@@ -629,6 +681,8 @@ export function AgentTable({
           hasChildren={children.length > 0}
           uplineContractLevel={parentContractLevel}
           onRemove={setAgentToRemove}
+          onDelete={setAgentToDelete}
+          canDelete={canDeleteAgent(agent)}
           metrics={metricsMap.get(agent.id)}
           isOwner={agent.id === viewerId}
         />,
@@ -714,6 +768,8 @@ export function AgentTable({
                       hasChildren={false}
                       uplineContractLevel={null}
                       onRemove={() => {}}
+                      onDelete={() => {}}
+                      canDelete={false}
                       metrics={metricsMap.get(owner.id)}
                       isOwner={true}
                     />
@@ -806,6 +862,44 @@ export function AgentTable({
               className="bg-destructive text-destructive-foreground"
             >
               Remove from Team
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Agent Permanently Confirmation Dialog */}
+      <AlertDialog
+        open={!!agentToDelete}
+        onOpenChange={(open) => {
+          if (!open) setAgentToDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Agent Permanently?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This permanently deletes{" "}
+              <span className="font-semibold">
+                {agentToDelete
+                  ? [agentToDelete.first_name, agentToDelete.last_name]
+                      .filter(Boolean)
+                      .join(" ") || agentToDelete.email
+                  : ""}
+              </span>{" "}
+              and all of their commissions, policies, training progress, and
+              account access. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteUser.isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAgent}
+              disabled={deleteUser.isPending}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {deleteUser.isPending ? "Deleting..." : "Delete Permanently"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
