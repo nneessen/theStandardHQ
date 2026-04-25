@@ -885,12 +885,17 @@ export function AgentTable({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Edit Agent Modal */}
-      <EditAgentModal
-        agent={agentToEdit}
-        isOpen={!!agentToEdit}
-        onClose={() => setAgentToEdit(null)}
-      />
+      {/* Edit Agent Modal — conditionally rendered so each open mounts a
+          fresh instance. Required because @tanstack/react-form captures
+          defaultValues only on first mount; without remount, fields would
+          always show the values from when the modal first appeared. */}
+      {agentToEdit && (
+        <EditAgentModal
+          agent={agentToEdit}
+          isOpen={true}
+          onClose={() => setAgentToEdit(null)}
+        />
+      )}
 
       {/* Delete Agent Permanently Confirmation Dialog */}
       <AlertDialog

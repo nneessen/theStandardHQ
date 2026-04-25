@@ -1,6 +1,5 @@
 // src/features/hierarchy/components/EditAgentModal.tsx
 
-import React from "react";
 import { useForm } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { hierarchyKeys, invalidateHierarchyForNode } from "@/hooks";
@@ -79,6 +78,10 @@ export function EditAgentModal({
           queryKey: hierarchyKeys.rollup(agent.id, undefined, "agent-details"),
         });
         invalidateHierarchyForNode(queryClient, agent.id);
+        // useMyDownlines is keyed by "me", not the downline's id, so the
+        // node-scoped helper above won't match it. Invalidate the whole
+        // hierarchy family so the parent table reflects the saved values.
+        queryClient.invalidateQueries({ queryKey: ["hierarchy"] });
         onClose();
       } catch (error) {
         console.error("Error updating agent:", error);
