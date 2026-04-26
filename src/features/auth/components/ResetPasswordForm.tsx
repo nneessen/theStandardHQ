@@ -3,7 +3,7 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { PillButton } from "@/components/v2";
 import { FormErrors } from "../hooks/useAuthValidation";
 import { AlertCircle } from "lucide-react";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
@@ -24,9 +24,12 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
   onSubmit,
 }) => {
   return (
-    <form className="space-y-3" onSubmit={onSubmit}>
+    <form className="space-y-4" onSubmit={onSubmit}>
       <div className="space-y-1.5">
-        <Label htmlFor="email" className="text-sm font-medium">
+        <Label
+          htmlFor="email"
+          className="text-xs font-semibold text-v2-ink-muted uppercase tracking-wider"
+        >
           Email
         </Label>
         <Input
@@ -38,7 +41,7 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
           required
           disabled={loading}
           autoComplete="email"
-          className={`h-9 ${formErrors.email ? "border-destructive focus-visible:ring-destructive/50" : ""}`}
+          className={`h-11 rounded-v2-md border-v2-ring bg-v2-card text-v2-ink placeholder:text-v2-ink-subtle focus-visible:ring-v2-accent ${formErrors.email ? "border-destructive focus-visible:ring-destructive/50" : ""}`}
         />
         {formErrors.email && (
           <div className="flex items-center gap-1.5 text-xs text-destructive mt-1">
@@ -48,11 +51,12 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
         )}
       </div>
 
-      <Button
+      <PillButton
         type="submit"
-        variant="warning"
+        tone="black"
+        size="lg"
+        fullWidth
         disabled={loading}
-        className="w-full h-9 text-sm font-medium mt-2"
       >
         {loading ? (
           <>
@@ -62,7 +66,7 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
         ) : (
           "Send reset link"
         )}
-      </Button>
+      </PillButton>
     </form>
   );
 };

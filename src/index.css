@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -72,6 +73,31 @@
     --rec-progress-soft: #e0f2fe;
     --rec-error: #b91c1c;
     --rec-error-soft: #fee2e2;
+
+    /* ==================== DESIGN SYSTEM V2 (Crextio-inspired) ==================== */
+    /* Soft, rounded, warm yellow/cream aesthetic. Scoped to .theme-v2 surfaces. */
+    --v2-bg-canvas: #f4f1ea;
+    --v2-bg-card: #ffffff;
+    --v2-bg-card-tinted: #fefcf3;
+    --v2-bg-card-dark: #0e0e0c;
+    --v2-accent: #ffd23b;
+    --v2-accent-strong: #f5b800;
+    --v2-accent-soft: #fff4c2;
+    --v2-ink: #0f0f0f;
+    --v2-ink-muted: #5e5d56;
+    --v2-ink-subtle: #918e85;
+    --v2-ring: #ece9df;
+    --v2-ring-strong: #d9d5c7;
+    --v2-radius-sm: 14px;
+    --v2-radius-md: 20px;
+    --v2-radius-lg: 28px;
+    --v2-radius-pill: 9999px;
+    --v2-shadow-soft:
+      0 1px 2px rgba(20, 18, 12, 0.04), 0 8px 24px rgba(20, 18, 12, 0.05);
+    --v2-shadow-lift:
+      0 2px 4px rgba(20, 18, 12, 0.06), 0 16px 40px rgba(20, 18, 12, 0.08);
+    --v2-font-display:
+      "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   }
 
   .dark {
@@ -107,6 +133,23 @@
     --info-foreground: #fafaf9;
   }
 
+  /* ==================== DESIGN SYSTEM V2 — DARK MODE ==================== */
+  .theme-v2.dark,
+  .dark .theme-v2 {
+    --v2-bg-canvas: #0d0c09;
+    --v2-bg-card: #18170f;
+    --v2-bg-card-tinted: #1a1810;
+    --v2-bg-card-dark: #050505;
+    --v2-accent: #ffd23b;
+    --v2-accent-strong: #f5b800;
+    --v2-accent-soft: rgba(255, 210, 59, 0.12);
+    --v2-ink: #f7f4ea;
+    --v2-ink-muted: #b3b0a4;
+    --v2-ink-subtle: #6b6a62;
+    --v2-ring: rgba(255, 255, 255, 0.08);
+    --v2-ring-strong: rgba(255, 255, 255, 0.16);
+  }
+
   /* Apply background and text colors to body */
   body {
     @apply bg-background text-foreground;
@@ -114,6 +157,42 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+}
+
+/* ==================== DESIGN SYSTEM V2 UTILITIES ==================== */
+.theme-v2 {
+  font-family: var(--v2-font-display);
+  color: var(--v2-ink);
+}
+
+.theme-v2 .v2-canvas {
+  background-color: var(--v2-bg-canvas);
+  background-image: radial-gradient(
+      circle at 78% 28%,
+      rgba(255, 210, 59, 0.42) 0%,
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 12% 92%,
+      rgba(255, 210, 59, 0.16) 0%,
+      transparent 42%
+    );
+  background-attachment: fixed;
+}
+
+.theme-v2.dark .v2-canvas,
+.dark .theme-v2 .v2-canvas {
+  background-color: var(--v2-bg-canvas);
+  background-image: radial-gradient(
+      circle at 78% 28%,
+      rgba(255, 210, 59, 0.08) 0%,
+      transparent 38%
+    ),
+    radial-gradient(
+      circle at 12% 92%,
+      rgba(255, 210, 59, 0.04) 0%,
+      transparent 42%
+    );
 }
 
 /* ==================== ANIMATIONS ==================== */

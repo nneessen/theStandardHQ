@@ -67,11 +67,38 @@ export default {
           pending: "var(--warning)",
           lapsed: "var(--error)",
         },
+        // Design System V2 — Crextio-inspired soft yellow/cream
+        v2: {
+          canvas: "var(--v2-bg-canvas)",
+          card: "var(--v2-bg-card)",
+          "card-tinted": "var(--v2-bg-card-tinted)",
+          "card-dark": "var(--v2-bg-card-dark)",
+          accent: "var(--v2-accent)",
+          "accent-strong": "var(--v2-accent-strong)",
+          "accent-soft": "var(--v2-accent-soft)",
+          ink: "var(--v2-ink)",
+          "ink-muted": "var(--v2-ink-muted)",
+          "ink-subtle": "var(--v2-ink-subtle)",
+          ring: "var(--v2-ring)",
+          "ring-strong": "var(--v2-ring-strong)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        // V2 radii
+        "v2-sm": "var(--v2-radius-sm)",
+        "v2-md": "var(--v2-radius-md)",
+        "v2-lg": "var(--v2-radius-lg)",
+        "v2-pill": "var(--v2-radius-pill)",
+      },
+      boxShadow: {
+        "v2-soft": "var(--v2-shadow-soft)",
+        "v2-lift": "var(--v2-shadow-lift)",
+      },
+      fontFamily: {
+        display: "var(--v2-font-display)",
       },
       animation: {
         fadeIn: "fadeIn 0.3s ease-in-out",

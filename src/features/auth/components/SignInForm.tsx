@@ -4,6 +4,7 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { PillButton } from "@/components/v2";
 import { FormErrors } from "../hooks/useAuthValidation";
 import { AlertCircle } from "lucide-react";
 import { LogoSpinner } from "@/components/ui/logo-spinner";
@@ -30,9 +31,12 @@ export const SignInForm: React.FC<SignInFormProps> = ({
   onForgotPassword,
 }) => {
   return (
-    <form className="space-y-3" onSubmit={onSubmit}>
+    <form className="space-y-4" onSubmit={onSubmit}>
       <div className="space-y-1.5">
-        <Label htmlFor="email" className="text-sm font-medium">
+        <Label
+          htmlFor="email"
+          className="text-xs font-semibold text-v2-ink-muted uppercase tracking-wider"
+        >
           Email
         </Label>
         <Input
@@ -45,7 +49,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({
           required
           disabled={loading}
           autoComplete="email"
-          className={`h-9 ${formErrors.email ? "border-destructive focus-visible:ring-destructive/50" : ""}`}
+          className={`h-11 rounded-v2-md border-v2-ring bg-v2-card text-v2-ink placeholder:text-v2-ink-subtle focus-visible:ring-v2-accent ${formErrors.email ? "border-destructive focus-visible:ring-destructive/50" : ""}`}
         />
         {formErrors.email && (
           <div className="flex items-center gap-1.5 text-xs text-destructive mt-1">
@@ -57,7 +61,10 @@ export const SignInForm: React.FC<SignInFormProps> = ({
 
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <Label htmlFor="password" className="text-sm font-medium">
+          <Label
+            htmlFor="password"
+            className="text-xs font-semibold text-v2-ink-muted uppercase tracking-wider"
+          >
             Password
           </Label>
           <Button
@@ -65,7 +72,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({
             onClick={onForgotPassword}
             variant="link"
             disabled={loading}
-            className="h-auto p-0 text-xs font-normal text-muted-foreground hover:text-foreground"
+            className="h-auto p-0 text-xs font-normal text-v2-ink-muted hover:text-v2-ink"
           >
             Forgot password?
           </Button>
@@ -80,7 +87,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({
           required
           disabled={loading}
           autoComplete="current-password"
-          className={`h-9 ${formErrors.password ? "border-destructive focus-visible:ring-destructive/50" : ""}`}
+          className={`h-11 rounded-v2-md border-v2-ring bg-v2-card text-v2-ink placeholder:text-v2-ink-subtle focus-visible:ring-v2-accent ${formErrors.password ? "border-destructive focus-visible:ring-destructive/50" : ""}`}
         />
         {formErrors.password && (
           <div className="flex items-center gap-1.5 text-xs text-destructive mt-1">
@@ -90,11 +97,13 @@ export const SignInForm: React.FC<SignInFormProps> = ({
         )}
       </div>
 
-      <Button
+      <PillButton
         type="submit"
-        variant="warning"
+        tone="black"
+        size="lg"
+        fullWidth
         disabled={loading}
-        className="w-full h-9 text-sm font-medium mt-2"
+        className="mt-2"
       >
         {loading ? (
           <>
@@ -104,7 +113,7 @@ export const SignInForm: React.FC<SignInFormProps> = ({
         ) : (
           "Sign in"
         )}
-      </Button>
+      </PillButton>
     </form>
   );
 };

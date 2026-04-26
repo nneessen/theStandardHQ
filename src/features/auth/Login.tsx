@@ -2,12 +2,12 @@ import React, { useState, useMemo } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { isLocalSupabase } from "../../services/base";
-import { Button } from "../../components/ui/button";
 import { SESSION_STORAGE_KEYS } from "../../constants/auth.constants";
 import { AuthErrorDisplay } from "./components/AuthErrorDisplay";
 import { AuthSuccessMessage } from "./components/AuthSuccessMessage";
 import { SignInForm } from "./components/SignInForm";
 import { ResetPasswordForm } from "./components/ResetPasswordForm";
+import { SectionShell, SoftCard, PillButton } from "@/components/v2";
 
 interface LoginProps {
   onSuccess?: () => void;
@@ -116,10 +116,6 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
     setPassword("");
   };
 
-  const eyebrow = isRecruitIntent
-    ? "[01] Onboarding · The Standard"
-    : "[01] The Standard · Sign in";
-
   const title =
     mode === "reset"
       ? "Reset your password"
@@ -131,185 +127,150 @@ export const Login: React.FC<LoginProps> = ({ onSuccess }) => {
     mode === "reset"
       ? "Enter your email and we'll send you a reset link."
       : isRecruitIntent
-        ? "Sign in to continue your onboarding. Your recruiter is ready when you are."
+        ? "Sign in to continue your onboarding."
         : "Sign in to your agency dashboard.";
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col lg:flex-row">
-      {/* Editorial left pane — value-prop block, no animations */}
-      <aside className="hidden lg:flex lg:w-1/2 xl:w-[55%] flex-col justify-between p-10 xl:p-14 border-r border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-3">
-          <img
-            src="/logos/LetterLogo.png"
-            alt="The Standard"
-            className="h-9 w-9 dark:hidden"
-          />
-          <img
-            src="/logos/Light Letter Logo .png"
-            alt="The Standard"
-            className="h-9 w-9 hidden dark:block"
-          />
-          <div className="flex flex-col">
-            <span
-              className="text-zinc-900 dark:text-zinc-100 text-base font-bold tracking-wide"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              THE STANDARD
-            </span>
-            <span className="text-[9px] uppercase tracking-[0.3em] font-semibold text-zinc-500 dark:text-zinc-400">
-              Financial Group
-            </span>
-          </div>
-        </div>
-
-        <div className="max-w-xl">
-          <div className="text-[10px] uppercase tracking-[0.2em] font-semibold text-zinc-500 dark:text-zinc-400 mb-4">
-            {isRecruitIntent ? "For new recruits" : "For agents"}
-          </div>
-          <h1
-            className="text-4xl xl:text-5xl font-semibold tracking-tight leading-[1.05] text-zinc-900 dark:text-zinc-100"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-          >
-            {isRecruitIntent ? (
-              <>
-                Your career
-                <br />
-                starts here.
-              </>
-            ) : (
-              <>
-                Your agency,
-                <br />
-                fully optimized.
-              </>
-            )}
-          </h1>
-          <div className="mt-5 h-[3px] w-12 bg-zinc-900 dark:bg-zinc-100" />
-          <p className="mt-5 text-[14px] italic text-zinc-700 dark:text-zinc-300 leading-relaxed">
-            {isRecruitIntent
-              ? "Sign in to pick up where you left off. Every step of your onboarding lives in one place — the next thing to do is always at the top."
-              : "Track commissions, manage recruits, and grow your insurance business with analytics and automation built for the way you actually work."}
-          </p>
-        </div>
-
-        <div className="text-[10px] uppercase tracking-[0.2em] font-semibold text-zinc-500 dark:text-zinc-400">
-          © {new Date().getFullYear()} The Standard Financial Group
-        </div>
-      </aside>
-
-      {/* Right pane — form */}
-      <main className="flex-1 flex items-center justify-center p-6 sm:p-10">
-        <div className="w-full max-w-[420px]">
-          {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-3 mb-8">
+    <SectionShell>
+      <div className="min-h-screen flex flex-col">
+        {/* Top brand strip */}
+        <header className="px-6 sm:px-10 py-6 flex items-center justify-between">
+          <div className="inline-flex items-center gap-2 rounded-v2-pill bg-v2-card border border-v2-ring shadow-v2-soft px-3 py-1.5">
             <img
               src="/logos/LetterLogo.png"
               alt="The Standard"
-              className="h-9 w-9 dark:hidden"
+              className="h-6 w-6 dark:hidden"
             />
             <img
               src="/logos/Light Letter Logo .png"
               alt="The Standard"
-              className="h-9 w-9 hidden dark:block"
+              className="h-6 w-6 hidden dark:block"
             />
-            <div className="flex flex-col">
-              <span
-                className="text-zinc-900 dark:text-zinc-100 text-base font-bold tracking-wide"
-                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-              >
-                THE STANDARD
-              </span>
-              <span className="text-[9px] uppercase tracking-[0.3em] font-semibold text-zinc-500 dark:text-zinc-400">
-                Financial Group
-              </span>
-            </div>
+            <span className="text-sm font-semibold tracking-tight text-v2-ink">
+              The Standard
+            </span>
+            <span className="ml-1 inline-flex items-center px-2 h-5 rounded-v2-pill bg-v2-accent text-[10px] font-bold uppercase tracking-wider text-v2-ink">
+              HQ
+            </span>
           </div>
-
-          <div className="border-b border-zinc-900 dark:border-zinc-100 pb-5 mb-6">
-            <div className="text-[10px] uppercase tracking-[0.2em] font-semibold text-zinc-500 dark:text-zinc-400">
-              {eyebrow}
-            </div>
-            <h2
-              className="mt-1.5 text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 leading-[1.1]"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          <div className="hidden sm:flex items-center gap-3 text-xs text-v2-ink-muted">
+            <span>Need help?</span>
+            <a
+              href="/landing"
+              className="rounded-v2-pill border border-v2-ring px-3 h-8 inline-flex items-center hover:bg-v2-card transition-colors"
             >
-              {title}
-            </h2>
-            <p className="mt-2 text-[13px] italic text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              {subtitle}
+              Visit our site
+            </a>
+          </div>
+        </header>
+
+        {/* Main hero */}
+        <main className="flex-1 flex items-center justify-center px-6 sm:px-10 pb-10">
+          <div className="w-full max-w-md">
+            <SoftCard
+              radius="lg"
+              padding="lg"
+              lift
+              className="relative overflow-hidden"
+            >
+              {/* Decorative accent blob */}
+              <div
+                aria-hidden
+                className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-v2-accent opacity-30 blur-2xl pointer-events-none"
+              />
+
+              <div className="relative">
+                <div className="text-[11px] uppercase tracking-[0.18em] font-semibold text-v2-ink-subtle mb-3">
+                  {isRecruitIntent ? "Onboarding" : "Sign in"}
+                </div>
+                <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight leading-tight text-v2-ink font-display">
+                  {title}
+                </h1>
+                <p className="mt-2 text-sm text-v2-ink-muted leading-relaxed">
+                  {subtitle}
+                </p>
+
+                <div className="mt-6 space-y-3">
+                  <AuthSuccessMessage message={message || ""} />
+                  <AuthErrorDisplay
+                    error={error || ""}
+                    mode={mode}
+                    onSwitchToSignup={() => {}}
+                  />
+                </div>
+
+                <div className="mt-5">
+                  {mode === "signin" && (
+                    <SignInForm
+                      email={email}
+                      password={password}
+                      loading={loading}
+                      formErrors={formErrors}
+                      onEmailChange={setEmail}
+                      onPasswordChange={setPassword}
+                      onSubmit={handleSubmit}
+                      onForgotPassword={() => switchMode("reset")}
+                    />
+                  )}
+
+                  {mode === "reset" && (
+                    <>
+                      <ResetPasswordForm
+                        email={email}
+                        loading={loading}
+                        formErrors={formErrors}
+                        onEmailChange={setEmail}
+                        onSubmit={handleSubmit}
+                      />
+                      <div className="mt-4">
+                        <PillButton
+                          type="button"
+                          tone="ghost"
+                          size="md"
+                          fullWidth
+                          disabled={loading}
+                          onClick={() => switchMode("signin")}
+                        >
+                          Back to sign in
+                        </PillButton>
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {mode === "signin" && (
+                  <p className="mt-6 text-[12px] text-v2-ink-muted leading-relaxed">
+                    The Standard is invitation-only. If you don&apos;t have an
+                    account yet, your recruiter will send you a link.
+                  </p>
+                )}
+              </div>
+            </SoftCard>
+
+            <p className="mt-6 text-center text-[11px] text-v2-ink-subtle">
+              By continuing, you agree to our{" "}
+              <Link
+                to="/terms"
+                className="underline underline-offset-4 hover:text-v2-ink transition-colors"
+              >
+                Terms
+              </Link>{" "}
+              and{" "}
+              <Link
+                to="/privacy"
+                className="underline underline-offset-4 hover:text-v2-ink transition-colors"
+              >
+                Privacy Policy
+              </Link>
+              .
             </p>
           </div>
+        </main>
 
-          <div className="space-y-3 mb-4">
-            <AuthSuccessMessage message={message || ""} />
-            <AuthErrorDisplay
-              error={error || ""}
-              mode={mode}
-              onSwitchToSignup={() => {}}
-            />
-          </div>
-
-          {mode === "signin" && (
-            <>
-              <SignInForm
-                email={email}
-                password={password}
-                loading={loading}
-                formErrors={formErrors}
-                onEmailChange={setEmail}
-                onPasswordChange={setPassword}
-                onSubmit={handleSubmit}
-                onForgotPassword={() => switchMode("reset")}
-              />
-              <p className="mt-5 text-[12px] italic text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                The Standard is invitation-only. If you don&apos;t have an
-                account yet, your recruiter will send you a link.
-              </p>
-            </>
-          )}
-
-          {mode === "reset" && (
-            <>
-              <ResetPasswordForm
-                email={email}
-                loading={loading}
-                formErrors={formErrors}
-                onEmailChange={setEmail}
-                onSubmit={handleSubmit}
-              />
-              <div className="mt-5 border-t border-zinc-200 dark:border-zinc-800 pt-4">
-                <Button
-                  type="button"
-                  onClick={() => switchMode("signin")}
-                  variant="ghost"
-                  disabled={loading}
-                  className="w-full text-[12px] uppercase tracking-[0.18em] font-semibold"
-                >
-                  Back to sign in
-                </Button>
-              </div>
-            </>
-          )}
-
-          <p className="mt-8 text-[11px] text-zinc-500 dark:text-zinc-400">
-            By continuing, you agree to our{" "}
-            <Link
-              to="/terms"
-              className="underline underline-offset-4 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-            >
-              Terms
-            </Link>{" "}
-            and{" "}
-            <Link
-              to="/privacy"
-              className="underline underline-offset-4 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
-            >
-              Privacy Policy
-            </Link>
-            .
-          </p>
-        </div>
-      </main>
-    </div>
+        <footer className="px-6 sm:px-10 py-5 text-[11px] uppercase tracking-[0.18em] font-semibold text-v2-ink-subtle text-center">
+          © {new Date().getFullYear()} The Standard Financial Group
+        </footer>
+      </div>
+    </SectionShell>
   );
 };

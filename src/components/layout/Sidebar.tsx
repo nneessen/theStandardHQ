@@ -699,21 +699,21 @@ export default function Sidebar({
       const lockedEl = (
         <div
           className={cn(
-            "relative flex items-center h-9 rounded-md cursor-not-allowed opacity-50 mb-0.5",
+            "relative flex items-center h-9 rounded-v2-pill cursor-not-allowed opacity-50 mb-0.5",
             isCollapsed ? "w-9 justify-center mx-auto" : "w-full gap-2.5 px-3",
           )}
           onClick={handleLockedNavClick}
         >
-          <Icon size={16} className="text-muted-foreground flex-shrink-0" />
+          <Icon size={16} className="text-v2-ink-muted flex-shrink-0" />
           {!isCollapsed && (
-            <span className="text-sm blur-[0.5px] text-muted-foreground truncate">
+            <span className="text-sm blur-[0.5px] text-v2-ink-muted truncate">
               {item.label}
             </span>
           )}
           <Lock
             size={10}
             className={cn(
-              "absolute text-muted-foreground/70",
+              "absolute text-v2-ink-subtle",
               isCollapsed
                 ? "bottom-0.5 right-0.5"
                 : "right-2 top-1/2 -translate-y-1/2",
@@ -743,10 +743,10 @@ export default function Sidebar({
       const actionEl = (
         <button
           className={cn(
-            "relative flex items-center h-9 rounded-md text-sm transition-colors mb-0.5",
+            "relative flex items-center h-9 rounded-v2-pill text-sm transition-colors mb-0.5",
             isCollapsed ? "w-9 justify-center mx-auto" : "w-full gap-2.5 px-3",
-            actionItem.colorClass || "text-muted-foreground",
-            "hover:bg-accent/40",
+            actionItem.colorClass || "text-v2-ink-muted",
+            "hover:bg-v2-accent-soft hover:text-v2-ink",
           )}
           onClick={() => {
             actionItem.onClick?.();
@@ -785,24 +785,24 @@ export default function Sidebar({
         {({ isActive }) => (
           <div
             className={cn(
-              "relative flex items-center h-9 rounded-md text-sm transition-colors mb-0.5",
+              "relative flex items-center h-9 rounded-v2-pill text-sm transition-colors mb-0.5",
               isCollapsed
                 ? "w-9 justify-center mx-auto"
                 : "w-full gap-2.5 px-3",
               isActive
-                ? "bg-secondary text-foreground font-semibold"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary/70",
+                ? "bg-v2-ink text-white font-semibold shadow-v2-soft"
+                : "text-v2-ink-muted hover:text-v2-ink hover:bg-v2-accent-soft",
             )}
             data-active={isActive}
           >
-            {isActive && (
-              <span className="absolute left-0 top-0.5 bottom-0.5 w-1 rounded-full bg-info" />
-            )}
             <Icon
               size={16}
-              className={cn("flex-shrink-0", isActive && "text-info")}
+              className={cn("flex-shrink-0", isActive ? "text-v2-accent" : "")}
             />
             {!isCollapsed && <span className="truncate">{navItem.label}</span>}
+            {isActive && !isCollapsed && (
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-v2-accent" />
+            )}
           </div>
         )}
       </Link>
@@ -853,28 +853,28 @@ export default function Sidebar({
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed left-0 top-0 h-screen bg-card border-r border-border flex flex-col z-[100] transition-all duration-200",
+          "theme-v2 fixed left-0 top-0 h-screen bg-v2-card-tinted border-r border-v2-ring flex flex-col z-[100] transition-all duration-200 font-display",
           isCollapsed ? "w-[72px]" : "w-[220px]",
           isMobile && (isMobileOpen ? "translate-x-0" : "-translate-x-full"),
           isMobile && !isCollapsed && "w-[280px]",
         )}
       >
         {/* Header */}
-        <div className="p-3 border-b border-border bg-card/80">
+        <div className="p-3 border-b border-v2-ring bg-v2-card/60">
           {!isCollapsed ? (
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <div className="w-8 h-8 bg-secondary text-secondary-foreground rounded-md flex items-center justify-center text-xs font-bold flex-shrink-0 border border-border shadow-sm">
+                <div className="w-9 h-9 bg-v2-accent text-v2-ink rounded-v2-pill flex items-center justify-center text-xs font-bold flex-shrink-0 shadow-v2-soft">
                   {userName
                     .split(" ")
                     .map((n) => n[0])
                     .join("")}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-semibold text-foreground truncate tracking-tight">
+                  <div className="text-sm font-semibold text-v2-ink truncate tracking-tight">
                     {userName}
                   </div>
-                  <div className="text-[11px] text-muted-foreground truncate">
+                  <div className="text-[11px] text-v2-ink-muted truncate">
                     {userEmail}
                   </div>
                   {imoLoading ? (
@@ -886,7 +886,7 @@ export default function Sidebar({
                       Organization unavailable
                     </div>
                   ) : imo || agency ? (
-                    <div className="text-[10px] text-muted-foreground/70 truncate mt-0.5 flex items-center gap-1">
+                    <div className="text-[10px] text-v2-ink-subtle truncate mt-0.5 flex items-center gap-1">
                       {imo && (
                         <span
                           className="font-medium"
@@ -960,24 +960,24 @@ export default function Sidebar({
                 <div key={group.id}>
                   {/* Separator between sections (expanded only) */}
                   {!isCollapsed && groupIdx > 0 && (
-                    <div className="my-1.5 mx-3 border-t border-border" />
+                    <div className="my-1.5 mx-3 border-t border-v2-ring" />
                   )}
                   {/* Section header (expanded only) */}
                   {!isCollapsed && (
                     <div
                       className={cn(
-                        "mb-1 px-2 flex items-center justify-between cursor-pointer group",
+                        "mb-1 px-3 flex items-center justify-between cursor-pointer group",
                         groupIdx > 0 ? "mt-2" : "mt-1",
                       )}
                       onClick={() => toggleSection(group.id)}
                     >
-                      <span className="text-[11px] font-semibold uppercase text-muted-foreground tracking-wider select-none">
+                      <span className="text-[10px] font-semibold uppercase text-v2-ink-subtle tracking-[0.14em] select-none">
                         {group.label}
                       </span>
                       <ChevronDown
                         size={12}
                         className={cn(
-                          "text-muted-foreground/60 transition-transform duration-200 group-hover:text-muted-foreground",
+                          "text-v2-ink-subtle transition-transform duration-200 group-hover:text-v2-ink-muted",
                           isSectionCollapsed && "-rotate-90",
                         )}
                       />
@@ -995,7 +995,7 @@ export default function Sidebar({
 
                   {/* Thin separator between groups when collapsed */}
                   {isCollapsed && group.separatorAfter && (
-                    <div className="my-1.5 mx-2 border-t border-border/50" />
+                    <div className="my-1.5 mx-2 border-t border-v2-ring/60" />
                   )}
                 </div>
               );
@@ -1003,7 +1003,7 @@ export default function Sidebar({
           </nav>
 
           {/* Footer */}
-          <div className="p-2 border-t border-border bg-card/80">
+          <div className="p-2 border-t border-v2-ring bg-v2-card/60">
             {/* Footer nav items (Billing, Settings) */}
             {footerNavItems.map((item) => renderNavItem(item, item.href))}
 
@@ -1012,7 +1012,7 @@ export default function Sidebar({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
-                    className="relative flex items-center h-9 w-9 justify-center mx-auto rounded-md text-sm transition-colors mb-0.5 text-muted-foreground hover:text-foreground hover:bg-secondary/70"
+                    className="relative flex items-center h-9 w-9 justify-center mx-auto rounded-v2-pill text-sm transition-colors mb-0.5 text-v2-ink-muted hover:text-v2-ink hover:bg-v2-accent-soft"
                     onClick={() => setSupportOpen(true)}
                   >
                     <LifeBuoy size={16} className="flex-shrink-0" />
@@ -1024,7 +1024,7 @@ export default function Sidebar({
               </Tooltip>
             ) : (
               <button
-                className="relative flex items-center h-9 w-full gap-2.5 px-3 rounded-md text-sm transition-colors mb-0.5 text-muted-foreground hover:text-foreground hover:bg-secondary/70"
+                className="relative flex items-center h-9 w-full gap-2.5 px-3 rounded-v2-pill text-sm transition-colors mb-0.5 text-v2-ink-muted hover:text-v2-ink hover:bg-v2-accent-soft"
                 onClick={() => setSupportOpen(true)}
               >
                 <LifeBuoy size={16} className="flex-shrink-0" />
@@ -1033,7 +1033,7 @@ export default function Sidebar({
             )}
 
             {/* Separator */}
-            <div className="my-1.5 mx-1 border-t border-border/50" />
+            <div className="my-1.5 mx-1 border-t border-v2-ring/60" />
 
             {/* Theme toggle + Logout */}
             {isCollapsed ? (
@@ -1042,7 +1042,7 @@ export default function Sidebar({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
-                      className="h-9 w-9 flex items-center justify-center rounded-md text-destructive hover:bg-destructive/10 transition-colors"
+                      className="h-9 w-9 flex items-center justify-center rounded-v2-pill text-destructive hover:bg-destructive/10 transition-colors"
                       onClick={onLogout}
                     >
                       <LogOut size={16} />
@@ -1057,7 +1057,7 @@ export default function Sidebar({
               <div className="flex items-center gap-2">
                 <ThemeToggle />
                 <button
-                  className="flex-1 flex items-center gap-2.5 h-9 px-3 rounded-md text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                  className="flex-1 flex items-center gap-2.5 h-9 px-3 rounded-v2-pill text-sm text-destructive hover:bg-destructive/10 transition-colors"
                   onClick={onLogout}
                 >
                   <LogOut size={16} />
