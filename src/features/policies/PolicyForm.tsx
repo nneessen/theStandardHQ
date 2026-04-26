@@ -5,7 +5,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useCarriers } from "../../hooks/carriers";
 import { useProducts } from "../../hooks/products/useProducts";
 import { NewPolicyForm, Policy } from "../../types/policy.types";
-import { Button } from "@/components/ui/button";
+import { PillButton } from "@/components/v2";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -286,66 +286,70 @@ export const PolicyForm: React.FC<PolicyFormProps> = ({
       onSubmit={handleSubmit}
       className="flex-1 flex flex-col overflow-hidden min-h-0"
     >
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 p-3 md:p-4 overflow-y-auto min-h-0 overscroll-y-contain">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-5 p-4 md:p-5 overflow-y-auto min-h-0 overscroll-y-contain">
         {/* Left Column - Client Information */}
-        <PolicyFormClientSection
-          formData={formData}
-          displayErrors={displayErrors}
-          carriers={carriers}
-          products={carrierProducts}
-          productsLoading={productsLoading}
-          productCommissionRates={productCommissionRates}
-          termModifiers={termModifiers}
-          showContactDetails={showContactDetails}
-          onShowContactDetailsChange={setShowContactDetails}
-          onInputChange={handleInputChange}
-          onSelectChange={handleSelectChange}
-          onPhoneChange={handlePhoneChange}
-          onDOBChange={handleDOBChange}
-        />
+        <section className="flex flex-col gap-3">
+          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+            Client
+          </div>
+          <PolicyFormClientSection
+            formData={formData}
+            displayErrors={displayErrors}
+            carriers={carriers}
+            products={carrierProducts}
+            productsLoading={productsLoading}
+            productCommissionRates={productCommissionRates}
+            termModifiers={termModifiers}
+            showContactDetails={showContactDetails}
+            onShowContactDetailsChange={setShowContactDetails}
+            onInputChange={handleInputChange}
+            onSelectChange={handleSelectChange}
+            onPhoneChange={handlePhoneChange}
+            onDOBChange={handleDOBChange}
+          />
+        </section>
 
         {/* Right Column - Policy Details */}
-        <PolicyFormPolicySection
-          formData={formData}
-          displayErrors={displayErrors}
-          policyId={policyId}
-          annualPremium={annualPremium}
-          expectedCommission={expectedCommission}
-          productCommissionRates={productCommissionRates}
-          onInputChange={handleInputChange}
-          onSelectChange={handleSelectChange}
-        />
+        <section className="flex flex-col gap-3">
+          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+            Policy
+          </div>
+          <PolicyFormPolicySection
+            formData={formData}
+            displayErrors={displayErrors}
+            policyId={policyId}
+            annualPremium={annualPremium}
+            expectedCommission={expectedCommission}
+            productCommissionRates={productCommissionRates}
+            onInputChange={handleInputChange}
+            onSelectChange={handleSelectChange}
+          />
+        </section>
       </div>
 
-      {/* Footer */}
-      <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-        <Button
+      {/* Footer — fixed, no scroll */}
+      <div className="flex items-center justify-end gap-2 px-5 py-3 border-t border-v2-ring bg-v2-card-tinted flex-shrink-0">
+        <PillButton
           type="button"
           onClick={onClose}
-          variant="ghost"
+          tone="ghost"
           size="sm"
-          className="h-8 text-xs"
           disabled={isLoading}
         >
           Cancel
-        </Button>
-        <Button
-          type="submit"
-          size="sm"
-          disabled={isLoading}
-          className="h-8 text-xs bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-        >
+        </PillButton>
+        <PillButton type="submit" tone="black" size="sm" disabled={isLoading}>
           {isLoading ? (
             <>
-              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-              {policyId ? "Saving..." : "Creating..."}
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              {policyId ? "Saving…" : "Creating…"}
             </>
           ) : policyId ? (
-            "Update Policy"
+            "Update policy"
           ) : (
-            "Add Policy"
+            "Add policy"
           )}
-        </Button>
+        </PillButton>
       </div>
 
       {/* Submit Date Confirmation Dialog */}

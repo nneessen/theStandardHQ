@@ -262,7 +262,7 @@ export const PolicyDashboard: React.FC = () => {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
+    <div className="flex flex-col gap-5">
       <PolicyList
         onEditPolicy={handleEditPolicy}
         onNewPolicy={() => setIsPolicyFormOpen(true)}
