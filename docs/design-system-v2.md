@@ -13,12 +13,21 @@ display-weight typography. The result reads as "modern HR tool" instead of
 
 ## How v2 is layered
 
-- All v2 styles live under the `.theme-v2` class — they do not affect any
-  page that is not explicitly opted in.
+- All v2 styles live under the `.theme-v2` class.
+- **Every authenticated route is already wrapped in `theme-v2 v2-canvas`
+  by `src/App.tsx`** (both the sidebar variant and the free-user-header
+  variant). New pages do not need to wrap themselves — they inherit the
+  cream canvas, Plus Jakarta Sans, and ink palette automatically.
+- Three global overrides are scoped to `.theme-v2` in `src/index.css`:
+  1. shadcn `<Card>` (rounded-xl + bg-card) → v2-md radius, soft shadow,
+     soft ring border, hover lift
+  2. Page `<h1>` / `<h2>` default to `font-display` (Plus Jakarta Sans)
+  3. shadcn primary buttons (`rounded-md`) become pill-shaped
+- Per-page migration is now **only about layout polish** — replacing
+  list/table chrome with `SoftCard`, adding hero strips, swapping
+  buttons for `PillButton`. Visual baseline is already there.
 - Existing shadcn tokens, dark mode, and the recruiting amber theme are
-  untouched.
-- Migration is per-page: wrap the page root in `<SectionShell>` and swap
-  shadcn primitives for v2 primitives where the visual matters.
+  untouched. Public landing & recruiting funnels keep their custom themes.
 
 ## Tokens
 
@@ -143,17 +152,36 @@ Pure-SVG donut for circular metrics with a slot for center content.
 />
 ```
 
-## Migrating a page — 4-step recipe
+## Migrating a page — what's automatic vs. manual
 
-1. **Wrap the page root in `<SectionShell>`** to apply the canvas gradient
-   and font-display to its subtree.
-2. **Swap top-level container `Card` → `SoftCard`** with `padding="lg"` and
-   `lift` for hero cards.
-3. **Replace shadcn `Button` (rectangular) with `PillButton`** for primary
-   CTAs. Keep the rectangular `Button` inside data tables and dialog
-   footers — it's denser there.
-4. **Replace hard borders (`border-zinc-200`) with `border-v2-ring`** and
-   replace `bg-white` with `bg-v2-card`.
+### Automatic (already done for every authenticated page)
+
+The `App.tsx` content wrapper applies `theme-v2 v2-canvas font-display
+text-v2-ink` around the routed `<Outlet>`, and `index.css` has scoped
+overrides under `.theme-v2`:
+
+- shadcn `<Card>` picks up v2 radius + soft shadow + ring border
+- `<h1>` / `<h2>` default to Plus Jakarta Sans display font
+- shadcn primary buttons (`rounded-md`) become pill-shaped
+
+So a brand-new page that just uses `Card` + `Button` + `h1` already looks
+v2 with no code changes.
+
+### Manual (per-page polish)
+
+Reach for these primitives when the default chrome isn't enough:
+
+1. **`<SectionShell>`** — only needed on **unauthenticated** pages
+   (auth screens, landing). Auth routes inherit it from `App.tsx`.
+2. **`<SoftCard>` over `<Card>`** when you want the bigger rounded-lg
+   look (28px radius), the dark variant for "today" / task lists,
+   or photo-bg cards.
+3. **`<PillButton>` over `<Button>`** for primary page CTAs — same
+   pill shape but with explicit yellow / black tones.
+4. **`<MetricBar>` / `<StatTile>` / `<RingProgress>`** for KPI hero
+   strips (see `DashboardHeroV2.tsx`).
+5. **`border-v2-ring`** instead of `border-zinc-200` if you ever
+   author a hard border manually.
 
 Validate: `npm run build` (zero TS errors) → start dev server → eyeball at
 1280 / 1440 / 1920 → confirm the dark-mode toggle still works on the page.
@@ -177,51 +205,52 @@ Validate: `npm run build` (zero TS errors) → start dev server → eyeball at
 
 ## Page migration checklist
 
-Already on v2:
+### Baseline v2 (automatic — applies to every authenticated page)
 
-- [x] Sidebar (`src/components/layout/Sidebar.tsx`)
+- [x] Global `theme-v2 v2-canvas font-display` wrapper in `App.tsx`
+- [x] Global Card / heading / button overrides in `index.css`
+- [x] Sidebar (`src/components/layout/Sidebar.tsx`) — pill nav items, black active state, yellow dot
 - [x] Login (`src/features/auth/Login.tsx`) + SignInForm + ResetPasswordForm
-- [x] Dashboard home — hero region (`src/features/dashboard/DashboardHome.tsx` +
-      `DashboardHeroV2.tsx`); lower sections wrapped in `SoftCard`s
+- [x] Dashboard home — hero region + all lower sections in `SoftCard`s
+- [x] Auxiliary auth pages (AuthCallback, EmailVerificationPending, PendingApproval, DeniedAccess, ResetPassword) — themed wrappers
+- [x] Public landing fallback themed (recruiter-customized sections retain their own theme)
 
-To migrate (estimated effort tag in parens — XS/S/M/L):
+### Optional polish (manual — opt in when a page deserves a hero strip)
 
-- [ ] `src/features/auth/AuthCallback.tsx` (XS)
-- [ ] `src/features/auth/EmailVerificationPending.tsx` (XS)
-- [ ] `src/features/auth/PendingApproval.tsx` (XS)
-- [ ] `src/features/auth/DeniedAccess.tsx` (XS)
-- [ ] `src/features/auth/ResetPassword.tsx` (S — confirm screen, not flow)
-- [ ] `src/features/landing/PublicLandingPage.tsx` (L — has a database-driven
-      theme of its own; coordinate with `landingPageService` before swapping
-      tokens, or apply v2 only to the auth-CTA strip)
-- [ ] `src/features/dashboard/components/Masthead.tsx` (S — currently unused
-      after v2 hero swap; can be deleted once no other route imports it)
-- [ ] `src/features/dashboard/components/HeroSummary.tsx` (S — same as above)
-- [ ] `src/features/dashboard/components/SecondaryMetricsRow.tsx` (S — same)
-- [ ] `src/features/dashboard/components/PaceLines.tsx` (S — restyle bars to
-      `MetricBar` aesthetic)
-- [ ] `src/features/dashboard/components/EditorialAlertsActions.tsx` (M)
-- [ ] `src/features/dashboard/components/DetailsSection.tsx` (M)
-- [ ] `src/features/dashboard/components/OrgMetricsSection.tsx` (M)
-- [ ] `src/features/dashboard/components/TeamRecruitingSection.tsx` (M)
-- [ ] Policies (`src/features/policies/*`) (L — large data tables, use
-      SoftCard wrapper only)
-- [ ] Commissions (`src/features/commissions/*`) (L)
-- [ ] Recruiting pipeline (`src/features/recruiting/*`) (L)
-- [ ] Reports (`src/features/reports/*`) (L)
-- [ ] Targets (`src/features/targets/*`) (M)
-- [ ] Analytics (`src/features/analytics/*`) (L)
-- [ ] Hierarchy / Team (`src/features/hierarchy/*`) (M)
-- [ ] Expenses (`src/features/expenses/*`) (M)
-- [ ] Billing (`src/features/billing/*`) (M)
-- [ ] Settings (`src/features/settings/*`) (L — many sub-pages)
-- [ ] Admin (`src/features/admin/*`) (L)
-- [ ] Training / My Training / Agent Roadmap (M each)
-- [ ] Voice Agent (`src/features/voice-agent/*`) (M)
-- [ ] Lead Vendors / Lead Drop / Marketing (S each)
-- [ ] Workflows / Business Tools / Quick Quote / UW Wizard (M each)
-- [ ] Leaderboard (S)
-- [ ] Messages (M)
+These pages already look v2 thanks to the global overrides. Only return
+to polish them when product wants them to feel more like the dashboard
+(metric bars, hero photo card, ring progress, etc.):
+
+- [ ] Policies (`src/features/policies/*`) — list-heavy; consider
+      `SoftCard` wrap on the toolbar/filter chrome
+- [ ] Commissions / Comp Guide
+- [ ] Recruiting pipeline (already partially card-based)
+- [ ] Reports — wrap report blocks in `SoftCard`
+- [ ] Targets — natural fit for `MetricBar` hero
+- [ ] Analytics — natural fit for `StatTile` row + `RingProgress`
+- [ ] Hierarchy / Team
+- [ ] Expenses
+- [ ] Billing
+- [ ] Settings (multi-tab; one tab at a time)
+- [ ] Admin (`src/features/admin/*`)
+- [ ] Training / My Training / Agent Roadmap
+- [ ] Voice Agent / Chat Bot
+- [ ] Lead Vendors / Lead Drop / Marketing / Messages
+- [ ] Workflows / Business Tools / Quick Quote / UW Wizard
+- [ ] Close KPI / Close AI Builder / Channel Orchestration
+- [ ] Leaderboard
+
+### Out of band
+
+- Public landing (`src/features/landing/PublicLandingPage.tsx`) — owned
+  by `landingPageService` (recruiter customization). Don't override its
+  theme unless you also update the service contract.
+- Recruit pipeline (`src/features/recruiting/...` recruit-side flows) —
+  has its own brand stack via `RecruitHeader` + amber recruiting tokens.
+  Leave alone or pair-migrate with the recruiting team.
+- Legacy editorial dashboard subcomponents (`Masthead`, `HeroSummary`,
+  `SecondaryMetricsRow`) — superseded by `DashboardHeroV2`. Can be
+  deleted once no other route imports them.
 
 ## Reference
 
