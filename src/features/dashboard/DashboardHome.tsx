@@ -31,18 +31,16 @@ import type { NewPolicyForm } from "../../types/policy.types";
 import { transformFormToCreateData } from "../policies/utils/policyFormTransformer";
 import { formatCurrency } from "@/lib/format";
 
-// New editorial components
-import { Masthead } from "./components/Masthead";
-import { HeroSummary } from "./components/HeroSummary";
-import {
-  SecondaryMetricsRow,
-  type SecondaryMetric,
-} from "./components/SecondaryMetricsRow";
+// New editorial components (kept for the lower sections)
 import { PaceLines, type PaceLine } from "./components/PaceLines";
 import { EditorialAlertsActions } from "./components/EditorialAlertsActions";
 import { DetailsSection } from "./components/DetailsSection";
 import { OrgMetricsSection } from "./components/OrgMetricsSection";
 import { TeamRecruitingSection } from "./components/TeamRecruitingSection";
+
+// V2 hero + shell
+import { DashboardHeroV2 } from "./components/DashboardHeroV2";
+import { SectionShell, SoftCard } from "@/components/v2";
 
 // Dialogs
 import { ExpenseDialogCompact as ExpenseDialog } from "../expenses/components/ExpenseDialogCompact";
@@ -220,7 +218,6 @@ export const DashboardHome: React.FC = () => {
     timePeriod,
   );
   const periodSuffix = getPeriodSuffix(timePeriod);
-  const isAboveBreakeven = periodAnalytics.surplusDeficit >= 0;
   const isCreating = createPolicy.isPending || createExpense.isPending;
 
   const elapsed = periodElapsed(timePeriod, dateRange, periodOffset);
@@ -253,40 +250,6 @@ export const DashboardHome: React.FC = () => {
     policiesNeeded: policiesNeededDisplay,
     periodSuffix,
   });
-  const activeAlertsCount = alertsConfig.filter((a) => a.condition).length;
-
-  // Secondary metrics — 4 inline big numerics following the hero
-  const secondaryMetrics: SecondaryMetric[] = [
-    {
-      label: "Policies",
-      value: periodPolicies.newCount.toLocaleString(),
-      caption:
-        policiesNeededDisplay > 0
-          ? `${Math.ceil(policiesNeededDisplay)} more to pace`
-          : "target hit",
-    },
-    {
-      label: "Premium",
-      value: formatCurrency(periodPolicies.premiumWritten),
-      caption:
-        periodPolicies.averagePremium > 0
-          ? `${formatCurrency(periodPolicies.averagePremium)} avg`
-          : undefined,
-    },
-    {
-      label: "Expenses",
-      value: formatCurrency(periodExpenses.total),
-      caption:
-        periodCommissions.paid > 0
-          ? `${((periodExpenses.total / periodCommissions.paid) * 100).toFixed(0)}% of commissions`
-          : undefined,
-    },
-    {
-      label: "Pipeline",
-      value: formatCurrency(currentState.pendingPipeline),
-      caption: "pending commissions",
-    },
-  ];
 
   // Pace lines — full-width labelled progress bars
   const commissionTarget = periodAnalytics.paceMetrics.monthlyTarget || null;
@@ -437,13 +400,34 @@ export const DashboardHome: React.FC = () => {
     dashboardFeatures.isImoAdmin ||
     dashboardFeatures.isAgencyOwner;
 
+  // V2 metric percentages
+  const pacePct =
+    commissionTarget && commissionTarget > 0
+      ? Math.min(1, periodCommissions.paid / commissionTarget)
+      : expectedPct;
+  const persistencyPct = Math.max(0, 1 - derivedMetrics.lapsedRate / 100);
+  const pipelineFillPct =
+    commissionTarget && commissionTarget > 0
+      ? Math.min(1, currentState.pendingPipeline / commissionTarget)
+      : Math.min(
+          1,
+          currentState.pendingPipeline / Math.max(1, periodCommissions.paid),
+        );
+
+  const greetingName =
+    user?.email
+      ?.split("@")[0]
+      ?.split(".")[0]
+      ?.replace(/^./, (c) => c.toUpperCase()) || "there";
+
   return (
     <>
-      <div className="min-h-[calc(100vh-4rem)] bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
+      <SectionShell>
         <div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12 py-4 sm:py-6">
-          <Masthead
-            title={title}
-            subtitle={
+          <DashboardHeroV2
+            greetingName={greetingName}
+            periodTitle={title}
+            daysSubtitle={
               showDaysSubtitle
                 ? `Day ${elapsed.daysElapsed} of ${elapsed.daysTotal}`
                 : undefined
@@ -452,40 +436,40 @@ export const DashboardHome: React.FC = () => {
             onTimePeriodChange={handleTimePeriodChange}
             periodOffset={periodOffset}
             onOffsetChange={setPeriodOffset}
+            pacePct={pacePct}
+            persistencyPct={persistencyPct}
             elapsedPct={expectedPct}
+            pipelineFillPct={pipelineFillPct}
+            policiesCount={periodPolicies.newCount}
+            premiumWritten={periodPolicies.premiumWritten}
+            pendingPipeline={currentState.pendingPipeline}
           />
 
-          <HeroSummary
-            periodLabel={title}
-            primaryValue={periodCommissions.paid}
-            net={periodAnalytics.surplusDeficit}
-            policies={periodPolicies.newCount}
-            policiesNeeded={policiesNeededDisplay}
-            alertsCount={activeAlertsCount}
-            isAboveBreakeven={isAboveBreakeven}
-          />
+          <SoftCard padding="lg" className="mb-6">
+            <PaceLines
+              lines={paceLines}
+              daysElapsed={showDaysSubtitle ? elapsed.daysElapsed : undefined}
+              daysTotal={showDaysSubtitle ? elapsed.daysTotal : undefined}
+              expectedPct={expectedPct}
+            />
+          </SoftCard>
 
-          <SecondaryMetricsRow metrics={secondaryMetrics} />
+          <SoftCard padding="lg" className="mb-6">
+            <EditorialAlertsActions
+              alerts={augmentedAlerts}
+              actions={quickActions}
+              onActionClick={handleQuickAction}
+              isCreating={isCreating}
+            />
+          </SoftCard>
 
-          <PaceLines
-            lines={paceLines}
-            daysElapsed={showDaysSubtitle ? elapsed.daysElapsed : undefined}
-            daysTotal={showDaysSubtitle ? elapsed.daysTotal : undefined}
-            expectedPct={expectedPct}
-          />
-
-          <EditorialAlertsActions
-            alerts={augmentedAlerts}
-            actions={quickActions}
-            onActionClick={handleQuickAction}
-            isCreating={isCreating}
-          />
-
-          <DetailsSection sections={kpiConfig} />
+          <SoftCard padding="lg" className="mb-6">
+            <DetailsSection sections={kpiConfig} />
+          </SoftCard>
 
           {showOrg && (
-            <section className="py-6 border-t border-zinc-200 dark:border-zinc-800">
-              <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-zinc-500 dark:text-zinc-400 mb-3">
+            <SoftCard padding="lg" className="mb-6">
+              <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-subtle mb-3">
                 Organization
               </h2>
               <OrgMetricsSection
@@ -495,11 +479,11 @@ export const DashboardHome: React.FC = () => {
                 isAgencyOwner={dashboardFeatures.isAgencyOwner}
                 dateRange={dateRange}
               />
-            </section>
+            </SoftCard>
           )}
 
-          <section className="py-6 border-t border-zinc-200 dark:border-zinc-800">
-            <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-zinc-500 dark:text-zinc-400 mb-3">
+          <SoftCard padding="lg" className="mb-6">
+            <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-subtle mb-3">
               Team & Recruiting
             </h2>
             <TeamRecruitingSection
@@ -509,9 +493,9 @@ export const DashboardHome: React.FC = () => {
               unreadMessages={unreadMessages ?? 0}
               hasAccess={hasTeamAccess || dashboardFeatures.isAdmin}
             />
-          </section>
+          </SoftCard>
         </div>
-      </div>
+      </SectionShell>
 
       <ExpenseDialog
         open={activeDialog === "expense"}
