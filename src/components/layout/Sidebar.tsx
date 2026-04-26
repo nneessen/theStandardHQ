@@ -853,9 +853,9 @@ export default function Sidebar({
       {/* Sidebar */}
       <div
         className={cn(
-          "theme-v2 fixed left-0 top-0 h-screen bg-v2-card-tinted border-r border-v2-ring flex flex-col z-[100] transition-all duration-200 font-display",
+          "theme-v2 fixed left-3 top-3 bottom-3 h-[calc(100vh-1.5rem)] bg-v2-card-tinted border border-v2-ring rounded-v2-lg shadow-v2-lift flex flex-col z-[100] transition-all duration-200 font-display overflow-hidden",
           isCollapsed ? "w-[72px]" : "w-[220px]",
-          isMobile && (isMobileOpen ? "translate-x-0" : "-translate-x-full"),
+          isMobile && (isMobileOpen ? "translate-x-0" : "-translate-x-[110%]"),
           isMobile && !isCollapsed && "w-[280px]",
         )}
       >
@@ -1076,10 +1076,11 @@ export default function Sidebar({
         userName={userName}
       />
 
-      {/* Main content margin helper */}
+      {/* Main content margin helper — sidebar floats with 12px gutters,
+          so reserve sidebar width + 12px left + 12px right of breathing room. */}
       <style>{`
         .main-content {
-          margin-left: ${isCollapsed ? "72px" : "220px"};
+          margin-left: ${isCollapsed ? "96px" : "244px"};
           transition: margin-left 0.2s ease;
         }
         @media (max-width: 768px) {
