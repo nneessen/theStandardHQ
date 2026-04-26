@@ -37,7 +37,7 @@ export function TrendComparison() {
         <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Trend Comparison
         </div>
-        <div className="p-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-3 text-center text-[11px] text-v2-ink-muted">
           Loading...
         </div>
       </div>
@@ -127,18 +127,42 @@ export function TrendComparison() {
     return ((current - previous) / previous) * 100;
   };
 
+  const apChangePct = getChangePercent(currentAP, prevAP);
+  const apTrend = apChangePct >= 0;
+
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
-          Trend Comparison
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-5">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+            Trend Comparison
+          </div>
+          <div className="text-xs text-v2-ink-muted mt-0.5">
+            vs prior period
+          </div>
         </div>
-        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
-          vs prior period
-        </span>
+        <div className="text-right">
+          <div
+            className={cn(
+              "text-2xl font-semibold tracking-tight leading-none inline-flex items-center gap-1",
+              apTrend
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-red-600 dark:text-red-400",
+            )}
+          >
+            {apTrend ? (
+              <TrendingUp className="h-5 w-5" />
+            ) : (
+              <TrendingDown className="h-5 w-5" />
+            )}
+            {apChangePct > 0 ? "+" : ""}
+            {Math.round(apChangePct)}%
+          </div>
+          <div className="text-[10px] text-v2-ink-subtle mt-1">AP change</div>
+        </div>
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         {metrics.map((metric) => {
           const changePct = getChangePercent(metric.current, metric.previous);
           const isUp = changePct > 0;
@@ -150,20 +174,18 @@ export function TrendComparison() {
               key={metric.label}
               className="flex items-center justify-between text-[11px] py-0.5"
             >
-              <span className="text-zinc-500 dark:text-zinc-400">
-                {metric.label}
-              </span>
+              <span className="text-v2-ink-muted">{metric.label}</span>
               <div className="flex items-center gap-3">
                 {/* Previous value */}
-                <span className="font-mono text-zinc-400 dark:text-zinc-500 text-[10px]">
+                <span className="font-mono text-v2-ink-subtle text-[10px]">
                   {formatValue(metric.previous, metric.format)}
                 </span>
 
                 {/* Arrow */}
-                <span className="text-zinc-300 dark:text-zinc-700">→</span>
+                <span className="text-v2-ink-subtle">→</span>
 
                 {/* Current value */}
-                <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                <span className="font-mono font-bold text-v2-ink">
                   {formatValue(metric.current, metric.format)}
                 </span>
 
@@ -174,8 +196,7 @@ export function TrendComparison() {
                     isUp &&
                       "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
                     isDown && "bg-red-500/10 text-red-600 dark:text-red-400",
-                    isNeutral &&
-                      "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400",
+                    isNeutral && "bg-v2-ring text-v2-ink-muted",
                   )}
                 >
                   {isUp && <TrendingUp className="h-2.5 w-2.5" />}

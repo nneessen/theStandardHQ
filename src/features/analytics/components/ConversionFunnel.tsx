@@ -28,7 +28,7 @@ export function ConversionFunnel() {
         <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Conversion Funnel
         </div>
-        <div className="p-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-3 text-center text-[11px] text-v2-ink-muted">
           Loading...
         </div>
       </div>
@@ -102,19 +102,29 @@ export function ConversionFunnel() {
   const maxCount = Math.max(...stages.map((s) => s.count), 1);
 
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
-          Conversion Funnel
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-5">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+            Conversion Funnel
+          </div>
+          <div className="text-xs text-v2-ink-muted mt-0.5">
+            Lead-to-policy pipeline
+          </div>
         </div>
-        {avgTimeToClose > 0 && (
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
-            Avg close: {avgTimeToClose}d
-          </span>
+        {leadsPurchased > 0 && (
+          <div className="text-right">
+            <div className="text-3xl font-semibold tracking-tight text-v2-ink leading-none">
+              {((active / leadsPurchased) * 100).toFixed(1)}%
+            </div>
+            <div className="text-[10px] text-v2-ink-subtle mt-1">
+              lead → active
+            </div>
+          </div>
         )}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         {stages.map((stage, idx) => {
           const widthPct = maxCount > 0 ? (stage.count / maxCount) * 100 : 0;
           const prevCount = idx > 0 ? stages[idx - 1].count : 0;
@@ -124,11 +134,11 @@ export function ConversionFunnel() {
           return (
             <div key={stage.label}>
               <div className="flex items-center justify-between mb-0.5">
-                <span className="text-[11px] text-zinc-600 dark:text-zinc-300">
+                <span className="text-[11px] text-v2-ink-muted">
                   {stage.label}
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                  <span className="text-[11px] font-mono font-bold text-v2-ink">
                     {stage.count.toLocaleString()}
                   </span>
                   {conversionRate && (
@@ -164,16 +174,16 @@ export function ConversionFunnel() {
       {/* Summary stats */}
       <div className="mt-2 grid grid-cols-2 gap-1 text-[11px]">
         <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
-          <div className="text-zinc-400 dark:text-zinc-500">Lead→Active</div>
-          <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
+          <div className="text-v2-ink-subtle">Lead→Active</div>
+          <div className="font-bold font-mono text-v2-ink">
             {leadsPurchased > 0
               ? `${((active / leadsPurchased) * 100).toFixed(1)}%`
               : "—"}
           </div>
         </div>
         <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
-          <div className="text-zinc-400 dark:text-zinc-500">Avg Close Time</div>
-          <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
+          <div className="text-v2-ink-subtle">Avg Close Time</div>
+          <div className="font-bold font-mono text-v2-ink">
             {avgTimeToClose > 0 ? `${avgTimeToClose} days` : "—"}
           </div>
         </div>

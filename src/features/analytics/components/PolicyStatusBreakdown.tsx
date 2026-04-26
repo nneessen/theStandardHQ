@@ -49,7 +49,7 @@ export function PolicyStatusBreakdown() {
         <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Policy Status
         </div>
-        <div className="p-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-3 text-center text-[11px] text-v2-ink-muted">
           Loading...
         </div>
       </div>
@@ -71,35 +71,49 @@ export function PolicyStatusBreakdown() {
   };
 
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
-            Policy Status
+      <div className="mb-4">
+        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+          Policy Status
+        </div>
+        <div className="text-xs text-v2-ink-muted mt-0.5">
+          Active vs lapsed vs cancelled
+        </div>
+      </div>
+
+      {/* Three big stat tiles */}
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-v2-sm p-3">
+          <div className="text-[10px] uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-300 font-semibold">
+            Active
           </div>
-          <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
-            Active vs Lapsed vs Cancelled
+          <div className="text-2xl font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5 leading-none">
+            {statusSummary.active.count}
           </div>
         </div>
-        {/* Status Summary */}
-        <div className="flex items-center gap-2 text-[10px]">
-          <span className="text-emerald-600 dark:text-emerald-400 font-mono font-bold">
-            {statusSummary.active.count}
-          </span>
-          <span className="text-amber-600 dark:text-amber-400 font-mono font-bold">
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-v2-sm p-3">
+          <div className="text-[10px] uppercase tracking-[0.14em] text-amber-700 dark:text-amber-300 font-semibold">
+            Lapsed
+          </div>
+          <div className="text-2xl font-semibold text-amber-600 dark:text-amber-400 mt-0.5 leading-none">
             {statusSummary.lapsed.count}
-          </span>
-          <span className="text-red-600 dark:text-red-400 font-mono font-bold">
+          </div>
+        </div>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-v2-sm p-3">
+          <div className="text-[10px] uppercase tracking-[0.14em] text-red-700 dark:text-red-300 font-semibold">
+            Cancelled
+          </div>
+          <div className="text-2xl font-semibold text-red-600 dark:text-red-400 mt-0.5 leading-none">
             {statusSummary.cancelled.count}
-          </span>
+          </div>
         </div>
       </div>
 
       {/* Compact Monthly Trend Chart */}
-      <div className="mb-2">
-        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em] mb-1">
-          12-Month Trend
+      <div className="mb-3">
+        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em] mb-2">
+          12-month trend
         </div>
         <div className="h-32">
           <ResponsiveContainer width="100%" height="100%">
@@ -159,11 +173,11 @@ export function PolicyStatusBreakdown() {
               </div>
               <Table className="text-[11px]">
                 <TableHeader>
-                  <TableRow className="h-7 border-b border-zinc-200 dark:border-zinc-800">
-                    <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                  <TableRow className="h-7 border-b border-v2-ring">
+                    <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                       Product
                     </TableHead>
-                    <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+                    <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                       Rate
                     </TableHead>
                   </TableRow>
@@ -172,11 +186,11 @@ export function PolicyStatusBreakdown() {
                   {bestPerformers.slice(0, 3).map((product, idx) => (
                     <TableRow
                       key={idx}
-                      className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                      className="border-b border-v2-ring/60 hover:bg-v2-canvas"
                     >
-                      <TableCell className="p-1.5 text-zinc-900 dark:text-zinc-100">
+                      <TableCell className="p-1.5 text-v2-ink">
                         {formatProductName(product.productName)}
-                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 ml-1">
+                        <span className="text-[10px] text-v2-ink-subtle ml-1">
                           ({product.activePolicies})
                         </span>
                       </TableCell>
@@ -198,11 +212,11 @@ export function PolicyStatusBreakdown() {
               </div>
               <Table className="text-[11px]">
                 <TableHeader>
-                  <TableRow className="h-7 border-b border-zinc-200 dark:border-zinc-800">
-                    <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                  <TableRow className="h-7 border-b border-v2-ring">
+                    <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                       Product
                     </TableHead>
-                    <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+                    <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                       Rate
                     </TableHead>
                   </TableRow>
@@ -211,11 +225,11 @@ export function PolicyStatusBreakdown() {
                   {needsAttention.slice(0, 3).map((product, idx) => (
                     <TableRow
                       key={idx}
-                      className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                      className="border-b border-v2-ring/60 hover:bg-v2-canvas"
                     >
-                      <TableCell className="p-1.5 text-zinc-900 dark:text-zinc-100">
+                      <TableCell className="p-1.5 text-v2-ink">
                         {formatProductName(product.productName)}
-                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 ml-1">
+                        <span className="text-[10px] text-v2-ink-subtle ml-1">
                           ({product.activePolicies})
                         </span>
                       </TableCell>
@@ -232,7 +246,7 @@ export function PolicyStatusBreakdown() {
       )}
 
       {bestPerformers.length === 0 && needsAttention.length === 0 && (
-        <div className="text-center text-[11px] text-zinc-400 dark:text-zinc-500 py-2">
+        <div className="text-center text-[11px] text-v2-ink-subtle py-2">
           Insufficient data for retention analysis
         </div>
       )}

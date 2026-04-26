@@ -31,7 +31,7 @@ export function ClientSegmentation() {
         <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Client Segments
         </div>
-        <div className="p-3 text-center text-[10px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-3 text-center text-[10px] text-v2-ink-muted">
           Loading...
         </div>
       </div>
@@ -91,27 +91,40 @@ export function ClientSegmentation() {
   ];
 
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-      <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em] mb-2">
-        Client Segments
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-5">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+            Client Segments
+          </div>
+          <div className="text-xs text-v2-ink-muted mt-0.5">
+            Value tiers & chargeback risk
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="text-2xl font-semibold tracking-tight text-v2-ink leading-none">
+            {formatCurrency(totalRevenue)}
+          </div>
+          <div className="text-[10px] text-v2-ink-subtle mt-1">total AP</div>
+        </div>
       </div>
 
       <Table className="text-[11px] mb-2">
         <TableHeader>
-          <TableRow className="h-7 border-b border-zinc-200 dark:border-zinc-800">
-            <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+          <TableRow className="h-7 border-b border-v2-ring">
+            <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
               Tier
             </TableHead>
-            <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+            <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
               Clients
             </TableHead>
-            <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+            <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
               Total AP
             </TableHead>
-            <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+            <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
               Avg AP
             </TableHead>
-            <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+            <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
               Mix %
             </TableHead>
           </TableRow>
@@ -120,7 +133,7 @@ export function ClientSegmentation() {
           {segmentTableData.map((row, idx) => (
             <TableRow
               key={idx}
-              className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+              className="border-b border-v2-ring/60 hover:bg-v2-canvas"
             >
               <TableCell className="p-1.5">
                 <span
@@ -136,13 +149,13 @@ export function ClientSegmentation() {
                   {row.tier}
                 </span>
               </TableCell>
-              <TableCell className="p-1.5 text-right font-mono text-zinc-500 dark:text-zinc-400">
+              <TableCell className="p-1.5 text-right font-mono text-v2-ink-muted">
                 {row.clients}
               </TableCell>
-              <TableCell className="p-1.5 text-right font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+              <TableCell className="p-1.5 text-right font-mono font-semibold text-v2-ink">
                 {formatCurrency(row.totalAP)}
               </TableCell>
-              <TableCell className="p-1.5 text-right font-mono text-zinc-500 dark:text-zinc-400">
+              <TableCell className="p-1.5 text-right font-mono text-v2-ink-muted">
                 {formatCurrency(row.avgAP)}
               </TableCell>
               <TableCell className="p-1.5 text-right">
@@ -172,14 +185,14 @@ export function ClientSegmentation() {
           </div>
           <Table className="text-[11px]">
             <TableHeader>
-              <TableRow className="h-7 border-b border-zinc-200 dark:border-zinc-800">
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+              <TableRow className="h-7 border-b border-v2-ring">
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                   Client
                 </TableHead>
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                   At Risk
                 </TableHead>
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                   Age
                 </TableHead>
               </TableRow>
@@ -188,11 +201,11 @@ export function ClientSegmentation() {
               {chargebackRisk.map((row) => (
                 <TableRow
                   key={row.policyId}
-                  className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  className="border-b border-v2-ring/60 hover:bg-v2-canvas"
                 >
                   <TableCell className="p-1.5">
                     <span
-                      className="font-medium text-zinc-900 dark:text-zinc-100 truncate"
+                      className="font-medium text-v2-ink truncate"
                       title={row.clientName}
                     >
                       {row.clientName}
@@ -209,7 +222,7 @@ export function ClientSegmentation() {
                           ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                           : row.riskLevel === "medium"
                             ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                            : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+                            : "bg-v2-ring text-v2-ink-muted",
                       )}
                     >
                       {row.monthsInContestability}mo

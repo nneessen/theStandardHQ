@@ -45,7 +45,7 @@ export function CarriersProductsBreakdown() {
         <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Carriers & Products
         </div>
-        <div className="p-3 text-center text-[10px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-3 text-center text-[10px] text-v2-ink-muted">
           Loading...
         </div>
       </div>
@@ -182,34 +182,49 @@ export function CarriersProductsBreakdown() {
       });
   });
 
+  const totalPremiumAcrossCarriers = sortedCarriers.reduce(
+    (s, c) => s + c.totalPremium,
+    0,
+  );
+
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
-          Carriers & Products
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-5">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+            Carriers & Products
+          </div>
+          <div className="text-xs text-v2-ink-muted mt-0.5">
+            {sortedCarriers.length} carriers active
+          </div>
         </div>
-        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
-          {sortedCarriers.length} carriers
-        </span>
+        <div className="text-right">
+          <div className="text-2xl font-semibold tracking-tight text-v2-ink leading-none">
+            {formatCurrency(totalPremiumAcrossCarriers)}
+          </div>
+          <div className="text-[10px] text-v2-ink-subtle mt-1">
+            total premium
+          </div>
+        </div>
       </div>
 
       {tableData.length > 0 ? (
         <Table className="text-[11px]">
           <TableHeader>
-            <TableRow className="h-7 border-b border-zinc-200 dark:border-zinc-800">
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+            <TableRow className="h-7 border-b border-v2-ring">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                 Carrier / Product
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Policies
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Premium
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Rate
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Commission
               </TableHead>
             </TableRow>
@@ -218,29 +233,29 @@ export function CarriersProductsBreakdown() {
             {tableData.map((row, idx) => (
               <TableRow
                 key={idx}
-                className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                className="border-b border-v2-ring/60 hover:bg-v2-canvas"
               >
                 <TableCell className="p-1.5">
                   <span
                     className={cn(
                       row.isCarrier
-                        ? "font-semibold text-zinc-900 dark:text-zinc-100"
-                        : "text-[9px] text-zinc-500 dark:text-zinc-400",
+                        ? "font-semibold text-v2-ink"
+                        : "text-[9px] text-v2-ink-muted",
                     )}
                   >
                     {row.name}
                   </span>
                 </TableCell>
-                <TableCell className="p-1.5 text-right font-mono text-zinc-500 dark:text-zinc-400">
+                <TableCell className="p-1.5 text-right font-mono text-v2-ink-muted">
                   {row.policies}
                 </TableCell>
-                <TableCell className="p-1.5 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                <TableCell className="p-1.5 text-right font-mono text-v2-ink">
                   {formatCurrency(row.premium)}
                 </TableCell>
                 <TableCell className="p-1.5 text-right font-mono text-emerald-600 dark:text-emerald-400">
                   {row.avgRate.toFixed(1)}%
                 </TableCell>
-                <TableCell className="p-1.5 text-right font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                <TableCell className="p-1.5 text-right font-mono font-semibold text-v2-ink">
                   {formatCurrency(row.commission)}
                 </TableCell>
               </TableRow>
@@ -248,7 +263,7 @@ export function CarriersProductsBreakdown() {
           </TableBody>
         </Table>
       ) : (
-        <div className="p-3 text-center text-[11px] text-zinc-400 dark:text-zinc-500">
+        <div className="p-3 text-center text-[11px] text-v2-ink-subtle">
           No carrier data available
         </div>
       )}

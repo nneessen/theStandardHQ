@@ -25,7 +25,7 @@ export function PaceMetrics() {
         <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Pace Metrics
         </div>
-        <div className="p-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-3 text-center text-[11px] text-v2-ink-muted">
           Loading...
         </div>
       </div>
@@ -129,20 +129,20 @@ export function PaceMetrics() {
   };
 
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-start justify-between mb-4">
         <div>
           <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
             Pace Metrics
           </div>
-          <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
+          <div className="text-xs text-v2-ink-muted mt-0.5">
             {getTimePeriodLabel()}
           </div>
         </div>
         <div
           className={cn(
-            "px-2.5 py-1 rounded-v2-pill text-[10px] font-semibold tracking-wide uppercase",
+            "px-3 py-1 rounded-v2-pill text-[10px] font-semibold tracking-wide uppercase",
             isProfitable
               ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
               : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
@@ -152,91 +152,77 @@ export function PaceMetrics() {
         </div>
       </div>
 
-      {/* Metrics */}
-      <div className="space-y-1">
-        {/* AP Written */}
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="text-zinc-500 dark:text-zinc-400">AP Written</span>
-          <div className="flex items-center gap-2">
-            <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
-              {formatCurrency(premiumWritten)}
-            </span>
-            <span className="text-zinc-400 dark:text-zinc-500">
-              ({policyCount} policies)
-            </span>
+      {/* Hero number — projected AP */}
+      <div className="mb-4">
+        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em] mb-1">
+          Projected AP
+        </div>
+        <div className="text-3xl font-semibold tracking-tight text-v2-ink leading-none">
+          {formatCurrency(projectedAPTotal)}
+        </div>
+        <div className="text-[11px] text-v2-ink-muted mt-1">
+          @ {formatCurrency(currentAPPace)}/day · {projectedPolicyTotal}{" "}
+          projected policies
+        </div>
+      </div>
+
+      {/* Stat tiles */}
+      <div className="grid grid-cols-2 gap-2 mb-3">
+        <div className="bg-v2-canvas border border-v2-ring rounded-v2-sm p-3">
+          <div className="text-[10px] text-v2-ink-subtle uppercase tracking-[0.14em]">
+            AP written
+          </div>
+          <div className="text-lg font-semibold text-v2-ink mt-0.5 leading-tight">
+            {formatCurrency(premiumWritten)}
+          </div>
+          <div className="text-[10px] text-v2-ink-subtle mt-0.5">
+            {policyCount} policies
           </div>
         </div>
-
-        {/* Projected AP */}
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="text-zinc-500 dark:text-zinc-400">Projected AP</span>
-          <div className="flex items-center gap-2">
-            <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
-              {formatCurrency(projectedAPTotal)}
-            </span>
-            <span className="text-zinc-400 dark:text-zinc-500">
-              @ {formatCurrency(currentAPPace)}/day
-            </span>
+        <div className="bg-v2-canvas border border-v2-ring rounded-v2-sm p-3">
+          <div className="text-[10px] text-v2-ink-subtle uppercase tracking-[0.14em]">
+            Average AP
           </div>
-        </div>
-
-        {/* Average Premium */}
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="text-zinc-500 dark:text-zinc-400">Average AP</span>
-          <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+          <div className="text-lg font-semibold text-v2-ink mt-0.5 leading-tight">
             {formatCurrency(averagePremium)}
-          </span>
-        </div>
-
-        {/* Projected Policies */}
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="text-zinc-500 dark:text-zinc-400">
-            Projected Policies
-          </span>
-          <div className="flex items-center gap-2">
-            <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
-              {projectedPolicyTotal}
-            </span>
-            <span className="text-zinc-400 dark:text-zinc-500">
-              @ {currentPolicyPace.toFixed(1)}/day
-            </span>
+          </div>
+          <div className="text-[10px] text-v2-ink-subtle mt-0.5">
+            per policy
           </div>
         </div>
+      </div>
 
-        <div className="h-px bg-v2-ring my-2" />
+      <div className="h-px bg-v2-ring my-3" />
 
-        {/* Surplus/Deficit */}
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="text-zinc-500 dark:text-zinc-400 uppercase">
+      {/* Footer row — surplus/deficit + time */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex-1">
+          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
             {isProfitable ? "Surplus" : "Deficit"}
-          </span>
-          <div className="flex items-center gap-2">
-            <span
-              className={cn(
-                "font-mono font-bold",
-                isProfitable
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-red-600 dark:text-red-400",
-              )}
-            >
-              {formatCurrency(Math.abs(netIncome))}
-            </span>
-            {!isProfitable && (
-              <span className="text-zinc-400 dark:text-zinc-500">
-                (need {formatNumber(dailyTarget)}/day)
-              </span>
-            )}
           </div>
+          <div
+            className={cn(
+              "text-lg font-semibold leading-tight mt-0.5",
+              isProfitable
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-red-600 dark:text-red-400",
+            )}
+          >
+            {formatCurrency(Math.abs(netIncome))}
+          </div>
+          {!isProfitable && (
+            <div className="text-[10px] text-v2-ink-subtle">
+              need {formatNumber(dailyTarget)}/day
+            </div>
+          )}
         </div>
-
-        {/* Time Remaining */}
-        <div className="flex items-center justify-between text-[11px]">
-          <span className="text-zinc-500 dark:text-zinc-400">Time Left</span>
-          <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
-            {daysRemaining > 0
-              ? `${daysRemaining} ${daysRemaining === 1 ? "day" : "days"}`
-              : `${hoursRemaining} ${hoursRemaining === 1 ? "hour" : "hours"}`}
-          </span>
+        <div className="text-right">
+          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+            Time left
+          </div>
+          <div className="text-lg font-semibold text-v2-ink leading-tight mt-0.5">
+            {daysRemaining > 0 ? `${daysRemaining}d` : `${hoursRemaining}h`}
+          </div>
         </div>
       </div>
     </div>

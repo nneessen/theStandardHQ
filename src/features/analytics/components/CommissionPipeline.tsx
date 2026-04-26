@@ -24,7 +24,7 @@ export function CommissionPipeline() {
         <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Commission Pipeline
         </div>
-        <div className="p-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-3 text-center text-[11px] text-v2-ink-muted">
           Loading...
         </div>
       </div>
@@ -118,32 +118,43 @@ export function CommissionPipeline() {
   const projectedQuarterly = avgDailyEarnings * 90;
 
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-      <div className="mb-2">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-5">
+      <div className="mb-4">
         <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Commission Pipeline
         </div>
-        <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
-          Cash Flow Forecast
+        <div className="text-xs text-v2-ink-muted mt-0.5">
+          Cash flow forecast
+        </div>
+      </div>
+
+      {/* Hero pending number */}
+      <div className="mb-4">
+        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em] mb-1">
+          Total Pending
+        </div>
+        <div className="text-3xl font-semibold tracking-tight text-v2-ink leading-none">
+          {formatCurrency(totalPending)}
+        </div>
+        <div className="text-[11px] text-v2-ink-muted mt-1">
+          Quarterly projection · {formatCurrency(projectedQuarterly)}
         </div>
       </div>
 
       {/* Pipeline Timeline */}
-      <div className="space-y-2 mb-3">
+      <div className="space-y-2.5 mb-3">
         {/* Next 30 Days */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Clock className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-            <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-              Next 30 days
-            </span>
+            <span className="text-[11px] text-v2-ink-muted">Next 30 days</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold font-mono text-emerald-600 dark:text-emerald-400">
               {formatCurrency(pending30)}
             </span>
             {pendingCount30 > 0 && (
-              <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+              <span className="text-[10px] text-v2-ink-subtle">
                 ({pendingCount30})
               </span>
             )}
@@ -154,16 +165,14 @@ export function CommissionPipeline() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Clock className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-            <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-              Next 60 days
-            </span>
+            <span className="text-[11px] text-v2-ink-muted">Next 60 days</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold font-mono text-amber-600 dark:text-amber-400">
               {formatCurrency(pending60)}
             </span>
             {pendingCount60 > 0 && (
-              <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+              <span className="text-[10px] text-v2-ink-subtle">
                 ({pendingCount60})
               </span>
             )}
@@ -174,16 +183,14 @@ export function CommissionPipeline() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Clock className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-            <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-              Next 90 days
-            </span>
+            <span className="text-[11px] text-v2-ink-muted">Next 90 days</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold font-mono text-blue-600 dark:text-blue-400">
               {formatCurrency(pending90)}
             </span>
             {pendingCount90 > 0 && (
-              <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+              <span className="text-[10px] text-v2-ink-subtle">
                 ({pendingCount90})
               </span>
             )}
@@ -191,23 +198,21 @@ export function CommissionPipeline() {
         </div>
 
         {/* Divider */}
-        <div className="h-px bg-zinc-200 dark:bg-zinc-800" />
+        <div className="h-px bg-v2-ring" />
 
         {/* At Risk */}
         {atRisk > 0 && (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-3 w-3 text-red-600 dark:text-red-400" />
-              <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                At Risk
-              </span>
+              <span className="text-[11px] text-v2-ink-muted">At Risk</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold font-mono text-red-600 dark:text-red-400">
                 {formatCurrency(atRisk)}
               </span>
               {atRiskCount > 0 && (
-                <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                <span className="text-[10px] text-v2-ink-subtle">
                   ({atRiskCount})
                 </span>
               )}
@@ -216,42 +221,22 @@ export function CommissionPipeline() {
         )}
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-2 gap-2 p-2 bg-zinc-100 dark:bg-zinc-800 rounded">
-        <div className="text-center">
-          <div className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase">
-            Total Pending
-          </div>
-          <div className="text-sm font-bold font-mono text-blue-600 dark:text-blue-400">
-            {formatCurrency(totalPending)}
-          </div>
-        </div>
-        <div className="text-center">
-          <div className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase">
-            Quarterly Proj
-          </div>
-          <div className="text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400">
-            {formatCurrency(projectedQuarterly)}
-          </div>
-        </div>
-      </div>
-
-      {/* Cash Flow Status */}
+      {/* Cash Flow Status pill */}
       <div
         className={cn(
-          "mt-2 p-1.5 rounded text-center text-[10px] font-medium",
+          "rounded-v2-pill px-3 py-2 text-center text-[11px] font-semibold",
           totalPending > 50000
-            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
             : totalPending > 25000
-              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-              : "bg-red-500/10 text-red-600 dark:text-red-400",
+              ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
+              : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
         )}
       >
         {totalPending > 50000
-          ? "Strong pipeline - cash flow healthy"
+          ? "Strong pipeline · cash flow healthy"
           : totalPending > 25000
-            ? "Moderate pipeline - maintain activity"
-            : "Weak pipeline - increase sales activity"}
+            ? "Moderate pipeline · maintain activity"
+            : "Weak pipeline · increase sales activity"}
       </div>
     </div>
   );

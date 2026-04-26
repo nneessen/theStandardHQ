@@ -40,7 +40,7 @@ export function AgentPerformance() {
         <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Agent Performance
         </div>
-        <div className="p-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-3 text-center text-[11px] text-v2-ink-muted">
           Loading...
         </div>
       </div>
@@ -58,37 +58,49 @@ export function AgentPerformance() {
     }).format(value);
 
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
-          Agent Performance
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-5">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+            Agent Performance
+          </div>
+          <div className="text-xs text-v2-ink-muted mt-0.5">
+            {entries.length} agents · top 10 shown
+          </div>
         </div>
-        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
-          {entries.length} agents
-        </span>
+        {entries[0] && (
+          <div className="text-right">
+            <div className="text-2xl font-semibold tracking-tight text-v2-ink leading-none truncate max-w-[140px]">
+              {entries[0].agentName}
+            </div>
+            <div className="text-[10px] text-v2-ink-subtle mt-1">
+              {entries[0].policyCount} policies leads
+            </div>
+          </div>
+        )}
       </div>
 
       {entries.length === 0 ? (
-        <div className="p-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-3 text-center text-[11px] text-v2-ink-muted">
           No agent data for this period
         </div>
       ) : (
         <Table className="text-[11px]">
           <TableHeader>
-            <TableRow className="h-7 border-b border-zinc-200 dark:border-zinc-800">
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 w-8">
+            <TableRow className="h-7 border-b border-v2-ring">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas w-8">
                 #
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                 Agent
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Policies
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 AP
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 IP
               </TableHead>
             </TableRow>
@@ -97,21 +109,21 @@ export function AgentPerformance() {
             {entries.slice(0, 10).map((entry) => (
               <TableRow
                 key={entry.agentId}
-                className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                className="border-b border-v2-ring/60 hover:bg-v2-canvas"
               >
-                <TableCell className="p-1.5 font-mono text-zinc-400 dark:text-zinc-500">
+                <TableCell className="p-1.5 font-mono text-v2-ink-subtle">
                   {entry.rankOverall}
                 </TableCell>
-                <TableCell className="p-1.5 text-zinc-900 dark:text-zinc-100 truncate max-w-[120px]">
+                <TableCell className="p-1.5 text-v2-ink truncate max-w-[120px]">
                   {entry.agentName}
                 </TableCell>
-                <TableCell className="p-1.5 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                <TableCell className="p-1.5 text-right font-mono text-v2-ink">
                   {entry.policyCount}
                 </TableCell>
-                <TableCell className="p-1.5 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                <TableCell className="p-1.5 text-right font-mono text-v2-ink">
                   {formatCurrency(entry.apTotal)}
                 </TableCell>
-                <TableCell className="p-1.5 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                <TableCell className="p-1.5 text-right font-mono text-v2-ink">
                   {formatCurrency(entry.ipTotal)}
                 </TableCell>
               </TableRow>
@@ -123,23 +135,21 @@ export function AgentPerformance() {
       {/* Totals */}
       {data?.totals && entries.length > 0 && (
         <div className="mt-2 grid grid-cols-3 gap-1 text-[11px]">
-          <div className="p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded text-center">
-            <div className="text-zinc-400 dark:text-zinc-500">
-              Total Policies
-            </div>
-            <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
+          <div className="p-1 bg-v2-canvas rounded text-center">
+            <div className="text-v2-ink-subtle">Total Policies</div>
+            <div className="font-bold font-mono text-v2-ink">
               {data.totals.totalPolicies}
             </div>
           </div>
-          <div className="p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded text-center">
-            <div className="text-zinc-400 dark:text-zinc-500">Total AP</div>
-            <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
+          <div className="p-1 bg-v2-canvas rounded text-center">
+            <div className="text-v2-ink-subtle">Total AP</div>
+            <div className="font-bold font-mono text-v2-ink">
               {formatCurrency(data.totals.totalAp)}
             </div>
           </div>
-          <div className="p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded text-center">
-            <div className="text-zinc-400 dark:text-zinc-500">Total IP</div>
-            <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
+          <div className="p-1 bg-v2-canvas rounded text-center">
+            <div className="text-v2-ink-subtle">Total IP</div>
+            <div className="font-bold font-mono text-v2-ink">
               {formatCurrency(data.totals.totalIp)}
             </div>
           </div>

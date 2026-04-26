@@ -50,7 +50,7 @@ export function GamePlan() {
         <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Game Plan
         </div>
-        <div className="p-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-3 text-center text-[11px] text-v2-ink-muted">
           Loading...
         </div>
       </div>
@@ -117,24 +117,31 @@ export function GamePlan() {
   };
 
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
-          Game Plan
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-5">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+            Game Plan
+          </div>
+          <div className="text-xs text-v2-ink-muted mt-0.5">
+            {gamePlan.currentMonth} · {gamePlan.daysRemainingInMonth}d left
+          </div>
         </div>
-        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
-          {gamePlan.currentMonth} • {gamePlan.daysRemainingInMonth}d left
-        </span>
+        <div className="text-right">
+          <div className="text-3xl font-semibold tracking-tight text-v2-ink leading-none">
+            {Math.round(gamePlan.progressPercent)}%
+          </div>
+          <div className="text-[10px] text-v2-ink-subtle mt-1">
+            of monthly goal
+          </div>
+        </div>
       </div>
 
       {/* Monthly Progress Bar */}
-      <div className="mb-2">
-        <div className="flex items-center justify-between mb-0.5">
-          <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-            Monthly Goal Progress
-          </span>
-          <span className="text-[11px] font-bold font-mono text-zinc-900 dark:text-zinc-100">
-            {Math.round(gamePlan.progressPercent)}%
+      <div className="mb-3">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.14em]">
+            Monthly progress
           </span>
         </div>
         <div className="h-2 bg-v2-ring rounded-v2-pill overflow-hidden">
@@ -155,19 +162,19 @@ export function GamePlan() {
       {/* Compact Monthly Stats Grid */}
       <div className="grid grid-cols-4 gap-1 mb-2 text-[11px]">
         <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
-          <div className="text-zinc-400 dark:text-zinc-500">MTD</div>
-          <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
+          <div className="text-v2-ink-subtle">MTD</div>
+          <div className="font-bold font-mono text-v2-ink">
             {formatCurrency(gamePlan.mtdCommissions)}
           </div>
         </div>
         <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
-          <div className="text-zinc-400 dark:text-zinc-500">Goal</div>
-          <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
+          <div className="text-v2-ink-subtle">Goal</div>
+          <div className="font-bold font-mono text-v2-ink">
             {formatCurrency(gamePlan.grossCommissionNeeded)}
           </div>
         </div>
         <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
-          <div className="text-zinc-400 dark:text-zinc-500">Gap</div>
+          <div className="text-v2-ink-subtle">Gap</div>
           <div
             className={cn(
               "font-bold font-mono",
@@ -180,8 +187,8 @@ export function GamePlan() {
           </div>
         </div>
         <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
-          <div className="text-zinc-400 dark:text-zinc-500">Days</div>
-          <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
+          <div className="text-v2-ink-subtle">Days</div>
+          <div className="font-bold font-mono text-v2-ink">
             {gamePlan.daysRemainingInMonth}
           </div>
         </div>
@@ -190,10 +197,10 @@ export function GamePlan() {
       {/* Annual Progress Bar */}
       <div className="mb-2">
         <div className="flex items-center justify-between mb-0.5">
-          <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <span className="text-[11px] text-v2-ink-muted">
             Annual Goal Progress
           </span>
-          <span className="text-[11px] font-bold font-mono text-zinc-900 dark:text-zinc-100">
+          <span className="text-[11px] font-bold font-mono text-v2-ink">
             {Math.round(annualProgress.progressPercent)}%
           </span>
         </div>
@@ -215,35 +222,35 @@ export function GamePlan() {
       {/* Compact Annual Stats */}
       <div className="grid grid-cols-4 gap-1 mb-2 text-[11px]">
         <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
-          <div className="text-zinc-400 dark:text-zinc-500">YTD</div>
+          <div className="text-v2-ink-subtle">YTD</div>
           <div className="font-bold font-mono text-emerald-600 dark:text-emerald-400">
             {formatCurrency(annualProgress.ytdCommissions)}
           </div>
         </div>
         <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
-          <div className="text-zinc-400 dark:text-zinc-500">Annual</div>
-          <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
+          <div className="text-v2-ink-subtle">Annual</div>
+          <div className="font-bold font-mono text-v2-ink">
             {formatCurrency(annualProgress.annualGoal)}
           </div>
         </div>
         <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
-          <div className="text-zinc-400 dark:text-zinc-500">Need</div>
+          <div className="text-v2-ink-subtle">Need</div>
           <div className="font-bold font-mono text-red-600 dark:text-red-400">
             {formatCurrency(annualProgress.remainingNeeded)}
           </div>
         </div>
         <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
-          <div className="text-zinc-400 dark:text-zinc-500">Months</div>
-          <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
+          <div className="text-v2-ink-subtle">Months</div>
+          <div className="font-bold font-mono text-v2-ink">
             {annualProgress.monthsRemaining}
           </div>
         </div>
       </div>
 
       {/* Key Metrics Row */}
-      <div className="grid grid-cols-2 gap-1 p-1.5 bg-zinc-100 dark:bg-zinc-800 rounded mb-2">
+      <div className="grid grid-cols-2 gap-1 p-1.5 bg-v2-ring rounded mb-2">
         <div className="text-center">
-          <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <div className="text-[11px] text-v2-ink-muted">
             Monthly Avg Needed
           </div>
           <div className="text-xs font-bold font-mono text-blue-600 dark:text-blue-400">
@@ -251,9 +258,7 @@ export function GamePlan() {
           </div>
         </div>
         <div className="text-center">
-          <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
-            Policies/Month
-          </div>
+          <div className="text-[11px] text-v2-ink-muted">Policies/Month</div>
           <div className="text-xs font-bold font-mono text-blue-600 dark:text-blue-400">
             ~{annualProgress.policiesNeededPerMonth}
           </div>
@@ -268,15 +273,15 @@ export function GamePlan() {
           </div>
           <Table className="text-[11px] mb-2">
             <TableHeader>
-              <TableRow className="h-7 border-b border-zinc-200 dark:border-zinc-800">
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 w-6"></TableHead>
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+              <TableRow className="h-7 border-b border-v2-ring">
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas w-6"></TableHead>
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                   Action
                 </TableHead>
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                   Details
                 </TableHead>
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                   Priority
                 </TableHead>
               </TableRow>
@@ -286,7 +291,7 @@ export function GamePlan() {
               {gamePlan.smartMoves.slice(0, 3).map((row: any, idx: number) => (
                 <TableRow
                   key={idx}
-                  className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  className="border-b border-v2-ring/60 hover:bg-v2-canvas"
                 >
                   <TableCell className="p-1.5 w-6">
                     <div className={getUrgencyColor(row.urgency)}>
@@ -294,12 +299,10 @@ export function GamePlan() {
                     </div>
                   </TableCell>
                   <TableCell className="p-1.5">
-                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {row.title}
-                    </span>
+                    <span className="font-medium text-v2-ink">{row.title}</span>
                   </TableCell>
                   <TableCell className="p-1.5">
-                    <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                    <span className="text-[11px] text-v2-ink-muted">
                       {row.description}
                     </span>
                   </TableCell>
@@ -328,14 +331,14 @@ export function GamePlan() {
           </div>
           <Table className="text-[11px] mb-2">
             <TableHeader>
-              <TableRow className="h-7 border-b border-zinc-200 dark:border-zinc-800">
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+              <TableRow className="h-7 border-b border-v2-ring">
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                   Scenario
                 </TableHead>
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                   Projected
                 </TableHead>
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                   Goal %
                 </TableHead>
               </TableRow>
@@ -348,14 +351,14 @@ export function GamePlan() {
                 return (
                   <TableRow
                     key={idx}
-                    className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                    className="border-b border-v2-ring/60 hover:bg-v2-canvas"
                   >
                     <TableCell className="p-1.5">
-                      <span className="text-[11px] text-zinc-900 dark:text-zinc-100">
+                      <span className="text-[11px] text-v2-ink">
                         {row.condition}
                       </span>
                     </TableCell>
-                    <TableCell className="p-1.5 text-right font-mono text-[11px] text-zinc-900 dark:text-zinc-100">
+                    <TableCell className="p-1.5 text-right font-mono text-[11px] text-v2-ink">
                       {formatCurrency(row.projectedEarnings)}
                     </TableCell>
                     <TableCell className="p-1.5 text-right">

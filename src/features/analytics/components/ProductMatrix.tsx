@@ -29,7 +29,7 @@ export function ProductMatrix() {
         <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Product Mix
         </div>
-        <div className="p-3 text-center text-[10px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-3 text-center text-[10px] text-v2-ink-muted">
           Loading...
         </div>
       </div>
@@ -81,29 +81,41 @@ export function ProductMatrix() {
     .sort((a, b) => b.revenue - a.revenue);
 
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
-          Product Mix
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-5">
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+            Product Mix
+          </div>
+          <div className="text-xs text-v2-ink-muted mt-0.5">
+            {productData.length} products in book
+          </div>
         </div>
-        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
-          {productData.length} products
-        </span>
+        {productData[0] && (
+          <div className="text-right">
+            <div className="text-2xl font-semibold tracking-tight text-v2-ink leading-none">
+              {productData[0].percentage.toFixed(0)}%
+            </div>
+            <div className="text-[10px] text-v2-ink-subtle mt-1 truncate max-w-[140px]">
+              {formatProductName(productData[0].product)} leads
+            </div>
+          </div>
+        )}
       </div>
       {productData.length > 0 ? (
         <Table className="text-[11px]">
           <TableHeader>
-            <TableRow className="h-7 border-b border-zinc-200 dark:border-zinc-800">
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+            <TableRow className="h-7 border-b border-v2-ring">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                 Product
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Policies
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Mix %
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Revenue
               </TableHead>
             </TableRow>
@@ -112,12 +124,12 @@ export function ProductMatrix() {
             {productData.map((row, idx) => (
               <TableRow
                 key={idx}
-                className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                className="border-b border-v2-ring/60 hover:bg-v2-canvas"
               >
-                <TableCell className="p-1.5 font-medium text-zinc-900 dark:text-zinc-100">
+                <TableCell className="p-1.5 font-medium text-v2-ink">
                   {formatProductName(row.product)}
                 </TableCell>
-                <TableCell className="p-1.5 text-right font-mono text-zinc-500 dark:text-zinc-400">
+                <TableCell className="p-1.5 text-right font-mono text-v2-ink-muted">
                   {row.count}
                 </TableCell>
                 <TableCell className="p-1.5 text-right">
@@ -134,7 +146,7 @@ export function ProductMatrix() {
                     {row.percentage.toFixed(1)}%
                   </span>
                 </TableCell>
-                <TableCell className="p-1.5 text-right font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                <TableCell className="p-1.5 text-right font-mono font-semibold text-v2-ink">
                   {formatCurrency(row.revenue)}
                 </TableCell>
               </TableRow>
@@ -142,7 +154,7 @@ export function ProductMatrix() {
           </TableBody>
         </Table>
       ) : (
-        <div className="p-3 text-center text-[11px] text-zinc-400 dark:text-zinc-500">
+        <div className="p-3 text-center text-[11px] text-v2-ink-subtle">
           No product data available
         </div>
       )}
