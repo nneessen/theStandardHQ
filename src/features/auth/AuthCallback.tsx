@@ -39,11 +39,17 @@ export const AuthCallback: React.FC = () => {
         });
 
         // For recovery errors, route to ResetPassword with error context
-        if ((errorCode || errorDescription) && type === AUTH_CALLBACK_TYPES.RECOVERY) {
-          logger.auth("[AuthCallback] Recovery error detected, routing to reset password", {
-            errorCode,
-            errorDescription: errorDescription?.substring(0, 100),
-          });
+        if (
+          (errorCode || errorDescription) &&
+          type === AUTH_CALLBACK_TYPES.RECOVERY
+        ) {
+          logger.auth(
+            "[AuthCallback] Recovery error detected, routing to reset password",
+            {
+              errorCode,
+              errorDescription: errorDescription?.substring(0, 100),
+            },
+          );
           sessionStorage.setItem(
             SESSION_STORAGE_KEYS.PASSWORD_RESET_ERROR,
             JSON.stringify({
@@ -178,7 +184,7 @@ export const AuthCallback: React.FC = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="theme-v2 v2-canvas font-display text-v2-ink min-h-screen flex items-center justify-center">
       <div className="max-w-md w-full px-4">
         <div className="bg-gradient-to-br from-card to-muted/10 rounded-2xl shadow-2xl p-8 text-center">
           {/* Logo */}

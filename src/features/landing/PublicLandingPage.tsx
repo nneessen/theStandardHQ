@@ -110,10 +110,10 @@ export function PublicLandingPage() {
   // Only show error if we truly have no data (should never happen with placeholderData)
   if (!theme) {
     return (
-      <div className="min-h-screen bg-[#030303] flex items-center justify-center">
-        <div className="text-white text-center">
-          <h1 className="text-2xl font-bold mb-2">Something went wrong</h1>
-          <p className="text-white/60">Please try refreshing the page.</p>
+      <div className="theme-v2 min-h-screen bg-v2-canvas flex items-center justify-center">
+        <div className="text-v2-ink text-center font-display">
+          <h1 className="text-2xl font-semibold mb-2">Something went wrong</h1>
+          <p className="text-v2-ink-muted">Please try refreshing the page.</p>
         </div>
       </div>
     );

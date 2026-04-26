@@ -165,6 +165,7 @@
   color: var(--v2-ink);
 }
 
+.theme-v2.v2-canvas,
 .theme-v2 .v2-canvas {
   background-color: var(--v2-bg-canvas);
   background-image: radial-gradient(
@@ -180,7 +181,9 @@
   background-attachment: fixed;
 }
 
+.theme-v2.dark.v2-canvas,
 .theme-v2.dark .v2-canvas,
+.dark .theme-v2.v2-canvas,
 .dark .theme-v2 .v2-canvas {
   background-color: var(--v2-bg-canvas);
   background-image: radial-gradient(

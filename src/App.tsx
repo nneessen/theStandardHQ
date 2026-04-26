@@ -227,7 +227,7 @@ function AuthenticatedApp() {
                 onLogout={handleLogout}
               />
               <div className="flex-1 min-w-0">
-                <div className="p-6 w-full min-h-screen">
+                <div className="theme-v2 v2-canvas font-display p-6 w-full min-h-screen text-v2-ink">
                   <ApprovalGuard>
                     <Outlet />
                   </ApprovalGuard>
@@ -252,7 +252,7 @@ function AuthenticatedApp() {
                 onLogout={handleLogout}
               />
               <div className="main-content flex-1 min-w-0">
-                <div className="p-6 w-full min-h-screen">
+                <div className="theme-v2 v2-canvas font-display p-6 w-full min-h-screen text-v2-ink">
                   <ApprovalGuard>
                     <Outlet />
                   </ApprovalGuard>

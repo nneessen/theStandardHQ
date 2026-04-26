@@ -212,7 +212,7 @@ export const ResetPassword: React.FC = () => {
   // Show loading state while auth is being checked
   if (authLoading || (!checkedAuth && !hasToken && !error)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="theme-v2 v2-canvas font-display text-v2-ink min-h-screen flex items-center justify-center">
         <div className="text-center">
           <LogoSpinner size="xl" className="mb-4" />
           <p className="text-muted-foreground">Verifying your reset link...</p>
@@ -222,7 +222,7 @@ export const ResetPassword: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="theme-v2 v2-canvas font-display text-v2-ink min-h-screen flex">
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] bg-foreground relative overflow-hidden">
         {/* Refined grid pattern */}

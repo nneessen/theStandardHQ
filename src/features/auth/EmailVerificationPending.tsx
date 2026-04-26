@@ -24,7 +24,7 @@ export const EmailVerificationPending: React.FC = () => {
   } = useEmailVerification();
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="theme-v2 v2-canvas font-display text-v2-ink min-h-screen flex">
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] bg-foreground relative overflow-hidden">
         {/* Geometric background pattern */}
