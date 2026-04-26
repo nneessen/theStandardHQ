@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { PillButton } from "@/components/v2";
 import { Package, Gift, HelpCircle, Plus, Loader2, Check } from "lucide-react";
 import { LeadPurchaseSelector } from "./LeadPurchaseSelector";
 import { ManageLeadPurchaseDialog } from "@/features/expenses";
@@ -134,22 +134,27 @@ export function LeadSourceDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleDismiss}>
-        <DialogContent className="max-w-sm p-0 gap-0 overflow-hidden">
-          <DialogHeader className="px-4 pt-3 pb-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50">
-            <DialogTitle className="text-sm font-semibold flex items-center gap-2">
-              <span className="flex items-center justify-center w-6 h-6 rounded-md bg-blue-100 dark:bg-blue-900/40">
-                <Package className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-              </span>
-              Track Lead Source
-            </DialogTitle>
-            <DialogDescription className="text-[11px] text-muted-foreground">
+        <DialogContent className="theme-v2 font-display max-w-sm w-[calc(100vw-1.5rem)] sm:w-auto max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] p-0 gap-0 overflow-hidden bg-v2-card text-v2-ink border border-v2-ring rounded-v2-lg shadow-v2-lift flex flex-col">
+          <DialogHeader className="px-5 py-3 border-b border-v2-ring bg-v2-card-tinted flex-shrink-0">
+            <div className="flex items-center gap-2.5">
+              <span className="h-2 w-2 rounded-full bg-v2-accent" />
+              <div className="flex flex-col leading-tight">
+                <span className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+                  Lead source
+                </span>
+                <DialogTitle className="text-base font-semibold tracking-tight text-v2-ink text-left">
+                  Track lead source
+                </DialogTitle>
+              </div>
+            </div>
+            <DialogDescription className="text-[11px] text-v2-ink-muted text-left">
               {policyNumber
                 ? `Link policy ${policyNumber} to its lead source`
                 : "Link this policy to its lead source"}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="px-4 py-3 space-y-1.5">
+          <div className="px-4 py-3 space-y-1.5 overflow-y-auto flex-1 min-h-0">
             {/* Option: From Lead Purchase */}
             <OptionButton
               selected={sourceOption === "lead_purchase"}
@@ -157,27 +162,26 @@ export function LeadSourceDialog({
               icon={Package}
               label="Lead Purchase"
               description="From a purchased lead pack"
-              colorClass="info"
             />
 
             {/* Expanded section for lead purchase selection */}
             {sourceOption === "lead_purchase" && (
-              <div className="ml-6 pl-2 border-l-2 border-blue-300 dark:border-blue-700/60">
+              <div className="ml-6 pl-3 border-l-2 border-v2-accent">
                 <LeadPurchaseSelector
                   selectedId={selectedPurchase?.id}
                   onSelect={setSelectedPurchase}
                   className="mt-1"
                 />
-                <Button
+                <PillButton
                   type="button"
-                  variant="ghost"
+                  tone="ghost"
                   size="sm"
-                  className="mt-1.5 h-7 text-xs w-full justify-start text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                  className="mt-2 h-7 px-3 text-[11px] w-full justify-start"
                   onClick={() => setShowAddPurchaseDialog(true)}
                 >
-                  <Plus className="h-3 w-3 mr-1.5" />
-                  Add New Lead Pack
-                </Button>
+                  <Plus className="h-3 w-3" />
+                  Add new lead pack
+                </PillButton>
               </div>
             )}
 
@@ -188,7 +192,6 @@ export function LeadSourceDialog({
               icon={Gift}
               label="Free Lead"
               description="Hand-me-down from upline/agent"
-              colorClass="success"
             />
 
             {/* Option: Other */}
@@ -198,23 +201,22 @@ export function LeadSourceDialog({
               icon={HelpCircle}
               label="Other Source"
               description="Referral, organic, etc."
-              colorClass="neutral"
             />
           </div>
 
-          <DialogFooter className="px-4 py-2.5 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 flex-row justify-between sm:justify-between">
-            <Button
+          <DialogFooter className="px-5 py-3 border-t border-v2-ring bg-v2-card-tinted flex-row justify-between sm:justify-between flex-shrink-0">
+            <PillButton
               type="button"
-              variant="ghost"
+              tone="ghost"
               size="sm"
               onClick={handleSkip}
               disabled={isSubmitting}
-              className="h-7 text-xs text-muted-foreground"
             >
               Skip
-            </Button>
-            <Button
+            </PillButton>
+            <PillButton
               type="button"
+              tone="black"
               size="sm"
               onClick={handleSave}
               disabled={
@@ -222,17 +224,16 @@ export function LeadSourceDialog({
                 !sourceOption ||
                 (sourceOption === "lead_purchase" && !selectedPurchase)
               }
-              className="h-7 text-xs px-4"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                  Saving...
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Saving…
                 </>
               ) : (
                 "Save"
               )}
-            </Button>
+            </PillButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -248,56 +249,13 @@ export function LeadSourceDialog({
   );
 }
 
-type ColorClass = "info" | "success" | "neutral";
-
 interface OptionButtonProps {
   selected: boolean;
   onClick: () => void;
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   description: string;
-  colorClass: ColorClass;
 }
-
-const colorStyles: Record<
-  ColorClass,
-  {
-    selectedBg: string;
-    selectedBorder: string;
-    selectedRing: string;
-    iconBg: string;
-    iconColor: string;
-    radioSelected: string;
-  }
-> = {
-  info: {
-    selectedBg: "bg-blue-50 dark:bg-blue-950/30",
-    selectedBorder: "border-blue-200 dark:border-blue-800",
-    selectedRing: "ring-1 ring-blue-200/60 dark:ring-blue-800/40",
-    iconBg: "bg-blue-100 dark:bg-blue-900/40",
-    iconColor: "text-blue-600 dark:text-blue-400",
-    radioSelected:
-      "border-blue-600 bg-blue-600 dark:border-blue-500 dark:bg-blue-500",
-  },
-  success: {
-    selectedBg: "bg-emerald-50 dark:bg-emerald-950/30",
-    selectedBorder: "border-emerald-200 dark:border-emerald-800",
-    selectedRing: "ring-1 ring-emerald-200/60 dark:ring-emerald-800/40",
-    iconBg: "bg-emerald-100 dark:bg-emerald-900/40",
-    iconColor: "text-emerald-600 dark:text-emerald-400",
-    radioSelected:
-      "border-emerald-600 bg-emerald-600 dark:border-emerald-500 dark:bg-emerald-500",
-  },
-  neutral: {
-    selectedBg: "bg-zinc-100 dark:bg-zinc-800/50",
-    selectedBorder: "border-zinc-300 dark:border-zinc-700",
-    selectedRing: "ring-1 ring-zinc-200/60 dark:ring-zinc-700/40",
-    iconBg: "bg-zinc-200 dark:bg-zinc-700/50",
-    iconColor: "text-zinc-600 dark:text-zinc-400",
-    radioSelected:
-      "border-zinc-600 bg-zinc-600 dark:border-zinc-400 dark:bg-zinc-400",
-  },
-};
 
 function OptionButton({
   selected,
@@ -305,19 +263,16 @@ function OptionButton({
   icon: Icon,
   label,
   description,
-  colorClass,
 }: OptionButtonProps) {
-  const colors = colorStyles[colorClass];
-
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left border transition-all duration-150",
+        "w-full flex items-center gap-2.5 px-3 py-2 rounded-v2-md text-left border transition-colors duration-150",
         selected
-          ? `${colors.selectedBg} ${colors.selectedBorder} ${colors.selectedRing}`
-          : "border-transparent hover:bg-zinc-50 dark:hover:bg-zinc-800/40 active:bg-zinc-100 dark:active:bg-zinc-800/60",
+          ? "bg-v2-accent-soft border-v2-accent text-v2-ink"
+          : "bg-v2-card border-v2-ring text-v2-ink hover:bg-v2-canvas",
       )}
     >
       {/* Selection indicator */}
@@ -325,8 +280,8 @@ function OptionButton({
         className={cn(
           "flex-shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors",
           selected
-            ? `${colors.radioSelected} text-white`
-            : "border-muted-foreground/40",
+            ? "bg-v2-ink border-v2-ink text-white"
+            : "bg-transparent border-v2-ring",
         )}
       >
         {selected && <Check className="h-2.5 w-2.5" />}
@@ -335,29 +290,19 @@ function OptionButton({
       {/* Icon in tinted pill */}
       <div
         className={cn(
-          "flex-shrink-0 w-6 h-6 rounded-md flex items-center justify-center",
-          selected ? colors.iconBg : "bg-zinc-100 dark:bg-zinc-800",
+          "flex-shrink-0 w-7 h-7 rounded-v2-pill flex items-center justify-center",
+          selected
+            ? "bg-v2-accent text-v2-ink"
+            : "bg-v2-canvas text-v2-ink-muted",
         )}
       >
-        <Icon
-          className={cn(
-            "h-3.5 w-3.5",
-            selected ? colors.iconColor : "text-muted-foreground",
-          )}
-        />
+        <Icon className="h-3.5 w-3.5" />
       </div>
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <div
-          className={cn(
-            "text-xs font-medium",
-            selected ? "text-foreground" : "text-foreground/80",
-          )}
-        >
-          {label}
-        </div>
-        <div className="text-[10px] text-muted-foreground truncate">
+        <div className="text-xs font-semibold text-v2-ink">{label}</div>
+        <div className="text-[10px] text-v2-ink-muted truncate">
           {description}
         </div>
       </div>

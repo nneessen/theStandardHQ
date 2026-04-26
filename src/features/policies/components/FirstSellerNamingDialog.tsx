@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { PillButton } from "@/components/v2";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Trophy, Sparkles } from "lucide-react";
@@ -212,76 +212,52 @@ export function FirstSellerNamingDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden bg-card border border-border/50 shadow-2xl">
-        {/* Decorative header with gradient and pattern */}
-        <div className="relative bg-foreground px-6 py-8 overflow-hidden">
-          {/* Subtle grid pattern */}
-          <div className="absolute inset-0 opacity-[0.04]">
-            <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <pattern
-                  id="firstsale-grid"
-                  width="32"
-                  height="32"
-                  patternUnits="userSpaceOnUse"
-                >
-                  <path
-                    d="M 32 0 L 0 0 0 32"
-                    fill="none"
-                    stroke="white"
-                    strokeWidth="0.5"
-                  />
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#firstsale-grid)" />
-            </svg>
-          </div>
+      <DialogContent className="theme-v2 font-display sm:max-w-lg w-[calc(100vw-1.5rem)] sm:w-auto max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] p-0 overflow-hidden bg-v2-card text-v2-ink border border-v2-ring rounded-v2-lg shadow-v2-lift flex flex-col">
+        {/* Hero header — dark v2 card with subtle yellow glow */}
+        <div className="relative bg-v2-bg-card-dark text-white px-6 py-6 overflow-hidden flex-shrink-0">
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-v2-accent/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-v2-accent/10 rounded-full blur-2xl" />
 
-          {/* Glow effects */}
-          <div className="absolute top-0 -left-10 w-40 h-40 bg-amber-500/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 -right-10 w-32 h-32 bg-amber-400/10 rounded-full blur-2xl" />
-
-          {/* Content */}
           <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2.5 bg-amber-500/20 rounded-xl">
-                <Trophy className="h-7 w-7 text-amber-400" />
-              </div>
-              <div className="p-2.5 bg-purple-500/20 rounded-xl">
-                <Sparkles className="h-7 w-7 text-purple-400" />
-              </div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="inline-flex items-center justify-center h-9 w-9 rounded-v2-pill bg-v2-accent text-v2-ink">
+                <Trophy className="h-5 w-5" />
+              </span>
+              <span className="inline-flex items-center justify-center h-9 w-9 rounded-v2-pill bg-white/10 text-v2-accent">
+                <Sparkles className="h-5 w-5" />
+              </span>
             </div>
 
-            <DialogHeader className="text-left space-y-2">
-              <DialogTitle
-                className="text-2xl font-bold text-white dark:text-black"
-                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-              >
-                First Sale of the Day!
+            <DialogHeader className="text-left space-y-1.5">
+              <div className="text-[10px] font-semibold text-v2-accent uppercase tracking-[0.18em]">
+                First sale today
+              </div>
+              <DialogTitle className="text-2xl font-semibold tracking-tight text-white">
+                Name today&apos;s leaderboard
               </DialogTitle>
-              <DialogDescription className="text-white/80 dark:text-black/70 text-sm leading-relaxed">
-                You're the first to close a deal
+              <DialogDescription className="text-white/75 text-sm leading-relaxed">
+                You&apos;re the first to close a deal
                 {agencyName !== "IMO-Level" &&
                 agencyName !== "Self Made Financial"
                   ? ` at ${agencyName}`
                   : agencyName === "Self Made Financial"
                     ? " in the entire organization"
                     : ""}{" "}
-                today! As a reward, you get to name today's leaderboard.
+                today. As a reward, you get to name the leaderboard.
               </DialogDescription>
             </DialogHeader>
 
             {/* Show channels that will receive the leaderboard */}
             {hasMultipleChannels && channelNames.length > 0 && (
-              <div className="mt-4 p-2 bg-white/5 dark:bg-black/5 rounded-lg">
-                <span className="text-xs text-white/60 dark:text-black/60 block mb-1.5">
-                  Your title will be posted to {totalChannels} channels:
+              <div className="mt-3 rounded-v2-md bg-white/5 px-3 py-2">
+                <span className="text-[10px] font-semibold text-white/60 uppercase tracking-[0.18em] block mb-1.5">
+                  Posting to {totalChannels} channels
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {channelNames.map((name) => (
                     <span
                       key={name}
-                      className="text-xs px-2 py-0.5 bg-white/10 dark:bg-black/10 rounded text-white/80 dark:text-black/70"
+                      className="text-[11px] px-2 py-0.5 rounded-v2-pill bg-white/10 text-white/80"
                     >
                       #{name}
                     </span>
@@ -293,18 +269,18 @@ export function FirstSellerNamingDialog({
         </div>
 
         {/* Form content */}
-        <div className="px-6 py-5 space-y-5">
-          <div className="space-y-2">
+        <div className="px-5 py-4 space-y-4 overflow-y-auto flex-1 min-h-0">
+          <div className="space-y-1.5">
             <Label
               htmlFor="leaderboard-title"
-              className="text-sm font-medium text-foreground"
+              className="text-[11px] font-semibold uppercase tracking-[0.14em] text-v2-ink-subtle"
             >
-              Leaderboard Title for {agencyName}
+              Leaderboard title · {agencyName}
             </Label>
             <Input
               ref={inputRef}
               id="leaderboard-title"
-              placeholder="e.g., Freaky Friday Sales, Monday Motivation..."
+              placeholder="e.g., Freaky Friday Sales, Monday Motivation…"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={(e) => {
@@ -313,17 +289,16 @@ export function FirstSellerNamingDialog({
                 }
               }}
               autoFocus
-              className="h-11 text-base"
+              className="h-10 text-sm bg-v2-card border-v2-ring focus-visible:ring-v2-accent"
             />
-            <p className="text-xs text-muted-foreground">
-              This title will appear on the Slack leaderboard for everyone to
-              see
+            <p className="text-[11px] text-v2-ink-muted">
+              Will appear on the Slack leaderboard for everyone to see.
             </p>
           </div>
 
           {/* Quick emoji picker */}
-          <div className="space-y-2">
-            <Label className="text-xs text-muted-foreground">
+          <div className="space-y-1.5">
+            <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-v2-ink-subtle">
               Quick add emoji
             </Label>
             <div className="flex flex-wrap gap-1.5">
@@ -332,7 +307,7 @@ export function FirstSellerNamingDialog({
                   key={emoji}
                   type="button"
                   onClick={() => insertEmoji(emoji)}
-                  className="w-9 h-9 flex items-center justify-center text-lg hover:bg-muted rounded-lg transition-colors border border-transparent hover:border-border"
+                  className="w-9 h-9 flex items-center justify-center text-lg rounded-v2-pill border border-v2-ring bg-v2-card hover:bg-v2-accent-soft transition-colors disabled:opacity-50"
                   disabled={isSubmitting}
                 >
                   {emoji}
@@ -343,24 +318,27 @@ export function FirstSellerNamingDialog({
         </div>
 
         {/* Footer */}
-        <DialogFooter className="px-6 py-4 bg-muted/30 border-t border-border/50 flex gap-3 sm:gap-3">
-          <Button
+        <DialogFooter className="px-5 py-3 bg-v2-card-tinted border-t border-v2-ring flex gap-2 flex-shrink-0">
+          <PillButton
             type="button"
-            variant="ghost"
+            tone="ghost"
+            size="sm"
             onClick={handleSkip}
             disabled={isSubmitting}
             className="flex-1 sm:flex-none"
           >
-            {isSubmitting ? "Posting..." : "Use Default Title"}
-          </Button>
-          <Button
+            {isSubmitting ? "Posting…" : "Use default title"}
+          </PillButton>
+          <PillButton
             type="button"
+            tone="black"
+            size="sm"
             onClick={handleSubmit}
             disabled={isSubmitting || !title.trim()}
-            className="flex-1 sm:flex-none bg-amber-500 hover:bg-amber-600 text-black font-medium"
+            className="flex-1 sm:flex-none"
           >
-            {isSubmitting ? "Posting..." : "Name the Leaderboard"}
-          </Button>
+            {isSubmitting ? "Posting…" : "Name the leaderboard"}
+          </PillButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

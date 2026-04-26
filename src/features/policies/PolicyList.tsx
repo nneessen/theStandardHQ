@@ -51,7 +51,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PillButton, SoftCard, StatTile } from "@/components/v2";
+import { PillButton, SoftCard } from "@/components/v2";
 import {
   Tooltip,
   TooltipContent,
@@ -448,30 +448,86 @@ export const PolicyList: React.FC<PolicyListProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* Hero header */}
-      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex flex-col gap-1">
-          <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-v2-ink-subtle">
-            <FileText className="h-3.5 w-3.5" />
-            Book of Business
+    <div className="flex flex-col gap-2">
+      {/* Compact header: title + inline metric chips + actions in ONE row */}
+      <header className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <FileText className="h-4 w-4 text-v2-ink" />
+            <h1 className="text-base font-semibold tracking-tight text-v2-ink">
+              Policies
+            </h1>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-v2-ink leading-tight">
-            Policies
-          </h1>
           {metrics && (
-            <p className="text-sm text-v2-ink-muted">
-              {metrics.totalPolicies.toLocaleString()} total · $
-              {(metrics.totalPremium / 1000).toFixed(1)}k AP written
-            </p>
+            <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-v2-ink-muted flex-wrap leading-tight">
+              <span>
+                <span className="text-v2-ink font-semibold">
+                  {metrics.totalPolicies.toLocaleString()}
+                </span>{" "}
+                total
+              </span>
+              <span className="text-v2-ink-subtle">·</span>
+              <span className="inline-flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                <span className="text-v2-ink font-semibold">
+                  {metrics.activePolicies.toLocaleString()}
+                </span>{" "}
+                active
+              </span>
+              <span className="text-v2-ink-subtle">·</span>
+              <span className="inline-flex items-center gap-1">
+                <span className="h-1.5 w-1.5 rounded-full bg-v2-accent" />
+                <span className="text-v2-ink font-semibold">
+                  {metrics.pendingPolicies.toLocaleString()}
+                </span>{" "}
+                pending
+              </span>
+              <span className="text-v2-ink-subtle">·</span>
+              <span>
+                <span className="text-v2-ink font-semibold">
+                  ${(metrics.totalPremium / 1000).toFixed(1)}k
+                </span>{" "}
+                premium
+              </span>
+              {canViewCommissions && (
+                <>
+                  <span className="text-v2-ink-subtle">·</span>
+                  <span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                      ${(earnedCommission / 1000).toFixed(1)}k
+                    </span>{" "}
+                    earned
+                  </span>
+                  <span className="text-v2-ink-subtle">·</span>
+                  <span>
+                    <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                      ${(pendingCommission / 1000).toFixed(1)}k
+                    </span>{" "}
+                    pending
+                  </span>
+                </>
+              )}
+              <span className="text-v2-ink-subtle">·</span>
+              <span>
+                <span className="text-v2-ink font-semibold">
+                  {metrics.ytdPolicies.toLocaleString()}
+                </span>{" "}
+                YTD
+              </span>
+            </div>
           )}
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <PillButton tone="ghost" size="sm" disabled={exporting}>
-                <Download className="h-3.5 w-3.5" />
+              <PillButton
+                tone="ghost"
+                size="sm"
+                disabled={exporting}
+                className="h-7 px-2.5 text-[11px]"
+              >
+                <Download className="h-3 w-3" />
                 {exporting ? "Exporting…" : "Export"}
               </PillButton>
             </DropdownMenuTrigger>
@@ -490,111 +546,56 @@ export const PolicyList: React.FC<PolicyListProps> = ({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <PillButton onClick={onNewPolicy} tone="black" size="sm">
-            <Plus className="h-3.5 w-3.5" />
+          <PillButton
+            onClick={onNewPolicy}
+            tone="black"
+            size="sm"
+            className="h-7 px-2.5 text-[11px]"
+          >
+            <Plus className="h-3 w-3" />
             New policy
           </PillButton>
         </div>
       </header>
 
-      {/* Stat tiles */}
-      {metrics && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          <SoftCard padding="md">
-            <StatTile
-              value={metrics.totalPolicies.toLocaleString()}
-              caption="Total policies"
-            />
-          </SoftCard>
-          <SoftCard padding="md">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-end gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 mb-2.5" />
-                <span className="text-4xl font-semibold tracking-tight leading-none text-v2-ink">
-                  {metrics.activePolicies.toLocaleString()}
-                </span>
-              </div>
-              <span className="text-[11px] uppercase tracking-wider text-v2-ink-muted font-medium">
-                Active
-              </span>
-            </div>
-          </SoftCard>
-          <SoftCard padding="md">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-end gap-2">
-                <span className="h-2 w-2 rounded-full bg-v2-accent mb-2.5" />
-                <span className="text-4xl font-semibold tracking-tight leading-none text-v2-ink">
-                  {metrics.pendingPolicies.toLocaleString()}
-                </span>
-              </div>
-              <span className="text-[11px] uppercase tracking-wider text-v2-ink-muted font-medium">
-                Pending
-              </span>
-            </div>
-          </SoftCard>
-          {canViewCommissions ? (
-            <>
-              <SoftCard padding="md">
-                <StatTile
-                  value={`$${(earnedCommission / 1000).toFixed(1)}k`}
-                  caption="Earned commission"
-                />
-              </SoftCard>
-              <SoftCard padding="md">
-                <StatTile
-                  value={`$${(pendingCommission / 1000).toFixed(1)}k`}
-                  caption="Pending commission"
-                />
-              </SoftCard>
-            </>
-          ) : (
-            <>
-              <SoftCard padding="md">
-                <StatTile
-                  value={`$${(metrics.totalPremium / 1000).toFixed(1)}k`}
-                  caption="Premium"
-                />
-              </SoftCard>
-              <SoftCard padding="md">
-                <StatTile
-                  value={metrics.ytdPolicies.toLocaleString()}
-                  caption="YTD policies"
-                />
-              </SoftCard>
-            </>
-          )}
-        </div>
-      )}
-
       {/* Table card */}
       <SoftCard padding="none" className="overflow-hidden flex flex-col">
-        {/* Search + filter toggle */}
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-v2-ring bg-v2-card-tinted">
-          <div className="flex-1 relative flex items-center">
-            <Search size={14} className="absolute left-3 text-v2-ink-subtle" />
+        {/* Search + filter toggle (compact, single row) */}
+        <div className="flex items-center gap-1.5 px-2.5 py-1.5 border-b border-v2-ring bg-v2-card-tinted">
+          <div className="flex-1 relative flex items-center min-w-0">
+            <Search
+              size={12}
+              className="absolute left-2.5 text-v2-ink-subtle"
+            />
             <Input
               type="text"
               placeholder="Search by policy # or client name…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-9 pl-9 text-sm bg-v2-card border-v2-ring rounded-v2-pill focus-visible:ring-v2-accent"
+              className="h-7 pl-7 text-[11px] bg-v2-card border-v2-ring rounded-v2-pill focus-visible:ring-v2-accent"
             />
           </div>
           <PillButton
             onClick={() => setShowFilters(!showFilters)}
             tone={showFilters ? "black" : "ghost"}
             size="sm"
+            className="h-7 px-2.5 text-[11px]"
           >
-            <Filter size={13} />
+            <Filter size={11} />
             Filters
             {filterCount > 0 && (
-              <span className="ml-1 inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-v2-pill bg-v2-accent text-v2-ink text-[10px] font-bold">
+              <span className="ml-0.5 inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded-v2-pill bg-v2-accent text-v2-ink text-[9px] font-bold">
                 {filterCount}
               </span>
             )}
           </PillButton>
           {filterCount > 0 && (
-            <PillButton onClick={clearFilters} tone="ghost" size="sm">
+            <PillButton
+              onClick={clearFilters}
+              tone="ghost"
+              size="sm"
+              className="h-7 px-2.5 text-[11px]"
+            >
               Clear
             </PillButton>
           )}
