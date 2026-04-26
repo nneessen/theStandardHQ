@@ -24,8 +24,8 @@ export function ConversionFunnel() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Conversion Funnel
         </div>
         <div className="p-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
@@ -52,9 +52,7 @@ export function ConversionFunnel() {
   const applicationsSubmitted = policiesWithSubmit.length;
 
   // Approved = policies with status approved
-  const approved = raw.policies.filter(
-    (p) => p.status === "approved",
-  ).length;
+  const approved = raw.policies.filter((p) => p.status === "approved").length;
 
   // Active = policies with lifecycle_status active
   const active = raw.policies.filter(
@@ -104,9 +102,9 @@ export function ConversionFunnel() {
   const maxCount = Math.max(...stages.map((s) => s.count), 1);
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Conversion Funnel
         </div>
         {avgTimeToClose > 0 && (
@@ -121,9 +119,7 @@ export function ConversionFunnel() {
           const widthPct = maxCount > 0 ? (stage.count / maxCount) * 100 : 0;
           const prevCount = idx > 0 ? stages[idx - 1].count : 0;
           const conversionRate =
-            prevCount > 0
-              ? ((stage.count / prevCount) * 100).toFixed(1)
-              : null;
+            prevCount > 0 ? ((stage.count / prevCount) * 100).toFixed(1) : null;
 
           return (
             <div key={stage.label}>
@@ -151,9 +147,12 @@ export function ConversionFunnel() {
                   )}
                 </div>
               </div>
-              <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+              <div className="h-2.5 bg-v2-ring rounded-v2-pill overflow-hidden">
                 <div
-                  className={cn("h-full rounded-full transition-all", stage.color)}
+                  className={cn(
+                    "h-full rounded-full transition-all",
+                    stage.color,
+                  )}
                   style={{ width: `${Math.max(widthPct, 2)}%` }}
                 />
               </div>
@@ -164,7 +163,7 @@ export function ConversionFunnel() {
 
       {/* Summary stats */}
       <div className="mt-2 grid grid-cols-2 gap-1 text-[11px]">
-        <div className="p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded text-center">
+        <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
           <div className="text-zinc-400 dark:text-zinc-500">Lead→Active</div>
           <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
             {leadsPurchased > 0
@@ -172,7 +171,7 @@ export function ConversionFunnel() {
               : "—"}
           </div>
         </div>
-        <div className="p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded text-center">
+        <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
           <div className="text-zinc-400 dark:text-zinc-500">Avg Close Time</div>
           <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
             {avgTimeToClose > 0 ? `${avgTimeToClose} days` : "—"}

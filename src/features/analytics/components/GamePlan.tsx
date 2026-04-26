@@ -46,8 +46,8 @@ export function GamePlan() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Game Plan
         </div>
         <div className="p-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
@@ -61,7 +61,9 @@ export function GamePlan() {
   const periodExpenses = (allExpenses || [])
     .filter((e) => {
       const expenseDate = new Date(e.date);
-      return expenseDate >= dateRange.startDate && expenseDate <= dateRange.endDate;
+      return (
+        expenseDate >= dateRange.startDate && expenseDate <= dateRange.endDate
+      );
     })
     .reduce((sum, e) => sum + e.amount, 0);
 
@@ -115,9 +117,9 @@ export function GamePlan() {
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Game Plan
         </div>
         <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
@@ -135,7 +137,7 @@ export function GamePlan() {
             {Math.round(gamePlan.progressPercent)}%
           </span>
         </div>
-        <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+        <div className="h-2 bg-v2-ring rounded-v2-pill overflow-hidden">
           <div
             className={cn(
               "h-full transition-all duration-300",
@@ -152,19 +154,19 @@ export function GamePlan() {
 
       {/* Compact Monthly Stats Grid */}
       <div className="grid grid-cols-4 gap-1 mb-2 text-[11px]">
-        <div className="p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded text-center">
+        <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
           <div className="text-zinc-400 dark:text-zinc-500">MTD</div>
           <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
             {formatCurrency(gamePlan.mtdCommissions)}
           </div>
         </div>
-        <div className="p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded text-center">
+        <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
           <div className="text-zinc-400 dark:text-zinc-500">Goal</div>
           <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
             {formatCurrency(gamePlan.grossCommissionNeeded)}
           </div>
         </div>
-        <div className="p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded text-center">
+        <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
           <div className="text-zinc-400 dark:text-zinc-500">Gap</div>
           <div
             className={cn(
@@ -177,7 +179,7 @@ export function GamePlan() {
             {formatCurrency(Math.abs(gamePlan.gap))}
           </div>
         </div>
-        <div className="p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded text-center">
+        <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
           <div className="text-zinc-400 dark:text-zinc-500">Days</div>
           <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
             {gamePlan.daysRemainingInMonth}
@@ -195,7 +197,7 @@ export function GamePlan() {
             {Math.round(annualProgress.progressPercent)}%
           </span>
         </div>
-        <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+        <div className="h-2 bg-v2-ring rounded-v2-pill overflow-hidden">
           <div
             className={cn(
               "h-full transition-all duration-300",
@@ -212,25 +214,25 @@ export function GamePlan() {
 
       {/* Compact Annual Stats */}
       <div className="grid grid-cols-4 gap-1 mb-2 text-[11px]">
-        <div className="p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded text-center">
+        <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
           <div className="text-zinc-400 dark:text-zinc-500">YTD</div>
           <div className="font-bold font-mono text-emerald-600 dark:text-emerald-400">
             {formatCurrency(annualProgress.ytdCommissions)}
           </div>
         </div>
-        <div className="p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded text-center">
+        <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
           <div className="text-zinc-400 dark:text-zinc-500">Annual</div>
           <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
             {formatCurrency(annualProgress.annualGoal)}
           </div>
         </div>
-        <div className="p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded text-center">
+        <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
           <div className="text-zinc-400 dark:text-zinc-500">Need</div>
           <div className="font-bold font-mono text-red-600 dark:text-red-400">
             {formatCurrency(annualProgress.remainingNeeded)}
           </div>
         </div>
-        <div className="p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded text-center">
+        <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
           <div className="text-zinc-400 dark:text-zinc-500">Months</div>
           <div className="font-bold font-mono text-zinc-900 dark:text-zinc-100">
             {annualProgress.monthsRemaining}
@@ -261,7 +263,7 @@ export function GamePlan() {
       {/* Smart Moves Section */}
       {gamePlan.smartMoves && gamePlan.smartMoves.length > 0 && (
         <>
-          <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1 mt-2">
+          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em] mb-1 mt-2">
             Smart Moves
           </div>
           <Table className="text-[11px] mb-2">
@@ -321,7 +323,7 @@ export function GamePlan() {
       {/* What-If Scenarios */}
       {gamePlan.scenarios && gamePlan.scenarios.length > 0 && (
         <>
-          <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1 mt-2">
+          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em] mb-1 mt-2">
             What If Scenarios
           </div>
           <Table className="text-[11px] mb-2">

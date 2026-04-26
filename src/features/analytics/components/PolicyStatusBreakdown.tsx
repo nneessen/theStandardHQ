@@ -45,8 +45,8 @@ export function PolicyStatusBreakdown() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Policy Status
         </div>
         <div className="p-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
@@ -71,11 +71,11 @@ export function PolicyStatusBreakdown() {
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div>
-          <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
             Policy Status
           </div>
           <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
@@ -98,7 +98,7 @@ export function PolicyStatusBreakdown() {
 
       {/* Compact Monthly Trend Chart */}
       <div className="mb-2">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em] mb-1">
           12-Month Trend
         </div>
         <div className="h-32">
@@ -106,41 +106,42 @@ export function PolicyStatusBreakdown() {
             <LineChart data={monthlyTrend}>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="#3f3f46"
-                strokeOpacity={0.3}
+                stroke="#d9d5c7"
+                strokeOpacity={0.6}
               />
               <XAxis
                 dataKey="month"
-                tick={{ fontSize: 9, fill: "#71717a" }}
+                tick={{ fontSize: 9, fill: "#5e5d56" }}
                 height={20}
               />
-              <YAxis tick={{ fontSize: 9, fill: "#71717a" }} width={30} />
+              <YAxis tick={{ fontSize: 9, fill: "#5e5d56" }} width={30} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#18181b",
-                  border: "1px solid #3f3f46",
-                  borderRadius: "6px",
+                  backgroundColor: "#0e0e0c",
+                  border: "1px solid #ffd23b",
+                  borderRadius: "12px",
                   fontSize: "10px",
-                  padding: "4px 8px",
+                  padding: "6px 10px",
+                  color: "#fff",
                 }}
-                labelStyle={{ color: "#a1a1aa" }}
+                labelStyle={{ color: "#ffd23b" }}
               />
               <Legend wrapperStyle={{ fontSize: "10px" }} iconSize={8} />
               <Line
                 type="monotone"
                 dataKey="active"
                 stroke="#10b981"
-                strokeWidth={1}
+                strokeWidth={1.5}
                 name="Active"
-                dot={{ r: 1.5 }}
+                dot={{ r: 2 }}
               />
               <Line
                 type="monotone"
                 dataKey="lapsed"
-                stroke="#f59e0b"
-                strokeWidth={1}
+                stroke="#ffd23b"
+                strokeWidth={1.5}
                 name="Lapsed"
-                dot={{ r: 1.5 }}
+                dot={{ r: 2 }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -153,7 +154,7 @@ export function PolicyStatusBreakdown() {
           {/* Best Performers */}
           {bestPerformers.length > 0 && (
             <div>
-              <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+              <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em] mb-1">
                 Best Performers
               </div>
               <Table className="text-[11px]">
@@ -192,7 +193,7 @@ export function PolicyStatusBreakdown() {
           {/* Needs Attention */}
           {needsAttention.length > 0 && (
             <div>
-              <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+              <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em] mb-1">
                 Needs Attention
               </div>
               <Table className="text-[11px]">

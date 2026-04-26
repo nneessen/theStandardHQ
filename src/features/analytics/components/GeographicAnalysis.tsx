@@ -34,8 +34,8 @@ export function GeographicAnalysis() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Premium by State
         </div>
         <div className="p-3 text-center text-[10px] text-zinc-500 dark:text-zinc-400">
@@ -90,9 +90,9 @@ export function GeographicAnalysis() {
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Premium by State
         </div>
         <span className="text-[10px] text-zinc-400 dark:text-zinc-500">

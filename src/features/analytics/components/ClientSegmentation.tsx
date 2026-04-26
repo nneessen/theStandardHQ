@@ -27,8 +27,8 @@ export function ClientSegmentation() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Client Segments
         </div>
         <div className="p-3 text-center text-[10px] text-zinc-500 dark:text-zinc-400">
@@ -91,8 +91,8 @@ export function ClientSegmentation() {
   ];
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-      <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+      <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em] mb-2">
         Client Segments
       </div>
 
@@ -167,7 +167,7 @@ export function ClientSegmentation() {
       {/* Top Chargeback Risk - highest premium policies in contestability */}
       {chargebackRisk && chargebackRisk.length > 0 && (
         <>
-          <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1 mt-2">
+          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em] mb-1 mt-2">
             Top Chargeback Risk
           </div>
           <Table className="text-[11px]">

@@ -21,8 +21,8 @@ export function PaceMetrics() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+        <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
           Pace Metrics
         </div>
         <div className="p-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
@@ -129,11 +129,11 @@ export function PaceMetrics() {
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div>
-          <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+          <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
             Pace Metrics
           </div>
           <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
@@ -142,13 +142,13 @@ export function PaceMetrics() {
         </div>
         <div
           className={cn(
-            "px-1.5 py-0.5 rounded text-[9px] font-medium",
+            "px-2.5 py-1 rounded-v2-pill text-[10px] font-semibold tracking-wide uppercase",
             isProfitable
-              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-              : "bg-red-500/10 text-red-600 dark:text-red-400",
+              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+              : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
           )}
         >
-          {isProfitable ? "PROFITABLE" : "DEFICIT"}
+          {isProfitable ? "Profitable" : "Deficit"}
         </div>
       </div>
 
@@ -203,7 +203,7 @@ export function PaceMetrics() {
           </div>
         </div>
 
-        <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+        <div className="h-px bg-v2-ring my-2" />
 
         {/* Surplus/Deficit */}
         <div className="flex items-center justify-between text-[11px]">
