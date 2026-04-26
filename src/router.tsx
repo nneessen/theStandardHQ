@@ -57,7 +57,6 @@ import {
   TeamOverviewPage,
   RoadmapRunnerPage,
 } from "./features/agent-roadmap";
-import { THE_STANDARD_AGENCY_ID } from "./hooks/subscription";
 import PresentationRecordPage from "./features/training-modules/components/presentations/PresentationRecordPage";
 import PresentationDetailPage from "./features/training-modules/components/presentations/PresentationDetailPage";
 import { ContractingPage } from "./features/contracting/ContractingPage";
@@ -1008,8 +1007,7 @@ const marketingTemplateEditRoute = createRoute({
 });
 
 // ============================================================================
-// Agent Roadmap routes (super-admin only at launch; agency-gated for agents
-// once the runner page lands in Commit 6)
+// Agent Roadmap routes
 // ============================================================================
 
 // Admin: list of all roadmaps in the current agency
@@ -1076,11 +1074,7 @@ const agentRoadmapLandingRoute = createRoute({
   }),
   component: () => {
     const { preview } = agentRoadmapLandingRoute.useSearch();
-    return (
-      <RouteGuard allowedAgencyId={THE_STANDARD_AGENCY_ID}>
-        <RoadmapLandingOrAdmin preview={!!preview} />
-      </RouteGuard>
-    );
+    return <RoadmapLandingOrAdmin preview={!!preview} />;
   },
 });
 
@@ -1090,11 +1084,7 @@ const agentRoadmapRunnerRoute = createRoute({
   path: "agent-roadmap/$roadmapId",
   component: () => {
     const { roadmapId } = agentRoadmapRunnerRoute.useParams();
-    return (
-      <RouteGuard allowedAgencyId={THE_STANDARD_AGENCY_ID}>
-        <RoadmapRunnerPage roadmapId={roadmapId} />
-      </RouteGuard>
-    );
+    return <RoadmapRunnerPage roadmapId={roadmapId} />;
   },
 });
 

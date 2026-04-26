@@ -1,13 +1,18 @@
-// src/features/recruiting/pages/MyRecruitingPipeline.tsx
-// Recruit's personal onboarding pipeline view - full-width brutalist design
-
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { useUplineProfile } from "@/hooks/hierarchy";
-// eslint-disable-next-line no-restricted-imports -- Temporary: direct supabase access for recruit pipeline, TODO: move to service
+// eslint-disable-next-line no-restricted-imports -- direct supabase access for recruit pipeline page
 import { supabase } from "@/services/base/supabase";
-import { AlertCircle, Loader2 } from "lucide-react";
+import {
+  AlertCircle,
+  Camera,
+  Compass,
+  ListChecks,
+  Loader2,
+  MessageSquare,
+  User,
+} from "lucide-react";
 import {
   useRecruitPhaseProgress,
   useCurrentPhase,
@@ -17,14 +22,16 @@ import { useTemplate } from "../hooks/usePipeline";
 import { PhaseChecklist } from "../components/PhaseChecklist";
 import { CommunicationPanel } from "../components/CommunicationPanel";
 import { useRecruitDocuments } from "../hooks/useRecruitDocuments";
+import { ContactsSection, DocumentsSection } from "../components/onboarding";
 import {
-  WelcomeHero,
-  CurrentPhaseWizard,
-  NoCurrentPhase,
-  OnboardingTimeline,
-  ContactsSection,
-  DocumentsSection,
-} from "../components/onboarding";
+  EditorialMasthead,
+  EditorialSection,
+  EditorialStat,
+  EditorialStepper,
+  CurrentPhaseSection,
+  NextActionCard,
+} from "../components/editorial";
+import type { StepperItem, StepperStatus } from "../components/editorial";
 import type { UserProfile } from "@/types/hierarchy.types";
 
 interface KeyContact {
@@ -34,12 +41,17 @@ interface KeyContact {
   profile: UserProfile | null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- template phases come from raw service response
+type TemplatePhase = any;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- checklist items come from raw service response
+type TemplateItem = any;
+
 export function MyRecruitingPipeline() {
   const { user, loading: authLoading } = useAuth();
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [expandedPhase, setExpandedPhase] = useState<string | null>(null);
 
-  // Fetch profile directly using AuthContext's user.id
   const {
     data: profile,
     isLoading: profileLoading,
@@ -48,13 +60,11 @@ export function MyRecruitingPipeline() {
     queryKey: ["recruit-pipeline-profile", user?.id],
     queryFn: async () => {
       if (!user?.id) return null;
-
       const { data, error } = await supabase
         .from("user_profiles")
         .select("*")
         .eq("id", user.id)
         .single();
-
       if (error) throw error;
       return data as UserProfile;
     },
@@ -69,7 +79,6 @@ export function MyRecruitingPipeline() {
   const isReady =
     !authLoading && !profileLoading && !!user?.id && !!profile?.id;
 
-  // Fetch recruit's agency name for dynamic headline
   const { data: recruitAgency } = useQuery({
     queryKey: ["recruit-agency", profile?.agency_id],
     queryFn: async () => {
@@ -84,12 +93,10 @@ export function MyRecruitingPipeline() {
     enabled: isReady && !!profile?.agency_id,
   });
 
-  // Fetch upline/trainer info
   const { data: upline } = useUplineProfile(profile?.upline_id ?? undefined, {
     enabled: isReady && !!profile?.upline_id,
   });
 
-  // Fetch key contacts (trainers, contracting managers)
   const { data: keyContacts } = useQuery<KeyContact[]>({
     queryKey: ["key-contacts"],
     queryFn: async () => {
@@ -101,15 +108,12 @@ export function MyRecruitingPipeline() {
         .or("roles.cs.{trainer},roles.cs.{contracting_manager}");
 
       if (error) throw error;
-
       const contacts: KeyContact[] = [];
-
-      for (const user of data || []) {
-        const roles = (user.roles as string[]) || [];
+      for (const u of data || []) {
+        const roles = (u.roles as string[]) || [];
         const isTrainer = roles.includes("trainer");
         const isContracting = roles.includes("contracting_manager");
         if (!isTrainer && !isContracting) continue;
-
         const roleKey =
           isTrainer && isContracting
             ? "trainer_contracting"
@@ -122,100 +126,72 @@ export function MyRecruitingPipeline() {
             : isTrainer
               ? "Trainer"
               : "Contracting";
-
         contacts.push({
-          id: `${user.id}-${roleKey}`,
+          id: `${u.id}-${roleKey}`,
           role: roleKey,
           label,
-          profile: user as UserProfile,
+          profile: u as UserProfile,
         });
       }
-
       return contacts;
     },
     enabled: isReady,
   });
 
-  // Fetch phase progress
   const { data: phaseProgress } = useRecruitPhaseProgress(profile?.id);
   const { data: currentPhase } = useCurrentPhase(profile?.id);
-  // Use the user's enrolled template, NOT the global default
-  // This fixes "Unknown Phase" bug when user is in a non-default pipeline
   const { data: template } = useTemplate(
     profile?.pipeline_template_id ?? undefined,
   );
   const { data: documents } = useRecruitDocuments(profile?.id);
 
-  // Fetch all checklist progress for all phases
   const { data: allChecklistProgress } = useQuery({
     queryKey: ["all-checklist-progress", profile?.id],
     queryFn: async () => {
       if (!profile?.id) return [];
-
       const { data, error } = await supabase
         .from("recruit_checklist_progress")
         .select("*")
         .eq("user_id", profile.id);
-
       if (error) throw error;
       return data || [];
     },
     enabled: !!profile?.id,
   });
 
-  // Use current phase checklist for the current phase section
   const { data: currentChecklistProgress } = useChecklistProgress(
     profile?.id,
     currentPhase?.phase_id,
   );
 
-  // Calculate progress percentage
-  const calculateProgress = () => {
-    if (!phaseProgress || phaseProgress.length === 0) return 0;
-    const completed = phaseProgress.filter(
-      (p) => p.status === "completed",
-    ).length;
-    return Math.round((completed / phaseProgress.length) * 100);
-  };
-
-  // Handle photo upload
   const handlePhotoUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file || !user?.id) return;
-
     if (!file.type.startsWith("image/")) {
       alert("Please upload an image file");
       return;
     }
-
     if (file.size > 5 * 1024 * 1024) {
       alert("File size must be less than 5MB");
       return;
     }
-
     setUploadingPhoto(true);
-
     try {
       const fileName = `${user.id}/avatar_${Date.now()}.${file.name.split(".").pop()}`;
       const { error: uploadError } = await supabase.storage
         .from("recruiting-assets")
         .upload(fileName, file, { upsert: true });
-
       if (uploadError) throw uploadError;
-
       const { data: urlData } = supabase.storage
         .from("recruiting-assets")
         .getPublicUrl(fileName);
-
       const { error: updateError } = await supabase
         .from("user_profiles")
         .update({ profile_photo_url: urlData.publicUrl })
         .eq("id", user.id);
-
       if (updateError) throw updateError;
-
       window.location.reload();
     } catch (error) {
       console.error("Error uploading photo:", error);
@@ -225,199 +201,393 @@ export function MyRecruitingPipeline() {
     }
   };
 
-  // Loading state
-  if (authLoading || profileLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a]">
-        <div className="text-center">
-          <Loader2
-            className="h-8 w-8 animate-spin mx-auto mb-3"
-            style={{ color: "var(--recruiting-primary)" }}
-          />
-          <p className="text-[11px] text-white/40 font-mono uppercase tracking-wider">
-            Loading your pipeline...
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // ---------- derived ----------
 
-  // Error state
-  if (profileError) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a]">
-        <div className="p-6 max-w-sm text-center border border-white/10 rounded-lg">
-          <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-3" />
-          <h2 className="text-sm font-semibold text-white mb-1">
-            Error Loading Profile
-          </h2>
-          <p className="text-[11px] text-white/40 mb-2">
-            Please refresh the page to try again.
-          </p>
-          <p className="text-[10px] text-white/20 font-mono">
-            {String(profileError)}
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const progressPercentage = useMemo(() => {
+    if (!phaseProgress || phaseProgress.length === 0) return 0;
+    const completed = phaseProgress.filter(
+      (p) => p.status === "completed",
+    ).length;
+    return Math.round((completed / phaseProgress.length) * 100);
+  }, [phaseProgress]);
 
-  // No profile found
-  if (!profile) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-[#0a0a0a]">
-        <div className="p-6 max-w-sm text-center border border-white/10 rounded-lg">
-          <AlertCircle className="h-8 w-8 text-amber-500 mx-auto mb-3" />
-          <h2 className="text-sm font-semibold text-white mb-1">
-            Profile Not Found
-          </h2>
-          <p className="text-[11px] text-white/40">
-            Please contact support for assistance.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  const totalPhases = phaseProgress?.length ?? 0;
+  const completedPhases =
+    phaseProgress?.filter((p) => p.status === "completed").length ?? 0;
+  const remainingPhases = Math.max(totalPhases - completedPhases, 0);
 
-  const progressPercentage = calculateProgress();
-
-  // Get current phase data
   const currentPhaseIndex =
     phaseProgress?.findIndex((p) => p.phase_id === currentPhase?.phase_id) ?? 0;
 
-  const currentPhaseData = template?.phases?.find(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- phase template type
-    (p: any) => p.id === currentPhase?.phase_id,
+  const currentPhaseData: TemplatePhase | undefined = template?.phases?.find(
+    (p: TemplatePhase) => p.id === currentPhase?.phase_id,
   );
 
-  // Check if current phase is hidden from recruit
   const isCurrentPhaseHidden = currentPhaseData?.visible_to_recruit === false;
 
-  // Filter hidden checklist items for recruit view
-  const allChecklistItemsForPhase = currentPhaseData?.checklist_items || [];
+  const allChecklistItemsForPhase: TemplateItem[] =
+    currentPhaseData?.checklist_items || [];
 
   const currentChecklistItems = allChecklistItemsForPhase.filter(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- checklist item type
-    (item: any) => item.visible_to_recruit !== false,
+    (item: TemplateItem) => item.visible_to_recruit !== false,
   );
 
+  const currentItemsCompleted =
+    currentChecklistProgress?.filter((p) => p.status === "completed").length ||
+    0;
+
+  const recruitFirstName = profile?.first_name?.trim() || "";
   const recruitName =
-    `${profile.first_name || ""} ${profile.last_name || ""}`.trim();
+    `${profile?.first_name || ""} ${profile?.last_name || ""}`.trim();
+  const agencyName = recruitAgency?.name || "your agency";
+
+  const stepperItems: StepperItem[] = useMemo(() => {
+    if (!phaseProgress) return [];
+    return phaseProgress.map((p, idx) => {
+      const tplPhase: TemplatePhase | undefined = template?.phases?.find(
+        (tp: TemplatePhase) => tp.id === p.phase_id,
+      );
+      const hidden = tplPhase?.visible_to_recruit === false;
+      let status: StepperStatus;
+      if (hidden) status = "locked";
+      else if (p.status === "completed") status = "completed";
+      else if (p.status === "blocked") status = "blocked";
+      else if (p.status === "in_progress") status = "in_progress";
+      else status = "not_started";
+
+      const items: TemplateItem[] = (
+        (tplPhase?.checklist_items || []) as TemplateItem[]
+      ).filter((it: TemplateItem) => it.visible_to_recruit !== false);
+      const phaseItemProgress = (allChecklistProgress || []).filter((cp) =>
+        items.some((it: TemplateItem) => it.id === cp.checklist_item_id),
+      );
+      const done = phaseItemProgress.filter(
+        (cp) => cp.status === "completed" || cp.status === "approved",
+      ).length;
+
+      let caption: React.ReactNode = null;
+      if (status === "completed") {
+        caption = `All ${items.length} items complete`;
+      } else if (status === "in_progress") {
+        caption = `${done} of ${items.length} items complete`;
+      } else if (status === "blocked") {
+        caption = p.blocked_reason || "Paused by your recruiter";
+      } else if (status === "locked") {
+        caption = "Handled by your recruiter";
+      } else if (tplPhase?.estimated_days) {
+        caption = `Estimated ${tplPhase.estimated_days} day${tplPhase.estimated_days === 1 ? "" : "s"}`;
+      }
+
+      return {
+        id: p.id,
+        index: idx,
+        name: tplPhase?.phase_name || `Phase ${idx + 1}`,
+        status,
+        caption,
+      } satisfies StepperItem;
+    });
+  }, [phaseProgress, template, allChecklistProgress]);
+
+  const nextAction = useMemo(() => {
+    if (!profile) return null;
+    if (!currentPhase || !template) {
+      return {
+        eyebrow: "Welcome",
+        headline:
+          "Your recruiter is setting up your pipeline. Check back here once it's ready.",
+        caption:
+          "If this takes more than a day, send your recruiter a quick text — they may need a nudge.",
+        tone: "neutral" as const,
+      };
+    }
+    if (isCurrentPhaseHidden) {
+      return {
+        eyebrow: "Waiting on admin",
+        headline:
+          "Your recruiter is reviewing this step. No action needed from you right now.",
+        caption:
+          "We'll surface the next step here as soon as it's ready. Feel free to message them below if you want a status update.",
+        tone: "neutral" as const,
+      };
+    }
+    if (currentPhase.status === "blocked") {
+      return {
+        eyebrow: "Phase blocked",
+        headline:
+          currentPhase.blocked_reason ||
+          "Your recruiter blocked this phase and added a note.",
+        caption:
+          "Read the reason below, take any action you can, then text your recruiter to unblock.",
+        tone: "warn" as const,
+      };
+    }
+    const firstIncomplete = currentChecklistItems.find(
+      (it: TemplateItem) =>
+        !currentChecklistProgress?.some(
+          (cp) =>
+            cp.checklist_item_id === it.id &&
+            (cp.status === "completed" || cp.status === "approved"),
+        ),
+    ) as TemplateItem | undefined;
+    if (!firstIncomplete) {
+      return {
+        eyebrow: "Phase ready",
+        headline:
+          "Every required item is checked off — your recruiter will advance you to the next phase shortly.",
+        caption:
+          "If a few hours pass and nothing happens, drop them a message below.",
+        tone: "primary" as const,
+      };
+    }
+    return {
+      eyebrow: "Do this next",
+      headline: firstIncomplete.item_name as string,
+      caption:
+        firstIncomplete.item_description ||
+        "Find this step in the checklist below to complete it.",
+      tone: "primary" as const,
+    };
+  }, [
+    profile,
+    currentPhase,
+    template,
+    isCurrentPhaseHidden,
+    currentChecklistItems,
+    currentChecklistProgress,
+  ]);
+
+  // ---------- loading / error ----------
+
+  if (authLoading || profileLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#fafaf7] dark:bg-[#0c0a09]">
+        <div className="text-center">
+          <Loader2 className="h-6 w-6 animate-spin mx-auto mb-3 text-amber-600 dark:text-amber-400" />
+          <p className="text-[11px] uppercase tracking-[0.2em] font-bold text-stone-500 dark:text-stone-400">
+            Loading your pipeline…
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (profileError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#fafaf7] dark:bg-[#0c0a09]">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl ring-1 ring-stone-200/70 dark:ring-stone-800 shadow-md dark:shadow-none p-6 max-w-sm text-center">
+          <AlertCircle className="h-6 w-6 text-red-700 dark:text-red-400 mx-auto mb-3" />
+          <h2 className="text-base font-bold text-stone-900 dark:text-stone-100 mb-1">
+            Couldn&apos;t load your profile
+          </h2>
+          <p className="text-[13px] text-stone-600 dark:text-stone-400">
+            Refresh the page to try again. If this keeps happening, message your
+            recruiter.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#fafaf7] dark:bg-[#0c0a09]">
+        <div className="bg-white dark:bg-stone-900 rounded-2xl ring-1 ring-stone-200/70 dark:ring-stone-800 shadow-md dark:shadow-none p-6 max-w-sm text-center">
+          <AlertCircle className="h-6 w-6 text-amber-600 dark:text-amber-400 mx-auto mb-3" />
+          <h2 className="text-base font-bold text-stone-900 dark:text-stone-100 mb-1">
+            Profile not found
+          </h2>
+          <p className="text-[13px] text-stone-600 dark:text-stone-400">
+            Please contact support.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ---------- render ----------
+
+  const subtitle = (
+    <>
+      You&apos;re{" "}
+      <span className="font-mono tabular-nums font-bold text-stone-900 dark:text-stone-100">
+        {progressPercentage}%
+      </span>{" "}
+      through your onboarding with {agencyName}.{" "}
+      {currentPhase
+        ? "Next up: complete the items in your current phase below."
+        : "Your recruiter will activate your first phase soon."}
+    </>
+  );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
-      {/* Full-width container with responsive padding */}
-      <div className="max-w-7xl mx-auto px-3 py-4 md:px-6 md:py-6 lg:px-8 space-y-4 md:space-y-6">
-        {/* Welcome Hero Banner - Full Width */}
-        <WelcomeHero
-          firstName={profile.first_name}
-          lastName={profile.last_name}
-          agencyName={recruitAgency?.name}
-          profilePhotoUrl={profile.profile_photo_url}
-          progressPercentage={progressPercentage}
-          currentPhaseName={
-            isCurrentPhaseHidden
-              ? "Waiting for Admin Action"
-              : currentPhaseData?.phase_name
+    <div className="min-h-screen bg-[#fafaf7] dark:bg-[#0c0a09]">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-16 flex flex-col gap-5 md:gap-6">
+        <EditorialMasthead
+          icon={Compass}
+          eyebrow={`Onboarding · ${agencyName}`}
+          title={
+            <>
+              Welcome,{" "}
+              <span className="text-amber-600 dark:text-amber-400">
+                {recruitFirstName || "recruit"}
+              </span>
+              .
+            </>
           }
-          phaseProgress={phaseProgress}
-          uploadingPhoto={uploadingPhoto}
-          onPhotoUpload={handlePhotoUpload}
+          subtitle={subtitle}
+          rightSlot={
+            <div className="flex items-end gap-6">
+              <EditorialStat
+                label="Complete"
+                value={`${progressPercentage}%`}
+                size="lg"
+                tone={progressPercentage === 100 ? "success" : "brand"}
+              />
+              <EditorialStat
+                label="Phases left"
+                value={remainingPhases}
+                size="md"
+              />
+            </div>
+          }
         />
 
-        {/* Current Phase - Full Width */}
+        {nextAction && (
+          <NextActionCard
+            eyebrow={nextAction.eyebrow}
+            headline={nextAction.headline}
+            caption={nextAction.caption}
+            tone={nextAction.tone}
+          />
+        )}
+
         {currentPhase && template ? (
-          <CurrentPhaseWizard
-            currentPhaseName={currentPhaseData?.phase_name}
-            currentPhaseId={currentPhase?.phase_id}
-            currentPhaseIndex={currentPhaseIndex}
+          <CurrentPhaseSection
+            phaseIndex={currentPhaseIndex < 0 ? 0 : currentPhaseIndex}
+            totalPhases={totalPhases}
+            phaseName={
+              isCurrentPhaseHidden
+                ? "Waiting on your recruiter"
+                : currentPhaseData?.phase_name || "Current Phase"
+            }
+            itemsCompleted={currentItemsCompleted}
+            itemsTotal={currentChecklistItems.length}
             isHidden={isCurrentPhaseHidden}
             isBlocked={currentPhase.status === "blocked"}
             blockedReason={currentPhase.blocked_reason}
             notes={currentPhase.notes}
-            checklistItemCount={currentChecklistItems.length}
-            completedItemCount={
-              currentChecklistProgress?.filter((p) => p.status === "completed")
-                .length || 0
-            }
-            phaseProgress={phaseProgress}
           >
-            <PhaseChecklist
-              userId={profile.id}
-              checklistItems={currentChecklistItems}
-              checklistProgress={currentChecklistProgress || []}
-              isUpline={false}
-              currentUserId={profile.id}
-              currentPhaseId={currentPhase?.phase_id}
-              viewedPhaseId={currentPhase?.phase_id}
-              isAdmin={profile?.is_admin || false}
-              onPhaseComplete={() => {
-                const phaseProgressEl = document.getElementById(
-                  "phase-progress-timeline",
-                );
-                if (phaseProgressEl) {
-                  phaseProgressEl.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                  });
-                }
-              }}
-              recruitEmail={profile.email}
-              recruitName={recruitName}
-              documents={documents || []}
-            />
-          </CurrentPhaseWizard>
+            {!isCurrentPhaseHidden && (
+              <PhaseChecklist
+                userId={profile.id}
+                checklistItems={currentChecklistItems}
+                checklistProgress={currentChecklistProgress || []}
+                isUpline={false}
+                currentUserId={profile.id}
+                currentPhaseId={currentPhase?.phase_id}
+                viewedPhaseId={currentPhase?.phase_id}
+                isAdmin={profile?.is_admin || false}
+                onPhaseComplete={() => {
+                  const el = document.getElementById("phase-progress-timeline");
+                  if (el)
+                    el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+                recruitEmail={profile.email}
+                recruitName={recruitName}
+                documents={documents || []}
+              />
+            )}
+          </CurrentPhaseSection>
         ) : (
-          <NoCurrentPhase />
+          <EditorialSection
+            icon={Compass}
+            iconTone="brand"
+            eyebrow="No active phase"
+            title="Your pipeline isn't set up yet"
+            caption="Your recruiter will enroll you in a pipeline. The moment they do, your first phase appears here."
+          >
+            <div />
+          </EditorialSection>
         )}
 
-        {/* Timeline - Full Width */}
         <div id="phase-progress-timeline">
-          <OnboardingTimeline
-            phaseProgress={phaseProgress}
-            templatePhases={template?.phases}
-            allChecklistProgress={allChecklistProgress}
-            expandedPhase={expandedPhase}
-            onExpandedChange={setExpandedPhase}
-          />
+          <EditorialSection
+            icon={ListChecks}
+            iconTone="progress"
+            eyebrow="Roadmap"
+            title="Every step, in order"
+            caption="Tap any phase to peek at what's inside. Locked phases are handled by your recruiter."
+          >
+            {stepperItems.length > 0 ? (
+              <EditorialStepper
+                items={stepperItems}
+                expandedId={expandedPhase}
+                onToggleExpanded={(id) =>
+                  setExpandedPhase((cur) => (cur === id ? null : id))
+                }
+              />
+            ) : (
+              <p className="text-[13px] text-stone-500 dark:text-stone-400">
+                No phases yet — they will appear here as soon as your recruiter
+                sets up your pipeline.
+              </p>
+            )}
+          </EditorialSection>
         </div>
 
-        {/* Two-column grid for Contacts, Documents, and Communication - responsive */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          {/* Left Column - Contacts + Documents stacked */}
-          <div className="space-y-4 md:space-y-6">
-            {/* Key Contacts Section */}
-            <ContactsSection
-              upline={upline}
-              keyContacts={keyContacts}
-              recruitName={recruitName}
-            />
+        <ContactsSection
+          upline={upline}
+          keyContacts={keyContacts}
+          recruitName={recruitName}
+        />
 
-            {/* Documents Section */}
-            <DocumentsSection
+        <DocumentsSection
+          userId={profile.id}
+          documents={documents}
+          isUpline={false}
+          currentUserId={profile.id}
+        />
+
+        <EditorialSection
+          icon={MessageSquare}
+          iconTone="brand"
+          eyebrow="Messages"
+          title="Talk to your recruiter"
+          caption="Anything that doesn't fit a checklist box belongs here — questions, scheduling, voice memos."
+        >
+          <div className="rounded-xl ring-1 ring-stone-200/70 dark:ring-stone-800 overflow-hidden">
+            <CommunicationPanel
               userId={profile.id}
-              documents={documents}
-              isUpline={false}
-              currentUserId={profile.id}
+              upline={upline}
+              currentUserProfile={profile}
             />
           </div>
+        </EditorialSection>
 
-          {/* Right Column - Communication Panel */}
-          <section className="recruiting-section recruiting-accent-top">
-            <div className="relative z-10">
-              <div className="px-4 pt-4 md:px-5 md:pt-5">
-                <span className="recruiting-index">[06] Messages</span>
-              </div>
-              <div className="h-[400px] md:h-[500px] recruiting-comm-wrapper">
-                <CommunicationPanel
-                  userId={profile.id}
-                  upline={upline}
-                  currentUserProfile={profile}
-                />
-              </div>
-            </div>
-          </section>
-        </div>
+        <EditorialSection
+          icon={User}
+          iconTone="stone"
+          eyebrow="Profile"
+          title="Your photo"
+          caption="A clear headshot helps your recruiter and trainers match a face to the name. Keep it under 5 MB."
+          compact
+        >
+          <label className="inline-flex items-center gap-2 cursor-pointer rounded-lg bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-900 px-4 py-2.5 text-[13px] font-semibold transition-colors">
+            {uploadingPhoto ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Camera className="h-3.5 w-3.5" />
+            )}
+            {uploadingPhoto ? "Uploading…" : "Upload a photo"}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handlePhotoUpload}
+              disabled={uploadingPhoto}
+            />
+          </label>
+        </EditorialSection>
       </div>
     </div>
   );

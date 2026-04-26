@@ -167,11 +167,11 @@ describe("invitation entity", () => {
 
     // Wait for dialog to open, then click the confirm button (not the dialog title)
     await waitFor(() =>
-      screen.getByText(
-        "Cancel this invitation? The registration link will no longer work.",
-      ),
+      screen.getByText(/The registration link will stop working/),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Cancel Invitation" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /^Cancel invitation$/i }),
+    );
 
     await waitFor(() =>
       expect(actions.onCancelInvitation).toHaveBeenCalledTimes(1),
@@ -179,9 +179,7 @@ describe("invitation entity", () => {
     // Dialog closes after resolve
     await waitFor(() =>
       expect(
-        screen.queryByText(
-          "Cancel this invitation? The registration link will no longer work.",
-        ),
+        screen.queryByText(/The registration link will stop working/),
       ).toBeNull(),
     );
   });
@@ -194,20 +192,18 @@ describe("invitation entity", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /cancel/i }));
     await waitFor(() =>
-      screen.getByText(
-        "Cancel this invitation? The registration link will no longer work.",
-      ),
+      screen.getByText(/The registration link will stop working/),
     );
-    fireEvent.click(screen.getByRole("button", { name: "Cancel Invitation" }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /^Cancel invitation$/i }),
+    );
 
     await waitFor(() =>
       expect(actions.onCancelInvitation).toHaveBeenCalledTimes(1),
     );
     // Dialog should still be open
     expect(
-      screen.getByText(
-        "Cancel this invitation? The registration link will no longer work.",
-      ),
+      screen.getByText(/The registration link will stop working/),
     ).toBeInTheDocument();
   });
 });
@@ -226,14 +222,14 @@ describe("runAction integration — handler propagation", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /^Advance$/i }));
     await waitFor(() =>
-      screen.getByText("Advance this recruit to the next phase?"),
+      screen.getByText(/Move this recruit to the next phase/),
     );
     fireEvent.click(screen.getByRole("button", { name: "Advance" }));
 
     await waitFor(() => expect(failingAdvance).toHaveBeenCalledTimes(1));
     // Dialog must still be open — if handler swallowed the error, it would have closed
     expect(
-      screen.getByText("Advance this recruit to the next phase?"),
+      screen.getByText(/Move this recruit to the next phase/),
     ).toBeInTheDocument();
   });
 
@@ -244,14 +240,14 @@ describe("runAction integration — handler propagation", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /^Advance$/i }));
     await waitFor(() =>
-      screen.getByText("Advance this recruit to the next phase?"),
+      screen.getByText(/Move this recruit to the next phase/),
     );
     fireEvent.click(screen.getByRole("button", { name: "Advance" }));
 
     await waitFor(() => expect(successAdvance).toHaveBeenCalledTimes(1));
     await waitFor(() =>
       expect(
-        screen.queryByText("Advance this recruit to the next phase?"),
+        screen.queryByText(/Move this recruit to the next phase/),
       ).toBeNull(),
     );
   });
@@ -282,7 +278,7 @@ describe("registered entity — pipeline", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /^Advance$/i }));
     await waitFor(() =>
-      screen.getByText("Advance this recruit to the next phase?"),
+      screen.getByText(/Move this recruit to the next phase/),
     );
     fireEvent.click(screen.getByRole("button", { name: "Advance" }));
 
@@ -291,7 +287,7 @@ describe("registered entity — pipeline", () => {
     );
     await waitFor(() =>
       expect(
-        screen.queryByText("Advance this recruit to the next phase?"),
+        screen.queryByText(/Move this recruit to the next phase/),
       ).toBeNull(),
     );
   });
@@ -304,7 +300,7 @@ describe("registered entity — pipeline", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /^Advance$/i }));
     await waitFor(() =>
-      screen.getByText("Advance this recruit to the next phase?"),
+      screen.getByText(/Move this recruit to the next phase/),
     );
     fireEvent.click(screen.getByRole("button", { name: "Advance" }));
 
@@ -312,7 +308,7 @@ describe("registered entity — pipeline", () => {
       expect(actions.onAdvancePhase).toHaveBeenCalledTimes(1),
     );
     expect(
-      screen.getByText("Advance this recruit to the next phase?"),
+      screen.getByText(/Move this recruit to the next phase/),
     ).toBeInTheDocument();
   });
 

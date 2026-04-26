@@ -425,14 +425,11 @@ export default function Sidebar({
           href: "/my-training",
           subscriptionFeature: "training",
         },
-        // Agent Roadmap — checkoff-as-you-go onboarding guide, gated to
-        // The Standard agents. Super-admin bypasses via RouteGuard.
         {
           icon: Compass,
           label: "Agent Roadmap",
           href: "/agent-roadmap",
           public: true,
-          allowedAgencyId: THE_STANDARD_AGENCY_ID,
         },
       ],
     },

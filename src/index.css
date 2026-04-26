@@ -47,13 +47,31 @@
       "SF Mono", Monaco, "Cascadia Code", Consolas, "Courier New", monospace;
 
     /* ==================== RECRUITING PAGE THEME VARIABLES ==================== */
-    /* These are dynamically set by applyRecruitingTheme() for branded pages */
+    /* Legacy brutalist tokens — retained one release for downstream callers. */
     --recruiting-primary: #0ea5e9;
     --recruiting-primary-light: #e0f2fe;
     --recruiting-primary-dark: #0284c7;
     --recruiting-accent: #22c55e;
     --recruiting-accent-light: #dcfce7;
     --recruiting-accent-dark: #16a34a;
+
+    /* ==================== RECRUITING SURFACE TOKENS ==================== */
+    /* Carded warm-paper system anchored to The Standard's amber-500 brand
+       (matches the public landing page in src/features/landing/*). */
+    --rec-paper: #fafaf7;
+    --rec-card: #ffffff;
+    --rec-ink: #1c1917;
+    --rec-ink-muted: #57534e;
+    --rec-ring: rgba(231, 229, 220, 0.8);
+    --rec-brand: #f59e0b;
+    --rec-brand-soft: #fef3c7;
+    --rec-brand-tint: rgba(245, 158, 11, 0.08);
+    --rec-success: #059669;
+    --rec-success-soft: #d1fae5;
+    --rec-progress: #0284c7;
+    --rec-progress-soft: #e0f2fe;
+    --rec-error: #b91c1c;
+    --rec-error-soft: #fee2e2;
   }
 
   .dark {

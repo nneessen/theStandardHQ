@@ -1,8 +1,6 @@
-// src/features/recruiting/components/RecruitActionBar.tsx
 import { useState } from "react";
 import type { UserProfile } from "@/types/hierarchy.types";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
   TooltipContent,
@@ -63,6 +61,37 @@ interface RecruitActionBarProps {
   loading: RecruitActionLoading;
 }
 
+// ─── Hint copy ────────────────────────────────────────────────────────────────
+// Plain-language one-liners surfaced as tooltips on every action button.
+const HINT = {
+  advance:
+    "Move this recruit to the next phase. Use when all required items are checked off.",
+  revert: "Move back one phase. Audit-logged. Checklist progress is preserved.",
+  block:
+    "Pause progress and add a reason. The recruit sees the reason on their pipeline page.",
+  unblock: "Resume progress on the blocked phase.",
+  unenroll:
+    "Remove from the current pipeline so you can re-enroll them in a different one.",
+  initialize:
+    "Enroll this recruit in the active pipeline so they can start checking off steps.",
+  invite:
+    "Send the welcome / sign-in invitation again. Useful if the original email was missed.",
+  resendInvite: "Re-send the invitation email — the existing link stays valid.",
+  cancelInvite:
+    "Cancel this invitation. The registration link will no longer work.",
+  delete:
+    "Permanently delete this recruit and all their progress. Cannot be undone.",
+  graduate:
+    "Promote to a full agent. Sets their NPN, removes the recruit role, audit-logged.",
+  slackNew:
+    "Post a 'new recruit' announcement to your recruiting Slack channel.",
+  slackNpn:
+    "Post 'NPN received' to your recruiting Slack channel. Requires NPN to be set first.",
+} as const;
+
+const buttonBase =
+  "h-7 text-[11px] uppercase tracking-[0.16em] font-semibold px-2.5 flex-shrink-0";
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 interface InvitationActionBarProps {
@@ -83,45 +112,49 @@ function InvitationActionBar({
   if (entity.kind !== "invitation") return null;
   return (
     <>
-      <Badge
-        variant="secondary"
-        className="text-[10px] px-1.5 py-0 h-5 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
-      >
+      <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-amber-700 dark:text-amber-400">
         {entity.invitationStatus
           ? INVITATION_STATUS_LABELS[entity.invitationStatus]
           : "Pending"}
-      </Badge>
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() => {
-          onResendInvite().catch(() => {});
-        }}
-        disabled={!policy.canResendInvite}
-        className="h-6 text-[10px] px-2 flex-shrink-0"
-      >
-        {loading.isResendingInvite ? (
-          <Loader2 className="h-3 w-3 animate-spin" />
-        ) : (
-          <SendHorizontal className="h-3 w-3 mr-0.5" />
-        )}
-        Resend
-      </Button>
+      </span>
+      <ActionTooltip hint={HINT.resendInvite}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            onResendInvite().catch(() => {});
+          }}
+          disabled={!policy.canResendInvite}
+          className={buttonBase}
+        >
+          {loading.isResendingInvite ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <SendHorizontal className="h-3 w-3 mr-1" />
+          )}
+          Resend
+        </Button>
+      </ActionTooltip>
       <div className="flex-1" />
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={onCancelClick}
-        disabled={!policy.canCancelInvitation}
-        className="h-6 text-[10px] px-2 text-red-600 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
-      >
-        {loading.isCancellingInvitation ? (
-          <Loader2 className="h-3 w-3 animate-spin" />
-        ) : (
-          <X className="h-3 w-3 mr-0.5" />
-        )}
-        Cancel
-      </Button>
+      <ActionTooltip hint={HINT.cancelInvite}>
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={onCancelClick}
+          disabled={!policy.canCancelInvitation}
+          className={cn(
+            buttonBase,
+            "text-red-700 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-950/30",
+          )}
+        >
+          {loading.isCancellingInvitation ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <X className="h-3 w-3 mr-1" />
+          )}
+          Cancel
+        </Button>
+      </ActionTooltip>
     </>
   );
 }
@@ -159,109 +192,129 @@ function PipelineActionBar({
     <>
       {hasPipelineProgress ? (
         <>
+          <ActionTooltip hint={HINT.advance}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onAdvanceClick}
+              disabled={!policy.canAdvance}
+              className={buttonBase}
+            >
+              <ArrowRight className="h-3 w-3 mr-1" />
+              Advance
+            </Button>
+          </ActionTooltip>
+          {policy.canRevert && (
+            <ActionTooltip hint={HINT.revert}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={onRevertClick}
+                disabled={loading.isReverting}
+                className={buttonBase}
+              >
+                {loading.isReverting ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Undo2 className="h-3 w-3 mr-1" />
+                )}
+                Revert
+              </Button>
+            </ActionTooltip>
+          )}
+          {policy.canUnblock ? (
+            <ActionTooltip hint={HINT.unblock}>
+              <Button
+                size="sm"
+                variant="default"
+                onClick={onUnblockClick}
+                className={buttonBase}
+              >
+                <CheckCircle2 className="h-3 w-3 mr-1" />
+                Unblock
+              </Button>
+            </ActionTooltip>
+          ) : (
+            <ActionTooltip hint={HINT.block}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={onBlockClick}
+                disabled={!policy.canBlock}
+                className={buttonBase}
+              >
+                <Ban className="h-3 w-3 mr-1" />
+                Block
+              </Button>
+            </ActionTooltip>
+          )}
+          <ActionTooltip hint={HINT.unenroll}>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onUnenroll}
+              disabled={loading.isUnenrolling}
+              className={cn(
+                buttonBase,
+                "text-amber-700 hover:text-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/30",
+              )}
+            >
+              <RotateCcw className="h-3 w-3 mr-1" />
+              Unenroll
+            </Button>
+          </ActionTooltip>
+        </>
+      ) : (
+        <ActionTooltip hint={HINT.initialize}>
           <Button
             size="sm"
             variant="outline"
-            onClick={onAdvanceClick}
-            disabled={!policy.canAdvance}
-            className="h-6 text-[10px] px-2 flex-shrink-0"
+            onClick={onInitialize}
+            disabled={loading.isInitializing}
+            className={buttonBase}
           >
-            <ArrowRight className="h-3 w-3 mr-0.5" />
-            Advance
+            {loading.isInitializing ? (
+              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+            ) : (
+              <Clock className="h-3 w-3 mr-1" />
+            )}
+            Initialize
           </Button>
-          {policy.canRevert && (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={onRevertClick}
-              disabled={loading.isReverting}
-              className="h-6 text-[10px] px-2 flex-shrink-0"
-            >
-              {loading.isReverting ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <Undo2 className="h-3 w-3 mr-0.5" />
-              )}
-              Revert
-            </Button>
-          )}
-          {policy.canUnblock ? (
-            <Button
-              size="sm"
-              variant="default"
-              onClick={onUnblockClick}
-              className="h-6 text-[10px] px-2 flex-shrink-0"
-            >
-              <CheckCircle2 className="h-3 w-3 mr-0.5" />
-              Unblock
-            </Button>
-          ) : (
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={onBlockClick}
-              disabled={!policy.canBlock}
-              className="h-6 text-[10px] px-2 flex-shrink-0"
-            >
-              <Ban className="h-3 w-3 mr-0.5" />
-              Block
-            </Button>
-          )}
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={onUnenroll}
-            disabled={loading.isUnenrolling}
-            className="h-6 text-[10px] px-2 text-orange-600 hover:text-orange-700 hover:bg-orange-50 flex-shrink-0"
-            title="Remove from pipeline to re-enroll in a different one"
-          >
-            <RotateCcw className="h-3 w-3 mr-0.5" />
-            Unenroll
-          </Button>
-        </>
-      ) : (
+        </ActionTooltip>
+      )}
+      <ActionTooltip hint={HINT.invite}>
         <Button
           size="sm"
           variant="outline"
-          onClick={onInitialize}
-          disabled={loading.isInitializing}
-          className="h-6 text-[10px] px-2 flex-shrink-0"
+          onClick={() => {
+            onResendInvite().catch(() => {});
+          }}
+          disabled={!policy.canResendInvite}
+          className={buttonBase}
         >
-          {loading.isInitializing ? (
-            <Loader2 className="h-3 w-3 mr-0.5 animate-spin" />
+          {loading.isResendingInvite ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
           ) : (
-            <Clock className="h-3 w-3 mr-0.5" />
+            <SendHorizontal className="h-3 w-3 mr-1" />
           )}
-          Initialize
+          Invite
         </Button>
-      )}
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() => {
-          onResendInvite().catch(() => {});
-        }}
-        disabled={!policy.canResendInvite}
-        className="h-6 text-[10px] px-2 flex-shrink-0"
-      >
-        {loading.isResendingInvite ? (
-          <Loader2 className="h-3 w-3 animate-spin" />
-        ) : (
-          <SendHorizontal className="h-3 w-3 mr-0.5" />
-        )}
-        Invite
-      </Button>
+      </ActionTooltip>
       <div className="flex-1" />
       {permissions.canDelete && (
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={onDeleteOpen}
-          aria-label="Delete recruit"
-          className="h-6 text-[10px] px-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
-        >
-          <Trash2 className="h-3 w-3" />
-        </Button>
+        <ActionTooltip hint={HINT.delete}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={onDeleteOpen}
+            aria-label="Delete recruit"
+            className={cn(
+              "h-7 px-2 flex-shrink-0 text-red-700 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-950/30",
+            )}
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </ActionTooltip>
       )}
     </>
   );
@@ -286,91 +339,75 @@ function SlackActionBar({
   onSendNew,
   onSendNpn,
 }: SlackActionBarProps) {
-  const channelLabel = slack.recruitChannel?.name
-    ? `#${slack.recruitChannel.name}`
-    : "the recruiting channel";
-
   return (
     <>
       {policy.showNewRecruitSlack && (
-        <TooltipProvider delayDuration={200}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={policy.newRecruitSlackDisabled}
-                onClick={onSendNew}
-                className={cn(
-                  "h-6 text-[10px] px-2 flex-shrink-0",
-                  slack.notificationStatus?.newRecruitSent &&
-                    "text-emerald-600 border-emerald-300",
-                )}
-              >
-                {sendingType === "new_recruit" && loading.isSendingSlack ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : slack.notificationStatus?.newRecruitSent ? (
-                  <Check className="h-3 w-3 mr-0.5" />
-                ) : (
-                  <Hash className="h-3 w-3 mr-0.5" />
-                )}
-                {slack.notificationStatus?.newRecruitSent
-                  ? "Sent"
-                  : "Slack: New Recruit"}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="text-[10px]">
-                {slack.notificationStatus?.newRecruitSent
-                  ? "New recruit notification already sent"
-                  : `Post to ${channelLabel}`}
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <ActionTooltip
+          hint={
+            slack.notificationStatus?.newRecruitSent
+              ? "New-recruit announcement already sent. Click would send again."
+              : HINT.slackNew
+          }
+        >
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={policy.newRecruitSlackDisabled}
+            onClick={onSendNew}
+            className={cn(
+              buttonBase,
+              slack.notificationStatus?.newRecruitSent &&
+                "text-teal-700 border-teal-300 dark:text-teal-400 dark:border-teal-700",
+            )}
+          >
+            {sendingType === "new_recruit" && loading.isSendingSlack ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : slack.notificationStatus?.newRecruitSent ? (
+              <Check className="h-3 w-3 mr-1" />
+            ) : (
+              <Hash className="h-3 w-3 mr-1" />
+            )}
+            {slack.notificationStatus?.newRecruitSent
+              ? "Sent"
+              : "Slack: new recruit"}
+          </Button>
+        </ActionTooltip>
       )}
       {policy.showNpnSlack && (
-        <TooltipProvider delayDuration={200}>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={policy.npnSlackDisabled}
-                onClick={() => {
-                  if (!recruit.npn) {
-                    toast.error("Set the recruit's NPN first, then post.");
-                    return;
-                  }
-                  onSendNpn();
-                }}
-                className={cn(
-                  "h-6 text-[10px] px-2 flex-shrink-0",
-                  slack.notificationStatus?.npnReceivedSent &&
-                    "text-emerald-600 border-emerald-300",
-                )}
-              >
-                {sendingType === "npn_received" && loading.isSendingSlack ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : slack.notificationStatus?.npnReceivedSent ? (
-                  <Check className="h-3 w-3 mr-0.5" />
-                ) : (
-                  <Hash className="h-3 w-3 mr-0.5" />
-                )}
-                {slack.notificationStatus?.npnReceivedSent
-                  ? "Sent"
-                  : "Slack: NPN"}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="text-[10px]">
-                {slack.notificationStatus?.npnReceivedSent
-                  ? "NPN received notification already sent"
-                  : `Post NPN received to ${channelLabel}`}
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <ActionTooltip
+          hint={
+            slack.notificationStatus?.npnReceivedSent
+              ? "NPN-received already sent. Click would send again."
+              : HINT.slackNpn
+          }
+        >
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={policy.npnSlackDisabled}
+            onClick={() => {
+              if (!recruit.npn) {
+                toast.error("Set the recruit's NPN first, then post.");
+                return;
+              }
+              onSendNpn();
+            }}
+            className={cn(
+              buttonBase,
+              slack.notificationStatus?.npnReceivedSent &&
+                "text-teal-700 border-teal-300 dark:text-teal-400 dark:border-teal-700",
+            )}
+          >
+            {sendingType === "npn_received" && loading.isSendingSlack ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : slack.notificationStatus?.npnReceivedSent ? (
+              <Check className="h-3 w-3 mr-1" />
+            ) : (
+              <Hash className="h-3 w-3 mr-1" />
+            )}
+            {slack.notificationStatus?.npnReceivedSent ? "Sent" : "Slack: NPN"}
+          </Button>
+        </ActionTooltip>
       )}
     </>
   );
@@ -394,7 +431,6 @@ export function RecruitActionBar({
     "new_recruit" | "npn_received" | null
   >(null);
 
-  // Dialog open state
   const [advanceDialogOpen, setAdvanceDialogOpen] = useState(false);
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
   const [blockReason, setBlockReason] = useState("");
@@ -415,10 +451,6 @@ export function RecruitActionBar({
     loading,
   });
 
-  /**
-   * Wraps an async action: keeps the dialog open on failure so the user can
-   * retry. Dialog is only closed after a successful await.
-   */
   async function runAction(
     actionKey: string,
     dialogCloser: () => void,
@@ -440,9 +472,9 @@ export function RecruitActionBar({
   const isInvitation = entity.kind === "invitation";
 
   return (
-    <>
-      <div className="flex flex-col gap-1 mt-2">
-        <div className="flex items-center gap-1 flex-wrap">
+    <TooltipProvider delayDuration={250}>
+      <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           {isInvitation ? (
             <InvitationActionBar
               entity={entity}
@@ -469,9 +501,8 @@ export function RecruitActionBar({
           )}
         </div>
 
-        {/* Notification buttons — registered recruits only */}
         {!isInvitation && (
-          <div className="flex items-center gap-1">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
             <SlackActionBar
               policy={policy}
               loading={loading}
@@ -499,20 +530,24 @@ export function RecruitActionBar({
                 }
               }}
             />
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setGraduateDialogOpen(true)}
-              className="h-6 text-[10px] px-2 text-emerald-600 hover:text-emerald-700 border-emerald-200 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:text-emerald-300 dark:border-emerald-800 dark:hover:bg-emerald-900/20 flex-shrink-0"
-            >
-              <GraduationCap className="h-3 w-3 mr-0.5" />
-              Graduate
-            </Button>
+            <ActionTooltip hint={HINT.graduate}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setGraduateDialogOpen(true)}
+                className={cn(
+                  buttonBase,
+                  "text-teal-700 border-teal-300 hover:text-teal-800 hover:bg-teal-50 dark:text-teal-400 dark:border-teal-800 dark:hover:bg-teal-950/30",
+                )}
+              >
+                <GraduationCap className="h-3 w-3 mr-1" />
+                Graduate
+              </Button>
+            </ActionTooltip>
           </div>
         )}
       </div>
 
-      {/* Graduate to Agent Dialog */}
       {graduateDialogOpen && (
         <GraduateToAgentDialog
           recruit={recruit}
@@ -521,15 +556,15 @@ export function RecruitActionBar({
         />
       )}
 
-      {/* Advance Phase Confirmation */}
       <AlertDialog open={advanceDialogOpen} onOpenChange={setAdvanceDialogOpen}>
         <AlertDialogContent className="max-w-sm">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-sm">
-              Advance Phase
+              Advance phase
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              Advance this recruit to the next phase?
+            <AlertDialogDescription className="text-xs italic">
+              Move this recruit to the next phase. They will see the new phase
+              on their pipeline page immediately.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-1">
@@ -557,7 +592,6 @@ export function RecruitActionBar({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Block Phase Dialog (with reason input) */}
       <AlertDialog
         open={blockDialogOpen}
         onOpenChange={(open) => {
@@ -567,9 +601,10 @@ export function RecruitActionBar({
       >
         <AlertDialogContent className="max-w-sm">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-sm">Block Phase</AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              Provide a reason for blocking this phase.
+            <AlertDialogTitle className="text-sm">Block phase</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs italic">
+              The recruit sees this reason on their pipeline page. Be specific —
+              they need to know what to do to unblock.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-2">
@@ -580,7 +615,7 @@ export function RecruitActionBar({
               id="block-reason"
               value={blockReason}
               onChange={(e) => setBlockReason(e.target.value)}
-              placeholder="Enter reason for blocking..."
+              placeholder="e.g. Background-check application missing on file"
               className="h-8 text-xs mt-1"
               autoFocus
             />
@@ -612,15 +647,15 @@ export function RecruitActionBar({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Unblock Phase Confirmation */}
       <AlertDialog open={unblockDialogOpen} onOpenChange={setUnblockDialogOpen}>
         <AlertDialogContent className="max-w-sm">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-sm">
-              Unblock Phase
+              Unblock phase
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              Unblock this phase and resume progress?
+            <AlertDialogDescription className="text-xs italic">
+              Clears the block reason and resumes progress. The recruit can keep
+              checking off items.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-1">
@@ -648,16 +683,15 @@ export function RecruitActionBar({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Revert Phase Confirmation */}
       <AlertDialog open={revertDialogOpen} onOpenChange={setRevertDialogOpen}>
         <AlertDialogContent className="max-w-sm">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-sm">
-              Revert Phase
+              Revert phase
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              Revert this phase back to In Progress? Checklist progress will be
-              preserved.
+            <AlertDialogDescription className="text-xs italic">
+              Move back one phase. Checklist progress on the current phase is
+              preserved. This is audit-logged.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-1">
@@ -685,7 +719,6 @@ export function RecruitActionBar({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Cancel Invitation Confirmation */}
       <AlertDialog
         open={cancelInviteDialogOpen}
         onOpenChange={setCancelInviteDialogOpen}
@@ -693,10 +726,11 @@ export function RecruitActionBar({
         <AlertDialogContent className="max-w-sm">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-sm">
-              Cancel Invitation
+              Cancel invitation
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-xs">
-              Cancel this invitation? The registration link will no longer work.
+            <AlertDialogDescription className="text-xs italic">
+              The registration link will stop working. You can always send a new
+              invite later.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="gap-1">
@@ -716,11 +750,30 @@ export function RecruitActionBar({
               {pendingAction === "cancel-invite" ? (
                 <Loader2 className="h-3 w-3 animate-spin mr-1" />
               ) : null}
-              Cancel Invitation
+              Cancel invitation
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </TooltipProvider>
+  );
+}
+
+interface ActionTooltipProps {
+  hint: string;
+  children: React.ReactNode;
+}
+
+function ActionTooltip({ hint, children }: ActionTooltipProps) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent
+        side="bottom"
+        className="max-w-[260px] text-[11px] leading-relaxed"
+      >
+        {hint}
+      </TooltipContent>
+    </Tooltip>
   );
 }

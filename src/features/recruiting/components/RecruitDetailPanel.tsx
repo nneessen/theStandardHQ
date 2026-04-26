@@ -413,7 +413,7 @@ export function RecruitDetailPanel({
   const canRevert = canRevertViewingPhase || hasCompletedPhaseBefore;
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-zinc-50 dark:bg-zinc-950">
       {/* Header */}
       <div className="px-3 py-2.5 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
         <RecruitDetailHeader
@@ -524,45 +524,45 @@ export function RecruitDetailPanel({
         onValueChange={setActiveTab}
         className="flex-1 flex flex-col min-h-0"
       >
-        <TabsList className="mx-3 mt-2 grid grid-cols-5 h-8 bg-zinc-200/50 dark:bg-zinc-800/50 p-0.5 rounded-md">
+        <TabsList className="mx-4 mt-3 mb-1 flex h-auto items-center gap-4 sm:gap-5 bg-transparent p-0 rounded-none border-b border-zinc-200 dark:border-zinc-800 justify-start overflow-x-auto">
           <TabsTrigger
             value="checklist"
-            className="text-[11px] h-7 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
+            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
           >
-            <ListChecks className="h-3.5 w-3.5 mr-1" />
+            <ListChecks className="h-3 w-3 mr-1.5" />
             Tasks
           </TabsTrigger>
           <TabsTrigger
             value="contracting"
-            className="text-[11px] h-7 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
+            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
           >
-            <Briefcase className="h-3.5 w-3.5 mr-1" />
+            <Briefcase className="h-3 w-3 mr-1.5" />
             Contracts
             {contractRequests && contractRequests.length > 0 && (
-              <span className="ml-1 text-[10px] bg-blue-500 text-white rounded-full px-1 min-w-[16px] h-4 inline-flex items-center justify-center">
+              <span className="ml-1.5 font-mono tabular-nums text-[10px] text-teal-700 dark:text-teal-400">
                 {contractRequests.length}
               </span>
             )}
           </TabsTrigger>
           <TabsTrigger
             value="documents"
-            className="text-[11px] h-7 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
+            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
           >
-            <FolderOpen className="h-3.5 w-3.5 mr-1" />
+            <FolderOpen className="h-3 w-3 mr-1.5" />
             Docs
           </TabsTrigger>
           <TabsTrigger
             value="emails"
-            className="text-[11px] h-7 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
+            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
           >
-            <Mail className="h-3.5 w-3.5 mr-1" />
+            <Mail className="h-3 w-3 mr-1.5" />
             Email
           </TabsTrigger>
           <TabsTrigger
             value="activity"
-            className="text-[11px] h-7 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm"
+            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
           >
-            <Activity className="h-3.5 w-3.5 mr-1" />
+            <Activity className="h-3 w-3 mr-1.5" />
             Log
           </TabsTrigger>
         </TabsList>

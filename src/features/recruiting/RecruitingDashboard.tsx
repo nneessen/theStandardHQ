@@ -1,27 +1,22 @@
-// src/features/recruiting/RecruitingDashboard.tsx
-
-import React, { useState, useEffect, useMemo } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect, useMemo } from "react";
 import {
   Sheet,
   SheetContent,
   SheetDescription,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import {
   UserPlus,
   Mail,
   Download,
   Settings2,
-  Users,
   Inbox,
   Link2,
   Copy,
   Check,
   ArrowRight,
+  ArrowUpRight,
+  Users,
 } from "lucide-react";
 import {
   useRecruits,
@@ -34,6 +29,12 @@ import { RecruitDetailPanel } from "./components/RecruitDetailPanel";
 import { AddRecruitDialog } from "./components/AddRecruitDialog";
 import { SendInviteDialog } from "./components/SendInviteDialog";
 import { RecruitingErrorBoundary } from "./components/RecruitingErrorBoundary";
+import {
+  EditorialMasthead,
+  EditorialStat,
+  PipelineAttentionRow,
+} from "./components/editorial";
+import type { AttentionItem } from "./components/editorial";
 import type { UserProfile } from "@/types/hierarchy.types";
 import { useAuth } from "@/contexts/AuthContext";
 import { STAFF_ONLY_ROLES } from "@/constants/roles";
@@ -48,8 +49,8 @@ import { normalizePhaseNameToStatus } from "@/lib/pipeline";
 import { useFeatureAccess } from "@/hooks/subscription";
 import { FeatureGate } from "@/components/subscription/FeatureGate";
 import { BasicRecruitingView } from "./components/BasicRecruitingView";
+import { cn } from "@/lib/utils";
 
-// Extended type for recruits with joined data
 type RecruitWithRelations = UserProfile & {
   recruiter?: {
     id: string;
@@ -65,6 +66,11 @@ type RecruitWithRelations = UserProfile & {
   } | null;
 };
 
+const TOOLBAR_LINK_PRIMARY =
+  "inline-flex items-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-stone-900 px-3.5 py-2 text-[12px] font-semibold transition-all hover:-translate-y-px hover:shadow-md active:translate-y-0";
+const TOOLBAR_LINK_GHOST =
+  "inline-flex items-center gap-1.5 rounded-lg ring-1 ring-stone-200 dark:ring-stone-700 hover:ring-stone-300 dark:hover:ring-stone-600 hover:bg-stone-50 dark:hover:bg-stone-800 px-3 py-2 text-[12px] font-semibold text-stone-800 dark:text-stone-200 transition-colors";
+
 function RecruitingDashboardContent() {
   const { user } = useAuth();
   const [hideProspects, setHideProspects] = useState(true);
@@ -78,11 +84,9 @@ function RecruitingDashboardContent() {
 
   const recruitFilters: RecruitFilters | undefined = (() => {
     if (!user?.id) return undefined;
-
     if (isStaffRole && user.imo_id) {
       return { imo_id: user.imo_id, exclude_prospects: hideProspects };
     }
-
     return { my_recruits_user_id: user.id, exclude_prospects: hideProspects };
   })();
 
@@ -94,9 +98,7 @@ function RecruitingDashboardContent() {
   );
 
   const { data: pendingInvitations = [] } = usePendingInvitations();
-
   const { data: pendingLeadsCount } = usePendingLeadsCount();
-
   const { data: activeTemplate } = useActiveTemplate();
   const { data: pipelinePhases = [] } = usePhases(activeTemplate?.id);
 
@@ -107,6 +109,7 @@ function RecruitingDashboardContent() {
   const [sendInviteDialogOpen, setSendInviteDialogOpen] = useState(false);
   const [detailSheetOpen, setDetailSheetOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
   const { recruitId } = useSearch({ from: "/recruiting" });
 
@@ -141,7 +144,7 @@ function RecruitingDashboardContent() {
   ).filter((recruit) => recruit.id !== user?.id);
 
   const invitedRecruits = pendingInvitations
-    .filter((inv) => !inv.recruit_id) // Only invitations without a user yet
+    .filter((inv) => !inv.recruit_id)
     .map((inv) => ({
       id: `invitation-${inv.id}`,
       email: inv.email,
@@ -165,13 +168,11 @@ function RecruitingDashboardContent() {
       agency_id: user?.agency_id || null,
     })) as unknown as RecruitWithRelations[];
 
-  // Combine registered recruits with pending invitations
   const recruits = useMemo(
     () => [...invitedRecruits, ...registeredRecruits],
     [invitedRecruits, registeredRecruits],
   );
 
-  // Auto-select recruit from URL param (deep link from trainer dashboard)
   useEffect(() => {
     if (recruitId && recruits.length > 0 && !selectedRecruit) {
       const recruit = recruits.find((r) => r.id === recruitId);
@@ -182,34 +183,66 @@ function RecruitingDashboardContent() {
     }
   }, [recruitId, recruits, selectedRecruit]);
 
-  // Sync selectedRecruit with latest query data after mutations (e.g. NPN update)
-
   useEffect(() => {
     if (!selectedRecruit) return;
     const fresh = recruits.find((r) => r.id === selectedRecruit.id);
     if (fresh && fresh !== selectedRecruit) setSelectedRecruit(fresh);
   }, [recruits]);
 
-  // Calculate stats from recruits data directly
-  // Active phases come from the pipeline_phases table, normalized to status keys
   const activePhaseStatuses = pipelinePhases.map((phase) =>
     normalizePhaseNameToStatus(phase.phase_name),
   );
-  const stats = {
-    total: recruits.length,
-    active: recruits.filter((r) =>
-      r.onboarding_status && activePhaseStatuses.length > 0
-        ? activePhaseStatuses.includes(r.onboarding_status)
-        : r.onboarding_status !== "completed" &&
-          r.onboarding_status !== "dropped",
-    ).length,
-    completed: recruits.filter((r) => r.onboarding_status === "completed")
-      .length,
-    dropped: recruits.filter((r) => r.onboarding_status === "dropped").length,
-  };
+
+  const stats = useMemo(() => {
+    return {
+      total: recruits.length,
+      active: recruits.filter((r) =>
+        r.onboarding_status && activePhaseStatuses.length > 0
+          ? activePhaseStatuses.includes(r.onboarding_status)
+          : r.onboarding_status !== "completed" &&
+            r.onboarding_status !== "dropped",
+      ).length,
+      completed: recruits.filter((r) => r.onboarding_status === "completed")
+        .length,
+      dropped: recruits.filter((r) => r.onboarding_status === "dropped").length,
+      invited: recruits.filter((r) => r.onboarding_status === "invited").length,
+      blocked: recruits.filter((r) => r.onboarding_status === "blocked").length,
+    };
+  }, [recruits, activePhaseStatuses]);
+
+  const attentionItems: AttentionItem[] = [
+    {
+      id: "invited",
+      count: stats.invited,
+      label: "invited · awaiting signup",
+      tone: "warn",
+      onSelect: () =>
+        setStatusFilter((f) => (f === "invited" ? null : "invited")),
+      isActive: statusFilter === "invited",
+    },
+    {
+      id: "blocked",
+      count: stats.blocked,
+      label: "blocked · need unblock",
+      tone: "error",
+      onSelect: () =>
+        setStatusFilter((f) => (f === "blocked" ? null : "blocked")),
+      isActive: statusFilter === "blocked",
+    },
+    {
+      id: "leads",
+      count: pendingLeadsCount || 0,
+      label: "incoming leads to review",
+      tone: "success",
+    },
+  ];
+
+  const filteredRecruits = useMemo(() => {
+    if (!statusFilter) return recruits;
+    return recruits.filter((r) => r.onboarding_status === statusFilter);
+  }, [recruits, statusFilter]);
 
   const handleSelectRecruit = (recruit: UserProfile) => {
-    // Allow both real recruits and pending invitations to open the detail panel
     setSelectedRecruit(recruit);
     setDetailSheetOpen(true);
   };
@@ -230,13 +263,8 @@ function RecruitingDashboardContent() {
           : r.upline?.email || "",
       Created: r.created_at ? new Date(r.created_at).toLocaleDateString() : "",
     }));
-
     downloadCSV(exportData, "recruits");
     toast.success(`Exported ${recruits.length} recruits to CSV`);
-  };
-
-  const handleBulkEmail = () => {
-    toast.success("Bulk email feature coming soon!");
   };
 
   const handleRecruitDeleted = () => {
@@ -244,213 +272,222 @@ function RecruitingDashboardContent() {
     setDetailSheetOpen(false);
   };
 
+  const recruitingLinkUrl = recruiterSlug
+    ? `www.thestandardhq.com/join-${recruiterSlug}`
+    : null;
+
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
-      {/* Preview Warning Banner - shown to non-admin users */}
-
-      {/* Compact Header with inline stats */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-5">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-            <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Recruiting Pipeline
-            </h1>
-          </div>
-
-          {/* Inline compact stats */}
-          <div className="flex items-center gap-3 text-[11px]">
-            <div className="flex items-center gap-1">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {stats.total}
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">total</span>
+    <div className="min-h-screen bg-[#fafaf7] dark:bg-[#0c0a09]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-12 flex flex-col gap-5 md:gap-6">
+        <EditorialMasthead
+          icon={Users}
+          eyebrow="Recruiting · Pipeline"
+          title="Your recruits, at a glance"
+          subtitle={
+            <>
+              Click any name to open their pipeline. The card below highlights
+              who needs you right now — start there before scrolling the full
+              list.
+            </>
+          }
+          rightSlot={
+            <div className="flex items-end gap-6">
+              <EditorialStat
+                label="Active"
+                value={stats.active}
+                size="lg"
+                tone="brand"
+              />
+              <EditorialStat
+                label="Complete"
+                value={stats.completed}
+                size="md"
+                tone="success"
+              />
+              <EditorialStat
+                label="Dropped"
+                value={stats.dropped}
+                size="md"
+                tone={stats.dropped > 0 ? "error" : "default"}
+              />
             </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
-            <div className="flex items-center gap-1">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {stats.active}
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">active</span>
-            </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
-            <div className="flex items-center gap-1">
-              <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                {stats.completed}
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">complete</span>
-            </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
-            <div className="flex items-center gap-1">
-              <span className="font-medium text-red-600 dark:text-red-400">
-                {stats.dropped}
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">dropped</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center gap-1.5">
-          {/* Leads button - hidden for staff roles (trainer/contracting_manager) */}
-          {!isStaffRole && (
-            <Button
-              size="sm"
-              variant="ghost"
-              asChild
-              className="h-6 text-[10px] px-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
-              <Link to="/recruiting/leads">
-                <Inbox className="h-3 w-3 mr-1" />
-                Leads
-                {pendingLeadsCount && pendingLeadsCount > 0 ? (
-                  <Badge
-                    variant="secondary"
-                    className="ml-1 h-4 px-1 text-[9px] bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-400"
-                  >
-                    {pendingLeadsCount}
-                  </Badge>
-                ) : null}
-              </Link>
-            </Button>
-          )}
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleBulkEmail}
-            className="h-6 text-[10px] px-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-          >
-            <Mail className="h-3 w-3 mr-1" />
-            Email
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleExportCSV}
-            className="h-6 text-[10px] px-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-          >
-            <Download className="h-3 w-3 mr-1" />
-            Export
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setSendInviteDialogOpen(true)}
-            className="h-6 text-[10px] px-2"
-          >
-            <Mail className="h-3 w-3 mr-1" />
-            Send Invite
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={() => setAddRecruitDialogOpen(true)}
-            className="h-6 text-[10px] px-2"
-          >
-            <UserPlus className="h-3 w-3 mr-1" />
-            Add Recruit
-          </Button>
-
-          <Button
-            size="sm"
-            variant="ghost"
-            asChild
-            className="h-6 w-6 p-0 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-          >
-            <Link to="/recruiting/admin/pipelines">
-              <Settings2 className="h-3.5 w-3.5" />
-            </Link>
-          </Button>
-
-          <div className="flex items-center gap-1.5 ml-3 border-l border-zinc-200 dark:border-zinc-700 pl-3">
-            <Checkbox
-              id="hide-prospects"
-              checked={hideProspects}
-              onCheckedChange={(checked) => setHideProspects(!!checked)}
-              className="h-3.5 w-3.5"
-            />
-            <Label
-              htmlFor="hide-prospects"
-              className="text-[10px] text-zinc-600 dark:text-zinc-400 cursor-pointer"
-            >
-              Hide Prospects
-            </Label>
-          </div>
-        </div>
-      </div>
-
-      {/* Recruiting Link Banner - hidden for staff roles and requires custom_branding feature */}
-      {!isStaffRole && hasCustomBranding && (
-        <>
-          {recruiterSlug ? (
-            <div className="flex items-center justify-between bg-emerald-50 dark:bg-emerald-950/30 rounded-lg px-3 py-2 border border-emerald-200 dark:border-emerald-800">
-              <div className="flex items-center gap-2">
-                <Link2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-[11px] text-emerald-700 dark:text-emerald-300">
-                  Your link:
-                </span>
-                <span className="text-[11px] font-mono text-emerald-800 dark:text-emerald-200">
-                  www.thestandardhq.com/join-{recruiterSlug}
-                </span>
-              </div>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleCopyLink}
-                className="h-6 text-[10px] px-2 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
-              >
-                {linkCopied ? (
-                  <>
-                    <Check className="h-3 w-3 mr-1" />
-                    Copied!
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-3 w-3 mr-1" />
-                    Copy Link
-                  </>
-                )}
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between bg-amber-50 dark:bg-amber-950/30 rounded-lg px-3 py-2 border border-amber-200 dark:border-amber-800">
-              <div className="flex items-center gap-2">
-                <Link2 className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                <span className="text-[11px] text-amber-700 dark:text-amber-300">
-                  Set up your personal recruiting link to share on social media
-                </span>
-              </div>
-              <Button
-                size="sm"
-                variant="ghost"
-                asChild
-                className="h-6 text-[10px] px-2 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50"
-              >
-                <Link to="/settings">
-                  Set Up Link
-                  <ArrowRight className="h-3 w-3 ml-1" />
-                </Link>
-              </Button>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Main Content - Table */}
-      <div className="flex-1 overflow-hidden bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-        <RecruitListTable
-          recruits={recruits}
-          isLoading={recruitsLoading}
-          selectedRecruitId={selectedRecruit?.id}
-          onSelectRecruit={handleSelectRecruit}
+          }
         />
+
+        <PipelineAttentionRow items={attentionItems} />
+
+        {/* Recruit list — wrapped in a card */}
+        <section className="rounded-2xl bg-white dark:bg-stone-900 ring-1 ring-stone-200/70 dark:ring-stone-800 shadow-sm dark:shadow-none overflow-hidden">
+          {/* Toolbar */}
+          <div className="px-5 md:px-6 py-4 border-b border-stone-200/70 dark:border-stone-800 bg-stone-50/40 dark:bg-stone-950/40 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:flex-wrap">
+            <div className="flex items-baseline gap-3 flex-wrap">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-500 dark:text-stone-400">
+                {statusFilter
+                  ? `Filtered · ${statusFilter}`
+                  : `Showing all ${stats.total}`}
+              </span>
+              {statusFilter && (
+                <button
+                  type="button"
+                  onClick={() => setStatusFilter(null)}
+                  className="text-[11px] text-stone-600 dark:text-stone-400 underline underline-offset-2 hover:text-stone-900 dark:hover:text-stone-100"
+                >
+                  clear filter
+                </button>
+              )}
+              <label className="ml-2 inline-flex items-center gap-1.5 text-[11px] text-stone-700 dark:text-stone-300 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={hideProspects}
+                  onChange={(e) => setHideProspects(e.target.checked)}
+                  className="h-3.5 w-3.5 rounded border-stone-300 dark:border-stone-700"
+                />
+                Hide prospects
+              </label>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              {!isStaffRole && (
+                <Link to="/recruiting/leads" className={TOOLBAR_LINK_GHOST}>
+                  <Inbox className="h-3.5 w-3.5" />
+                  Leads
+                  {pendingLeadsCount && pendingLeadsCount > 0 ? (
+                    <span className="ml-1 font-mono tabular-nums text-amber-700 dark:text-amber-400">
+                      {pendingLeadsCount}
+                    </span>
+                  ) : null}
+                </Link>
+              )}
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                className={TOOLBAR_LINK_GHOST}
+              >
+                <Download className="h-3.5 w-3.5" />
+                Export
+              </button>
+              <button
+                type="button"
+                onClick={() => setSendInviteDialogOpen(true)}
+                className={TOOLBAR_LINK_GHOST}
+              >
+                <Mail className="h-3.5 w-3.5" />
+                Send invite
+              </button>
+              <Link
+                to="/recruiting/admin/pipelines"
+                className={TOOLBAR_LINK_GHOST}
+              >
+                <Settings2 className="h-3.5 w-3.5" />
+                Pipelines
+              </Link>
+              <button
+                type="button"
+                onClick={() => setAddRecruitDialogOpen(true)}
+                className={TOOLBAR_LINK_PRIMARY}
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                Add recruit
+              </button>
+            </div>
+          </div>
+
+          {/* Recruiting link strip */}
+          {!isStaffRole && hasCustomBranding && (
+            <div
+              className={cn(
+                "px-5 md:px-6 py-3.5 border-b border-stone-200/70 dark:border-stone-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3",
+                recruitingLinkUrl
+                  ? "bg-amber-50/60 dark:bg-amber-950/30"
+                  : "bg-amber-50/30 dark:bg-amber-950/20",
+              )}
+            >
+              {recruitingLinkUrl ? (
+                <>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Link2 className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400 flex-shrink-0" />
+                    <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-amber-700 dark:text-amber-400">
+                      Your link
+                    </span>
+                    <span className="text-[12px] font-mono text-stone-900 dark:text-stone-100 truncate">
+                      {recruitingLinkUrl}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyLink}
+                    className={cn(
+                      TOOLBAR_LINK_PRIMARY,
+                      "self-start sm:self-auto",
+                    )}
+                  >
+                    {linkCopied ? (
+                      <>
+                        <Check className="h-3.5 w-3.5" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5" />
+                        Copy link
+                      </>
+                    )}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Link2 className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400 flex-shrink-0" />
+                    <span className="text-[12px] text-stone-800 dark:text-stone-200">
+                      Set up your personal recruiting link to share on social
+                      media.
+                    </span>
+                  </div>
+                  <Link to="/settings" className={TOOLBAR_LINK_PRIMARY}>
+                    Set up link
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Table */}
+          <div className="px-5 md:px-6">
+            <RecruitListTable
+              recruits={filteredRecruits}
+              isLoading={recruitsLoading}
+              selectedRecruitId={selectedRecruit?.id}
+              onSelectRecruit={handleSelectRecruit}
+            />
+          </div>
+
+          {filteredRecruits.length === 0 && !recruitsLoading && (
+            <div className="px-5 md:px-6 pb-8 pt-2 text-center">
+              <p className="text-[14px] text-stone-700 dark:text-stone-300 mb-4">
+                {statusFilter
+                  ? `No recruits match the "${statusFilter}" filter.`
+                  : "No recruits yet — send an invite or add one to start your pipeline."}
+              </p>
+              {!statusFilter && (
+                <button
+                  type="button"
+                  onClick={() => setSendInviteDialogOpen(true)}
+                  className={cn(TOOLBAR_LINK_PRIMARY, "inline-flex")}
+                >
+                  Send your first invite
+                  <ArrowUpRight className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          )}
+        </section>
       </div>
 
-      {/* Detail Panel as Sheet (slide-out) */}
       <Sheet open={detailSheetOpen} onOpenChange={setDetailSheetOpen}>
         <SheetContent
           side="right"
-          className="w-[500px] sm:max-w-[500px] p-0 overflow-hidden"
+          className="w-full sm:max-w-[480px] md:max-w-[560px] lg:max-w-[640px] p-0 overflow-hidden"
         >
           <SheetTitle className="sr-only">Recruit Details</SheetTitle>
           <SheetDescription className="sr-only">
@@ -469,12 +506,11 @@ function RecruitingDashboardContent() {
         </SheetContent>
       </Sheet>
 
-      {/* Add Recruit Dialog */}
       <AddRecruitDialog
         open={addRecruitDialogOpen}
         onOpenChange={setAddRecruitDialogOpen}
-        onSuccess={(recruitId) => {
-          const newRecruit = recruits.find((r) => r.id === recruitId);
+        onSuccess={(newRecruitId) => {
+          const newRecruit = recruits.find((r) => r.id === newRecruitId);
           if (newRecruit) {
             setSelectedRecruit(newRecruit);
             setDetailSheetOpen(true);
@@ -482,7 +518,6 @@ function RecruitingDashboardContent() {
         }}
       />
 
-      {/* Send Invite Dialog */}
       <SendInviteDialog
         open={sendInviteDialogOpen}
         onOpenChange={setSendInviteDialogOpen}
@@ -491,13 +526,6 @@ function RecruitingDashboardContent() {
   );
 }
 
-/**
- * Intentional behavior: Users shown this view have no active subscription but have
- * ≥1 existing recruit. They retain full recruiting ability (including Add Recruit) even
- * after subscription expiry/downgrade. This ensures uplines don't lose access to managing
- * their team due to billing changes. If this should be gated, wrap the Add Recruit button
- * in a FeatureButtonGate component.
- */
 function FreeUplineRecruitingView() {
   const { user } = useAuth();
 
@@ -521,15 +549,12 @@ function FreeUplineRecruitingView() {
   const [addRecruitDialogOpen, setAddRecruitDialogOpen] = useState(false);
   const [detailSheetOpen, setDetailSheetOpen] = useState(false);
 
-  // Read recruitId from URL search params (for deep linking)
   const { recruitId } = useSearch({ from: "/recruiting" });
 
-  // Filter out the current user from the recruits list
   const recruits = ((recruitsData?.data || []) as UserProfile[]).filter(
     (recruit) => recruit.id !== user?.id,
   );
 
-  // Auto-select recruit from URL param
   useEffect(() => {
     if (recruitId && recruits.length > 0 && !selectedRecruit) {
       const recruit = recruits.find((r) => r.id === recruitId);
@@ -540,15 +565,12 @@ function FreeUplineRecruitingView() {
     }
   }, [recruitId, recruits, selectedRecruit]);
 
-  // Sync selectedRecruit with latest query data after mutations (e.g. NPN update)
-
   useEffect(() => {
     if (!selectedRecruit) return;
     const fresh = recruits.find((r) => r.id === selectedRecruit.id);
     if (fresh && fresh !== selectedRecruit) setSelectedRecruit(fresh);
   }, [recruits]);
 
-  // Calculate stats
   const activePhaseStatuses = pipelinePhases.map((phase) =>
     normalizePhaseNameToStatus(phase.phase_name),
   );
@@ -576,84 +598,79 @@ function FreeUplineRecruitingView() {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
-      {/* Compact Header with inline stats */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-5">
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-            <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Recruiting Pipeline
-            </h1>
-          </div>
-
-          {/* Inline compact stats */}
-          <div className="flex items-center gap-3 text-[11px]">
-            <div className="flex items-center gap-1">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {stats.total}
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">total</span>
+    <div className="min-h-screen bg-[#fafaf7] dark:bg-[#0c0a09]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-12 flex flex-col gap-5 md:gap-6">
+        <EditorialMasthead
+          icon={Users}
+          eyebrow="Recruiting · Free tier"
+          title="Your existing team"
+          subtitle={
+            <>
+              You can keep managing your existing recruits on the free plan.{" "}
+              <Link
+                to="/billing"
+                className="font-bold text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 underline underline-offset-2"
+              >
+                Upgrade
+              </Link>{" "}
+              to unlock the full pipeline configuration and add more.
+            </>
+          }
+          rightSlot={
+            <div className="flex items-end gap-6">
+              <EditorialStat
+                label="Active"
+                value={stats.active}
+                size="lg"
+                tone="brand"
+              />
+              <EditorialStat
+                label="Complete"
+                value={stats.completed}
+                size="md"
+                tone="success"
+              />
+              <EditorialStat
+                label="Dropped"
+                value={stats.dropped}
+                size="md"
+                tone={stats.dropped > 0 ? "error" : "default"}
+              />
             </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
-            <div className="flex items-center gap-1">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {stats.active}
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">active</span>
-            </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
-            <div className="flex items-center gap-1">
-              <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                {stats.completed}
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">complete</span>
-            </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
-            <div className="flex items-center gap-1">
-              <span className="font-medium text-red-600 dark:text-red-400">
-                {stats.dropped}
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">dropped</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center gap-1.5">
-          <Link
-            to="/billing"
-            className="text-[10px] text-violet-600 dark:text-violet-400 hover:underline mr-2"
-          >
-            Upgrade for full pipeline
-            <ArrowRight className="inline h-3 w-3 ml-0.5" />
-          </Link>
-          <Button
-            size="sm"
-            onClick={() => setAddRecruitDialogOpen(true)}
-            className="h-6 text-[10px] px-2"
-          >
-            <UserPlus className="h-3 w-3 mr-1" />
-            Add Recruit
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Content - Table */}
-      <div className="flex-1 overflow-hidden bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-        <RecruitListTable
-          recruits={recruits}
-          isLoading={recruitsLoading}
-          selectedRecruitId={selectedRecruit?.id}
-          onSelectRecruit={handleSelectRecruit}
+          }
         />
+
+        <section className="rounded-2xl bg-white dark:bg-stone-900 ring-1 ring-stone-200/70 dark:ring-stone-800 shadow-sm dark:shadow-none overflow-hidden">
+          <div className="px-5 md:px-6 py-4 border-b border-stone-200/70 dark:border-stone-800 bg-stone-50/40 dark:bg-stone-950/40 flex items-center justify-end gap-2 flex-wrap">
+            <Link to="/billing" className={TOOLBAR_LINK_GHOST}>
+              Upgrade for full pipeline
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setAddRecruitDialogOpen(true)}
+              className={TOOLBAR_LINK_PRIMARY}
+            >
+              <UserPlus className="h-3.5 w-3.5" />
+              Add recruit
+            </button>
+          </div>
+
+          <div className="px-5 md:px-6">
+            <RecruitListTable
+              recruits={recruits}
+              isLoading={recruitsLoading}
+              selectedRecruitId={selectedRecruit?.id}
+              onSelectRecruit={handleSelectRecruit}
+            />
+          </div>
+        </section>
       </div>
 
-      {/* Detail Panel as Sheet (slide-out) */}
       <Sheet open={detailSheetOpen} onOpenChange={setDetailSheetOpen}>
         <SheetContent
           side="right"
-          className="w-[500px] sm:max-w-[500px] p-0 overflow-hidden"
+          className="w-full sm:max-w-[480px] md:max-w-[560px] lg:max-w-[640px] p-0 overflow-hidden"
         >
           <SheetTitle className="sr-only">Recruit Details</SheetTitle>
           <SheetDescription className="sr-only">
@@ -672,7 +689,6 @@ function FreeUplineRecruitingView() {
         </SheetContent>
       </Sheet>
 
-      {/* Add Recruit Dialog */}
       <AddRecruitDialog
         open={addRecruitDialogOpen}
         onOpenChange={setAddRecruitDialogOpen}
@@ -695,13 +711,11 @@ export function RecruitingDashboard() {
       STAFF_ONLY_ROLES.includes(role as (typeof STAFF_ONLY_ROLES)[number]),
     ) ?? false;
 
-  // Check feature access levels (only needed for non-staff users)
   const { hasAccess: hasCustomPipeline, isLoading: loadingCustomPipeline } =
     useFeatureAccess("recruiting_custom_pipeline");
   const { hasAccess: hasBasicRecruiting, isLoading: loadingBasicRecruiting } =
     useFeatureAccess("recruiting_basic");
 
-  // Check if free-tier user has their own recruits (upline access)
   const { data: ownRecruitsData, isLoading: loadingOwnRecruits } = useRecruits(
     user?.id
       ? { my_recruits_user_id: user.id, exclude_prospects: false }
@@ -719,7 +733,6 @@ export function RecruitingDashboard() {
     },
   );
 
-  // Staff roles bypass all feature checks - show full dashboard immediately
   if (isStaffRole) {
     return (
       <RecruitingErrorBoundary>
@@ -728,16 +741,14 @@ export function RecruitingDashboard() {
     );
   }
 
-  // Show loading state while checking feature access (non-staff users only)
   if (loadingCustomPipeline || loadingBasicRecruiting) {
     return (
-      <div className="flex items-center justify-center h-64 text-[11px] text-zinc-500">
-        Loading...
+      <div className="flex items-center justify-center h-64 text-[11px] uppercase tracking-[0.2em] font-semibold text-stone-500 dark:text-stone-400">
+        Loading…
       </div>
     );
   }
 
-  // Full custom pipeline access - show full dashboard
   if (hasCustomPipeline) {
     return (
       <RecruitingErrorBoundary>
@@ -746,7 +757,6 @@ export function RecruitingDashboard() {
     );
   }
 
-  // Basic recruiting access only - show simplified view
   if (hasBasicRecruiting) {
     return (
       <RecruitingErrorBoundary>
@@ -755,16 +765,14 @@ export function RecruitingDashboard() {
     );
   }
 
-  // Free-tier: check if user has own recruits
   if (loadingOwnRecruits) {
     return (
-      <div className="flex items-center justify-center h-64 text-[11px] text-zinc-500">
-        Loading...
+      <div className="flex items-center justify-center h-64 text-[11px] uppercase tracking-[0.2em] font-semibold text-stone-500 dark:text-stone-400">
+        Loading…
       </div>
     );
   }
 
-  // Filter out the user themselves from the recruit count
   const ownRecruits = (ownRecruitsData?.data || []).filter(
     (r) => r.id !== user?.id,
   );
@@ -776,7 +784,6 @@ export function RecruitingDashboard() {
     );
   }
 
-  // No recruiting access and no recruits - show upgrade prompt
   return (
     <FeatureGate feature="recruiting_basic" promptVariant="card">
       <div />
