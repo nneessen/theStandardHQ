@@ -1,10 +1,16 @@
 // src/features/analytics/AnalyticsDashboard.tsx
 
 import { lazy, Suspense } from "react";
-import { BarChart3, Sparkles, CheckCircle2 } from "lucide-react";
+import {
+  BarChart3,
+  Sparkles,
+  CheckCircle2,
+  FileDown,
+  FileText,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { TimePeriodSelector } from "./components/TimePeriodSelector";
-import { Button } from "@/components/ui/button";
+import { PillButton, SoftCard } from "@/components/v2";
 import { useAnalyticsData } from "@/hooks";
 import { downloadCSV, printAnalyticsToPDF } from "../../utils/exportHelpers";
 import {
@@ -116,60 +122,65 @@ function AnalyticsDashboardContent() {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
-      {/* Compact Header Card */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+    <div className="flex flex-col gap-5">
+      {/* Hero band — large display heading + period + export pills */}
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-1">
+          <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-v2-ink-subtle">
+            <BarChart3 className="h-3.5 w-3.5" />
+            Performance
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight text-v2-ink leading-tight">
             Analytics
           </h1>
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400 hidden sm:inline">
-            Performance metrics and insights
-          </span>
+          <p className="text-sm text-v2-ink-muted">
+            Performance metrics and insights across your book.
+          </p>
         </div>
 
-        {/* TimePeriodSelector and Export */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <TimePeriodSelector
             selectedPeriod={timePeriod}
             onPeriodChange={setTimePeriod}
             customRange={customRange}
             onCustomRangeChange={setCustomRange}
           />
-          <div className="hidden sm:flex gap-1.5 flex-shrink-0">
-            <Button
+          <div className="hidden sm:flex gap-2 flex-shrink-0">
+            <PillButton
               onClick={handleExportCSV}
+              tone="ghost"
               size="sm"
-              variant="ghost"
-              className="h-6 px-2 text-[10px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
               title="Export data to CSV"
             >
+              <FileDown className="h-3.5 w-3.5" />
               CSV
-            </Button>
-            <Button
+            </PillButton>
+            <PillButton
               onClick={handlePrintPDF}
+              tone="ghost"
               size="sm"
-              variant="ghost"
-              className="h-6 px-2 text-[10px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
               title="Print report to PDF"
             >
+              <FileText className="h-3.5 w-3.5" />
               PDF
-            </Button>
+            </PillButton>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1">
         {/* Loading State */}
         {analyticsData.isLoading || sectionsLoading ? (
-          <div className="p-4 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
-            Loading analytics...
-          </div>
+          <SoftCard
+            padding="lg"
+            className="text-center text-sm text-v2-ink-muted"
+          >
+            Loading analytics…
+          </SoftCard>
         ) : (
           <>
-            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-2 max-w-[1920px] mx-auto w-full">
+            <div className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-3 max-w-[1920px] mx-auto w-full">
               {/* Sections are rendered based on plan access - hidden if no access */}
               <AnalyticsSectionGate section="pace_metrics">
                 <Suspense fallback={null}>
@@ -246,29 +257,31 @@ function AnalyticsDashboardContent() {
 
             {/* Upgrade Banner - only show when there are locked sections */}
             {lockedSections.length > 0 && (
-              <div className="mt-4 max-w-[1920px] mx-auto">
-                <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 rounded-lg border border-amber-200 dark:border-amber-800/50 p-4">
+              <div className="mt-5 max-w-[1920px] mx-auto">
+                <SoftCard variant="tinted" padding="lg">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                          Unlock More Analytics
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="inline-flex h-7 w-7 items-center justify-center rounded-v2-pill bg-v2-accent text-v2-ink">
+                          <Sparkles className="h-3.5 w-3.5" />
+                        </span>
+                        <span className="text-base font-semibold tracking-tight text-v2-ink">
+                          Unlock more analytics
                         </span>
                       </div>
 
-                      <div className="flex flex-wrap gap-x-6 gap-y-2">
+                      <div className="flex flex-wrap gap-x-8 gap-y-3">
                         {/* Available Sections */}
                         {accessibleSections.length > 0 && (
                           <div>
-                            <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                              Your Plan Includes
+                            <span className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+                              Your plan includes
                             </span>
-                            <div className="flex flex-wrap gap-1.5 mt-1">
+                            <div className="flex flex-wrap gap-1.5 mt-1.5">
                               {accessibleSections.map((section) => (
                                 <span
                                   key={section}
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-v2-pill text-[11px] bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
                                 >
                                   <CheckCircle2 className="h-3 w-3" />
                                   {ANALYTICS_SECTION_NAMES[section]}
@@ -280,14 +293,14 @@ function AnalyticsDashboardContent() {
 
                         {/* Locked Sections */}
                         <div>
-                          <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-                            Upgrade to Unlock
+                          <span className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+                            Upgrade to unlock
                           </span>
-                          <div className="flex flex-wrap gap-1.5 mt-1">
+                          <div className="flex flex-wrap gap-1.5 mt-1.5">
                             {lockedSections.map((section) => (
                               <span
                                 key={section}
-                                className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
+                                className="inline-flex items-center px-2.5 py-1 rounded-v2-pill text-[11px] bg-v2-card border border-v2-ring text-v2-ink-muted"
                               >
                                 {ANALYTICS_SECTION_NAMES[section]}
                               </span>
@@ -297,25 +310,22 @@ function AnalyticsDashboardContent() {
                       </div>
                     </div>
 
-                    <Link to="/billing">
-                      <Button
-                        size="sm"
-                        className="h-8 px-4 text-xs bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0 whitespace-nowrap"
-                      >
-                        <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-                        Upgrade Plan
-                      </Button>
+                    <Link to="/billing" className="flex-shrink-0">
+                      <PillButton tone="black" size="md">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        Upgrade plan
+                      </PillButton>
                     </Link>
                   </div>
-                </div>
+                </SoftCard>
               </div>
             )}
           </>
         )}
 
-        {/* Compact Footer Note */}
-        <div className="mt-3 px-2 py-1 text-[10px] text-zinc-400 dark:text-zinc-500 text-center max-w-[1920px]">
-          Real-time calculations • Auto-refresh on data changes
+        {/* Footer note */}
+        <div className="mt-4 px-2 py-1 text-[11px] text-v2-ink-subtle text-center max-w-[1920px]">
+          Real-time calculations · Auto-refresh on data changes
         </div>
       </div>
     </div>
