@@ -198,6 +198,34 @@
     );
 }
 
+/* Globally soften shadcn Card chrome inside the v2 theme.
+   Cards keep their layout/content but pick up v2 radius + shadow + ring border
+   so every page that uses <Card> inherits the new aesthetic for free. */
+.theme-v2 .rounded-xl.bg-card,
+.theme-v2 .rounded-lg.bg-card {
+  border-radius: var(--v2-radius-md);
+  box-shadow: var(--v2-shadow-soft);
+  border: 1px solid var(--v2-ring);
+}
+.theme-v2 .rounded-xl.bg-card:hover,
+.theme-v2 .rounded-lg.bg-card:hover {
+  box-shadow: var(--v2-shadow-lift);
+}
+
+/* Page-level H1/H2 inside theme-v2 default to the display font.
+   Pages can opt-out by passing their own font-* class. */
+.theme-v2 h1:not([class*="font-"]),
+.theme-v2 h2:not([class*="font-"]) {
+  font-family: var(--v2-font-display);
+  letter-spacing: -0.01em;
+}
+
+/* Pill-ify primary buttons inside the v2 theme so all pages get the rounded
+   button look. Targets shadcn buttons (h-9/h-10/h-11 + rounded-md). */
+.theme-v2 button.rounded-md {
+  border-radius: var(--v2-radius-pill);
+}
+
 /* ==================== ANIMATIONS ==================== */
 @keyframes fadeIn {
   from {
