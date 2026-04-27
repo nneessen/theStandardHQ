@@ -183,7 +183,7 @@ export const DashboardHeroV2: React.FC<DashboardHeroV2Props> = ({
             display={commYtdDisplay}
           />
         </div>
-        <div className="lg:col-span-5 grid grid-cols-3 gap-4 lg:justify-items-end">
+        <div className="lg:col-span-5 flex flex-col gap-3">
           <StatTile
             icon={<FileText className="h-4 w-4" />}
             value={policiesCount.toLocaleString()}
