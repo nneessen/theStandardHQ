@@ -26,11 +26,11 @@ export function TeamGeographicAnalysis({
 }: TeamGeographicAnalysisProps) {
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+        <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
           Team Premium by State
         </div>
-        <div className="p-3 text-center text-[10px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-3 text-center text-[10px] text-v2-ink-muted">
           Loading...
         </div>
       </div>
@@ -57,12 +57,12 @@ export function TeamGeographicAnalysis({
   const _avgPremiumPerState = data.length > 0 ? totalPremium / data.length : 0;
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+        <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
           Team Premium by State
         </div>
-        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+        <span className="text-[10px] text-v2-ink-subtle">
           {data.length} states • Top 10
         </span>
       </div>
@@ -70,20 +70,20 @@ export function TeamGeographicAnalysis({
       {topStates.length > 0 ? (
         <Table className="text-[11px]">
           <TableHeader>
-            <TableRow className="h-7 border-b border-zinc-200 dark:border-zinc-800">
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+            <TableRow className="h-7 border-b border-v2-ring">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                 State
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Policies
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Total
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 Avg
               </TableHead>
-              <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+              <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                 % Total
               </TableHead>
             </TableRow>
@@ -95,18 +95,18 @@ export function TeamGeographicAnalysis({
               return (
                 <TableRow
                   key={idx}
-                  className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  className="border-b border-v2-ring/60 hover:bg-v2-canvas"
                 >
-                  <TableCell className="p-1.5 font-medium text-zinc-900 dark:text-zinc-100">
+                  <TableCell className="p-1.5 font-medium text-v2-ink">
                     {row.state}
                   </TableCell>
-                  <TableCell className="p-1.5 text-right font-mono text-zinc-500 dark:text-zinc-400">
+                  <TableCell className="p-1.5 text-right font-mono text-v2-ink-muted">
                     {row.policyCount}
                   </TableCell>
-                  <TableCell className="p-1.5 text-right font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                  <TableCell className="p-1.5 text-right font-mono font-semibold text-v2-ink">
                     {formatCurrency(row.totalPremium)}
                   </TableCell>
-                  <TableCell className="p-1.5 text-right font-mono text-zinc-500 dark:text-zinc-400">
+                  <TableCell className="p-1.5 text-right font-mono text-v2-ink-muted">
                     {formatCurrency(avgPerPolicy)}
                   </TableCell>
                   <TableCell className="p-1.5 text-right">
@@ -117,7 +117,7 @@ export function TeamGeographicAnalysis({
                           ? "text-emerald-600 dark:text-emerald-400 font-bold"
                           : row.percentage >= 10
                             ? "text-amber-600 dark:text-amber-400"
-                            : "text-zinc-500 dark:text-zinc-400"
+                            : "text-v2-ink-muted",
                       )}
                     >
                       {row.percentage.toFixed(1)}%
@@ -129,18 +129,18 @@ export function TeamGeographicAnalysis({
           </TableBody>
         </Table>
       ) : (
-        <div className="p-3 text-center text-[11px] text-zinc-400 dark:text-zinc-500">
+        <div className="p-3 text-center text-[11px] text-v2-ink-subtle">
           No geographic data available
         </div>
       )}
 
       {/* Summary footer */}
       {topStates.length > 0 && (
-        <div className="mt-2 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded flex items-center justify-between text-[10px]">
-          <span className="text-zinc-500 dark:text-zinc-400">
+        <div className="mt-2 p-2 bg-v2-canvas rounded flex items-center justify-between text-[10px]">
+          <span className="text-v2-ink-muted">
             {totalPolicies} policies across {data.length} states
           </span>
-          <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+          <span className="font-mono font-bold text-v2-ink">
             {formatCurrency(totalPremium)}
           </span>
         </div>

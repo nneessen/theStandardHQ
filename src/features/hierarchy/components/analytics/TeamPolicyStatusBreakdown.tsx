@@ -21,11 +21,11 @@ export function TeamPolicyStatusBreakdown({
 }: TeamPolicyStatusBreakdownProps) {
   if (isLoading || !data) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+        <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
           Team Policy Status
         </div>
-        <div className="p-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-3 text-center text-[11px] text-v2-ink-muted">
           {isLoading ? "Loading..." : "No data available"}
         </div>
       </div>
@@ -108,14 +108,14 @@ export function TeamPolicyStatusBreakdown({
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div>
-          <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+          <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
             Team Policy Status
           </div>
-          <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
+          <div className="text-[10px] text-v2-ink-subtle">
             {data.total.count} total policies
           </div>
         </div>
@@ -126,7 +126,7 @@ export function TeamPolicyStatusBreakdown({
               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
               : data.persistencyRate >= 60
                 ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                : "bg-red-500/10 text-red-600 dark:text-red-400"
+                : "bg-red-500/10 text-red-600 dark:text-red-400",
           )}
         >
           {data.persistencyRate.toFixed(1)}% Persistency
@@ -136,18 +136,15 @@ export function TeamPolicyStatusBreakdown({
       {/* Status Breakdown Grid */}
       <div className="grid grid-cols-2 gap-2 mb-2">
         {statuses.map((status) => (
-          <div
-            key={status.label}
-            className="p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded"
-          >
+          <div key={status.label} className="p-2 bg-v2-canvas rounded">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <span className="text-[10px] text-v2-ink-muted">
                 {status.label}
               </span>
               <span
                 className={cn(
                   "text-[10px] font-medium",
-                  getColorClass(status.color, "text")
+                  getColorClass(status.color, "text"),
                 )}
               >
                 {status.percent}%
@@ -157,17 +154,17 @@ export function TeamPolicyStatusBreakdown({
               <span
                 className={cn(
                   "font-mono font-bold text-sm",
-                  getColorClass(status.color, "text")
+                  getColorClass(status.color, "text"),
                 )}
               >
                 {status.count}
               </span>
-              <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
+              <span className="text-[9px] text-v2-ink-subtle">
                 {formatCurrency(status.premium)}
               </span>
             </div>
             {/* Mini progress bar */}
-            <div className="h-1 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden mt-1">
+            <div className="h-1 bg-v2-ring rounded-full overflow-hidden mt-1">
               <div
                 className={cn("h-full", getColorClass(status.color, "bg"))}
                 style={{ width: `${status.percent}%` }}
@@ -178,11 +175,11 @@ export function TeamPolicyStatusBreakdown({
       </div>
 
       {/* Total Summary */}
-      <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded flex items-center justify-between">
-        <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+      <div className="p-2 bg-v2-ring rounded flex items-center justify-between">
+        <span className="text-[10px] font-medium text-v2-ink-muted">
           Total Premium
         </span>
-        <span className="font-mono font-bold text-sm text-zinc-900 dark:text-zinc-100">
+        <span className="font-mono font-bold text-sm text-v2-ink">
           {formatCurrency(data.total.premium)}
         </span>
       </div>

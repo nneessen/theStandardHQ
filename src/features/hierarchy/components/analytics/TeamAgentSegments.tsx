@@ -27,11 +27,11 @@ interface TeamAgentSegmentsProps {
 export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
   if (isLoading || !data) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+        <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
           Agent Segments
         </div>
-        <div className="p-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-3 text-center text-[11px] text-v2-ink-muted">
           {isLoading ? "Loading..." : "No data available"}
         </div>
       </div>
@@ -94,19 +94,19 @@ export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div>
-          <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+          <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
             Agent Segments
           </div>
-          <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
+          <div className="text-[10px] text-v2-ink-subtle">
             {data.totalAgents} agents • {formatCurrency(data.totalTeamAP)} total
             AP
           </div>
         </div>
-        <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
+        <div className="text-[10px] text-v2-ink-subtle">
           Avg: {formatCurrency(data.avgAgentAP)}
         </div>
       </div>
@@ -158,11 +158,11 @@ export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
                 >
                   {segment.data.agentCount}
                 </span>
-                <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
+                <span className="text-[9px] text-v2-ink-subtle">
                   agents ({percentOfTeam}%)
                 </span>
               </div>
-              <div className="text-[9px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <div className="text-[9px] text-v2-ink-muted mt-0.5">
                 {formatCurrency(segment.data.totalAP)} ({percentOfAP}% of team
                 AP)
               </div>
@@ -184,22 +184,22 @@ export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
 
         return (
           <>
-            <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+            <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em] mb-1">
               Top 5 Agents
             </div>
             <Table className="text-[11px]">
               <TableHeader>
-                <TableRow className="h-7 border-b border-zinc-200 dark:border-zinc-800">
-                  <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                <TableRow className="h-7 border-b border-v2-ring">
+                  <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                     Agent
                   </TableHead>
-                  <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+                  <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                     Policies
                   </TableHead>
-                  <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+                  <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                     AP
                   </TableHead>
-                  <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+                  <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                     Persist
                   </TableHead>
                 </TableRow>
@@ -208,19 +208,19 @@ export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
                 {allAgents.slice(0, 5).map((agent, idx) => (
                   <TableRow
                     key={agent.agentId}
-                    className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                    className="border-b border-v2-ring/60 hover:bg-v2-canvas"
                   >
                     <TableCell className="p-1.5">
                       <div className="flex items-center gap-1">
-                        <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
+                        <span className="text-[9px] text-v2-ink-subtle">
                           #{idx + 1}
                         </span>
-                        <span className="font-medium text-zinc-900 dark:text-zinc-100 truncate max-w-[120px]">
+                        <span className="font-medium text-v2-ink truncate max-w-[120px]">
                           {agent.agentName}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="p-1.5 text-right font-mono text-zinc-500 dark:text-zinc-400">
+                    <TableCell className="p-1.5 text-right font-mono text-v2-ink-muted">
                       {agent.policyCount}
                     </TableCell>
                     <TableCell className="p-1.5 text-right font-mono font-semibold text-emerald-600 dark:text-emerald-400">

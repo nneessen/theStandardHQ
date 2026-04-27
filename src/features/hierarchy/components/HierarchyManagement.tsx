@@ -179,10 +179,10 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
   if (!isAdmin) {
     return (
       <div
-        className={`bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 ${className || ""}`}
+        className={`bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft ${className || ""}`}
       >
-        <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800">
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+        <div className="px-3 py-2 border-b border-v2-ring">
+          <h3 className="text-sm font-semibold text-v2-ink">
             Hierarchy Management
           </h3>
         </div>
@@ -216,16 +216,16 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
 
   return (
     <div
-      className={`bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 ${className || ""}`}
+      className={`bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft ${className || ""}`}
     >
-      <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring">
         <div className="flex items-center gap-2">
           <Shield className="h-4 w-4 text-amber-600 dark:text-amber-400" />
           <div>
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <h3 className="text-sm font-semibold text-v2-ink">
               Hierarchy Management
             </h3>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted">
               {downlines?.length || 0} agents across {levels.length} levels
             </p>
           </div>
@@ -240,41 +240,41 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
       <div className="p-3">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-4">
-            <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            <div className="text-[11px] text-v2-ink-muted">
               Loading agents...
             </div>
           </div>
         ) : !downlines || downlines.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-4">
-            <Shield className="h-6 w-6 text-zinc-300 dark:text-zinc-600 mb-1" />
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            <Shield className="h-6 w-6 text-v2-ink-subtle mb-1" />
+            <p className="text-[11px] text-v2-ink-muted">
               No agents in hierarchy
             </p>
-            <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
+            <p className="text-[10px] text-v2-ink-subtle">
               Agents will appear here once they are added to the system
             </p>
           </div>
         ) : (
-          <div className="rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
+          <div className="rounded-lg overflow-hidden border border-v2-ring">
             <Table>
               <TableHeader>
-                <TableRow className="h-8 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800">
-                  <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+                <TableRow className="h-8 bg-v2-canvas border-b border-v2-ring">
+                  <TableHead className="text-[10px] font-semibold text-v2-ink-muted">
                     Agent
                   </TableHead>
-                  <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+                  <TableHead className="text-[10px] font-semibold text-v2-ink-muted">
                     Level
                   </TableHead>
-                  <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+                  <TableHead className="text-[10px] font-semibold text-v2-ink-muted">
                     Reports To
                   </TableHead>
-                  <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 text-right">
+                  <TableHead className="text-[10px] font-semibold text-v2-ink-muted text-right">
                     Direct
                   </TableHead>
-                  <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 text-right">
+                  <TableHead className="text-[10px] font-semibold text-v2-ink-muted text-right">
                     Total Down
                   </TableHead>
-                  <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 text-right">
+                  <TableHead className="text-[10px] font-semibold text-v2-ink-muted text-right">
                     Actions
                   </TableHead>
                 </TableRow>
@@ -296,30 +296,30 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
                   return (
                     <TableRow
                       key={agent.id}
-                      className="h-9 border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                      className="h-9 border-b border-v2-ring/60 hover:bg-v2-canvas"
                     >
-                      <TableCell className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                      <TableCell className="text-[11px] font-medium text-v2-ink">
                         {agent.email}
                       </TableCell>
                       <TableCell>
-                        <span className="text-[10px] text-zinc-600 dark:text-zinc-400">
+                        <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                           L{agent.hierarchy_depth}
                         </span>
                       </TableCell>
-                      <TableCell className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                      <TableCell className="text-[11px] text-v2-ink-muted">
                         {uplineEmail || (
                           <Badge
                             variant="outline"
-                            className="text-[9px] px-1 py-0 h-4 border-zinc-300 dark:border-zinc-600"
+                            className="text-[9px] px-1 py-0 h-4 border-v2-ring "
                           >
                             Root
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="text-[11px] text-right text-zinc-700 dark:text-zinc-300">
+                      <TableCell className="text-[11px] text-right text-v2-ink-muted">
                         {directDownlines}
                       </TableCell>
-                      <TableCell className="text-[11px] text-right text-zinc-700 dark:text-zinc-300">
+                      <TableCell className="text-[11px] text-right text-v2-ink-muted">
                         {totalDownlines}
                       </TableCell>
                       <TableCell className="text-right">
@@ -327,7 +327,7 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEditAgent(agent)}
-                          className="h-6 w-6 p-0 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                          className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
                         >
                           <Edit className="h-3.5 w-3.5" />
                         </Button>

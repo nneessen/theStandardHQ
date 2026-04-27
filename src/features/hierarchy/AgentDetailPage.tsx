@@ -60,7 +60,11 @@ import {
   PeriodNavigator,
   DateRangeDisplay,
 } from "@/features/dashboard";
-import { getDateRange, isInDateRange, type TimePeriod } from "@/utils/dateRange";
+import {
+  getDateRange,
+  isInDateRange,
+  type TimePeriod,
+} from "@/utils/dateRange";
 
 /** Type for policy objects returned from hierarchyService.getAgentPolicies */
 interface AgentPolicy {
@@ -399,7 +403,7 @@ export function AgentDetailPage() {
   if (loadingAgent) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="text-[11px] text-v2-ink-muted">
           Loading agent details...
         </div>
       </div>
@@ -409,10 +413,8 @@ export function AgentDetailPage() {
   if (!agentData) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-2">
-        <AlertCircle className="h-6 w-6 text-zinc-400" />
-        <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
-          Agent not found
-        </div>
+        <AlertCircle className="h-6 w-6 text-v2-ink-subtle" />
+        <div className="text-[11px] text-v2-ink-muted">Agent not found</div>
         <Button
           variant="outline"
           size="sm"
@@ -431,38 +433,36 @@ export function AgentDetailPage() {
       : agentData.email;
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
+    <div className="min-h-screen flex flex-col p-3 space-y-2.5">
       {/* Compact Header with inline stats */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate({ to: "/hierarchy" })}
-            className="h-6 px-2 text-[10px] text-zinc-600 dark:text-zinc-400"
+            className="h-6 px-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle"
           >
             <ArrowLeft className="h-3 w-3 mr-1" />
             Back
           </Button>
-          <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+          <div className="h-3 w-px bg-v2-ring" />
 
           {/* Agent info inline */}
           <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-              <User className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
+            <div className="h-7 w-7 rounded-full bg-v2-ring flex items-center justify-center">
+              <User className="h-3.5 w-3.5 text-v2-ink-muted" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                {agentName}
-              </h1>
-              <div className="flex items-center gap-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+              <h1 className="text-sm font-semibold text-v2-ink">{agentName}</h1>
+              <div className="flex items-center gap-2 text-[10px] text-v2-ink-muted">
                 <span className="flex items-center gap-0.5">
                   <Mail className="h-2.5 w-2.5" />
                   {agentData.email}
                 </span>
                 {agentData.phone && (
                   <>
-                    <span className="text-zinc-300 dark:text-zinc-600">|</span>
+                    <span className="text-v2-ink-subtle">|</span>
                     <span className="flex items-center gap-0.5">
                       <Phone className="h-2.5 w-2.5" />
                       {agentData.phone}
@@ -471,7 +471,7 @@ export function AgentDetailPage() {
                 )}
                 {agentData.state && (
                   <>
-                    <span className="text-zinc-300 dark:text-zinc-600">|</span>
+                    <span className="text-v2-ink-subtle">|</span>
                     <span className="flex items-center gap-0.5">
                       <MapPin className="h-2.5 w-2.5" />
                       {agentData.state}
@@ -482,13 +482,13 @@ export function AgentDetailPage() {
             </div>
           </div>
 
-          <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+          <div className="h-3 w-px bg-v2-ring" />
 
           {/* Inline compact stats */}
           <div className="flex items-center gap-3 text-[11px]">
             <Badge
               variant="outline"
-              className="text-[10px] h-5 px-1.5 border-zinc-300 dark:border-zinc-600"
+              className="text-[10px] h-5 px-1.5 border-v2-ring "
             >
               Level {agentData.contract_level || 80}%
             </Badge>
@@ -501,28 +501,28 @@ export function AgentDetailPage() {
                 {agentData.approval_status}
               </Badge>
             )}
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+            <div className="h-3 w-px bg-v2-ring" />
             <div className="flex items-center gap-1">
-              <FileCheck className="h-3 w-3 text-zinc-400" />
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              <FileCheck className="h-3 w-3 text-v2-ink-subtle" />
+              <span className="font-medium text-v2-ink">
                 {mtdMetrics.policies}
               </span>
-              <span className="text-zinc-500 dark:text-zinc-400">MTD</span>
+              <span className="text-v2-ink-muted">MTD</span>
             </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+            <div className="h-3 w-px bg-v2-ring" />
             <div className="flex items-center gap-1">
               <DollarSign className="h-3 w-3 text-emerald-500" />
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              <span className="font-medium text-v2-ink">
                 {formatCurrency(mtdMetrics.premium)}
               </span>
             </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+            <div className="h-3 w-px bg-v2-ring" />
             <div className="flex items-center gap-1">
               <TrendingUp className="h-3 w-3 text-blue-500" />
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              <span className="font-medium text-v2-ink">
                 {ytdMetrics.policies}
               </span>
-              <span className="text-zinc-500 dark:text-zinc-400">YTD</span>
+              <span className="text-v2-ink-muted">YTD</span>
             </div>
           </div>
         </div>
@@ -531,7 +531,7 @@ export function AgentDetailPage() {
           <Button
             size="sm"
             variant="ghost"
-            className="h-6 px-2 text-[10px] text-zinc-600 dark:text-zinc-400"
+            className="h-6 px-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle"
             onClick={() =>
               toast.success(
                 `Message feature coming soon for ${agentData.email}`,
@@ -544,7 +544,7 @@ export function AgentDetailPage() {
           <Button
             size="sm"
             variant="ghost"
-            className="h-6 px-2 text-[10px] text-zinc-600 dark:text-zinc-400"
+            className="h-6 px-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle"
             onClick={() => setIsEditModalOpen(true)}
           >
             <Edit className="h-3 w-3 mr-1" />
@@ -554,14 +554,14 @@ export function AgentDetailPage() {
       </div>
 
       {/* Compact tabs */}
-      <div className="flex items-center gap-0.5 bg-zinc-200/50 dark:bg-zinc-800/50 rounded-md p-0.5 w-fit">
+      <div className="flex items-center gap-0.5 bg-v2-canvas rounded-md p-0.5 w-fit">
         <button
           onClick={() => setActiveTab("policies")}
           className={cn(
             "flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
             activeTab === "policies"
-              ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+              ? "bg-v2-card shadow-sm text-v2-ink"
+              : "text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle",
           )}
         >
           <FileCheck className="h-3.5 w-3.5" />
@@ -572,8 +572,8 @@ export function AgentDetailPage() {
           className={cn(
             "flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
             activeTab === "commissions"
-              ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+              ? "bg-v2-card shadow-sm text-v2-ink"
+              : "text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle",
           )}
         >
           <DollarSign className="h-3.5 w-3.5" />
@@ -584,8 +584,8 @@ export function AgentDetailPage() {
           className={cn(
             "flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
             activeTab === "overrides"
-              ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+              ? "bg-v2-card shadow-sm text-v2-ink"
+              : "text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle",
           )}
         >
           <TrendingUp className="h-3.5 w-3.5" />
@@ -596,8 +596,8 @@ export function AgentDetailPage() {
           className={cn(
             "flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
             activeTab === "team"
-              ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+              ? "bg-v2-card shadow-sm text-v2-ink"
+              : "text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle",
           )}
         >
           <Users className="h-3.5 w-3.5" />
@@ -608,8 +608,8 @@ export function AgentDetailPage() {
       {/* Content area */}
       <div className="flex-1 overflow-auto">
         {(activeTab === "policies" || activeTab === "commissions") && (
-          <div className="flex flex-wrap items-center justify-between gap-2 bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800 mb-2">
-            <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide shrink-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-v2-card rounded-lg px-3 py-2 border border-v2-ring mb-2">
+            <div className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide shrink-0">
               Date Filter
             </div>
             <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap min-w-0">
@@ -633,35 +633,35 @@ export function AgentDetailPage() {
           (() => {
             return (
               <div className="space-y-2">
-                <div className="rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                <div className="rounded-lg bg-v2-card border border-v2-ring">
                   <Table>
-                    <TableHeader className="sticky top-0 bg-zinc-50 dark:bg-zinc-800/50 z-10">
-                      <TableRow className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-transparent">
-                        <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+                    <TableHeader className="sticky top-0 bg-v2-canvas z-10">
+                      <TableRow className="border-b border-v2-ring hover:bg-transparent">
+                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                           Policy #
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                           Client
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                           Product
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                           Carrier
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                           Submit Date
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                           Effective
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 text-right">
+                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted text-right">
                           Premium
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                           Status
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-8" />
+                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-8" />
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -669,7 +669,7 @@ export function AgentDetailPage() {
                         <TableRow>
                           <TableCell
                             colSpan={9}
-                            className="text-center text-[11px] text-zinc-500 dark:text-zinc-400 py-8"
+                            className="text-center text-[11px] text-v2-ink-muted py-8"
                           >
                             Loading policies...
                           </TableCell>
@@ -678,7 +678,7 @@ export function AgentDetailPage() {
                         <TableRow>
                           <TableCell
                             colSpan={9}
-                            className="text-center text-[11px] text-zinc-500 dark:text-zinc-400 py-8"
+                            className="text-center text-[11px] text-v2-ink-muted py-8"
                           >
                             {policyList.length === 0
                               ? "No policies found"
@@ -689,27 +689,27 @@ export function AgentDetailPage() {
                         paginatedPolicies.map((policy: AgentPolicy) => (
                           <TableRow
                             key={policy.id}
-                            className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/50"
+                            className="hover:bg-v2-canvas border-b border-v2-ring/60"
                           >
-                            <TableCell className="py-1.5 text-[11px] font-mono text-zinc-900 dark:text-zinc-100">
+                            <TableCell className="py-1.5 text-[11px] font-mono text-v2-ink">
                               {policy.policyNumber}
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-zinc-900 dark:text-zinc-100">
+                            <TableCell className="py-1.5 text-[11px] text-v2-ink">
                               {policy.clientName}
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-zinc-900 dark:text-zinc-100">
+                            <TableCell className="py-1.5 text-[11px] text-v2-ink">
                               {policy.product}
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-zinc-900 dark:text-zinc-100">
+                            <TableCell className="py-1.5 text-[11px] text-v2-ink">
                               {policy.carrier}
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-zinc-900 dark:text-zinc-100">
+                            <TableCell className="py-1.5 text-[11px] text-v2-ink">
                               {formatDate(policy.submitDate)}
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-zinc-900 dark:text-zinc-100">
+                            <TableCell className="py-1.5 text-[11px] text-v2-ink">
                               {formatDate(policy.effectiveDate)}
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 text-right">
+                            <TableCell className="py-1.5 text-[11px] font-semibold text-v2-ink text-right">
                               {formatCurrency(policy.annualPremium)}
                             </TableCell>
                             <TableCell className="py-1.5">
@@ -810,7 +810,7 @@ export function AgentDetailPage() {
                                       ))}
                                       {policy.lifecycleStatus && (
                                         <DropdownMenuItem
-                                          className="text-[11px] text-zinc-500"
+                                          className="text-[11px] text-v2-ink-muted"
                                           onClick={() =>
                                             handleLifecycleChange(
                                               policy.id,
@@ -848,7 +848,7 @@ export function AgentDetailPage() {
                 {/* Pagination */}
                 {totalPolicyPages > 1 && (
                   <div className="flex items-center justify-between px-1">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    <span className="text-[10px] text-v2-ink-muted">
                       {filteredPolicies.length} policies
                     </span>
                     <div className="flex items-center gap-1">
@@ -861,7 +861,7 @@ export function AgentDetailPage() {
                       >
                         <ChevronLeft className="h-3 w-3" />
                       </Button>
-                      <span className="text-[10px] text-zinc-600 dark:text-zinc-400 min-w-[4rem] text-center">
+                      <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle min-w-[4rem] text-center">
                         {policyPage + 1} / {totalPolicyPages}
                       </span>
                       <Button
@@ -884,39 +884,31 @@ export function AgentDetailPage() {
         {activeTab === "commissions" && (
           <div className="space-y-2">
             {/* Inline commission stats header */}
-            <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
               <div className="flex items-center gap-4 text-[11px]">
                 <div className="flex items-center gap-1">
-                  <span className="text-zinc-500 dark:text-zinc-400">
-                    Advances:
-                  </span>
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  <span className="text-v2-ink-muted">Advances:</span>
+                  <span className="font-semibold text-v2-ink">
                     {formatCurrency(commissionMetrics.advances)}
                   </span>
                 </div>
-                <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+                <div className="h-3 w-px bg-v2-ring" />
                 <div className="flex items-center gap-1">
-                  <span className="text-zinc-500 dark:text-zinc-400">
-                    Earned:
-                  </span>
+                  <span className="text-v2-ink-muted">Earned:</span>
                   <span className="font-semibold text-emerald-600">
                     {formatCurrency(commissionMetrics.earned)}
                   </span>
                 </div>
-                <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+                <div className="h-3 w-px bg-v2-ring" />
                 <div className="flex items-center gap-1">
-                  <span className="text-zinc-500 dark:text-zinc-400">
-                    Unearned:
-                  </span>
+                  <span className="text-v2-ink-muted">Unearned:</span>
                   <span className="font-semibold text-yellow-600">
                     {formatCurrency(commissionMetrics.unearned)}
                   </span>
                 </div>
-                <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+                <div className="h-3 w-px bg-v2-ring" />
                 <div className="flex items-center gap-1">
-                  <span className="text-zinc-500 dark:text-zinc-400">
-                    Chargebacks:
-                  </span>
+                  <span className="text-v2-ink-muted">Chargebacks:</span>
                   <span className="font-semibold text-red-600">
                     {formatCurrency(commissionMetrics.chargebacks)}
                   </span>
@@ -925,32 +917,32 @@ export function AgentDetailPage() {
             </div>
 
             {/* Commission table */}
-            <div className="rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+            <div className="rounded-lg bg-v2-card border border-v2-ring">
               <Table>
-                <TableHeader className="sticky top-0 bg-zinc-50 dark:bg-zinc-800/50 z-10">
-                  <TableRow className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-transparent">
-                    <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+                <TableHeader className="sticky top-0 bg-v2-canvas z-10">
+                  <TableRow className="border-b border-v2-ring hover:bg-transparent">
+                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                       Date
                     </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                       Type
                     </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                       Policy
                     </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 text-right">
+                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted text-right">
                       Advance
                     </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 text-right">
+                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted text-right">
                       Earned
                     </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 text-right">
+                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted text-right">
                       Unearned
                     </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 text-center">
+                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted text-center">
                       Progress
                     </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                       Status
                     </TableHead>
                   </TableRow>
@@ -960,7 +952,7 @@ export function AgentDetailPage() {
                     <TableRow>
                       <TableCell
                         colSpan={8}
-                        className="text-center text-[11px] text-zinc-500 dark:text-zinc-400 py-8"
+                        className="text-center text-[11px] text-v2-ink-muted py-8"
                       >
                         Loading commissions...
                       </TableCell>
@@ -969,7 +961,7 @@ export function AgentDetailPage() {
                     <TableRow>
                       <TableCell
                         colSpan={8}
-                        className="text-center text-[11px] text-zinc-500 dark:text-zinc-400 py-8"
+                        className="text-center text-[11px] text-v2-ink-muted py-8"
                       >
                         {commissionList.length === 0
                           ? "No commissions found"
@@ -980,18 +972,18 @@ export function AgentDetailPage() {
                     paginatedCommissions.map((commission: AgentCommission) => (
                       <TableRow
                         key={commission.id}
-                        className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/50"
+                        className="hover:bg-v2-canvas border-b border-v2-ring/60"
                       >
-                        <TableCell className="py-1.5 text-[11px] text-zinc-900 dark:text-zinc-100">
+                        <TableCell className="py-1.5 text-[11px] text-v2-ink">
                           {formatDate(commission.date)}
                         </TableCell>
-                        <TableCell className="py-1.5 text-[11px] text-zinc-900 dark:text-zinc-100 capitalize">
+                        <TableCell className="py-1.5 text-[11px] text-v2-ink capitalize">
                           {commission.type}
                         </TableCell>
-                        <TableCell className="py-1.5 text-[11px] font-mono text-zinc-900 dark:text-zinc-100">
+                        <TableCell className="py-1.5 text-[11px] font-mono text-v2-ink">
                           {commission.policyNumber}
                         </TableCell>
-                        <TableCell className="py-1.5 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 text-right">
+                        <TableCell className="py-1.5 text-[11px] font-semibold text-v2-ink text-right">
                           {formatCurrency(commission.amount)}
                         </TableCell>
                         <TableCell className="py-1.5 text-[11px] font-semibold text-emerald-600 text-right">
@@ -1000,7 +992,7 @@ export function AgentDetailPage() {
                         <TableCell className="py-1.5 text-[11px] text-yellow-600 text-right">
                           {formatCurrency(commission.unearnedAmount || 0)}
                         </TableCell>
-                        <TableCell className="py-1.5 text-[11px] text-zinc-500 dark:text-zinc-400 text-center">
+                        <TableCell className="py-1.5 text-[11px] text-v2-ink-muted text-center">
                           {commission.monthsPaid || 0}/
                           {commission.advanceMonths || 9} mo
                         </TableCell>
@@ -1026,7 +1018,7 @@ export function AgentDetailPage() {
             </div>
             {totalCommissionPages > 1 && (
               <div className="flex items-center justify-between px-1">
-                <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <span className="text-[10px] text-v2-ink-muted">
                   {filteredCommissions.length} commissions
                 </span>
                 <div className="flex items-center gap-1">
@@ -1039,7 +1031,7 @@ export function AgentDetailPage() {
                   >
                     <ChevronLeft className="h-3 w-3" />
                   </Button>
-                  <span className="text-[10px] text-zinc-600 dark:text-zinc-400 min-w-[4rem] text-center">
+                  <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle min-w-[4rem] text-center">
                     {commissionPage + 1} / {totalCommissionPages}
                   </span>
                   <Button
@@ -1061,21 +1053,17 @@ export function AgentDetailPage() {
         {activeTab === "overrides" && (
           <div className="space-y-2">
             {/* Inline override stats header */}
-            <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
               <div className="flex items-center gap-4 text-[11px]">
                 <div className="flex items-center gap-1">
-                  <span className="text-zinc-500 dark:text-zinc-400">
-                    Their MTD Earnings:
-                  </span>
+                  <span className="text-v2-ink-muted">Their MTD Earnings:</span>
                   <span className="font-semibold text-emerald-600">
                     {formatCurrency(agentOverrideEarnings.mtd)}
                   </span>
                 </div>
-                <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+                <div className="h-3 w-px bg-v2-ring" />
                 <div className="flex items-center gap-1">
-                  <span className="text-zinc-500 dark:text-zinc-400">
-                    Their YTD Earnings:
-                  </span>
+                  <span className="text-v2-ink-muted">Their YTD Earnings:</span>
                   <span className="font-semibold text-emerald-600">
                     {formatCurrency(agentOverrideEarnings.ytd)}
                   </span>
@@ -1083,9 +1071,9 @@ export function AgentDetailPage() {
                 {/* Show viewer's overrides from this agent if not viewing own profile */}
                 {currentUser?.id !== agentId && (
                   <>
-                    <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+                    <div className="h-3 w-px bg-v2-ring" />
                     <div className="flex items-center gap-1">
-                      <span className="text-zinc-500 dark:text-zinc-400">
+                      <span className="text-v2-ink-muted">
                         Your MTD from them:
                       </span>
                       <span className="font-semibold text-blue-600">
@@ -1100,15 +1088,15 @@ export function AgentDetailPage() {
             {/* Two-column layout for override details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {/* Agent's Override Earnings from Downlines */}
-              <div className="rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4">
-                <h4 className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
+              <div className="rounded-lg bg-v2-card border border-v2-ring p-4">
+                <h4 className="text-[11px] font-semibold text-v2-ink-muted mb-3">
                   Their Override Earnings
                 </h4>
                 {agentOverrideEarnings.mtd > 0 ||
                 agentOverrideEarnings.ytd > 0 ? (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-zinc-500 dark:text-zinc-400">
+                      <span className="text-v2-ink-muted">
                         MTD Override Income:
                       </span>
                       <span className="font-semibold text-emerald-600">
@@ -1116,7 +1104,7 @@ export function AgentDetailPage() {
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-zinc-500 dark:text-zinc-400">
+                      <span className="text-v2-ink-muted">
                         YTD Override Income:
                       </span>
                       <span className="font-semibold text-emerald-600">
@@ -1125,7 +1113,7 @@ export function AgentDetailPage() {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 text-center py-2">
+                  <p className="text-[11px] text-v2-ink-muted text-center py-2">
                     No override earnings yet
                   </p>
                 )}
@@ -1133,15 +1121,15 @@ export function AgentDetailPage() {
 
               {/* Your Overrides from This Agent (only if not viewing own profile) */}
               {currentUser?.id !== agentId && (
-                <div className="rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-4">
-                  <h4 className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-3">
+                <div className="rounded-lg bg-v2-card border border-v2-ring p-4">
+                  <h4 className="text-[11px] font-semibold text-v2-ink-muted mb-3">
                     Your Overrides from This Agent
                   </h4>
                   {viewerEarningsFromAgent.mtd > 0 ||
                   viewerEarningsFromAgent.ytd > 0 ? (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-zinc-500 dark:text-zinc-400">
+                        <span className="text-v2-ink-muted">
                           MTD Override Income:
                         </span>
                         <span className="font-semibold text-blue-600">
@@ -1149,7 +1137,7 @@ export function AgentDetailPage() {
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-zinc-500 dark:text-zinc-400">
+                        <span className="text-v2-ink-muted">
                           YTD Override Income:
                         </span>
                         <span className="font-semibold text-blue-600">
@@ -1158,7 +1146,7 @@ export function AgentDetailPage() {
                       </div>
                     </div>
                   ) : (
-                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 text-center py-2">
+                    <p className="text-[11px] text-v2-ink-muted text-center py-2">
                       No overrides from this agent yet
                     </p>
                   )}
@@ -1174,55 +1162,49 @@ export function AgentDetailPage() {
             {teamComparison?.directReports?.length > 0 ? (
               <>
                 {/* Inline team stats header */}
-                <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+                <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
                   <div className="flex items-center gap-4 text-[11px]">
                     <div className="flex items-center gap-1">
-                      <Users className="h-3 w-3 text-zinc-400" />
-                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                      <Users className="h-3 w-3 text-v2-ink-subtle" />
+                      <span className="font-semibold text-v2-ink">
                         {teamComparison.totalMembers}
                       </span>
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        direct reports
-                      </span>
+                      <span className="text-v2-ink-muted">direct reports</span>
                     </div>
-                    <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+                    <div className="h-3 w-px bg-v2-ring" />
                     <div className="flex items-center gap-1">
-                      <FileCheck className="h-3 w-3 text-zinc-400" />
-                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                      <FileCheck className="h-3 w-3 text-v2-ink-subtle" />
+                      <span className="font-semibold text-v2-ink">
                         {teamComparison.totalPolicies}
                       </span>
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        team policies
-                      </span>
+                      <span className="text-v2-ink-muted">team policies</span>
                     </div>
-                    <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+                    <div className="h-3 w-px bg-v2-ring" />
                     <div className="flex items-center gap-1">
                       <DollarSign className="h-3 w-3 text-emerald-500" />
                       <span className="font-semibold text-emerald-600">
                         {formatCurrency(teamComparison.totalPremium)}
                       </span>
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        team premium
-                      </span>
+                      <span className="text-v2-ink-muted">team premium</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Team table */}
-                <div className="rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+                <div className="rounded-lg bg-v2-card border border-v2-ring">
                   <Table>
-                    <TableHeader className="sticky top-0 bg-zinc-50 dark:bg-zinc-800/50 z-10">
-                      <TableRow className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-transparent">
-                        <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+                    <TableHeader className="sticky top-0 bg-v2-canvas z-10">
+                      <TableRow className="border-b border-v2-ring hover:bg-transparent">
+                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                           Agent
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 text-right">
+                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted text-right">
                           Level
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 text-right">
+                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted text-right">
                           Policies
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 text-right">
+                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted text-right">
                           Premium
                         </TableHead>
                       </TableRow>
@@ -1239,18 +1221,18 @@ export function AgentDetailPage() {
                         }) => (
                           <TableRow
                             key={member.id}
-                            className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/50"
+                            className="hover:bg-v2-canvas border-b border-v2-ring/60"
                           >
-                            <TableCell className="py-1.5 text-[11px] text-zinc-900 dark:text-zinc-100">
+                            <TableCell className="py-1.5 text-[11px] text-v2-ink">
                               {member.name}
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-zinc-900 dark:text-zinc-100 text-right">
+                            <TableCell className="py-1.5 text-[11px] text-v2-ink text-right">
                               {member.contractLevel}%
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-zinc-900 dark:text-zinc-100 text-right">
+                            <TableCell className="py-1.5 text-[11px] text-v2-ink text-right">
                               {member.policies}
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 text-right">
+                            <TableCell className="py-1.5 text-[11px] font-semibold text-v2-ink text-right">
                               {formatCurrency(member.premium)}
                             </TableCell>
                           </TableRow>
@@ -1261,9 +1243,9 @@ export function AgentDetailPage() {
                 </div>
               </>
             ) : (
-              <div className="rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-6 text-center">
-                <Users className="h-5 w-5 text-zinc-400 mx-auto mb-2" />
-                <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <div className="rounded-lg bg-v2-card border border-v2-ring p-6 text-center">
+                <Users className="h-5 w-5 text-v2-ink-subtle mx-auto mb-2" />
+                <p className="text-[11px] text-v2-ink-muted">
                   No direct reports
                 </p>
               </div>
