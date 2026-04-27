@@ -51,7 +51,7 @@ export const PillNav: React.FC<PillNavProps> = ({
               "rounded-v2-pill font-semibold transition-colors",
               sizeCls,
               isActive
-                ? "bg-v2-ink text-white"
+                ? "bg-v2-ink text-v2-canvas"
                 : "text-v2-ink-muted hover:text-v2-ink hover:bg-v2-accent-soft",
             )}
             aria-current={isActive ? "page" : undefined}

@@ -1,5 +1,5 @@
 // src/features/leaderboard/LeaderboardPage.tsx
-// Main leaderboard page - data-dense brutalist design
+// Main leaderboard page - data-dense, v2 chrome
 
 import { useState } from "react";
 import {
@@ -10,7 +10,6 @@ import {
   TrendingUp,
   FileText,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -20,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PillNav, SoftCard } from "@/components/v2";
 import {
   useAgentLeaderboard,
   useAgencyLeaderboard,
@@ -36,6 +36,13 @@ import type {
   LeaderboardScope,
   TeamThreshold,
 } from "@/types/leaderboard.types";
+
+const SCOPE_ICONS: Record<LeaderboardScope, React.ElementType> = {
+  submit: FileText,
+  all: Users,
+  agency: Building2,
+  team: TrendingUp,
+};
 
 const timePeriods: { value: LeaderboardTimePeriod; label: string }[] = [
   { value: "mtd", label: "MTD" },
@@ -126,53 +133,85 @@ export function LeaderboardPage() {
           ? "teams"
           : "agents";
 
+  const scopeNavItems = scopes.map((s) => {
+    const Icon = SCOPE_ICONS[s.value];
+    return { label: s.label, value: s.value, icon: Icon };
+  });
+
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
-      {/* Compact Header + Filters */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
-        {/* Title + Help */}
-        <div className="flex items-center gap-2">
-          <Trophy className="h-4 w-4 text-amber-500" />
-          <div>
-            <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+    <div className="flex flex-col gap-2">
+      {/* Compact header — title + inline summary chips + filters in ONE row */}
+      <header className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <Trophy className="h-4 w-4 text-v2-accent-strong" />
+            <h1 className="text-base font-semibold tracking-tight text-v2-ink">
               Leaderboard
             </h1>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-              {filters.scope === "submit"
-                ? "Rankings by Submitted Premium (AP)"
-                : "Rankings by Issued Premium (IP)"}
-            </p>
+            <MetricsHelpPopover />
           </div>
-          <MetricsHelpPopover />
+          {totals && !isLoading && (
+            <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-v2-ink-muted flex-wrap leading-tight">
+              <span>
+                <span className="text-v2-ink font-semibold">
+                  {totals.totalEntries.toLocaleString()}
+                </span>{" "}
+                {entryLabel}
+              </span>
+              {filters.scope !== "submit" && "totalIp" in totals && (
+                <>
+                  <span className="text-v2-ink-subtle">·</span>
+                  <span>
+                    <span className="font-mono font-semibold text-amber-600 dark:text-amber-400">
+                      {formatCompactCurrency(totals.totalIp)}
+                    </span>{" "}
+                    IP
+                  </span>
+                </>
+              )}
+              <span className="text-v2-ink-subtle">·</span>
+              <span>
+                <span
+                  className={cn(
+                    "font-mono font-semibold",
+                    filters.scope === "submit"
+                      ? "text-amber-600 dark:text-amber-400"
+                      : "text-v2-ink",
+                  )}
+                >
+                  {formatCompactCurrency(totals.totalAp)}
+                </span>{" "}
+                AP
+              </span>
+              <span className="text-v2-ink-subtle">·</span>
+              <span>
+                <span className="text-v2-ink font-semibold">
+                  {totals.totalPolicies.toLocaleString()}
+                </span>{" "}
+                {filters.scope === "submit" ? "submitted" : "policies"}
+              </span>
+            </div>
+          )}
+          {isLoading && (
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-4 w-16" />
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-16" />
+            </div>
+          )}
         </div>
 
-        {/* Filters Row */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Scope Selector */}
-          <div className="flex items-center gap-1 p-0.5 rounded bg-zinc-100 dark:bg-zinc-800">
-            {scopes.map((s) => (
-              <Button
-                key={s.value}
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-6 px-2.5 text-[10px] font-medium rounded",
-                  filters.scope === s.value
-                    ? "bg-amber-500 text-white hover:bg-amber-600 shadow-sm"
-                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700",
-                )}
-                onClick={() => updateFilter("scope", s.value)}
-              >
-                {s.value === "submit" && <FileText className="h-3 w-3 mr-1" />}
-                {s.value === "all" && <Users className="h-3 w-3 mr-1" />}
-                {s.value === "agency" && <Building2 className="h-3 w-3 mr-1" />}
-                {s.value === "team" && <TrendingUp className="h-3 w-3 mr-1" />}
-                {s.label}
-              </Button>
-            ))}
-          </div>
+        <div className="flex flex-wrap items-center gap-1.5">
+          <PillNav
+            size="sm"
+            activeValue={filters.scope}
+            onChange={(v) => updateFilter("scope", v as LeaderboardScope)}
+            items={scopeNavItems.map((s) => ({
+              label: s.label,
+              value: s.value,
+            }))}
+          />
 
-          {/* Team Threshold (only when team scope selected) */}
           {filters.scope === "team" && (
             <Select
               value={String(filters.teamThreshold || 5)}
@@ -180,7 +219,7 @@ export function LeaderboardPage() {
                 updateFilter("teamThreshold", Number(v) as TeamThreshold)
               }
             >
-              <SelectTrigger className="h-6 w-16 text-[10px] border-zinc-200 dark:border-zinc-700">
+              <SelectTrigger className="h-7 w-16 text-[11px] border-v2-ring bg-v2-card rounded-v2-pill">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -193,111 +232,45 @@ export function LeaderboardPage() {
             </Select>
           )}
 
-          <div className="w-px h-4 bg-zinc-200 dark:bg-zinc-700" />
+          <PillNav
+            size="sm"
+            activeValue={filters.timePeriod}
+            onChange={(v) =>
+              updateFilter("timePeriod", v as LeaderboardTimePeriod)
+            }
+            items={timePeriods.map((p) => ({ label: p.label, value: p.value }))}
+          />
 
-          {/* Time Period */}
-          <div className="flex items-center gap-1 p-0.5 rounded bg-zinc-100 dark:bg-zinc-800">
-            {timePeriods.map((p) => (
-              <Button
-                key={p.value}
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-6 px-2 text-[10px] font-medium rounded",
-                  filters.timePeriod === p.value
-                    ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 shadow-sm"
-                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-200 dark:hover:bg-zinc-700",
-                )}
-                onClick={() => updateFilter("timePeriod", p.value)}
-              >
-                {p.label}
-              </Button>
-            ))}
-          </div>
-
-          {/* Custom Date Inputs */}
           {filters.timePeriod === "custom" && (
             <div className="flex items-center gap-1.5">
-              <Calendar className="h-3 w-3 text-zinc-400" />
+              <Calendar className="h-3 w-3 text-v2-ink-subtle" />
               <Input
                 type="date"
                 value={filters.startDate || ""}
                 onChange={(e) => updateFilter("startDate", e.target.value)}
-                className="h-6 w-28 text-[10px] px-1.5"
+                className="h-7 w-28 text-[11px] px-2 bg-v2-card border-v2-ring"
               />
-              <span className="text-[10px] text-zinc-400">-</span>
+              <span className="text-[11px] text-v2-ink-subtle">–</span>
               <Input
                 type="date"
                 value={filters.endDate || ""}
                 onChange={(e) => updateFilter("endDate", e.target.value)}
-                className="h-6 w-28 text-[10px] px-1.5"
+                className="h-7 w-28 text-[11px] px-2 bg-v2-card border-v2-ring"
               />
             </div>
           )}
         </div>
+      </header>
 
-        {/* Summary Stats */}
-        <div className="flex items-center gap-4 text-[10px]">
-          {isLoading ? (
-            <>
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-4 w-16" />
-            </>
-          ) : totals ? (
-            <>
-              <div className="flex items-center gap-1">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  {totals.totalEntries}
-                </span>
-                <span className="text-zinc-400 dark:text-zinc-500">
-                  {entryLabel}
-                </span>
-              </div>
-              {/* Show IP only for non-submit scopes */}
-              {filters.scope !== "submit" && "totalIp" in totals && (
-                <div className="flex items-center gap-1">
-                  <span className="font-mono font-semibold text-amber-600 dark:text-amber-400">
-                    {formatCompactCurrency(totals.totalIp)}
-                  </span>
-                  <span className="text-zinc-400 dark:text-zinc-500">IP</span>
-                </div>
-              )}
-              <div className="flex items-center gap-1">
-                <span
-                  className={cn(
-                    "font-mono",
-                    filters.scope === "submit"
-                      ? "font-semibold text-amber-600 dark:text-amber-400"
-                      : "text-zinc-600 dark:text-zinc-300",
-                  )}
-                >
-                  {formatCompactCurrency(totals.totalAp)}
-                </span>
-                <span className="text-zinc-400 dark:text-zinc-500">AP</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  {totals.totalPolicies}
-                </span>
-                <span className="text-zinc-400 dark:text-zinc-500">
-                  {filters.scope === "submit" ? "submitted" : "policies"}
-                </span>
-              </div>
-            </>
-          ) : null}
-        </div>
-      </div>
-
-      {/* Main Table */}
-      <div className="flex-1 overflow-hidden bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      {/* Main table */}
+      <SoftCard padding="none" className="overflow-hidden flex flex-col">
         <LeaderboardTable
           scope={filters.scope}
           entries={data?.entries || []}
           isLoading={isLoading}
           error={error}
         />
-      </div>
+      </SoftCard>
     </div>
   );
 }

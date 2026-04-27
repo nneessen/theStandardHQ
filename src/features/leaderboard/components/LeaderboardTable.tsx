@@ -40,10 +40,7 @@ function TableSkeleton({
   return (
     <>
       {Array.from({ length: rows }).map((_, i) => (
-        <tr
-          key={i}
-          className="border-b border-zinc-100 dark:border-zinc-800 last:border-0"
-        >
+        <tr key={i} className="border-b border-v2-ring/60 last:border-0">
           <td className="px-2 py-1.5 w-10">
             <Skeleton className="h-5 w-5 rounded-full" />
           </td>
@@ -87,7 +84,7 @@ function EmptyState({ isSubmit = false }: { isSubmit?: boolean }) {
     <tr>
       <td
         colSpan={isSubmit ? 4 : 7}
-        className="px-4 py-12 text-center text-zinc-400 dark:text-zinc-500"
+        className="px-4 py-12 text-center text-v2-ink-subtle"
       >
         <div className="flex flex-col items-center gap-2">
           <Trophy className="h-8 w-8 opacity-30" />
@@ -142,10 +139,10 @@ function AgentRow({
   return (
     <tr
       className={cn(
-        "border-b border-zinc-100 dark:border-zinc-800 last:border-0 transition-colors",
+        "border-b border-v2-ring/60 last:border-0 transition-colors",
         isTop3 && "bg-amber-50/50 dark:bg-amber-950/20",
         !isTop3 && isTop10 && "bg-amber-50/30 dark:bg-amber-950/10",
-        "hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+        "hover:bg-v2-canvas",
       )}
     >
       <td className="px-2 py-1.5 w-10">
@@ -153,12 +150,12 @@ function AgentRow({
       </td>
       <td className="px-2 py-1.5">
         <div className="flex items-center gap-2">
-          <Avatar className="h-6 w-6 border border-zinc-200 dark:border-zinc-700">
+          <Avatar className="h-6 w-6 border border-v2-ring">
             <AvatarImage
               src={entry.profilePhotoUrl || undefined}
               alt={entry.agentName}
             />
-            <AvatarFallback className="text-[10px] bg-zinc-100 dark:bg-zinc-800">
+            <AvatarFallback className="text-[10px] bg-v2-ring">
               {getInitials(entry.agentName)}
             </AvatarFallback>
           </Avatar>
@@ -166,14 +163,12 @@ function AgentRow({
             <p
               className={cn(
                 "text-xs font-medium truncate",
-                isTop3
-                  ? "text-amber-700 dark:text-amber-300"
-                  : "text-zinc-900 dark:text-zinc-100",
+                isTop3 ? "text-amber-700 dark:text-amber-300" : "text-v2-ink",
               )}
             >
               {entry.agentName}
             </p>
-            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 truncate">
+            <p className="text-[10px] text-v2-ink-subtle truncate">
               {entry.agencyName || "No agency"}
             </p>
           </div>
@@ -185,34 +180,34 @@ function AgentRow({
             "font-mono text-xs font-semibold",
             entry.ipTotal > 0
               ? "text-amber-600 dark:text-amber-400"
-              : "text-zinc-300 dark:text-zinc-600",
+              : "text-v2-ink-subtle",
           )}
         >
           {formatCurrency(entry.ipTotal)}
         </span>
       </td>
       <td className="px-2 py-1.5 text-right">
-        <span className="font-mono text-xs text-zinc-500 dark:text-zinc-400">
+        <span className="font-mono text-xs text-v2-ink-muted">
           {formatCurrency(entry.apTotal)}
         </span>
       </td>
       <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-zinc-600 dark:text-zinc-300">
+        <span className="text-xs tabular-nums text-v2-ink-muted">
           {entry.policyCount}
         </span>
         {entry.pendingPolicyCount > 0 && (
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 ml-0.5">
+          <span className="text-[10px] text-v2-ink-subtle ml-0.5">
             +{entry.pendingPolicyCount}
           </span>
         )}
       </td>
       <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-zinc-400 dark:text-zinc-500">
+        <span className="text-xs tabular-nums text-v2-ink-subtle">
           {entry.prospectCount}
         </span>
       </td>
       <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-zinc-400 dark:text-zinc-500">
+        <span className="text-xs tabular-nums text-v2-ink-subtle">
           {entry.pipelineCount}
         </span>
       </td>
@@ -234,10 +229,10 @@ function AgencyRow({
   return (
     <tr
       className={cn(
-        "border-b border-zinc-100 dark:border-zinc-800 last:border-0 transition-colors",
+        "border-b border-v2-ring/60 last:border-0 transition-colors",
         isTop3 && "bg-amber-50/50 dark:bg-amber-950/20",
         !isTop3 && isTop10 && "bg-amber-50/30 dark:bg-amber-950/10",
-        "hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+        "hover:bg-v2-canvas",
       )}
     >
       <td className="px-2 py-1.5 w-10">
@@ -245,21 +240,19 @@ function AgencyRow({
       </td>
       <td className="px-2 py-1.5">
         <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center h-6 w-6 rounded bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
-            <Building2 className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
+          <div className="flex items-center justify-center h-6 w-6 rounded bg-v2-ring border border-v2-ring">
+            <Building2 className="h-3.5 w-3.5 text-v2-ink-muted" />
           </div>
           <div className="min-w-0">
             <p
               className={cn(
                 "text-xs font-medium truncate",
-                isTop3
-                  ? "text-amber-700 dark:text-amber-300"
-                  : "text-zinc-900 dark:text-zinc-100",
+                isTop3 ? "text-amber-700 dark:text-amber-300" : "text-v2-ink",
               )}
             >
               {entry.agencyName}
             </p>
-            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 truncate">
+            <p className="text-[10px] text-v2-ink-subtle truncate">
               {entry.ownerName} · {entry.agentCount} agent
               {entry.agentCount !== 1 ? "s" : ""}
             </p>
@@ -272,34 +265,34 @@ function AgencyRow({
             "font-mono text-xs font-semibold",
             entry.ipTotal > 0
               ? "text-amber-600 dark:text-amber-400"
-              : "text-zinc-300 dark:text-zinc-600",
+              : "text-v2-ink-subtle",
           )}
         >
           {formatCurrency(entry.ipTotal)}
         </span>
       </td>
       <td className="px-2 py-1.5 text-right">
-        <span className="font-mono text-xs text-zinc-500 dark:text-zinc-400">
+        <span className="font-mono text-xs text-v2-ink-muted">
           {formatCurrency(entry.apTotal)}
         </span>
       </td>
       <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-zinc-600 dark:text-zinc-300">
+        <span className="text-xs tabular-nums text-v2-ink-muted">
           {entry.policyCount}
         </span>
         {entry.pendingPolicyCount > 0 && (
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 ml-0.5">
+          <span className="text-[10px] text-v2-ink-subtle ml-0.5">
             +{entry.pendingPolicyCount}
           </span>
         )}
       </td>
       <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-zinc-400 dark:text-zinc-500">
+        <span className="text-xs tabular-nums text-v2-ink-subtle">
           {entry.prospectCount}
         </span>
       </td>
       <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-zinc-400 dark:text-zinc-500">
+        <span className="text-xs tabular-nums text-v2-ink-subtle">
           {entry.pipelineCount}
         </span>
       </td>
@@ -321,10 +314,10 @@ function SubmitRow({
   return (
     <tr
       className={cn(
-        "border-b border-zinc-100 dark:border-zinc-800 last:border-0 transition-colors",
+        "border-b border-v2-ring/60 last:border-0 transition-colors",
         isTop3 && "bg-amber-50/50 dark:bg-amber-950/20",
         !isTop3 && isTop10 && "bg-amber-50/30 dark:bg-amber-950/10",
-        "hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+        "hover:bg-v2-canvas",
       )}
     >
       <td className="px-2 py-1.5 w-10">
@@ -332,12 +325,12 @@ function SubmitRow({
       </td>
       <td className="px-2 py-1.5">
         <div className="flex items-center gap-2">
-          <Avatar className="h-6 w-6 border border-zinc-200 dark:border-zinc-700">
+          <Avatar className="h-6 w-6 border border-v2-ring">
             <AvatarImage
               src={entry.profilePhotoUrl || undefined}
               alt={entry.agentName}
             />
-            <AvatarFallback className="text-[10px] bg-zinc-100 dark:bg-zinc-800">
+            <AvatarFallback className="text-[10px] bg-v2-ring">
               {getInitials(entry.agentName)}
             </AvatarFallback>
           </Avatar>
@@ -345,14 +338,12 @@ function SubmitRow({
             <p
               className={cn(
                 "text-xs font-medium truncate",
-                isTop3
-                  ? "text-amber-700 dark:text-amber-300"
-                  : "text-zinc-900 dark:text-zinc-100",
+                isTop3 ? "text-amber-700 dark:text-amber-300" : "text-v2-ink",
               )}
             >
               {entry.agentName}
             </p>
-            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 truncate">
+            <p className="text-[10px] text-v2-ink-subtle truncate">
               {entry.agencyName || "No agency"}
             </p>
           </div>
@@ -364,14 +355,14 @@ function SubmitRow({
             "font-mono text-xs font-semibold",
             entry.apTotal > 0
               ? "text-amber-600 dark:text-amber-400"
-              : "text-zinc-300 dark:text-zinc-600",
+              : "text-v2-ink-subtle",
           )}
         >
           {formatCurrency(entry.apTotal)}
         </span>
       </td>
       <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-zinc-600 dark:text-zinc-300">
+        <span className="text-xs tabular-nums text-v2-ink-muted">
           {entry.policyCount}
         </span>
       </td>
@@ -393,10 +384,10 @@ function TeamRow({
   return (
     <tr
       className={cn(
-        "border-b border-zinc-100 dark:border-zinc-800 last:border-0 transition-colors",
+        "border-b border-v2-ring/60 last:border-0 transition-colors",
         isTop3 && "bg-amber-50/50 dark:bg-amber-950/20",
         !isTop3 && isTop10 && "bg-amber-50/30 dark:bg-amber-950/10",
-        "hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+        "hover:bg-v2-canvas",
       )}
     >
       <td className="px-2 py-1.5 w-10">
@@ -405,16 +396,16 @@ function TeamRow({
       <td className="px-2 py-1.5">
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Avatar className="h-6 w-6 border border-zinc-200 dark:border-zinc-700">
+            <Avatar className="h-6 w-6 border border-v2-ring">
               <AvatarImage
                 src={entry.leaderProfilePhotoUrl || undefined}
                 alt={entry.leaderName}
               />
-              <AvatarFallback className="text-[10px] bg-zinc-100 dark:bg-zinc-800">
+              <AvatarFallback className="text-[10px] bg-v2-ring">
                 {getInitials(entry.leaderName)}
               </AvatarFallback>
             </Avatar>
-            <div className="absolute -bottom-0.5 -right-0.5 flex items-center justify-center h-3.5 w-3.5 rounded-full bg-blue-500 border border-white dark:border-zinc-900">
+            <div className="absolute -bottom-0.5 -right-0.5 flex items-center justify-center h-3.5 w-3.5 rounded-full bg-blue-500 border border-v2-card">
               <Users className="h-2 w-2 text-white" />
             </div>
           </div>
@@ -422,14 +413,12 @@ function TeamRow({
             <p
               className={cn(
                 "text-xs font-medium truncate",
-                isTop3
-                  ? "text-amber-700 dark:text-amber-300"
-                  : "text-zinc-900 dark:text-zinc-100",
+                isTop3 ? "text-amber-700 dark:text-amber-300" : "text-v2-ink",
               )}
             >
               {entry.leaderName}'s Team
             </p>
-            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 truncate">
+            <p className="text-[10px] text-v2-ink-subtle truncate">
               {entry.teamSize} member{entry.teamSize !== 1 ? "s" : ""} ·{" "}
               {entry.agencyName || "No agency"}
             </p>
@@ -442,34 +431,34 @@ function TeamRow({
             "font-mono text-xs font-semibold",
             entry.ipTotal > 0
               ? "text-amber-600 dark:text-amber-400"
-              : "text-zinc-300 dark:text-zinc-600",
+              : "text-v2-ink-subtle",
           )}
         >
           {formatCurrency(entry.ipTotal)}
         </span>
       </td>
       <td className="px-2 py-1.5 text-right">
-        <span className="font-mono text-xs text-zinc-500 dark:text-zinc-400">
+        <span className="font-mono text-xs text-v2-ink-muted">
           {formatCurrency(entry.apTotal)}
         </span>
       </td>
       <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-zinc-600 dark:text-zinc-300">
+        <span className="text-xs tabular-nums text-v2-ink-muted">
           {entry.policyCount}
         </span>
         {entry.pendingPolicyCount > 0 && (
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 ml-0.5">
+          <span className="text-[10px] text-v2-ink-subtle ml-0.5">
             +{entry.pendingPolicyCount}
           </span>
         )}
       </td>
       <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-zinc-400 dark:text-zinc-500">
+        <span className="text-xs tabular-nums text-v2-ink-subtle">
           {entry.prospectCount}
         </span>
       </td>
       <td className="px-2 py-1.5 text-center">
-        <span className="text-xs tabular-nums text-zinc-400 dark:text-zinc-500">
+        <span className="text-xs tabular-nums text-v2-ink-subtle">
           {entry.pipelineCount}
         </span>
       </td>
@@ -492,45 +481,45 @@ export function LeaderboardTable({
   return (
     <div className="h-full overflow-auto">
       <table className="w-full text-left">
-        <thead className="sticky top-0 bg-zinc-50 dark:bg-zinc-800/80 backdrop-blur-sm z-10 border-b border-zinc-200 dark:border-zinc-700">
+        <thead className="sticky top-0 bg-v2-canvas/80 backdrop-blur-sm z-10 border-b border-v2-ring">
           {isSubmit ? (
             // Simplified headers for submit scope (4 columns)
             <tr>
-              <th className="px-2 py-2 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider w-10">
+              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider w-10">
                 #
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider">
                 Agent
               </th>
               <th className="px-2 py-2 text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider text-right">
                 AP
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider text-center">
+              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider text-center">
                 Submitted
               </th>
             </tr>
           ) : (
             // Standard headers (7 columns)
             <tr>
-              <th className="px-2 py-2 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider w-10">
+              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider w-10">
                 #
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider">
                 {nameHeader}
               </th>
               <th className="px-2 py-2 text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider text-right">
                 IP
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider text-right">
+              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider text-right">
                 AP
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider text-center">
+              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider text-center">
                 Policies
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider text-center">
+              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider text-center">
                 Prospects
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider text-center">
+              <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider text-center">
                 Pipeline
               </th>
             </tr>

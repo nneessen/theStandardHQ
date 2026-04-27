@@ -16,7 +16,7 @@ export function MetricsHelpPopover() {
         <Button
           variant="ghost"
           size="sm"
-          className="h-5 w-5 p-0 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+          className="h-5 w-5 p-0 text-v2-ink-subtle hover:text-v2-ink-muted"
         >
           <HelpCircle className="h-3.5 w-3.5" />
         </Button>
@@ -24,7 +24,7 @@ export function MetricsHelpPopover() {
       <PopoverContent align="start" className="w-80 text-xs">
         <div className="space-y-3">
           <div>
-            <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+            <h4 className="font-semibold text-v2-ink mb-1">
               Metrics Explained
             </h4>
           </div>
@@ -34,10 +34,10 @@ export function MetricsHelpPopover() {
               <span className="font-medium text-amber-600 dark:text-amber-400">
                 IP (Issued Premium)
               </span>
-              <p className="text-zinc-600 dark:text-zinc-400 text-[11px] mt-0.5">
-                Total annual premium from active policies with paid
-                advance commissions. This represents confirmed,
-                commission-generating business.
+              <p className="text-v2-ink-muted dark:text-v2-ink-subtle text-[11px] mt-0.5">
+                Total annual premium from active policies with paid advance
+                commissions. This represents confirmed, commission-generating
+                business.
               </p>
             </div>
 
@@ -45,41 +45,36 @@ export function MetricsHelpPopover() {
               <span className="font-medium text-blue-600 dark:text-blue-400">
                 AP (Annual Premium)
               </span>
-              <p className="text-zinc-600 dark:text-zinc-400 text-[11px] mt-0.5">
-                Total annual premium from pending policies (submitted but
-                not yet issued). This is business in the pipeline awaiting
-                carrier approval.
+              <p className="text-v2-ink-muted dark:text-v2-ink-subtle text-[11px] mt-0.5">
+                Total annual premium from pending policies (submitted but not
+                yet issued). This is business in the pipeline awaiting carrier
+                approval.
               </p>
             </div>
 
             <div>
-              <span className="font-medium text-zinc-700 dark:text-zinc-300">
+              <span className="font-medium text-v2-ink-muted">
                 Policies (+N)
               </span>
-              <p className="text-zinc-600 dark:text-zinc-400 text-[11px] mt-0.5">
-                Shows issued policy count with pending policies in
-                parentheses. Example: "12 (+3)" means 12 issued policies
-                and 3 more pending.
+              <p className="text-v2-ink-muted dark:text-v2-ink-subtle text-[11px] mt-0.5">
+                Shows issued policy count with pending policies in parentheses.
+                Example: "12 (+3)" means 12 issued policies and 3 more pending.
               </p>
             </div>
 
             <div>
-              <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                Prospects
-              </span>
-              <p className="text-zinc-600 dark:text-zinc-400 text-[11px] mt-0.5">
-                Potential recruits who have been identified but not yet
-                enrolled in the onboarding pipeline.
+              <span className="font-medium text-v2-ink-muted">Prospects</span>
+              <p className="text-v2-ink-muted dark:text-v2-ink-subtle text-[11px] mt-0.5">
+                Potential recruits who have been identified but not yet enrolled
+                in the onboarding pipeline.
               </p>
             </div>
 
             <div>
-              <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                Pipeline
-              </span>
-              <p className="text-zinc-600 dark:text-zinc-400 text-[11px] mt-0.5">
-                Recruits actively progressing through onboarding stages
-                (not prospects, completed, or dropped).
+              <span className="font-medium text-v2-ink-muted">Pipeline</span>
+              <p className="text-v2-ink-muted dark:text-v2-ink-subtle text-[11px] mt-0.5">
+                Recruits actively progressing through onboarding stages (not
+                prospects, completed, or dropped).
               </p>
             </div>
           </div>

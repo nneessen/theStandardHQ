@@ -33,7 +33,7 @@ export function RankBadge({
       <div
         className={cn(
           "flex items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-amber-600 shadow-sm",
-          containerSize
+          containerSize,
         )}
       >
         <Trophy className={cn(iconSize, "text-amber-900")} />
@@ -46,10 +46,10 @@ export function RankBadge({
       <div
         className={cn(
           "flex items-center justify-center rounded-full bg-gradient-to-br from-zinc-300 to-zinc-400 shadow-sm",
-          containerSize
+          containerSize,
         )}
       >
-        <Medal className={cn(iconSize, "text-zinc-700")} />
+        <Medal className={cn(iconSize, "text-v2-ink")} />
       </div>
     );
   }
@@ -59,7 +59,7 @@ export function RankBadge({
       <div
         className={cn(
           "flex items-center justify-center rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-sm",
-          containerSize
+          containerSize,
         )}
       >
         <Award className={cn(iconSize, "text-orange-900")} />
@@ -74,7 +74,7 @@ export function RankBadge({
         textSize,
         highlightTop10 && rank <= 10
           ? "text-amber-600 dark:text-amber-400"
-          : "text-zinc-400"
+          : "text-v2-ink-subtle",
       )}
     >
       {rank}
