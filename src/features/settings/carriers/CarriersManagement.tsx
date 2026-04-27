@@ -98,8 +98,8 @@ export function CarriersManagement() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
-        <div className="flex items-center justify-center text-[11px] text-zinc-500 dark:text-zinc-400">
+      <div className="bg-v2-card rounded-lg border border-v2-ring p-6">
+        <div className="flex items-center justify-center text-[11px] text-v2-ink-muted">
           Loading carriers...
         </div>
       </div>
@@ -108,16 +108,16 @@ export function CarriersManagement() {
 
   return (
     <>
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="bg-v2-card rounded-lg border border-v2-ring">
         {/* Header */}
-        <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring/60">
           <div className="flex items-center gap-2">
-            <Building2 className="h-3.5 w-3.5 text-zinc-400" />
+            <Building2 className="h-3.5 w-3.5 text-v2-ink-subtle" />
             <div>
-              <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+              <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
                 Carriers
               </h3>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-v2-ink-muted">
                 Manage insurance carriers and their information
               </p>
             </div>
@@ -135,34 +135,34 @@ export function CarriersManagement() {
         <div className="p-3 space-y-2">
           {/* Search */}
           <div className="relative w-64">
-            <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-zinc-400" />
+            <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-v2-ink-subtle" />
             <Input
               type="text"
               placeholder="Search carriers..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-7 h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+              className="pl-7 h-7 text-[11px] bg-v2-card border-v2-ring"
             />
           </div>
 
           {/* Table */}
-          <div className="rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
+          <div className="rounded-lg overflow-hidden border border-v2-ring">
             <Table>
-              <TableHeader className="sticky top-0 bg-zinc-50 dark:bg-zinc-800/50 z-10">
-                <TableRow className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-transparent">
-                  <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+              <TableHeader className="sticky top-0 bg-v2-canvas z-10">
+                <TableRow className="border-b border-v2-ring hover:bg-transparent">
+                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                     Carrier Name
                   </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[120px]">
+                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[120px]">
                     Short Name
                   </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[80px]">
+                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px]">
                     # Products
                   </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[80px]">
+                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px]">
                     Status
                   </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[80px] text-right">
+                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px] text-right">
                     Actions
                   </TableHead>
                 </TableRow>
@@ -172,7 +172,7 @@ export function CarriersManagement() {
                   <TableRow>
                     <TableCell
                       colSpan={5}
-                      className="text-center text-[11px] text-zinc-500 dark:text-zinc-400 py-6"
+                      className="text-center text-[11px] text-v2-ink-muted py-6"
                     >
                       {searchTerm
                         ? "No carriers found matching your search."
@@ -183,20 +183,20 @@ export function CarriersManagement() {
                   filteredCarriers.map((carrier) => (
                     <TableRow
                       key={carrier.id}
-                      className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/50"
+                      className="hover:bg-v2-canvas border-b border-v2-ring/60"
                     >
                       <TableCell className="py-1.5">
-                        <span className="font-medium text-[11px] text-zinc-900 dark:text-zinc-100">
+                        <span className="font-medium text-[11px] text-v2-ink">
                           {carrier.name}
                         </span>
                       </TableCell>
                       <TableCell className="py-1.5">
-                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                        <span className="text-[11px] text-v2-ink-muted">
                           {carrier.code || "—"}
                         </span>
                       </TableCell>
                       <TableCell className="py-1.5">
-                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                        <span className="text-[11px] text-v2-ink-muted">
                           {getProductCount(carrier.id)}
                         </span>
                       </TableCell>
@@ -213,7 +213,7 @@ export function CarriersManagement() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-5 px-1.5 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                            className="h-5 px-1.5 text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
                             onClick={() => handleBuildTableClick(carrier)}
                             title="Edit build table for rating class determination"
                           >
@@ -223,7 +223,7 @@ export function CarriersManagement() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-5 px-1.5 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                            className="h-5 px-1.5 text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
                             onClick={() => handleEditCarrier(carrier)}
                           >
                             <Edit className="h-2.5 w-2.5 mr-0.5" />

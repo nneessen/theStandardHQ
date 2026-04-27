@@ -35,18 +35,15 @@ export function CarrierDeleteDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-sm p-3 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+      <AlertDialogContent className="max-w-sm p-3 bg-v2-card border-v2-ring">
         <AlertDialogHeader className="space-y-1">
-          <AlertDialogTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <AlertDialogTitle className="text-sm font-semibold text-v2-ink">
             Delete Carrier?
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-2 text-[11px]">
-            <p className="text-zinc-600 dark:text-zinc-400">
+            <p className="text-v2-ink-muted dark:text-v2-ink-subtle">
               Are you sure you want to delete{" "}
-              <strong className="text-zinc-900 dark:text-zinc-100">
-                {carrier.name}
-              </strong>
-              ?
+              <strong className="text-v2-ink">{carrier.name}</strong>?
             </p>
             {productCount > 0 && (
               <p className="text-red-600 dark:text-red-400 font-medium">
@@ -55,7 +52,7 @@ export function CarrierDeleteDialog({
                 affect those products.
               </p>
             )}
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted">
               This action cannot be undone.
             </p>
           </AlertDialogDescription>
@@ -63,7 +60,7 @@ export function CarrierDeleteDialog({
         <AlertDialogFooter className="gap-1 pt-3">
           <AlertDialogCancel
             disabled={isDeleting}
-            className="h-7 px-2 text-[10px] border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900"
+            className="h-7 px-2 text-[10px] border-v2-ring bg-v2-card"
           >
             Cancel
           </AlertDialogCancel>

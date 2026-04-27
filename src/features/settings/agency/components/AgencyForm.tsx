@@ -221,7 +221,7 @@ export function AgencyForm({
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4 mt-4">
           {/* Basic Info */}
           <div className="space-y-3">
-            <h4 className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">
+            <h4 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
               Basic Information
             </h4>
 
@@ -312,7 +312,7 @@ export function AgencyForm({
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-v2-ink-muted">
                 The owner has full control over this agency
               </p>
             </div>
@@ -322,12 +322,12 @@ export function AgencyForm({
               cascadePreview &&
               cascadePreview.downlineCount > 0 && (
                 <div className="mt-2 space-y-2">
-                  <div className="flex items-center justify-between p-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+                  <div className="flex items-center justify-between p-2 rounded-lg border border-v2-ring bg-v2-canvas">
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                      <p className="text-[11px] font-medium text-v2-ink">
                         Assign owner's team to this agency
                       </p>
-                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                      <p className="text-[10px] text-v2-ink-muted">
                         {isLoadingPreview ? (
                           "Checking team size..."
                         ) : (
@@ -365,7 +365,7 @@ export function AgencyForm({
 
           {/* Contact Info */}
           <div className="space-y-3">
-            <h4 className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">
+            <h4 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
               Contact Information
             </h4>
 
@@ -411,7 +411,7 @@ export function AgencyForm({
 
           {/* Address */}
           <div className="space-y-3">
-            <h4 className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">
+            <h4 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
               Address
             </h4>
 
@@ -470,16 +470,14 @@ export function AgencyForm({
           {/* Status (edit only) */}
           {isEditing && (
             <div className="space-y-3">
-              <h4 className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wide">
+              <h4 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
                 Status
               </h4>
 
-              <div className="flex items-center justify-between p-2 rounded-lg border border-zinc-200 dark:border-zinc-700">
+              <div className="flex items-center justify-between p-2 rounded-lg border border-v2-ring">
                 <div>
-                  <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
-                    Active
-                  </p>
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[11px] font-medium text-v2-ink">Active</p>
+                  <p className="text-[10px] text-v2-ink-muted">
                     Deactivating will hide this agency from users
                   </p>
                 </div>
@@ -492,7 +490,7 @@ export function AgencyForm({
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-2 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+          <div className="flex justify-end gap-2 pt-4 border-t border-v2-ring">
             <Button
               type="button"
               variant="outline"

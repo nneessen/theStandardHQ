@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Textarea } from '@/components/ui/textarea';
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from "@/components/ui/dialog";
 import {
   CheckCircle2,
   XCircle,
@@ -20,25 +20,29 @@ import {
   User,
   Clock,
   MessageSquare,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   usePendingJoinApprovals,
   useApproveJoinRequest,
   useRejectJoinRequest,
-} from '@/hooks/join-request';
-import type { JoinRequest } from '@/types/join-request.types';
+} from "@/hooks/join-request";
+import type { JoinRequest } from "@/types/join-request.types";
 
-function formatUserName(user?: { first_name: string | null; last_name: string | null; email: string | null }) {
-  if (!user) return 'Unknown';
-  const name = `${user.first_name || ''} ${user.last_name || ''}`.trim();
-  return name || user.email || 'Unknown';
+function formatUserName(user?: {
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+}) {
+  if (!user) return "Unknown";
+  const name = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+  return name || user.email || "Unknown";
 }
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 }
 
@@ -50,12 +54,12 @@ interface RequestRowProps {
 
 function RequestRow({ request, onApprove, onReject }: RequestRowProps) {
   return (
-    <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-2.5 space-y-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+    <div className="border border-v2-ring rounded-lg p-2.5 space-y-2 hover:bg-v2-canvas">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <User className="h-3.5 w-3.5 text-zinc-400" />
-          <span className="font-medium text-[11px] text-zinc-900 dark:text-zinc-100">
+          <User className="h-3.5 w-3.5 text-v2-ink-subtle" />
+          <span className="font-medium text-[11px] text-v2-ink">
             {formatUserName(request.requester)}
           </span>
         </div>
@@ -66,10 +70,10 @@ function RequestRow({ request, onApprove, onReject }: RequestRowProps) {
       </div>
 
       {/* Details */}
-      <div className="grid grid-cols-2 gap-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+      <div className="grid grid-cols-2 gap-2 text-[10px] text-v2-ink-muted">
         <div className="flex items-center gap-1">
           <Building2 className="h-3 w-3" />
-          <span>{request.imo?.name || 'Unknown IMO'}</span>
+          <span>{request.imo?.name || "Unknown IMO"}</span>
         </div>
         {request.agency && (
           <div className="flex items-center gap-1">
@@ -81,9 +85,9 @@ function RequestRow({ request, onApprove, onReject }: RequestRowProps) {
 
       {/* Message */}
       {request.message && (
-        <div className="flex items-start gap-1 text-[10px] bg-zinc-50 dark:bg-zinc-800/50 p-2 rounded">
-          <MessageSquare className="h-3 w-3 mt-0.5 shrink-0 text-zinc-400" />
-          <span className="italic text-zinc-600 dark:text-zinc-300">"{request.message}"</span>
+        <div className="flex items-start gap-1 text-[10px] bg-v2-canvas p-2 rounded">
+          <MessageSquare className="h-3 w-3 mt-0.5 shrink-0 text-v2-ink-subtle" />
+          <span className="italic text-v2-ink-muted">"{request.message}"</span>
         </div>
       )}
 
@@ -118,8 +122,10 @@ export function PendingJoinApprovalsList() {
   const rejectRequest = useRejectJoinRequest();
 
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
-  const [selectedRequest, setSelectedRequest] = useState<JoinRequest | null>(null);
-  const [rejectionReason, setRejectionReason] = useState('');
+  const [selectedRequest, setSelectedRequest] = useState<JoinRequest | null>(
+    null,
+  );
+  const [rejectionReason, setRejectionReason] = useState("");
 
   const handleApprove = async (request: JoinRequest) => {
     try {
@@ -127,14 +133,14 @@ export function PendingJoinApprovalsList() {
       toast.success(`Approved ${formatUserName(request.requester)}'s request`);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : 'Failed to approve request'
+        error instanceof Error ? error.message : "Failed to approve request",
       );
     }
   };
 
   const handleRejectClick = (request: JoinRequest) => {
     setSelectedRequest(request);
-    setRejectionReason('');
+    setRejectionReason("");
     setRejectDialogOpen(true);
   };
 
@@ -146,20 +152,22 @@ export function PendingJoinApprovalsList() {
         request_id: selectedRequest.id,
         reason: rejectionReason.trim() || null,
       });
-      toast.success(`Rejected ${formatUserName(selectedRequest.requester)}'s request`);
+      toast.success(
+        `Rejected ${formatUserName(selectedRequest.requester)}'s request`,
+      );
       setRejectDialogOpen(false);
       setSelectedRequest(null);
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : 'Failed to reject request'
+        error instanceof Error ? error.message : "Failed to reject request",
       );
     }
   };
 
   if (isLoading) {
     return (
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
-        <div className="flex items-center justify-center text-[11px] text-zinc-500 dark:text-zinc-400">
+      <div className="border border-v2-ring rounded-lg p-4">
+        <div className="flex items-center justify-center text-[11px] text-v2-ink-muted">
           <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
           Loading pending approvals...
         </div>
@@ -169,14 +177,14 @@ export function PendingJoinApprovalsList() {
 
   if (!requests?.length) {
     return (
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-3">
+      <div className="border border-v2-ring rounded-lg p-3">
         <div className="flex items-center gap-2 mb-2">
-          <Users className="h-3.5 w-3.5 text-zinc-400" />
-          <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <Users className="h-3.5 w-3.5 text-v2-ink-subtle" />
+          <span className="text-[11px] font-semibold text-v2-ink">
             Pending Join Requests
           </span>
         </div>
-        <p className="text-center text-[11px] text-zinc-500 dark:text-zinc-400 py-2">
+        <p className="text-center text-[11px] text-v2-ink-muted py-2">
           No pending requests to review
         </p>
       </div>
@@ -185,14 +193,14 @@ export function PendingJoinApprovalsList() {
 
   return (
     <>
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-3">
+      <div className="border border-v2-ring rounded-lg p-3">
         <div className="flex items-center gap-2 mb-3">
-          <Users className="h-3.5 w-3.5 text-zinc-400" />
+          <Users className="h-3.5 w-3.5 text-v2-ink-subtle" />
           <div className="flex-1">
-            <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+            <span className="text-[11px] font-semibold text-v2-ink">
               Pending Join Requests
             </span>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted">
               Review and approve new user requests
             </p>
           </div>
@@ -219,8 +227,8 @@ export function PendingJoinApprovalsList() {
           <DialogHeader>
             <DialogTitle>Reject Join Request</DialogTitle>
             <DialogDescription>
-              Reject {formatUserName(selectedRequest?.requester)}'s request to join.
-              Optionally provide a reason.
+              Reject {formatUserName(selectedRequest?.requester)}'s request to
+              join. Optionally provide a reason.
             </DialogDescription>
           </DialogHeader>
           <div className="py-2">

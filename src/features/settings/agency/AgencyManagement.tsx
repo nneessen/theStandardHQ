@@ -41,7 +41,11 @@ import {
 } from "@/hooks/imo";
 import { useImo } from "@/hooks/imo";
 import { AgencyForm } from "./components/AgencyForm";
-import type { Agency, CreateAgencyData, UpdateAgencyData } from "@/types/imo.types";
+import type {
+  Agency,
+  CreateAgencyData,
+  UpdateAgencyData,
+} from "@/types/imo.types";
 
 export function AgencyManagement() {
   const { imo, isImoAdmin, isSuperAdmin } = useImo();
@@ -66,7 +70,7 @@ export function AgencyManagement() {
     return agencies.filter(
       (agency) =>
         agency.name.toLowerCase().includes(search) ||
-        agency.code.toLowerCase().includes(search)
+        agency.code.toLowerCase().includes(search),
     );
   }, [agencies, searchTerm]);
 
@@ -83,14 +87,15 @@ export function AgencyManagement() {
   const handleDeleteAgency = async (agency: Agency) => {
     if (
       window.confirm(
-        `Are you sure you want to permanently delete "${agency.name}"? This cannot be undone.`
+        `Are you sure you want to permanently delete "${agency.name}"? This cannot be undone.`,
       )
     ) {
       try {
         await deleteAgency.mutateAsync(agency.id);
         toast.success("Agency deleted successfully");
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to delete agency";
+        const message =
+          error instanceof Error ? error.message : "Failed to delete agency";
         toast.error(message);
       }
     }
@@ -99,14 +104,17 @@ export function AgencyManagement() {
   const handleDeactivateAgency = async (agency: Agency) => {
     if (
       window.confirm(
-        `Are you sure you want to deactivate "${agency.name}"? This will hide the agency but preserve data.`
+        `Are you sure you want to deactivate "${agency.name}"? This will hide the agency but preserve data.`,
       )
     ) {
       try {
         await deactivateAgency.mutateAsync(agency.id);
         toast.success("Agency deactivated");
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to deactivate agency";
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to deactivate agency";
         toast.error(message);
       }
     }
@@ -114,7 +122,7 @@ export function AgencyManagement() {
 
   const handleFormSubmit = async (
     data: CreateAgencyData | UpdateAgencyData,
-    options?: { cascadeDownlines?: boolean }
+    options?: { cascadeDownlines?: boolean },
   ) => {
     try {
       if (selectedAgency) {
@@ -141,15 +149,18 @@ export function AgencyManagement() {
         });
 
         // Show appropriate toast based on cascade result
-        if (result.cascadeResult?.success && result.cascadeResult.totalUpdated > 0) {
+        if (
+          result.cascadeResult?.success &&
+          result.cascadeResult.totalUpdated > 0
+        ) {
           toast.success(
             `Agency created - ${result.cascadeResult.totalUpdated} user${
               result.cascadeResult.totalUpdated === 1 ? "" : "s"
-            } assigned`
+            } assigned`,
           );
         } else if (result.cascadeResult && !result.cascadeResult.success) {
           toast.warning(
-            "Agency created but team assignment failed. You can manually assign users."
+            "Agency created but team assignment failed. You can manually assign users.",
           );
         } else {
           toast.success("Agency created successfully");
@@ -158,7 +169,8 @@ export function AgencyManagement() {
       setIsFormOpen(false);
       setSelectedAgency(null);
     } catch (error) {
-      const message = error instanceof Error ? error.message : "An error occurred";
+      const message =
+        error instanceof Error ? error.message : "An error occurred";
       toast.error(message);
       console.error("Agency form submit error:", error);
     }
@@ -166,8 +178,8 @@ export function AgencyManagement() {
 
   if (!imo) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
-        <div className="flex items-center justify-center text-[11px] text-zinc-500 dark:text-zinc-400">
+      <div className="bg-v2-card rounded-lg border border-v2-ring p-6">
+        <div className="flex items-center justify-center text-[11px] text-v2-ink-muted">
           No IMO context available
         </div>
       </div>
@@ -176,8 +188,8 @@ export function AgencyManagement() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
-        <div className="flex items-center justify-center text-[11px] text-zinc-500 dark:text-zinc-400">
+      <div className="bg-v2-card rounded-lg border border-v2-ring p-6">
+        <div className="flex items-center justify-center text-[11px] text-v2-ink-muted">
           Loading agencies...
         </div>
       </div>
@@ -186,16 +198,16 @@ export function AgencyManagement() {
 
   return (
     <>
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="bg-v2-card rounded-lg border border-v2-ring">
         {/* Header */}
-        <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring/60">
           <div className="flex items-center gap-2">
-            <Building2 className="h-3.5 w-3.5 text-zinc-400" />
+            <Building2 className="h-3.5 w-3.5 text-v2-ink-subtle" />
             <div>
-              <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+              <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
                 Agency Management
               </h3>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-v2-ink-muted">
                 Manage agencies within {imo.name}
               </p>
             </div>
@@ -215,38 +227,38 @@ export function AgencyManagement() {
         <div className="p-3 space-y-2">
           {/* Search */}
           <div className="relative w-64">
-            <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-zinc-400" />
+            <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-v2-ink-subtle" />
             <Input
               type="text"
               placeholder="Search agencies..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-7 h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+              className="pl-7 h-7 text-[11px] bg-v2-card border-v2-ring"
             />
           </div>
 
           {/* Table */}
-          <div className="rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
+          <div className="rounded-lg overflow-hidden border border-v2-ring">
             <Table>
-              <TableHeader className="sticky top-0 bg-zinc-50 dark:bg-zinc-800/50 z-10">
-                <TableRow className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-transparent">
-                  <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+              <TableHeader className="sticky top-0 bg-v2-canvas z-10">
+                <TableRow className="border-b border-v2-ring hover:bg-transparent">
+                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                     Agency Name
                   </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[100px]">
+                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px]">
                     Code
                   </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[150px]">
+                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[150px]">
                     Owner
                   </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[80px]">
+                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px]">
                     Agents
                   </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[80px]">
+                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px]">
                     Status
                   </TableHead>
                   {canManage && (
-                    <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[80px] text-right">
+                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px] text-right">
                       Actions
                     </TableHead>
                   )}
@@ -257,7 +269,7 @@ export function AgencyManagement() {
                   <TableRow>
                     <TableCell
                       colSpan={canManage ? 6 : 5}
-                      className="text-center text-[11px] text-zinc-500 dark:text-zinc-400 py-6"
+                      className="text-center text-[11px] text-v2-ink-muted py-6"
                     >
                       {searchTerm
                         ? "No agencies found matching your search."
@@ -290,7 +302,9 @@ export function AgencyManagement() {
           agency={selectedAgency}
           imoId={imo.id}
           onSubmit={handleFormSubmit}
-          isSubmitting={createAgencyWithCascade.isPending || updateAgency.isPending}
+          isSubmitting={
+            createAgencyWithCascade.isPending || updateAgency.isPending
+          }
         />
       )}
     </>
@@ -314,14 +328,14 @@ function AgencyTableRow({
   const { data: metrics } = useAgencyMetrics(agency.id);
 
   return (
-    <TableRow className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/50">
+    <TableRow className="hover:bg-v2-canvas border-b border-v2-ring/60">
       <TableCell className="py-1.5">
         <div className="flex flex-col">
-          <span className="font-medium text-[11px] text-zinc-900 dark:text-zinc-100">
+          <span className="font-medium text-[11px] text-v2-ink">
             {agency.name}
           </span>
           {agency.contact_email && (
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <span className="text-[10px] text-v2-ink-muted">
               {agency.contact_email}
             </span>
           )}
@@ -336,20 +350,20 @@ function AgencyTableRow({
         {agency.owner ? (
           <div className="flex items-center gap-1.5">
             <Crown className="h-3 w-3 text-amber-500" />
-            <span className="text-[11px] text-zinc-700 dark:text-zinc-300">
+            <span className="text-[11px] text-v2-ink-muted">
               {agency.owner.first_name && agency.owner.last_name
                 ? `${agency.owner.first_name} ${agency.owner.last_name}`
                 : agency.owner.email}
             </span>
           </div>
         ) : (
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 italic">
+          <span className="text-[10px] text-v2-ink-subtle italic">
             No owner assigned
           </span>
         )}
       </TableCell>
       <TableCell className="py-1.5">
-        <div className="flex items-center gap-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center gap-1 text-[11px] text-v2-ink-muted">
           <Users className="h-3 w-3" />
           {metrics?.total_agents ?? "—"}
         </div>
@@ -369,7 +383,7 @@ function AgencyTableRow({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-5 w-5 p-0 text-zinc-600 dark:text-zinc-400"
+                className="h-5 w-5 p-0 text-v2-ink-muted dark:text-v2-ink-subtle"
               >
                 <MoreHorizontal className="h-3.5 w-3.5" />
               </Button>

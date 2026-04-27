@@ -1,6 +1,10 @@
 // src/features/settings/SettingsDashboard.tsx
-// Redesigned with zinc palette and compact design patterns
+//
+// Settings page — grouped left-side nav with plain-English labels,
+// category groupings, and section descriptions for non-technical users.
 
+import { useMemo } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import {
   User,
   Settings,
@@ -31,8 +35,14 @@ import { IntegrationsTab } from "./integrations";
 import { AuditTrailPage } from "@/features/audit";
 import { UnderwritingSettingsTab } from "@/features/underwriting";
 import { LandingPageSettingsTab } from "./landing-page";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { SoftCard } from "@/components/v2";
 import { usePermissionCheck } from "@/hooks/permissions";
 import { useImo } from "@/hooks/imo";
 import { usePendingAgencyRequestCount } from "@/hooks/agency-request";
@@ -41,15 +51,32 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 // eslint-disable-next-line no-restricted-imports -- Legacy import, needs refactor to use hooks
 import { supabase } from "@/services/base/supabase";
+import { cn } from "@/lib/utils";
 import type { RoleName } from "@/types/permissions.types";
 
 interface SettingsDashboardProps {
   initialTab?: string;
 }
 
+interface SettingsItem {
+  id: string;
+  label: string;
+  description: string;
+  icon: React.ElementType;
+  visible: boolean;
+  badge?: number;
+  Component: React.ComponentType;
+}
+
+interface SettingsGroup {
+  label: string;
+  items: SettingsItem[];
+}
+
 export function SettingsDashboard({ initialTab }: SettingsDashboardProps) {
+  const navigate = useNavigate();
   const { can } = usePermissionCheck();
-  const { isSuperAdmin, isImoAdmin, loading: _imoLoading } = useImo();
+  const { isSuperAdmin, isImoAdmin } = useImo();
   const { user } = useAuth();
   const { data: pendingAgencyRequestCount = 0 } =
     usePendingAgencyRequestCount();
@@ -82,283 +109,340 @@ export function SettingsDashboard({ initialTab }: SettingsDashboardProps) {
     !hasRole("admin" as RoleName) &&
     !userProfile?.is_admin;
 
-  // Check if user has admin permission to manage carriers
   const canManageCarriers = can("carriers.manage");
-
-  // Check organization management permissions
   const canManageImos = isSuperAdmin;
   const canManageAgencies = isImoAdmin || isSuperAdmin;
   const canViewAuditTrail = isImoAdmin || isSuperAdmin;
+  const canManageLanding = isImoAdmin || isSuperAdmin;
 
-  // Valid tab values
-  const validTabs = [
-    "imos",
-    "agencies",
-    "carriers",
-    "products",
-    "rates",
-    "constants",
-    "underwriting",
-    "landing-page",
-    "agents",
-    "integrations",
-    "agency-request",
-    "join-request",
-    "notifications",
-    "audit-trail",
-  ];
+  // ── Groups + items ──────────────────────────────────────────────
+  const groups: SettingsGroup[] = useMemo(
+    () => [
+      {
+        label: "You",
+        items: [
+          {
+            id: "agents",
+            label: "Profile",
+            description: "Your account, photo, recruiting URL, and branding.",
+            icon: User,
+            visible: true,
+            Component: UserProfile,
+          },
+          {
+            id: "notifications",
+            label: "Alerts",
+            description:
+              "Choose which events notify you and tune custom alert rules.",
+            icon: Bell,
+            visible: true,
+            Component: NotificationsSettingsPage,
+          },
+          {
+            id: "integrations",
+            label: "Integrations",
+            description:
+              "Connect Slack, calendars, email, and other outside tools.",
+            icon: Link2,
+            visible: true,
+            Component: IntegrationsTab,
+          },
+        ],
+      },
+      {
+        label: "Organization",
+        items: [
+          {
+            id: "agency-request",
+            label: "Agency requests",
+            description:
+              "Apply to become an agency, or review pending agency applications.",
+            icon: ClipboardCheck,
+            visible: !isStaffOnly,
+            badge: pendingAgencyRequestCount,
+            Component: AgencyRequestPage,
+          },
+          {
+            id: "join-request",
+            label: "Join requests",
+            description:
+              "Request to join an organization, or approve people who want to join yours.",
+            icon: UserPlus,
+            visible: !isStaffOnly,
+            badge: pendingJoinRequestCount,
+            Component: JoinRequestPage,
+          },
+          {
+            id: "agencies",
+            label: "Agencies",
+            description: "Manage agencies in your IMO.",
+            icon: Building,
+            visible: canManageAgencies,
+            Component: AgencyManagement,
+          },
+          {
+            id: "imos",
+            label: "IMOs",
+            description: "Super-admin only — manage every IMO in the system.",
+            icon: Crown,
+            visible: canManageImos,
+            Component: ImoManagement,
+          },
+        ],
+      },
+      {
+        label: "Insurance",
+        items: [
+          {
+            id: "carriers",
+            label: "Carriers",
+            description:
+              "Insurance carriers your agents can work with, and their rating tables.",
+            icon: Building2,
+            visible: canManageCarriers,
+            Component: CarriersManagement,
+          },
+          {
+            id: "products",
+            label: "Products",
+            description:
+              "Insurance products available for each carrier (Term, Whole, IUL, etc.).",
+            icon: Package,
+            visible: canManageCarriers,
+            Component: ProductsManagement,
+          },
+          {
+            id: "rates",
+            label: "Commission rates",
+            description:
+              "What percentage your agents earn for each product, by contract level.",
+            icon: Percent,
+            visible: canManageCarriers,
+            Component: CommissionRatesManagement,
+          },
+          {
+            id: "underwriting",
+            label: "Underwriting",
+            description:
+              "AI underwriting wizard: criteria, acceptance rules, and guides.",
+            icon: Stethoscope,
+            visible: canManageCarriers,
+            Component: UnderwritingSettingsTab,
+          },
+        ],
+      },
+      {
+        label: "System",
+        items: [
+          {
+            id: "landing-page",
+            label: "Public landing page",
+            description:
+              "Customize the public-facing recruiting page (hero, FAQ, theme).",
+            icon: Globe,
+            visible: canManageLanding,
+            Component: LandingPageSettingsTab,
+          },
+          {
+            id: "constants",
+            label: "System defaults",
+            description:
+              "Average annual premium and other system-wide calculation defaults.",
+            icon: Settings,
+            visible: canManageCarriers,
+            Component: ConstantsManagement,
+          },
+          {
+            id: "audit-trail",
+            label: "Activity log",
+            description:
+              "Audit history of changes across the system (admin only).",
+            icon: History,
+            visible: canViewAuditTrail,
+            Component: AuditTrailPage,
+          },
+        ],
+      },
+    ],
+    [
+      isStaffOnly,
+      pendingAgencyRequestCount,
+      pendingJoinRequestCount,
+      canManageAgencies,
+      canManageImos,
+      canManageCarriers,
+      canManageLanding,
+      canViewAuditTrail,
+    ],
+  );
 
-  // Default tab: use initialTab if valid, otherwise prioritize based on permissions
-  const computedDefaultTab = canManageImos
-    ? "imos"
-    : canManageAgencies
-      ? "agencies"
-      : canManageCarriers
-        ? "carriers"
-        : "agents";
+  // Flatten visible items
+  const visibleItems = useMemo(
+    () => groups.flatMap((g) => g.items.filter((i) => i.visible)),
+    [groups],
+  );
 
-  const defaultTab =
-    initialTab && validTabs.includes(initialTab)
-      ? initialTab
-      : computedDefaultTab;
+  // Resolve active tab — URL-supplied, fall back to first visible item
+  const activeId = useMemo(() => {
+    if (initialTab && visibleItems.some((i) => i.id === initialTab)) {
+      return initialTab;
+    }
+    return visibleItems[0]?.id ?? "agents";
+  }, [initialTab, visibleItems]);
+
+  const activeItem = visibleItems.find((i) => i.id === activeId);
+
+  const setActiveTab = (id: string) => {
+    navigate({
+      to: "/settings",
+      search: { tab: id },
+    });
+  };
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
-      {/* Compact Header */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+    <div className="flex flex-col gap-3">
+      {/* Compact header */}
+      <header className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
-          <Settings className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <Settings className="h-4 w-4 text-v2-ink" />
+          <h1 className="text-base font-semibold tracking-tight text-v2-ink">
             Settings
           </h1>
         </div>
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+        <p className="text-[11px] text-v2-ink-muted">
           {canManageCarriers
-            ? "Configure carriers, products, commission rates, and system settings"
-            : "Manage your profile and preferences"}
+            ? "Configure your account, organization, and insurance setup."
+            : "Manage your account, alerts, and integrations."}
         </p>
+      </header>
+
+      {/* Mobile: dropdown selector */}
+      <div className="lg:hidden">
+        <Select value={activeId} onValueChange={setActiveTab}>
+          <SelectTrigger className="h-9 bg-v2-card border-v2-ring rounded-v2-pill text-sm">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {groups.map((g) => {
+              const groupItems = g.items.filter((i) => i.visible);
+              if (groupItems.length === 0) return null;
+              return (
+                <div key={g.label}>
+                  <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-v2-ink-subtle">
+                    {g.label}
+                  </div>
+                  {groupItems.map((i) => (
+                    <SelectItem key={i.id} value={i.id} className="text-sm">
+                      {i.label}
+                      {i.badge && i.badge > 0 ? ` (${i.badge})` : ""}
+                    </SelectItem>
+                  ))}
+                </div>
+              );
+            })}
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Content area with tabs */}
-      <div className="flex-1 flex flex-col min-h-0">
-        <Tabs
-          defaultValue={defaultTab}
-          className="flex flex-col flex-1 min-h-0"
-        >
-          {/* Compact tabs - single row */}
-          <TabsList className="flex items-center gap-0 bg-zinc-200/50 dark:bg-zinc-800/50 rounded-md p-0.5 h-auto w-full">
-            {/* Organization Management tabs - Super Admin / IMO Admin */}
-            {canManageImos && (
-              <TabsTrigger
-                value="imos"
-                className="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 text-[10px] font-medium rounded transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-              >
-                <Crown className="h-3 w-3 shrink-0" />
-                <span className="truncate">IMOs</span>
-              </TabsTrigger>
-            )}
-            {canManageAgencies && (
-              <TabsTrigger
-                value="agencies"
-                className="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 text-[10px] font-medium rounded transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-              >
-                <Building className="h-3 w-3 shrink-0" />
-                <span className="truncate">Agencies</span>
-              </TabsTrigger>
-            )}
-            {/* Admin tabs */}
-            {canManageCarriers && (
-              <>
-                <TabsTrigger
-                  value="carriers"
-                  className="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 text-[10px] font-medium rounded transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-                >
-                  <Building2 className="h-3 w-3 shrink-0" />
-                  <span className="truncate">Carriers</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="products"
-                  className="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 text-[10px] font-medium rounded transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-                >
-                  <Package className="h-3 w-3 shrink-0" />
-                  <span className="truncate">Products</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="rates"
-                  className="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 text-[10px] font-medium rounded transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-                >
-                  <Percent className="h-3 w-3 shrink-0" />
-                  <span className="truncate">Rates</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="constants"
-                  className="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 text-[10px] font-medium rounded transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-                >
-                  <Settings className="h-3 w-3 shrink-0" />
-                  <span className="truncate">Constants</span>
-                </TabsTrigger>
-                <TabsTrigger
-                  value="underwriting"
-                  className="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 text-[10px] font-medium rounded transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-                >
-                  <Stethoscope className="h-3 w-3 shrink-0" />
-                  <span className="truncate">Underwriting</span>
-                </TabsTrigger>
-              </>
-            )}
-            {(isImoAdmin || isSuperAdmin) && (
-              <TabsTrigger
-                value="landing-page"
-                className="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 text-[10px] font-medium rounded transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-              >
-                <Globe className="h-3 w-3 shrink-0" />
-                <span className="truncate">Landing</span>
-              </TabsTrigger>
-            )}
-            <TabsTrigger
-              value="agents"
-              className="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 text-[10px] font-medium rounded transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-            >
-              <User className="h-3 w-3 shrink-0" />
-              <span className="truncate">Profile</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="integrations"
-              className="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 text-[10px] font-medium rounded transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-            >
-              <Link2 className="h-3 w-3 shrink-0" />
-              <span className="truncate">Integrations</span>
-            </TabsTrigger>
-            {!isStaffOnly && (
-              <TabsTrigger
-                value="agency-request"
-                className="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 text-[10px] font-medium rounded transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-              >
-                <ClipboardCheck className="h-3 w-3 shrink-0" />
-                <span className="truncate">Agency</span>
-                {pendingAgencyRequestCount > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="h-3.5 px-1 text-[9px] min-w-0"
-                  >
-                    {pendingAgencyRequestCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-            )}
-            {!isStaffOnly && (
-              <TabsTrigger
-                value="join-request"
-                className="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 text-[10px] font-medium rounded transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-              >
-                <UserPlus className="h-3 w-3 shrink-0" />
-                <span className="truncate">Join</span>
-                {pendingJoinRequestCount > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="h-3.5 px-1 text-[9px] min-w-0"
-                  >
-                    {pendingJoinRequestCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-            )}
-            <TabsTrigger
-              value="notifications"
-              className="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 text-[10px] font-medium rounded transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-            >
-              <Bell className="h-3 w-3 shrink-0" />
-              <span className="truncate">Alerts</span>
-            </TabsTrigger>
-            {canViewAuditTrail && (
-              <TabsTrigger
-                value="audit-trail"
-                className="flex-1 flex items-center justify-center gap-1 px-1.5 py-1 text-[10px] font-medium rounded transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900 data-[state=active]:shadow-sm data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-              >
-                <History className="h-3 w-3 shrink-0" />
-                <span className="truncate">Audit</span>
-              </TabsTrigger>
-            )}
-          </TabsList>
+      {/* Desktop: side nav + panel */}
+      <div className="hidden lg:grid lg:grid-cols-[240px_1fr] gap-4 items-start">
+        <SoftCard padding="md" className="sticky top-3 self-start">
+          <nav className="flex flex-col gap-4">
+            {groups.map((g) => {
+              const groupItems = g.items.filter((i) => i.visible);
+              if (groupItems.length === 0) return null;
+              return (
+                <div key={g.label} className="flex flex-col gap-1">
+                  <div className="px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-v2-ink-subtle">
+                    {g.label}
+                  </div>
+                  <ul className="flex flex-col gap-0.5">
+                    {groupItems.map((i) => {
+                      const Icon = i.icon;
+                      const isActive = i.id === activeId;
+                      return (
+                        <li key={i.id}>
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab(i.id)}
+                            aria-current={isActive ? "page" : undefined}
+                            className={cn(
+                              "w-full flex items-center gap-2 h-8 px-2.5 rounded-v2-pill text-[12px] font-medium transition-colors",
+                              isActive
+                                ? "bg-v2-ink text-v2-canvas shadow-v2-soft"
+                                : "text-v2-ink-muted hover:text-v2-ink hover:bg-v2-accent-soft",
+                            )}
+                          >
+                            <Icon
+                              className={cn(
+                                "h-3.5 w-3.5 flex-shrink-0",
+                                isActive && "text-v2-accent",
+                              )}
+                            />
+                            <span className="truncate flex-1 text-left">
+                              {i.label}
+                            </span>
+                            {i.badge && i.badge > 0 ? (
+                              <span className="inline-flex items-center justify-center min-w-[18px] h-4 px-1 rounded-v2-pill bg-v2-accent text-v2-ink text-[10px] font-bold">
+                                {i.badge}
+                              </span>
+                            ) : null}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              );
+            })}
+          </nav>
+        </SoftCard>
 
-          {/* Tab content */}
-          <div className="flex-1 overflow-y-auto mt-2">
-            {/* Organization Management content */}
-            {canManageImos && (
-              <TabsContent value="imos" className="mt-0">
-                <ImoManagement />
-              </TabsContent>
-            )}
+        <div className="flex flex-col gap-3 min-w-0">
+          {activeItem && (
+            <SoftCard padding="md">
+              <div className="flex items-start gap-2.5">
+                <span className="inline-flex items-center justify-center h-8 w-8 rounded-v2-pill bg-v2-accent-soft text-v2-ink flex-shrink-0">
+                  <activeItem.icon className="h-4 w-4" />
+                </span>
+                <div className="flex flex-col leading-tight min-w-0">
+                  <h2 className="text-base font-semibold tracking-tight text-v2-ink">
+                    {activeItem.label}
+                  </h2>
+                  <p className="text-[12px] text-v2-ink-muted">
+                    {activeItem.description}
+                  </p>
+                </div>
+              </div>
+            </SoftCard>
+          )}
 
-            {canManageAgencies && (
-              <TabsContent value="agencies" className="mt-0">
-                <AgencyManagement />
-              </TabsContent>
-            )}
-
-            {/* Admin content */}
-            {canManageCarriers && (
-              <>
-                <TabsContent value="carriers" className="mt-0">
-                  <CarriersManagement />
-                </TabsContent>
-
-                <TabsContent value="products" className="mt-0">
-                  <ProductsManagement />
-                </TabsContent>
-
-                <TabsContent value="rates" className="mt-0">
-                  <CommissionRatesManagement />
-                </TabsContent>
-
-                <TabsContent value="constants" className="mt-0">
-                  <ConstantsManagement />
-                </TabsContent>
-
-                <TabsContent value="underwriting" className="mt-0">
-                  <UnderwritingSettingsTab />
-                </TabsContent>
-              </>
-            )}
-
-            {(isImoAdmin || isSuperAdmin) && (
-              <TabsContent value="landing-page" className="mt-0 h-full">
-                <LandingPageSettingsTab />
-              </TabsContent>
-            )}
-
-            <TabsContent value="agents" className="mt-0">
-              <UserProfile />
-            </TabsContent>
-
-            <TabsContent value="integrations" className="mt-0">
-              <IntegrationsTab />
-            </TabsContent>
-
-            {!isStaffOnly && (
-              <TabsContent value="agency-request" className="mt-0">
-                <AgencyRequestPage />
-              </TabsContent>
-            )}
-
-            {!isStaffOnly && (
-              <TabsContent value="join-request" className="mt-0">
-                <JoinRequestPage />
-              </TabsContent>
-            )}
-
-            <TabsContent value="notifications" className="mt-0">
-              <NotificationsSettingsPage />
-            </TabsContent>
-
-            {canViewAuditTrail && (
-              <TabsContent value="audit-trail" className="mt-0">
-                <AuditTrailPage />
-              </TabsContent>
-            )}
-
+          <div className="min-w-0">
+            {activeItem && <activeItem.Component />}
           </div>
-        </Tabs>
+        </div>
+      </div>
+
+      {/* Mobile: panel content */}
+      <div className="lg:hidden flex flex-col gap-3">
+        {activeItem && (
+          <SoftCard padding="md">
+            <div className="flex items-start gap-2.5">
+              <span className="inline-flex items-center justify-center h-8 w-8 rounded-v2-pill bg-v2-accent-soft text-v2-ink flex-shrink-0">
+                <activeItem.icon className="h-4 w-4" />
+              </span>
+              <div className="flex flex-col leading-tight min-w-0">
+                <h2 className="text-base font-semibold tracking-tight text-v2-ink">
+                  {activeItem.label}
+                </h2>
+                <p className="text-[12px] text-v2-ink-muted">
+                  {activeItem.description}
+                </p>
+              </div>
+            </div>
+          </SoftCard>
+        )}
+        <div className="min-w-0">{activeItem && <activeItem.Component />}</div>
       </div>
     </div>
   );

@@ -90,8 +90,8 @@ export function PendingApprovalsList() {
 
   if (isLoading) {
     return (
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
-        <div className="flex items-center justify-center text-[11px] text-zinc-500 dark:text-zinc-400">
+      <div className="border border-v2-ring rounded-lg p-4">
+        <div className="flex items-center justify-center text-[11px] text-v2-ink-muted">
           <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
           Loading pending requests...
         </div>
@@ -101,19 +101,17 @@ export function PendingApprovalsList() {
 
   if (!pendingRequests || pendingRequests.length === 0) {
     return (
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-3">
+      <div className="border border-v2-ring rounded-lg p-3">
         <div className="flex items-center gap-2 mb-2">
-          <Inbox className="h-3.5 w-3.5 text-zinc-400" />
-          <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <Inbox className="h-3.5 w-3.5 text-v2-ink-subtle" />
+          <h4 className="text-[11px] font-semibold text-v2-ink">
             Pending Approvals
           </h4>
         </div>
         <div className="text-center py-4">
-          <Inbox className="h-6 w-6 mx-auto mb-2 text-zinc-300 dark:text-zinc-600" />
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-            No pending requests
-          </p>
-          <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
+          <Inbox className="h-6 w-6 mx-auto mb-2 text-v2-ink-subtle" />
+          <p className="text-[11px] text-v2-ink-muted">No pending requests</p>
+          <p className="text-[10px] text-v2-ink-subtle">
             When agents in your downline request agency status, they will appear
             here.
           </p>
@@ -124,17 +122,17 @@ export function PendingApprovalsList() {
 
   return (
     <>
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-3">
+      <div className="border border-v2-ring rounded-lg p-3">
         <div className="flex items-center gap-2 mb-3">
           <Clock className="h-3.5 w-3.5 text-amber-500" />
-          <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <h4 className="text-[11px] font-semibold text-v2-ink">
             Pending Approvals
           </h4>
           <Badge variant="destructive" className="text-[10px] h-4 px-1">
             {pendingRequests.length}
           </Badge>
         </div>
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-3">
+        <p className="text-[10px] text-v2-ink-muted mb-3">
           Review and approve or reject agency requests from your downline
         </p>
         <div className="space-y-2">
@@ -189,8 +187,8 @@ export function PendingApprovalsList() {
           {actionType === "approve" && selectedRequest && (
             <div className="space-y-2 py-2">
               <div className="flex items-center gap-2">
-                <Building2 className="h-3 w-3 text-zinc-400" />
-                <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                <Building2 className="h-3 w-3 text-v2-ink-subtle" />
+                <span className="text-[11px] font-medium text-v2-ink">
                   {selectedRequest.proposed_name}
                 </span>
                 <Badge
@@ -201,7 +199,7 @@ export function PendingApprovalsList() {
                 </Badge>
               </div>
               {selectedRequest.proposed_description && (
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] text-v2-ink-muted">
                   {selectedRequest.proposed_description}
                 </p>
               )}
@@ -212,7 +210,7 @@ export function PendingApprovalsList() {
             <div className="space-y-1.5">
               <Label
                 htmlFor="rejection-reason"
-                className="text-[11px] text-zinc-500 dark:text-zinc-400"
+                className="text-[11px] text-v2-ink-muted"
               >
                 Rejection Reason (Optional)
               </Label>
@@ -289,18 +287,18 @@ function PendingRequestCard({
     : "Unknown";
 
   return (
-    <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-2.5 space-y-2">
+    <div className="border border-v2-ring rounded-lg p-2.5 space-y-2">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-1.5">
-            <Users className="h-3 w-3 text-zinc-400" />
-            <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+            <Users className="h-3 w-3 text-v2-ink-subtle" />
+            <span className="text-[11px] font-medium text-v2-ink">
               {requesterName}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Building2 className="h-3 w-3 text-zinc-400" />
-            <span className="text-[11px] text-zinc-700 dark:text-zinc-300">
+            <Building2 className="h-3 w-3 text-v2-ink-subtle" />
+            <span className="text-[11px] text-v2-ink-muted">
               {request.proposed_name}
             </span>
             <Badge variant="outline" className="text-[10px] h-4 px-1 font-mono">
@@ -308,19 +306,19 @@ function PendingRequestCard({
             </Badge>
           </div>
         </div>
-        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+        <span className="text-[10px] text-v2-ink-subtle">
           {new Date(request.requested_at).toLocaleDateString()}
         </span>
       </div>
 
       {request.proposed_description && (
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 line-clamp-2">
+        <p className="text-[10px] text-v2-ink-muted line-clamp-2">
           {request.proposed_description}
         </p>
       )}
 
       {request.current_agency && (
-        <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
+        <p className="text-[10px] text-v2-ink-subtle">
           Currently in: {request.current_agency.name}
         </p>
       )}

@@ -56,10 +56,10 @@ export function WorkspaceLogoUpload({
 
   return (
     <div className="space-y-2">
-      <Label className="text-[9px] text-zinc-600 dark:text-zinc-400">
+      <Label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
         Workspace Logo
       </Label>
-      <p className="text-[8px] text-zinc-400">
+      <p className="text-[8px] text-v2-ink-subtle">
         {WORKSPACE_LOGO_SIZE}x{WORKSPACE_LOGO_SIZE} recommended. PNG, JPG, WebP,
         or SVG.
       </p>
@@ -68,7 +68,7 @@ export function WorkspaceLogoUpload({
         {currentLogoUrl ? (
           <>
             {/* Logo Preview */}
-            <div className="relative w-12 h-12 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 overflow-hidden flex-shrink-0">
+            <div className="relative w-12 h-12 rounded-lg border border-v2-ring bg-v2-ring overflow-hidden flex-shrink-0">
               <img
                 src={currentLogoUrl}
                 alt="Workspace logo"
@@ -97,7 +97,7 @@ export function WorkspaceLogoUpload({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 text-zinc-400 hover:text-red-500"
+                className="h-6 w-6 p-0 text-v2-ink-subtle hover:text-red-500"
                 onClick={handleDelete}
                 disabled={disabled || isLoading}
               >
@@ -115,15 +115,15 @@ export function WorkspaceLogoUpload({
             <div
               className={`w-12 h-12 rounded-lg border-2 border-dashed flex items-center justify-center flex-shrink-0 transition-colors ${
                 disabled
-                  ? "border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50"
-                  : "border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-800/50 hover:border-purple-400 dark:hover:border-purple-600 cursor-pointer"
+                  ? "border-v2-ring bg-v2-canvas"
+                  : "border-v2-ring dark:border-v2-ring bg-v2-canvas hover:border-purple-400 dark:hover:border-purple-600 cursor-pointer"
               }`}
               onClick={disabled ? undefined : handleUploadClick}
             >
               {isUploading ? (
-                <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+                <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
               ) : (
-                <Image className="h-4 w-4 text-zinc-400" />
+                <Image className="h-4 w-4 text-v2-ink-subtle" />
               )}
             </div>
 

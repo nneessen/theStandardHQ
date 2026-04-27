@@ -101,7 +101,7 @@ export function GmailIntegrationCard() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -109,7 +109,7 @@ export function GmailIntegrationCard() {
   return (
     <div className="space-y-3">
       {/* Header Card */}
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+      <div className="bg-v2-card rounded-lg border border-v2-ring p-3">
         <div className="flex items-start gap-3">
           {/* Icon */}
           <div className="p-2 rounded-lg bg-gradient-to-br from-red-500/20 to-orange-500/20 dark:from-red-900/30 dark:to-orange-900/30">
@@ -119,9 +119,7 @@ export function GmailIntegrationCard() {
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Gmail
-              </h3>
+              <h3 className="text-sm font-semibold text-v2-ink">Gmail</h3>
               {isConnected ? (
                 <Badge
                   variant="default"
@@ -154,7 +152,7 @@ export function GmailIntegrationCard() {
               )}
             </div>
 
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
+            <p className="text-[10px] text-v2-ink-muted mt-1">
               {hasIntegration
                 ? "Send and receive emails from your personal Gmail account."
                 : "Connect your Gmail to send and receive emails from your own account."}
@@ -182,12 +180,12 @@ export function GmailIntegrationCard() {
 
       {/* Connected Account Card */}
       {hasIntegration && (
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 space-y-3">
-          <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <div className="bg-v2-card rounded-lg border border-v2-ring p-3 space-y-3">
+          <h4 className="text-[11px] font-semibold text-v2-ink">
             Connected Account
           </h4>
 
-          <div className="flex items-center gap-3 p-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
+          <div className="flex items-center gap-3 p-2.5 bg-v2-canvas rounded-lg">
             <Avatar className="h-10 w-10">
               <AvatarImage
                 src={integration.gmail_picture_url || undefined}
@@ -199,10 +197,10 @@ export function GmailIntegrationCard() {
             </Avatar>
 
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+              <p className="text-[11px] font-medium text-v2-ink">
                 {integration.gmail_name || integration.gmail_address}
               </p>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+              <p className="text-[10px] text-v2-ink-muted truncate">
                 {integration.gmail_address}
               </p>
             </div>
@@ -246,7 +244,7 @@ export function GmailIntegrationCard() {
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-7 w-7 p-0 text-zinc-400 hover:text-red-500"
+                className="h-7 w-7 p-0 text-v2-ink-subtle hover:text-red-500"
                 onClick={() => setShowDisconnectDialog(true)}
                 title="Disconnect Gmail"
               >
@@ -256,7 +254,7 @@ export function GmailIntegrationCard() {
           </div>
 
           {/* Sync Status */}
-          <div className="flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center justify-between text-[10px] text-v2-ink-muted">
             <span>
               Last synced: {formatLastSynced(integration.last_synced_at)}
             </span>

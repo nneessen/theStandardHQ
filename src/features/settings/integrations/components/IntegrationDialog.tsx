@@ -156,7 +156,7 @@ export function IntegrationDialog({
 
   return (
     <Dialog open={open} onOpenChange={() => !isPending && onClose()}>
-      <DialogContent className="max-w-md p-3 bg-white dark:bg-zinc-900">
+      <DialogContent className="max-w-md p-3 bg-v2-card">
         <DialogHeader className="space-y-1">
           <DialogTitle className="text-sm font-semibold">
             {isEditing ? "Edit" : "Connect"} {INTEGRATION_TYPE_LABELS[type]}
@@ -171,23 +171,21 @@ export function IntegrationDialog({
         <div className="space-y-3 py-2">
           {/* Display Name */}
           <div className="space-y-1">
-            <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Display Name
-              <span className="text-zinc-400 dark:text-zinc-500 ml-1">
-                (optional)
-              </span>
+              <span className="text-v2-ink-subtle ml-1">(optional)</span>
             </Label>
             <Input
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="e.g., 30 Min Phone Call"
-              className="h-7 text-[11px] bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+              className="h-7 text-[11px] bg-v2-canvas border-v2-ring"
             />
           </div>
 
           {/* Booking URL */}
           <div className="space-y-1">
-            <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Booking URL
               <span className="text-red-500 ml-0.5">*</span>
             </Label>
@@ -195,12 +193,12 @@ export function IntegrationDialog({
               value={bookingUrl}
               onChange={(e) => handleUrlChange(e.target.value)}
               placeholder={INTEGRATION_TYPE_PLACEHOLDERS[type]}
-              className={`h-7 text-[11px] bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 ${
+              className={`h-7 text-[11px] bg-v2-canvas border-v2-ring ${
                 urlError ? "border-red-500 dark:border-red-500" : ""
               }`}
             />
             {urlError && <p className="text-[10px] text-red-500">{urlError}</p>}
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+            <p className="text-[10px] text-v2-ink-muted flex items-center gap-1">
               <ExternalLink className="h-2.5 w-2.5" />
               This link will be shown to recruits for scheduling
             </p>
@@ -210,34 +208,30 @@ export function IntegrationDialog({
           {type === "zoom" && (
             <>
               <div className="space-y-1">
-                <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+                <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   Meeting ID
-                  <span className="text-zinc-400 dark:text-zinc-500 ml-1">
-                    (optional)
-                  </span>
+                  <span className="text-v2-ink-subtle ml-1">(optional)</span>
                 </Label>
                 <Input
                   value={meetingId}
                   onChange={(e) => setMeetingId(e.target.value)}
                   placeholder="e.g., 123 456 7890"
-                  className="h-7 text-[11px] bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                  className="h-7 text-[11px] bg-v2-canvas border-v2-ring"
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+                <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   Passcode
-                  <span className="text-zinc-400 dark:text-zinc-500 ml-1">
-                    (optional)
-                  </span>
+                  <span className="text-v2-ink-subtle ml-1">(optional)</span>
                 </Label>
                 <Input
                   value={passcode}
                   onChange={(e) => setPasscode(e.target.value)}
                   placeholder="e.g., abc123"
-                  className="h-7 text-[11px] bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                  className="h-7 text-[11px] bg-v2-canvas border-v2-ring"
                 />
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] text-v2-ink-muted">
                   Will be shown to recruits along with the meeting link
                 </p>
               </div>
@@ -246,17 +240,15 @@ export function IntegrationDialog({
 
           {/* Instructions */}
           <div className="space-y-1">
-            <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Instructions for Recruits
-              <span className="text-zinc-400 dark:text-zinc-500 ml-1">
-                (optional)
-              </span>
+              <span className="text-v2-ink-subtle ml-1">(optional)</span>
             </Label>
             <Textarea
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
               placeholder="e.g., Please book a time that works for you. I'll call you at the scheduled time."
-              className="text-[11px] min-h-14 bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+              className="text-[11px] min-h-14 bg-v2-canvas border-v2-ring"
             />
           </div>
         </div>

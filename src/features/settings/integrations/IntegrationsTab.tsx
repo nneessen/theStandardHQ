@@ -108,7 +108,7 @@ export function IntegrationsTab() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -117,7 +117,7 @@ export function IntegrationsTab() {
     <div className="space-y-6">
       {/* Email Integration Section */}
       <div className="space-y-4">
-        <h3 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 px-1">
+        <h3 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted px-1">
           Email Integration
         </h3>
         <GmailIntegrationCard />
@@ -125,7 +125,7 @@ export function IntegrationsTab() {
 
       {/* Messaging Integrations Section */}
       <div className="space-y-4">
-        <h3 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 px-1">
+        <h3 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted px-1">
           Messaging Integrations
         </h3>
         <SlackIntegrationCard />
@@ -134,7 +134,7 @@ export function IntegrationsTab() {
 
       {/* Training Integrations Section */}
       <div className="space-y-4">
-        <h3 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 px-1">
+        <h3 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted px-1">
           Training Integrations
         </h3>
         <ElevenLabsIntegrationCard />
@@ -143,14 +143,14 @@ export function IntegrationsTab() {
       {/* Scheduling Integrations Section */}
       <div className="space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+        <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
           <div className="flex items-center gap-2">
-            <Link2 className="h-4 w-4 text-zinc-700 dark:text-zinc-300" />
+            <Link2 className="h-4 w-4 text-v2-ink-muted" />
             <div>
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h2 className="text-sm font-semibold text-v2-ink">
                 Scheduling Integrations
               </h2>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-v2-ink-muted">
                 Connect your scheduling tools for recruiting pipeline
               </p>
             </div>
@@ -160,7 +160,7 @@ export function IntegrationsTab() {
         {/* Existing Integrations */}
         {integrations && integrations.length > 0 && (
           <div className="space-y-2">
-            <h3 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 px-1">
+            <h3 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted px-1">
               Connected Integrations
             </h3>
             <div className="space-y-1.5">
@@ -172,17 +172,15 @@ export function IntegrationsTab() {
                 return (
                   <div
                     key={integration.id}
-                    className="flex items-center gap-3 p-2.5 bg-white dark:bg-zinc-900 rounded-md border border-zinc-200 dark:border-zinc-800"
+                    className="flex items-center gap-3 p-2.5 bg-v2-card rounded-md border border-v2-ring"
                   >
-                    <div
-                      className={`p-1.5 rounded ${colorClass} bg-zinc-100 dark:bg-zinc-800`}
-                    >
+                    <div className={`p-1.5 rounded ${colorClass} bg-v2-ring`}>
                       <Icon className="h-4 w-4" />
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                        <span className="text-[11px] font-medium text-v2-ink">
                           {
                             INTEGRATION_TYPE_LABELS[
                               integration.integration_type
@@ -190,7 +188,7 @@ export function IntegrationsTab() {
                           }
                         </span>
                         {integration.display_name && (
-                          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                          <span className="text-[10px] text-v2-ink-muted">
                             — {integration.display_name}
                           </span>
                         )}
@@ -203,7 +201,7 @@ export function IntegrationsTab() {
                           {integration.is_active ? "Active" : "Disabled"}
                         </Badge>
                       </div>
-                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+                      <p className="text-[10px] text-v2-ink-muted truncate">
                         {integration.booking_url}
                       </p>
                     </div>
@@ -248,7 +246,7 @@ export function IntegrationsTab() {
         {/* Available Integrations to Add */}
         {typesToAdd.length > 0 && (
           <div className="space-y-2">
-            <h3 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 px-1">
+            <h3 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted px-1">
               Available Integrations
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -260,21 +258,19 @@ export function IntegrationsTab() {
                   <button
                     key={type}
                     onClick={() => handleAdd(type)}
-                    className="flex items-center gap-2.5 p-2.5 bg-white dark:bg-zinc-900 rounded-md border border-dashed border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors text-left"
+                    className="flex items-center gap-2.5 p-2.5 bg-v2-card rounded-md border border-dashed border-v2-ring dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-v2-ring transition-colors text-left"
                   >
-                    <div
-                      className={`p-1.5 rounded ${colorClass} bg-zinc-100 dark:bg-zinc-800`}
-                    >
+                    <div className={`p-1.5 rounded ${colorClass} bg-v2-ring`}>
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                        <span className="text-[11px] font-medium text-v2-ink">
                           {INTEGRATION_TYPE_LABELS[type]}
                         </span>
-                        <Plus className="h-3 w-3 text-zinc-400" />
+                        <Plus className="h-3 w-3 text-v2-ink-subtle" />
                       </div>
-                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                      <p className="text-[10px] text-v2-ink-muted">
                         {INTEGRATION_TYPE_DESCRIPTIONS[type]}
                       </p>
                     </div>
@@ -288,7 +284,7 @@ export function IntegrationsTab() {
         {/* Empty State */}
         {(!integrations || integrations.length === 0) &&
           typesToAdd.length === 0 && (
-            <div className="text-center py-8 text-[11px] text-zinc-500 dark:text-zinc-400">
+            <div className="text-center py-8 text-[11px] text-v2-ink-muted">
               All integrations are connected.
             </div>
           )}

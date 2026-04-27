@@ -62,12 +62,19 @@ export function AlertRulesSection() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<AlertRule | null>(null);
   const [historyRule, setHistoryRule] = useState<AlertRule | null>(null);
-  const [deleteConfirmRule, setDeleteConfirmRule] = useState<AlertRule | null>(null);
+  const [deleteConfirmRule, setDeleteConfirmRule] = useState<AlertRule | null>(
+    null,
+  );
 
   const handleToggleActive = async (rule: AlertRule) => {
     try {
-      await toggleRule.mutateAsync({ ruleId: rule.id, isActive: !rule.is_active });
-      toast.success(rule.is_active ? "Alert rule disabled" : "Alert rule enabled");
+      await toggleRule.mutateAsync({
+        ruleId: rule.id,
+        isActive: !rule.is_active,
+      });
+      toast.success(
+        rule.is_active ? "Alert rule disabled" : "Alert rule enabled",
+      );
     } catch {
       toast.error("Failed to update alert rule");
     }
@@ -87,7 +94,9 @@ export function AlertRulesSection() {
 
   const formatThreshold = (rule: AlertRule) => {
     const symbol = COMPARISON_SYMBOLS[rule.comparison];
-    const unit = rule.threshold_unit ? UNIT_LABELS[rule.threshold_unit] || rule.threshold_unit : "";
+    const unit = rule.threshold_unit
+      ? UNIT_LABELS[rule.threshold_unit] || rule.threshold_unit
+      : "";
 
     if (unit === "$") {
       return `${symbol} $${rule.threshold_value.toLocaleString()}`;
@@ -109,7 +118,7 @@ export function AlertRulesSection() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -119,12 +128,18 @@ export function AlertRulesSection() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">Custom Alert Rules</h4>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <h4 className="text-[11px] font-semibold text-v2-ink">
+            Custom Alert Rules
+          </h4>
+          <p className="text-[10px] text-v2-ink-muted">
             Set up alerts for business metrics that matter to you
           </p>
         </div>
-        <Button size="sm" className="h-7 text-[10px] gap-1" onClick={() => setCreateDialogOpen(true)}>
+        <Button
+          size="sm"
+          className="h-7 text-[10px] gap-1"
+          onClick={() => setCreateDialogOpen(true)}
+        >
           <Plus className="h-3 w-3" />
           New Alert Rule
         </Button>
@@ -132,14 +147,21 @@ export function AlertRulesSection() {
 
       {/* Rules List */}
       {!rules || rules.length === 0 ? (
-        <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-6">
+        <div className="border border-v2-ring rounded-lg p-6">
           <div className="flex flex-col items-center justify-center">
-            <AlertTriangle className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-2" />
-            <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">No alert rules configured</p>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-3">
+            <AlertTriangle className="h-8 w-8 text-v2-ink-subtle mb-2" />
+            <p className="text-[11px] font-medium text-v2-ink">
+              No alert rules configured
+            </p>
+            <p className="text-[10px] text-v2-ink-muted mb-3">
               Create rules to get notified about important changes
             </p>
-            <Button size="sm" variant="outline" className="h-6 text-[10px]" onClick={() => setCreateDialogOpen(true)}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-6 text-[10px]"
+              onClick={() => setCreateDialogOpen(true)}
+            >
               Create your first rule
             </Button>
           </div>
@@ -149,13 +171,15 @@ export function AlertRulesSection() {
           {rules.map((rule) => (
             <div
               key={rule.id}
-              className={`border border-zinc-200 dark:border-zinc-700 rounded-lg ${!rule.is_active ? "opacity-60" : ""}`}
+              className={`border border-v2-ring rounded-lg ${!rule.is_active ? "opacity-60" : ""}`}
             >
               <div className="p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">{rule.name}</span>
+                      <span className="text-[11px] font-semibold text-v2-ink truncate">
+                        {rule.name}
+                      </span>
                       <Badge
                         variant={rule.is_active ? "default" : "secondary"}
                         className="text-[9px] h-4 px-1"
@@ -163,7 +187,7 @@ export function AlertRulesSection() {
                         {rule.is_active ? "Active" : "Disabled"}
                       </Badge>
                     </div>
-                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    <p className="text-[10px] text-v2-ink-muted mt-0.5">
                       {METRIC_LABELS[rule.metric]} {formatThreshold(rule)}
                     </p>
                   </div>
@@ -181,15 +205,24 @@ export function AlertRulesSection() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setEditingRule(rule)} className="text-xs">
+                        <DropdownMenuItem
+                          onClick={() => setEditingRule(rule)}
+                          className="text-xs"
+                        >
                           <Pencil className="h-3.5 w-3.5 mr-2" />
                           Edit
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setHistoryRule(rule)} className="text-xs">
+                        <DropdownMenuItem
+                          onClick={() => setHistoryRule(rule)}
+                          className="text-xs"
+                        >
                           <History className="h-3.5 w-3.5 mr-2" />
                           View History
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleToggleActive(rule)} className="text-xs">
+                        <DropdownMenuItem
+                          onClick={() => handleToggleActive(rule)}
+                          className="text-xs"
+                        >
                           {rule.is_active ? (
                             <>
                               <PowerOff className="h-3.5 w-3.5 mr-2" />
@@ -216,11 +249,15 @@ export function AlertRulesSection() {
                 </div>
               </div>
 
-              <div className="px-3 py-2 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 rounded-b-lg">
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+              <div className="px-3 py-2 border-t border-v2-ring/60 bg-v2-canvas rounded-b-lg">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-v2-ink-muted">
                   <span>Scope: {getScopeLabel(rule)}</span>
                   <span>
-                    Notify: {[rule.notify_in_app && "In-app", rule.notify_email && "Email"]
+                    Notify:{" "}
+                    {[
+                      rule.notify_in_app && "In-app",
+                      rule.notify_email && "Email",
+                    ]
                       .filter(Boolean)
                       .join(", ")}
                   </span>
@@ -230,7 +267,11 @@ export function AlertRulesSection() {
                   )}
                   {rule.last_triggered_at && (
                     <span>
-                      Last: {format(new Date(rule.last_triggered_at), "MMM d, h:mm a")}
+                      Last:{" "}
+                      {format(
+                        new Date(rule.last_triggered_at),
+                        "MMM d, h:mm a",
+                      )}
                     </span>
                   )}
                 </div>
@@ -260,12 +301,16 @@ export function AlertRulesSection() {
       />
 
       {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteConfirmRule} onOpenChange={(open) => !open && setDeleteConfirmRule(null)}>
+      <AlertDialog
+        open={!!deleteConfirmRule}
+        onOpenChange={(open) => !open && setDeleteConfirmRule(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Alert Rule</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{deleteConfirmRule?.name}"? This action cannot be undone.
+              Are you sure you want to delete "{deleteConfirmRule?.name}"? This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

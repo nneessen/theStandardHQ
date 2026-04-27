@@ -22,7 +22,7 @@ export function CustomDomainManager() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -42,13 +42,13 @@ export function CustomDomainManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Globe className="h-4 w-4 text-zinc-500" />
-          <h3 className="text-sm font-medium text-zinc-900">Custom Domain</h3>
+          <Globe className="h-4 w-4 text-v2-ink-muted" />
+          <h3 className="text-sm font-medium text-v2-ink">Custom Domain</h3>
         </div>
         {canAddDomain && !showAddForm && (
           <button
             onClick={() => setShowAddForm(true)}
-            className="flex items-center gap-1 text-xs font-medium text-zinc-600 hover:text-zinc-900"
+            className="flex items-center gap-1 text-xs font-medium text-v2-ink-muted hover:text-v2-ink"
           >
             <Plus className="h-3.5 w-3.5" />
             Add Domain
@@ -57,7 +57,7 @@ export function CustomDomainManager() {
       </div>
 
       {/* Description */}
-      <p className="text-xs text-zinc-500">
+      <p className="text-xs text-v2-ink-muted">
         Connect your own subdomain (e.g., join.yourdomain.com) to your
         recruiting page. Visitors will see your custom URL in their browser.
       </p>
@@ -73,11 +73,13 @@ export function CustomDomainManager() {
           ))}
         </div>
       ) : !showAddForm ? (
-        <div className="rounded-md border border-dashed border-zinc-200 p-4 text-center">
-          <p className="text-xs text-zinc-500">No custom domain configured</p>
+        <div className="rounded-md border border-dashed border-v2-ring p-4 text-center">
+          <p className="text-xs text-v2-ink-muted">
+            No custom domain configured
+          </p>
           <button
             onClick={() => setShowAddForm(true)}
-            className="mt-2 text-xs font-medium text-zinc-700 hover:text-zinc-900"
+            className="mt-2 text-xs font-medium text-v2-ink hover:text-v2-ink"
           >
             Add your first custom domain
           </button>
@@ -91,12 +93,12 @@ export function CustomDomainManager() {
 
       {/* v1 Limit Notice */}
       {hasActiveDomain && (
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-v2-ink-muted">
           You already have an active custom domain. Delete it to add a new one.
         </p>
       )}
       {hasPendingDomain && !hasActiveDomain && (
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-v2-ink-muted">
           Complete or delete your pending domain before adding a new one.
         </p>
       )}

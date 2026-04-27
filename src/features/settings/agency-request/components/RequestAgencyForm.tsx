@@ -69,10 +69,7 @@ export function RequestAgencyForm() {
     <form onSubmit={handleSubmit} className="space-y-3">
       {/* Agency Name */}
       <div className="space-y-1.5">
-        <Label
-          htmlFor="agency-name"
-          className="text-[11px] text-zinc-500 dark:text-zinc-400"
-        >
+        <Label htmlFor="agency-name" className="text-[11px] text-v2-ink-muted">
           Agency Name *
         </Label>
         <Input
@@ -82,16 +79,13 @@ export function RequestAgencyForm() {
           onChange={(e) => setName(e.target.value)}
           disabled={isSubmitting}
           maxLength={100}
-          className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+          className="h-7 text-[11px] bg-v2-card border-v2-ring"
         />
       </div>
 
       {/* Agency Code */}
       <div className="space-y-1.5">
-        <Label
-          htmlFor="agency-code"
-          className="text-[11px] text-zinc-500 dark:text-zinc-400"
-        >
+        <Label htmlFor="agency-code" className="text-[11px] text-v2-ink-muted">
           Agency Code *
         </Label>
         <div className="relative">
@@ -102,12 +96,12 @@ export function RequestAgencyForm() {
             onChange={(e) => setCode(e.target.value.toUpperCase())}
             disabled={isSubmitting}
             maxLength={20}
-            className="h-7 text-[11px] uppercase pr-8 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+            className="h-7 text-[11px] uppercase pr-8 bg-v2-card border-v2-ring"
           />
           {debouncedCode.length >= 2 && (
             <div className="absolute right-2 top-1/2 -translate-y-1/2">
               {isCheckingCode ? (
-                <Loader2 className="h-3 w-3 animate-spin text-zinc-400" />
+                <Loader2 className="h-3 w-3 animate-spin text-v2-ink-subtle" />
               ) : isCodeAvailable ? (
                 <CheckCircle className="h-3 w-3 text-green-500" />
               ) : (
@@ -123,7 +117,7 @@ export function RequestAgencyForm() {
             {isCodeAvailable ? "Code is available" : "Code is already in use"}
           </p>
         )}
-        <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
+        <p className="text-[10px] text-v2-ink-subtle">
           Unique code to identify your agency (2-20 characters)
         </p>
       </div>
@@ -132,7 +126,7 @@ export function RequestAgencyForm() {
       <div className="space-y-1.5">
         <Label
           htmlFor="agency-description"
-          className="text-[11px] text-zinc-500 dark:text-zinc-400"
+          className="text-[11px] text-v2-ink-muted"
         >
           Description (Optional)
         </Label>
@@ -144,13 +138,13 @@ export function RequestAgencyForm() {
           disabled={isSubmitting}
           rows={2}
           maxLength={500}
-          className="text-[11px] resize-none bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+          className="text-[11px] resize-none bg-v2-card border-v2-ring"
         />
       </div>
 
       {/* Info notice */}
-      <div className="flex items-start gap-2 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded text-[10px] text-zinc-600 dark:text-zinc-400">
-        <Info className="h-3 w-3 mt-0.5 shrink-0 text-zinc-400" />
+      <div className="flex items-start gap-2 p-2 bg-v2-canvas rounded text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Info className="h-3 w-3 mt-0.5 shrink-0 text-v2-ink-subtle" />
         <p>
           Your request will be sent to your direct upline for approval. Once
           approved, your agency will be created and your downline agents will be

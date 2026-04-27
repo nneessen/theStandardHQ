@@ -1,6 +1,6 @@
-import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Clock,
   CheckCircle2,
@@ -10,45 +10,49 @@ import {
   Building2,
   Users,
   User,
-} from 'lucide-react';
+} from "lucide-react";
 import {
   useMyPendingJoinRequest,
   useMyJoinRequests,
   useCancelJoinRequest,
-} from '@/hooks/join-request';
-import type { JoinRequest } from '@/types/join-request.types';
+} from "@/hooks/join-request";
+import type { JoinRequest } from "@/types/join-request.types";
 
 const statusConfig = {
   pending: {
     icon: Clock,
-    label: 'Pending',
-    variant: 'outline' as const,
-    color: 'text-amber-600 dark:text-amber-400',
+    label: "Pending",
+    variant: "outline" as const,
+    color: "text-amber-600 dark:text-amber-400",
   },
   approved: {
     icon: CheckCircle2,
-    label: 'Approved',
-    variant: 'default' as const,
-    color: 'text-green-600 dark:text-green-400',
+    label: "Approved",
+    variant: "default" as const,
+    color: "text-green-600 dark:text-green-400",
   },
   rejected: {
     icon: XCircle,
-    label: 'Rejected',
-    variant: 'destructive' as const,
-    color: 'text-red-600 dark:text-red-400',
+    label: "Rejected",
+    variant: "destructive" as const,
+    color: "text-red-600 dark:text-red-400",
   },
   cancelled: {
     icon: Ban,
-    label: 'Cancelled',
-    variant: 'secondary' as const,
-    color: 'text-zinc-500 dark:text-zinc-400',
+    label: "Cancelled",
+    variant: "secondary" as const,
+    color: "text-v2-ink-muted",
   },
 };
 
-function formatUserName(user?: { first_name: string | null; last_name: string | null; email: string | null }) {
-  if (!user) return 'Unknown';
-  const name = `${user.first_name || ''} ${user.last_name || ''}`.trim();
-  return name || user.email || 'Unknown';
+function formatUserName(user?: {
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+}) {
+  if (!user) return "Unknown";
+  const name = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+  return name || user.email || "Unknown";
 }
 
 function RequestCard({ request }: { request: JoinRequest }) {
@@ -59,21 +63,21 @@ function RequestCard({ request }: { request: JoinRequest }) {
   const handleCancel = async () => {
     try {
       await cancelRequest.mutateAsync(request.id);
-      toast.success('Request cancelled');
+      toast.success("Request cancelled");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : 'Failed to cancel request'
+        error instanceof Error ? error.message : "Failed to cancel request",
       );
     }
   };
 
   return (
-    <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-3">
+    <div className="border border-v2-ring rounded-lg p-3">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <StatusIcon className={`h-3.5 w-3.5 ${config.color}`} />
-          <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <span className="text-[11px] font-semibold text-v2-ink">
             Join Request
           </span>
         </div>
@@ -85,51 +89,61 @@ function RequestCard({ request }: { request: JoinRequest }) {
       <div className="space-y-2">
         {/* IMO */}
         <div className="flex items-center gap-2 text-[11px]">
-          <Building2 className="h-3 w-3 text-zinc-400" />
-          <span className="text-zinc-500 dark:text-zinc-400">IMO:</span>
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">{request.imo?.name || 'Unknown'}</span>
+          <Building2 className="h-3 w-3 text-v2-ink-subtle" />
+          <span className="text-v2-ink-muted">IMO:</span>
+          <span className="font-medium text-v2-ink">
+            {request.imo?.name || "Unknown"}
+          </span>
         </div>
 
         {/* Agency */}
         {request.agency && (
           <div className="flex items-center gap-2 text-[11px]">
-            <Users className="h-3 w-3 text-zinc-400" />
-            <span className="text-zinc-500 dark:text-zinc-400">Agency:</span>
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">{request.agency.name}</span>
+            <Users className="h-3 w-3 text-v2-ink-subtle" />
+            <span className="text-v2-ink-muted">Agency:</span>
+            <span className="font-medium text-v2-ink">
+              {request.agency.name}
+            </span>
           </div>
         )}
 
         {/* Approver */}
         <div className="flex items-center gap-2 text-[11px]">
-          <User className="h-3 w-3 text-zinc-400" />
-          <span className="text-zinc-500 dark:text-zinc-400">Reviewed by:</span>
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">{formatUserName(request.approver)}</span>
+          <User className="h-3 w-3 text-v2-ink-subtle" />
+          <span className="text-v2-ink-muted">Reviewed by:</span>
+          <span className="font-medium text-v2-ink">
+            {formatUserName(request.approver)}
+          </span>
         </div>
 
         {/* Message */}
         {request.message && (
-          <div className="text-[10px] text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 p-2 rounded">
+          <div className="text-[10px] text-v2-ink-muted bg-v2-canvas p-2 rounded">
             "{request.message}"
           </div>
         )}
 
         {/* Rejection Reason */}
-        {request.status === 'rejected' && request.rejection_reason && (
+        {request.status === "rejected" && request.rejection_reason && (
           <div className="text-[10px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-2 rounded border border-red-200 dark:border-red-800">
-            <span className="font-medium">Reason:</span> {request.rejection_reason}
+            <span className="font-medium">Reason:</span>{" "}
+            {request.rejection_reason}
           </div>
         )}
 
         {/* Timestamps */}
-        <div className="text-[10px] text-zinc-400 dark:text-zinc-500">
+        <div className="text-[10px] text-v2-ink-subtle">
           Requested: {new Date(request.requested_at).toLocaleDateString()}
           {request.reviewed_at && (
-            <> · Reviewed: {new Date(request.reviewed_at).toLocaleDateString()}</>
+            <>
+              {" "}
+              · Reviewed: {new Date(request.reviewed_at).toLocaleDateString()}
+            </>
           )}
         </div>
 
         {/* Cancel Button */}
-        {request.status === 'pending' && (
+        {request.status === "pending" && (
           <Button
             variant="outline"
             size="sm"
@@ -151,13 +165,14 @@ function RequestCard({ request }: { request: JoinRequest }) {
 }
 
 export function MyJoinRequestStatus() {
-  const { data: pendingRequest, isLoading: pendingLoading } = useMyPendingJoinRequest();
+  const { data: pendingRequest, isLoading: pendingLoading } =
+    useMyPendingJoinRequest();
   const { data: allRequests, isLoading: allLoading } = useMyJoinRequests();
 
   if (pendingLoading || allLoading) {
     return (
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-4">
-        <div className="flex items-center justify-center text-[11px] text-zinc-500 dark:text-zinc-400">
+      <div className="border border-v2-ring rounded-lg p-4">
+        <div className="flex items-center justify-center text-[11px] text-v2-ink-muted">
           <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
           Loading...
         </div>
@@ -171,7 +186,7 @@ export function MyJoinRequestStatus() {
   }
 
   // Show most recent non-pending request if any
-  const recentRequest = allRequests?.find((r) => r.status !== 'pending');
+  const recentRequest = allRequests?.find((r) => r.status !== "pending");
   if (recentRequest) {
     return <RequestCard request={recentRequest} />;
   }

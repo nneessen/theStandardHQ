@@ -41,45 +41,45 @@ export function DomainSetupGuide({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="rounded-md border border-zinc-200 bg-zinc-50">
+    <div className="rounded-md border border-v2-ring bg-v2-canvas">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex w-full items-center justify-between px-3 py-2 text-left"
       >
-        <span className="text-xs font-medium text-zinc-700">How It Works</span>
+        <span className="text-xs font-medium text-v2-ink">How It Works</span>
         {isOpen ? (
-          <ChevronDown className="h-3.5 w-3.5 text-zinc-500" />
+          <ChevronDown className="h-3.5 w-3.5 text-v2-ink-muted" />
         ) : (
-          <ChevronRight className="h-3.5 w-3.5 text-zinc-500" />
+          <ChevronRight className="h-3.5 w-3.5 text-v2-ink-muted" />
         )}
       </button>
 
       {isOpen && (
-        <div className="border-t border-zinc-200 px-3 py-2">
+        <div className="border-t border-v2-ring px-3 py-2">
           <div className="space-y-2">
             {SETUP_STEPS.map((step) => (
               <div key={step.step} className="flex items-start gap-2">
-                <div className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-zinc-200 text-[10px] font-medium text-zinc-600">
+                <div className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-v2-ring text-[10px] font-medium text-v2-ink-muted">
                   {step.step}
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-zinc-800">
+                    <span className="text-xs font-medium text-v2-ink">
                       {step.name}
                     </span>
-                    <span className="flex items-center gap-0.5 text-[10px] text-zinc-500">
+                    <span className="flex items-center gap-0.5 text-[10px] text-v2-ink-muted">
                       <Clock className="h-2.5 w-2.5" />
                       {step.time}
                     </span>
                   </div>
-                  <p className="text-[10px] text-zinc-500">
+                  <p className="text-[10px] text-v2-ink-muted">
                     {step.description}
                   </p>
                 </div>
               </div>
             ))}
           </div>
-          <p className="mt-2 border-t border-zinc-200 pt-2 text-[10px] text-zinc-500">
+          <p className="mt-2 border-t border-v2-ring pt-2 text-[10px] text-v2-ink-muted">
             Total setup time: 10-30 minutes depending on DNS propagation
           </p>
         </div>

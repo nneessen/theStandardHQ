@@ -67,7 +67,7 @@ export function MyAgencyRequestStatus({ request }: MyAgencyRequestStatusProps) {
         return (
           <Badge
             variant="outline"
-            className="text-[10px] h-4 px-1 bg-zinc-50 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"
+            className="text-[10px] h-4 px-1 bg-v2-canvas text-v2-ink-muted border-v2-ring dark:bg-zinc-800 dark:text-v2-ink-subtle dark:border-zinc-700"
           >
             Cancelled
           </Badge>
@@ -94,8 +94,8 @@ export function MyAgencyRequestStatus({ request }: MyAgencyRequestStatusProps) {
       {/* Header row */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Building2 className="h-3 w-3 text-zinc-400" />
-          <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+          <Building2 className="h-3 w-3 text-v2-ink-subtle" />
+          <span className="text-[11px] font-medium text-v2-ink">
             {request.proposed_name}
           </span>
           <Badge variant="outline" className="text-[10px] h-4 px-1 font-mono">
@@ -108,29 +108,27 @@ export function MyAgencyRequestStatus({ request }: MyAgencyRequestStatusProps) {
       {/* Details grid */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px]">
         <div>
-          <span className="text-zinc-400 dark:text-zinc-500">Submitted:</span>
-          <span className="ml-1 text-zinc-700 dark:text-zinc-300">
+          <span className="text-v2-ink-subtle">Submitted:</span>
+          <span className="ml-1 text-v2-ink-muted">
             {new Date(request.requested_at).toLocaleDateString()}
           </span>
         </div>
         <div>
-          <span className="text-zinc-400 dark:text-zinc-500">Approver:</span>
-          <span className="ml-1 text-zinc-700 dark:text-zinc-300">
-            {approverName}
-          </span>
+          <span className="text-v2-ink-subtle">Approver:</span>
+          <span className="ml-1 text-v2-ink-muted">{approverName}</span>
         </div>
         {request.reviewed_at && (
           <div>
-            <span className="text-zinc-400 dark:text-zinc-500">Reviewed:</span>
-            <span className="ml-1 text-zinc-700 dark:text-zinc-300">
+            <span className="text-v2-ink-subtle">Reviewed:</span>
+            <span className="ml-1 text-v2-ink-muted">
               {new Date(request.reviewed_at).toLocaleDateString()}
             </span>
           </div>
         )}
         {request.created_agency && (
           <div>
-            <span className="text-zinc-400 dark:text-zinc-500">Agency:</span>
-            <span className="ml-1 text-zinc-700 dark:text-zinc-300">
+            <span className="text-v2-ink-subtle">Agency:</span>
+            <span className="ml-1 text-v2-ink-muted">
               {request.created_agency.name}
             </span>
           </div>
@@ -140,8 +138,8 @@ export function MyAgencyRequestStatus({ request }: MyAgencyRequestStatusProps) {
       {/* Description */}
       {request.proposed_description && (
         <div className="text-[10px]">
-          <span className="text-zinc-400 dark:text-zinc-500">Description:</span>
-          <p className="mt-0.5 text-zinc-600 dark:text-zinc-400">
+          <span className="text-v2-ink-subtle">Description:</span>
+          <p className="mt-0.5 text-v2-ink-muted dark:text-v2-ink-subtle">
             {request.proposed_description}
           </p>
         </div>

@@ -92,7 +92,7 @@ export function InstagramIntegrationCard() {
   if (isLoading || isProfileLoading) {
     return (
       <div className="flex items-center justify-center p-4">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -100,7 +100,7 @@ export function InstagramIntegrationCard() {
   return (
     <div className="space-y-3">
       {/* Header Card */}
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+      <div className="bg-v2-card rounded-lg border border-v2-ring p-3">
         <div className="flex items-start gap-3">
           {/* Icon */}
           <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 dark:from-purple-900/30 dark:to-pink-900/30">
@@ -110,7 +110,7 @@ export function InstagramIntegrationCard() {
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-sm font-semibold text-v2-ink">
                 Instagram DM
               </h3>
               {isConnected ? (
@@ -145,7 +145,7 @@ export function InstagramIntegrationCard() {
               )}
             </div>
 
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
+            <p className="text-[10px] text-v2-ink-muted mt-1">
               {hasIntegration
                 ? "Manage Instagram DM conversations and recruiting leads."
                 : "Connect your Instagram Business account to manage DMs and recruiting."}
@@ -173,12 +173,12 @@ export function InstagramIntegrationCard() {
 
       {/* Connected Account Card */}
       {hasIntegration && (
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 space-y-3">
-          <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <div className="bg-v2-card rounded-lg border border-v2-ring p-3 space-y-3">
+          <h4 className="text-[11px] font-semibold text-v2-ink">
             Connected Account
           </h4>
 
-          <div className="flex items-center gap-3 p-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
+          <div className="flex items-center gap-3 p-2.5 bg-v2-canvas rounded-lg">
             <Avatar className="h-10 w-10">
               <AvatarImage
                 src={integration.instagram_profile_picture_url || undefined}
@@ -191,10 +191,10 @@ export function InstagramIntegrationCard() {
             </Avatar>
 
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+              <p className="text-[11px] font-medium text-v2-ink">
                 {integration.instagram_name || integration.instagram_username}
               </p>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-v2-ink-muted">
                 @{integration.instagram_username}
               </p>
             </div>
@@ -244,7 +244,7 @@ export function InstagramIntegrationCard() {
 
           {/* Info note for connected state */}
           {isConnected && (
-            <p className="text-[9px] text-zinc-400 dark:text-zinc-500">
+            <p className="text-[9px] text-v2-ink-subtle">
               Access Instagram DMs from the Messages page. Templates can be
               managed in Messages → Settings → Templates.
             </p>
@@ -269,7 +269,7 @@ export function InstagramIntegrationCard() {
           </DialogHeader>
 
           <div className="py-3">
-            <div className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
+            <div className="flex items-center gap-3 p-3 bg-v2-canvas rounded-lg">
               <Avatar className="h-8 w-8">
                 <AvatarImage
                   src={integration?.instagram_profile_picture_url || undefined}
@@ -281,10 +281,10 @@ export function InstagramIntegrationCard() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                <p className="text-[11px] font-medium text-v2-ink">
                   @{integration?.instagram_username}
                 </p>
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] text-v2-ink-muted">
                   {integration?.instagram_name}
                 </p>
               </div>

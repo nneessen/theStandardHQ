@@ -14,16 +14,16 @@ export function NotificationsSettingsPage() {
   const [activeTab, setActiveTab] = useState("preferences");
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="bg-v2-card rounded-lg border border-v2-ring">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring/60">
         <div className="flex items-center gap-2">
-          <Bell className="h-3.5 w-3.5 text-zinc-400" />
+          <Bell className="h-3.5 w-3.5 text-v2-ink-subtle" />
           <div>
-            <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+            <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
               Notifications & Alerts
             </h3>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted">
               Manage notifications and custom alerts
             </p>
           </div>

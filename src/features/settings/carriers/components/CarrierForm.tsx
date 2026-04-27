@@ -110,12 +110,12 @@ export function CarrierForm({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-md p-3 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
-        <SheetHeader className="space-y-1 pb-3 border-b border-zinc-100 dark:border-zinc-800">
-          <SheetTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+      <SheetContent className="sm:max-w-md p-3 bg-v2-card border-v2-ring">
+        <SheetHeader className="space-y-1 pb-3 border-b border-v2-ring/60">
+          <SheetTitle className="text-sm font-semibold text-v2-ink">
             {carrier ? "Edit Carrier" : "Add New Carrier"}
           </SheetTitle>
-          <SheetDescription className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <SheetDescription className="text-[10px] text-v2-ink-muted">
             {carrier
               ? "Update carrier information. Changes will affect all associated products."
               : "Create a new insurance carrier. You can add products to this carrier later."}
@@ -132,7 +132,7 @@ export function CarrierForm({
               name="name"
               render={({ field }) => (
                 <FormItem className="space-y-1">
-                  <FormLabel className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                  <FormLabel className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
                     Carrier Name *
                   </FormLabel>
                   <FormControl>
@@ -140,10 +140,10 @@ export function CarrierForm({
                       placeholder="e.g., Foresters Financial"
                       {...field}
                       value={field.value || ""}
-                      className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                      className="h-7 text-[11px] bg-v2-card border-v2-ring"
                     />
                   </FormControl>
-                  <FormDescription className="text-[10px] text-zinc-400">
+                  <FormDescription className="text-[10px] text-v2-ink-subtle">
                     The official name of the insurance carrier
                   </FormDescription>
                   <FormMessage className="text-[10px]" />
@@ -156,7 +156,7 @@ export function CarrierForm({
               name="code"
               render={({ field }) => (
                 <FormItem className="space-y-1">
-                  <FormLabel className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                  <FormLabel className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
                     Code (Optional)
                   </FormLabel>
                   <FormControl>
@@ -164,10 +164,10 @@ export function CarrierForm({
                       placeholder="e.g., FRST"
                       {...field}
                       value={field.value || ""}
-                      className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                      className="h-7 text-[11px] bg-v2-card border-v2-ring"
                     />
                   </FormControl>
-                  <FormDescription className="text-[10px] text-zinc-400">
+                  <FormDescription className="text-[10px] text-v2-ink-subtle">
                     A short code or acronym for display purposes
                   </FormDescription>
                   <FormMessage className="text-[10px]" />
@@ -182,7 +182,7 @@ export function CarrierForm({
                 name="imo_id"
                 render={({ field }) => (
                   <FormItem className="space-y-1">
-                    <FormLabel className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                    <FormLabel className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
                       IMO *
                     </FormLabel>
                     <Select
@@ -190,7 +190,7 @@ export function CarrierForm({
                       value={field.value || ""}
                     >
                       <FormControl>
-                        <SelectTrigger className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
+                        <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
                           <SelectValue placeholder="Select IMO" />
                         </SelectTrigger>
                       </FormControl>
@@ -206,7 +206,7 @@ export function CarrierForm({
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormDescription className="text-[10px] text-zinc-400">
+                    <FormDescription className="text-[10px] text-v2-ink-subtle">
                       Which IMO this carrier belongs to
                     </FormDescription>
                     <FormMessage className="text-[10px]" />
@@ -220,12 +220,12 @@ export function CarrierForm({
               name="advance_cap"
               render={({ field }) => (
                 <FormItem className="space-y-1">
-                  <FormLabel className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                  <FormLabel className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
                     Advance Cap (Optional)
                   </FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-zinc-400 text-[11px]">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-v2-ink-subtle text-[11px]">
                         $
                       </span>
                       <Input
@@ -239,11 +239,11 @@ export function CarrierForm({
                             value === "" ? null : parseFloat(value),
                           );
                         }}
-                        className="h-7 pl-5 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                        className="h-7 pl-5 text-[11px] bg-v2-card border-v2-ring"
                       />
                     </div>
                   </FormControl>
-                  <FormDescription className="text-[10px] text-zinc-400">
+                  <FormDescription className="text-[10px] text-v2-ink-subtle">
                     Maximum advance per policy. Leave empty for no cap.
                   </FormDescription>
                   <FormMessage className="text-[10px]" />
@@ -255,12 +255,12 @@ export function CarrierForm({
               control={form.control}
               name="is_active"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-700 p-2">
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border border-v2-ring p-2">
                   <div className="space-y-0.5">
-                    <FormLabel className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                    <FormLabel className="text-[11px] font-medium text-v2-ink">
                       Active Status
                     </FormLabel>
-                    <FormDescription className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    <FormDescription className="text-[10px] text-v2-ink-muted">
                       Inactive carriers won't appear in dropdowns
                     </FormDescription>
                   </div>
@@ -275,14 +275,14 @@ export function CarrierForm({
               )}
             />
 
-            <SheetFooter className="gap-1 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+            <SheetFooter className="gap-1 pt-3 border-t border-v2-ring/60">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => onOpenChange(false)}
                 disabled={isSubmitting}
-                className="h-7 px-2 text-[10px] border-zinc-200 dark:border-zinc-700"
+                className="h-7 px-2 text-[10px] border-v2-ring"
               >
                 Cancel
               </Button>

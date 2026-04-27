@@ -449,8 +449,8 @@ export function UserProfile() {
 
   if (!user) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
-        <div className="flex items-center justify-center text-[11px] text-zinc-500 dark:text-zinc-400">
+      <div className="bg-v2-card rounded-lg border border-v2-ring p-6">
+        <div className="flex items-center justify-center text-[11px] text-v2-ink-muted">
           Loading user information...
         </div>
       </div>
@@ -476,11 +476,11 @@ export function UserProfile() {
                 Pro / Team
               </Badge>
             </div>
-            <p className="mt-1 text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+            <p className="mt-1 text-[11px] font-medium text-v2-ink">
               Licensing/Writing #&apos;s team workspace includes a 7-day free
               trial, then requires Pro or Team.
             </p>
-            <p className="mt-1 text-[10px] text-zinc-600 dark:text-zinc-300">
+            <p className="mt-1 text-[10px] text-v2-ink-muted">
               Use your trial to play around with the workspace, manage your
               entire team&apos;s writing numbers, see which agents have which
               carrier contracts, compare which states agents are licensed in,
@@ -499,18 +499,18 @@ export function UserProfile() {
       </div>
 
       {/* Profile Photo Card */}
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
-          <Camera className="h-3.5 w-3.5 text-zinc-400" />
-          <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+      <div className="bg-v2-card rounded-lg border border-v2-ring">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-v2-ring/60">
+          <Camera className="h-3.5 w-3.5 text-v2-ink-subtle" />
+          <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
             Profile Photo
           </h3>
         </div>
         <div className="p-3">
           <div className="flex items-center gap-4">
-            <Avatar className="h-14 w-14 border border-zinc-200 dark:border-zinc-700 flex-shrink-0">
+            <Avatar className="h-14 w-14 border border-v2-ring flex-shrink-0">
               <AvatarImage src={profilePhotoUrl || undefined} />
-              <AvatarFallback className="text-[13px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
+              <AvatarFallback className="text-[13px] bg-v2-ring text-v2-ink-muted">
                 {user.first_name?.[0]}
                 {user.last_name?.[0]}
               </AvatarFallback>
@@ -530,7 +530,7 @@ export function UserProfile() {
                 variant="outline"
                 disabled={uploadingPhoto}
                 onClick={() => photoInputRef.current?.click()}
-                className="h-7 px-2 text-[10px] border-zinc-200 dark:border-zinc-700"
+                className="h-7 px-2 text-[10px] border-v2-ring"
               >
                 {uploadingPhoto ? (
                   <>
@@ -544,7 +544,7 @@ export function UserProfile() {
                   </>
                 )}
               </Button>
-              <p className="mt-1 text-[9px] text-zinc-400 dark:text-zinc-500">
+              <p className="mt-1 text-[9px] text-v2-ink-subtle">
                 JPG, PNG, or GIF · Max 5MB · Used in Slack leaderboard posts
               </p>
               {photoError && (
@@ -559,29 +559,29 @@ export function UserProfile() {
       </div>
 
       {/* User Information Card */}
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
-          <User className="h-3.5 w-3.5 text-zinc-400" />
-          <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+      <div className="bg-v2-card rounded-lg border border-v2-ring">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-v2-ring/60">
+          <User className="h-3.5 w-3.5 text-v2-ink-subtle" />
+          <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
             User Profile
           </h3>
         </div>
         <div className="p-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1">
+              <label className="block text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1">
                 Email
               </label>
-              <div className="px-2 py-1.5 bg-zinc-50 dark:bg-zinc-800 rounded text-[11px] text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+              <div className="px-2 py-1.5 bg-v2-canvas rounded text-[11px] text-v2-ink-muted border border-v2-ring">
                 {user.email}
               </div>
             </div>
 
             <div>
-              <label className="block text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1">
+              <label className="block text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1">
                 Name
               </label>
-              <div className="px-2 py-1.5 bg-zinc-50 dark:bg-zinc-800 rounded text-[11px] text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+              <div className="px-2 py-1.5 bg-v2-canvas rounded text-[11px] text-v2-ink-muted border border-v2-ring">
                 {user.first_name && user.last_name
                   ? getDisplayName({
                       first_name: user.first_name,
@@ -596,10 +596,10 @@ export function UserProfile() {
       </div>
 
       {/* Change Email Card */}
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
-          <Mail className="h-3.5 w-3.5 text-zinc-400" />
-          <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+      <div className="bg-v2-card rounded-lg border border-v2-ring">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-v2-ring/60">
+          <Mail className="h-3.5 w-3.5 text-v2-ink-subtle" />
+          <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
             Change Email
           </h3>
         </div>
@@ -618,7 +618,7 @@ export function UserProfile() {
                 <div>
                   <label
                     htmlFor="newEmail"
-                    className="block text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1"
+                    className="block text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1"
                   >
                     New email address
                   </label>
@@ -632,13 +632,13 @@ export function UserProfile() {
                     }}
                     placeholder="new@example.com"
                     disabled={emailChangeStatus === "sending"}
-                    className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                    className="h-7 text-[11px] bg-v2-card border-v2-ring"
                   />
                 </div>
                 <div>
                   <label
                     htmlFor="emailChangePassword"
-                    className="block text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1"
+                    className="block text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1"
                   >
                     Current password (required)
                   </label>
@@ -653,7 +653,7 @@ export function UserProfile() {
                       }}
                       placeholder="Enter your password"
                       disabled={emailChangeStatus === "sending"}
-                      className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                      className="h-7 text-[11px] bg-v2-card border-v2-ring"
                     />
                     <Button
                       type="submit"
@@ -664,7 +664,7 @@ export function UserProfile() {
                       }
                       size="sm"
                       variant="outline"
-                      className="h-7 px-2 text-[10px] border-zinc-200 dark:border-zinc-700 flex-shrink-0"
+                      className="h-7 px-2 text-[10px] border-v2-ring flex-shrink-0"
                     >
                       {emailChangeStatus === "sending" ? (
                         <>
@@ -692,15 +692,15 @@ export function UserProfile() {
       {/* Personal Recruiting Link & Branding Card - Premium Feature */}
       {!isStaffOnly && (
         <FeatureGate feature="custom_branding" promptVariant="card">
-          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-            <div className="flex items-center gap-2 px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
-              <Link2 className="h-3.5 w-3.5 text-zinc-400" />
-              <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+          <div className="bg-v2-card rounded-lg border border-v2-ring">
+            <div className="flex items-center gap-2 px-3 py-2 border-b border-v2-ring/60">
+              <Link2 className="h-3.5 w-3.5 text-v2-ink-subtle" />
+              <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
                 Personal Recruiting Link
               </h3>
             </div>
             <div className="p-3">
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-2">
+              <p className="text-[10px] text-v2-ink-muted mb-2">
                 Create your personal recruiting URL to share on social media.
                 Prospects who submit through your link will appear in your leads
                 queue.
@@ -745,12 +745,12 @@ export function UserProfile() {
                 <div className="max-w-md">
                   <label
                     htmlFor="recruiterSlug"
-                    className="block text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1"
+                    className="block text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1"
                   >
                     {currentSlug ? "Change URL Slug" : "Choose Your URL Slug"}
                   </label>
                   <div className="flex gap-2 items-center">
-                    <span className="text-[11px] text-zinc-400 dark:text-zinc-500 flex-shrink-0">
+                    <span className="text-[11px] text-v2-ink-subtle flex-shrink-0">
                       /join-
                     </span>
                     <Input
@@ -759,7 +759,7 @@ export function UserProfile() {
                       value={recruiterSlug}
                       onChange={handleSlugChange}
                       placeholder="john-smith"
-                      className={`h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 ${
+                      className={`h-7 text-[11px] bg-v2-card border-v2-ring ${
                         slugError ? "border-red-500" : ""
                       }`}
                     />
@@ -768,7 +768,7 @@ export function UserProfile() {
                       disabled={updateProfile.isPending || !!slugError}
                       size="sm"
                       variant="outline"
-                      className="h-7 px-2 text-[10px] border-zinc-200 dark:border-zinc-700"
+                      className="h-7 px-2 text-[10px] border-v2-ring"
                     >
                       <Save className="h-3 w-3 mr-1" />
                       {updateProfile.isPending ? "Saving..." : "Save"}
@@ -786,7 +786,7 @@ export function UserProfile() {
                       Recruiting link saved successfully!
                     </div>
                   )}
-                  <p className="mt-1.5 text-[9px] text-zinc-400 dark:text-zinc-500">
+                  <p className="mt-1.5 text-[9px] text-v2-ink-subtle">
                     Use lowercase letters, numbers, and hyphens only. Example:
                     john-smith, jsmith2025
                   </p>
@@ -794,12 +794,12 @@ export function UserProfile() {
               </form>
 
               {/* Custom Domain Section */}
-              <div className="mt-4 pt-3 border-t border-zinc-200 dark:border-zinc-700">
+              <div className="mt-4 pt-3 border-t border-v2-ring">
                 <CustomDomainManager />
               </div>
 
               {/* Branding Settings Section */}
-              <div className="mt-4 pt-3 border-t border-zinc-200 dark:border-zinc-700">
+              <div className="mt-4 pt-3 border-t border-v2-ring">
                 <BrandingSettings />
               </div>
             </div>
@@ -809,19 +809,19 @@ export function UserProfile() {
 
       {/* Team Hierarchy Card - Hidden for staff-only roles */}
       {!isStaffOnly && (
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
-            <Users className="h-3.5 w-3.5 text-zinc-400" />
-            <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+        <div className="bg-v2-card rounded-lg border border-v2-ring">
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-v2-ring/60">
+            <Users className="h-3.5 w-3.5 text-v2-ink-subtle" />
+            <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
               Team Hierarchy
             </h3>
           </div>
           <div className="p-3">
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-2">
+            <p className="text-[10px] text-v2-ink-muted mb-2">
               Specify who your upline is. This determines who earns override
               commissions on your policies.
               {currentUplineEmail && (
-                <span className="block mt-1 text-zinc-700 dark:text-zinc-300 font-medium">
+                <span className="block mt-1 text-v2-ink-muted font-medium">
                   Current upline: {currentUplineEmail}
                 </span>
               )}
@@ -831,7 +831,7 @@ export function UserProfile() {
               <div className="max-w-md">
                 <label
                   htmlFor="uplineEmail"
-                  className="block text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1"
+                  className="block text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1"
                 >
                   Upline Email (leave blank to remove)
                 </label>
@@ -842,7 +842,7 @@ export function UserProfile() {
                     value={uplineEmail}
                     onChange={handleUplineEmailChange}
                     placeholder="upline@example.com"
-                    className={`h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 ${
+                    className={`h-7 text-[11px] bg-v2-card border-v2-ring ${
                       uplineError ? "border-red-500" : ""
                     }`}
                   />
@@ -851,7 +851,7 @@ export function UserProfile() {
                     disabled={updateHierarchy.isPending}
                     size="sm"
                     variant="outline"
-                    className="h-7 px-2 text-[10px] border-zinc-200 dark:border-zinc-700"
+                    className="h-7 px-2 text-[10px] border-v2-ring"
                   >
                     <Save className="h-3 w-3 mr-1" />
                     {updateHierarchy.isPending ? "Updating..." : "Update"}
@@ -878,14 +878,14 @@ export function UserProfile() {
       {/* Commission Settings Card - Only show for agents, not staff */}
       {!isStaffOnly && (
         <>
-          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-            <div className="px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
-              <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+          <div className="bg-v2-card rounded-lg border border-v2-ring">
+            <div className="px-3 py-2 border-b border-v2-ring/60">
+              <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
                 Commission Settings
               </h3>
             </div>
             <div className="p-3">
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-2">
+              <p className="text-[10px] text-v2-ink-muted mb-2">
                 Your contract level determines your commission rates. This
                 setting only affects new commissions and does not change
                 existing policies or commission calculations.
@@ -895,7 +895,7 @@ export function UserProfile() {
                 <div className="max-w-xs">
                   <label
                     htmlFor="contractLevel"
-                    className="block text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1"
+                    className="block text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1"
                   >
                     Contract Level (80-145)
                   </label>
@@ -907,7 +907,7 @@ export function UserProfile() {
                       max="145"
                       value={contractLevel}
                       onChange={handleContractLevelChange}
-                      className={`h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 w-24 ${
+                      className={`h-7 text-[11px] bg-v2-card border-v2-ring w-24 ${
                         validationError ? "border-red-500" : ""
                       }`}
                     />

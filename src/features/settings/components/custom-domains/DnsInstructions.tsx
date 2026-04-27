@@ -31,7 +31,7 @@ export function DnsInstructions({
   const CopyButton = ({ value, field }: { value: string; field: string }) => (
     <button
       onClick={() => handleCopy(value, field)}
-      className="ml-2 rounded p-0.5 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600"
+      className="ml-2 rounded p-0.5 text-v2-ink-subtle hover:bg-v2-ring hover:text-v2-ink-muted"
       title="Copy"
     >
       {copiedField === field ? (
@@ -43,7 +43,7 @@ export function DnsInstructions({
   );
 
   return (
-    <div className="mt-3 space-y-3 rounded bg-zinc-100 p-3">
+    <div className="mt-3 space-y-3 rounded bg-v2-ring p-3">
       <div className="flex items-start gap-2 rounded bg-blue-50 p-2">
         <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-blue-500" />
         <p className="text-xs text-blue-700">
@@ -54,25 +54,25 @@ export function DnsInstructions({
 
       {/* CNAME Record */}
       <div>
-        <h4 className="text-xs font-medium text-zinc-700">1. CNAME Record</h4>
-        <p className="mt-0.5 text-xs text-zinc-500">
+        <h4 className="text-xs font-medium text-v2-ink">1. CNAME Record</h4>
+        <p className="mt-0.5 text-xs text-v2-ink-muted">
           Points your subdomain to The Standard
         </p>
-        <div className="mt-1 space-y-1 rounded bg-white p-2 font-mono text-xs">
+        <div className="mt-1 space-y-1 rounded bg-v2-card p-2 font-mono text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-zinc-500">Name:</span>
-            <span className="flex items-center text-zinc-900">
+            <span className="text-v2-ink-muted">Name:</span>
+            <span className="flex items-center text-v2-ink">
               {subdomainPrefix}
               <CopyButton value={subdomainPrefix} field="cname-name" />
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-zinc-500">Type:</span>
-            <span className="text-zinc-900">CNAME</span>
+            <span className="text-v2-ink-muted">Type:</span>
+            <span className="text-v2-ink">CNAME</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-zinc-500">Value:</span>
-            <span className="flex items-center text-zinc-900">
+            <span className="text-v2-ink-muted">Value:</span>
+            <span className="flex items-center text-v2-ink">
               {vercelCname || "cname.vercel-dns.com"}
               <CopyButton
                 value={vercelCname || "cname.vercel-dns.com"}
@@ -91,16 +91,16 @@ export function DnsInstructions({
 
       {/* TXT Verification Record */}
       <div>
-        <h4 className="text-xs font-medium text-zinc-700">
+        <h4 className="text-xs font-medium text-v2-ink">
           2. TXT Verification Record
         </h4>
-        <p className="mt-0.5 text-xs text-zinc-500">
+        <p className="mt-0.5 text-xs text-v2-ink-muted">
           Proves you own this domain
         </p>
-        <div className="mt-1 space-y-1 rounded bg-white p-2 font-mono text-xs">
+        <div className="mt-1 space-y-1 rounded bg-v2-card p-2 font-mono text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-zinc-500">Name:</span>
-            <span className="flex items-center text-zinc-900">
+            <span className="text-v2-ink-muted">Name:</span>
+            <span className="flex items-center text-v2-ink">
               _thestandardhq-verify.{subdomainPrefix}
               <CopyButton
                 value={`_thestandardhq-verify.${subdomainPrefix}`}
@@ -109,20 +109,20 @@ export function DnsInstructions({
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-zinc-500">Type:</span>
-            <span className="text-zinc-900">TXT</span>
+            <span className="text-v2-ink-muted">Type:</span>
+            <span className="text-v2-ink">TXT</span>
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-zinc-500">Value:</span>
-            <span className="flex items-center break-all text-zinc-900">
+            <span className="text-v2-ink-muted">Value:</span>
+            <span className="flex items-center break-all text-v2-ink">
               {verificationToken}
               <CopyButton value={verificationToken} field="txt-value" />
             </span>
           </div>
         </div>
-        <p className="mt-1 text-xs text-zinc-400">
+        <p className="mt-1 text-xs text-v2-ink-subtle">
           Some registrars need the full name:{" "}
-          <code className="bg-zinc-200 px-1">
+          <code className="bg-v2-ring px-1">
             _thestandardhq-verify.{hostname}
           </code>
         </p>

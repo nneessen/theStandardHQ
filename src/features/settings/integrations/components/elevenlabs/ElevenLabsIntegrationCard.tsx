@@ -69,26 +69,34 @@ export function ElevenLabsIntegrationCard() {
       voiceName: string;
       imoId: string;
     }) => {
-      const { data, error } = await supabase.functions.invoke("save-elevenlabs-config", {
-        body: {
-          imoId: params.imoId,
-          apiKey: params.apiKey,
-          voiceId: params.voiceId || undefined,
-          voiceName: params.voiceName || undefined,
-          existingId: config?.id || undefined,
+      const { data, error } = await supabase.functions.invoke(
+        "save-elevenlabs-config",
+        {
+          body: {
+            imoId: params.imoId,
+            apiKey: params.apiKey,
+            voiceId: params.voiceId || undefined,
+            voiceName: params.voiceName || undefined,
+            existingId: config?.id || undefined,
+          },
         },
-      });
+      );
       if (error) throw new Error(error.message || "Failed to save config");
-      if (data && !data.ok) throw new Error(data.error || "Failed to save config");
+      if (data && !data.ok)
+        throw new Error(data.error || "Failed to save config");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: elevenlabsKeys.config(imo!.id) });
+      queryClient.invalidateQueries({
+        queryKey: elevenlabsKeys.config(imo!.id),
+      });
       setEditing(false);
       setApiKey("");
       toast.success("ElevenLabs configuration saved");
     },
     onError: (err) => {
-      toast.error(`Failed to save: ${err instanceof Error ? err.message : "Unknown error"}`);
+      toast.error(
+        `Failed to save: ${err instanceof Error ? err.message : "Unknown error"}`,
+      );
     },
   });
 
@@ -103,7 +111,9 @@ export function ElevenLabsIntegrationCard() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: elevenlabsKeys.config(imo!.id) });
+      queryClient.invalidateQueries({
+        queryKey: elevenlabsKeys.config(imo!.id),
+      });
     },
   });
 
@@ -111,7 +121,9 @@ export function ElevenLabsIntegrationCard() {
   const handleTest = useCallback(async () => {
     setTesting(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
 
       const response = await supabase.functions.invoke("text-to-speech", {
@@ -121,7 +133,9 @@ export function ElevenLabsIntegrationCard() {
       if (response.error) throw new Error(response.error.message);
       toast.success("TTS test successful! Audio generated.");
     } catch (err) {
-      toast.error(`Test failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+      toast.error(
+        `Test failed: ${err instanceof Error ? err.message : "Unknown error"}`,
+      );
     } finally {
       setTesting(false);
     }
@@ -146,14 +160,14 @@ export function ElevenLabsIntegrationCard() {
 
   if (isLoading) {
     return (
-      <div className="p-2.5 bg-white dark:bg-zinc-900 rounded-md border border-zinc-200 dark:border-zinc-800">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+      <div className="p-2.5 bg-v2-card rounded-md border border-v2-ring">
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
 
   return (
-    <div className="p-2.5 bg-white dark:bg-zinc-900 rounded-md border border-zinc-200 dark:border-zinc-800 space-y-2">
+    <div className="p-2.5 bg-v2-card rounded-md border border-v2-ring space-y-2">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -162,7 +176,7 @@ export function ElevenLabsIntegrationCard() {
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+              <span className="text-[11px] font-medium text-v2-ink">
                 ElevenLabs TTS
               </span>
               {config ? (
@@ -178,7 +192,7 @@ export function ElevenLabsIntegrationCard() {
                 </Badge>
               )}
             </div>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted">
               Text-to-speech for script practice prompts
             </p>
           </div>
@@ -217,16 +231,22 @@ export function ElevenLabsIntegrationCard() {
         <div className="flex items-center justify-between text-[10px]">
           <div className="flex items-center gap-3">
             {config.default_voice_name && (
-              <span className="text-zinc-500">
-                Voice: <span className="text-zinc-700 dark:text-zinc-300">{config.default_voice_name}</span>
+              <span className="text-v2-ink-muted">
+                Voice:{" "}
+                <span className="text-v2-ink-muted">
+                  {config.default_voice_name}
+                </span>
               </span>
             )}
-            <span className="text-zinc-500">
-              API Key: <span className="text-zinc-700 dark:text-zinc-300">••••••••</span>
+            <span className="text-v2-ink-muted">
+              API Key: <span className="text-v2-ink-muted">••••••••</span>
             </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Label htmlFor="elevenlabs-active" className="text-[10px] text-zinc-500">
+            <Label
+              htmlFor="elevenlabs-active"
+              className="text-[10px] text-v2-ink-muted"
+            >
               {config.is_active ? "Enabled" : "Disabled"}
             </Label>
             <Switch
@@ -243,7 +263,7 @@ export function ElevenLabsIntegrationCard() {
       {(editing || !config) && (
         <div className="space-y-2 pt-1">
           <div className="space-y-1">
-            <label className="text-[10px] text-zinc-500">
+            <label className="text-[10px] text-v2-ink-muted">
               API Key <span className="text-red-500">*</span>
             </label>
             <div className="relative">
@@ -257,15 +277,19 @@ export function ElevenLabsIntegrationCard() {
               <button
                 type="button"
                 onClick={() => setShowKey(!showKey)}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-v2-ink-subtle hover:text-v2-ink-muted"
               >
-                {showKey ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                {showKey ? (
+                  <EyeOff className="h-3 w-3" />
+                ) : (
+                  <Eye className="h-3 w-3" />
+                )}
               </button>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
-              <label className="text-[10px] text-zinc-500">Voice ID</label>
+              <label className="text-[10px] text-v2-ink-muted">Voice ID</label>
               <Input
                 value={voiceId}
                 onChange={(e) => setVoiceId(e.target.value)}
@@ -274,7 +298,9 @@ export function ElevenLabsIntegrationCard() {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] text-zinc-500">Voice Name</label>
+              <label className="text-[10px] text-v2-ink-muted">
+                Voice Name
+              </label>
               <Input
                 value={voiceName}
                 onChange={(e) => setVoiceName(e.target.value)}

@@ -243,9 +243,9 @@ export function UnderwritingConstraintsEditor({
 
       <CollapsibleContent className="space-y-3 pt-2">
         {/* Age-Tiered Face Amounts */}
-        <div className="space-y-2 rounded-md border border-zinc-200 dark:border-zinc-700 p-2">
+        <div className="space-y-2 rounded-md border border-v2-ring p-2">
           <div className="flex items-center justify-between">
-            <Label className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide flex items-center gap-1">
+            <Label className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide flex items-center gap-1">
               <DollarSign className="h-3 w-3" />
               Age-Tiered Face Amount Limits
             </Label>
@@ -263,12 +263,12 @@ export function UnderwritingConstraintsEditor({
           </div>
 
           {ageTiers.length === 0 ? (
-            <p className="text-[10px] text-zinc-400 italic py-1">
+            <p className="text-[10px] text-v2-ink-subtle italic py-1">
               No age-based limits configured
             </p>
           ) : (
             <div className="space-y-1.5">
-              <div className="grid grid-cols-[1fr_1fr_1fr_24px] gap-1 text-[9px] font-medium text-zinc-500 uppercase">
+              <div className="grid grid-cols-[1fr_1fr_1fr_24px] gap-1 text-[9px] font-medium text-v2-ink-muted uppercase">
                 <span>Min Age</span>
                 <span>Max Age</span>
                 <span>Max Face Amount</span>
@@ -323,7 +323,7 @@ export function UnderwritingConstraintsEditor({
                     size="sm"
                     onClick={() => removeAgeTier(index)}
                     disabled={disabled}
-                    className="h-6 w-6 p-0 text-zinc-400 hover:text-red-500"
+                    className="h-6 w-6 p-0 text-v2-ink-subtle hover:text-red-500"
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
@@ -334,12 +334,12 @@ export function UnderwritingConstraintsEditor({
         </div>
 
         {/* Knockout Conditions */}
-        <div className="space-y-2 rounded-md border border-zinc-200 dark:border-zinc-700 p-2">
-          <Label className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide flex items-center gap-1">
+        <div className="space-y-2 rounded-md border border-v2-ring p-2">
+          <Label className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide flex items-center gap-1">
             <AlertTriangle className="h-3 w-3" />
             Knockout Conditions
           </Label>
-          <p className="text-[10px] text-zinc-400">
+          <p className="text-[10px] text-v2-ink-subtle">
             Health conditions that automatically disqualify clients from this
             product
           </p>
@@ -374,18 +374,18 @@ export function UnderwritingConstraintsEditor({
         </div>
 
         {/* Full Underwriting Threshold */}
-        <div className="space-y-2 rounded-md border border-zinc-200 dark:border-zinc-700 p-2">
-          <Label className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide flex items-center gap-1">
+        <div className="space-y-2 rounded-md border border-v2-ring p-2">
+          <Label className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide flex items-center gap-1">
             <Shield className="h-3 w-3" />
             Full Underwriting Threshold
           </Label>
-          <p className="text-[10px] text-zinc-400">
+          <p className="text-[10px] text-v2-ink-subtle">
             Face amounts above this threshold require full medical underwriting
           </p>
 
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Label className="text-[10px] text-zinc-500 w-24">
+              <Label className="text-[10px] text-v2-ink-muted w-24">
                 Base Threshold:
               </Label>
               <Input
@@ -402,16 +402,16 @@ export function UnderwritingConstraintsEditor({
                 className="h-6 text-[11px] px-1.5 flex-1"
               />
               {fullUnderwritingThreshold > 0 && (
-                <span className="text-[10px] text-zinc-500 w-24 text-right">
+                <span className="text-[10px] text-v2-ink-muted w-24 text-right">
                   {formatCurrency(fullUnderwritingThreshold)}
                 </span>
               )}
             </div>
 
             {/* Age-specific thresholds */}
-            <div className="pt-1 border-t border-zinc-100 dark:border-zinc-800">
+            <div className="pt-1 border-t border-v2-ring/60">
               <div className="flex items-center justify-between mb-1.5">
-                <Label className="text-[10px] text-zinc-500">
+                <Label className="text-[10px] text-v2-ink-muted">
                   Age-Specific Overrides (optional):
                 </Label>
                 <Button
@@ -428,12 +428,12 @@ export function UnderwritingConstraintsEditor({
               </div>
 
               {fullUnderwritingAgeBands.length === 0 ? (
-                <p className="text-[10px] text-zinc-400 italic">
+                <p className="text-[10px] text-v2-ink-subtle italic">
                   Base threshold applies to all ages
                 </p>
               ) : (
                 <div className="space-y-1.5">
-                  <div className="grid grid-cols-[1fr_1fr_1fr_24px] gap-1 text-[9px] font-medium text-zinc-500 uppercase">
+                  <div className="grid grid-cols-[1fr_1fr_1fr_24px] gap-1 text-[9px] font-medium text-v2-ink-muted uppercase">
                     <span>Min Age</span>
                     <span>Max Age</span>
                     <span>Threshold</span>
@@ -488,7 +488,7 @@ export function UnderwritingConstraintsEditor({
                         size="sm"
                         onClick={() => removeFullUnderwritingAgeBand(index)}
                         disabled={disabled}
-                        className="h-6 w-6 p-0 text-zinc-400 hover:text-red-500"
+                        className="h-6 w-6 p-0 text-v2-ink-subtle hover:text-red-500"
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
@@ -583,14 +583,14 @@ function KnockoutConditionSelector({
             className="h-8 text-[11px]"
           />
           <CommandList>
-            <CommandEmpty className="text-[11px] py-4 text-center text-zinc-500">
+            <CommandEmpty className="text-[11px] py-4 text-center text-v2-ink-muted">
               No conditions found.
             </CommandEmpty>
             {categories.map((category) => (
               <CommandGroup
                 key={category}
                 heading={
-                  <span className="text-[10px] font-semibold uppercase text-zinc-400">
+                  <span className="text-[10px] font-semibold uppercase text-v2-ink-subtle">
                     {category.replace(/_/g, " ")}
                   </span>
                 }

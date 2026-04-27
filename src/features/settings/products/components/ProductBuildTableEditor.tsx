@@ -41,11 +41,11 @@ export function ProductBuildChartSelector({
   if (!carrierId) {
     return (
       <div className="space-y-1">
-        <Label className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide flex items-center gap-1">
+        <Label className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide flex items-center gap-1">
           <Ruler className="h-3 w-3" />
           Build Chart
         </Label>
-        <p className="text-[10px] text-zinc-400">
+        <p className="text-[10px] text-v2-ink-subtle">
           Select a carrier first to choose a build chart.
         </p>
       </div>
@@ -56,7 +56,7 @@ export function ProductBuildChartSelector({
   if (!isLoading && options.length === 0) {
     return (
       <div className="space-y-1">
-        <Label className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide flex items-center gap-1">
+        <Label className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide flex items-center gap-1">
           <Ruler className="h-3 w-3" />
           Build Chart
         </Label>
@@ -76,7 +76,7 @@ export function ProductBuildChartSelector({
 
   return (
     <div className="space-y-1">
-      <Label className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide flex items-center gap-1">
+      <Label className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide flex items-center gap-1">
         <Ruler className="h-3 w-3" />
         Build Chart
       </Label>
@@ -85,7 +85,7 @@ export function ProductBuildChartSelector({
         onValueChange={(v) => onChange(v === "default" ? null : v)}
         disabled={disabled || isLoading}
       >
-        <SelectTrigger className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
+        <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
           <SelectValue placeholder="Select build chart..." />
         </SelectTrigger>
         <SelectContent>
@@ -130,13 +130,13 @@ export function ProductBuildChartSelector({
         </SelectContent>
       </Select>
       {!value && defaultChart && (
-        <p className="text-[10px] text-zinc-400">
+        <p className="text-[10px] text-v2-ink-subtle">
           Will use carrier default: {defaultChart.name} (
           {BUILD_TABLE_TYPE_LABELS[defaultChart.tableType]})
         </p>
       )}
       {value && selectedChart && (
-        <p className="text-[10px] text-zinc-400">
+        <p className="text-[10px] text-v2-ink-subtle">
           Using: {selectedChart.name} (
           {BUILD_TABLE_TYPE_LABELS[selectedChart.tableType]})
         </p>

@@ -146,12 +146,12 @@ export function DomainCard({ domain }: DomainCardProps) {
     checkStatus.isPending;
 
   return (
-    <div className="rounded-md border border-zinc-200 bg-white p-3">
+    <div className="rounded-md border border-v2-ring bg-v2-card p-3">
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="truncate text-sm font-medium text-zinc-900">
+            <span className="truncate text-sm font-medium text-v2-ink">
               {domain.hostname}
             </span>
             <span
@@ -167,14 +167,14 @@ export function DomainCard({ domain }: DomainCardProps) {
                 href={`https://${domain.hostname}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
+                className="flex items-center gap-1 text-xs text-v2-ink-muted hover:text-v2-ink"
               >
                 <ExternalLink className="h-3 w-3" />
                 Visit
               </a>
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700"
+                className="flex items-center gap-1 text-xs text-v2-ink-muted hover:text-v2-ink"
               >
                 {copied ? (
                   <Check className="h-3 w-3 text-green-500" />
@@ -194,7 +194,7 @@ export function DomainCard({ domain }: DomainCardProps) {
           <button
             onClick={handleDelete}
             disabled={isLoading}
-            className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
+            className="rounded p-1 text-v2-ink-subtle hover:bg-v2-ring hover:text-v2-ink-muted"
             title="Delete domain"
           >
             <Trash2 className="h-4 w-4" />
@@ -222,7 +222,7 @@ export function DomainCard({ domain }: DomainCardProps) {
         <div className="mt-3">
           <button
             onClick={() => setShowDns(!showDns)}
-            className="text-xs font-medium text-zinc-600 hover:text-zinc-900"
+            className="text-xs font-medium text-v2-ink-muted hover:text-v2-ink"
           >
             {showDns ? "Hide" : "Show"} DNS Instructions
           </button>
@@ -292,12 +292,12 @@ export function DomainCard({ domain }: DomainCardProps) {
           )}
           {/* Diagnostics panel */}
           {diagnostics && (
-            <div className="rounded border border-zinc-200 bg-zinc-50 p-2">
-              <p className="text-[10px] font-medium text-zinc-600">
+            <div className="rounded border border-v2-ring bg-v2-canvas p-2">
+              <p className="text-[10px] font-medium text-v2-ink-muted">
                 DNS Diagnostics
               </p>
               <div className="mt-1 space-y-0.5">
-                <p className="text-[10px] text-zinc-500">
+                <p className="text-[10px] text-v2-ink-muted">
                   CNAME detected:{" "}
                   <span
                     className={
@@ -310,15 +310,15 @@ export function DomainCard({ domain }: DomainCardProps) {
                   </span>
                 </p>
                 {diagnostics.cnames_found.length > 0 && (
-                  <p className="text-[10px] text-zinc-500">
+                  <p className="text-[10px] text-v2-ink-muted">
                     Points to:{" "}
-                    <code className="bg-zinc-100 px-0.5">
+                    <code className="bg-v2-ring px-0.5">
                       {diagnostics.cnames_found.join(", ")}
                     </code>
                   </p>
                 )}
                 {diagnostics.misconfigured !== null && (
-                  <p className="text-[10px] text-zinc-500">
+                  <p className="text-[10px] text-v2-ink-muted">
                     DNS misconfigured:{" "}
                     <span
                       className={
@@ -336,12 +336,12 @@ export function DomainCard({ domain }: DomainCardProps) {
           )}
           <div className="flex items-center justify-between">
             {isPolling ? (
-              <span className="flex items-center gap-1.5 text-[10px] text-zinc-500">
+              <span className="flex items-center gap-1.5 text-[10px] text-v2-ink-muted">
                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-500" />
                 Auto-checking status...
               </span>
             ) : (
-              <span className="text-[10px] text-zinc-400">
+              <span className="text-[10px] text-v2-ink-subtle">
                 Auto-check paused
               </span>
             )}
@@ -350,7 +350,7 @@ export function DomainCard({ domain }: DomainCardProps) {
                 <button
                   onClick={handleDelete}
                   disabled={isLoading}
-                  className="text-[10px] text-zinc-400 hover:text-zinc-600"
+                  className="text-[10px] text-v2-ink-subtle hover:text-v2-ink-muted"
                 >
                   Cancel provisioning
                 </button>
@@ -358,7 +358,7 @@ export function DomainCard({ domain }: DomainCardProps) {
               <button
                 onClick={handleCheckStatus}
                 disabled={isLoading}
-                className="flex items-center gap-1 rounded px-2 py-1 text-[10px] font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-50"
+                className="flex items-center gap-1 rounded px-2 py-1 text-[10px] font-medium text-v2-ink-muted hover:bg-v2-ring hover:text-v2-ink disabled:opacity-50"
               >
                 <RefreshCw
                   className={`h-3 w-3 ${checkStatus.isPending ? "animate-spin" : ""}`}

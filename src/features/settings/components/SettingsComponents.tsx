@@ -17,14 +17,12 @@ export const SettingsCard: React.FC<SettingsCardProps> = ({
   className = "",
 }) => {
   return (
-    <div
-      className={`bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 ${className}`}
-    >
-      <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
-        <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+    <div className={`bg-v2-card rounded-lg border border-v2-ring ${className}`}>
+      <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring/60">
+        <h4 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
           {title}
         </h4>
-        {icon && <div className="text-zinc-400 dark:text-zinc-500">{icon}</div>}
+        {icon && <div className="text-v2-ink-subtle">{icon}</div>}
       </div>
       <div className="p-3">{children}</div>
     </div>
@@ -43,15 +41,11 @@ export const SettingsHeader: React.FC<SettingsHeaderProps> = ({
   children,
 }) => {
   return (
-    <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800 mb-2">
+    <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring mb-2">
       <div>
-        <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-          {title}
-        </h1>
+        <h1 className="text-sm font-semibold text-v2-ink">{title}</h1>
         {description && (
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-            {description}
-          </p>
+          <p className="text-[11px] text-v2-ink-muted">{description}</p>
         )}
       </div>
       {children && <div>{children}</div>}

@@ -114,7 +114,7 @@ export function AuditLogTable({
   return (
     <div className="space-y-3">
       {/* Table */}
-      <div className="rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-800">
+      <div className="rounded-lg overflow-hidden border border-v2-ring">
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
@@ -145,10 +145,10 @@ export function AuditLogTable({
             ) : data.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center">
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className="text-sm text-v2-ink-muted">
                     No audit logs found
                   </p>
-                  <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">
+                  <p className="text-xs text-v2-ink-subtle mt-1">
                     Try adjusting your filters
                   </p>
                 </TableCell>
@@ -157,10 +157,10 @@ export function AuditLogTable({
               data.map((log) => (
                 <TableRow
                   key={log.id}
-                  className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/50"
+                  className="cursor-pointer hover:bg-v2-canvas border-b border-v2-ring/60"
                   onClick={() => onSelectLog(log.id)}
                 >
-                  <TableCell className="text-[11px] text-zinc-500 dark:text-zinc-400 tabular-nums">
+                  <TableCell className="text-[11px] text-v2-ink-muted tabular-nums">
                     {formatRelativeTime(log.createdAt)}
                   </TableCell>
                   <TableCell className="text-[11px]">
@@ -178,7 +178,7 @@ export function AuditLogTable({
                   <TableCell className="text-[11px]">
                     {formatActionType(log.actionType)}
                   </TableCell>
-                  <TableCell className="text-[11px] text-zinc-500 dark:text-zinc-400 max-w-[200px] truncate">
+                  <TableCell className="text-[11px] text-v2-ink-muted max-w-[200px] truncate">
                     {formatChangedFields(log.changedFields)}
                   </TableCell>
                   <TableCell className="text-[11px]">
@@ -207,7 +207,7 @@ export function AuditLogTable({
       {/* Pagination */}
       {totalCount > 0 && (
         <div className="flex items-center justify-between text-xs">
-          <p className="text-zinc-500 dark:text-zinc-400 tabular-nums">
+          <p className="text-v2-ink-muted tabular-nums">
             Showing {startIndex}–{endIndex} of {totalCount.toLocaleString()}
           </p>
           <div className="flex items-center gap-1">
@@ -220,7 +220,7 @@ export function AuditLogTable({
             >
               <ChevronLeft className="h-3.5 w-3.5" />
             </Button>
-            <span className="px-2 text-zinc-600 dark:text-zinc-400 tabular-nums">
+            <span className="px-2 text-v2-ink-muted dark:text-v2-ink-subtle tabular-nums">
               {page} / {totalPages}
             </span>
             <Button

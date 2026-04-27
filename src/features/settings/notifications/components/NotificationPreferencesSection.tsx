@@ -11,9 +11,22 @@ import { z } from "zod";
 import { Loader2, Save, Bell, Mail, Clock } from "lucide-react";
 import { toast } from "sonner";
 
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
@@ -21,7 +34,10 @@ import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,
 } from "@/hooks/alerts";
-import { TIMEZONE_OPTIONS, DIGEST_FREQUENCY_OPTIONS } from "@/types/alert-rules.types";
+import {
+  TIMEZONE_OPTIONS,
+  DIGEST_FREQUENCY_OPTIONS,
+} from "@/types/alert-rules.types";
 
 const preferencesSchema = z.object({
   in_app_enabled: z.boolean(),
@@ -40,7 +56,14 @@ type PreferencesFormData = z.infer<typeof preferencesSchema>;
 // Time options for digest delivery
 const TIME_OPTIONS = Array.from({ length: 24 }, (_, i) => {
   const hour = i.toString().padStart(2, "0");
-  const label = i === 0 ? "12:00 AM" : i < 12 ? `${i}:00 AM` : i === 12 ? "12:00 PM" : `${i - 12}:00 PM`;
+  const label =
+    i === 0
+      ? "12:00 AM"
+      : i < 12
+        ? `${i}:00 AM`
+        : i === 12
+          ? "12:00 PM"
+          : `${i - 12}:00 PM`;
   return { value: `${hour}:00:00`, label };
 });
 
@@ -72,7 +95,8 @@ export function NotificationPreferencesSection() {
         email_digest_enabled: preferences.email_digest_enabled ?? false,
         email_digest_frequency: preferences.email_digest_frequency ?? "daily",
         email_digest_time: preferences.email_digest_time ?? "09:00:00",
-        email_digest_timezone: preferences.email_digest_timezone ?? "America/New_York",
+        email_digest_timezone:
+          preferences.email_digest_timezone ?? "America/New_York",
         quiet_hours_enabled: preferences.quiet_hours_enabled ?? false,
         quiet_hours_start: preferences.quiet_hours_start ?? "22:00:00",
         quiet_hours_end: preferences.quiet_hours_end ?? "08:00:00",
@@ -103,7 +127,7 @@ export function NotificationPreferencesSection() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -112,14 +136,14 @@ export function NotificationPreferencesSection() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
         {/* In-App Notifications */}
-        <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-3">
+        <div className="border border-v2-ring rounded-lg p-3">
           <div className="flex items-center gap-2 mb-3">
-            <Bell className="h-3.5 w-3.5 text-zinc-400" />
+            <Bell className="h-3.5 w-3.5 text-v2-ink-subtle" />
             <div>
-              <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <h4 className="text-[11px] font-semibold text-v2-ink">
                 In-App Notifications
               </h4>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-v2-ink-muted">
                 Notifications shown in the app
               </p>
             </div>
@@ -129,15 +153,20 @@ export function NotificationPreferencesSection() {
             control={form.control}
             name="in_app_enabled"
             render={({ field }) => (
-              <FormItem className="flex items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-700 p-2.5">
+              <FormItem className="flex items-center justify-between rounded-lg border border-v2-ring p-2.5">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-[11px] text-zinc-900 dark:text-zinc-100">Enable in-app notifications</FormLabel>
-                  <FormDescription className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <FormLabel className="text-[11px] text-v2-ink">
+                    Enable in-app notifications
+                  </FormLabel>
+                  <FormDescription className="text-[10px] text-v2-ink-muted">
                     Show notification bell and dropdown
                   </FormDescription>
                 </div>
                 <FormControl>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 </FormControl>
               </FormItem>
             )}
@@ -145,14 +174,14 @@ export function NotificationPreferencesSection() {
         </div>
 
         {/* Email Digest */}
-        <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-3">
+        <div className="border border-v2-ring rounded-lg p-3">
           <div className="flex items-center gap-2 mb-3">
-            <Mail className="h-3.5 w-3.5 text-zinc-400" />
+            <Mail className="h-3.5 w-3.5 text-v2-ink-subtle" />
             <div>
-              <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <h4 className="text-[11px] font-semibold text-v2-ink">
                 Email Digest
               </h4>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-v2-ink-muted">
                 Receive a summary of notifications via email
               </p>
             </div>
@@ -162,15 +191,20 @@ export function NotificationPreferencesSection() {
             control={form.control}
             name="email_digest_enabled"
             render={({ field }) => (
-              <FormItem className="flex items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-700 p-2.5">
+              <FormItem className="flex items-center justify-between rounded-lg border border-v2-ring p-2.5">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-[11px] text-zinc-900 dark:text-zinc-100">Enable email digest</FormLabel>
-                  <FormDescription className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <FormLabel className="text-[11px] text-v2-ink">
+                    Enable email digest
+                  </FormLabel>
+                  <FormDescription className="text-[10px] text-v2-ink-muted">
                     Get unread notifications sent to your email
                   </FormDescription>
                 </div>
                 <FormControl>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 </FormControl>
               </FormItem>
             )}
@@ -185,8 +219,13 @@ export function NotificationPreferencesSection() {
                   name="email_digest_frequency"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] text-zinc-500 dark:text-zinc-400">Frequency</FormLabel>
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <FormLabel className="text-[10px] text-v2-ink-muted">
+                        Frequency
+                      </FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <FormControl>
                           <SelectTrigger className="h-7 text-[11px]">
                             <SelectValue />
@@ -194,7 +233,11 @@ export function NotificationPreferencesSection() {
                         </FormControl>
                         <SelectContent>
                           {DIGEST_FREQUENCY_OPTIONS.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value} className="text-[11px]">
+                            <SelectItem
+                              key={opt.value}
+                              value={opt.value}
+                              className="text-[11px]"
+                            >
                               {opt.label}
                             </SelectItem>
                           ))}
@@ -209,8 +252,13 @@ export function NotificationPreferencesSection() {
                   name="email_digest_time"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] text-zinc-500 dark:text-zinc-400">Delivery Time</FormLabel>
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <FormLabel className="text-[10px] text-v2-ink-muted">
+                        Delivery Time
+                      </FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <FormControl>
                           <SelectTrigger className="h-7 text-[11px]">
                             <SelectValue />
@@ -218,7 +266,11 @@ export function NotificationPreferencesSection() {
                         </FormControl>
                         <SelectContent>
                           {TIME_OPTIONS.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value} className="text-[11px]">
+                            <SelectItem
+                              key={opt.value}
+                              value={opt.value}
+                              className="text-[11px]"
+                            >
                               {opt.label}
                             </SelectItem>
                           ))}
@@ -233,8 +285,13 @@ export function NotificationPreferencesSection() {
                   name="email_digest_timezone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] text-zinc-500 dark:text-zinc-400">Timezone</FormLabel>
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <FormLabel className="text-[10px] text-v2-ink-muted">
+                        Timezone
+                      </FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <FormControl>
                           <SelectTrigger className="h-7 text-[11px]">
                             <SelectValue />
@@ -242,7 +299,11 @@ export function NotificationPreferencesSection() {
                         </FormControl>
                         <SelectContent>
                           {TIMEZONE_OPTIONS.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value} className="text-[11px]">
+                            <SelectItem
+                              key={opt.value}
+                              value={opt.value}
+                              className="text-[11px]"
+                            >
                               {opt.label}
                             </SelectItem>
                           ))}
@@ -257,14 +318,14 @@ export function NotificationPreferencesSection() {
         </div>
 
         {/* Quiet Hours */}
-        <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-3">
+        <div className="border border-v2-ring rounded-lg p-3">
           <div className="flex items-center gap-2 mb-3">
-            <Clock className="h-3.5 w-3.5 text-zinc-400" />
+            <Clock className="h-3.5 w-3.5 text-v2-ink-subtle" />
             <div>
-              <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <h4 className="text-[11px] font-semibold text-v2-ink">
                 Quiet Hours
               </h4>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-v2-ink-muted">
                 Pause notifications during specified hours
               </p>
             </div>
@@ -274,15 +335,20 @@ export function NotificationPreferencesSection() {
             control={form.control}
             name="quiet_hours_enabled"
             render={({ field }) => (
-              <FormItem className="flex items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-700 p-2.5">
+              <FormItem className="flex items-center justify-between rounded-lg border border-v2-ring p-2.5">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-[11px] text-zinc-900 dark:text-zinc-100">Enable quiet hours</FormLabel>
-                  <FormDescription className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <FormLabel className="text-[11px] text-v2-ink">
+                    Enable quiet hours
+                  </FormLabel>
+                  <FormDescription className="text-[10px] text-v2-ink-muted">
                     Suppress notifications during these hours
                   </FormDescription>
                 </div>
                 <FormControl>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 </FormControl>
               </FormItem>
             )}
@@ -297,8 +363,13 @@ export function NotificationPreferencesSection() {
                   name="quiet_hours_start"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] text-zinc-500 dark:text-zinc-400">Start Time</FormLabel>
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <FormLabel className="text-[10px] text-v2-ink-muted">
+                        Start Time
+                      </FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <FormControl>
                           <SelectTrigger className="h-7 text-[11px]">
                             <SelectValue />
@@ -306,7 +377,11 @@ export function NotificationPreferencesSection() {
                         </FormControl>
                         <SelectContent>
                           {TIME_OPTIONS.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value} className="text-[11px]">
+                            <SelectItem
+                              key={opt.value}
+                              value={opt.value}
+                              className="text-[11px]"
+                            >
                               {opt.label}
                             </SelectItem>
                           ))}
@@ -321,8 +396,13 @@ export function NotificationPreferencesSection() {
                   name="quiet_hours_end"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] text-zinc-500 dark:text-zinc-400">End Time</FormLabel>
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <FormLabel className="text-[10px] text-v2-ink-muted">
+                        End Time
+                      </FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <FormControl>
                           <SelectTrigger className="h-7 text-[11px]">
                             <SelectValue />
@@ -330,7 +410,11 @@ export function NotificationPreferencesSection() {
                         </FormControl>
                         <SelectContent>
                           {TIME_OPTIONS.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value} className="text-[11px]">
+                            <SelectItem
+                              key={opt.value}
+                              value={opt.value}
+                              className="text-[11px]"
+                            >
                               {opt.label}
                             </SelectItem>
                           ))}

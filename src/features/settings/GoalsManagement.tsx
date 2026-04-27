@@ -122,8 +122,8 @@ export function GoalsManagement() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
-        <div className="flex items-center justify-center text-[11px] text-zinc-500 dark:text-zinc-400">
+      <div className="bg-v2-card rounded-lg border border-v2-ring p-6">
+        <div className="flex items-center justify-center text-[11px] text-v2-ink-muted">
           Loading your goals...
         </div>
       </div>
@@ -133,14 +133,14 @@ export function GoalsManagement() {
   return (
     <div className="space-y-2">
       {/* Goals Form Card */}
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-2 px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
-          <Target className="h-3.5 w-3.5 text-zinc-400" />
+      <div className="bg-v2-card rounded-lg border border-v2-ring">
+        <div className="flex items-center gap-2 px-3 py-2 border-b border-v2-ring/60">
+          <Target className="h-3.5 w-3.5 text-v2-ink-subtle" />
           <div>
-            <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+            <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
               Income & Production Goals
             </h3>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted">
               Set your annual and monthly targets for income and production
             </p>
           </div>
@@ -149,7 +149,7 @@ export function GoalsManagement() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Income Targets */}
             <div className="space-y-2">
-              <h4 className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide flex items-center gap-1">
+              <h4 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide flex items-center gap-1">
                 <TrendingUp className="h-3 w-3" />
                 Income Targets
               </h4>
@@ -157,7 +157,7 @@ export function GoalsManagement() {
                 <div>
                   <label
                     htmlFor="annualIncome"
-                    className="block text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-1"
+                    className="block text-[10px] font-medium text-v2-ink-muted mb-1"
                   >
                     Annual Income Goal
                   </label>
@@ -171,9 +171,9 @@ export function GoalsManagement() {
                     }}
                     placeholder="120000"
                     step="1000"
-                    className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                    className="h-7 text-[11px] bg-v2-card border-v2-ring"
                   />
-                  <p className="text-[10px] text-zinc-400 mt-0.5">
+                  <p className="text-[10px] text-v2-ink-subtle mt-0.5">
                     Target: {formatCurrency(Number(annualIncomeTarget) || 0)}
                   </p>
                 </div>
@@ -181,7 +181,7 @@ export function GoalsManagement() {
                 <div>
                   <label
                     htmlFor="monthlyIncome"
-                    className="block text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-1"
+                    className="block text-[10px] font-medium text-v2-ink-muted mb-1"
                   >
                     Monthly Income Goal
                   </label>
@@ -195,9 +195,9 @@ export function GoalsManagement() {
                     }}
                     placeholder="10000"
                     step="100"
-                    className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                    className="h-7 text-[11px] bg-v2-card border-v2-ring"
                   />
-                  <p className="text-[10px] text-zinc-400 mt-0.5">
+                  <p className="text-[10px] text-v2-ink-subtle mt-0.5">
                     Target: {formatCurrency(Number(monthlyIncomeTarget) || 0)}
                   </p>
                 </div>
@@ -206,14 +206,14 @@ export function GoalsManagement() {
 
             {/* Production Targets */}
             <div className="space-y-2">
-              <h4 className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+              <h4 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
                 Production Targets
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label
                     htmlFor="annualPolicies"
-                    className="block text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-1"
+                    className="block text-[10px] font-medium text-v2-ink-muted mb-1"
                   >
                     Annual Policies Goal
                   </label>
@@ -227,9 +227,9 @@ export function GoalsManagement() {
                     }}
                     placeholder="100"
                     step="1"
-                    className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                    className="h-7 text-[11px] bg-v2-card border-v2-ring"
                   />
-                  <p className="text-[10px] text-zinc-400 mt-0.5">
+                  <p className="text-[10px] text-v2-ink-subtle mt-0.5">
                     Number of policies to sell this year
                   </p>
                 </div>
@@ -237,7 +237,7 @@ export function GoalsManagement() {
                 <div>
                   <label
                     htmlFor="monthlyPolicies"
-                    className="block text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-1"
+                    className="block text-[10px] font-medium text-v2-ink-muted mb-1"
                   >
                     Monthly Policies Goal
                   </label>
@@ -251,9 +251,9 @@ export function GoalsManagement() {
                     }}
                     placeholder="9"
                     step="1"
-                    className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                    className="h-7 text-[11px] bg-v2-card border-v2-ring"
                   />
-                  <p className="text-[10px] text-zinc-400 mt-0.5">
+                  <p className="text-[10px] text-v2-ink-subtle mt-0.5">
                     Number of policies to sell per month
                   </p>
                 </div>
@@ -262,13 +262,13 @@ export function GoalsManagement() {
 
             {/* Quality Targets */}
             <div className="space-y-2">
-              <h4 className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+              <h4 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
                 Quality Targets
               </h4>
               <div className="max-w-xs">
                 <label
                   htmlFor="persistency"
-                  className="block text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-1"
+                  className="block text-[10px] font-medium text-v2-ink-muted mb-1"
                 >
                   13-Month Persistency Goal (%)
                 </label>
@@ -284,9 +284,9 @@ export function GoalsManagement() {
                   step="1"
                   min="0"
                   max="100"
-                  className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                  className="h-7 text-[11px] bg-v2-card border-v2-ring"
                 />
-                <p className="text-[10px] text-zinc-400 mt-0.5">
+                <p className="text-[10px] text-v2-ink-subtle mt-0.5">
                   Target retention rate at 13 months: {persistency13Target}%
                 </p>
               </div>

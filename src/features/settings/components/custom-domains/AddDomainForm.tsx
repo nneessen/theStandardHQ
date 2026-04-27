@@ -83,22 +83,22 @@ export function AddDomainForm({ onCancel }: AddDomainFormProps) {
   // Show DNS instructions after successful creation
   if (createdDomain) {
     return (
-      <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3">
+      <div className="rounded-md border border-v2-ring bg-v2-canvas p-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Globe className="h-4 w-4 text-green-500" />
-            <span className="text-sm font-medium text-zinc-900">
+            <span className="text-sm font-medium text-v2-ink">
               Domain Added: {createdDomain.hostname}
             </span>
           </div>
           <button
             onClick={onCancel}
-            className="rounded p-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600"
+            className="rounded p-1 text-v2-ink-subtle hover:bg-v2-ring hover:text-v2-ink-muted"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
-        <p className="mt-2 text-xs text-zinc-600">
+        <p className="mt-2 text-xs text-v2-ink-muted">
           Add the DNS records below, then click "Verify DNS" to continue.
         </p>
         <DnsInstructions
@@ -117,22 +117,22 @@ export function AddDomainForm({ onCancel }: AddDomainFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-md border border-zinc-200 bg-zinc-50 p-3"
+      className="rounded-md border border-v2-ring bg-v2-canvas p-3"
     >
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-zinc-900">
+        <span className="text-sm font-medium text-v2-ink">
           Add Custom Domain
         </span>
         <button
           type="button"
           onClick={onCancel}
-          className="rounded p-1 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-600"
+          className="rounded p-1 text-v2-ink-subtle hover:bg-v2-ring hover:text-v2-ink-muted"
         >
           <X className="h-4 w-4" />
         </button>
       </div>
 
-      <p className="mt-1 text-xs text-zinc-500">
+      <p className="mt-1 text-xs text-v2-ink-muted">
         Enter a subdomain you control (e.g., join.yourdomain.com). Apex domains
         are not supported in this version.
       </p>

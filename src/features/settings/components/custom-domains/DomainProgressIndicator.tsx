@@ -78,12 +78,12 @@ function StepDot({ state }: { state: StepState }) {
   }
 
   return (
-    <div className="h-3.5 w-3.5 rounded-full border border-zinc-300 bg-white" />
+    <div className="h-3.5 w-3.5 rounded-full border border-v2-ring bg-v2-card" />
   );
 }
 
 function StepConnector({ fromState }: { fromState: StepState }) {
-  const color = fromState === "completed" ? "bg-green-500" : "bg-zinc-200";
+  const color = fromState === "completed" ? "bg-green-500" : "bg-v2-ring";
   return <div className={`h-[2px] w-3 ${color}`} />;
 }
 
@@ -109,7 +109,7 @@ export function DomainProgressIndicator({
                     ? "text-purple-700"
                     : state === "completed"
                       ? "text-green-700"
-                      : "text-zinc-400"
+                      : "text-v2-ink-subtle"
                 }`}
               >
                 {step.label}

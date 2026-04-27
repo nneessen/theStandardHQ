@@ -1,10 +1,13 @@
-import { Loader2, UserPlus } from 'lucide-react';
-import { useJoinRequestEligibility, usePendingJoinApprovalCount } from '@/hooks/join-request';
+import { Loader2, UserPlus } from "lucide-react";
+import {
+  useJoinRequestEligibility,
+  usePendingJoinApprovalCount,
+} from "@/hooks/join-request";
 import {
   JoinRequestForm,
   MyJoinRequestStatus,
   PendingJoinApprovalsList,
-} from './components';
+} from "./components";
 
 /**
  * Join Request Page
@@ -15,13 +18,14 @@ import {
  * - If user is an approver: shows pending approvals
  */
 export function JoinRequestPage() {
-  const { data: eligibility, isLoading: eligibilityLoading } = useJoinRequestEligibility();
+  const { data: eligibility, isLoading: eligibilityLoading } =
+    useJoinRequestEligibility();
   const { data: pendingCount } = usePendingJoinApprovalCount();
 
   if (eligibilityLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-6">
-        <div className="flex items-center justify-center text-[11px] text-zinc-500 dark:text-zinc-400">
+      <div className="bg-v2-card rounded-lg border border-v2-ring p-6">
+        <div className="flex items-center justify-center text-[11px] text-v2-ink-muted">
           <Loader2 className="h-4 w-4 animate-spin mr-2" />
           Loading...
         </div>
@@ -30,16 +34,16 @@ export function JoinRequestPage() {
   }
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="bg-v2-card rounded-lg border border-v2-ring">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring/60">
         <div className="flex items-center gap-2">
-          <UserPlus className="h-3.5 w-3.5 text-zinc-400" />
+          <UserPlus className="h-3.5 w-3.5 text-v2-ink-subtle" />
           <div>
-            <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+            <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
               Join Requests
             </h3>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted">
               Request to join an organization
             </p>
           </div>
@@ -58,7 +62,7 @@ export function JoinRequestPage() {
 
         {/* Show reason if not eligible and no pending request shown */}
         {!eligibility?.canSubmit && eligibility?.reason && (
-          <div className="text-center py-4 text-[11px] text-zinc-500 dark:text-zinc-400">
+          <div className="text-center py-4 text-[11px] text-v2-ink-muted">
             {eligibility.reason}
           </div>
         )}
