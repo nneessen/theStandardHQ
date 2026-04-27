@@ -1,8 +1,8 @@
 // src/features/reports/components/ReportErrorBoundary.tsx
 
-import { Component, type ReactNode } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { Button } from '../../../components/ui/button';
+import { Component, type ReactNode } from "react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
+import { Button } from "../../../components/ui/button";
 
 interface Props {
   children: ReactNode;
@@ -34,7 +34,7 @@ export class ReportErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Report render error:', error, errorInfo);
+    console.error("Report render error:", error, errorInfo);
   }
 
   handleRetry = () => {
@@ -50,14 +50,15 @@ export class ReportErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="p-6 bg-white dark:bg-zinc-900 rounded-lg border border-red-200 dark:border-red-800">
+        <div className="p-6 bg-v2-card rounded-lg border border-red-200 dark:border-red-800">
           <div className="flex flex-col items-center text-center">
             <AlertTriangle className="w-8 h-8 text-red-500 mb-3" />
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+            <h3 className="text-sm font-semibold text-v2-ink mb-1">
               Report Error
             </h3>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4 max-w-md">
-              An error occurred while rendering this report. This may be due to unexpected data format.
+            <p className="text-xs text-v2-ink-muted mb-4 max-w-md">
+              An error occurred while rendering this report. This may be due to
+              unexpected data format.
             </p>
             <Button
               variant="outline"
@@ -90,7 +91,11 @@ interface QueryErrorAlertProps {
  * Displays query-level errors for report components.
  * Use this when one or more queries fail but the component doesn't crash.
  */
-export function QueryErrorAlert({ title, errors, onRetry }: QueryErrorAlertProps) {
+export function QueryErrorAlert({
+  title,
+  errors,
+  onRetry,
+}: QueryErrorAlertProps) {
   const failedQueries = errors.filter((e) => e.error !== null);
 
   if (failedQueries.length === 0) return null;
@@ -106,8 +111,8 @@ export function QueryErrorAlert({ title, errors, onRetry }: QueryErrorAlertProps
           <ul className="mt-1 text-xs text-amber-700 dark:text-amber-300 space-y-0.5">
             {failedQueries.map(({ name, error }) => (
               <li key={name}>
-                <span className="font-medium">{name}:</span>{' '}
-                {error?.message || 'Unknown error'}
+                <span className="font-medium">{name}:</span>{" "}
+                {error?.message || "Unknown error"}
               </li>
             ))}
           </ul>
@@ -141,19 +146,25 @@ interface ReportQueryErrorProps {
  */
 export function ReportQueryError({ message, onRetry }: ReportQueryErrorProps) {
   return (
-    <div className="p-8 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="p-8 bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
       <div className="flex flex-col items-center text-center">
         <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-full mb-4">
           <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
         </div>
-        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+        <h3 className="text-sm font-semibold text-v2-ink mb-1">
           Failed to Load Report
         </h3>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-4 max-w-md">
-          {message || 'An error occurred while loading the report data. Please try again.'}
+        <p className="text-xs text-v2-ink-muted mb-4 max-w-md">
+          {message ||
+            "An error occurred while loading the report data. Please try again."}
         </p>
         {onRetry && (
-          <Button variant="outline" size="sm" onClick={onRetry} className="gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRetry}
+            className="gap-2"
+          >
             <RefreshCw className="w-3 h-3" />
             Retry
           </Button>

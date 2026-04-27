@@ -20,15 +20,11 @@ export function ReportSectionCard({
   onClientTierClick,
 }: ReportSectionCardProps) {
   return (
-    <div className="px-3 py-2 md:py-3 border-b border-zinc-200 dark:border-zinc-800 last:border-b-0">
-      <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">
-        {section.title}
-      </h2>
+    <div className="px-3 py-2 md:py-3 border-b border-v2-ring last:border-b-0">
+      <h2 className="text-sm font-bold text-v2-ink mb-1.5">{section.title}</h2>
 
       {section.description && (
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
-          {section.description}
-        </p>
+        <p className="text-xs text-v2-ink-muted mb-2">{section.description}</p>
       )}
 
       {/* Section Metrics Table */}
@@ -71,16 +67,13 @@ function SectionMetricsTable({ metrics }: { metrics: MetricItem[] }) {
   return (
     <div className="mb-3">
       <table className="w-full text-xs">
-        <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+        <tbody className="divide-y divide-v2-ring/60">
           {metrics.map((metric, idx) => (
-            <tr
-              key={idx}
-              className="group hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-            >
-              <td className="py-1 pr-2 text-zinc-500 dark:text-zinc-400 font-medium w-1/3">
+            <tr key={idx} className="group hover:bg-v2-canvas">
+              <td className="py-1 pr-2 text-v2-ink-muted font-medium w-1/3">
                 {metric.label}
               </td>
-              <td className="py-1 text-zinc-900 dark:text-zinc-100 font-bold text-sm">
+              <td className="py-1 text-v2-ink font-bold text-sm">
                 <div className="flex items-baseline gap-1">
                   <span>{metric.value}</span>
                   {metric.trend && (
@@ -90,7 +83,7 @@ function SectionMetricsTable({ metrics }: { metrics: MetricItem[] }) {
                           ? "text-emerald-600 dark:text-emerald-400"
                           : metric.trend === "down"
                             ? "text-red-600 dark:text-red-400"
-                            : "text-zinc-500 dark:text-zinc-400"
+                            : "text-v2-ink-muted"
                       }`}
                     >
                       {metric.trend === "up"
@@ -102,7 +95,7 @@ function SectionMetricsTable({ metrics }: { metrics: MetricItem[] }) {
                   )}
                 </div>
               </td>
-              <td className="py-1 text-right text-xs text-zinc-500 dark:text-zinc-400">
+              <td className="py-1 text-right text-xs text-v2-ink-muted">
                 {metric.change !== undefined && (
                   <span>
                     {metric.change > 0 ? "+" : ""}
@@ -123,11 +116,9 @@ function SectionChartPlaceholder({ section }: { section: ReportSection }) {
 
   return (
     <div className="mb-3 space-y-1">
-      <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-        Performance Trends
-      </h4>
-      <div className="p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded border border-zinc-200 dark:border-zinc-700">
-        <div className="h-40 flex items-center justify-center text-zinc-500 dark:text-zinc-400 text-xs">
+      <h4 className="text-xs font-semibold text-v2-ink">Performance Trends</h4>
+      <div className="p-2 bg-v2-canvas rounded border border-v2-ring">
+        <div className="h-40 flex items-center justify-center text-v2-ink-muted text-xs">
           Chart data available ({section.chartData.datasets.length} datasets)
         </div>
       </div>
@@ -173,28 +164,25 @@ function SectionTableWithChart({
       {/* Data Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
-          <thead className="bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-700">
+          <thead className="bg-v2-canvas border-b border-v2-ring">
             <tr>
               {section.tableData.headers.map((header, headerIdx) => (
                 <th
                   key={headerIdx}
-                  className="px-2 py-1.5 text-left font-semibold text-zinc-500 dark:text-zinc-400 text-[10px]"
+                  className="px-2 py-1.5 text-left font-semibold text-v2-ink-muted text-[10px]"
                 >
                   {header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+          <tbody className="divide-y divide-v2-ring/60">
             {section.tableData.rows.map((row, rowIdx) => (
-              <tr
-                key={rowIdx}
-                className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-              >
+              <tr key={rowIdx} className="hover:bg-v2-canvas">
                 {row.map((cell, cellIdx) => (
                   <td
                     key={cellIdx}
-                    className="px-2 py-1.5 text-xs text-zinc-500 dark:text-zinc-400"
+                    className="px-2 py-1.5 text-xs text-v2-ink-muted"
                   >
                     {cell}
                   </td>
@@ -218,9 +206,7 @@ interface InsightItem {
 function SectionInsights({ insights }: { insights: InsightItem[] }) {
   return (
     <div className="mt-3 space-y-2">
-      <h4 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-        Key Findings
-      </h4>
+      <h4 className="text-xs font-semibold text-v2-ink">Key Findings</h4>
       {insights.map((insight, idx) => (
         <div
           key={insight.id || idx}
@@ -228,20 +214,17 @@ function SectionInsights({ insights }: { insights: InsightItem[] }) {
         >
           <CheckCircle className="w-3 h-3 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100 mb-0.5">
+            <p className="text-xs font-medium text-v2-ink mb-0.5">
               {insight.title}
             </p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
+            <p className="text-xs text-v2-ink-muted leading-relaxed">
               {insight.description}
             </p>
             {insight.recommendedActions &&
               insight.recommendedActions.length > 0 && (
                 <ul className="mt-1 space-y-0.5">
                   {insight.recommendedActions.map((action, actionIdx) => (
-                    <li
-                      key={actionIdx}
-                      className="text-xs text-zinc-900 dark:text-zinc-100"
-                    >
+                    <li key={actionIdx} className="text-xs text-v2-ink">
                       → {action}
                     </li>
                   ))}

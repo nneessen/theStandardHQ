@@ -1,8 +1,15 @@
 // src/features/reports/ReportsDashboard.tsx
 
 import { useState, useMemo } from "react";
-import { Package, Loader2, ChevronDown, Calendar } from "lucide-react";
-import { Button } from "../../components/ui/button";
+import {
+  Package,
+  Loader2,
+  ChevronDown,
+  Calendar,
+  FileText,
+  Sheet,
+  FileBarChart,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu";
+import { PillButton, SoftCard } from "@/components/v2";
 import {
   TimePeriodSelector,
   AdvancedTimePeriod,
@@ -136,33 +144,39 @@ export function ReportsDashboard() {
 
   return (
     <>
-      <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
-        {/* Compact Header Card - matches other pages */}
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-3">
+        {/* Compact header — title dropdown + period selector + actions in ONE row */}
+        <header className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2 min-w-0 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <FileBarChart className="h-4 w-4 text-v2-ink" />
+              <h1 className="text-base font-semibold tracking-tight text-v2-ink">
+                Reports
+              </h1>
+            </div>
             {/* Report Type Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
+                <PillButton
+                  tone="ghost"
                   size="sm"
-                  className="h-7 px-2 text-xs font-semibold gap-1"
+                  className="h-7 px-2.5 text-[11px]"
                 >
                   {getReportName(selectedType)}
                   <ChevronDown className="h-3 w-3 opacity-50" />
-                </Button>
+                </PillButton>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-48">
+              <DropdownMenuContent align="start" className="w-56">
                 {Object.entries(REPORT_CATEGORIES).map(([key, category]) => (
                   <div key={key}>
-                    <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-zinc-500">
+                    <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.18em] text-v2-ink-subtle">
                       {category.name}
                     </DropdownMenuLabel>
                     {category.reports.map((report) => (
                       <DropdownMenuItem
                         key={report.type}
                         onClick={() => setSelectedType(report.type)}
-                        className={`text-xs ${selectedType === report.type ? "bg-blue-50 dark:bg-blue-950" : ""}`}
+                        className={`text-xs ${selectedType === report.type ? "bg-v2-accent-soft text-v2-ink" : ""}`}
                       >
                         <span className="mr-2">{report.icon}</span>
                         {report.name}
@@ -173,12 +187,9 @@ export function ReportsDashboard() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-            <span className="text-[11px] text-zinc-500 dark:text-zinc-400 hidden sm:inline">
-              Professional reporting and analytics
-            </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <TimePeriodSelector
               selectedPeriod={timePeriod}
               onPeriodChange={setTimePeriod}
@@ -186,47 +197,49 @@ export function ReportsDashboard() {
               onCustomRangeChange={setCustomRange}
             />
             <div className="hidden sm:flex gap-1">
-              <Button
+              <PillButton
                 onClick={handleExportPDF}
+                tone="ghost"
                 size="sm"
-                variant="ghost"
                 disabled={!report || isLoading}
-                className="h-7 px-2 text-xs"
+                className="h-7 px-2.5 text-[11px]"
                 title="Export to PDF"
               >
+                <FileText className="h-3 w-3" />
                 PDF
-              </Button>
-              <Button
+              </PillButton>
+              <PillButton
                 onClick={handleExportExcel}
+                tone="ghost"
                 size="sm"
-                variant="ghost"
                 disabled={!report || isLoading}
-                className="h-7 px-2 text-xs"
+                className="h-7 px-2.5 text-[11px]"
                 title="Export to Excel"
               >
+                <Sheet className="h-3 w-3" />
                 Excel
-              </Button>
-              <Button
+              </PillButton>
+              <PillButton
                 onClick={() => setBundleDialogOpen(true)}
+                tone="ghost"
                 size="sm"
-                variant="ghost"
-                className="h-7 px-2 text-xs bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400"
+                className="h-7 px-2.5 text-[11px]"
               >
-                <Package className="w-3 h-3 mr-1" />
+                <Package className="h-3 w-3" />
                 Bundle
-              </Button>
-              <Button
+              </PillButton>
+              <PillButton
                 onClick={() => setShowScheduledReports(!showScheduledReports)}
+                tone={showScheduledReports ? "black" : "ghost"}
                 size="sm"
-                variant="ghost"
-                className={`h-7 px-2 text-xs ${showScheduledReports ? "bg-green-500/10 hover:bg-green-500/20 text-green-600 dark:text-green-400" : ""}`}
+                className="h-7 px-2.5 text-[11px]"
               >
-                <Calendar className="w-3 h-3 mr-1" />
+                <Calendar className="h-3 w-3" />
                 Schedule
-              </Button>
+              </PillButton>
             </div>
           </div>
-        </div>
+        </header>
 
         {/* Scheduled Reports Panel */}
         <Collapsible
@@ -234,34 +247,35 @@ export function ReportsDashboard() {
           onOpenChange={setShowScheduledReports}
         >
           <CollapsibleContent>
-            <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-4">
+            <SoftCard padding="md">
               <ScheduledReportsManager />
-            </div>
+            </SoftCard>
           </CollapsibleContent>
         </Collapsible>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-auto space-y-2">
+        <div className="flex-1 space-y-2.5">
           {/* Loading State */}
           {isLoading && (
-            <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-8">
-              <div className="flex flex-col items-center justify-center">
-                <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin mb-3" />
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Generating report...
-                </p>
+            <SoftCard padding="lg">
+              <div className="flex flex-col items-center justify-center py-6">
+                <Loader2 className="w-6 h-6 text-v2-ink-muted animate-spin mb-2" />
+                <p className="text-xs text-v2-ink-muted">Generating report…</p>
               </div>
-            </div>
+            </SoftCard>
           )}
 
           {/* Error State */}
           {error && (
-            <div className="bg-white dark:bg-zinc-900 rounded-lg border border-red-200 dark:border-red-800 p-4">
+            <SoftCard
+              padding="md"
+              className="border-red-300 dark:border-red-800"
+            >
               <p className="text-xs text-red-600 dark:text-red-400">
                 Error:{" "}
                 {error instanceof Error ? error.message : "Unknown error"}
               </p>
-            </div>
+            </SoftCard>
           )}
 
           {/* Team Performance Reports (Phase 6) */}
@@ -289,7 +303,7 @@ export function ReportsDashboard() {
             report &&
             selectedType !== "imo-performance" &&
             selectedType !== "agency-performance" && (
-              <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+              <SoftCard padding="none" className="overflow-hidden">
                 <ReportDocumentHeader title={report.title} filters={filters} />
                 <ExecutiveSummary summary={report.summary} />
 
@@ -304,13 +318,13 @@ export function ReportsDashboard() {
                 ))}
 
                 {/* Report Footer */}
-                <div className="p-2 bg-zinc-50 dark:bg-zinc-800/50 text-center border-t border-zinc-200 dark:border-zinc-700 rounded-b-lg">
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                    Report ID: {report.id} | Generated:{" "}
+                <div className="px-3 py-2 bg-v2-canvas text-center border-t border-v2-ring">
+                  <p className="text-[11px] text-v2-ink-subtle">
+                    Report ID: {report.id} · Generated{" "}
                     {report.generatedAt.toLocaleString()}
                   </p>
                 </div>
-              </div>
+              </SoftCard>
             )}
         </div>
       </div>

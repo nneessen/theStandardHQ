@@ -139,10 +139,8 @@ function AgencyPerformanceReportContent({
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload || !payload.length) return null;
     return (
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg p-3 text-[11px]">
-        <p className="font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-          {label}
-        </p>
+      <div className="bg-v2-card border border-v2-ring rounded-lg shadow-lg p-3 text-[11px]">
+        <p className="font-semibold text-v2-ink mb-2">{label}</p>
         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center justify-between gap-4">
@@ -151,11 +149,9 @@ function AgencyPerformanceReportContent({
                 className="w-2 h-2 rounded-full"
                 style={{ backgroundColor: entry.color }}
               />
-              <span className="text-zinc-500 dark:text-zinc-400">
-                {entry.name}:
-              </span>
+              <span className="text-v2-ink-muted">{entry.name}:</span>
             </span>
-            <span className="font-mono font-medium text-zinc-900 dark:text-zinc-100">
+            <span className="font-mono font-medium text-v2-ink">
               {typeof entry.value === "number"
                 ? formatCurrency(entry.value)
                 : entry.value}
@@ -168,9 +164,9 @@ function AgencyPerformanceReportContent({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-center p-8 bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
         <Loader2 className="w-5 h-5 animate-spin text-blue-600 dark:text-blue-400" />
-        <span className="ml-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+        <span className="ml-2 text-[11px] text-v2-ink-muted">
           Loading agency performance data...
         </span>
       </div>
@@ -192,13 +188,13 @@ function AgencyPerformanceReportContent({
 
   if (!performanceReport) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-4">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
         <div className="flex flex-col items-center justify-center text-center py-4">
-          <AlertCircle className="h-6 w-6 text-zinc-400 dark:text-zinc-500 mb-2" />
-          <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+          <AlertCircle className="h-6 w-6 text-v2-ink-subtle mb-2" />
+          <p className="text-[11px] font-medium text-v2-ink">
             Agency Performance Report Unavailable
           </p>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 max-w-[300px]">
+          <p className="text-[10px] text-v2-ink-muted mt-1 max-w-[300px]">
             This report requires database features that may not be available
             yet.
           </p>
@@ -223,36 +219,36 @@ function AgencyPerformanceReportContent({
       {/* KPI Cards Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
         {/* Active Policies */}
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+        <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
           <div className="flex items-center gap-2 mb-1">
             <FileText className="w-3.5 h-3.5 text-blue-500" />
-            <span className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <span className="text-[9px] font-medium text-v2-ink-muted uppercase tracking-[0.18em]">
               Active Policies
             </span>
           </div>
-          <p className="text-xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
+          <p className="text-xl font-bold font-mono text-v2-ink">
             {dashboardMetrics?.active_policies?.toLocaleString() || 0}
           </p>
         </div>
 
         {/* Total Premium */}
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+        <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
           <div className="flex items-center gap-2 mb-1">
             <DollarSign className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <span className="text-[9px] font-medium text-v2-ink-muted uppercase tracking-[0.18em]">
               Total Premium
             </span>
           </div>
-          <p className="text-xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
+          <p className="text-xl font-bold font-mono text-v2-ink">
             {formatCurrency(dashboardMetrics?.total_annual_premium || 0)}
           </p>
         </div>
 
         {/* Total AP (YTD) */}
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+        <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
           <div className="flex items-center gap-2 mb-1">
             <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <span className="text-[9px] font-medium text-v2-ink-muted uppercase tracking-[0.18em]">
               Total AP (YTD)
             </span>
           </div>
@@ -270,17 +266,17 @@ function AgencyPerformanceReportContent({
         </div>
 
         {/* Agents */}
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+        <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
           <div className="flex items-center gap-2 mb-1">
             <Users className="w-3.5 h-3.5 text-violet-500" />
-            <span className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <span className="text-[9px] font-medium text-v2-ink-muted uppercase tracking-[0.18em]">
               Agents
             </span>
           </div>
-          <p className="text-xl font-bold font-mono text-zinc-900 dark:text-zinc-100">
+          <p className="text-xl font-bold font-mono text-v2-ink">
             {dashboardMetrics?.agent_count || 0}
           </p>
-          <p className="text-[9px] text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-[9px] text-v2-ink-muted mt-1">
             Avg:{" "}
             {formatCurrency(dashboardMetrics?.avg_production_per_agent || 0)}
             /agent
@@ -289,22 +285,22 @@ function AgencyPerformanceReportContent({
       </div>
 
       {/* Premium Growth Chart */}
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Calendar className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <Calendar className="w-3.5 h-3.5 text-v2-ink-subtle" />
+            <span className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
               Premium Activity
             </span>
           </div>
-          <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 rounded-md p-0.5">
+          <div className="flex items-center gap-1 bg-v2-ring rounded-md p-0.5">
             <button
               onClick={() => setViewMode("monthly")}
               className={cn(
                 "px-2 py-1 text-[10px] font-medium rounded transition-colors",
                 viewMode === "monthly"
-                  ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+                  ? "bg-v2-card text-v2-ink shadow-sm"
+                  : "text-v2-ink-muted hover:text-v2-ink",
               )}
             >
               Monthly
@@ -314,8 +310,8 @@ function AgencyPerformanceReportContent({
               className={cn(
                 "px-2 py-1 text-[10px] font-medium rounded transition-colors",
                 viewMode === "weekly"
-                  ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+                  ? "bg-v2-card text-v2-ink shadow-sm"
+                  : "text-v2-ink-muted hover:text-v2-ink",
               )}
             >
               Weekly
@@ -402,8 +398,8 @@ function AgencyPerformanceReportContent({
             </ResponsiveContainer>
           </div>
         ) : (
-          <div className="h-[220px] flex items-center justify-center border border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg">
-            <p className="text-[11px] text-zinc-400">No data available</p>
+          <div className="h-[220px] flex items-center justify-center border border-dashed border-v2-ring rounded-lg">
+            <p className="text-[11px] text-v2-ink-subtle">No data available</p>
           </div>
         )}
       </div>
@@ -411,9 +407,9 @@ function AgencyPerformanceReportContent({
       {/* Period Summary */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
         {/* Period Stats */}
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+        <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
               Period Performance
             </span>
             <div
@@ -429,34 +425,26 @@ function AgencyPerformanceReportContent({
           </div>
           <div className="space-y-1.5">
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-zinc-500 dark:text-zinc-400">
-                New Premium
-              </span>
-              <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+              <span className="text-v2-ink-muted">New Premium</span>
+              <span className="font-mono font-bold text-v2-ink">
                 {formatCurrency(summary.total_new_premium)}
               </span>
             </div>
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-zinc-500 dark:text-zinc-400">
-                New Policies
-              </span>
-              <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+              <span className="text-v2-ink-muted">New Policies</span>
+              <span className="font-mono font-bold text-v2-ink">
                 {summary.total_new_policies.toLocaleString()}
               </span>
             </div>
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-zinc-500 dark:text-zinc-400">
-                Commissions
-              </span>
+              <span className="text-v2-ink-muted">Commissions</span>
               <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
                 {formatCurrency(summary.total_commissions)}
               </span>
             </div>
-            <div className="h-px bg-zinc-200 dark:bg-zinc-800" />
+            <div className="h-px bg-v2-ring" />
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-zinc-500 dark:text-zinc-400">
-                Net Growth
-              </span>
+              <span className="text-v2-ink-muted">Net Growth</span>
               <div className="flex items-center gap-1">
                 {netGrowthPositive ? (
                   <TrendingUp className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
@@ -480,8 +468,8 @@ function AgencyPerformanceReportContent({
         </div>
 
         {/* Policy Activity Bar Chart */}
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-          <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+        <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+          <span className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
             Policy Activity ({viewMode === "monthly" ? "Monthly" : "Weekly"})
           </span>
           {chartData.length > 0 ? (
@@ -535,7 +523,7 @@ function AgencyPerformanceReportContent({
             </div>
           ) : (
             <div className="h-[120px] flex items-center justify-center">
-              <p className="text-[11px] text-zinc-400">No data</p>
+              <p className="text-[11px] text-v2-ink-subtle">No data</p>
             </div>
           )}
         </div>
@@ -543,12 +531,12 @@ function AgencyPerformanceReportContent({
 
       {/* Agent Production Table */}
       {agentProduction && agentProduction.length > 0 && (
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+        <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
               Agent Production & AP Breakdown
             </span>
-            <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+            <span className="text-[10px] text-v2-ink-subtle">
               {agentProduction.length} agents
             </span>
           </div>
@@ -556,17 +544,17 @@ function AgencyPerformanceReportContent({
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-zinc-200 dark:border-zinc-800">
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto w-10">
+                <TableRow className="border-v2-ring">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto w-10">
                     #
                   </TableHead>
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto">
                     Agent
                   </TableHead>
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto text-right">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                     Policies
                   </TableHead>
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto text-right">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                     Premium
                   </TableHead>
                   <TableHead className="text-[10px] py-1.5 h-auto text-right">
@@ -584,17 +572,14 @@ function AgencyPerformanceReportContent({
                       Pending
                     </span>
                   </TableHead>
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto text-right">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                     Share
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {agentProduction.slice(0, 10).map((agent, index) => (
-                  <TableRow
-                    key={agent.agent_id}
-                    className="border-zinc-200 dark:border-zinc-800"
-                  >
+                  <TableRow key={agent.agent_id} className="border-v2-ring">
                     <TableCell className="text-[11px] py-1.5">
                       <div
                         className={cn(
@@ -602,10 +587,10 @@ function AgencyPerformanceReportContent({
                           index === 0
                             ? "bg-amber-500/20 text-amber-600 dark:text-amber-400"
                             : index === 1
-                              ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
+                              ? "bg-v2-ring text-v2-ink-muted"
                               : index === 2
                                 ? "bg-orange-500/20 text-orange-600 dark:text-orange-400"
-                                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400",
+                                : "bg-v2-ring text-v2-ink-muted",
                         )}
                       >
                         {index + 1}
@@ -613,18 +598,18 @@ function AgencyPerformanceReportContent({
                     </TableCell>
                     <TableCell className="text-[11px] py-1.5">
                       <div>
-                        <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                        <p className="font-medium text-v2-ink">
                           {agent.agent_name}
                         </p>
-                        <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+                        <p className="text-[9px] text-v2-ink-muted">
                           {agent.agent_email}
                         </p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-v2-ink">
                       {agent.active_policies}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono font-bold text-v2-ink">
                       {formatCurrency(agent.total_annual_premium)}
                     </TableCell>
                     <TableCell className="text-[11px] py-1.5 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
@@ -636,7 +621,7 @@ function AgencyPerformanceReportContent({
                     <TableCell className="text-[11px] py-1.5 text-right font-mono text-amber-600 dark:text-amber-400">
                       {formatCurrency(agent.unearned_amount)}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-zinc-500 dark:text-zinc-400">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-v2-ink-muted">
                       {agent.pct_of_agency_production}%
                     </TableCell>
                   </TableRow>
@@ -648,31 +633,31 @@ function AgencyPerformanceReportContent({
       )}
 
       {/* Detailed Breakdown Table */}
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-        <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+        <span className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
           {viewMode === "monthly" ? "Monthly" : "Weekly"} Breakdown
         </span>
 
         <div className="overflow-x-auto mt-2">
           <Table>
             <TableHeader>
-              <TableRow className="border-zinc-200 dark:border-zinc-800">
-                <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto">
+              <TableRow className="border-v2-ring">
+                <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto">
                   {viewMode === "monthly" ? "Month" : "Week"}
                 </TableHead>
-                <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto text-right">
+                <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                   Policies
                 </TableHead>
-                <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto text-right">
+                <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                   Premium
                 </TableHead>
-                <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto text-right">
+                <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                   Lapsed
                 </TableHead>
-                <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto text-right">
+                <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                   Net Change
                 </TableHead>
-                <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto text-right">
+                <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                   Running Total
                 </TableHead>
               </TableRow>
@@ -693,17 +678,14 @@ function AgencyPerformanceReportContent({
                     : (row as NonNullable<typeof weeklyReport>["weeks"][0])
                         .week_start;
                 return (
-                  <TableRow
-                    key={key}
-                    className="border-zinc-200 dark:border-zinc-800"
-                  >
-                    <TableCell className="text-[11px] py-1.5 font-medium text-zinc-900 dark:text-zinc-100">
+                  <TableRow key={key} className="border-v2-ring">
+                    <TableCell className="text-[11px] py-1.5 font-medium text-v2-ink">
                       {label}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-v2-ink">
                       {row.new_policies}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-v2-ink">
                       {formatCurrency(row.new_premium)}
                     </TableCell>
                     <TableCell className="text-[11px] py-1.5 text-right font-mono text-red-600 dark:text-red-400">
@@ -721,7 +703,7 @@ function AgencyPerformanceReportContent({
                         {formatCurrency(row.net_premium_change)}
                       </span>
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono font-bold text-v2-ink">
                       {formatCurrency(row.running_total_premium)}
                     </TableCell>
                   </TableRow>

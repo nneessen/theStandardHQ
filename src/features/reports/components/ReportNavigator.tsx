@@ -18,11 +18,11 @@ export function ReportNavigator({
   onSelectType,
 }: ReportNavigatorProps) {
   return (
-    <div className="hidden md:block w-48 lg:w-52 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex-shrink-0">
+    <div className="hidden md:block w-48 lg:w-52 border-r border-v2-ring bg-v2-card flex-shrink-0">
       <div className="p-3 space-y-3">
         {Object.entries(REPORT_CATEGORIES).map(([key, category]) => (
           <div key={key}>
-            <h3 className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2 px-2">
+            <h3 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-v2-ink-muted mb-2 px-2">
               {category.name}
             </h3>
             <div className="space-y-1">
@@ -33,7 +33,7 @@ export function ReportNavigator({
                   className={`w-full text-left px-2 py-1.5 rounded-sm text-xs transition-colors ${
                     selectedType === report.type
                       ? "bg-blue-600 text-white font-medium"
-                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
+                      : "hover:bg-v2-canvas text-v2-ink"
                   }`}
                 >
                   <span className="mr-1.5">{report.icon}</span>
@@ -66,7 +66,7 @@ export function ReportMobileSelector({
       <select
         value={selectedType}
         onChange={(e) => onSelectType(e.target.value as ReportType)}
-        className="w-full px-3 py-2 text-sm border border-zinc-200 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100"
+        className="w-full px-3 py-2 text-sm border border-v2-ring rounded-md bg-v2-card text-v2-ink"
       >
         {Object.entries(REPORT_CATEGORIES).map(([key, category]) => (
           <optgroup key={key} label={category.name}>

@@ -108,9 +108,9 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-center p-8 bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
         <Loader2 className="w-5 h-5 animate-spin text-blue-600 dark:text-blue-400" />
-        <span className="ml-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+        <span className="ml-2 text-[11px] text-v2-ink-muted">
           Loading IMO performance data...
         </span>
       </div>
@@ -132,13 +132,13 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
 
   if (!performanceReport) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-4">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
         <div className="flex flex-col items-center justify-center text-center py-4">
-          <AlertCircle className="h-6 w-6 text-zinc-400 dark:text-zinc-500 mb-2" />
-          <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+          <AlertCircle className="h-6 w-6 text-v2-ink-subtle mb-2" />
+          <p className="text-[11px] font-medium text-v2-ink">
             IMO Performance Report Unavailable
           </p>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 max-w-[300px]">
+          <p className="text-[10px] text-v2-ink-muted mt-1 max-w-[300px]">
             This report requires database features that may not be available
             yet.
           </p>
@@ -163,9 +163,9 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
       {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
         {/* Summary Stats Card */}
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+        <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
               Performance Summary
             </div>
             <div
@@ -182,49 +182,39 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
 
           <div className="space-y-1">
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-zinc-500 dark:text-zinc-400">
-                New Premium
-              </span>
-              <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+              <span className="text-v2-ink-muted">New Premium</span>
+              <span className="font-mono font-bold text-v2-ink">
                 {formatCurrency(summary.total_new_premium)}
               </span>
             </div>
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-zinc-500 dark:text-zinc-400">
-                Commissions
-              </span>
+              <span className="text-v2-ink-muted">Commissions</span>
               <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
                 {formatCurrency(summary.total_commissions)}
               </span>
             </div>
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-zinc-500 dark:text-zinc-400">
-                New Policies
-              </span>
-              <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+              <span className="text-v2-ink-muted">New Policies</span>
+              <span className="font-mono font-bold text-v2-ink">
                 {summary.total_new_policies.toLocaleString()}
               </span>
             </div>
-            <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+            <div className="h-px bg-v2-ring my-1" />
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-zinc-500 dark:text-zinc-400">
-                New Agents
-              </span>
-              <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+              <span className="text-v2-ink-muted">New Agents</span>
+              <span className="font-mono font-bold text-v2-ink">
                 {summary.total_new_agents.toLocaleString()}
               </span>
             </div>
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-zinc-500 dark:text-zinc-400">Lapsed</span>
+              <span className="text-v2-ink-muted">Lapsed</span>
               <span className="font-mono font-bold text-red-600 dark:text-red-400">
                 {summary.total_lapsed.toLocaleString()}
               </span>
             </div>
-            <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+            <div className="h-px bg-v2-ring my-1" />
             <div className="flex items-center justify-between text-[11px]">
-              <span className="text-zinc-500 dark:text-zinc-400 uppercase">
-                Net Growth
-              </span>
+              <span className="text-v2-ink-muted uppercase">Net Growth</span>
               <div className="flex items-center gap-1">
                 {netGrowthPositive ? (
                   <TrendingUp className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
@@ -248,8 +238,8 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
         </div>
 
         {/* Monthly Trend Chart */}
-        <div className="lg:col-span-2 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-          <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+        <div className="lg:col-span-2 bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+          <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em] mb-2">
             Monthly Production Trend
           </div>
           <TrendLineChart
@@ -275,12 +265,12 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
 
       {/* Agency Comparison */}
       {agencyComparison && agencyComparison.agencies.length > 0 && (
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+        <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+            <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
               Agency Comparison
             </div>
-            <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+            <span className="text-[10px] text-v2-ink-subtle">
               {agencyComparison.summary.total_agencies} agencies •{" "}
               {agencyComparison.summary.total_agents} agents
             </span>
@@ -289,36 +279,33 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-zinc-200 dark:border-zinc-800">
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto w-12">
+                <TableRow className="border-v2-ring">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto w-12">
                     #
                   </TableHead>
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto">
                     Agency
                   </TableHead>
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto text-right">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                     Agents
                   </TableHead>
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto text-right">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                     Policies
                   </TableHead>
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto text-right">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                     Premium
                   </TableHead>
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto text-right">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                     Retention
                   </TableHead>
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto text-right">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                     % Share
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {agencyComparison.agencies.slice(0, 10).map((agency, index) => (
-                  <TableRow
-                    key={agency.agency_id}
-                    className="border-zinc-200 dark:border-zinc-800"
-                  >
+                  <TableRow key={agency.agency_id} className="border-v2-ring">
                     <TableCell className="text-[11px] py-1.5">
                       <div
                         className={cn(
@@ -326,10 +313,10 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
                           index === 0
                             ? "bg-amber-500/20 text-amber-600 dark:text-amber-400"
                             : index === 1
-                              ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
+                              ? "bg-v2-ring text-v2-ink-muted"
                               : index === 2
                                 ? "bg-orange-500/20 text-orange-600 dark:text-orange-400"
-                                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400",
+                                : "bg-v2-ring text-v2-ink-muted",
                         )}
                       >
                         {agency.rank_by_premium}
@@ -337,21 +324,21 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
                     </TableCell>
                     <TableCell className="text-[11px] py-1.5">
                       <div>
-                        <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                        <p className="font-medium text-v2-ink">
                           {agency.agency_name}
                         </p>
-                        <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+                        <p className="text-[9px] text-v2-ink-muted">
                           {agency.owner_name}
                         </p>
                       </div>
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-v2-ink">
                       {agency.agent_count}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-v2-ink">
                       {agency.new_policies}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono font-bold text-v2-ink">
                       {formatCurrency(agency.new_premium)}
                     </TableCell>
                     <TableCell className="text-[11px] py-1.5 text-right">
@@ -368,7 +355,7 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
                         {agency.retention_rate}%
                       </span>
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-zinc-500 dark:text-zinc-400">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-v2-ink-muted">
                       {agency.pct_of_imo_premium}%
                     </TableCell>
                   </TableRow>
@@ -381,41 +368,38 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
 
       {/* Top Performers */}
       {topPerformers && topPerformers.performers.length > 0 && (
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-          <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+        <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+          <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em] mb-2">
             Top Performers
           </div>
 
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-zinc-200 dark:border-zinc-800">
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto w-12">
+                <TableRow className="border-v2-ring">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto w-12">
                     #
                   </TableHead>
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto">
                     Agent
                   </TableHead>
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto">
                     Agency
                   </TableHead>
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto text-right">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                     Policies
                   </TableHead>
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto text-right">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                     Premium
                   </TableHead>
-                  <TableHead className="text-[10px] text-zinc-500 dark:text-zinc-400 py-1.5 h-auto text-right">
+                  <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                     Commissions
                   </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {topPerformers.performers.map((performer, index) => (
-                  <TableRow
-                    key={performer.agent_id}
-                    className="border-zinc-200 dark:border-zinc-800"
-                  >
+                  <TableRow key={performer.agent_id} className="border-v2-ring">
                     <TableCell className="text-[11px] py-1.5">
                       <div
                         className={cn(
@@ -423,25 +407,25 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
                           index === 0
                             ? "bg-amber-500/20 text-amber-600 dark:text-amber-400"
                             : index === 1
-                              ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
+                              ? "bg-v2-ring text-v2-ink-muted"
                               : index === 2
                                 ? "bg-orange-500/20 text-orange-600 dark:text-orange-400"
-                                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400",
+                                : "bg-v2-ring text-v2-ink-muted",
                         )}
                       >
                         {performer.rank_in_imo}
                       </div>
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 font-medium text-zinc-900 dark:text-zinc-100">
+                    <TableCell className="text-[11px] py-1.5 font-medium text-v2-ink">
                       {performer.agent_name}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-zinc-500 dark:text-zinc-400">
+                    <TableCell className="text-[11px] py-1.5 text-v2-ink-muted">
                       {performer.agency_name}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-v2-ink">
                       {performer.new_policies}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono font-bold text-v2-ink">
                       {formatCurrency(performer.new_premium)}
                     </TableCell>
                     <TableCell className="text-[11px] py-1.5 text-right font-mono text-emerald-600 dark:text-emerald-400">
