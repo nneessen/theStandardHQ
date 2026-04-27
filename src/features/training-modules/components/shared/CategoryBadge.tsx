@@ -18,7 +18,8 @@ const CATEGORY_COLORS: Record<ModuleCategory, string> = {
     "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
   onboarding:
     "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400",
-  custom: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+  custom:
+    "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle",
 };
 
 export function CategoryBadge({ category }: { category: ModuleCategory }) {

@@ -25,14 +25,14 @@ export function ChallengeCard({
   const isActive = now >= new Date(challenge.start_date) && now <= end;
 
   return (
-    <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-2.5 space-y-2 bg-white dark:bg-zinc-900">
+    <div className="border border-v2-ring dark:border-v2-ring-strong rounded-lg p-2.5 space-y-2 bg-v2-card">
       <div className="flex items-start justify-between">
         <div>
-          <h4 className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+          <h4 className="text-xs font-medium text-v2-ink dark:text-v2-ink">
             {challenge.title}
           </h4>
           {challenge.description && (
-            <p className="text-[10px] text-zinc-500 mt-0.5">
+            <p className="text-[10px] text-v2-ink-muted mt-0.5">
               {challenge.description}
             </p>
           )}
@@ -44,7 +44,7 @@ export function ChallengeCard({
 
       {isParticipating && (
         <div className="space-y-1">
-          <div className="flex justify-between text-[10px] text-zinc-500">
+          <div className="flex justify-between text-[10px] text-v2-ink-muted">
             <span>
               {currentValue}/{challenge.target_value}
             </span>
@@ -57,7 +57,7 @@ export function ChallengeCard({
       )}
 
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-[10px] text-zinc-400">
+        <div className="flex items-center gap-2 text-[10px] text-v2-ink-subtle">
           <span className="flex items-center gap-0.5">
             <Clock className="h-2.5 w-2.5" />
             {daysLeft}d left

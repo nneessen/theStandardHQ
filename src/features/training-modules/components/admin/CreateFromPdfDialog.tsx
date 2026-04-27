@@ -100,7 +100,7 @@ export function CreateFromPdfDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-sm">Import Module from PDF</DialogTitle>
-          <DialogDescription className="text-xs text-zinc-500">
+          <DialogDescription className="text-xs text-v2-ink-muted">
             Upload a PDF to auto-create a training module with lessons and
             quizzes.
           </DialogDescription>
@@ -109,7 +109,7 @@ export function CreateFromPdfDialog({
         <div className="space-y-3 py-2">
           {/* File input */}
           <div>
-            <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+            <label className="block text-xs font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-1">
               PDF File
             </label>
             <input
@@ -118,7 +118,7 @@ export function CreateFromPdfDialog({
               accept=".pdf"
               onChange={handleFileChange}
               disabled={isActive}
-              className="block w-full text-xs text-zinc-600 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-zinc-100 file:text-zinc-700 dark:file:bg-zinc-800 dark:file:text-zinc-300 hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700 disabled:opacity-50"
+              className="block w-full text-xs text-v2-ink-muted file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-v2-card-tinted file:text-v2-ink dark:file:bg-zinc-800 dark:file:text-v2-ink-subtle hover:file:bg-zinc-200 dark:hover:file:bg-v2-ring-strong disabled:opacity-50"
             />
             {fileError && (
               <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
@@ -127,7 +127,7 @@ export function CreateFromPdfDialog({
               </p>
             )}
             {file && !fileError && (
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-xs text-v2-ink-muted mt-1">
                 {file.name} ({formatSize(file.size)})
               </p>
             )}
@@ -135,14 +135,14 @@ export function CreateFromPdfDialog({
 
           {/* Category */}
           <div>
-            <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+            <label className="block text-xs font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-1">
               Category
             </label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as ModuleCategory)}
               disabled={isActive}
-              className="w-full h-7 text-xs border border-zinc-200 dark:border-zinc-700 rounded-md px-2 bg-white dark:bg-zinc-900 disabled:opacity-50"
+              className="w-full h-7 text-xs border border-v2-ring dark:border-v2-ring-strong rounded-md px-2 bg-v2-card disabled:opacity-50"
             >
               {MODULE_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -154,13 +154,13 @@ export function CreateFromPdfDialog({
 
           {/* Progress */}
           {isActive && (
-            <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 rounded px-3 py-2">
+            <div className="flex items-center gap-2 text-xs text-v2-ink-muted dark:text-v2-ink-subtle bg-v2-canvas dark:bg-v2-card-tinted/50 rounded px-3 py-2">
               <Loader2 className="h-3 w-3 animate-spin flex-shrink-0" />
               <div>
                 <p>{progress.message}</p>
                 {progress.lessonProgress &&
                   progress.lessonProgress.current > 0 && (
-                    <p className="text-zinc-400 mt-0.5">
+                    <p className="text-v2-ink-subtle mt-0.5">
                       Lesson {progress.lessonProgress.current} of{" "}
                       {progress.lessonProgress.total}
                     </p>

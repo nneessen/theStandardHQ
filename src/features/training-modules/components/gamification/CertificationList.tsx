@@ -19,7 +19,7 @@ export function CertificationList() {
         <CertificationCard key={cert.id} userCert={cert} />
       ))}
       {certs.length === 0 && (
-        <div className="text-center py-6 text-xs text-zinc-400">
+        <div className="text-center py-6 text-xs text-v2-ink-subtle">
           No certifications yet
         </div>
       )}

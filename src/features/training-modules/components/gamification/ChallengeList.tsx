@@ -32,7 +32,7 @@ export function ChallengeList() {
         />
       ))}
       {challenges.length === 0 && (
-        <div className="text-center py-6 text-xs text-zinc-400">
+        <div className="text-center py-6 text-xs text-v2-ink-subtle">
           No active challenges
         </div>
       )}

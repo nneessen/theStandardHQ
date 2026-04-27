@@ -34,7 +34,7 @@ export const MARKER_TYPE_COLORS: Record<
   chapter: {
     dot: "bg-zinc-400 dark:bg-zinc-500",
     ring: "ring-zinc-300 dark:ring-zinc-700",
-    text: "text-zinc-600 dark:text-zinc-400",
+    text: "text-v2-ink-muted dark:text-v2-ink-subtle",
   },
   highlight: {
     dot: "bg-emerald-500",

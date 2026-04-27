@@ -1,11 +1,6 @@
 // src/features/training-modules/components/admin/LessonEditor.tsx
 import { useState, useCallback } from "react";
-import {
-  Plus,
-  Loader2,
-  GripVertical,
-  Trash2,
-} from "lucide-react";
+import { Plus, Loader2, GripVertical, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -175,9 +170,8 @@ export function LessonEditor({ lesson }: LessonEditorProps) {
   };
 
   const updateBlockOrders = async (blocks: TrainingLessonContent[]) => {
-    const { trainingLessonService } = await import(
-      "../../services/trainingLessonService"
-    );
+    const { trainingLessonService } =
+      await import("../../services/trainingLessonService");
     for (let i = 0; i < blocks.length; i++) {
       if (blocks[i].sort_order !== i) {
         await trainingLessonService.updateContentBlock(blocks[i].id, {
@@ -191,7 +185,7 @@ export function LessonEditor({ lesson }: LessonEditorProps) {
   if (isLoading) {
     return (
       <div className="flex justify-center py-8">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -206,7 +200,7 @@ export function LessonEditor({ lesson }: LessonEditorProps) {
       {/* Lesson Metadata */}
       <div className="space-y-3">
         <div className="space-y-1">
-          <label className="text-[11px] font-medium text-zinc-500">
+          <label className="text-[11px] font-medium text-v2-ink-muted">
             Lesson Title
           </label>
           <Input
@@ -218,27 +212,27 @@ export function LessonEditor({ lesson }: LessonEditorProps) {
         </div>
 
         <div className="space-y-1">
-          <label className="text-[11px] font-medium text-zinc-500">
+          <label className="text-[11px] font-medium text-v2-ink-muted">
             Description
           </label>
           <textarea
             value={localDescription}
             onChange={(e) => setLocalDescription(e.target.value)}
             rows={2}
-            className="w-full text-xs rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 resize-none"
+            className="w-full text-xs rounded-md border border-v2-ring dark:border-v2-ring-strong bg-v2-card p-2 resize-none"
             placeholder="Optional description"
           />
         </div>
 
         <div className="grid grid-cols-4 gap-2">
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-zinc-500">
+            <label className="text-[11px] font-medium text-v2-ink-muted">
               Type
             </label>
             <select
               value={lesson.lesson_type}
               onChange={(e) => updateField("lesson_type", e.target.value)}
-              className="w-full h-7 text-xs border border-zinc-200 dark:border-zinc-700 rounded-md px-2 bg-white dark:bg-zinc-900"
+              className="w-full h-7 text-xs border border-v2-ring dark:border-v2-ring-strong rounded-md px-2 bg-v2-card"
             >
               {LESSON_TYPES.map((type) => (
                 <option key={type} value={type}>
@@ -248,7 +242,7 @@ export function LessonEditor({ lesson }: LessonEditorProps) {
             </select>
           </div>
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-zinc-500">
+            <label className="text-[11px] font-medium text-v2-ink-muted">
               XP Reward
             </label>
             <Input
@@ -259,7 +253,7 @@ export function LessonEditor({ lesson }: LessonEditorProps) {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-zinc-500">
+            <label className="text-[11px] font-medium text-v2-ink-muted">
               Duration (min)
             </label>
             <Input
@@ -271,7 +265,7 @@ export function LessonEditor({ lesson }: LessonEditorProps) {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-zinc-500">
+            <label className="text-[11px] font-medium text-v2-ink-muted">
               Required
             </label>
             <select
@@ -279,7 +273,7 @@ export function LessonEditor({ lesson }: LessonEditorProps) {
               onChange={(e) =>
                 updateField("is_required", e.target.value === "yes")
               }
-              className="w-full h-7 text-xs border border-zinc-200 dark:border-zinc-700 rounded-md px-2 bg-white dark:bg-zinc-900"
+              className="w-full h-7 text-xs border border-v2-ring dark:border-v2-ring-strong rounded-md px-2 bg-v2-card"
             >
               <option value="yes">Yes</option>
               <option value="no">No</option>
@@ -289,13 +283,13 @@ export function LessonEditor({ lesson }: LessonEditorProps) {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-zinc-200 dark:border-zinc-800" />
+      <div className="border-t border-v2-ring dark:border-v2-ring" />
 
       {/* Content Blocks (for content/practice lessons) */}
       {isContentOrPractice && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+            <h3 className="text-xs font-semibold text-v2-ink dark:text-v2-ink-muted">
               Content Blocks ({contentBlocks.length})
             </h3>
             <div className="relative">
@@ -321,7 +315,7 @@ export function LessonEditor({ lesson }: LessonEditorProps) {
                     onChange={(e) =>
                       setAddingBlockType(e.target.value as ContentType)
                     }
-                    className="h-6 text-[10px] border border-zinc-200 dark:border-zinc-700 rounded px-1 bg-white dark:bg-zinc-900"
+                    className="h-6 text-[10px] border border-v2-ring dark:border-v2-ring-strong rounded px-1 bg-v2-card"
                   >
                     {CONTENT_TYPES.map((type) => (
                       <option key={type} value={type}>
@@ -355,7 +349,7 @@ export function LessonEditor({ lesson }: LessonEditorProps) {
           </div>
 
           {contentBlocks.length === 0 ? (
-            <div className="text-center py-6 text-[10px] text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg">
+            <div className="text-center py-6 text-[10px] text-v2-ink-subtle border border-dashed border-v2-ring dark:border-v2-ring rounded-lg">
               No content blocks yet. Add one above.
             </div>
           ) : (
@@ -397,8 +391,14 @@ function SortableContentBlock({
   lessonId: string;
   onDelete: () => void;
 }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: block.id });
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: block.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -410,27 +410,27 @@ function SortableContentBlock({
     <div
       ref={setNodeRef}
       style={style}
-      className="border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900 mb-2"
+      className="border border-v2-ring dark:border-v2-ring rounded-lg bg-v2-card mb-2"
     >
-      <div className="flex items-center gap-1.5 px-2 py-1.5 border-b border-zinc-100 dark:border-zinc-800">
+      <div className="flex items-center gap-1.5 px-2 py-1.5 border-b border-v2-ring dark:border-v2-ring">
         <span
           {...attributes}
           {...listeners}
           className="cursor-grab flex-shrink-0"
         >
-          <GripVertical className="h-3 w-3 text-zinc-300" />
+          <GripVertical className="h-3 w-3 text-v2-ink-subtle" />
         </span>
-        <span className="text-[10px] font-medium text-zinc-500 uppercase">
+        <span className="text-[10px] font-medium text-v2-ink-muted uppercase">
           {block.content_type.replace("_", " ")}
         </span>
         {block.title && (
-          <span className="text-[10px] text-zinc-400 truncate">
+          <span className="text-[10px] text-v2-ink-subtle truncate">
             — {block.title}
           </span>
         )}
         <div className="flex-1" />
         <button onClick={onDelete}>
-          <Trash2 className="h-3 w-3 text-zinc-400 hover:text-red-500" />
+          <Trash2 className="h-3 w-3 text-v2-ink-subtle hover:text-red-500" />
         </button>
       </div>
       <div className="p-2">

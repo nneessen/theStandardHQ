@@ -35,7 +35,7 @@ export function PdfDocumentViewer({ url }: PdfDocumentViewerProps) {
         file={url}
         onLoadSuccess={onDocumentLoadSuccess}
         loading={
-          <div className="flex items-center gap-2 py-20 justify-center text-zinc-400">
+          <div className="flex items-center gap-2 py-20 justify-center text-v2-ink-subtle">
             <Loader2 className="h-4 w-4 animate-spin" />
             <span className="text-xs">Loading PDF...</span>
           </div>
@@ -50,7 +50,7 @@ export function PdfDocumentViewer({ url }: PdfDocumentViewerProps) {
           Array.from({ length: numPages }, (_, i) => (
             <div
               key={i}
-              className="mb-2 rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-white"
+              className="mb-2 rounded-lg overflow-hidden border border-v2-ring dark:border-v2-ring-strong bg-white"
             >
               <Page
                 pageNumber={i + 1}
@@ -58,7 +58,7 @@ export function PdfDocumentViewer({ url }: PdfDocumentViewerProps) {
                 renderTextLayer
                 renderAnnotationLayer
                 loading={
-                  <div className="flex items-center gap-2 py-20 justify-center text-zinc-400">
+                  <div className="flex items-center gap-2 py-20 justify-center text-v2-ink-subtle">
                     <Loader2 className="h-4 w-4 animate-spin" />
                   </div>
                 }
@@ -68,7 +68,7 @@ export function PdfDocumentViewer({ url }: PdfDocumentViewerProps) {
       </Document>
 
       {numPages && (
-        <p className="text-[10px] text-zinc-400 text-center pt-1">
+        <p className="text-[10px] text-v2-ink-subtle text-center pt-1">
           {numPages} {numPages === 1 ? "page" : "pages"}
         </p>
       )}

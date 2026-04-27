@@ -30,19 +30,19 @@ export function ModuleCard({ assignment }: ModuleCardProps) {
       to={"/my-training/$moduleId" as string}
       params={{ moduleId: module.id } as Record<string, string>}
     >
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-2.5 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors cursor-pointer">
+      <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring p-2.5 hover:border-v2-ring-strong dark:hover:border-v2-ring-strong transition-colors cursor-pointer">
         <div className="flex items-start justify-between gap-2 mb-1.5">
-          <h3 className="text-xs font-medium text-zinc-900 dark:text-zinc-100 line-clamp-1">
+          <h3 className="text-xs font-medium text-v2-ink dark:text-v2-ink line-clamp-1">
             {module.title}
           </h3>
-          <ChevronRight className="h-3.5 w-3.5 text-zinc-300 flex-shrink-0" />
+          <ChevronRight className="h-3.5 w-3.5 text-v2-ink-subtle flex-shrink-0" />
         </div>
 
         <div className="flex items-center gap-1.5 mb-2">
           <CategoryBadge category={module.category} />
           <DifficultyBadge level={module.difficulty_level} />
           {module.estimated_duration_minutes && (
-            <span className="text-[10px] text-zinc-400 flex items-center gap-0.5">
+            <span className="text-[10px] text-v2-ink-subtle flex items-center gap-0.5">
               <Clock className="h-2.5 w-2.5" />
               {module.estimated_duration_minutes}m
             </span>
@@ -51,10 +51,10 @@ export function ModuleCard({ assignment }: ModuleCardProps) {
 
         <div className="space-y-1">
           <div className="flex items-center justify-between text-[10px]">
-            <span className="text-zinc-500">
+            <span className="text-v2-ink-muted">
               {completedLessons}/{totalLessons} lessons
             </span>
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+            <span className="font-medium text-v2-ink dark:text-v2-ink-muted">
               {totalLessons > 0
                 ? Math.round((completedLessons / totalLessons) * 100)
                 : 0}
@@ -72,7 +72,7 @@ export function ModuleCard({ assignment }: ModuleCardProps) {
         )}
 
         {assignment.due_date && !isOverdue && (
-          <div className="text-[10px] text-zinc-400 mt-1">
+          <div className="text-[10px] text-v2-ink-subtle mt-1">
             Due {new Date(assignment.due_date).toLocaleDateString()}
           </div>
         )}

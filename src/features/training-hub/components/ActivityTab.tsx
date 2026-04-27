@@ -245,25 +245,27 @@ export function ActivityTab({ searchQuery }: ActivityTabProps) {
       <div className="flex items-center gap-3 text-[11px] mb-2">
         <div className="flex items-center gap-1">
           <Mail className="h-3 w-3 text-blue-500" />
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">
+          <span className="font-medium text-v2-ink dark:text-v2-ink">
             {recentEmails?.length || 0}
           </span>
-          <span className="text-zinc-500 dark:text-zinc-400">emails</span>
+          <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+            emails
+          </span>
         </div>
-        <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+        <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
         <div className="flex items-center gap-1">
           <Bell className="h-3 w-3 text-purple-500" />
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">
+          <span className="font-medium text-v2-ink dark:text-v2-ink">
             {recentNotifications?.length || 0}
           </span>
-          <span className="text-zinc-500 dark:text-zinc-400">
+          <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
             notifications
           </span>
         </div>
       </div>
 
       {/* Activity list */}
-      <div className="flex-1 overflow-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
+      <div className="flex-1 overflow-auto rounded-lg border border-v2-ring dark:border-v2-ring-strong">
         {isLoading ? (
           <div className="p-3 space-y-2">
             {[1, 2, 3, 4, 5].map((i) => (
@@ -273,8 +275,8 @@ export function ActivityTab({ searchQuery }: ActivityTabProps) {
         ) : filteredActivities.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center py-8">
-              <Clock className="h-6 w-6 mx-auto mb-2 text-zinc-400" />
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <Clock className="h-6 w-6 mx-auto mb-2 text-v2-ink-subtle" />
+              <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 {searchQuery
                   ? "No activity matches your search"
                   : "No recent activity"}
@@ -282,11 +284,11 @@ export function ActivityTab({ searchQuery }: ActivityTabProps) {
             </div>
           </div>
         ) : (
-          <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+          <div className="divide-y divide-v2-ring dark:divide-v2-ring">
             {filteredActivities.map((activity) => (
               <div
                 key={`${activity.type}-${activity.id}`}
-                className="flex items-start gap-2.5 px-2.5 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                className="flex items-start gap-2.5 px-2.5 py-2 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 transition-colors"
               >
                 {/* Icon */}
                 <div className="mt-0.5">
@@ -306,24 +308,24 @@ export function ActivityTab({ searchQuery }: ActivityTabProps) {
                   {activity.type === "email" ? (
                     <>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                        <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink truncate">
                           {activity.subject}
                         </span>
                         {getEmailStatusIcon(activity.status)}
                       </div>
-                      <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+                      <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
                         To: {activity.recipient}
                       </div>
                     </>
                   ) : (
                     <>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                        <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink truncate">
                           {activity.title}
                         </span>
                         {getNotificationTypeIcon(activity.notification_type)}
                       </div>
-                      <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+                      <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
                         {activity.message || `Sent to ${activity.user_name}`}
                       </div>
                     </>
@@ -342,7 +344,7 @@ export function ActivityTab({ searchQuery }: ActivityTabProps) {
                   >
                     {activity.type === "email" ? "Email" : "Notification"}
                   </Badge>
-                  <span className="text-[9px] text-zinc-500 dark:text-zinc-400">
+                  <span className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     {formatDistanceToNow(new Date(activity.created_at), {
                       addSuffix: true,
                     })}
@@ -353,7 +355,7 @@ export function ActivityTab({ searchQuery }: ActivityTabProps) {
 
             {/* Load More Button */}
             {hasMoreData && (
-              <div className="p-3 flex justify-center border-t border-zinc-100 dark:border-zinc-800">
+              <div className="p-3 flex justify-center border-t border-v2-ring dark:border-v2-ring">
                 <Button
                   variant="outline"
                   size="sm"

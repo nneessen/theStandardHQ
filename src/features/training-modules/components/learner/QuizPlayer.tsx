@@ -85,10 +85,10 @@ export function QuizPlayer({ quiz, lessonId: _lessonId }: QuizPlayerProps) {
   if (questions.length === 0) {
     return (
       <div className="max-w-2xl mx-auto p-6 text-center space-y-2">
-        <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+        <h3 className="text-sm font-medium text-v2-ink dark:text-v2-ink">
           Quiz not ready
         </h3>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-v2-ink-muted">
           This quiz doesn't have any questions yet. Please check back later or
           contact your trainer.
         </p>
@@ -103,14 +103,14 @@ export function QuizPlayer({ quiz, lessonId: _lessonId }: QuizPlayerProps) {
   return (
     <div className="max-w-2xl mx-auto p-4 space-y-4">
       {/* Progress */}
-      <div className="flex items-center justify-between text-[11px] text-zinc-500">
+      <div className="flex items-center justify-between text-[11px] text-v2-ink-muted">
         <span>
           Question {currentQ + 1} of {questions.length}
         </span>
         <span>{quiz.pass_threshold}% needed to pass</span>
       </div>
 
-      <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-1">
+      <div className="w-full bg-v2-ring dark:bg-v2-ring-strong rounded-full h-1">
         <div
           className="h-1 rounded-full bg-blue-500 transition-all"
           style={{ width: `${((currentQ + 1) / questions.length) * 100}%` }}
@@ -119,7 +119,7 @@ export function QuizPlayer({ quiz, lessonId: _lessonId }: QuizPlayerProps) {
 
       {/* Question */}
       <div className="space-y-3">
-        <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+        <h3 className="text-sm font-medium text-v2-ink dark:text-v2-ink">
           {question.question_text}
         </h3>
 
@@ -133,7 +133,7 @@ export function QuizPlayer({ quiz, lessonId: _lessonId }: QuizPlayerProps) {
                 className={`w-full text-left px-3 py-2 rounded-lg border text-xs transition-colors ${
                   isSelected
                     ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
-                    : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600"
+                    : "border-v2-ring dark:border-v2-ring-strong hover:border-v2-ring-strong dark:hover:border-v2-ring-strong"
                 }`}
               >
                 {option.option_text}

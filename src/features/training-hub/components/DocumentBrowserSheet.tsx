@@ -69,7 +69,7 @@ const CATEGORY_ICONS: Record<TrainingDocumentCategory, React.ReactNode> = {
 
 // File type icon helper
 function getFileIcon(fileType: string | null) {
-  if (!fileType) return <File className="h-4 w-4 text-zinc-400" />;
+  if (!fileType) return <File className="h-4 w-4 text-v2-ink-subtle" />;
   if (fileType.includes("pdf"))
     return <FileText className="h-4 w-4 text-red-500" />;
   if (fileType.includes("word") || fileType.includes("document"))
@@ -80,7 +80,7 @@ function getFileIcon(fileType: string | null) {
     return <Presentation className="h-4 w-4 text-orange-500" />;
   if (fileType.includes("image"))
     return <Image className="h-4 w-4 text-purple-500" />;
-  return <File className="h-4 w-4 text-zinc-400" />;
+  return <File className="h-4 w-4 text-v2-ink-subtle" />;
 }
 
 export function DocumentBrowserSheet({
@@ -153,7 +153,7 @@ export function DocumentBrowserSheet({
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent className="w-[400px] sm:w-[480px] flex flex-col p-0">
-        <SheetHeader className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+        <SheetHeader className="px-4 py-3 border-b border-v2-ring dark:border-v2-ring">
           <SheetTitle className="text-sm flex items-center gap-2">
             <Paperclip className="h-4 w-4" />
             Attach Documents
@@ -161,10 +161,10 @@ export function DocumentBrowserSheet({
         </SheetHeader>
 
         {/* Filters */}
-        <div className="px-4 py-2 border-b border-zinc-200 dark:border-zinc-800 space-y-2">
+        <div className="px-4 py-2 border-b border-v2-ring dark:border-v2-ring space-y-2">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-v2-ink-subtle" />
             <Input
               placeholder="Search documents..."
               value={search}
@@ -221,10 +221,10 @@ export function DocumentBrowserSheet({
         <ScrollArea className="flex-1">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+              <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
             </div>
           ) : documents && documents.length > 0 ? (
-            <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            <div className="divide-y divide-v2-ring dark:divide-v2-ring">
               {documents.map((doc) => {
                 const selected = isSelected(doc);
                 const disabled =
@@ -239,7 +239,7 @@ export function DocumentBrowserSheet({
                         ? "bg-blue-50 dark:bg-blue-950/30"
                         : disabled
                           ? "opacity-50 cursor-not-allowed"
-                          : "hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                          : "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50"
                     }`}
                   >
                     <Checkbox
@@ -249,7 +249,7 @@ export function DocumentBrowserSheet({
                     />
                     {getFileIcon(doc.fileType)}
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                      <p className="text-xs font-medium text-v2-ink dark:text-v2-ink truncate">
                         {doc.name}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
@@ -259,7 +259,7 @@ export function DocumentBrowserSheet({
                         >
                           {TRAINING_CATEGORY_CONFIG[doc.category]?.label}
                         </Badge>
-                        <span className="text-[10px] text-zinc-400">
+                        <span className="text-[10px] text-v2-ink-subtle">
                           {formatFileSize(doc.fileSize)}
                         </span>
                       </div>
@@ -269,7 +269,7 @@ export function DocumentBrowserSheet({
               })}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-zinc-400">
+            <div className="flex flex-col items-center justify-center py-8 text-v2-ink-subtle">
               <FileText className="h-8 w-8 mb-2 opacity-50" />
               <p className="text-xs">No documents found</p>
               {(search || categoryFilter !== "all") && (
@@ -280,7 +280,7 @@ export function DocumentBrowserSheet({
         </ScrollArea>
 
         {/* Footer */}
-        <SheetFooter className="px-4 py-3 border-t border-zinc-200 dark:border-zinc-800 gap-2">
+        <SheetFooter className="px-4 py-3 border-t border-v2-ring dark:border-v2-ring gap-2">
           <Button
             variant="outline"
             size="sm"

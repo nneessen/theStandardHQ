@@ -71,7 +71,7 @@ export function PresentationUploader({
   if (selectedFile) {
     const isAudio = AUDIO_TYPES.includes(selectedFile.type);
     return (
-      <div className="flex items-center gap-2 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+      <div className="flex items-center gap-2 p-2.5 rounded-lg border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
         {isAudio ? (
           <FileAudio className="h-4 w-4 text-emerald-500 flex-shrink-0" />
         ) : (
@@ -79,7 +79,7 @@ export function PresentationUploader({
         )}
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium truncate">{selectedFile.name}</p>
-          <p className="text-[10px] text-zinc-500">
+          <p className="text-[10px] text-v2-ink-muted">
             {formatSize(selectedFile.size)}
           </p>
         </div>
@@ -108,14 +108,14 @@ export function PresentationUploader({
         className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
           dragOver
             ? "border-blue-400 bg-blue-50 dark:bg-blue-900/20"
-            : "border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600"
+            : "border-v2-ring-strong dark:border-v2-ring-strong hover:border-v2-ring-strong dark:hover:border-v2-ring-strong"
         }`}
       >
-        <Upload className="h-5 w-5 mx-auto mb-2 text-zinc-400" />
-        <p className="text-xs text-zinc-600 dark:text-zinc-400">
+        <Upload className="h-5 w-5 mx-auto mb-2 text-v2-ink-subtle" />
+        <p className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle">
           Drop an audio or video file here or click to browse
         </p>
-        <p className="text-[10px] text-zinc-400 mt-1">
+        <p className="text-[10px] text-v2-ink-subtle mt-1">
           MP3, WAV, OGG &middot; MP4, WebM, MOV &middot; Max 500MB
         </p>
       </div>

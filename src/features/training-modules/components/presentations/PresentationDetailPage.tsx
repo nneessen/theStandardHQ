@@ -54,16 +54,16 @@ export default function PresentationDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="h-[calc(100vh-4rem)] flex items-center justify-center bg-zinc-50/40 dark:bg-zinc-950">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+      <div className="h-[calc(100vh-4rem)] flex items-center justify-center bg-v2-canvas/40 dark:bg-v2-canvas">
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
 
   if (!submission) {
     return (
-      <div className="h-[calc(100vh-4rem)] flex flex-col items-center justify-center gap-2 bg-zinc-50/40 dark:bg-zinc-950">
-        <p className="text-xs text-zinc-500">Submission not found</p>
+      <div className="h-[calc(100vh-4rem)] flex flex-col items-center justify-center gap-2 bg-v2-canvas/40 dark:bg-v2-canvas">
+        <p className="text-xs text-v2-ink-muted">Submission not found</p>
         <Button
           variant="ghost"
           size="sm"
@@ -99,9 +99,9 @@ export default function PresentationDetailPage() {
     : "text-blue-500 dark:text-blue-400";
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col bg-zinc-50/60 dark:bg-zinc-950">
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-v2-canvas/60 dark:bg-v2-canvas">
       {/* Header (raised white card) */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 shadow-sm">
+      <div className="flex items-center justify-between bg-v2-card px-3 py-2 border-b border-v2-ring dark:border-v2-ring shadow-sm">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -112,15 +112,15 @@ export default function PresentationDetailPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <div
-            className={`p-1.5 rounded-md bg-zinc-100 dark:bg-zinc-800/80 ${fileIconColor}`}
+            className={`p-1.5 rounded-md bg-v2-card-tinted dark:bg-v2-card-tinted/80 ${fileIconColor}`}
           >
             <FileIcon className="h-3.5 w-3.5" />
           </div>
           <div>
-            <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 leading-tight">
+            <h1 className="text-sm font-semibold text-v2-ink dark:text-v2-ink leading-tight">
               {submission.title}
             </h1>
-            <p className="text-[10px] text-zinc-500 mt-0.5">
+            <p className="text-[10px] text-v2-ink-muted mt-0.5">
               by {submitterName} &middot; Week of{" "}
               {new Date(submission.week_start + "T00:00:00").toLocaleDateString(
                 "en-US",
@@ -135,7 +135,7 @@ export default function PresentationDetailPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-zinc-400 hover:text-red-500"
+              className="h-7 w-7 text-v2-ink-subtle hover:text-red-500"
               onClick={() => setShowDeleteDialog(true)}
               disabled={deleteMutation.isPending}
             >
@@ -159,21 +159,21 @@ export default function PresentationDetailPage() {
             />
 
             {submission.description && (
-              <section className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
-                <header className="px-3 py-2 bg-zinc-50/80 dark:bg-zinc-900/80 border-b border-zinc-200 dark:border-zinc-800">
-                  <h3 className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide">
+              <section className="rounded-xl border border-v2-ring dark:border-v2-ring bg-v2-card shadow-sm overflow-hidden">
+                <header className="px-3 py-2 bg-v2-canvas/80 dark:bg-v2-card/80 border-b border-v2-ring dark:border-v2-ring">
+                  <h3 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink-muted uppercase tracking-wide">
                     Description
                   </h3>
                 </header>
-                <p className="px-3 py-2.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">
+                <p className="px-3 py-2.5 text-xs text-v2-ink dark:text-v2-ink-muted whitespace-pre-wrap leading-relaxed">
                   {submission.description}
                 </p>
               </section>
             )}
 
             {/* Metadata strip */}
-            <section className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm">
-              <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-zinc-100 dark:divide-zinc-800/50">
+            <section className="rounded-xl border border-v2-ring dark:border-v2-ring bg-v2-card shadow-sm">
+              <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-v2-ring dark:divide-v2-ring/50">
                 <MetaCell
                   icon={<FileIcon className={`h-3 w-3 ${fileIconColor}`} />}
                   label="Type"
@@ -184,25 +184,25 @@ export default function PresentationDetailPage() {
                   }
                 />
                 <MetaCell
-                  icon={<HardDrive className="h-3 w-3 text-zinc-400" />}
+                  icon={<HardDrive className="h-3 w-3 text-v2-ink-subtle" />}
                   label="Size"
                   value={`${(submission.file_size / (1024 * 1024)).toFixed(1)} MB`}
                 />
                 {submission.duration_seconds ? (
                   <MetaCell
-                    icon={<Clock className="h-3 w-3 text-zinc-400" />}
+                    icon={<Clock className="h-3 w-3 text-v2-ink-subtle" />}
                     label="Duration"
                     value={`${Math.floor(submission.duration_seconds / 60)}:${(submission.duration_seconds % 60).toString().padStart(2, "0")}`}
                   />
                 ) : (
                   <MetaCell
-                    icon={<Clock className="h-3 w-3 text-zinc-400" />}
+                    icon={<Clock className="h-3 w-3 text-v2-ink-subtle" />}
                     label="Duration"
                     value="—"
                   />
                 )}
                 <MetaCell
-                  icon={<Calendar className="h-3 w-3 text-zinc-400" />}
+                  icon={<Calendar className="h-3 w-3 text-v2-ink-subtle" />}
                   label="Submitted"
                   value={new Date(submission.created_at).toLocaleDateString(
                     "en-US",
@@ -271,11 +271,11 @@ interface MetaCellProps {
 function MetaCell({ icon, label, value }: MetaCellProps) {
   return (
     <div className="px-3 py-2">
-      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wide text-zinc-500 mb-0.5">
+      <div className="flex items-center gap-1 text-[10px] uppercase tracking-wide text-v2-ink-muted mb-0.5">
         {icon}
         {label}
       </div>
-      <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate">
+      <p className="text-xs font-medium text-v2-ink dark:text-v2-ink truncate">
         {value}
       </p>
     </div>

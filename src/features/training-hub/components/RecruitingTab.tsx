@@ -179,47 +179,55 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
 
   const getPhaseColor = (status: string | null | undefined): string => {
     if (!status)
-      return "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
+      return "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle";
     // Use terminal status colors for completed/dropped, else default to blue for pipeline phases
     const colorClass =
       TERMINAL_STATUS_COLORS[status] || "bg-blue-100 text-blue-800";
     return (
       colorClass ||
-      "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+      "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle"
     );
   };
 
   return (
     <div className="flex flex-col h-full">
       {/* Header with stats and actions */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring dark:border-v2-ring">
         <div className="flex items-center gap-4 text-[11px]">
           <div className="flex items-center gap-1">
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">
+            <span className="font-medium text-v2-ink dark:text-v2-ink">
               {stats.total}
             </span>
-            <span className="text-zinc-500 dark:text-zinc-400">total</span>
+            <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+              total
+            </span>
           </div>
-          <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+          <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
           <div className="flex items-center gap-1">
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">
+            <span className="font-medium text-v2-ink dark:text-v2-ink">
               {stats.active}
             </span>
-            <span className="text-zinc-500 dark:text-zinc-400">active</span>
+            <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+              active
+            </span>
           </div>
-          <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+          <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
           <div className="flex items-center gap-1">
             <span className="font-medium text-emerald-600 dark:text-emerald-400">
               {stats.completed}
             </span>
-            <span className="text-zinc-500 dark:text-zinc-400">complete</span>
+            <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+              complete
+            </span>
           </div>
-          <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+          <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
           <div className="flex items-center gap-1">
             <span className="font-medium text-red-600 dark:text-red-400">
               {stats.dropped}
             </span>
-            <span className="text-zinc-500 dark:text-zinc-400">dropped</span>
+            <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+              dropped
+            </span>
           </div>
         </div>
 
@@ -228,7 +236,7 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
             size="sm"
             variant="ghost"
             onClick={handleExportCSV}
-            className="h-6 text-[10px] px-2 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+            className="h-6 text-[10px] px-2 text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-canvas"
           >
             <Download className="h-3 w-3 mr-1" />
             Export
@@ -245,9 +253,9 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-zinc-100 dark:border-zinc-800/50">
+      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-v2-ring dark:border-v2-ring/50">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="h-6 w-24 text-[10px] border-zinc-200 dark:border-zinc-700">
+          <SelectTrigger className="h-6 w-24 text-[10px] border-v2-ring dark:border-v2-ring-strong">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -267,7 +275,7 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
         </Select>
 
         <Select value={phaseFilter} onValueChange={setPhaseFilter}>
-          <SelectTrigger className="h-6 w-28 text-[10px] border-zinc-200 dark:border-zinc-700">
+          <SelectTrigger className="h-6 w-28 text-[10px] border-v2-ring dark:border-v2-ring-strong">
             <SelectValue placeholder="Phase" />
           </SelectTrigger>
           <SelectContent>
@@ -288,7 +296,7 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
 
         <div className="flex-1" />
 
-        <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+        <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           {filteredRecruits.length} results
         </span>
       </div>
@@ -304,20 +312,20 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
         ) : (
           <Table>
             <TableHeader className="sticky top-0 z-10">
-              <TableRow className="h-7 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-700">
-                <TableHead className="h-7 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 w-[200px]">
+              <TableRow className="h-7 bg-v2-canvas dark:bg-v2-card-tinted/50 border-b border-v2-ring dark:border-v2-ring-strong">
+                <TableHead className="h-7 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted w-[200px]">
                   Recruit
                 </TableHead>
-                <TableHead className="h-7 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 w-[140px]">
+                <TableHead className="h-7 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted w-[140px]">
                   Upline
                 </TableHead>
-                <TableHead className="h-7 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 w-[80px]">
+                <TableHead className="h-7 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted w-[80px]">
                   State
                 </TableHead>
-                <TableHead className="h-7 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 w-[100px]">
+                <TableHead className="h-7 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted w-[100px]">
                   Phase
                 </TableHead>
-                <TableHead className="h-7 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 w-[90px]">
+                <TableHead className="h-7 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted w-[90px]">
                   Updated
                 </TableHead>
               </TableRow>
@@ -346,10 +354,10 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
                   <TableRow
                     key={recruit.id}
                     onClick={() => handleSelectRecruit(recruit)}
-                    className={`h-9 border-b border-zinc-100 dark:border-zinc-800 cursor-pointer transition-colors ${
+                    className={`h-9 border-b border-v2-ring dark:border-v2-ring cursor-pointer transition-colors ${
                       isSelected
                         ? "bg-blue-50 dark:bg-blue-900/20"
-                        : "hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                        : "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50"
                     }`}
                   >
                     <TableCell className="py-1.5">
@@ -358,10 +366,10 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
                           {recruitName.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <div className="font-medium text-[11px] text-zinc-900 dark:text-zinc-100 truncate">
+                          <div className="font-medium text-[11px] text-v2-ink dark:text-v2-ink truncate">
                             {recruitName}
                           </div>
-                          <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+                          <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
                             {recruit.email}
                           </div>
                         </div>
@@ -369,17 +377,17 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
                     </TableCell>
                     <TableCell className="py-1.5">
                       {uplineName ? (
-                        <span className="text-[11px] text-zinc-600 dark:text-zinc-400 truncate">
+                        <span className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
                           {uplineName}
                         </span>
                       ) : (
-                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                        <span className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted">
                           -
                         </span>
                       )}
                     </TableCell>
                     <TableCell className="py-1.5">
-                      <span className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                      <span className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                         {recruit.resident_state || "-"}
                       </span>
                     </TableCell>
@@ -392,7 +400,7 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
                       </Badge>
                     </TableCell>
                     <TableCell className="py-1.5">
-                      <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                      <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                         {recruit.updated_at
                           ? formatDistanceToNow(new Date(recruit.updated_at), {
                               addSuffix: true,
@@ -407,7 +415,7 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
                 <TableRow>
                   <TableCell
                     colSpan={5}
-                    className="text-center text-[11px] text-zinc-500 dark:text-zinc-400 py-8"
+                    className="text-center text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle py-8"
                   >
                     {searchQuery
                       ? "No recruits match your search"
@@ -422,9 +430,9 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-3 py-2 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="flex items-center justify-between px-3 py-2 border-t border-v2-ring dark:border-v2-ring">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Rows:
             </span>
             <Select
@@ -434,7 +442,7 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
                 setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="h-6 w-14 text-[10px] border-zinc-200 dark:border-zinc-700">
+              <SelectTrigger className="h-6 w-14 text-[10px] border-v2-ring dark:border-v2-ring-strong">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -455,19 +463,19 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
             <Button
               size="sm"
               variant="outline"
-              className="h-6 w-6 p-0 border-zinc-200 dark:border-zinc-700"
+              className="h-6 w-6 p-0 border-v2-ring dark:border-v2-ring-strong"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
             >
               <ChevronLeft className="h-3 w-3" />
             </Button>
-            <span className="text-[10px] text-zinc-600 dark:text-zinc-400 px-2">
+            <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle px-2">
               {currentPage} / {totalPages}
             </span>
             <Button
               size="sm"
               variant="outline"
-              className="h-6 w-6 p-0 border-zinc-200 dark:border-zinc-700"
+              className="h-6 w-6 p-0 border-v2-ring dark:border-v2-ring-strong"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
             >

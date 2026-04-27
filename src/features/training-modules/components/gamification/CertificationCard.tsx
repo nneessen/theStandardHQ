@@ -17,27 +17,29 @@ export function CertificationCard({ userCert }: CertificationCardProps) {
       className={`flex items-center gap-2.5 p-2.5 rounded-lg border ${
         userCert.status === "active"
           ? "border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/10"
-          : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 opacity-60"
+          : "border-v2-ring dark:border-v2-ring bg-v2-canvas dark:bg-v2-card opacity-60"
       }`}
     >
       <div
         className={`h-8 w-8 rounded-full flex items-center justify-center ${
           userCert.status === "active"
             ? "bg-emerald-100 dark:bg-emerald-900/30"
-            : "bg-zinc-200 dark:bg-zinc-800"
+            : "bg-zinc-200 dark:bg-v2-card-tinted"
         }`}
       >
         <ShieldCheck
           className={`h-4 w-4 ${
-            userCert.status === "active" ? "text-emerald-600" : "text-zinc-400"
+            userCert.status === "active"
+              ? "text-emerald-600"
+              : "text-v2-ink-subtle"
           }`}
         />
       </div>
       <div className="flex-1 min-w-0">
-        <h4 className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+        <h4 className="text-xs font-medium text-v2-ink dark:text-v2-ink">
           {cert?.name}
         </h4>
-        <div className="flex items-center gap-2 text-[10px] text-zinc-500">
+        <div className="flex items-center gap-2 text-[10px] text-v2-ink-muted">
           <span>
             Earned {new Date(userCert.earned_at).toLocaleDateString()}
           </span>
@@ -55,7 +57,7 @@ export function CertificationCard({ userCert }: CertificationCardProps) {
         className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
           userCert.status === "active"
             ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400"
-            : "bg-zinc-200 dark:bg-zinc-700 text-zinc-500"
+            : "bg-v2-ring dark:bg-v2-ring-strong text-v2-ink-muted"
         }`}
       >
         {userCert.status}

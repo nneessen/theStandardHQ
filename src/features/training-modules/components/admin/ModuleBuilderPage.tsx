@@ -156,7 +156,7 @@ export default function ModuleBuilderPage({
   if (moduleLoading || !module) {
     return (
       <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -166,7 +166,7 @@ export default function ModuleBuilderPage({
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center gap-2 px-3 py-2 bg-v2-card border-b border-v2-ring dark:border-v2-ring">
         <Button
           variant="ghost"
           size="icon"
@@ -218,9 +218,9 @@ export default function ModuleBuilderPage({
       {/* Two-panel layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left: Lesson list */}
-        <div className="w-60 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex flex-col">
-          <div className="flex items-center justify-between px-2 py-1.5 border-b border-zinc-100 dark:border-zinc-800">
-            <span className="text-[11px] font-medium text-zinc-500">
+        <div className="w-60 border-r border-v2-ring dark:border-v2-ring bg-v2-card flex flex-col">
+          <div className="flex items-center justify-between px-2 py-1.5 border-b border-v2-ring dark:border-v2-ring">
+            <span className="text-[11px] font-medium text-v2-ink-muted">
               Lessons ({lessons.length})
             </span>
             <div className="flex gap-1">
@@ -279,7 +279,7 @@ export default function ModuleBuilderPage({
               </SortableContext>
             </DndContext>
             {lessons.length === 0 && (
-              <div className="text-center py-6 text-[10px] text-zinc-400">
+              <div className="text-center py-6 text-[10px] text-v2-ink-subtle">
                 No lessons yet.
                 <br />
                 Click + to add one.
@@ -295,7 +295,7 @@ export default function ModuleBuilderPage({
           ) : selectedLesson ? (
             <LessonEditor lesson={selectedLesson} />
           ) : (
-            <div className="h-full flex items-center justify-center text-xs text-zinc-400">
+            <div className="h-full flex items-center justify-center text-xs text-v2-ink-subtle">
               Select a lesson to edit, or click the gear icon for module
               settings.
             </div>
@@ -355,8 +355,8 @@ function SortableLessonItem({
       style={style}
       className={`flex items-center gap-1 px-1.5 py-1.5 rounded text-[11px] mb-0.5 group cursor-pointer transition-colors ${
         isSelected
-          ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-          : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+          ? "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink dark:text-v2-ink"
+          : "text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50"
       }`}
       onClick={onSelect}
     >
@@ -365,9 +365,9 @@ function SortableLessonItem({
         {...listeners}
         className="cursor-grab flex-shrink-0"
       >
-        <GripVertical className="h-3 w-3 text-zinc-300" />
+        <GripVertical className="h-3 w-3 text-v2-ink-subtle" />
       </span>
-      <span className="h-4 w-4 rounded bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-[8px] font-bold flex-shrink-0">
+      <span className="h-4 w-4 rounded bg-v2-ring dark:bg-v2-ring-strong flex items-center justify-center text-[8px] font-bold flex-shrink-0">
         {typeIcon}
       </span>
       <span className="truncate flex-1">{lesson.title}</span>
@@ -379,7 +379,7 @@ function SortableLessonItem({
         }}
         title="Duplicate lesson"
       >
-        <Copy className="h-3 w-3 text-zinc-400 hover:text-blue-500" />
+        <Copy className="h-3 w-3 text-v2-ink-subtle hover:text-blue-500" />
       </button>
       <button
         className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
@@ -389,7 +389,7 @@ function SortableLessonItem({
         }}
         title="Delete lesson"
       >
-        <Trash2 className="h-3 w-3 text-zinc-400 hover:text-red-500" />
+        <Trash2 className="h-3 w-3 text-v2-ink-subtle hover:text-red-500" />
       </button>
     </div>
   );
@@ -470,12 +470,14 @@ function ModuleSettings({
 
   return (
     <div className="max-w-lg space-y-3">
-      <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+      <h2 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
         Module Settings
       </h2>
 
       <div className="space-y-2">
-        <label className="text-[11px] font-medium text-zinc-500">Title</label>
+        <label className="text-[11px] font-medium text-v2-ink-muted">
+          Title
+        </label>
         <Input
           value={localTitle}
           onChange={(e) => setLocalTitle(e.target.value)}
@@ -484,26 +486,26 @@ function ModuleSettings({
       </div>
 
       <div className="space-y-2">
-        <label className="text-[11px] font-medium text-zinc-500">
+        <label className="text-[11px] font-medium text-v2-ink-muted">
           Description
         </label>
         <textarea
           value={localDesc}
           onChange={(e) => setLocalDesc(e.target.value)}
           rows={3}
-          className="w-full text-xs rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 resize-none"
+          className="w-full text-xs rounded-md border border-v2-ring dark:border-v2-ring-strong bg-v2-card p-2 resize-none"
         />
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <label className="text-[11px] font-medium text-zinc-500">
+          <label className="text-[11px] font-medium text-v2-ink-muted">
             Category
           </label>
           <select
             value={module.category}
             onChange={(e) => update("category", e.target.value)}
-            className="w-full h-7 text-xs border border-zinc-200 dark:border-zinc-700 rounded-md px-2 bg-white dark:bg-zinc-900"
+            className="w-full h-7 text-xs border border-v2-ring dark:border-v2-ring-strong rounded-md px-2 bg-v2-card"
           >
             {MODULE_CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
@@ -513,13 +515,13 @@ function ModuleSettings({
           </select>
         </div>
         <div className="space-y-1">
-          <label className="text-[11px] font-medium text-zinc-500">
+          <label className="text-[11px] font-medium text-v2-ink-muted">
             Difficulty
           </label>
           <select
             value={module.difficulty_level}
             onChange={(e) => update("difficulty_level", e.target.value)}
-            className="w-full h-7 text-xs border border-zinc-200 dark:border-zinc-700 rounded-md px-2 bg-white dark:bg-zinc-900"
+            className="w-full h-7 text-xs border border-v2-ring dark:border-v2-ring-strong rounded-md px-2 bg-v2-card"
           >
             {DIFFICULTY_LEVELS.map((level) => (
               <option key={level} value={level}>
@@ -532,7 +534,7 @@ function ModuleSettings({
 
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <label className="text-[11px] font-medium text-zinc-500">
+          <label className="text-[11px] font-medium text-v2-ink-muted">
             Duration (min)
           </label>
           <Input
@@ -544,7 +546,7 @@ function ModuleSettings({
           />
         </div>
         <div className="space-y-1">
-          <label className="text-[11px] font-medium text-zinc-500">
+          <label className="text-[11px] font-medium text-v2-ink-muted">
             XP Reward
           </label>
           <Input
@@ -557,7 +559,9 @@ function ModuleSettings({
       </div>
 
       <div className="space-y-1">
-        <label className="text-[11px] font-medium text-zinc-500">Tags</label>
+        <label className="text-[11px] font-medium text-v2-ink-muted">
+          Tags
+        </label>
         <div className="flex flex-wrap gap-1 mb-1">
           {module.tags.map((tag) => (
             <Badge key={tag} variant="secondary" className="text-[10px] px-1.5">

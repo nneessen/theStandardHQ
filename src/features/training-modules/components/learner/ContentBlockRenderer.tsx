@@ -102,9 +102,9 @@ export function ContentBlockRenderer({ block }: ContentBlockRendererProps) {
 
       const embedUrl = getEmbedUrl(metadata.video_id, metadata.platform);
       return (
-        <div className="rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700">
+        <div className="rounded-lg overflow-hidden border border-v2-ring dark:border-v2-ring-strong">
           {block.title && (
-            <div className="px-2.5 py-1.5 bg-zinc-50 dark:bg-zinc-800 text-[11px] font-medium">
+            <div className="px-2.5 py-1.5 bg-v2-canvas dark:bg-v2-card-tinted text-[11px] font-medium">
               {block.title}
             </div>
           )}
@@ -133,7 +133,7 @@ export function ContentBlockRenderer({ block }: ContentBlockRendererProps) {
           href={block.external_url || "#"}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          className="flex items-center gap-2 p-2.5 rounded-lg border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50 hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted transition-colors"
         >
           <ExternalLink className="h-4 w-4 text-blue-500 flex-shrink-0" />
           <div className="flex-1 min-w-0">
@@ -141,7 +141,7 @@ export function ContentBlockRenderer({ block }: ContentBlockRendererProps) {
               {block.external_url_label || block.external_url}
             </p>
             {block.external_url_label && (
-              <p className="text-[10px] text-zinc-500 truncate">
+              <p className="text-[10px] text-v2-ink-muted truncate">
                 {block.external_url}
               </p>
             )}
@@ -167,13 +167,13 @@ function PdfBlockRenderer({ block }: { block: TrainingLessonContent }) {
 
   if (!block.document_id || !doc) {
     return (
-      <div className="flex items-center gap-2 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+      <div className="flex items-center gap-2 p-2.5 rounded-lg border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
         <FileText className="h-4 w-4 text-red-500 flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium truncate">
             {block.title || "Document"}
           </p>
-          <p className="text-[10px] text-zinc-500">
+          <p className="text-[10px] text-v2-ink-muted">
             PDF document not available
           </p>
         </div>
@@ -183,11 +183,11 @@ function PdfBlockRenderer({ block }: { block: TrainingLessonContent }) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+      <div className="flex items-center gap-2 p-2.5 rounded-lg border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
         <FileText className="h-4 w-4 text-red-500 flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium truncate">{doc.name}</p>
-          <p className="text-[10px] text-zinc-500">
+          <p className="text-[10px] text-v2-ink-muted">
             {((doc.fileSize || 0) / 1024).toFixed(0)} KB
           </p>
         </div>
@@ -232,18 +232,18 @@ function SlidesBlockRenderer({ block }: { block: TrainingLessonContent }) {
 
   if (!block.document_id || !doc) {
     return (
-      <div className="flex items-center gap-2 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+      <div className="flex items-center gap-2 p-2.5 rounded-lg border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
         <Presentation className="h-4 w-4 text-blue-500 flex-shrink-0" />
-        <p className="text-xs text-zinc-500">Slides not available</p>
+        <p className="text-xs text-v2-ink-muted">Slides not available</p>
       </div>
     );
   }
 
   if (!signedUrl) {
     return (
-      <div className="flex items-center gap-2 p-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+      <div className="flex items-center gap-2 p-2.5 rounded-lg border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
         <Presentation className="h-4 w-4 text-blue-500 flex-shrink-0" />
-        <p className="text-xs text-zinc-400">Loading slides...</p>
+        <p className="text-xs text-v2-ink-subtle">Loading slides...</p>
       </div>
     );
   }
@@ -288,7 +288,7 @@ function ScriptPromptRenderer({ block }: { block: TrainingLessonContent }) {
         )}
       </div>
       {block.script_prompt_text && (
-        <div className="text-xs text-zinc-800 dark:text-zinc-200 leading-relaxed whitespace-pre-wrap">
+        <div className="text-xs text-v2-ink dark:text-v2-ink leading-relaxed whitespace-pre-wrap">
           {block.script_prompt_text}
         </div>
       )}

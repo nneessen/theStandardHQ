@@ -45,7 +45,10 @@ function shiftWeek(weekStart: string, direction: -1 | 1): string {
   return date.toISOString().split("T")[0];
 }
 
-export function PresentationWeekPicker({ weekStart, onChange }: PresentationWeekPickerProps) {
+export function PresentationWeekPicker({
+  weekStart,
+  onChange,
+}: PresentationWeekPickerProps) {
   const currentWeek = getCurrentWeekStart();
   const isCurrentWeek = weekStart === currentWeek;
 
@@ -60,7 +63,7 @@ export function PresentationWeekPicker({ weekStart, onChange }: PresentationWeek
         <ChevronLeft className="h-3.5 w-3.5" />
       </Button>
 
-      <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 min-w-[140px] text-center">
+      <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted min-w-[140px] text-center">
         {formatWeekRange(weekStart)}
         {isCurrentWeek && (
           <span className="ml-1 text-[10px] text-blue-500">(this week)</span>

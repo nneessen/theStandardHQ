@@ -43,10 +43,10 @@ export function QuizResults({ result, quiz, onRetake }: QuizResultsProps) {
       )}
 
       <div className="space-y-1">
-        <div className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+        <div className="text-3xl font-bold text-v2-ink dark:text-v2-ink">
           {Math.round(result.score_percentage)}%
         </div>
-        <div className="text-xs text-zinc-500">
+        <div className="text-xs text-v2-ink-muted">
           {result.score_points}/{result.max_points} points
         </div>
         {result.xp_earned > 0 && (
@@ -58,7 +58,7 @@ export function QuizResults({ result, quiz, onRetake }: QuizResultsProps) {
 
       {/* Answer review */}
       {quiz.show_correct_answers && (
-        <div className="text-left space-y-2 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="text-left space-y-2 pt-4 border-t border-v2-ring dark:border-v2-ring">
           {result.answers.map((answer, i) => {
             const question = quiz.questions[i];
             return (
@@ -72,11 +72,11 @@ export function QuizResults({ result, quiz, onRetake }: QuizResultsProps) {
                   <XCircle className="h-3.5 w-3.5 text-red-500 mt-0.5 flex-shrink-0" />
                 )}
                 <div>
-                  <span className="text-zinc-700 dark:text-zinc-300">
+                  <span className="text-v2-ink dark:text-v2-ink-muted">
                     {question?.question_text}
                   </span>
                   {!answer.is_correct && question?.explanation && (
-                    <p className="text-[10px] text-zinc-500 mt-0.5">
+                    <p className="text-[10px] text-v2-ink-muted mt-0.5">
                       {question.explanation}
                     </p>
                   )}

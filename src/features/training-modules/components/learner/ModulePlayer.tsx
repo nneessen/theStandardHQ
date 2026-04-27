@@ -64,17 +64,12 @@ export default function ModulePlayer({ moduleId }: ModulePlayerProps) {
     if (currentIndex < lessons.length - 1) {
       setCurrentIndex(currentIndex + 1);
     }
-  }, [
-    currentLesson,
-    completeLesson,
-    currentIndex,
-    lessons.length,
-  ]);
+  }, [currentLesson, completeLesson, currentIndex, lessons.length]);
 
   if (moduleLoading || !module) {
     return (
       <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -82,7 +77,7 @@ export default function ModulePlayer({ moduleId }: ModulePlayerProps) {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center gap-2 px-3 py-2 bg-v2-card border-b border-v2-ring dark:border-v2-ring">
         <Button
           variant="ghost"
           size="sm"
@@ -93,7 +88,7 @@ export default function ModulePlayer({ moduleId }: ModulePlayerProps) {
           Back
         </Button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+          <h1 className="text-sm font-semibold text-v2-ink dark:text-v2-ink truncate">
             {module.title}
           </h1>
           <div className="flex items-center gap-2">
@@ -102,7 +97,7 @@ export default function ModulePlayer({ moduleId }: ModulePlayerProps) {
               max={lessons.length}
               className="w-32"
             />
-            <span className="text-[10px] text-zinc-500">
+            <span className="text-[10px] text-v2-ink-muted">
               {completedCount}/{lessons.length} lessons
             </span>
           </div>
@@ -112,7 +107,7 @@ export default function ModulePlayer({ moduleId }: ModulePlayerProps) {
       {/* Lesson navigation sidebar + content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Lesson nav sidebar */}
-        <div className="w-52 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-y-auto p-2">
+        <div className="w-52 border-r border-v2-ring dark:border-v2-ring bg-v2-card overflow-y-auto p-2">
           {lessons.map((lesson, index) => {
             const prog = progressSummary.find((p) => p.lesson_id === lesson.id);
             const isComplete = prog?.status === "completed";
@@ -124,14 +119,14 @@ export default function ModulePlayer({ moduleId }: ModulePlayerProps) {
                 onClick={() => setCurrentIndex(index)}
                 className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left text-[11px] mb-0.5 transition-colors ${
                   isCurrent
-                    ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                    : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                    ? "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink dark:text-v2-ink"
+                    : "text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50"
                 }`}
               >
                 {isComplete ? (
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
                 ) : (
-                  <span className="h-3.5 w-3.5 rounded-full border border-zinc-300 dark:border-zinc-600 flex-shrink-0 flex items-center justify-center text-[8px]">
+                  <span className="h-3.5 w-3.5 rounded-full border border-v2-ring-strong dark:border-v2-ring-strong flex-shrink-0 flex items-center justify-center text-[8px]">
                     {index + 1}
                   </span>
                 )}
@@ -148,7 +143,7 @@ export default function ModulePlayer({ moduleId }: ModulePlayerProps) {
       </div>
 
       {/* Bottom nav */}
-      <div className="flex items-center justify-between px-3 py-2 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between px-3 py-2 bg-v2-card border-t border-v2-ring dark:border-v2-ring">
         <Button
           variant="outline"
           size="sm"

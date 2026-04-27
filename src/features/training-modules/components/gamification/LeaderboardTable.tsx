@@ -22,17 +22,17 @@ export function LeaderboardTable({ agencyId }: LeaderboardTableProps) {
   const { user } = useAuth();
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring">
       {/* Period selector */}
-      <div className="flex items-center gap-1 p-2 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center gap-1 p-2 border-b border-v2-ring dark:border-v2-ring">
         {PERIODS.map((p) => (
           <button
             key={p.id}
             onClick={() => setPeriod(p.id)}
             className={`px-2 py-1 rounded text-[10px] font-medium transition-colors ${
               period === p.id
-                ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-                : "text-zinc-500 hover:text-zinc-700"
+                ? "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink dark:text-v2-ink"
+                : "text-v2-ink-muted hover:text-v2-ink"
             }`}
           >
             {p.label}
@@ -45,7 +45,7 @@ export function LeaderboardTable({ agencyId }: LeaderboardTableProps) {
           <Loader2 className="h-4 w-4 animate-spin" />
         </div>
       ) : (
-        <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+        <div className="divide-y divide-v2-ring dark:divide-v2-ring">
           {entries.map((entry) => {
             const isMe = entry.user_id === user?.id;
             return (
@@ -60,10 +60,10 @@ export function LeaderboardTable({ agencyId }: LeaderboardTableProps) {
                     entry.rank === 1
                       ? "text-amber-500"
                       : entry.rank === 2
-                        ? "text-zinc-400"
+                        ? "text-v2-ink-subtle"
                         : entry.rank === 3
                           ? "text-amber-700"
-                          : "text-zinc-400"
+                          : "text-v2-ink-subtle"
                   }`}
                 >
                   {Number(entry.rank) <= 3 ? (
@@ -88,7 +88,7 @@ export function LeaderboardTable({ agencyId }: LeaderboardTableProps) {
             );
           })}
           {entries.length === 0 && (
-            <div className="text-center py-6 text-xs text-zinc-400">
+            <div className="text-center py-6 text-xs text-v2-ink-subtle">
               No data yet
             </div>
           )}

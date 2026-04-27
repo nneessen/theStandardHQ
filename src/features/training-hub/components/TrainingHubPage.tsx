@@ -3,18 +3,10 @@
 // Note: Recruit pipeline management is now via the main /recruiting page
 // Note: Automation/workflows moved to super-admin-only /system/workflows page
 import { useState, useEffect } from "react";
-import {
-  Mail,
-  Activity,
-  Search,
-  X,
-  GraduationCap,
-  FileText,
-  BookOpen,
-} from "lucide-react";
+import { Mail, Search, X, GraduationCap, FileText } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PillNav, SoftCard } from "@/components/v2";
 import { useQuery } from "@tanstack/react-query";
 // eslint-disable-next-line no-restricted-imports
 import { supabase } from "@/services/base/supabase";
@@ -74,71 +66,50 @@ export default function TrainingHubPage() {
     },
   });
 
-  const tabs = [
-    {
-      id: "templates" as TabView,
-      label: "Email Templates",
-      icon: Mail,
-      count: templateStats?.count,
-    },
-    {
-      id: "documents" as TabView,
-      label: "Documents",
-      icon: FileText,
-      count: documentStats?.count,
-    },
-    {
-      id: "modules" as TabView,
-      label: "Modules",
-      icon: BookOpen,
-    },
-    { id: "activity" as TabView, label: "Activity", icon: Activity },
+  const tabItems = [
+    { label: "Email Templates", value: "templates" },
+    { label: "Documents", value: "documents" },
+    { label: "Modules", value: "modules" },
+    { label: "Activity", value: "activity" },
   ];
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
-      {/* Compact Header with inline stats */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-5">
-          <div className="flex items-center gap-2">
-            <GraduationCap className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-            <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+    <div className="flex flex-col gap-3">
+      {/* Compact header — title + inline stats + search */}
+      <header className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <GraduationCap className="h-4 w-4 text-v2-ink" />
+            <h1 className="text-base font-semibold tracking-tight text-v2-ink">
               Training Hub
             </h1>
           </div>
-
-          {/* Inline compact stats */}
-          <div className="flex items-center gap-3 text-[11px]">
-            <div className="flex items-center gap-1">
+          <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-v2-ink-muted flex-wrap leading-tight">
+            <span className="inline-flex items-center gap-1">
               <Mail className="h-3 w-3 text-blue-500" />
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {templateStats?.count || 0}
+              <span className="text-v2-ink font-semibold">
+                {templateStats?.count ?? 0}
               </span>
-              <span className="text-zinc-500 dark:text-zinc-400">
-                templates
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
+              templates
+            </span>
+            <span className="text-v2-ink-subtle">·</span>
+            <span className="inline-flex items-center gap-1">
               <FileText className="h-3 w-3 text-emerald-500" />
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {documentStats?.count || 0}
+              <span className="text-v2-ink font-semibold">
+                {documentStats?.count ?? 0}
               </span>
-              <span className="text-zinc-500 dark:text-zinc-400">
-                documents
-              </span>
-            </div>
+              documents
+            </span>
           </div>
         </div>
-
-        {/* Search Input */}
-        <div className="relative w-56">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400" />
+        <div className="relative w-56 flex-shrink-0">
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
           <Input
             type="text"
             placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-7 pl-7 pr-7 text-xs bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+            className="h-7 pl-7 pr-7 text-xs bg-v2-card border-v2-ring"
           />
           {searchQuery && (
             <Button
@@ -151,44 +122,16 @@ export default function TrainingHubPage() {
             </Button>
           )}
         </div>
-      </div>
+      </header>
 
-      {/* Compact tabs */}
-      <div className="flex items-center gap-0.5 bg-zinc-200/50 dark:bg-zinc-800/50 rounded-md p-0.5">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeView === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveView(tab.id)}
-              className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all ${
-                isActive
-                  ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-              }`}
-            >
-              <Icon className="h-3 w-3" />
-              <span>{tab.label}</span>
-              {tab.count !== undefined && tab.count > 0 && (
-                <Badge
-                  variant="secondary"
-                  className={`ml-1 h-4 px-1 text-[10px] ${
-                    isActive
-                      ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300"
-                      : "bg-zinc-300/50 dark:bg-zinc-700/50"
-                  }`}
-                >
-                  {tab.count}
-                </Badge>
-              )}
-            </button>
-          );
-        })}
-      </div>
+      <PillNav
+        size="sm"
+        activeValue={activeView}
+        onChange={(v) => setActiveView(v as TabView)}
+        items={tabItems}
+      />
 
-      {/* Content */}
-      <div className="flex-1 overflow-hidden bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+      <SoftCard padding="md">
         {activeView === "templates" && (
           <EmailTemplatesTab searchQuery={searchQuery} />
         )}
@@ -197,7 +140,7 @@ export default function TrainingHubPage() {
         )}
         {activeView === "modules" && <ModulesManagementTab />}
         {activeView === "activity" && <ActivityTab searchQuery={searchQuery} />}
-      </div>
+      </SoftCard>
     </div>
   );
 }

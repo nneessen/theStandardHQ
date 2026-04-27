@@ -144,7 +144,7 @@ export function ModulesManagementTab() {
       {/* Toolbar */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400" />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
           <Input
             placeholder="Search modules..."
             value={search}
@@ -155,7 +155,7 @@ export function ModulesManagementTab() {
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="h-7 text-xs border border-zinc-200 dark:border-zinc-700 rounded-md px-2 bg-white dark:bg-zinc-900"
+          className="h-7 text-xs border border-v2-ring dark:border-v2-ring-strong rounded-md px-2 bg-v2-card"
         >
           <option value="">All Categories</option>
           {MODULE_CATEGORIES.map((cat) => (
@@ -186,39 +186,39 @@ export function ModulesManagementTab() {
       {/* Table */}
       {isLoading ? (
         <div className="flex justify-center py-8">
-          <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+          <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
         </div>
       ) : (
-        <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden">
+        <div className="border border-v2-ring dark:border-v2-ring rounded-lg overflow-hidden">
           <table className="w-full text-xs">
             <thead>
-              <tr className="bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800">
-                <th className="text-left px-3 py-2 font-medium text-zinc-500">
+              <tr className="bg-v2-canvas dark:bg-v2-card-tinted/50 border-b border-v2-ring dark:border-v2-ring">
+                <th className="text-left px-3 py-2 font-medium text-v2-ink-muted">
                   Title
                 </th>
-                <th className="text-left px-3 py-2 font-medium text-zinc-500">
+                <th className="text-left px-3 py-2 font-medium text-v2-ink-muted">
                   Category
                 </th>
-                <th className="text-left px-3 py-2 font-medium text-zinc-500">
+                <th className="text-left px-3 py-2 font-medium text-v2-ink-muted">
                   Difficulty
                 </th>
-                <th className="text-center px-3 py-2 font-medium text-zinc-500">
+                <th className="text-center px-3 py-2 font-medium text-v2-ink-muted">
                   Status
                 </th>
-                <th className="text-center px-3 py-2 font-medium text-zinc-500">
+                <th className="text-center px-3 py-2 font-medium text-v2-ink-muted">
                   XP
                 </th>
-                <th className="text-right px-3 py-2 font-medium text-zinc-500">
+                <th className="text-right px-3 py-2 font-medium text-v2-ink-muted">
                   Updated
                 </th>
-                <th className="text-right px-3 py-2 font-medium text-zinc-500 w-10"></th>
+                <th className="text-right px-3 py-2 font-medium text-v2-ink-muted w-10"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            <tbody className="divide-y divide-v2-ring dark:divide-v2-ring">
               {modules.map((module) => (
                 <tr
                   key={module.id}
-                  className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30 cursor-pointer"
+                  className="hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/30 cursor-pointer"
                   onClick={() =>
                     navigate({
                       to: "/my-training/builder/$moduleId" as string,
@@ -227,11 +227,11 @@ export function ModulesManagementTab() {
                   }
                 >
                   <td className="px-3 py-2">
-                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                    <span className="font-medium text-v2-ink dark:text-v2-ink">
                       {module.title}
                     </span>
                     {module.description && (
-                      <p className="text-[10px] text-zinc-400 truncate max-w-xs mt-0.5">
+                      <p className="text-[10px] text-v2-ink-subtle truncate max-w-xs mt-0.5">
                         {module.description}
                       </p>
                     )}
@@ -250,10 +250,10 @@ export function ModulesManagementTab() {
                       {module.is_published ? "Published" : "Draft"}
                     </Badge>
                   </td>
-                  <td className="px-3 py-2 text-center text-zinc-500">
+                  <td className="px-3 py-2 text-center text-v2-ink-muted">
                     {module.xp_reward}
                   </td>
-                  <td className="px-3 py-2 text-right text-zinc-400">
+                  <td className="px-3 py-2 text-right text-v2-ink-subtle">
                     {new Date(module.updated_at).toLocaleDateString()}
                   </td>
                   <td
@@ -324,7 +324,10 @@ export function ModulesManagementTab() {
               ))}
               {modules.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="text-center py-8 text-zinc-400">
+                  <td
+                    colSpan={7}
+                    className="text-center py-8 text-v2-ink-subtle"
+                  >
                     No modules yet. Create your first training module.
                   </td>
                 </tr>
@@ -342,7 +345,7 @@ export function ModulesManagementTab() {
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-zinc-500">
+              <label className="text-[11px] font-medium text-v2-ink-muted">
                 Module Title
               </label>
               <Input
@@ -360,7 +363,7 @@ export function ModulesManagementTab() {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-zinc-500">
+              <label className="text-[11px] font-medium text-v2-ink-muted">
                 Category
               </label>
               <select
@@ -368,7 +371,7 @@ export function ModulesManagementTab() {
                 onChange={(e) =>
                   setNewModuleCategory(e.target.value as ModuleCategory)
                 }
-                className="w-full h-8 text-xs border border-zinc-200 dark:border-zinc-700 rounded-md px-2 bg-white dark:bg-zinc-900"
+                className="w-full h-8 text-xs border border-v2-ring dark:border-v2-ring-strong rounded-md px-2 bg-v2-card"
               >
                 {MODULE_CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>

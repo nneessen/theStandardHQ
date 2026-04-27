@@ -71,7 +71,7 @@ export function ContentBlockEditor({
       return <ScriptPromptBlock block={block} onUpdate={update} />;
     default:
       return (
-        <div className="text-[10px] text-zinc-400">
+        <div className="text-[10px] text-v2-ink-subtle">
           Unknown content type: {block.content_type}
         </div>
       );
@@ -111,7 +111,7 @@ function RichTextBlock({
 
   return (
     <div className="space-y-1">
-      <div className="flex items-center gap-1 text-[10px] text-zinc-500 mb-1">
+      <div className="flex items-center gap-1 text-[10px] text-v2-ink-muted mb-1">
         <Type className="h-3 w-3" />
         Rich Text
       </div>
@@ -143,7 +143,7 @@ function VideoBlock({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-1 text-[10px] text-zinc-500">
+      <div className="flex items-center gap-1 text-[10px] text-v2-ink-muted">
         <Video className="h-3 w-3" />
         Video URL
       </div>
@@ -154,7 +154,7 @@ function VideoBlock({
         className="h-7 text-xs"
       />
       {block.video_platform && (
-        <span className="text-[10px] text-zinc-400">
+        <span className="text-[10px] text-v2-ink-subtle">
           Platform detected: {block.video_platform}
         </span>
       )}
@@ -209,17 +209,17 @@ function PdfBlock({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-1 text-[10px] text-zinc-500">
+      <div className="flex items-center gap-1 text-[10px] text-v2-ink-muted">
         <FileText className="h-3 w-3" />
         PDF Document
       </div>
 
       {existingDoc ? (
-        <div className="flex items-center gap-2 p-2 rounded border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+        <div className="flex items-center gap-2 p-2 rounded border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
           <FileText className="h-4 w-4 text-red-500 flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium truncate">{existingDoc.name}</p>
-            <p className="text-[10px] text-zinc-500">
+            <p className="text-[10px] text-v2-ink-muted">
               {((existingDoc.fileSize || 0) / 1024).toFixed(0)} KB
             </p>
           </div>
@@ -235,14 +235,16 @@ function PdfBlock({
       ) : (
         <div
           onClick={() => !uploading && inputRef.current?.click()}
-          className="border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded p-4 text-center cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
+          className="border-2 border-dashed border-v2-ring-strong dark:border-v2-ring-strong rounded p-4 text-center cursor-pointer hover:border-v2-ring-strong dark:hover:border-v2-ring-strong transition-colors"
         >
           {uploading ? (
-            <Loader2 className="h-4 w-4 mx-auto animate-spin text-zinc-400" />
+            <Loader2 className="h-4 w-4 mx-auto animate-spin text-v2-ink-subtle" />
           ) : (
             <>
-              <Upload className="h-4 w-4 mx-auto mb-1 text-zinc-400" />
-              <p className="text-[10px] text-zinc-400">Click to upload a PDF</p>
+              <Upload className="h-4 w-4 mx-auto mb-1 text-v2-ink-subtle" />
+              <p className="text-[10px] text-v2-ink-subtle">
+                Click to upload a PDF
+              </p>
             </>
           )}
         </div>
@@ -310,17 +312,17 @@ function SlidesBlock({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-1 text-[10px] text-zinc-500">
+      <div className="flex items-center gap-1 text-[10px] text-v2-ink-muted">
         <Presentation className="h-3 w-3" />
         Slides (PDF)
       </div>
 
       {existingDoc ? (
-        <div className="flex items-center gap-2 p-2 rounded border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+        <div className="flex items-center gap-2 p-2 rounded border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
           <Presentation className="h-4 w-4 text-blue-500 flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium truncate">{existingDoc.name}</p>
-            <p className="text-[10px] text-zinc-500">
+            <p className="text-[10px] text-v2-ink-muted">
               {((existingDoc.fileSize || 0) / 1024).toFixed(0)} KB
             </p>
           </div>
@@ -336,15 +338,17 @@ function SlidesBlock({
       ) : (
         <div
           onClick={() => !uploading && inputRef.current?.click()}
-          className="border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded p-4 text-center cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
+          className="border-2 border-dashed border-v2-ring-strong dark:border-v2-ring-strong rounded p-4 text-center cursor-pointer hover:border-v2-ring-strong dark:hover:border-v2-ring-strong transition-colors"
         >
           {uploading ? (
-            <Loader2 className="h-4 w-4 mx-auto animate-spin text-zinc-400" />
+            <Loader2 className="h-4 w-4 mx-auto animate-spin text-v2-ink-subtle" />
           ) : (
             <>
-              <Upload className="h-4 w-4 mx-auto mb-1 text-zinc-400" />
-              <p className="text-[10px] text-zinc-400">Upload PDF slides</p>
-              <p className="text-[9px] text-zinc-400 mt-0.5">
+              <Upload className="h-4 w-4 mx-auto mb-1 text-v2-ink-subtle" />
+              <p className="text-[10px] text-v2-ink-subtle">
+                Upload PDF slides
+              </p>
+              <p className="text-[9px] text-v2-ink-subtle mt-0.5">
                 For best results, export PowerPoint as PDF
               </p>
             </>
@@ -393,13 +397,13 @@ function ExternalLinkBlock({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-1 text-[10px] text-zinc-500">
+      <div className="flex items-center gap-1 text-[10px] text-v2-ink-muted">
         <ExternalLink className="h-3 w-3" />
         External Link
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <label className="text-[10px] text-zinc-400">URL</label>
+          <label className="text-[10px] text-v2-ink-subtle">URL</label>
           <Input
             value={localUrl}
             onChange={(e) => setLocalUrl(e.target.value)}
@@ -408,7 +412,7 @@ function ExternalLinkBlock({
           />
         </div>
         <div className="space-y-1">
-          <label className="text-[10px] text-zinc-400">Label</label>
+          <label className="text-[10px] text-v2-ink-subtle">Label</label>
           <Input
             value={localLabel}
             onChange={(e) => setLocalLabel(e.target.value)}
@@ -447,27 +451,27 @@ function ScriptPromptBlock({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-1 text-[10px] text-zinc-500">
+      <div className="flex items-center gap-1 text-[10px] text-v2-ink-muted">
         <MessageSquare className="h-3 w-3" />
         Script Prompt
       </div>
       <div className="space-y-1">
-        <label className="text-[10px] text-zinc-400">Prompt Text</label>
+        <label className="text-[10px] text-v2-ink-subtle">Prompt Text</label>
         <textarea
           value={localPrompt}
           onChange={(e) => setLocalPrompt(e.target.value)}
           rows={3}
-          className="w-full text-xs rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 resize-none"
+          className="w-full text-xs rounded-md border border-v2-ring dark:border-v2-ring-strong bg-v2-card p-2 resize-none"
           placeholder="The script the agent should practice saying..."
         />
       </div>
       <div className="space-y-1">
-        <label className="text-[10px] text-zinc-400">Instructions</label>
+        <label className="text-[10px] text-v2-ink-subtle">Instructions</label>
         <textarea
           value={localInstructions}
           onChange={(e) => setLocalInstructions(e.target.value)}
           rows={2}
-          className="w-full text-xs rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 resize-none"
+          className="w-full text-xs rounded-md border border-v2-ring dark:border-v2-ring-strong bg-v2-card p-2 resize-none"
           placeholder="Instructions for the agent (tone, emphasis, objection handling)..."
         />
       </div>

@@ -109,19 +109,19 @@ function TemplateRow({
   canEdit: boolean;
 }) {
   return (
-    <TableRow className="text-[11px] border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+    <TableRow className="text-[11px] border-b border-v2-ring dark:border-v2-ring hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50">
       <TableCell className="py-1.5">
-        <span className="font-medium text-zinc-900 dark:text-zinc-100">
+        <span className="font-medium text-v2-ink dark:text-v2-ink">
           {template.name}
         </span>
       </TableCell>
-      <TableCell className="py-1.5 text-zinc-500 dark:text-zinc-400">
+      <TableCell className="py-1.5 text-v2-ink-muted dark:text-v2-ink-subtle">
         <span className="line-clamp-1">{template.subject}</span>
       </TableCell>
       <TableCell className="py-1.5">
         <Badge
           variant="outline"
-          className="text-[9px] px-1 py-0 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400"
+          className="text-[9px] px-1 py-0 border-v2-ring dark:border-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-subtle"
         >
           {CATEGORY_LABELS[template.category] || template.category}
         </Badge>
@@ -129,12 +129,12 @@ function TemplateRow({
       <TableCell className="py-1.5">
         <Badge
           variant="secondary"
-          className={`text-[9px] px-1 py-0 ${template.is_active ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"}`}
+          className={`text-[9px] px-1 py-0 ${template.is_active ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" : "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle"}`}
         >
           {template.is_active ? "Active" : "Inactive"}
         </Badge>
       </TableCell>
-      <TableCell className="py-1.5 text-zinc-500 dark:text-zinc-400">
+      <TableCell className="py-1.5 text-v2-ink-muted dark:text-v2-ink-subtle">
         {format(new Date(template.updated_at), "MMM d")}
       </TableCell>
       <TableCell className="py-1.5 w-8">
@@ -143,7 +143,7 @@ function TemplateRow({
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+              className="h-6 w-6 text-v2-ink-muted hover:text-v2-ink dark:text-v2-ink-subtle dark:hover:text-v2-canvas"
             >
               <MoreHorizontal className="h-3 w-3" />
             </Button>
@@ -218,7 +218,7 @@ function TemplateTable({
 }) {
   if (templates.length === 0) {
     return (
-      <div className="py-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+      <div className="py-3 text-center text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
         No templates
       </div>
     );
@@ -227,20 +227,20 @@ function TemplateTable({
   return (
     <Table>
       <TableHeader>
-        <TableRow className="h-6 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-          <TableHead className="h-6 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300">
+        <TableRow className="h-6 bg-v2-canvas dark:bg-v2-card-tinted/50 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50">
+          <TableHead className="h-6 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
             Name
           </TableHead>
-          <TableHead className="h-6 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300">
+          <TableHead className="h-6 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
             Subject
           </TableHead>
-          <TableHead className="h-6 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300">
+          <TableHead className="h-6 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
             Category
           </TableHead>
-          <TableHead className="h-6 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300">
+          <TableHead className="h-6 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
             Status
           </TableHead>
-          <TableHead className="h-6 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300">
+          <TableHead className="h-6 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
             Updated
           </TableHead>
           <TableHead className="h-6 w-8"></TableHead>
@@ -517,7 +517,10 @@ export function EmailTemplatesTab({ searchQuery }: EmailTemplatesTabProps) {
   };
 
   const globalTemplates = filterTemplates(data?.globalTemplates || [], true);
-  const personalTemplates = filterTemplates(data?.personalTemplates || [], false);
+  const personalTemplates = filterTemplates(
+    data?.personalTemplates || [],
+    false,
+  );
   const status = data?.status;
 
   const handleDelete = async () => {
@@ -553,18 +556,22 @@ export function EmailTemplatesTab({ searchQuery }: EmailTemplatesTabProps) {
         <div className="flex items-center gap-3 text-[11px]">
           <div className="flex items-center gap-1">
             <Globe className="h-3 w-3 text-blue-500" />
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">
+            <span className="font-medium text-v2-ink dark:text-v2-ink">
               {globalTemplates.length}
             </span>
-            <span className="text-zinc-500 dark:text-zinc-400">global</span>
+            <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+              global
+            </span>
           </div>
-          <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+          <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
           <div className="flex items-center gap-1">
             <User className="h-3 w-3 text-purple-500" />
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">
+            <span className="font-medium text-v2-ink dark:text-v2-ink">
               {status ? `${status.count}/${status.limit}` : "..."}
             </span>
-            <span className="text-zinc-500 dark:text-zinc-400">personal</span>
+            <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+              personal
+            </span>
           </div>
         </div>
         <Button
@@ -580,19 +587,19 @@ export function EmailTemplatesTab({ searchQuery }: EmailTemplatesTabProps) {
 
       {isLoading ? (
         <div className="flex h-40 items-center justify-center">
-          <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+          <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
         </div>
       ) : allTemplates.length === 0 ? (
-        <div className="flex h-40 flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-zinc-200 dark:border-zinc-700">
-          <FileText className="h-6 w-6 text-zinc-400" />
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="flex h-40 flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-v2-ring dark:border-v2-ring-strong">
+          <FileText className="h-6 w-6 text-v2-ink-subtle" />
+          <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             No email templates yet
           </p>
           <Button
             variant="outline"
             size="sm"
             onClick={() => setEditorState({ mode: "create", templateId: null })}
-            className="mt-1 h-6 text-[10px] border-zinc-200 dark:border-zinc-700"
+            className="mt-1 h-6 text-[10px] border-v2-ring dark:border-v2-ring-strong"
           >
             Create your first template
           </Button>
@@ -601,26 +608,26 @@ export function EmailTemplatesTab({ searchQuery }: EmailTemplatesTabProps) {
         <div className="space-y-2">
           {/* Global Templates Section */}
           <Collapsible open={globalOpen} onOpenChange={setGlobalOpen}>
-            <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+            <div className="rounded-lg border border-v2-ring dark:border-v2-ring-strong overflow-hidden">
               <CollapsibleTrigger asChild>
-                <button className="flex w-full items-center justify-between px-2.5 py-1.5 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
-                  <div className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                <button className="flex w-full items-center justify-between px-2.5 py-1.5 bg-v2-canvas dark:bg-v2-card-tinted/50 hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted transition-colors">
+                  <div className="flex items-center gap-1.5 text-[11px] font-medium text-v2-ink dark:text-v2-ink">
                     <Globe className="h-3 w-3 text-blue-500" />
                     Global Templates
                     <Badge
                       variant="secondary"
-                      className="ml-1 h-4 px-1 text-[9px] bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
+                      className="ml-1 h-4 px-1 text-[9px] bg-v2-ring dark:bg-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-muted"
                     >
                       {globalTemplates.length}
                     </Badge>
                   </div>
                   <ChevronDown
-                    className={`h-3 w-3 text-zinc-400 transition-transform ${globalOpen ? "" : "-rotate-90"}`}
+                    className={`h-3 w-3 text-v2-ink-subtle transition-transform ${globalOpen ? "" : "-rotate-90"}`}
                   />
                 </button>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="border-t border-zinc-200 dark:border-zinc-700">
+                <div className="border-t border-v2-ring dark:border-v2-ring-strong">
                   <TemplateTable
                     templates={globalTemplates}
                     onView={(id) =>
@@ -643,15 +650,15 @@ export function EmailTemplatesTab({ searchQuery }: EmailTemplatesTabProps) {
 
           {/* Personal Templates Section */}
           <Collapsible open={personalOpen} onOpenChange={setPersonalOpen}>
-            <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+            <div className="rounded-lg border border-v2-ring dark:border-v2-ring-strong overflow-hidden">
               <CollapsibleTrigger asChild>
-                <button className="flex w-full items-center justify-between px-2.5 py-1.5 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
-                  <div className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                <button className="flex w-full items-center justify-between px-2.5 py-1.5 bg-v2-canvas dark:bg-v2-card-tinted/50 hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted transition-colors">
+                  <div className="flex items-center gap-1.5 text-[11px] font-medium text-v2-ink dark:text-v2-ink">
                     <User className="h-3 w-3 text-purple-500" />
                     My Templates
                     <Badge
                       variant="secondary"
-                      className="ml-1 h-4 px-1 text-[9px] bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300"
+                      className="ml-1 h-4 px-1 text-[9px] bg-v2-ring dark:bg-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-muted"
                     >
                       {status
                         ? `${status.count}/${status.limit}`
@@ -659,12 +666,12 @@ export function EmailTemplatesTab({ searchQuery }: EmailTemplatesTabProps) {
                     </Badge>
                   </div>
                   <ChevronDown
-                    className={`h-3 w-3 text-zinc-400 transition-transform ${personalOpen ? "" : "-rotate-90"}`}
+                    className={`h-3 w-3 text-v2-ink-subtle transition-transform ${personalOpen ? "" : "-rotate-90"}`}
                   />
                 </button>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="border-t border-zinc-200 dark:border-zinc-700">
+                <div className="border-t border-v2-ring dark:border-v2-ring-strong">
                   <TemplateTable
                     templates={personalTemplates}
                     onView={(id) =>

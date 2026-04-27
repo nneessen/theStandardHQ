@@ -22,9 +22,8 @@ export function AssignmentRow({ assignment }: AssignmentRowProps) {
   const completedLessons = progress.filter(
     (p) => p.status === "completed",
   ).length;
-  const pct = totalLessons > 0
-    ? Math.round((completedLessons / totalLessons) * 100)
-    : 0;
+  const pct =
+    totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
   const isComplete = totalLessons > 0 && completedLessons === totalLessons;
   const isOverdue =
     !isComplete &&
@@ -49,10 +48,8 @@ export function AssignmentRow({ assignment }: AssignmentRowProps) {
       className="block"
     >
       <div
-        className={`flex items-center gap-3 px-2.5 py-1.5 rounded hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer text-[11px] ${
-          isOverdue
-            ? "bg-red-50/50 dark:bg-red-950/20"
-            : ""
+        className={`flex items-center gap-3 px-2.5 py-1.5 rounded hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 transition-colors cursor-pointer text-[11px] ${
+          isOverdue ? "bg-red-50/50 dark:bg-red-950/20" : ""
         }`}
       >
         {/* Priority dot */}
@@ -60,9 +57,7 @@ export function AssignmentRow({ assignment }: AssignmentRowProps) {
           {isHighPriority && (
             <div
               className={`w-1.5 h-1.5 rounded-full ${
-                assignment.priority === "urgent"
-                  ? "bg-red-500"
-                  : "bg-amber-500"
+                assignment.priority === "urgent" ? "bg-red-500" : "bg-amber-500"
               }`}
             />
           )}
@@ -70,7 +65,7 @@ export function AssignmentRow({ assignment }: AssignmentRowProps) {
 
         {/* Title */}
         <div className="flex-1 min-w-0">
-          <span className="text-zinc-900 dark:text-zinc-100 font-medium truncate block">
+          <span className="text-v2-ink dark:text-v2-ink font-medium truncate block">
             {module.title}
           </span>
         </div>
@@ -82,14 +77,18 @@ export function AssignmentRow({ assignment }: AssignmentRowProps) {
 
         {/* Progress bar + percentage */}
         <div className="w-24 flex-shrink-0 flex items-center gap-1.5">
-          <ProgressBar value={completedLessons} max={totalLessons} className="w-16" />
-          <span className="text-zinc-500 dark:text-zinc-400 w-7 text-right tabular-nums">
+          <ProgressBar
+            value={completedLessons}
+            max={totalLessons}
+            className="w-16"
+          />
+          <span className="text-v2-ink-muted dark:text-v2-ink-subtle w-7 text-right tabular-nums">
             {pct}%
           </span>
         </div>
 
         {/* Lessons */}
-        <div className="w-12 flex-shrink-0 text-zinc-500 dark:text-zinc-400 text-right tabular-nums hidden md:block">
+        <div className="w-12 flex-shrink-0 text-v2-ink-muted dark:text-v2-ink-subtle text-right tabular-nums hidden md:block">
           {completedLessons}/{totalLessons}
         </div>
 
@@ -98,19 +97,19 @@ export function AssignmentRow({ assignment }: AssignmentRowProps) {
           className={`w-16 flex-shrink-0 text-right ${
             isOverdue
               ? "text-red-500 font-medium"
-              : "text-zinc-500 dark:text-zinc-400"
+              : "text-v2-ink-muted dark:text-v2-ink-subtle"
           }`}
         >
           {isOverdue ? "Overdue" : formatDueDate()}
         </div>
 
         {/* XP */}
-        <div className="w-10 flex-shrink-0 text-right text-zinc-500 dark:text-zinc-400 tabular-nums hidden lg:block">
+        <div className="w-10 flex-shrink-0 text-right text-v2-ink-muted dark:text-v2-ink-subtle tabular-nums hidden lg:block">
           {module.xp_reward}
         </div>
 
         {/* Chevron */}
-        <ChevronRight className="h-3 w-3 text-zinc-300 dark:text-zinc-600 flex-shrink-0" />
+        <ChevronRight className="h-3 w-3 text-v2-ink-subtle dark:text-v2-ink-muted flex-shrink-0" />
       </div>
     </Link>
   );

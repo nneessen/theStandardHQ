@@ -49,7 +49,7 @@ export function QuizBuilder({ lessonId }: QuizBuilderProps) {
   if (isLoading) {
     return (
       <div className="flex justify-center py-6">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -57,7 +57,7 @@ export function QuizBuilder({ lessonId }: QuizBuilderProps) {
   if (!quiz) {
     return (
       <div className="text-center py-6 space-y-2">
-        <p className="text-[11px] text-zinc-500">
+        <p className="text-[11px] text-v2-ink-muted">
           No quiz created for this lesson yet.
         </p>
         <Button
@@ -81,7 +81,7 @@ export function QuizBuilder({ lessonId }: QuizBuilderProps) {
     <div className="space-y-4">
       <QuizSettingsEditor quiz={quiz} lessonId={lessonId} />
 
-      <div className="border-t border-zinc-200 dark:border-zinc-800" />
+      <div className="border-t border-v2-ring dark:border-v2-ring" />
 
       <QuestionList
         quizId={quiz.id}
@@ -156,12 +156,12 @@ function QuizSettingsEditor({
 
   return (
     <div className="space-y-2">
-      <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+      <h3 className="text-xs font-semibold text-v2-ink dark:text-v2-ink-muted">
         Quiz Settings
       </h3>
       <div className="grid grid-cols-3 gap-2">
         <div className="space-y-1">
-          <label className="text-[10px] text-zinc-500">
+          <label className="text-[10px] text-v2-ink-muted">
             Pass Threshold (%)
           </label>
           <Input
@@ -174,7 +174,7 @@ function QuizSettingsEditor({
           />
         </div>
         <div className="space-y-1">
-          <label className="text-[10px] text-zinc-500">Max Attempts</label>
+          <label className="text-[10px] text-v2-ink-muted">Max Attempts</label>
           <Input
             type="number"
             min={1}
@@ -184,7 +184,9 @@ function QuizSettingsEditor({
           />
         </div>
         <div className="space-y-1">
-          <label className="text-[10px] text-zinc-500">Time Limit (min)</label>
+          <label className="text-[10px] text-v2-ink-muted">
+            Time Limit (min)
+          </label>
           <Input
             type="number"
             value={timeLimit}
@@ -195,7 +197,7 @@ function QuizSettingsEditor({
         </div>
       </div>
       <div className="grid grid-cols-4 gap-2">
-        <label className="flex items-center gap-1.5 text-[10px] text-zinc-600 dark:text-zinc-400">
+        <label className="flex items-center gap-1.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           <input
             type="checkbox"
             checked={quiz.shuffle_questions}
@@ -204,7 +206,7 @@ function QuizSettingsEditor({
           />
           Shuffle Questions
         </label>
-        <label className="flex items-center gap-1.5 text-[10px] text-zinc-600 dark:text-zinc-400">
+        <label className="flex items-center gap-1.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           <input
             type="checkbox"
             checked={quiz.shuffle_options}
@@ -213,7 +215,7 @@ function QuizSettingsEditor({
           />
           Shuffle Options
         </label>
-        <label className="flex items-center gap-1.5 text-[10px] text-zinc-600 dark:text-zinc-400">
+        <label className="flex items-center gap-1.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           <input
             type="checkbox"
             checked={quiz.show_correct_answers}
@@ -223,7 +225,9 @@ function QuizSettingsEditor({
           Show Answers
         </label>
         <div className="space-y-1">
-          <label className="text-[10px] text-zinc-500">Perfect Score XP</label>
+          <label className="text-[10px] text-v2-ink-muted">
+            Perfect Score XP
+          </label>
           <Input
             type="number"
             value={xpBonus}
@@ -267,7 +271,7 @@ function QuestionList({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+        <h3 className="text-xs font-semibold text-v2-ink dark:text-v2-ink-muted">
           Questions ({questions.length})
         </h3>
         <Button
@@ -287,7 +291,7 @@ function QuestionList({
       </div>
 
       {questions.length === 0 ? (
-        <div className="text-center py-4 text-[10px] text-zinc-400 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg">
+        <div className="text-center py-4 text-[10px] text-v2-ink-subtle border border-dashed border-v2-ring dark:border-v2-ring rounded-lg">
           No questions yet. Add one above.
         </div>
       ) : (
@@ -367,20 +371,20 @@ function QuestionEditor({
   };
 
   return (
-    <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900">
+    <div className="border border-v2-ring dark:border-v2-ring rounded-lg bg-v2-card">
       {/* Question header */}
       <div
         className="flex items-center gap-1.5 px-2 py-1.5 cursor-pointer"
         onClick={() => setExpanded(!expanded)}
       >
-        <GripVertical className="h-3 w-3 text-zinc-300 flex-shrink-0" />
-        <span className="text-[10px] font-bold text-zinc-400 flex-shrink-0">
+        <GripVertical className="h-3 w-3 text-v2-ink-subtle flex-shrink-0" />
+        <span className="text-[10px] font-bold text-v2-ink-subtle flex-shrink-0">
           Q{index + 1}
         </span>
-        <span className="text-[11px] text-zinc-700 dark:text-zinc-300 truncate flex-1">
+        <span className="text-[11px] text-v2-ink dark:text-v2-ink-muted truncate flex-1">
           {questionText || question.question_text}
         </span>
-        <span className="text-[9px] text-zinc-400">
+        <span className="text-[9px] text-v2-ink-subtle">
           {question.points}pt{question.points !== 1 ? "s" : ""}
         </span>
         <button
@@ -389,12 +393,12 @@ function QuestionEditor({
             handleDelete();
           }}
         >
-          <Trash2 className="h-3 w-3 text-zinc-400 hover:text-red-500" />
+          <Trash2 className="h-3 w-3 text-v2-ink-subtle hover:text-red-500" />
         </button>
       </div>
 
       {expanded && (
-        <div className="px-2 pb-2 space-y-2 border-t border-zinc-100 dark:border-zinc-800 pt-2">
+        <div className="px-2 pb-2 space-y-2 border-t border-v2-ring dark:border-v2-ring pt-2">
           {/* Question text */}
           <Input
             value={questionText}
@@ -405,13 +409,13 @@ function QuestionEditor({
 
           <div className="grid grid-cols-3 gap-2">
             <div className="space-y-1">
-              <label className="text-[10px] text-zinc-500">Type</label>
+              <label className="text-[10px] text-v2-ink-muted">Type</label>
               <select
                 value={question.question_type}
                 onChange={(e) =>
                   save({ question_type: e.target.value as QuestionType })
                 }
-                className="w-full h-7 text-xs border border-zinc-200 dark:border-zinc-700 rounded-md px-2 bg-white dark:bg-zinc-900"
+                className="w-full h-7 text-xs border border-v2-ring dark:border-v2-ring-strong rounded-md px-2 bg-v2-card"
               >
                 {QUESTION_TYPES.map((type) => (
                   <option key={type} value={type}>
@@ -421,7 +425,7 @@ function QuestionEditor({
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] text-zinc-500">Points</label>
+              <label className="text-[10px] text-v2-ink-muted">Points</label>
               <Input
                 type="number"
                 min={1}
@@ -431,7 +435,9 @@ function QuestionEditor({
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] text-zinc-500">Explanation</label>
+              <label className="text-[10px] text-v2-ink-muted">
+                Explanation
+              </label>
               <Input
                 value={explanation}
                 onChange={(e) => setExplanation(e.target.value)}
@@ -499,7 +505,9 @@ function OptionList({
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <label className="text-[10px] font-medium text-zinc-500">Options</label>
+        <label className="text-[10px] font-medium text-v2-ink-muted">
+          Options
+        </label>
         {questionType !== "true_false" && (
           <Button
             variant="ghost"
@@ -607,7 +615,7 @@ function OptionRow({
         {option.is_correct ? (
           <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
         ) : (
-          <Circle className="h-3.5 w-3.5 text-zinc-300" />
+          <Circle className="h-3.5 w-3.5 text-v2-ink-subtle" />
         )}
       </button>
       <Input
@@ -618,7 +626,7 @@ function OptionRow({
       />
       {questionType !== "true_false" && (
         <button onClick={() => onDelete(option.id)}>
-          <Trash2 className="h-3 w-3 text-zinc-400 hover:text-red-500" />
+          <Trash2 className="h-3 w-3 text-v2-ink-subtle hover:text-red-500" />
         </button>
       )}
     </div>

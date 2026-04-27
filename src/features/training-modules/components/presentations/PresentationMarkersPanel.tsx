@@ -69,16 +69,16 @@ export function PresentationMarkersPanel({
   })();
 
   return (
-    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-v2-ring dark:border-v2-ring bg-v2-card shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 bg-zinc-50/80 dark:bg-zinc-900/80 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between px-3 py-2 bg-v2-canvas/80 dark:bg-v2-card/80 border-b border-v2-ring dark:border-v2-ring">
         <div className="flex items-center gap-1.5">
-          <Bookmark className="h-3.5 w-3.5 text-zinc-500" />
-          <h3 className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide">
+          <Bookmark className="h-3.5 w-3.5 text-v2-ink-muted" />
+          <h3 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink-muted uppercase tracking-wide">
             Markers
           </h3>
           {markers.length > 0 && (
-            <span className="text-[10px] text-zinc-400 font-mono">
+            <span className="text-[10px] text-v2-ink-subtle font-mono">
               {markers.length}
             </span>
           )}
@@ -87,7 +87,7 @@ export function PresentationMarkersPanel({
           <Button
             size="sm"
             variant="ghost"
-            className="h-6 text-[11px] gap-1 text-zinc-600 hover:text-zinc-900 dark:text-zinc-400"
+            className="h-6 text-[11px] gap-1 text-v2-ink-muted hover:text-v2-ink dark:text-v2-ink-subtle"
             onClick={handleAddClick}
           >
             <Plus className="h-3 w-3" />
@@ -125,14 +125,14 @@ export function PresentationMarkersPanel({
       )}
 
       {/* List */}
-      <div className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
+      <div className="divide-y divide-v2-ring dark:divide-v2-ring/50">
         {isLoading ? (
           <div className="p-4 flex items-center justify-center">
-            <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-400" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-v2-ink-subtle" />
           </div>
         ) : markers.length === 0 && !adding ? (
           <div className="p-6 text-center">
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
               No markers yet. Add one to help listeners skip to key moments.
             </p>
           </div>
@@ -212,15 +212,15 @@ function MarkerRow({
     <div
       className={`group flex items-start gap-2 px-3 py-2 transition-colors cursor-pointer ${
         isActive
-          ? "bg-zinc-50 dark:bg-zinc-800/40"
-          : "hover:bg-zinc-50/60 dark:hover:bg-zinc-800/20"
+          ? "bg-v2-canvas dark:bg-v2-card-tinted/40"
+          : "hover:bg-v2-canvas/60 dark:hover:bg-v2-card-tinted/20"
       }`}
       onClick={onSeek}
     >
       {/* Dot + timestamp */}
       <div className="flex flex-col items-center pt-0.5 w-12 flex-shrink-0">
         <div className={`h-2 w-2 rounded-full ${colors.dot}`} />
-        <span className="text-[10px] font-mono tabular-nums text-zinc-500 mt-0.5">
+        <span className="text-[10px] font-mono tabular-nums text-v2-ink-muted mt-0.5">
           {formatTimestamp(marker.timestamp_seconds)}
         </span>
       </div>
@@ -229,7 +229,7 @@ function MarkerRow({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5">
           <p
-            className={`text-xs font-medium truncate ${isActive ? "text-zinc-900 dark:text-zinc-100" : "text-zinc-800 dark:text-zinc-200"}`}
+            className={`text-xs font-medium truncate ${isActive ? "text-v2-ink dark:text-v2-ink" : "text-v2-ink dark:text-v2-ink"}`}
           >
             {marker.label}
           </p>
@@ -241,12 +241,12 @@ function MarkerRow({
           </span>
         </div>
         {marker.description && (
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5 line-clamp-2">
+          <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle mt-0.5 line-clamp-2">
             {marker.description}
           </p>
         )}
         {creator && (
-          <p className="text-[10px] text-zinc-400 mt-0.5">by {creator}</p>
+          <p className="text-[10px] text-v2-ink-subtle mt-0.5">by {creator}</p>
         )}
       </div>
 
@@ -262,7 +262,7 @@ function MarkerRow({
               onEdit();
             }}
           >
-            <Pencil className="h-3 w-3 text-zinc-500" />
+            <Pencil className="h-3 w-3 text-v2-ink-muted" />
           </Button>
           <Button
             variant="ghost"
@@ -273,7 +273,7 @@ function MarkerRow({
               onDelete();
             }}
           >
-            <Trash2 className="h-3 w-3 text-zinc-500" />
+            <Trash2 className="h-3 w-3 text-v2-ink-muted" />
           </Button>
         </div>
       )}
@@ -315,7 +315,7 @@ function MarkerForm({
   const canSubmit = label.trim().length > 0 && timestamp >= 0 && !isPending;
 
   return (
-    <div className="px-3 py-2.5 bg-zinc-50/80 dark:bg-zinc-800/30 border-b border-zinc-200 dark:border-zinc-800 space-y-2">
+    <div className="px-3 py-2.5 bg-v2-canvas/80 dark:bg-v2-card-tinted/30 border-b border-v2-ring dark:border-v2-ring space-y-2">
       <div className="flex items-center gap-2">
         <div className="flex-1">
           <Input
@@ -329,7 +329,7 @@ function MarkerForm({
         <select
           value={type}
           onChange={(e) => setType(e.target.value as MarkerType)}
-          className="h-7 text-[11px] rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 text-zinc-700 dark:text-zinc-300"
+          className="h-7 text-[11px] rounded border border-v2-ring dark:border-v2-ring-strong bg-v2-card px-2 text-v2-ink dark:text-v2-ink-muted"
         >
           {MARKER_TYPES.map((t) => (
             <option key={t} value={t}>
@@ -344,18 +344,18 @@ function MarkerForm({
         onChange={(e) => setDescription(e.target.value)}
         rows={2}
         placeholder="Optional details..."
-        className="w-full text-xs rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 resize-none"
+        className="w-full text-xs rounded border border-v2-ring dark:border-v2-ring-strong bg-v2-card p-2 resize-none"
       />
 
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-400">
+        <div className="flex items-center gap-1.5 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
           <span>At</span>
           <input
             type="number"
             min={0}
             value={timestamp}
             onChange={(e) => setTimestamp(parseInt(e.target.value, 10) || 0)}
-            className="w-16 h-6 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-1.5 text-[11px] font-mono"
+            className="w-16 h-6 rounded border border-v2-ring dark:border-v2-ring-strong bg-v2-card px-1.5 text-[11px] font-mono"
           />
           <span className="font-mono tabular-nums">
             ({formatTimestamp(timestamp)})

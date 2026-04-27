@@ -27,17 +27,25 @@ function detectSupportedMimeType(): string {
 }
 
 interface PresentationRecorderProps {
-  onRecordingComplete: (blob: Blob, mimeType: string, durationSeconds: number) => void;
+  onRecordingComplete: (
+    blob: Blob,
+    mimeType: string,
+    durationSeconds: number,
+  ) => void;
 }
 
-export function PresentationRecorder({ onRecordingComplete }: PresentationRecorderProps) {
+export function PresentationRecorder({
+  onRecordingComplete,
+}: PresentationRecorderProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const startTimeRef = useRef<number>(0);
 
-  const [state, setState] = useState<"idle" | "previewing" | "recording" | "done">("idle");
+  const [state, setState] = useState<
+    "idle" | "previewing" | "recording" | "done"
+  >("idle");
   const [elapsed, setElapsed] = useState(0);
   const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
   const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
@@ -62,7 +70,11 @@ export function PresentationRecorder({ onRecordingComplete }: PresentationRecord
     setError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 24 } },
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          frameRate: { ideal: 24 },
+        },
         audio: { echoCancellation: true, noiseSuppression: true },
       });
       streamRef.current = stream;
@@ -74,15 +86,28 @@ export function PresentationRecorder({ onRecordingComplete }: PresentationRecord
     } catch (err) {
       const mediaErr = err as DOMException;
       if (mediaErr.name === "NotAllowedError") {
-        setError("Camera/microphone permission was denied. Check your browser's site settings and allow access, then try again.");
+        setError(
+          "Camera/microphone permission was denied. Check your browser's site settings and allow access, then try again.",
+        );
       } else if (mediaErr.name === "NotFoundError") {
-        setError("No camera or microphone found. Please connect a device or use the Upload option instead.");
+        setError(
+          "No camera or microphone found. Please connect a device or use the Upload option instead.",
+        );
       } else if (mediaErr.name === "NotReadableError") {
-        setError("Camera/microphone is in use by another application. Close it and try again.");
-      } else if (window.location.protocol !== "https:" && window.location.hostname !== "localhost") {
-        setError("Camera access requires a secure connection (HTTPS). Please use the Upload option instead.");
+        setError(
+          "Camera/microphone is in use by another application. Close it and try again.",
+        );
+      } else if (
+        window.location.protocol !== "https:" &&
+        window.location.hostname !== "localhost"
+      ) {
+        setError(
+          "Camera access requires a secure connection (HTTPS). Please use the Upload option instead.",
+        );
       } else {
-        setError(`Could not access camera/microphone: ${mediaErr.message || "Unknown error"}. Try the Upload option instead.`);
+        setError(
+          `Could not access camera/microphone: ${mediaErr.message || "Unknown error"}. Try the Upload option instead.`,
+        );
       }
       console.error("getUserMedia error:", err);
     }
@@ -154,8 +179,9 @@ export function PresentationRecorder({ onRecordingComplete }: PresentationRecord
   if (!supported) {
     return (
       <div className="text-center py-6">
-        <p className="text-xs text-zinc-500">
-          Browser recording is not supported. Please use the upload option instead.
+        <p className="text-xs text-v2-ink-muted">
+          Browser recording is not supported. Please use the upload option
+          instead.
         </p>
       </div>
     );
@@ -164,18 +190,26 @@ export function PresentationRecorder({ onRecordingComplete }: PresentationRecord
   return (
     <div className="space-y-3">
       {/* Video preview / playback */}
-      <div className="rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-black">
+      <div className="rounded-lg overflow-hidden border border-v2-ring dark:border-v2-ring-strong bg-black">
         {state === "done" && recordedUrl ? (
           <video src={recordedUrl} controls className="w-full aspect-video" />
         ) : (
-          <video ref={videoRef} autoPlay playsInline muted className="w-full aspect-video" />
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full aspect-video"
+          />
         )}
       </div>
 
       {/* Timer */}
       {(state === "recording" || state === "done") && (
         <div className="text-center">
-          <span className={`text-sm font-mono font-medium ${state === "recording" ? "text-red-500" : "text-zinc-600 dark:text-zinc-400"}`}>
+          <span
+            className={`text-sm font-mono font-medium ${state === "recording" ? "text-red-500" : "text-v2-ink-muted dark:text-v2-ink-subtle"}`}
+          >
             {formatTime(elapsed)} / {formatTime(MAX_RECORDING_MS)}
           </span>
         </div>
@@ -189,24 +223,42 @@ export function PresentationRecorder({ onRecordingComplete }: PresentationRecord
           </Button>
         )}
         {state === "previewing" && (
-          <Button size="sm" className="h-8 text-xs bg-red-600 hover:bg-red-700" onClick={startRecording}>
+          <Button
+            size="sm"
+            className="h-8 text-xs bg-red-600 hover:bg-red-700"
+            onClick={startRecording}
+          >
             <Circle className="h-3 w-3 mr-1 fill-current" />
             Start Recording
           </Button>
         )}
         {state === "recording" && (
-          <Button size="sm" className="h-8 text-xs" variant="destructive" onClick={stopRecording}>
+          <Button
+            size="sm"
+            className="h-8 text-xs"
+            variant="destructive"
+            onClick={stopRecording}
+          >
             <Square className="h-3 w-3 mr-1 fill-current" />
             Stop
           </Button>
         )}
         {state === "done" && (
           <>
-            <Button size="sm" variant="outline" className="h-8 text-xs" onClick={reset}>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 text-xs"
+              onClick={reset}
+            >
               <RotateCcw className="h-3 w-3 mr-1" />
               Re-record
             </Button>
-            <Button size="sm" className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700" onClick={confirmRecording}>
+            <Button
+              size="sm"
+              className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700"
+              onClick={confirmRecording}
+            >
               Use This Recording
             </Button>
           </>

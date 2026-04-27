@@ -13,7 +13,7 @@ export function LessonViewer({ lessonId }: LessonViewerProps) {
   if (isLoading || !lesson) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -26,10 +26,10 @@ export function LessonViewer({ lessonId }: LessonViewerProps) {
     if (!lesson.quiz) {
       return (
         <div className="max-w-2xl mx-auto p-6 text-center space-y-2">
-          <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-base font-semibold text-v2-ink dark:text-v2-ink">
             {lesson.title}
           </h2>
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-v2-ink-muted">
             This quiz hasn't been set up yet. Please check back later or contact
             your trainer.
           </p>
@@ -48,11 +48,13 @@ export function LessonViewer({ lessonId }: LessonViewerProps) {
   return (
     <div className="max-w-3xl mx-auto p-4 space-y-4">
       <div>
-        <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+        <h2 className="text-base font-semibold text-v2-ink dark:text-v2-ink">
           {lesson.title}
         </h2>
         {lesson.description && (
-          <p className="text-xs text-zinc-500 mt-0.5">{lesson.description}</p>
+          <p className="text-xs text-v2-ink-muted mt-0.5">
+            {lesson.description}
+          </p>
         )}
       </div>
 

@@ -164,16 +164,16 @@ export const PresentationMediaPlayer = forwardRef<
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950 p-6 flex items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+      <div className="rounded-xl border border-v2-ring dark:border-v2-ring bg-gradient-to-b from-white to-zinc-50 dark:from-zinc-900 dark:to-zinc-950 p-6 flex items-center justify-center">
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
 
   if (error || !signedUrl) {
     return (
-      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 p-6 text-center">
-        <p className="text-xs text-zinc-500">Failed to load media</p>
+      <div className="rounded-xl border border-v2-ring dark:border-v2-ring bg-v2-canvas dark:bg-v2-card/50 p-6 text-center">
+        <p className="text-xs text-v2-ink-muted">Failed to load media</p>
       </div>
     );
   }
@@ -182,7 +182,7 @@ export const PresentationMediaPlayer = forwardRef<
   const playbackRates = [0.75, 1, 1.25, 1.5, 2];
 
   return (
-    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-gradient-to-b from-white to-zinc-50/80 dark:from-zinc-900 dark:to-zinc-950 shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-v2-ring dark:border-v2-ring bg-gradient-to-b from-white to-zinc-50/80 dark:from-zinc-900 dark:to-zinc-950 shadow-sm overflow-hidden">
       {/* Hidden native element drives audio/video; we render our own UI */}
       {isAudio ? (
         <audio
@@ -224,7 +224,7 @@ export const PresentationMediaPlayer = forwardRef<
           <span
             className={`h-1.5 w-1.5 rounded-full ${MARKER_TYPE_COLORS[activeMarker.marker_type as keyof typeof MARKER_TYPE_COLORS]?.dot || "bg-zinc-400"}`}
           />
-          <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 truncate">
+          <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted truncate">
             {activeMarker.label}
           </span>
         </div>
@@ -237,7 +237,7 @@ export const PresentationMediaPlayer = forwardRef<
           onClick={handleScrubberClick}
           onMouseMove={handleScrubberHover}
           onMouseLeave={() => setHoverTime(null)}
-          className="relative h-2 bg-zinc-200 dark:bg-zinc-800 rounded-full cursor-pointer group"
+          className="relative h-2 bg-zinc-200 dark:bg-v2-card-tinted rounded-full cursor-pointer group"
         >
           {/* Progress fill */}
           <div
@@ -274,7 +274,7 @@ export const PresentationMediaPlayer = forwardRef<
           {/* Hover preview tooltip */}
           {hoverTime !== null && duration > 0 && (
             <div
-              className="absolute -top-7 -translate-x-1/2 px-1.5 py-0.5 rounded text-[10px] font-medium bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 pointer-events-none whitespace-nowrap"
+              className="absolute -top-7 -translate-x-1/2 px-1.5 py-0.5 rounded text-[10px] font-medium bg-zinc-900 text-white dark:bg-v2-card-tinted dark:text-v2-ink pointer-events-none whitespace-nowrap"
               style={{ left: `${(hoverTime / duration) * 100}%` }}
             >
               {formatTimestamp(hoverTime)}
@@ -315,9 +315,9 @@ export const PresentationMediaPlayer = forwardRef<
           >
             <SkipForward className="h-3.5 w-3.5" />
           </Button>
-          <span className="ml-2 text-[11px] font-mono tabular-nums text-zinc-600 dark:text-zinc-400">
+          <span className="ml-2 text-[11px] font-mono tabular-nums text-v2-ink-muted dark:text-v2-ink-subtle">
             {formatTimestamp(currentTime)}
-            <span className="text-zinc-400 dark:text-zinc-600">
+            <span className="text-v2-ink-subtle dark:text-v2-ink-muted">
               {" "}
               / {formatTimestamp(duration)}
             </span>
@@ -329,7 +329,7 @@ export const PresentationMediaPlayer = forwardRef<
           <select
             value={playbackRate}
             onChange={(e) => setRate(parseFloat(e.target.value))}
-            className="h-7 text-[11px] rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-1.5 text-zinc-700 dark:text-zinc-300 font-mono"
+            className="h-7 text-[11px] rounded border border-v2-ring dark:border-v2-ring-strong bg-v2-card px-1.5 text-v2-ink dark:text-v2-ink-muted font-mono"
             title="Playback speed"
           >
             {playbackRates.map((r) => (

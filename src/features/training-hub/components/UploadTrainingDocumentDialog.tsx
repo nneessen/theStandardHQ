@@ -236,19 +236,19 @@ export function UploadTrainingDocumentDialog({
                 className={`flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed rounded-md cursor-pointer transition-colors ${
                   dragActive
                     ? "border-blue-400 bg-blue-50 dark:bg-blue-950/20"
-                    : "border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                    : "border-v2-ring dark:border-v2-ring-strong hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50"
                 }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
               >
-                <Upload className="h-6 w-6 text-zinc-400" />
+                <Upload className="h-6 w-6 text-v2-ink-subtle" />
                 <div className="text-center">
-                  <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                  <span className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle">
                     Drop file here or click to browse
                   </span>
-                  <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">
+                  <p className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted mt-1">
                     PDF, Word, Excel, PowerPoint, Images (max 50MB)
                   </p>
                 </div>
@@ -261,13 +261,13 @@ export function UploadTrainingDocumentDialog({
                 />
               </label>
             ) : (
-              <div className="flex items-center gap-2 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-md border border-zinc-200 dark:border-zinc-700">
-                <FileText className="h-5 w-5 text-zinc-500 flex-shrink-0" />
+              <div className="flex items-center gap-2 p-2 bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-md border border-v2-ring dark:border-v2-ring-strong">
+                <FileText className="h-5 w-5 text-v2-ink-muted flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                  <p className="text-xs font-medium text-v2-ink dark:text-v2-ink truncate">
                     {selectedFile.name}
                   </p>
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     {formatFileSize(selectedFile.size)}
                   </p>
                 </div>
@@ -319,7 +319,7 @@ export function UploadTrainingDocumentDialog({
                       {CATEGORY_ICONS[cat]}
                       <div>
                         <span>{TRAINING_CATEGORY_CONFIG[cat].label}</span>
-                        <span className="ml-2 text-[10px] text-zinc-400">
+                        <span className="ml-2 text-[10px] text-v2-ink-subtle">
                           {TRAINING_CATEGORY_CONFIG[cat].description}
                         </span>
                       </div>
@@ -337,7 +337,7 @@ export function UploadTrainingDocumentDialog({
               className="text-[11px] font-medium"
             >
               Description{" "}
-              <span className="font-normal text-zinc-400">(optional)</span>
+              <span className="font-normal text-v2-ink-subtle">(optional)</span>
             </Label>
             <Textarea
               id="doc-description"
@@ -352,13 +352,13 @@ export function UploadTrainingDocumentDialog({
           {/* Upload Progress */}
           {uploadProgress > 0 && uploadProgress < 100 && (
             <div className="space-y-1">
-              <div className="h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-v2-ring dark:bg-v2-ring-strong rounded-full overflow-hidden">
                 <div
                   className="h-full bg-blue-500 transition-all duration-300"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
-              <p className="text-[10px] text-zinc-500 text-center">
+              <p className="text-[10px] text-v2-ink-muted text-center">
                 Uploading...
               </p>
             </div>

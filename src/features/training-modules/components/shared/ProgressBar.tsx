@@ -14,7 +14,7 @@ export function ProgressBar({
 
   return (
     <div
-      className={`w-full bg-zinc-200 dark:bg-zinc-700 rounded-full ${height} ${className}`}
+      className={`w-full bg-v2-ring dark:bg-v2-ring-strong rounded-full ${height} ${className}`}
     >
       <div
         className={`${height} rounded-full transition-all duration-300 ${

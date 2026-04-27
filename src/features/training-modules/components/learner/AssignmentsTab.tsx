@@ -18,7 +18,9 @@ interface AssignmentsTabProps {
 
 export function AssignmentsTab({ assignments }: AssignmentsTabProps) {
   const [search, setSearch] = useState("");
-  const [difficultyFilter, setDifficultyFilter] = useState<DifficultyLevel | "">("");
+  const [difficultyFilter, setDifficultyFilter] = useState<
+    DifficultyLevel | ""
+  >("");
   const [priorityFilter, setPriorityFilter] = useState<PriorityLevel | "">("");
   const [openCategories, setOpenCategories] = useState<Set<ModuleCategory>>(
     () => new Set(MODULE_CATEGORIES),
@@ -29,7 +31,8 @@ export function AssignmentsTab({ assignments }: AssignmentsTabProps) {
     return assignments.filter((a) => {
       if (!a.module) return false;
       if (query && !a.module.title.toLowerCase().includes(query)) return false;
-      if (difficultyFilter && a.module.difficulty_level !== difficultyFilter) return false;
+      if (difficultyFilter && a.module.difficulty_level !== difficultyFilter)
+        return false;
       if (priorityFilter && a.priority !== priorityFilter) return false;
       return true;
     });
@@ -86,7 +89,7 @@ export function AssignmentsTab({ assignments }: AssignmentsTabProps) {
 
   if (assignments.length === 0) {
     return (
-      <div className="text-center py-12 text-xs text-zinc-400">
+      <div className="text-center py-12 text-xs text-v2-ink-subtle">
         No training assignments yet
       </div>
     );
@@ -98,21 +101,23 @@ export function AssignmentsTab({ assignments }: AssignmentsTabProps) {
       <div className="flex items-center gap-2 flex-wrap">
         {/* Search */}
         <div className="relative flex-1 min-w-[180px]">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400" />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
           <input
             type="text"
             placeholder="Search assignments..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-7 pl-7 pr-2 text-[11px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700"
+            className="w-full h-7 pl-7 pr-2 text-[11px] bg-v2-card border border-v2-ring dark:border-v2-ring rounded-md text-v2-ink dark:text-v2-ink placeholder:text-v2-ink-subtle focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700"
           />
         </div>
 
         {/* Difficulty filter */}
         <select
           value={difficultyFilter}
-          onChange={(e) => setDifficultyFilter(e.target.value as DifficultyLevel | "")}
-          className="h-7 px-2 text-[11px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700"
+          onChange={(e) =>
+            setDifficultyFilter(e.target.value as DifficultyLevel | "")
+          }
+          className="h-7 px-2 text-[11px] bg-v2-card border border-v2-ring dark:border-v2-ring rounded-md text-v2-ink dark:text-v2-ink-muted focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700"
         >
           <option value="">All Levels</option>
           {DIFFICULTY_LEVELS.map((d) => (
@@ -125,8 +130,10 @@ export function AssignmentsTab({ assignments }: AssignmentsTabProps) {
         {/* Priority filter */}
         <select
           value={priorityFilter}
-          onChange={(e) => setPriorityFilter(e.target.value as PriorityLevel | "")}
-          className="h-7 px-2 text-[11px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md text-zinc-700 dark:text-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700"
+          onChange={(e) =>
+            setPriorityFilter(e.target.value as PriorityLevel | "")
+          }
+          className="h-7 px-2 text-[11px] bg-v2-card border border-v2-ring dark:border-v2-ring rounded-md text-v2-ink dark:text-v2-ink-muted focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700"
         >
           <option value="">All Priorities</option>
           {PRIORITY_LEVELS.map((p) => (
@@ -139,7 +146,7 @@ export function AssignmentsTab({ assignments }: AssignmentsTabProps) {
         {/* Expand/Collapse All */}
         <button
           onClick={toggleAll}
-          className="h-7 px-2 text-[11px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md flex items-center gap-1 transition-colors"
+          className="h-7 px-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-canvas bg-v2-card border border-v2-ring dark:border-v2-ring rounded-md flex items-center gap-1 transition-colors"
           title={allOpen ? "Collapse all" : "Expand all"}
         >
           <ChevronsUpDown className="h-3 w-3" />
@@ -152,20 +159,16 @@ export function AssignmentsTab({ assignments }: AssignmentsTabProps) {
         <div className="flex items-center gap-2 px-2.5 py-1.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-md text-[11px] text-amber-700 dark:text-amber-400">
           <AlertTriangle className="h-3 w-3 flex-shrink-0" />
           <span>
-            {overdueCount > 0 && (
-              <>{overdueCount} overdue</>
-            )}
+            {overdueCount > 0 && <>{overdueCount} overdue</>}
             {overdueCount > 0 && urgentCount > 0 && " · "}
-            {urgentCount > 0 && (
-              <>{urgentCount} urgent</>
-            )}
+            {urgentCount > 0 && <>{urgentCount} urgent</>}
           </span>
         </div>
       )}
 
       {/* Category sections */}
       {filtered.length === 0 && hasFilters ? (
-        <div className="text-center py-8 text-xs text-zinc-400">
+        <div className="text-center py-8 text-xs text-v2-ink-subtle">
           No assignments match your filters
         </div>
       ) : (

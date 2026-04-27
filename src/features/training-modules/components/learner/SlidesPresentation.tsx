@@ -56,7 +56,7 @@ function SlideNavigator({
           aria-label="Slide navigator"
         />
       </div>
-      <span className="text-[11px] text-zinc-500 min-w-[56px] text-right tabular-nums flex-shrink-0">
+      <span className="text-[11px] text-v2-ink-muted min-w-[56px] text-right tabular-nums flex-shrink-0">
         {numPages ? `${currentPage} / ${numPages}` : `${currentPage}`}
       </span>
       <Button
@@ -132,14 +132,14 @@ export function SlidesPresentation({ url }: SlidesPresentationProps) {
 
       <div
         ref={containerRef}
-        className="rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-slate-800 flex items-center justify-center"
+        className="rounded-lg overflow-hidden border border-v2-ring dark:border-v2-ring-strong bg-slate-800 flex items-center justify-center"
         style={{ minHeight: 400 }}
       >
         <Document
           file={url}
           onLoadSuccess={onDocumentLoadSuccess}
           loading={
-            <div className="flex items-center gap-2 py-20 text-zinc-400">
+            <div className="flex items-center gap-2 py-20 text-v2-ink-subtle">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span className="text-xs">Loading slides...</span>
             </div>
@@ -154,7 +154,7 @@ export function SlidesPresentation({ url }: SlidesPresentationProps) {
             renderTextLayer={false}
             renderAnnotationLayer={false}
             loading={
-              <div className="flex items-center gap-2 py-20 text-zinc-400">
+              <div className="flex items-center gap-2 py-20 text-v2-ink-subtle">
                 <Loader2 className="h-4 w-4 animate-spin" />
               </div>
             }

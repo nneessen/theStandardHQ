@@ -131,16 +131,16 @@ function DocumentRow({
   canDelete: boolean;
 }) {
   return (
-    <TableRow className="text-[11px] border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+    <TableRow className="text-[11px] border-b border-v2-ring dark:border-v2-ring hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50">
       <TableCell className="py-1.5">
         <div className="flex items-center gap-2">
           {getFileIcon(document.fileType)}
           <div className="min-w-0">
-            <span className="font-medium text-zinc-900 dark:text-zinc-100 block truncate">
+            <span className="font-medium text-v2-ink dark:text-v2-ink block truncate">
               {document.name}
             </span>
             {document.description && (
-              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block truncate">
+              <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle block truncate">
                 {document.description}
               </span>
             )}
@@ -150,17 +150,17 @@ function DocumentRow({
       <TableCell className="py-1.5">
         <Badge
           variant="outline"
-          className="text-[9px] px-1.5 py-0 border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 gap-1"
+          className="text-[9px] px-1.5 py-0 border-v2-ring dark:border-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-subtle gap-1"
         >
           {CATEGORY_ICONS[document.category]}
           {TRAINING_CATEGORY_CONFIG[document.category]?.label ||
             document.category}
         </Badge>
       </TableCell>
-      <TableCell className="py-1.5 text-zinc-500 dark:text-zinc-400">
+      <TableCell className="py-1.5 text-v2-ink-muted dark:text-v2-ink-subtle">
         {formatFileSize(document.fileSize)}
       </TableCell>
-      <TableCell className="py-1.5 text-zinc-500 dark:text-zinc-400">
+      <TableCell className="py-1.5 text-v2-ink-muted dark:text-v2-ink-subtle">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -176,7 +176,7 @@ function DocumentRow({
           </Tooltip>
         </TooltipProvider>
       </TableCell>
-      <TableCell className="py-1.5 text-zinc-500 dark:text-zinc-400">
+      <TableCell className="py-1.5 text-v2-ink-muted dark:text-v2-ink-subtle">
         {format(new Date(document.createdAt), "MMM d, yyyy")}
       </TableCell>
       <TableCell className="py-1.5 w-8">
@@ -185,7 +185,7 @@ function DocumentRow({
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+              className="h-6 w-6 text-v2-ink-muted hover:text-v2-ink dark:text-v2-ink-subtle dark:hover:text-v2-canvas"
             >
               <MoreHorizontal className="h-3 w-3" />
             </Button>
@@ -245,7 +245,7 @@ function DocumentViewer({
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-white dark:bg-zinc-900 rounded-lg p-4 flex items-center gap-2">
+        <div className="bg-v2-card rounded-lg p-4 flex items-center gap-2">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span className="text-sm">Opening document...</span>
         </div>
@@ -343,7 +343,12 @@ export function DocumentsTab({ searchQuery }: DocumentsTabProps) {
   const canDelete = (doc: TrainingDocument) => {
     if (user?.is_super_admin) return true;
     const roles = (user?.roles as string[] | undefined) ?? [];
-    if (roles.includes("trainer") || roles.includes("contracting_manager") || roles.includes("admin")) return true;
+    if (
+      roles.includes("trainer") ||
+      roles.includes("contracting_manager") ||
+      roles.includes("admin")
+    )
+      return true;
     return doc.uploadedBy === user?.id;
   };
 
@@ -379,7 +384,7 @@ export function DocumentsTab({ searchQuery }: DocumentsTabProps) {
             </SelectContent>
           </Select>
           {documents && (
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               {documents.length} document{documents.length !== 1 ? "s" : ""}
             </span>
           )}
@@ -398,26 +403,26 @@ export function DocumentsTab({ searchQuery }: DocumentsTabProps) {
       {/* Documents table */}
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+          <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
         </div>
       ) : documents && documents.length > 0 ? (
-        <div className="border border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden">
+        <div className="border border-v2-ring dark:border-v2-ring rounded-md overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-700">
-                <TableHead className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 py-1.5">
+              <TableRow className="bg-v2-canvas dark:bg-v2-card-tinted/50 border-b border-v2-ring dark:border-v2-ring-strong">
+                <TableHead className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle py-1.5">
                   Document
                 </TableHead>
-                <TableHead className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 py-1.5">
+                <TableHead className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle py-1.5">
                   Category
                 </TableHead>
-                <TableHead className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 py-1.5">
+                <TableHead className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle py-1.5">
                   Size
                 </TableHead>
-                <TableHead className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 py-1.5">
+                <TableHead className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle py-1.5">
                   Uploaded By
                 </TableHead>
-                <TableHead className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 py-1.5">
+                <TableHead className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle py-1.5">
                   Date
                 </TableHead>
                 <TableHead className="w-8 py-1.5" />
@@ -439,7 +444,7 @@ export function DocumentsTab({ searchQuery }: DocumentsTabProps) {
           </Table>
         </div>
       ) : (
-        <div className="text-center py-8 text-zinc-500 dark:text-zinc-400">
+        <div className="text-center py-8 text-v2-ink-muted dark:text-v2-ink-subtle">
           <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
           <p className="text-sm">No documents found</p>
           <p className="text-xs mt-1">
@@ -492,9 +497,7 @@ export function DocumentsTab({ searchQuery }: DocumentsTabProps) {
             <AlertDialogAction
               onClick={handleRenameSave}
               className="h-7 text-xs"
-              disabled={
-                updateDocument.isPending || !renameValue.trim()
-              }
+              disabled={updateDocument.isPending || !renameValue.trim()}
             >
               {updateDocument.isPending ? (
                 <Loader2 className="h-3 w-3 animate-spin" />

@@ -268,7 +268,7 @@ export function AssignModuleDialog({
 
           {/* Assignment Mode */}
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-zinc-500">
+            <label className="text-[11px] font-medium text-v2-ink-muted">
               Assignment Type
             </label>
             <Select
@@ -301,33 +301,33 @@ export function AssignModuleDialog({
 
           {/* Downline summary — shown when "My Team" is selected */}
           {assignMode === "downline" && !activeAgencyAssignment && (
-            <div className="rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-[11px] dark:border-zinc-700 dark:bg-zinc-800/50">
+            <div className="rounded-md border border-v2-ring bg-v2-canvas px-3 py-2.5 text-[11px] dark:border-v2-ring-strong dark:bg-v2-card-tinted/50">
               {downlinesLoading ? (
-                <div className="flex items-center gap-2 text-zinc-500">
+                <div className="flex items-center gap-2 text-v2-ink-muted">
                   <Loader2 className="h-3 w-3 animate-spin" />
                   Loading your downline...
                 </div>
               ) : downlineStats.total === 0 ? (
-                <div className="text-zinc-500">
+                <div className="text-v2-ink-muted">
                   You don&apos;t have any agents in your downline yet.
                 </div>
               ) : (
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-600 dark:text-zinc-300">
+                    <span className="text-v2-ink-muted dark:text-v2-ink-muted">
                       Total downline
                     </span>
                     <span className="font-medium">{downlineStats.total}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-600 dark:text-zinc-300">
+                    <span className="text-v2-ink-muted dark:text-v2-ink-muted">
                       Already assigned
                     </span>
                     <span className="font-medium">
                       {downlineStats.alreadyAssigned}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between border-t border-zinc-200 pt-1 dark:border-zinc-700">
+                  <div className="flex items-center justify-between border-t border-v2-ring pt-1 dark:border-v2-ring-strong">
                     <span className="font-medium text-emerald-700 dark:text-emerald-400">
                       Will be assigned
                     </span>
@@ -343,15 +343,15 @@ export function AssignModuleDialog({
           {/* Multi-user search (only for individual) */}
           {assignMode === "individual" && !activeAgencyAssignment && (
             <div className="space-y-1.5">
-              <label className="text-[11px] font-medium text-zinc-500">
+              <label className="text-[11px] font-medium text-v2-ink-muted">
                 Assign To
                 {selectedUsers.length > 0 && (
-                  <span className="ml-1 text-zinc-400">
+                  <span className="ml-1 text-v2-ink-subtle">
                     ({selectedUsers.length} selected)
                   </span>
                 )}
                 {unassignedCount > 0 && selectedUsers.length === 0 && (
-                  <span className="ml-1 text-zinc-400">
+                  <span className="ml-1 text-v2-ink-subtle">
                     — {unassignedCount} unassigned
                   </span>
                 )}
@@ -359,7 +359,7 @@ export function AssignModuleDialog({
 
               {/* Selected user chips */}
               {selectedUsers.length > 0 && (
-                <div className="max-h-20 overflow-y-auto flex flex-wrap gap-1 p-1.5 border border-zinc-200 dark:border-zinc-700 rounded-md bg-zinc-50 dark:bg-zinc-800/50">
+                <div className="max-h-20 overflow-y-auto flex flex-wrap gap-1 p-1.5 border border-v2-ring dark:border-v2-ring-strong rounded-md bg-v2-canvas dark:bg-v2-card-tinted/50">
                   {selectedUsers.map((user) => (
                     <Badge
                       key={user.id}
@@ -382,7 +382,7 @@ export function AssignModuleDialog({
 
               {/* Search input */}
               <div className="relative">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400" />
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
                 <Input
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -392,26 +392,26 @@ export function AssignModuleDialog({
               </div>
 
               {/* Results list */}
-              <div className="h-52 overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded-md">
+              <div className="h-52 overflow-y-auto border border-v2-ring dark:border-v2-ring-strong rounded-md">
                 {agentsLoading && (
                   <div className="flex items-center justify-center py-6">
-                    <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+                    <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
                   </div>
                 )}
                 {!agentsLoading && unassignedCount === 0 && (
-                  <div className="py-6 text-center text-[11px] text-zinc-500">
+                  <div className="py-6 text-center text-[11px] text-v2-ink-muted">
                     All agents have been assigned this module
                   </div>
                 )}
                 {!agentsLoading &&
                   unassignedCount > 0 &&
                   visibleAgents.length === 0 && (
-                    <div className="py-6 text-center text-[11px] text-zinc-500">
+                    <div className="py-6 text-center text-[11px] text-v2-ink-muted">
                       No agents match your search
                     </div>
                   )}
                 {!agentsLoading && visibleAgents.length > 0 && (
-                  <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                  <div className="divide-y divide-v2-ring dark:divide-v2-ring">
                     {visibleAgents.map((user) => {
                       const selected = isSelected(user.id);
                       return (
@@ -422,14 +422,14 @@ export function AssignModuleDialog({
                           className={`w-full flex items-center gap-2 px-3 py-2 text-left transition-colors ${
                             selected
                               ? "bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-50 dark:hover:bg-blue-950/30"
-                              : "hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                              : "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted"
                           }`}
                         >
                           <div
                             className={`h-4 w-4 shrink-0 rounded border flex items-center justify-center ${
                               selected
                                 ? "bg-blue-600 border-blue-600"
-                                : "border-zinc-300 dark:border-zinc-600"
+                                : "border-v2-ring-strong dark:border-v2-ring-strong"
                             }`}
                           >
                             {selected && (
@@ -441,7 +441,7 @@ export function AssignModuleDialog({
                               {`${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() ||
                                 user.email}
                             </div>
-                            <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+                            <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
                               {user.email}
                             </div>
                           </div>
@@ -456,7 +456,7 @@ export function AssignModuleDialog({
 
           {/* Due Date */}
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-zinc-500">
+            <label className="text-[11px] font-medium text-v2-ink-muted">
               Due Date (optional)
             </label>
             <Input
@@ -469,7 +469,7 @@ export function AssignModuleDialog({
 
           {/* Priority */}
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-zinc-500">
+            <label className="text-[11px] font-medium text-v2-ink-muted">
               Priority
             </label>
             <Select
@@ -490,7 +490,7 @@ export function AssignModuleDialog({
           </div>
 
           {/* Mandatory */}
-          <label className="flex items-center gap-2 text-[11px] text-zinc-600 dark:text-zinc-400">
+          <label className="flex items-center gap-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             <input
               type="checkbox"
               checked={isMandatory}

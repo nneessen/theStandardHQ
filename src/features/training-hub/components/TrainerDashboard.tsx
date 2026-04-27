@@ -340,7 +340,7 @@ export function TrainerDashboard() {
   // Status badge helper
   const getStatusBadgeClass = (status: string | null): string => {
     if (!status)
-      return "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400";
+      return "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-subtle";
     switch (status.toLowerCase()) {
       case "completed":
       case "approved":
@@ -354,7 +354,7 @@ export function TrainerDashboard() {
       case "pending":
         return "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400";
       default:
-        return "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300";
+        return "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-muted";
     }
   };
 
@@ -389,23 +389,23 @@ export function TrainerDashboard() {
   const userName = user?.first_name || "Trainer";
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-2 sm:p-3 space-y-2 sm:space-y-2.5">
+    <div className="flex flex-col gap-2.5">
       {/* Header */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-zinc-900 rounded-lg px-2 sm:px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-v2-card rounded-lg px-2 sm:px-3 py-2 border border-v2-ring dark:border-v2-ring">
         <div className="flex items-center gap-2">
-          <GraduationCap className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
+          <GraduationCap className="h-4 w-4 text-v2-ink dark:text-v2-ink" />
           <div>
-            <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <h1 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
               Welcome back, {userName}
             </h1>
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Training & Contracting Overview
             </span>
           </div>
         </div>
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
           {/* Time Period Switcher */}
-          <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 rounded-md p-0.5">
+          <div className="flex items-center bg-v2-card-tinted dark:bg-v2-card-tinted rounded-md p-0.5">
             {(["week", "month", "quarter"] as TimePeriod[]).map((period) => (
               <button
                 key={period}
@@ -416,8 +416,8 @@ export function TrainerDashboard() {
                 className={cn(
                   "px-2 py-0.5 text-[10px] font-medium rounded transition-colors",
                   timePeriod === period
-                    ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 shadow-sm"
-                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+                    ? "bg-white dark:bg-v2-ring-strong text-v2-ink dark:text-v2-ink shadow-sm"
+                    : "text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-ink-subtle",
                 )}
               >
                 {period.charAt(0).toUpperCase() + period.slice(1)}
@@ -435,7 +435,7 @@ export function TrainerDashboard() {
             >
               <ChevronLeft className="h-3 w-3" />
             </Button>
-            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 rounded text-[10px] text-zinc-600 dark:text-zinc-300">
+            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-v2-card-tinted dark:bg-v2-card-tinted rounded text-[10px] text-v2-ink-muted dark:text-v2-ink-muted">
               <Calendar className="h-3 w-3" />
               <span>
                 {format(dateRange.start, "MMM d")} -{" "}
@@ -456,13 +456,13 @@ export function TrainerDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-auto">
+      <div>
         <div className="space-y-2">
           {/* Main 3-column layout */}
           <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-[280px_1fr_280px]">
             {/* Left Column - Key Metrics */}
-            <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-              <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+            <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring p-3">
+              <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mb-2">
                 Key Metrics
               </div>
               <div className="space-y-0.5">
@@ -499,10 +499,10 @@ export function TrainerDashboard() {
                   value={recruitStats?.prospects || 0}
                   loading={statsLoading}
                   icon={<UserPlus className="h-3 w-3" />}
-                  color="text-zinc-500 dark:text-zinc-400"
+                  color="text-v2-ink-muted dark:text-v2-ink-subtle"
                 />
 
-                <div className="my-2 border-t border-zinc-100 dark:border-zinc-800" />
+                <div className="my-2 border-t border-v2-ring dark:border-v2-ring" />
 
                 {/* Contracting Metrics */}
                 <StatRow
@@ -536,13 +536,13 @@ export function TrainerDashboard() {
             </div>
 
             {/* Center Column - Performance Overview */}
-            <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-              <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+            <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring p-3">
+              <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mb-2">
                 Performance Overview
               </div>
 
               {/* Status Banner */}
-              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-v2-ring dark:border-v2-ring">
                 {conversionRate >= 60 ? (
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                 ) : (
@@ -561,7 +561,7 @@ export function TrainerDashboard() {
                       ? "Pipeline Healthy"
                       : "Pipeline Needs Attention"}
                   </div>
-                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     {conversionRate}% conversion rate |{" "}
                     {recruitStats?.avgDaysToComplete || 0} avg days to complete
                   </div>
@@ -572,17 +572,17 @@ export function TrainerDashboard() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                      <th className="text-left py-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase">
+                    <tr className="border-b border-v2-ring dark:border-v2-ring">
+                      <th className="text-left py-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase">
                         Metric
                       </th>
-                      <th className="text-right py-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase">
+                      <th className="text-right py-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase">
                         Current
                       </th>
-                      <th className="text-right py-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase">
+                      <th className="text-right py-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase">
                         Target
                       </th>
-                      <th className="text-center py-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase w-8">
+                      <th className="text-center py-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase w-8">
                         Status
                       </th>
                     </tr>
@@ -656,15 +656,15 @@ export function TrainerDashboard() {
             <div className="flex flex-col gap-2 md:col-span-2 lg:col-span-1">
               {/* Alerts Panel */}
               {alerts.length > 0 && (
-                <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-                  <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+                <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring p-3">
+                  <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mb-2">
                     Alerts
                   </div>
                   <div className="space-y-2">
                     {alerts.map((alert, index) => (
                       <div
                         key={index}
-                        className="flex items-start gap-2 pb-2 border-b border-zinc-100 dark:border-zinc-800/50 last:border-b-0 last:pb-0"
+                        className="flex items-start gap-2 pb-2 border-b border-v2-ring dark:border-v2-ring/50 last:border-b-0 last:pb-0"
                       >
                         {getAlertIcon(alert.type)}
                         <div className="flex-1 min-w-0">
@@ -676,7 +676,7 @@ export function TrainerDashboard() {
                           >
                             {alert.title}
                           </div>
-                          <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                          <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                             {alert.message}
                           </div>
                         </div>
@@ -687,15 +687,15 @@ export function TrainerDashboard() {
               )}
 
               {/* Quick Actions Panel */}
-              <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-                <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+              <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring p-3">
+                <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mb-2">
                   Quick Actions
                 </div>
                 <div className="flex flex-col gap-1">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] font-medium justify-start w-full border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                    className="h-6 text-[10px] font-medium justify-start w-full border-v2-ring dark:border-v2-ring-strong hover:bg-v2-canvas dark:hover:bg-v2-card-tinted"
                     onClick={() => navigate({ to: "/recruiting" })}
                   >
                     <UserPlus className="h-3 w-3 mr-1.5" />
@@ -704,7 +704,7 @@ export function TrainerDashboard() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] font-medium justify-start w-full border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                    className="h-6 text-[10px] font-medium justify-start w-full border-v2-ring dark:border-v2-ring-strong hover:bg-v2-canvas dark:hover:bg-v2-card-tinted"
                     onClick={() => navigate({ to: "/contracting" })}
                   >
                     <FileCheck className="h-3 w-3 mr-1.5" />
@@ -713,7 +713,7 @@ export function TrainerDashboard() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] font-medium justify-start w-full border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                    className="h-6 text-[10px] font-medium justify-start w-full border-v2-ring dark:border-v2-ring-strong hover:bg-v2-canvas dark:hover:bg-v2-card-tinted"
                     onClick={() => navigate({ to: "/messages" })}
                   >
                     <Mail className="h-3 w-3 mr-1.5" />
@@ -727,7 +727,7 @@ export function TrainerDashboard() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] font-medium justify-start w-full border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+                    className="h-6 text-[10px] font-medium justify-start w-full border-v2-ring dark:border-v2-ring-strong hover:bg-v2-canvas dark:hover:bg-v2-card-tinted"
                     onClick={() => navigate({ to: "/training-hub" })}
                   >
                     <GraduationCap className="h-3 w-3 mr-1.5" />
@@ -760,15 +760,15 @@ export function TrainerDashboard() {
           </div>
 
           {/* KPI Grid */}
-          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-            <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+          <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring p-3">
+            <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mb-2">
               Detailed KPI Breakdown
             </div>
             <TooltipProvider delayDuration={200}>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Recruiting Section */}
                 <div>
-                  <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
+                  <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide mb-2">
                     Recruiting Pipeline
                   </div>
                   <div className="space-y-1">
@@ -813,8 +813,8 @@ export function TrainerDashboard() {
                 </div>
 
                 {/* Contracting Section */}
-                <div className="lg:border-l lg:border-zinc-200 lg:dark:border-zinc-700 lg:pl-4 border-t border-zinc-200 dark:border-zinc-700 pt-4 sm:border-t-0 sm:pt-0">
-                  <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
+                <div className="lg:border-l lg:border-v2-ring lg:dark:border-v2-ring-strong lg:pl-4 border-t border-v2-ring dark:border-v2-ring-strong pt-4 sm:border-t-0 sm:pt-0">
+                  <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide mb-2">
                     Carrier Contracts
                   </div>
                   <div className="space-y-1">
@@ -852,8 +852,8 @@ export function TrainerDashboard() {
                 </div>
 
                 {/* Activity Section */}
-                <div className="lg:border-l lg:border-zinc-200 lg:dark:border-zinc-700 lg:pl-4 border-t border-zinc-200 dark:border-zinc-700 pt-4 lg:border-t-0 lg:pt-0 sm:col-span-2 lg:col-span-1">
-                  <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
+                <div className="lg:border-l lg:border-v2-ring lg:dark:border-v2-ring-strong lg:pl-4 border-t border-v2-ring dark:border-v2-ring-strong pt-4 lg:border-t-0 lg:pt-0 sm:col-span-2 lg:col-span-1">
+                  <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide mb-2">
                     Activity & Engagement
                   </div>
                   <div className="space-y-1">
@@ -889,11 +889,11 @@ export function TrainerDashboard() {
           {/* Recent Activity Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
             {/* Recent Recruits */}
-            <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-              <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-200 dark:border-zinc-800">
+            <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring">
+              <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring dark:border-v2-ring">
                 <div className="flex items-center gap-1.5">
-                  <Users className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-                  <h2 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                  <Users className="h-3.5 w-3.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
+                  <h2 className="text-xs font-semibold text-v2-ink dark:text-v2-ink">
                     Recent Recruits
                   </h2>
                 </div>
@@ -901,14 +901,14 @@ export function TrainerDashboard() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 text-[10px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                    className="h-6 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-canvas"
                   >
                     View All
                     <ArrowRight className="h-3 w-3 ml-1" />
                   </Button>
                 </Link>
               </div>
-              <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              <div className="divide-y divide-v2-ring dark:divide-v2-ring">
                 {recruitsLoading ? (
                   [1, 2, 3, 4, 5].map((i) => (
                     <div key={i} className="px-3 py-2">
@@ -935,17 +935,17 @@ export function TrainerDashboard() {
                             search: { recruitId: recruit.id },
                           })
                         }
-                        className="flex items-center justify-between px-3 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
+                        className="flex items-center justify-between px-3 py-2 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-2">
-                          <div className="h-7 w-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-semibold text-zinc-600 dark:text-zinc-300">
+                          <div className="h-7 w-7 rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted flex items-center justify-center text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
                             {name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100 truncate max-w-[140px]">
+                            <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink truncate max-w-[140px]">
                               {name}
                             </p>
-                            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate max-w-[140px]">
+                            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate max-w-[140px]">
                               {recruit.email}
                             </p>
                           </div>
@@ -960,7 +960,7 @@ export function TrainerDashboard() {
                           >
                             {phase.replace(/_/g, " ")}
                           </Badge>
-                          <span className="text-[9px] text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
+                          <span className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted whitespace-nowrap">
                             {recruit.updated_at
                               ? formatDistanceToNow(
                                   new Date(recruit.updated_at),
@@ -974,8 +974,8 @@ export function TrainerDashboard() {
                   })
                 ) : (
                   <div className="px-3 py-6 text-center">
-                    <UserPlus className="h-6 w-6 text-zinc-300 dark:text-zinc-600 mx-auto mb-1" />
-                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                    <UserPlus className="h-6 w-6 text-v2-ink-subtle dark:text-v2-ink-muted mx-auto mb-1" />
+                    <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                       No recruits in pipeline yet
                     </p>
                   </div>
@@ -984,11 +984,11 @@ export function TrainerDashboard() {
             </div>
 
             {/* Recent Contracts */}
-            <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-              <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-200 dark:border-zinc-800">
+            <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring">
+              <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring dark:border-v2-ring">
                 <div className="flex items-center gap-1.5">
-                  <FileCheck className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-                  <h2 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                  <FileCheck className="h-3.5 w-3.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
+                  <h2 className="text-xs font-semibold text-v2-ink dark:text-v2-ink">
                     Recent Contracts
                   </h2>
                 </div>
@@ -996,14 +996,14 @@ export function TrainerDashboard() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 text-[10px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                    className="h-6 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-canvas"
                   >
                     View All
                     <ArrowRight className="h-3 w-3 ml-1" />
                   </Button>
                 </Link>
               </div>
-              <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              <div className="divide-y divide-v2-ring dark:divide-v2-ring">
                 {contractsListLoading ? (
                   [1, 2, 3, 4, 5].map((i) => (
                     <div key={i} className="px-3 py-2">
@@ -1026,17 +1026,17 @@ export function TrainerDashboard() {
                       <Link
                         key={contract.id}
                         to="/contracting"
-                        className="flex items-center justify-between px-3 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                        className="flex items-center justify-between px-3 py-2 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 transition-colors"
                       >
                         <div className="flex items-center gap-2">
-                          <div className="h-7 w-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-semibold text-zinc-600 dark:text-zinc-300">
+                          <div className="h-7 w-7 rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted flex items-center justify-center text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
                             {agentName.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100 truncate max-w-[140px]">
+                            <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink truncate max-w-[140px]">
                               {agentName}
                             </p>
-                            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate max-w-[140px]">
+                            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate max-w-[140px]">
                               {carrier?.name || "Unknown Carrier"}
                             </p>
                           </div>
@@ -1051,7 +1051,7 @@ export function TrainerDashboard() {
                           >
                             {contract.status}
                           </Badge>
-                          <span className="text-[9px] text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
+                          <span className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted whitespace-nowrap">
                             {contract.updated_at
                               ? formatDistanceToNow(
                                   new Date(contract.updated_at),
@@ -1065,8 +1065,8 @@ export function TrainerDashboard() {
                   })
                 ) : (
                   <div className="px-3 py-6 text-center">
-                    <FileCheck className="h-6 w-6 text-zinc-300 dark:text-zinc-600 mx-auto mb-1" />
-                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                    <FileCheck className="h-6 w-6 text-v2-ink-subtle dark:text-v2-ink-muted mx-auto mb-1" />
+                    <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                       No contracts yet
                     </p>
                   </div>
@@ -1092,8 +1092,8 @@ interface StatRowProps {
 
 function StatRow({ label, value, loading, icon, color }: StatRowProps) {
   return (
-    <div className="flex justify-between items-center text-[11px] hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded px-1 -mx-1 py-0.5">
-      <div className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+    <div className="flex justify-between items-center text-[11px] hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 rounded px-1 -mx-1 py-0.5">
+      <div className="flex items-center gap-1.5 text-v2-ink-muted dark:text-v2-ink-subtle">
         {icon}
         <span>{label}</span>
       </div>
@@ -1103,7 +1103,7 @@ function StatRow({ label, value, loading, icon, color }: StatRowProps) {
         <span
           className={cn(
             "font-mono font-semibold",
-            color || "text-zinc-900 dark:text-zinc-100",
+            color || "text-v2-ink dark:text-v2-ink",
           )}
         >
           {value}
@@ -1137,14 +1137,14 @@ function PerformanceRow({
   }[status];
 
   return (
-    <tr className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-      <td className="py-1.5 text-[11px] text-zinc-900 dark:text-zinc-100">
+    <tr className="hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50">
+      <td className="py-1.5 text-[11px] text-v2-ink dark:text-v2-ink">
         {metric}
       </td>
-      <td className="py-1.5 text-right text-[11px] font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+      <td className="py-1.5 text-right text-[11px] font-mono font-semibold text-v2-ink dark:text-v2-ink">
         {loading ? <Skeleton className="h-4 w-8 ml-auto" /> : current}
       </td>
-      <td className="py-1.5 text-right text-[11px] text-zinc-500 dark:text-zinc-400 font-mono">
+      <td className="py-1.5 text-right text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle font-mono">
         {target}
       </td>
       <td className="py-1.5 text-center">
@@ -1169,12 +1169,14 @@ function KPIRow({ label, value, loading }: KPIRowProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex justify-between items-center text-[11px] cursor-help hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded px-1 -mx-1 py-0.5">
-          <span className="text-zinc-500 dark:text-zinc-400">{label}</span>
+        <div className="flex justify-between items-center text-[11px] cursor-help hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 rounded px-1 -mx-1 py-0.5">
+          <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+            {label}
+          </span>
           {loading ? (
             <Skeleton className="h-4 w-8" />
           ) : (
-            <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+            <span className="font-mono font-semibold text-v2-ink dark:text-v2-ink">
               {value}
             </span>
           )}
@@ -1182,12 +1184,12 @@ function KPIRow({ label, value, loading }: KPIRowProps) {
       </TooltipTrigger>
       <TooltipContent
         side="top"
-        className="max-w-xs bg-zinc-900 dark:bg-zinc-800 border-zinc-700"
+        className="max-w-xs bg-zinc-900 dark:bg-v2-card-tinted border-v2-ring-strong"
       >
         <div className="space-y-1">
-          <div className="text-xs font-semibold text-zinc-100">{label}</div>
-          <div className="text-[10px] text-zinc-400">
-            Value: <span className="font-mono text-zinc-200">{value}</span>
+          <div className="text-xs font-semibold text-v2-canvas">{label}</div>
+          <div className="text-[10px] text-v2-ink-subtle">
+            Value: <span className="font-mono text-v2-canvas">{value}</span>
           </div>
         </div>
       </TooltipContent>

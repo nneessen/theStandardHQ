@@ -12,7 +12,10 @@ interface PresentationReviewPanelProps {
   onReviewed?: () => void;
 }
 
-export function PresentationReviewPanel({ submission, onReviewed }: PresentationReviewPanelProps) {
+export function PresentationReviewPanel({
+  submission,
+  onReviewed,
+}: PresentationReviewPanelProps) {
   const { user } = useAuth();
   const reviewMutation = useReviewPresentation();
   const [notes, setNotes] = useState("");
@@ -23,7 +26,9 @@ export function PresentationReviewPanel({ submission, onReviewed }: Presentation
       { id: submission.id, status, reviewerNotes: notes || undefined },
       {
         onSuccess: () => {
-          toast.success(status === "approved" ? "Presentation approved" : "Feedback sent");
+          toast.success(
+            status === "approved" ? "Presentation approved" : "Feedback sent",
+          );
           onReviewed?.();
         },
         onError: (err) => {
@@ -36,27 +41,32 @@ export function PresentationReviewPanel({ submission, onReviewed }: Presentation
   // Already reviewed — show review info
   if (submission.status !== "pending") {
     return (
-      <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 p-3 space-y-2">
-        <h3 className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 uppercase">
+      <div className="rounded-lg border border-v2-ring dark:border-v2-ring-strong p-3 space-y-2">
+        <h3 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink-muted uppercase">
           Review
         </h3>
-        <div className="text-xs text-zinc-600 dark:text-zinc-400">
+        <div className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle">
           <span className="font-medium">
-            {submission.status === "approved" ? "Approved" : "Needs Improvement"}
+            {submission.status === "approved"
+              ? "Approved"
+              : "Needs Improvement"}
           </span>
           {submission.reviewer && (
             <span>
-              {" "}by {submission.reviewer.first_name} {submission.reviewer.last_name}
+              {" "}
+              by {submission.reviewer.first_name}{" "}
+              {submission.reviewer.last_name}
             </span>
           )}
           {submission.reviewed_at && (
-            <span className="text-zinc-400">
-              {" "}&middot; {new Date(submission.reviewed_at).toLocaleDateString()}
+            <span className="text-v2-ink-subtle">
+              {" "}
+              &middot; {new Date(submission.reviewed_at).toLocaleDateString()}
             </span>
           )}
         </div>
         {submission.reviewer_notes && (
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 italic">
+          <p className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle italic">
             {submission.reviewer_notes}
           </p>
         )}
@@ -65,8 +75,8 @@ export function PresentationReviewPanel({ submission, onReviewed }: Presentation
   }
 
   return (
-    <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 p-3 space-y-2">
-      <h3 className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 uppercase">
+    <div className="rounded-lg border border-v2-ring dark:border-v2-ring-strong p-3 space-y-2">
+      <h3 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink-muted uppercase">
         Review This Presentation
       </h3>
       <textarea
@@ -74,7 +84,7 @@ export function PresentationReviewPanel({ submission, onReviewed }: Presentation
         onChange={(e) => setNotes(e.target.value)}
         rows={3}
         placeholder="Add feedback notes (optional)..."
-        className="w-full text-xs rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 resize-none"
+        className="w-full text-xs rounded-md border border-v2-ring dark:border-v2-ring-strong bg-v2-card p-2 resize-none"
       />
       <div className="flex items-center gap-2">
         <Button

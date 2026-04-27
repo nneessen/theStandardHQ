@@ -10,7 +10,7 @@ export function XpDisplay({ xp }: { xp: number }) {
       <span className="font-bold text-amber-600 dark:text-amber-400 text-[11px]">
         {xp.toLocaleString()}
       </span>
-      <span className="text-zinc-400 text-[10px]">XP</span>
+      <span className="text-v2-ink-subtle text-[10px]">XP</span>
       <span className="text-[9px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1 rounded">
         Lvl {level}
       </span>
