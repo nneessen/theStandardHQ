@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { invalidateHierarchyForNode } from "@/hooks/hierarchy";
 import { Button } from "@/components/ui/button";
+import { PillButton } from "@/components/v2";
 import {
   Dialog,
   DialogContent,
@@ -629,22 +630,36 @@ export default function EditUserDialog({
   return (
     <>
       <Dialog open={dialogOpen} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto p-0 bg-v2-card border-v2-ring">
-          <DialogHeader className="px-4 py-3 border-b border-v2-ring bg-v2-canvas">
-            <DialogTitle className="text-sm font-semibold flex items-center gap-2 text-v2-ink">
-              <User className="h-4 w-4" />
-              Edit User
-            </DialogTitle>
-            <DialogDescription className="text-[10px] text-v2-ink-muted">
-              {user.email} • Created{" "}
+        <DialogContent
+          className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-v2-card text-v2-ink border border-v2-ring shadow-v2-lift w-[calc(100vw-1.5rem)] sm:w-auto max-w-xl max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
+          hideCloseButton
+        >
+          <DialogHeader className="px-5 py-3 border-b border-v2-ring bg-v2-card-tinted flex-shrink-0">
+            <div className="flex items-center gap-2.5">
+              <span className="h-2 w-2 rounded-full bg-v2-accent" />
+              <div className="flex flex-col leading-tight min-w-0 flex-1">
+                <span className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+                  Edit user
+                </span>
+                <DialogTitle className="text-base font-semibold tracking-tight text-v2-ink text-left flex items-center gap-1.5">
+                  <User className="h-4 w-4" />
+                  {user.email}
+                </DialogTitle>
+              </div>
+            </div>
+            <DialogDescription className="text-[11px] text-v2-ink-muted text-left mt-1">
+              Created{" "}
               {user.created_at
                 ? new Date(user.created_at).toLocaleDateString()
                 : "Unknown"}
             </DialogDescription>
           </DialogHeader>
 
-          <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="mx-4 mt-3 grid w-[calc(100%-2rem)] grid-cols-5 h-7 bg-v2-ring p-0.5 rounded">
+          <Tabs
+            defaultValue="basic"
+            className="w-full flex flex-col flex-1 min-h-0"
+          >
+            <TabsList className="mx-5 mt-3 grid w-[calc(100%-2.5rem)] grid-cols-5 h-7 bg-v2-canvas border border-v2-ring p-0.5 rounded-v2-pill flex-shrink-0">
               <TabsTrigger
                 value="basic"
                 className="text-[10px] h-6 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-v2-card-dark data-[state=active]:shadow-sm"
@@ -677,7 +692,7 @@ export default function EditUserDialog({
               </TabsTrigger>
             </TabsList>
 
-            <div className="px-4 py-3">
+            <div className="px-5 py-4 overflow-y-auto flex-1 min-h-0">
               <TabsContent value="basic" className="space-y-3 mt-0">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
@@ -1336,24 +1351,24 @@ export default function EditUserDialog({
             </div>
           </Tabs>
 
-          <DialogFooter className="px-4 py-2.5 gap-1.5 border-t border-v2-ring bg-v2-canvas">
-            <Button
+          <DialogFooter className="px-5 py-3 gap-2 border-t border-v2-ring bg-v2-card-tinted flex-shrink-0 sm:justify-end">
+            <PillButton
               type="button"
-              variant="ghost"
-              onClick={() => onOpenChange(false)}
+              tone="ghost"
               size="sm"
-              className="h-6 text-[10px] px-2"
+              onClick={() => onOpenChange(false)}
             >
               Cancel
-            </Button>
-            <Button
-              onClick={handleSaveClick}
+            </PillButton>
+            <PillButton
+              type="button"
+              tone="black"
               size="sm"
-              className="h-6 text-[10px] px-2"
+              onClick={handleSaveClick}
               disabled={isSaving}
             >
-              {isSaving ? "Saving..." : "Save Changes"}
-            </Button>
+              {isSaving ? "Saving…" : "Save changes"}
+            </PillButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>
