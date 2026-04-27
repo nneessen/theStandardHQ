@@ -1,6 +1,5 @@
 // src/features/admin/components/AddUserDialog.tsx
 import { useState, useMemo } from "react";
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { PillButton } from "@/components/v2";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -171,17 +172,28 @@ export default function AddUserDialog({
         onOpenChange(isOpen);
       }}
     >
-      <DialogContent className="max-w-md p-3 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
-        <DialogHeader className="pb-2 space-y-1">
-          <DialogTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            Add New User
-          </DialogTitle>
-          <DialogDescription className="text-[10px] text-zinc-500 dark:text-zinc-400">
+      <DialogContent
+        className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-v2-card text-v2-ink border border-v2-ring shadow-v2-lift w-[calc(100vw-1.5rem)] sm:w-auto max-w-md max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
+        hideCloseButton
+      >
+        <DialogHeader className="px-5 py-3 border-b border-v2-ring bg-v2-card-tinted flex-shrink-0">
+          <div className="flex items-center gap-2.5">
+            <span className="h-2 w-2 rounded-full bg-v2-accent" />
+            <div className="flex flex-col leading-tight">
+              <span className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+                New user
+              </span>
+              <DialogTitle className="text-base font-semibold tracking-tight text-v2-ink text-left">
+                Add new user
+              </DialogTitle>
+            </div>
+          </div>
+          <DialogDescription className="text-[11px] text-v2-ink-muted text-left mt-1">
             A login link will be emailed to the user automatically.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3">
+        <div className="px-5 py-4 space-y-3 overflow-y-auto flex-1 min-h-0">
           {/* Email */}
           <div>
             <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
@@ -581,23 +593,18 @@ export default function AddUserDialog({
           )}
         </div>
 
-        <DialogFooter className="gap-1 pt-3">
-          <Button
+        <DialogFooter className="px-5 py-3 border-t border-v2-ring bg-v2-card-tinted flex-shrink-0 gap-2 sm:justify-end">
+          <PillButton
             type="button"
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
+            tone="ghost"
             size="sm"
-            className="h-6 px-2 text-[10px]"
+            onClick={() => onOpenChange(false)}
           >
             Cancel
-          </Button>
-          <Button
-            onClick={handleSave}
-            size="sm"
-            className="h-6 px-2 text-[10px]"
-          >
-            Create User
-          </Button>
+          </PillButton>
+          <PillButton type="button" tone="black" size="sm" onClick={handleSave}>
+            Create user
+          </PillButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>

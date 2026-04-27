@@ -56,11 +56,11 @@ export const EditorialAlertsActions: React.FC<EditorialAlertsActionsProps> = ({
   const activeAlerts = alerts.filter((a) => a.condition);
 
   return (
-    <section className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 py-6 border-t border-zinc-200 dark:border-zinc-800">
+    <section className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 py-6 border-t border-v2-ring">
       {/* ALERTS column */}
       <div>
         <div className="flex items-baseline justify-between mb-3">
-          <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-zinc-500 dark:text-zinc-400">
+          <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted">
             Alerts
           </h2>
           {activeAlerts.length > 0 && (
@@ -71,7 +71,7 @@ export const EditorialAlertsActions: React.FC<EditorialAlertsActionsProps> = ({
         </div>
 
         {activeAlerts.length === 0 ? (
-          <p className="text-[12px] italic text-zinc-500 dark:text-zinc-400">
+          <p className="text-[12px] italic text-v2-ink-muted">
             All clear — nothing flagged this period.
           </p>
         ) : (
@@ -95,7 +95,7 @@ export const EditorialAlertsActions: React.FC<EditorialAlertsActionsProps> = ({
                     >
                       {alert.title}
                     </span>
-                    <span className="text-[12px] text-zinc-600 dark:text-zinc-400">
+                    <span className="text-[12px] text-v2-ink-muted">
                       {" — "}
                       <span className="italic">{alert.message}</span>
                     </span>
@@ -109,7 +109,7 @@ export const EditorialAlertsActions: React.FC<EditorialAlertsActionsProps> = ({
 
       {/* QUICK ACTIONS column */}
       <div>
-        <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-zinc-500 dark:text-zinc-400 mb-3">
+        <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted mb-3">
           Quick Actions
         </h2>
         <div className="flex flex-col gap-1.5">
@@ -125,7 +125,7 @@ export const EditorialAlertsActions: React.FC<EditorialAlertsActionsProps> = ({
                       <button
                         type="button"
                         onClick={() => navigate({ to: "/billing" })}
-                        className="group flex items-center gap-2 text-[12px] text-zinc-400 dark:text-zinc-600 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors text-left w-fit"
+                        className="group flex items-center gap-2 text-[12px] text-v2-ink-subtle hover:text-v2-ink transition-colors text-left w-fit"
                       >
                         <Lock className="h-3 w-3 shrink-0" />
                         <span>{action.label}</span>
@@ -145,7 +145,7 @@ export const EditorialAlertsActions: React.FC<EditorialAlertsActionsProps> = ({
                             {action.lockedTooltip ??
                               `Upgrade to ${action.requiredTier ?? "Starter"} to unlock`}
                           </p>
-                          <p className="text-zinc-400 dark:text-zinc-500 mt-0.5">
+                          <p className="text-v2-ink-subtle mt-0.5">
                             Click to view plans
                           </p>
                         </div>
@@ -163,11 +163,11 @@ export const EditorialAlertsActions: React.FC<EditorialAlertsActionsProps> = ({
                 onClick={() => onActionClick(action.action)}
                 disabled={isCreating}
                 className={cn(
-                  "group flex items-center gap-2 text-[12px] text-zinc-700 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors text-left w-fit",
+                  "group flex items-center gap-2 text-[12px] text-v2-ink-muted hover:text-v2-ink transition-colors text-left w-fit",
                   isCreating && "opacity-60 cursor-not-allowed",
                 )}
               >
-                <Icon className="h-3 w-3 shrink-0 text-zinc-400 dark:text-zinc-600 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors" />
+                <Icon className="h-3 w-3 shrink-0 text-v2-ink-subtle group-hover:text-v2-ink transition-colors" />
                 <span className="border-b border-transparent group-hover:border-current">
                   {isCreating && action.label !== "View Reports"
                     ? `${action.label}...`

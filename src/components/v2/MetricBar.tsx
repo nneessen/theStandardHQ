@@ -17,8 +17,9 @@ const toneStyles = {
 
 /**
  * Labelled horizontal progress bar (mirrors the "Interviews 15%" rows in
- * the Crextio reference). The fill ends with a small chip showing the
- * formatted percentage or value.
+ * the Crextio reference). Renders the value chip to the right of the
+ * bar so it never gets clipped when the fill width is narrow or the
+ * dollar string is long.
  */
 export const MetricBar: React.FC<MetricBarProps> = ({
   label,
@@ -30,28 +31,27 @@ export const MetricBar: React.FC<MetricBarProps> = ({
   const pct = Math.max(0, Math.min(1, value));
   const pctText = display ?? `${Math.round(pct * 100)}%`;
   return (
-    <div className={cn("flex items-center gap-3 w-full", className)}>
-      <div className="text-xs font-medium text-v2-ink-muted w-24 shrink-0 truncate">
+    <div
+      className={cn(
+        "grid grid-cols-[minmax(0,7rem)_minmax(0,1fr)_auto] items-center gap-3 w-full min-w-0",
+        className,
+      )}
+    >
+      <div className="text-xs font-medium text-v2-ink-muted truncate">
         {label}
       </div>
-      <div className="relative flex-1 h-7 rounded-v2-pill bg-v2-canvas border border-v2-ring overflow-hidden">
+      <div className="relative h-2 rounded-v2-pill bg-v2-canvas border border-v2-ring overflow-hidden min-w-0">
         <div
           className={cn(
-            "absolute inset-y-0 left-0 rounded-v2-pill flex items-center justify-end pr-2.5 transition-[width] duration-500",
+            "absolute inset-y-0 left-0 rounded-v2-pill transition-[width] duration-500",
             toneStyles[tone],
           )}
-          style={{ width: `${Math.max(pct * 100, 14)}%` }}
-        >
-          <span
-            className={cn(
-              "text-[11px] font-semibold whitespace-nowrap",
-              tone === "yellow" ? "text-v2-ink" : "text-white",
-            )}
-          >
-            {pctText}
-          </span>
-        </div>
+          style={{ width: `${Math.max(pct * 100, 4)}%` }}
+        />
       </div>
+      <span className="text-[12px] font-semibold tabular-nums whitespace-nowrap text-v2-ink">
+        {pctText}
+      </span>
     </div>
   );
 };
