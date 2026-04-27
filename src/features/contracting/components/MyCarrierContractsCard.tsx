@@ -58,20 +58,20 @@ export function AgentCarrierContractsCard({
   return (
     <div
       className={cn(
-        "bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800",
+        "bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring",
         className,
       )}
     >
-      <div className="px-3 py-2 border-b border-zinc-100 dark:border-zinc-800 flex items-center gap-2">
-        <Briefcase className="h-3.5 w-3.5 text-zinc-400" />
-        <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+      <div className="px-3 py-2 border-b border-v2-ring dark:border-v2-ring flex items-center gap-2">
+        <Briefcase className="h-3.5 w-3.5 text-v2-ink-subtle" />
+        <h3 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink uppercase tracking-wide">
           {title}
         </h3>
       </div>
 
       {isLoading ? (
         <div className="p-4 text-center">
-          <Loader2 className="h-4 w-4 animate-spin text-zinc-400 mx-auto" />
+          <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle mx-auto" />
         </div>
       ) : error ? (
         <div className="p-3 flex items-center gap-2 text-red-500">
@@ -80,12 +80,12 @@ export function AgentCarrierContractsCard({
         </div>
       ) : !carriers || carriers.length === 0 ? (
         <div className="p-3 text-center">
-          <p className="text-[10px] text-zinc-500">
+          <p className="text-[10px] text-v2-ink-muted">
             No carriers configured for this agent&apos;s organization
           </p>
         </div>
       ) : (
-        <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+        <div className="divide-y divide-v2-ring dark:divide-v2-ring">
           {carriers.map((carrier) => {
             const contract = contractMap.get(carrier.id);
             const isActive = contract?.status === "approved";
@@ -97,11 +97,11 @@ export function AgentCarrierContractsCard({
                 className="flex items-center justify-between px-3 py-1.5"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                  <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink truncate">
                     {carrier.name}
                   </p>
                   {writingNumber && (
-                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                       #{writingNumber}
                     </p>
                   )}
@@ -118,8 +118,8 @@ export function AgentCarrierContractsCard({
         </div>
       )}
 
-      <div className="px-3 py-1.5 border-t border-zinc-100 dark:border-zinc-800">
-        <p className="text-[9px] text-zinc-400">{description}</p>
+      <div className="px-3 py-1.5 border-t border-v2-ring dark:border-v2-ring">
+        <p className="text-[9px] text-v2-ink-subtle">{description}</p>
       </div>
     </div>
   );

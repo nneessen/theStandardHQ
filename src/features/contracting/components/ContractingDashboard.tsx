@@ -543,9 +543,9 @@ export function ContractingDashboard() {
   }, [allRequests, totalCount]);
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2">
+    <div className="flex flex-col gap-2">
       {/* Compact Header */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-1.5 border border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-1.5 border border-v2-ring dark:border-v2-ring">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <FileCheck className="h-4 w-4" />
@@ -596,8 +596,8 @@ export function ContractingDashboard() {
       />
 
       {/* Table */}
-      <div className="flex-1 overflow-hidden bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-        <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-2">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft overflow-hidden">
+        <div className="px-3 py-2 border-b border-v2-ring dark:border-v2-ring flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
             <span>Grouped by recruit</span>
             <span className="h-3 w-px bg-border" />
@@ -1001,7 +1001,7 @@ export function ContractingDashboard() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-1.5 border border-zinc-200 dark:border-zinc-800">
+        <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-1.5 border border-v2-ring dark:border-v2-ring">
           <div className="text-[10px] text-muted-foreground">
             Showing {(page - 1) * PAGE_SIZE + 1}-
             {Math.min(page * PAGE_SIZE, totalCount)} of {totalCount} requests
