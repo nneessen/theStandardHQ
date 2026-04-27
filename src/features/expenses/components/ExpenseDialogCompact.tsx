@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { PillButton } from "@/components/v2";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -268,541 +269,565 @@ export function ExpenseDialogCompact({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-md">
-          <DialogHeader className="pb-2">
-            <DialogTitle className="text-sm font-semibold">
-              {expense ? "Edit Expense" : "Add Expense"}
-            </DialogTitle>
+        <DialogContent
+          className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-v2-card text-v2-ink border border-v2-ring shadow-v2-lift w-[calc(100vw-1.5rem)] sm:w-auto max-w-md max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
+          hideCloseButton
+        >
+          <DialogHeader className="px-5 py-3 border-b border-v2-ring bg-v2-card-tinted flex-shrink-0">
+            <div className="flex items-center gap-2.5">
+              <span className="h-2 w-2 rounded-full bg-v2-accent" />
+              <div className="flex flex-col leading-tight">
+                <span className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+                  {expense ? "Edit" : "New"}
+                </span>
+                <DialogTitle className="text-base font-semibold tracking-tight text-v2-ink text-left">
+                  {expense ? "Edit expense" : "Add expense"}
+                </DialogTitle>
+              </div>
+            </div>
           </DialogHeader>
 
-          <form onSubmit={handleSubmit} className="space-y-2">
-            {/* Essential Fields - Compact Grid */}
-            <div className="grid gap-2">
-              {/* Name & Amount Row */}
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label className="text-[11px] text-muted-foreground">
-                    Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    required
-                    className="h-7 text-xs"
-                    placeholder="e.g., Lunch with client"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-[11px] text-muted-foreground">
-                    Amount <span className="text-destructive">*</span>
-                  </Label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-2 top-1.5 h-3 w-3 text-muted-foreground" />
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={formData.amount || ""}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          amount:
-                            e.target.value === ""
-                              ? 0
-                              : parseFloat(e.target.value),
-                        })
-                      }
-                      required
-                      className="h-7 text-xs pl-7 font-mono"
-                      placeholder="0.00"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Date & Type Row */}
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label className="text-[11px] text-muted-foreground">
-                    Date <span className="text-destructive">*</span>
-                  </Label>
-                  <div className="relative">
-                    <Calendar className="absolute left-2 top-1.5 h-3 w-3 text-muted-foreground" />
-                    <Input
-                      type="date"
-                      value={formData.date}
-                      onChange={(e) =>
-                        setFormData({ ...formData, date: e.target.value })
-                      }
-                      required
-                      className="h-7 text-xs pl-7"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <Label className="text-[11px] text-muted-foreground">
-                    Type <span className="text-destructive">*</span>
-                  </Label>
-                  <div className="grid grid-cols-2 gap-1">
-                    <Button
-                      type="button"
-                      variant={
-                        formData.expense_type === "business"
-                          ? "default"
-                          : "outline"
-                      }
-                      size="sm"
-                      className="h-7 text-[10px]"
-                      onClick={() =>
-                        setFormData({ ...formData, expense_type: "business" })
-                      }
-                    >
-                      Business
-                    </Button>
-                    <Button
-                      type="button"
-                      variant={
-                        formData.expense_type === "personal"
-                          ? "default"
-                          : "outline"
-                      }
-                      size="sm"
-                      className="h-7 text-[10px]"
-                      onClick={() =>
-                        setFormData({ ...formData, expense_type: "personal" })
-                      }
-                    >
-                      Personal
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Category */}
-              <div>
-                <Label className="text-[11px] text-muted-foreground">
-                  Category <span className="text-destructive">*</span>
-                </Label>
-
-                {/* Quick Category Buttons */}
-                <div className="flex gap-1 mb-1">
-                  {quickCategories.map((cat) => (
-                    <Button
-                      key={cat.name}
-                      type="button"
-                      variant={
-                        formData.category === cat.name ? "default" : "ghost"
-                      }
-                      size="sm"
-                      className="h-6 px-2 text-[10px]"
-                      onClick={() =>
-                        setFormData({
-                          ...formData,
-                          category: cat.name,
-                          expense_type: cat.type as "business" | "personal",
-                        })
-                      }
-                    >
-                      {cat.label}
-                    </Button>
-                  ))}
-                </div>
-
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, category: value })
-                  }
-                >
-                  <SelectTrigger className="h-7 text-xs">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <div className="text-[10px] font-semibold text-muted-foreground px-2 py-1">
-                      Business
-                    </div>
-                    {DEFAULT_EXPENSE_CATEGORIES.filter(
-                      (cat) => cat.type === "business",
-                    ).map((cat) => (
-                      <SelectItem
-                        key={cat.name}
-                        value={cat.name}
-                        className="text-xs"
-                      >
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                    <div className="text-[10px] font-semibold text-muted-foreground px-2 py-1 mt-1">
-                      Personal
-                    </div>
-                    {DEFAULT_EXPENSE_CATEGORIES.filter(
-                      (cat) => cat.type === "personal",
-                    ).map((cat) => (
-                      <SelectItem
-                        key={cat.name}
-                        value={cat.name}
-                        className="text-xs"
-                      >
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                    <div className="text-[10px] font-semibold text-muted-foreground px-2 py-1 mt-1">
-                      Other
-                    </div>
-                    {DEFAULT_EXPENSE_CATEGORIES.filter(
-                      (cat) => cat.type === "general",
-                    ).map((cat) => (
-                      <SelectItem
-                        key={cat.name}
-                        value={cat.name}
-                        className="text-xs"
-                      >
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Lead Purchase Fields - Only shown when Life Insurance Leads category */}
-              {isLeadCategory && (
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2.5 space-y-2">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <Users className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                    <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-[0.18em]">
-                      Lead Purchase Details
-                    </span>
-                  </div>
-
-                  {/* Vendor Selection */}
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col flex-1 min-h-0"
+          >
+            {/* Body — only this region scrolls */}
+            <div className="px-5 py-4 space-y-3 overflow-y-auto flex-1 min-h-0">
+              {/* Essential Fields - Compact Grid */}
+              <div className="grid gap-2">
+                {/* Name & Amount Row */}
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label className="text-[10px] text-muted-foreground">
-                      Vendor <span className="text-destructive">*</span>
+                    <Label className="text-[11px] text-muted-foreground">
+                      Name <span className="text-destructive">*</span>
                     </Label>
-                    <div className="flex gap-1">
-                      <Select
-                        value={leadFields.vendorId}
-                        onValueChange={(value) =>
-                          setLeadFields({ ...leadFields, vendorId: value })
+                    <Input
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                      required
+                      className="h-7 text-xs"
+                      placeholder="e.g., Lunch with client"
+                    />
+                  </div>
+
+                  <div>
+                    <Label className="text-[11px] text-muted-foreground">
+                      Amount <span className="text-destructive">*</span>
+                    </Label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-2 top-1.5 h-3 w-3 text-muted-foreground" />
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={formData.amount || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            amount:
+                              e.target.value === ""
+                                ? 0
+                                : parseFloat(e.target.value),
+                          })
                         }
-                      >
-                        <SelectTrigger className="h-7 text-xs flex-1">
-                          <SelectValue placeholder="Select vendor" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {vendors.map((vendor: LeadVendor) => (
-                            <SelectItem key={vendor.id} value={vendor.id}>
-                              {vendor.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        required
+                        className="h-7 text-xs pl-7 font-mono"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Date & Type Row */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label className="text-[11px] text-muted-foreground">
+                      Date <span className="text-destructive">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Calendar className="absolute left-2 top-1.5 h-3 w-3 text-muted-foreground" />
+                      <Input
+                        type="date"
+                        value={formData.date}
+                        onChange={(e) =>
+                          setFormData({ ...formData, date: e.target.value })
+                        }
+                        required
+                        className="h-7 text-xs pl-7"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-[11px] text-muted-foreground">
+                      Type <span className="text-destructive">*</span>
+                    </Label>
+                    <div className="grid grid-cols-2 gap-1">
                       <Button
                         type="button"
-                        variant="outline"
+                        variant={
+                          formData.expense_type === "business"
+                            ? "default"
+                            : "outline"
+                        }
                         size="sm"
-                        className="h-7 px-2"
-                        onClick={() => setShowVendorDialog(true)}
+                        className="h-7 text-[10px]"
+                        onClick={() =>
+                          setFormData({ ...formData, expense_type: "business" })
+                        }
                       >
-                        <Plus className="h-3 w-3" />
+                        Business
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={
+                          formData.expense_type === "personal"
+                            ? "default"
+                            : "outline"
+                        }
+                        size="sm"
+                        className="h-7 text-[10px]"
+                        onClick={() =>
+                          setFormData({ ...formData, expense_type: "personal" })
+                        }
+                      >
+                        Personal
                       </Button>
                     </div>
                   </div>
+                </div>
 
-                  {/* Lead Count & Freshness */}
-                  <div className="grid grid-cols-2 gap-2">
+                {/* Category */}
+                <div>
+                  <Label className="text-[11px] text-muted-foreground">
+                    Category <span className="text-destructive">*</span>
+                  </Label>
+
+                  {/* Quick Category Buttons */}
+                  <div className="flex gap-1 mb-1">
+                    {quickCategories.map((cat) => (
+                      <Button
+                        key={cat.name}
+                        type="button"
+                        variant={
+                          formData.category === cat.name ? "default" : "ghost"
+                        }
+                        size="sm"
+                        className="h-6 px-2 text-[10px]"
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            category: cat.name,
+                            expense_type: cat.type as "business" | "personal",
+                          })
+                        }
+                      >
+                        {cat.label}
+                      </Button>
+                    ))}
+                  </div>
+
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, category: value })
+                    }
+                  >
+                    <SelectTrigger className="h-7 text-xs">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <div className="text-[10px] font-semibold text-muted-foreground px-2 py-1">
+                        Business
+                      </div>
+                      {DEFAULT_EXPENSE_CATEGORIES.filter(
+                        (cat) => cat.type === "business",
+                      ).map((cat) => (
+                        <SelectItem
+                          key={cat.name}
+                          value={cat.name}
+                          className="text-xs"
+                        >
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                      <div className="text-[10px] font-semibold text-muted-foreground px-2 py-1 mt-1">
+                        Personal
+                      </div>
+                      {DEFAULT_EXPENSE_CATEGORIES.filter(
+                        (cat) => cat.type === "personal",
+                      ).map((cat) => (
+                        <SelectItem
+                          key={cat.name}
+                          value={cat.name}
+                          className="text-xs"
+                        >
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                      <div className="text-[10px] font-semibold text-muted-foreground px-2 py-1 mt-1">
+                        Other
+                      </div>
+                      {DEFAULT_EXPENSE_CATEGORIES.filter(
+                        (cat) => cat.type === "general",
+                      ).map((cat) => (
+                        <SelectItem
+                          key={cat.name}
+                          value={cat.name}
+                          className="text-xs"
+                        >
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Lead Purchase Fields - Only shown when Life Insurance Leads category */}
+                {isLeadCategory && (
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2.5 space-y-2">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <Users className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                      <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-[0.18em]">
+                        Lead Purchase Details
+                      </span>
+                    </div>
+
+                    {/* Vendor Selection */}
                     <div>
                       <Label className="text-[10px] text-muted-foreground">
-                        # of Leads <span className="text-destructive">*</span>
+                        Vendor <span className="text-destructive">*</span>
+                      </Label>
+                      <div className="flex gap-1">
+                        <Select
+                          value={leadFields.vendorId}
+                          onValueChange={(value) =>
+                            setLeadFields({ ...leadFields, vendorId: value })
+                          }
+                        >
+                          <SelectTrigger className="h-7 text-xs flex-1">
+                            <SelectValue placeholder="Select vendor" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {vendors.map((vendor: LeadVendor) => (
+                              <SelectItem key={vendor.id} value={vendor.id}>
+                                {vendor.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2"
+                          onClick={() => setShowVendorDialog(true)}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Lead Count & Freshness */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">
+                          # of Leads <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={leadFields.leadCount}
+                          onChange={(e) =>
+                            setLeadFields({
+                              ...leadFields,
+                              leadCount: e.target.value,
+                            })
+                          }
+                          className="h-7 text-xs"
+                          placeholder="50"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">
+                          Lead Type
+                        </Label>
+                        <Select
+                          value={leadFields.leadFreshness}
+                          onValueChange={(value: LeadFreshness) =>
+                            setLeadFields({
+                              ...leadFields,
+                              leadFreshness: value,
+                            })
+                          }
+                        >
+                          <SelectTrigger className="h-7 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="fresh">
+                              Fresh (High-Intent)
+                            </SelectItem>
+                            <SelectItem value="aged">Aged</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    {/* Purchase Name (optional) */}
+                    <div>
+                      <Label className="text-[10px] text-muted-foreground">
+                        Pack Name (optional)
                       </Label>
                       <Input
-                        type="number"
-                        min="1"
-                        value={leadFields.leadCount}
+                        value={leadFields.purchaseName}
                         onChange={(e) =>
                           setLeadFields({
                             ...leadFields,
-                            leadCount: e.target.value,
+                            purchaseName: e.target.value,
                           })
                         }
                         className="h-7 text-xs"
-                        placeholder="50"
+                        placeholder="e.g., January 2026 Pack"
                       />
                     </div>
-                    <div>
-                      <Label className="text-[10px] text-muted-foreground">
-                        Lead Type
-                      </Label>
-                      <Select
-                        value={leadFields.leadFreshness}
-                        onValueChange={(value: LeadFreshness) =>
-                          setLeadFields({ ...leadFields, leadFreshness: value })
-                        }
-                      >
-                        <SelectTrigger className="h-7 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="fresh">
-                            Fresh (High-Intent)
-                          </SelectItem>
-                          <SelectItem value="aged">Aged</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+
+                    {/* Cost per lead calculation */}
+                    {leadFields.leadCount && formData.amount > 0 && (
+                      <div className="text-[10px] text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded px-2 py-1">
+                        Cost per lead: $
+                        {(
+                          formData.amount /
+                            parseInt(leadFields.leadCount, 10) || 0
+                        ).toFixed(2)}
+                      </div>
+                    )}
                   </div>
+                )}
 
-                  {/* Purchase Name (optional) */}
-                  <div>
-                    <Label className="text-[10px] text-muted-foreground">
-                      Pack Name (optional)
-                    </Label>
-                    <Input
-                      value={leadFields.purchaseName}
-                      onChange={(e) =>
-                        setLeadFields({
-                          ...leadFields,
-                          purchaseName: e.target.value,
-                        })
-                      }
-                      className="h-7 text-xs"
-                      placeholder="e.g., January 2026 Pack"
-                    />
-                  </div>
-
-                  {/* Cost per lead calculation */}
-                  {leadFields.leadCount && formData.amount > 0 && (
-                    <div className="text-[10px] text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded px-2 py-1">
-                      Cost per lead: $
-                      {(
-                        formData.amount / parseInt(leadFields.leadCount, 10) ||
-                        0
-                      ).toFixed(2)}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Description - Optional */}
-              <div>
-                <Label className="text-[11px] text-muted-foreground">
-                  Description
-                </Label>
-                <Input
-                  value={formData.description || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  className="h-7 text-xs"
-                  placeholder="Optional details"
-                />
-              </div>
-
-              {/* Flags Row - Compact Checkboxes */}
-              <div className="flex gap-4 py-1">
-                <div className="flex items-center gap-1.5">
-                  <Checkbox
-                    id="is_tax_deductible"
-                    checked={formData.is_tax_deductible || false}
-                    onCheckedChange={(checked) =>
-                      setFormData({
-                        ...formData,
-                        is_tax_deductible: checked as boolean,
-                      })
-                    }
-                    className="h-3 w-3"
-                  />
-                  <Label
-                    htmlFor="is_tax_deductible"
-                    className="cursor-pointer text-[11px]"
-                    title={TAX_DEDUCTIBLE_TOOLTIP}
-                  >
-                    Tax Deductible
+                {/* Description - Optional */}
+                <div>
+                  <Label className="text-[11px] text-muted-foreground">
+                    Description
                   </Label>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <Checkbox
-                    id="is_recurring"
-                    checked={formData.is_recurring || false}
-                    onCheckedChange={(checked) =>
-                      setFormData({
-                        ...formData,
-                        is_recurring: checked as boolean,
-                        recurring_frequency: checked
-                          ? formData.recurring_frequency || "monthly"
-                          : null,
-                      })
+                  <Input
+                    value={formData.description || ""}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
                     }
-                    className="h-3 w-3"
+                    className="h-7 text-xs"
+                    placeholder="Optional details"
                   />
-                  <Label
-                    htmlFor="is_recurring"
-                    className="cursor-pointer text-[11px]"
-                  >
-                    Recurring
-                  </Label>
                 </div>
 
-                {!expense && (
+                {/* Flags Row - Compact Checkboxes */}
+                <div className="flex gap-4 py-1">
                   <div className="flex items-center gap-1.5">
                     <Checkbox
-                      id="save_as_template"
-                      checked={saveAsTemplate}
+                      id="is_tax_deductible"
+                      checked={formData.is_tax_deductible || false}
                       onCheckedChange={(checked) =>
-                        setSaveAsTemplate(checked as boolean)
+                        setFormData({
+                          ...formData,
+                          is_tax_deductible: checked as boolean,
+                        })
                       }
                       className="h-3 w-3"
                     />
                     <Label
-                      htmlFor="save_as_template"
+                      htmlFor="is_tax_deductible"
                       className="cursor-pointer text-[11px]"
+                      title={TAX_DEDUCTIBLE_TOOLTIP}
                     >
-                      Save Template
+                      Tax Deductible
                     </Label>
                   </div>
-                )}
-              </div>
 
-              {/* Recurring Options - Only show if recurring */}
-              {formData.is_recurring && (
-                <div className="bg-muted/30 p-2 rounded space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <Label className="text-[10px] text-muted-foreground">
-                        Frequency <span className="text-destructive">*</span>
-                      </Label>
-                      <Select
-                        value={formData.recurring_frequency || "monthly"}
-                        onValueChange={(value) =>
-                          setFormData({
-                            ...formData,
-                            recurring_frequency: value as RecurringFrequency,
-                          })
+                  <div className="flex items-center gap-1.5">
+                    <Checkbox
+                      id="is_recurring"
+                      checked={formData.is_recurring || false}
+                      onCheckedChange={(checked) =>
+                        setFormData({
+                          ...formData,
+                          is_recurring: checked as boolean,
+                          recurring_frequency: checked
+                            ? formData.recurring_frequency || "monthly"
+                            : null,
+                        })
+                      }
+                      className="h-3 w-3"
+                    />
+                    <Label
+                      htmlFor="is_recurring"
+                      className="cursor-pointer text-[11px]"
+                    >
+                      Recurring
+                    </Label>
+                  </div>
+
+                  {!expense && (
+                    <div className="flex items-center gap-1.5">
+                      <Checkbox
+                        id="save_as_template"
+                        checked={saveAsTemplate}
+                        onCheckedChange={(checked) =>
+                          setSaveAsTemplate(checked as boolean)
                         }
+                        className="h-3 w-3"
+                      />
+                      <Label
+                        htmlFor="save_as_template"
+                        className="cursor-pointer text-[11px]"
                       >
-                        <SelectTrigger className="h-6 text-[10px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {RECURRING_FREQUENCY_OPTIONS.map((option) => (
-                            <SelectItem
-                              key={option.value}
-                              value={option.value}
-                              className="text-xs"
-                            >
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        Save Template
+                      </Label>
+                    </div>
+                  )}
+                </div>
+
+                {/* Recurring Options - Only show if recurring */}
+                {formData.is_recurring && (
+                  <div className="bg-muted/30 p-2 rounded space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">
+                          Frequency <span className="text-destructive">*</span>
+                        </Label>
+                        <Select
+                          value={formData.recurring_frequency || "monthly"}
+                          onValueChange={(value) =>
+                            setFormData({
+                              ...formData,
+                              recurring_frequency: value as RecurringFrequency,
+                            })
+                          }
+                        >
+                          <SelectTrigger className="h-6 text-[10px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {RECURRING_FREQUENCY_OPTIONS.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={option.value}
+                                className="text-xs"
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-[10px] text-muted-foreground">
+                          End Date
+                        </Label>
+                        <Input
+                          type="date"
+                          value={formData.recurring_end_date || ""}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              recurring_end_date: e.target.value || null,
+                            })
+                          }
+                          min={formData.date}
+                          className="h-6 text-[10px]"
+                        />
+                      </div>
                     </div>
 
+                    <Alert className="p-1.5">
+                      <Info className="h-3 w-3" />
+                      <AlertDescription className="text-[10px] ml-4">
+                        Next 12 occurrences will be auto-generated
+                      </AlertDescription>
+                    </Alert>
+                  </div>
+                )}
+
+                {/* Template Name - Only show if saving as template */}
+                {saveAsTemplate && !expense && (
+                  <div className="bg-muted/30 p-2 rounded">
+                    <Label className="text-[10px] text-muted-foreground">
+                      Template Name <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      value={templateName}
+                      onChange={(e) => setTemplateName(e.target.value)}
+                      placeholder="e.g., Monthly Office Rent"
+                      className="h-6 text-[10px] mt-1"
+                    />
+                  </div>
+                )}
+
+                {/* Notes - Optional, Collapsible */}
+                <details className="group">
+                  <summary className="cursor-pointer text-[11px] text-muted-foreground hover:text-foreground">
+                    Additional Fields
+                  </summary>
+                  <div className="mt-2 space-y-2">
                     <div>
                       <Label className="text-[10px] text-muted-foreground">
-                        End Date
+                        Receipt URL
                       </Label>
                       <Input
-                        type="date"
-                        value={formData.recurring_end_date || ""}
+                        type="url"
+                        placeholder="https://..."
+                        value={formData.receipt_url || ""}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            recurring_end_date: e.target.value || null,
+                            receipt_url: e.target.value,
                           })
                         }
-                        min={formData.date}
                         className="h-6 text-[10px]"
                       />
                     </div>
+                    <div>
+                      <Label className="text-[10px] text-muted-foreground">
+                        Notes
+                      </Label>
+                      <Textarea
+                        value={formData.notes || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, notes: e.target.value })
+                        }
+                        rows={2}
+                        className="text-[10px] resize-none"
+                      />
+                    </div>
                   </div>
-
-                  <Alert className="p-1.5">
-                    <Info className="h-3 w-3" />
-                    <AlertDescription className="text-[10px] ml-4">
-                      Next 12 occurrences will be auto-generated
-                    </AlertDescription>
-                  </Alert>
-                </div>
-              )}
-
-              {/* Template Name - Only show if saving as template */}
-              {saveAsTemplate && !expense && (
-                <div className="bg-muted/30 p-2 rounded">
-                  <Label className="text-[10px] text-muted-foreground">
-                    Template Name <span className="text-destructive">*</span>
-                  </Label>
-                  <Input
-                    value={templateName}
-                    onChange={(e) => setTemplateName(e.target.value)}
-                    placeholder="e.g., Monthly Office Rent"
-                    className="h-6 text-[10px] mt-1"
-                  />
-                </div>
-              )}
-
-              {/* Notes - Optional, Collapsible */}
-              <details className="group">
-                <summary className="cursor-pointer text-[11px] text-muted-foreground hover:text-foreground">
-                  Additional Fields
-                </summary>
-                <div className="mt-2 space-y-2">
-                  <div>
-                    <Label className="text-[10px] text-muted-foreground">
-                      Receipt URL
-                    </Label>
-                    <Input
-                      type="url"
-                      placeholder="https://..."
-                      value={formData.receipt_url || ""}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          receipt_url: e.target.value,
-                        })
-                      }
-                      className="h-6 text-[10px]"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-[10px] text-muted-foreground">
-                      Notes
-                    </Label>
-                    <Textarea
-                      value={formData.notes || ""}
-                      onChange={(e) =>
-                        setFormData({ ...formData, notes: e.target.value })
-                      }
-                      rows={2}
-                      className="text-[10px] resize-none"
-                    />
-                  </div>
-                </div>
-              </details>
+                </details>
+              </div>
             </div>
 
-            <DialogFooter className="gap-1 pt-2">
-              <Button
+            {/* Footer — fixed, no scroll */}
+            <DialogFooter className="px-5 py-3 border-t border-v2-ring bg-v2-card-tinted flex-shrink-0 gap-2 sm:justify-end">
+              <PillButton
                 type="button"
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
+                tone="ghost"
                 size="sm"
-                className="h-7 px-3 text-xs"
+                onClick={() => onOpenChange(false)}
               >
                 Cancel
-              </Button>
-              <Button
+              </PillButton>
+              <PillButton
                 type="submit"
-                disabled={isSubmitting}
+                tone="black"
                 size="sm"
-                className="h-7 px-3 text-xs"
+                disabled={isSubmitting}
               >
-                {isSubmitting ? "Saving..." : expense ? "Update" : "Create"}
-              </Button>
+                {isSubmitting
+                  ? "Saving…"
+                  : expense
+                    ? "Update expense"
+                    : "Add expense"}
+              </PillButton>
             </DialogFooter>
           </form>
         </DialogContent>
