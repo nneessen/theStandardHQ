@@ -64,7 +64,7 @@ export const GatedAction: React.FC<GatedActionProps> = ({
         variant="outline"
         size="sm"
         className={cn(
-          "h-6 text-[10px] font-medium justify-start w-full border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800",
+          "h-6 text-[10px] font-medium justify-start w-full border-v2-ring dark:border-v2-ring-strong hover:bg-v2-canvas dark:hover:bg-v2-card-tinted",
           isLoading && "opacity-60 cursor-not-allowed",
           className,
         )}
@@ -86,9 +86,9 @@ export const GatedAction: React.FC<GatedActionProps> = ({
             variant="outline"
             size="sm"
             className={cn(
-              "h-6 text-[10px] font-medium justify-start w-full border-zinc-200 dark:border-zinc-700",
-              "text-zinc-400 dark:text-zinc-500 hover:text-zinc-500 dark:hover:text-zinc-400",
-              "hover:bg-zinc-50 dark:hover:bg-zinc-800",
+              "h-6 text-[10px] font-medium justify-start w-full border-v2-ring dark:border-v2-ring-strong",
+              "text-v2-ink-subtle dark:text-v2-ink-muted hover:text-v2-ink-muted dark:hover:text-v2-ink-subtle",
+              "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted",
               className,
             )}
           >
@@ -101,7 +101,7 @@ export const GatedAction: React.FC<GatedActionProps> = ({
             <Crown className="h-3 w-3 text-amber-500 mt-0.5 flex-shrink-0" />
             <div>
               <p className="font-medium">{tooltipMessage}</p>
-              <p className="text-zinc-400 dark:text-zinc-500 mt-0.5">
+              <p className="text-v2-ink-subtle dark:text-v2-ink-muted mt-0.5">
                 Click to view plans
               </p>
             </div>

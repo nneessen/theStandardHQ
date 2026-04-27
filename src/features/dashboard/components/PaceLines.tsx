@@ -38,17 +38,19 @@ export const PaceLines: React.FC<PaceLinesProps> = ({
   expectedPct,
 }) => {
   return (
-    <section className="py-6 border-t border-zinc-200 dark:border-zinc-800">
+    <section className="py-6 border-t border-v2-ring dark:border-v2-ring">
       <div className="flex items-baseline justify-between mb-4 flex-wrap gap-2">
-        <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-zinc-500 dark:text-zinc-400">
+        <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
           Pace to Targets
         </h2>
-        <span className="text-[11px] italic text-zinc-500 dark:text-zinc-400 font-mono tabular-nums">
+        <span className="text-[11px] italic text-v2-ink-muted dark:text-v2-ink-subtle font-mono tabular-nums">
           {daysElapsed != null && daysTotal != null
             ? `Day ${daysElapsed} of ${daysTotal}`
             : null}
           {daysElapsed != null && daysTotal != null && (
-            <span className="text-zinc-400 dark:text-zinc-600 mx-1.5">·</span>
+            <span className="text-v2-ink-subtle dark:text-v2-ink-muted mx-1.5">
+              ·
+            </span>
           )}
           <span className="not-italic">
             {(expectedPct * 100).toFixed(0)}% elapsed
@@ -66,7 +68,7 @@ export const PaceLines: React.FC<PaceLinesProps> = ({
           const isOver = pct > 1;
 
           const fillClass = !hasTarget
-            ? "bg-zinc-300 dark:bg-zinc-700"
+            ? "bg-zinc-300 dark:bg-v2-ring-strong"
             : line.invert
               ? pct > 1
                 ? "bg-red-600 dark:bg-red-500"
@@ -76,33 +78,33 @@ export const PaceLines: React.FC<PaceLinesProps> = ({
               : isOver
                 ? "bg-emerald-600 dark:bg-emerald-500"
                 : isAhead
-                  ? "bg-zinc-900 dark:bg-zinc-100"
+                  ? "bg-v2-ink dark:bg-v2-card-tinted"
                   : pct >= 0.6
-                    ? "bg-zinc-700 dark:bg-zinc-300"
-                    : "bg-zinc-400 dark:bg-zinc-500";
+                    ? "bg-v2-ring-strong dark:bg-zinc-300"
+                    : "bg-v2-ink-subtle";
 
           const valueClass = !hasTarget
-            ? "text-zinc-500 dark:text-zinc-400"
+            ? "text-v2-ink-muted dark:text-v2-ink-subtle"
             : line.invert
               ? pct > 1
                 ? "text-red-700 dark:text-red-400 font-semibold"
-                : "text-zinc-700 dark:text-zinc-300"
+                : "text-v2-ink dark:text-v2-ink-muted"
               : isOver
                 ? "text-emerald-700 dark:text-emerald-400 font-semibold"
                 : isAhead
-                  ? "text-zinc-900 dark:text-zinc-100 font-semibold"
-                  : "text-zinc-500 dark:text-zinc-400";
+                  ? "text-v2-ink dark:text-v2-ink font-semibold"
+                  : "text-v2-ink-muted dark:text-v2-ink-subtle";
 
           return (
             <div
               key={line.label}
               className="grid grid-cols-[110px_1fr_auto] sm:grid-cols-[140px_1fr_auto] items-center gap-3 sm:gap-4"
             >
-              <span className="text-[12px] text-zinc-700 dark:text-zinc-300 truncate">
+              <span className="text-[12px] text-v2-ink dark:text-v2-ink-muted truncate">
                 {line.label}
               </span>
               <div
-                className="relative h-1 bg-zinc-100 dark:bg-zinc-900 overflow-hidden"
+                className="relative h-1 bg-v2-card-tinted dark:bg-v2-card overflow-hidden"
                 style={{ borderRadius: 0 }}
               >
                 <div
@@ -114,7 +116,7 @@ export const PaceLines: React.FC<PaceLinesProps> = ({
                 />
                 {hasTarget && expectedPct > 0 && expectedPct < 1 && (
                   <div
-                    className="absolute -top-0.5 -bottom-0.5 w-px bg-zinc-900 dark:bg-zinc-100"
+                    className="absolute -top-0.5 -bottom-0.5 w-px bg-v2-ink dark:bg-v2-card-tinted"
                     style={{ left: `${expectedPct * 100}%` }}
                     title={`Expected: ${(expectedPct * 100).toFixed(0)}%`}
                   />
@@ -126,12 +128,12 @@ export const PaceLines: React.FC<PaceLinesProps> = ({
                     <span className={cn("text-[12px]", valueClass)}>
                       {(pct * 100).toFixed(0)}%
                     </span>
-                    <span className="text-[10px] text-zinc-400 dark:text-zinc-600 italic">
+                    <span className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted italic">
                       of {formatRaw(line.target as number, line.unit)}
                     </span>
                   </>
                 ) : (
-                  <span className="text-[12px] text-zinc-700 dark:text-zinc-300">
+                  <span className="text-[12px] text-v2-ink dark:text-v2-ink-muted">
                     {formatRaw(line.current, line.unit)}
                   </span>
                 )}

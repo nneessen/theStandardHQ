@@ -49,16 +49,16 @@ export const GatedKPISection: React.FC<GatedKPISectionProps> = ({
       </div>
 
       {/* Overlay */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-zinc-900/80 rounded-lg">
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/80 dark:bg-v2-card/80 rounded-lg">
         <div className="flex flex-col items-center gap-2 p-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800">
-            <Lock className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted">
+            <Lock className="h-4 w-4 text-v2-ink-muted dark:text-v2-ink-subtle" />
           </div>
           <div className="text-center">
-            <p className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
+            <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink-muted">
               {title}
             </p>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-0.5">
               Upgrade to {requiredTier} to unlock
             </p>
           </div>

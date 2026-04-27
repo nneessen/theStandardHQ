@@ -596,10 +596,10 @@ export function CampaignWizard({
         </div>
 
         {state.resolvedContacts.length > 0 && (
-          <div className="rounded-md border border-border bg-zinc-50 dark:bg-zinc-900 max-h-[140px] overflow-y-auto">
+          <div className="rounded-md border border-border bg-v2-canvas dark:bg-v2-card max-h-[140px] overflow-y-auto">
             <table className="w-full text-[10px]">
               <thead>
-                <tr className="border-b border-border/60 bg-zinc-100 dark:bg-zinc-800">
+                <tr className="border-b border-border/60 bg-v2-card-tinted dark:bg-v2-card-tinted">
                   <th className="text-left font-medium text-muted-foreground px-2 py-1">
                     Email
                   </th>
@@ -663,7 +663,7 @@ export function CampaignWizard({
         </div>
 
         {starterOpen && (
-          <div className="grid grid-cols-4 gap-1.5 max-h-[120px] overflow-y-auto rounded-md border border-border p-2 bg-zinc-50 dark:bg-zinc-900">
+          <div className="grid grid-cols-4 gap-1.5 max-h-[120px] overflow-y-auto rounded-md border border-border p-2 bg-v2-canvas dark:bg-v2-card">
             {STARTER_TEMPLATES.map((tpl) => (
               <button
                 key={tpl.id}
@@ -720,7 +720,7 @@ export function CampaignWizard({
     return (
       <div className="flex flex-col gap-3 px-4 py-3">
         {/* Summary */}
-        <div className="rounded-md border border-border bg-zinc-50 dark:bg-zinc-900 p-3">
+        <div className="rounded-md border border-border bg-v2-canvas dark:bg-v2-card p-3">
           <div className="grid grid-cols-2 gap-y-2 text-[11px]">
             <div>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wide">
@@ -780,7 +780,7 @@ export function CampaignWizard({
         </div>
 
         {/* Step Indicator */}
-        <div className="flex items-center gap-0 px-4 py-2 border-b bg-zinc-50 dark:bg-zinc-900 shrink-0">
+        <div className="flex items-center gap-0 px-4 py-2 border-b bg-v2-canvas dark:bg-v2-card shrink-0">
           {STEPS.map((label, i) => (
             <div key={label} className="flex items-center">
               {i > 0 && (
@@ -821,7 +821,7 @@ export function CampaignWizard({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-t bg-zinc-50 dark:bg-zinc-900 shrink-0">
+        <div className="flex items-center justify-between px-4 py-2.5 border-t bg-v2-canvas dark:bg-v2-card shrink-0">
           <Button
             variant="ghost"
             size="sm"

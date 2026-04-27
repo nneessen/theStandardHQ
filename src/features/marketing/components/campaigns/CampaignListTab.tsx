@@ -37,7 +37,7 @@ const STATUS_CONFIG: Record<
   draft: {
     label: "Draft",
     className:
-      "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700",
+      "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle border-v2-ring dark:border-v2-ring-strong",
   },
   sending: {
     label: "Sending",
@@ -151,10 +151,10 @@ export function CampaignListTab({
       </div>
 
       {/* Table */}
-      <div className="rounded-md border border-border bg-zinc-50 dark:bg-zinc-900 overflow-hidden">
+      <div className="rounded-md border border-border bg-v2-canvas dark:bg-v2-card overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="h-8 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+            <TableRow className="h-8 bg-v2-card-tinted dark:bg-v2-card-tinted hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted">
               <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide py-0 pl-3 w-[220px]">
                 Name
               </TableHead>
@@ -244,7 +244,7 @@ export function CampaignListTab({
                 return (
                   <TableRow
                     key={campaign.id}
-                    className="py-1.5 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60 border-b border-border/60 last:border-0 cursor-pointer"
+                    className="py-1.5 hover:bg-v2-card-tinted/60 dark:hover:bg-v2-card-tinted/60 border-b border-border/60 last:border-0 cursor-pointer"
                     onClick={() => handleRowClick(campaign.id, campaign.status)}
                   >
                     {/* Name */}

@@ -72,7 +72,7 @@ export function CircularProgressGauge({
           fill="none"
           stroke="currentColor"
           strokeWidth={strokeWidth}
-          className="text-zinc-200 dark:text-zinc-700"
+          className="text-v2-canvas dark:text-v2-ink"
         />
 
         {/* Progress circle */}
@@ -104,7 +104,7 @@ export function CircularProgressGauge({
             {Math.round(clampedPercentage)}%
           </span>
           {label && (
-            <span className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 text-center max-w-[80%]">
+            <span className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle mt-1 text-center max-w-[80%]">
               {label}
             </span>
           )}

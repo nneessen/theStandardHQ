@@ -42,13 +42,13 @@ export const KPIGrid: React.FC<DetailedKPIGridProps> = ({ sections }) => {
       return "text-cyan-600 dark:text-cyan-400 bg-cyan-50/50 dark:bg-cyan-950/20";
     if (lowerCategory.includes("performance"))
       return "text-amber-600 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/20";
-    return "text-zinc-600 dark:text-zinc-400 bg-zinc-50/50 dark:bg-zinc-950/20";
+    return "text-v2-ink-muted dark:text-v2-ink-subtle bg-v2-canvas/50 dark:bg-v2-canvas/20";
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-      <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800">
-        <h3 className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+    <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring">
+      <div className="px-3 py-2 border-b border-v2-ring dark:border-v2-ring">
+        <h3 className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider">
           Detailed KPI Breakdown
         </h3>
       </div>
@@ -61,14 +61,14 @@ export const KPIGrid: React.FC<DetailedKPIGridProps> = ({ sections }) => {
             return (
               <div
                 key={sectionIndex}
-                className="rounded-lg p-3 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="rounded-lg p-3 bg-v2-canvas dark:bg-v2-card-tinted/50 hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted transition-colors"
               >
                 {/* Icon Header */}
                 <div className="flex items-center gap-2 mb-3 pb-2">
                   <div className={cn("p-1.5 rounded-md", colorClass)}>
                     <Icon size={14} />
                   </div>
-                  <div className="text-[10px] uppercase tracking-wider font-bold text-zinc-900 dark:text-zinc-100">
+                  <div className="text-[10px] uppercase tracking-wider font-bold text-v2-ink dark:text-v2-ink">
                     {section.category}
                   </div>
                 </div>
@@ -80,10 +80,10 @@ export const KPIGrid: React.FC<DetailedKPIGridProps> = ({ sections }) => {
                       key={kpiIndex}
                       className="flex justify-between items-baseline"
                     >
-                      <span className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-tight">
+                      <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-tight">
                         {kpi.label}
                       </span>
-                      <span className="text-[11px] font-bold font-mono text-zinc-900 dark:text-zinc-100 ml-2">
+                      <span className="text-[11px] font-bold font-mono text-v2-ink dark:text-v2-ink ml-2">
                         {kpi.value}
                       </span>
                     </div>

@@ -44,7 +44,7 @@ const classificationDotClass = (classification: StateClassificationType) => {
     case "red":
       return "bg-red-500 border-red-600";
     default:
-      return "bg-zinc-300 border-zinc-400 dark:bg-zinc-600 dark:border-zinc-500";
+      return "bg-zinc-300 border-zinc-400 dark:bg-v2-ring-strong dark:border-zinc-500";
   }
 };
 
@@ -194,7 +194,7 @@ function AgentStateLicensesPanel({
         <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] gap-2 items-center">
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+              <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
                 {state.label}
               </p>
               <Badge variant="outline" size="sm">
@@ -207,7 +207,7 @@ function AgentStateLicensesPanel({
                 {classification}
               </Badge>
             </div>
-            <p className="mt-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="mt-0.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               {isLicensed ? "Licensed" : "Missing license"}
             </p>
           </div>
@@ -220,7 +220,7 @@ function AgentStateLicensesPanel({
                 onEditClassification(state.value, state.label);
               }}
               disabled={!canEditClassifications}
-              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent"
+              className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-[10px] text-v2-ink-muted hover:bg-v2-card-tinted dark:text-v2-ink-muted dark:hover:bg-v2-card-tinted disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent"
               title={
                 canEditClassifications
                   ? `Edit ${state.label} color classification`
@@ -237,7 +237,7 @@ function AgentStateLicensesPanel({
             </button>
 
             <label className="flex items-center gap-2 cursor-pointer">
-              <span className="text-[10px] text-zinc-600 dark:text-zinc-300">
+              <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-muted">
                 Licensed
               </span>
               <Checkbox
@@ -262,13 +262,13 @@ function AgentStateLicensesPanel({
 
   return (
     <div className="h-full min-h-0 min-w-0 flex flex-col">
-      <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2 flex-wrap">
+      <div className="px-3 py-2 border-b border-v2-ring dark:border-v2-ring flex items-center justify-between gap-2 flex-wrap">
         <div>
-          <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+          <p className="text-xs font-semibold text-v2-ink dark:text-v2-ink">
             {[agent.first_name, agent.last_name].filter(Boolean).join(" ") ||
               agent.email}
           </p>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             State License Focus Workspace
           </p>
         </div>
@@ -287,13 +287,13 @@ function AgentStateLicensesPanel({
 
       <div className="flex-1 min-h-0 overflow-auto">
         <div className="p-3 space-y-3">
-          <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/20 p-3 space-y-3">
+          <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-white dark:bg-v2-canvas/20 p-3 space-y-3">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-200">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
                   Filters And Coverage
                 </p>
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   Search states, filter licensed status, and compare color
                   classifications while editing.
                 </p>
@@ -313,7 +313,7 @@ function AgentStateLicensesPanel({
 
             <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_auto] gap-2 items-start">
               <div className="relative min-w-0">
-                <Search className="h-3.5 w-3.5 text-zinc-400 absolute left-2 top-1/2 -translate-y-1/2" />
+                <Search className="h-3.5 w-3.5 text-v2-ink-subtle absolute left-2 top-1/2 -translate-y-1/2" />
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -385,7 +385,7 @@ function AgentStateLicensesPanel({
             </div>
 
             <div className="space-y-2">
-              <div className="h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
+              <div className="h-1.5 rounded-full bg-v2-ring dark:bg-v2-card-tinted overflow-hidden">
                 <div
                   className={cn(
                     "h-full transition-all",
@@ -399,19 +399,19 @@ function AgentStateLicensesPanel({
                 />
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-6 gap-2">
-                <div className="rounded-md border border-zinc-200 dark:border-zinc-800 p-2 text-center">
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <div className="rounded-md border border-v2-ring dark:border-v2-ring p-2 text-center">
+                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     Licensed
                   </p>
-                  <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                  <p className="text-xs font-semibold text-v2-ink dark:text-v2-ink">
                     {licensedCount}
                   </p>
                 </div>
-                <div className="rounded-md border border-zinc-200 dark:border-zinc-800 p-2 text-center">
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <div className="rounded-md border border-v2-ring dark:border-v2-ring p-2 text-center">
+                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     Missing
                   </p>
-                  <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                  <p className="text-xs font-semibold text-v2-ink dark:text-v2-ink">
                     {unlicensedCount}
                   </p>
                 </div>
@@ -425,7 +425,7 @@ function AgentStateLicensesPanel({
                 ).map((color) => (
                   <div
                     key={color}
-                    className="rounded-md border border-zinc-200 dark:border-zinc-800 p-2 flex items-center justify-between gap-2"
+                    className="rounded-md border border-v2-ring dark:border-v2-ring p-2 flex items-center justify-between gap-2"
                   >
                     <div className="flex items-center gap-1.5 min-w-0">
                       <span
@@ -434,17 +434,17 @@ function AgentStateLicensesPanel({
                           classificationDotClass(color),
                         )}
                       />
-                      <span className="text-[10px] text-zinc-600 dark:text-zinc-300 capitalize truncate">
+                      <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-muted capitalize truncate">
                         {color}
                       </span>
                     </div>
-                    <span className="text-[10px] font-semibold text-zinc-900 dark:text-zinc-100">
+                    <span className="text-[10px] font-semibold text-v2-ink dark:text-v2-ink">
                       {classificationCounts[color]}
                     </span>
                   </div>
                 ))}
               </div>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 Color tags help compare licensing strategy across uplines and
                 downlines.
               </p>
@@ -453,7 +453,7 @@ function AgentStateLicensesPanel({
 
           <div className="min-w-0">
             {visibleStates.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 py-12 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+              <div className="rounded-lg border border-dashed border-v2-ring-strong dark:border-v2-ring-strong py-12 text-center text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 No states match the current filters
               </div>
             ) : (
@@ -468,23 +468,23 @@ function AgentStateLicensesPanel({
                         {visibleUnlicensedStates.length}
                       </Badge>
                     </div>
-                    <div className="rounded-md border border-amber-200/80 dark:border-amber-900/40 overflow-hidden divide-y divide-amber-200/60 dark:divide-amber-900/30 bg-white/70 dark:bg-zinc-950/10">
+                    <div className="rounded-md border border-amber-200/80 dark:border-amber-900/40 overflow-hidden divide-y divide-amber-200/60 dark:divide-amber-900/30 bg-white/70 dark:bg-v2-canvas/10">
                       {visibleUnlicensedStates.map(renderStateRow)}
                     </div>
                   </section>
                 )}
 
                 {visibleLicensedStates.length > 0 && (
-                  <section className="min-w-0 space-y-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50/40 dark:bg-zinc-900/20 p-2.5">
+                  <section className="min-w-0 space-y-2 rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-canvas/40 dark:bg-v2-card/20 p-2.5">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-muted">
                         Licensed States
                       </p>
                       <Badge variant="outline" size="sm">
                         {visibleLicensedStates.length}
                       </Badge>
                     </div>
-                    <div className="rounded-md border border-zinc-200 dark:border-zinc-800 overflow-hidden divide-y divide-zinc-200/80 dark:divide-zinc-800 bg-white/70 dark:bg-zinc-950/10">
+                    <div className="rounded-md border border-v2-ring dark:border-v2-ring overflow-hidden divide-y divide-v2-ring/80 dark:divide-v2-ring bg-white/70 dark:bg-v2-canvas/10">
                       {visibleLicensedStates.map(renderStateRow)}
                     </div>
                   </section>
@@ -638,11 +638,11 @@ export function StateLicensesTab({
   if (isLoading) {
     return (
       <div className="p-3 space-y-2">
-        <Skeleton className="h-8 w-full bg-zinc-200 dark:bg-zinc-700" />
-        <Skeleton className="h-8 w-full bg-zinc-200 dark:bg-zinc-700" />
-        <Skeleton className="h-8 w-full bg-zinc-200 dark:bg-zinc-700" />
-        <Skeleton className="h-8 w-full bg-zinc-200 dark:bg-zinc-700" />
-        <Skeleton className="h-8 w-full bg-zinc-200 dark:bg-zinc-700" />
+        <Skeleton className="h-8 w-full bg-v2-ring dark:bg-v2-ring-strong" />
+        <Skeleton className="h-8 w-full bg-v2-ring dark:bg-v2-ring-strong" />
+        <Skeleton className="h-8 w-full bg-v2-ring dark:bg-v2-ring-strong" />
+        <Skeleton className="h-8 w-full bg-v2-ring dark:bg-v2-ring-strong" />
+        <Skeleton className="h-8 w-full bg-v2-ring dark:bg-v2-ring-strong" />
       </div>
     );
   }
@@ -650,8 +650,8 @@ export function StateLicensesTab({
   if (agents.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-4">
-        <MapPin className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-2" />
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+        <MapPin className="h-8 w-8 text-v2-ink-subtle dark:text-v2-ink-muted mb-2" />
+        <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
           No agents found in your hierarchy
         </p>
       </div>
@@ -701,9 +701,9 @@ export function StateLicensesTab({
 
   return (
     <div className="h-full min-h-0 min-w-0 flex flex-col">
-      <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0 space-y-2">
+      <div className="px-3 py-2 border-b border-v2-ring dark:border-v2-ring flex-shrink-0 space-y-2">
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 min-w-0">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle min-w-0">
             Team matrix view. Check boxes for licensed states. Click color dot
             to set state classification.
             {!classificationAgencyId &&
@@ -723,7 +723,7 @@ export function StateLicensesTab({
 
         <div className="flex flex-col gap-2 min-w-0 xl:flex-row xl:items-center">
           <div className="relative flex-1 min-w-0">
-            <Search className="h-3.5 w-3.5 text-zinc-400 absolute left-2 top-1/2 -translate-y-1/2" />
+            <Search className="h-3.5 w-3.5 text-v2-ink-subtle absolute left-2 top-1/2 -translate-y-1/2" />
             <Input
               value={stateSearch}
               onChange={(e) => setStateSearch(e.target.value)}

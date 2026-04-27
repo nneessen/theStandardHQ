@@ -26,11 +26,11 @@ export const PolicyDashboardHeader: React.FC<PolicyDashboardHeaderProps> = ({
   onNewPolicy,
 }) => {
   return (
-    <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+    <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring dark:border-v2-ring">
       {/* Title */}
       <div className="flex items-center gap-2">
-        <FileText className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-        <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+        <FileText className="h-4 w-4 text-v2-ink dark:text-v2-ink" />
+        <h1 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
           Policy Management
         </h1>
       </div>
@@ -38,52 +38,64 @@ export const PolicyDashboardHeader: React.FC<PolicyDashboardHeaderProps> = ({
       {/* Inline Stats with Dividers */}
       <div className="flex items-center gap-3 text-[11px]">
         <div className="flex items-center gap-1">
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">
+          <span className="font-medium text-v2-ink dark:text-v2-ink">
             {summary.totalPolicies}
           </span>
-          <span className="text-zinc-500 dark:text-zinc-400">total</span>
+          <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+            total
+          </span>
         </div>
-        <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+        <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
         <div className="flex items-center gap-1">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">
+          <span className="font-medium text-v2-ink dark:text-v2-ink">
             {summary.activePolicies}
           </span>
-          <span className="text-zinc-500 dark:text-zinc-400">active</span>
+          <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+            active
+          </span>
         </div>
-        <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+        <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
         <div className="flex items-center gap-1">
           <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">
+          <span className="font-medium text-v2-ink dark:text-v2-ink">
             {summary.pendingPolicies}
           </span>
-          <span className="text-zinc-500 dark:text-zinc-400">pending</span>
+          <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+            pending
+          </span>
         </div>
-        <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+        <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
         <div className="flex items-center gap-1">
-          <span className="font-medium text-zinc-900 dark:text-zinc-100">
+          <span className="font-medium text-v2-ink dark:text-v2-ink">
             ${(summary.totalAnnualPremium / 1000).toFixed(1)}K
           </span>
-          <span className="text-zinc-500 dark:text-zinc-400">premium</span>
+          <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+            premium
+          </span>
         </div>
-        <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+        <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
         <div className="flex items-center gap-1">
           <span className="font-medium text-emerald-600 dark:text-emerald-400">
             ${(summary.totalPaidCommission / 1000).toFixed(1)}K
           </span>
-          <span className="text-zinc-500 dark:text-zinc-400">paid</span>
+          <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+            paid
+          </span>
         </div>
-        <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+        <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
         <div className="flex items-center gap-1">
           <span className="font-medium text-blue-600 dark:text-blue-400">
             ${(summary.totalPendingCommission / 1000).toFixed(1)}K
           </span>
-          <span className="text-zinc-500 dark:text-zinc-400">pending comm</span>
+          <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+            pending comm
+          </span>
         </div>
         {summary.dateRangeLabel && (
           <>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
-            <span className="text-[9px] px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded">
+            <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
+            <span className="text-[9px] px-1.5 py-0.5 bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-subtle rounded">
               {summary.dateRangeLabel}
             </span>
           </>

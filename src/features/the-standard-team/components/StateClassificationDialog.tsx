@@ -55,7 +55,7 @@ const CLASSIFICATION_OPTIONS: {
     label: "Neutral",
     description: "No classification - default",
     colorClass:
-      "bg-zinc-100 border-zinc-300 dark:bg-zinc-800 dark:border-zinc-600",
+      "bg-v2-card-tinted border-v2-ring-strong dark:bg-v2-card-tinted dark:border-v2-ring-strong",
   },
 ];
 

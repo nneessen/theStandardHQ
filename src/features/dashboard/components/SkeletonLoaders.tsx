@@ -6,16 +6,16 @@ import { cn } from "@/lib/utils";
 export const KpiSkeleton = memo(({ className }: { className?: string }) => (
   <div
     className={cn(
-      "h-28 p-3 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 animate-pulse",
+      "h-28 p-3 rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card animate-pulse",
       className,
     )}
   >
     <div className="flex flex-col justify-between h-full">
       <div className="space-y-2">
-        <div className="h-5 bg-zinc-200 dark:bg-zinc-700 rounded w-20" />
-        <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded w-32" />
+        <div className="h-5 bg-v2-ring dark:bg-v2-ring-strong rounded w-20" />
+        <div className="h-3 bg-v2-ring dark:bg-v2-ring-strong rounded w-32" />
       </div>
-      <div className="h-8 bg-zinc-200 dark:bg-zinc-700 rounded" />
+      <div className="h-8 bg-v2-ring dark:bg-v2-ring-strong rounded" />
     </div>
   </div>
 ));
@@ -28,18 +28,18 @@ export const ChartSkeleton = memo(
     <div
       className={cn(
         height,
-        "p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 animate-pulse",
+        "p-4 rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card animate-pulse",
         className,
       )}
     >
       <div className="flex justify-between items-center mb-3">
-        <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-32" />
+        <div className="h-4 bg-v2-ring dark:bg-v2-ring-strong rounded w-32" />
         <div className="flex gap-2">
-          <div className="h-7 bg-zinc-200 dark:bg-zinc-700 rounded w-20" />
-          <div className="h-7 bg-zinc-200 dark:bg-zinc-700 rounded w-20" />
+          <div className="h-7 bg-v2-ring dark:bg-v2-ring-strong rounded w-20" />
+          <div className="h-7 bg-v2-ring dark:bg-v2-ring-strong rounded w-20" />
         </div>
       </div>
-      <div className="h-full bg-zinc-200 dark:bg-zinc-700 rounded" />
+      <div className="h-full bg-v2-ring dark:bg-v2-ring-strong rounded" />
     </div>
   ),
 );
@@ -59,24 +59,24 @@ export const TableSkeleton = memo(
   }) => (
     <div
       className={cn(
-        "p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 animate-pulse",
+        "p-4 rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card animate-pulse",
         className,
       )}
     >
       <div className="flex justify-between items-center mb-3">
-        <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-32" />
+        <div className="h-4 bg-v2-ring dark:bg-v2-ring-strong rounded w-32" />
         <div className="flex gap-2">
-          <div className="h-7 bg-zinc-200 dark:bg-zinc-700 rounded w-32" />
-          <div className="h-7 bg-zinc-200 dark:bg-zinc-700 rounded w-7" />
+          <div className="h-7 bg-v2-ring dark:bg-v2-ring-strong rounded w-32" />
+          <div className="h-7 bg-v2-ring dark:bg-v2-ring-strong rounded w-7" />
         </div>
       </div>
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-md p-3">
+      <div className="border border-v2-ring dark:border-v2-ring-strong rounded-md p-3">
         {/* Header */}
-        <div className="flex gap-3 pb-2 border-b border-zinc-200 dark:border-zinc-700">
+        <div className="flex gap-3 pb-2 border-b border-v2-ring dark:border-v2-ring-strong">
           {[...Array(columns)].map((_, i) => (
             <div
               key={i}
-              className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded flex-1"
+              className="h-3 bg-v2-ring dark:bg-v2-ring-strong rounded flex-1"
             />
           ))}
         </div>
@@ -87,7 +87,7 @@ export const TableSkeleton = memo(
               {[...Array(columns)].map((_, j) => (
                 <div
                   key={j}
-                  className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded flex-1"
+                  className="h-3 bg-v2-ring dark:bg-v2-ring-strong rounded flex-1"
                 />
               ))}
             </div>
@@ -125,14 +125,14 @@ GridSkeleton.displayName = "GridSkeleton";
 export const DashboardSkeleton = memo(() => (
   <div className="p-3 space-y-2.5 animate-pulse">
     {/* Header */}
-    <div className="flex justify-between items-center p-3 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="flex justify-between items-center p-3 bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring">
       <div>
-        <div className="h-5 bg-zinc-200 dark:bg-zinc-700 rounded w-32 mb-2" />
-        <div className="h-3 bg-zinc-200 dark:bg-zinc-700 rounded w-48" />
+        <div className="h-5 bg-v2-ring dark:bg-v2-ring-strong rounded w-32 mb-2" />
+        <div className="h-3 bg-v2-ring dark:bg-v2-ring-strong rounded w-48" />
       </div>
       <div className="flex gap-2">
-        <div className="h-8 bg-zinc-200 dark:bg-zinc-700 rounded w-32" />
-        <div className="h-8 bg-zinc-200 dark:bg-zinc-700 rounded w-20" />
+        <div className="h-8 bg-v2-ring dark:bg-v2-ring-strong rounded w-32" />
+        <div className="h-8 bg-v2-ring dark:bg-v2-ring-strong rounded w-20" />
       </div>
     </div>
 

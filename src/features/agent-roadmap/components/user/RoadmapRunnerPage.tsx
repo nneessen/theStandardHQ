@@ -138,12 +138,12 @@ export function RoadmapRunnerPage({ roadmapId }: RoadmapRunnerPageProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  <span className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
                     Roadmap complete
                   </span>
                   <Sparkles className="h-3 w-3 text-emerald-500" />
                 </div>
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   All required items done. Your progress is visible to your
                   manager.
                 </p>

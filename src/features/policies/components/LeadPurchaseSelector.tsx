@@ -110,7 +110,7 @@ function LeadPurchaseItem({
         "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left border transition-all duration-150",
         isSelected
           ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800"
-          : "border-transparent hover:bg-zinc-50 dark:hover:bg-zinc-800/40 active:bg-zinc-100 dark:active:bg-zinc-800/60",
+          : "border-transparent hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/40 active:bg-v2-card-tinted dark:active:bg-zinc-800/60",
       )}
     >
       {/* Selection indicator */}

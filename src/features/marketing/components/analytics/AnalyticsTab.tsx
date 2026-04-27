@@ -20,7 +20,7 @@ import type { CampaignStatus } from "../../types/marketing.types";
 import { CampaignDetailSheet } from "../campaigns/CampaignDetailSheet";
 
 const STATUS_COLORS: Record<CampaignStatus, string> = {
-  draft: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20",
+  draft: "bg-zinc-500/10 text-v2-ink-muted border-zinc-500/20",
   sending: "bg-blue-500/10 text-blue-600 border-blue-500/20",
   sent: "bg-green-500/10 text-green-600 border-green-500/20",
   scheduled: "bg-amber-500/10 text-amber-600 border-amber-500/20",

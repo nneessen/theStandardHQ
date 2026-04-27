@@ -123,9 +123,9 @@ export const KPIGridMatrix: React.FC<DetailedKPIGridProps> = ({ sections }) => {
   });
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-      <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800">
-        <h3 className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider font-mono">
+    <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring">
+      <div className="px-3 py-2 border-b border-v2-ring dark:border-v2-ring">
+        <h3 className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider font-mono">
           Command Center Matrix
         </h3>
       </div>
@@ -135,11 +135,11 @@ export const KPIGridMatrix: React.FC<DetailedKPIGridProps> = ({ sections }) => {
           {quadrants.map((quadrant) => (
             <div
               key={quadrant.id}
-              className="relative rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 p-3 space-y-2"
+              className="relative rounded-lg border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50 p-3 space-y-2"
             >
               {/* Quadrant Header */}
-              <div className="flex items-center justify-between mb-2 pb-2 border-b border-zinc-200 dark:border-zinc-700">
-                <h3 className="text-[10px] uppercase tracking-widest font-bold font-mono text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center justify-between mb-2 pb-2 border-b border-v2-ring dark:border-v2-ring-strong">
+                <h3 className="text-[10px] uppercase tracking-widest font-bold font-mono text-v2-ink-muted dark:text-v2-ink-subtle">
                   {quadrant.title}
                 </h3>
                 <div className="flex gap-1">
@@ -164,7 +164,7 @@ export const KPIGridMatrix: React.FC<DetailedKPIGridProps> = ({ sections }) => {
                     return (
                       <div
                         key={index}
-                        className="flex items-center justify-between gap-3 p-2 rounded bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700 transition-colors"
+                        className="flex items-center justify-between gap-3 p-2 rounded bg-v2-card border border-v2-ring dark:border-v2-ring hover:border-v2-ring dark:hover:border-v2-ring-strong transition-colors"
                       >
                         {/* Status dot */}
                         <div
@@ -177,10 +177,10 @@ export const KPIGridMatrix: React.FC<DetailedKPIGridProps> = ({ sections }) => {
 
                         {/* Label and Value */}
                         <div className="flex-1 min-w-0">
-                          <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+                          <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
                             {kpi.label}
                           </div>
-                          <div className="text-sm font-bold font-mono text-zinc-900 dark:text-zinc-100">
+                          <div className="text-sm font-bold font-mono text-v2-ink dark:text-v2-ink">
                             {kpi.value}
                           </div>
                         </div>
@@ -205,7 +205,7 @@ export const KPIGridMatrix: React.FC<DetailedKPIGridProps> = ({ sections }) => {
                     );
                   })
                 ) : (
-                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400 text-center py-4">
+                  <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle text-center py-4">
                     No metrics in this quadrant
                   </div>
                 )}
@@ -215,7 +215,7 @@ export const KPIGridMatrix: React.FC<DetailedKPIGridProps> = ({ sections }) => {
         </div>
 
         {/* System Status Footer */}
-        <div className="mt-3 pt-2 border-t border-zinc-200 dark:border-zinc-700 flex items-center justify-between text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+        <div className="mt-3 pt-2 border-t border-v2-ring dark:border-v2-ring-strong flex items-center justify-between text-[10px] font-mono text-v2-ink-muted dark:text-v2-ink-subtle">
           <div>SYSTEM: ACTIVE</div>
           <div className="flex items-center gap-2">
             <span>REFRESH: LIVE</span>

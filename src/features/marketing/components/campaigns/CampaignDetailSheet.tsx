@@ -59,7 +59,8 @@ const STATUS_CONFIG: Record<
 > = {
   draft: {
     label: "Draft",
-    className: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+    className:
+      "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle",
   },
   sending: {
     label: "Sending",
@@ -235,13 +236,13 @@ export function CampaignDetailSheet({
               </SheetHeader>
 
               {/* KPI Row */}
-              <div className="grid grid-cols-6 gap-1.5 px-4 py-2.5 border-b bg-zinc-50 dark:bg-zinc-900 shrink-0">
+              <div className="grid grid-cols-6 gap-1.5 px-4 py-2.5 border-b bg-v2-canvas dark:bg-v2-card shrink-0">
                 {[
                   {
                     label: "Recipients",
                     value: campaign.recipient_count,
                     icon: Users,
-                    cls: "text-zinc-500",
+                    cls: "text-v2-ink-muted",
                   },
                   {
                     label: "Sent",
@@ -417,7 +418,7 @@ export function CampaignDetailSheet({
                                   r.status === "failed" &&
                                     "bg-red-50 text-red-600 border-red-200",
                                   r.status === "pending" &&
-                                    "bg-zinc-50 text-zinc-500 border-zinc-200",
+                                    "bg-v2-canvas text-v2-ink-muted border-v2-ring",
                                 )}
                               >
                                 {r.status}

@@ -193,7 +193,7 @@ export function RoadmapListPage() {
   if (!agencyId) {
     return (
       <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -205,13 +205,13 @@ export function RoadmapListPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
       {/* ── Header bar ─────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring dark:border-v2-ring">
         <div className="flex items-center gap-2">
-          <ListChecks className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <ListChecks className="h-4 w-4 text-v2-ink dark:text-v2-ink" />
+          <h1 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
             Manage Roadmaps
           </h1>
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400 hidden sm:inline">
+          <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hidden sm:inline">
             Build and manage onboarding checklists
           </span>
         </div>
@@ -220,24 +220,24 @@ export function RoadmapListPage() {
           {(roadmaps ?? []).length > 0 && (
             <div className="flex items-center gap-3 text-[11px] mr-2">
               <span>
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                <span className="font-medium text-v2-ink dark:text-v2-ink">
                   {publishedCount}
                 </span>{" "}
-                <span className="text-zinc-500 dark:text-zinc-400">
+                <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                   published
                 </span>
               </span>
               {draftCount > 0 && (
                 <span>
-                  <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                  <span className="font-medium text-v2-ink dark:text-v2-ink">
                     {draftCount}
                   </span>{" "}
-                  <span className="text-zinc-500 dark:text-zinc-400">
+                  <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                     draft
                   </span>
                 </span>
               )}
-              <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+              <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
             </div>
           )}
 
@@ -279,7 +279,7 @@ export function RoadmapListPage() {
             {[1, 2, 3].map((n) => (
               <div
                 key={n}
-                className="h-20 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 animate-pulse"
+                className="h-20 rounded-lg bg-v2-card border border-v2-ring dark:border-v2-ring animate-pulse"
               />
             ))}
           </div>
@@ -288,7 +288,7 @@ export function RoadmapListPage() {
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
-                  <ListChecks className="h-5 w-5 text-zinc-400" />
+                  <ListChecks className="h-5 w-5 text-v2-ink-subtle" />
                 </EmptyMedia>
                 <EmptyTitle>No roadmaps yet</EmptyTitle>
                 <EmptyDescription>
@@ -484,7 +484,7 @@ function AdminRoadmapCard({
   onDelete,
 }: AdminRoadmapCardProps) {
   return (
-    <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 rounded-lg px-3 py-3 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors group">
+    <div className="flex items-center gap-3 bg-v2-card rounded-lg px-3 py-3 border border-v2-ring dark:border-v2-ring hover:border-v2-ring-strong dark:hover:border-v2-ring-strong transition-colors group">
       {leftSlot}
 
       {/* Info section */}
@@ -499,13 +499,13 @@ function AdminRoadmapCard({
           <button
             type="button"
             onClick={onEdit}
-            className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 hover:underline underline-offset-2 truncate text-left"
+            className="text-sm font-semibold text-v2-ink dark:text-v2-ink hover:underline underline-offset-2 truncate text-left"
           >
             {roadmap.title}
           </button>
         </div>
         {roadmap.description && (
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
+          <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
             {roadmap.description}
           </p>
         )}
@@ -519,8 +519,8 @@ function AdminRoadmapCard({
             Published
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-zinc-400 dark:text-zinc-500">
-            <div className="h-1.5 w-1.5 rounded-full bg-zinc-300 dark:bg-zinc-600" />
+          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-v2-ink-subtle dark:text-v2-ink-muted">
+            <div className="h-1.5 w-1.5 rounded-full bg-v2-ring-strong dark:bg-v2-ring-strong" />
             Draft
           </span>
         )}
@@ -646,7 +646,7 @@ function SortableAdminRoadmapCard({
             type="button"
             {...attributes}
             {...listeners}
-            className="flex items-center justify-center h-6 w-6 rounded text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 dark:hover:text-zinc-400 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+            className="flex items-center justify-center h-6 w-6 rounded text-v2-ink-subtle dark:text-v2-ink-muted hover:text-v2-ink-muted dark:hover:text-v2-ink-subtle cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
             aria-label={`Drag ${roadmap.title} to reorder`}
           >
             <GripVertical className="h-3.5 w-3.5" />

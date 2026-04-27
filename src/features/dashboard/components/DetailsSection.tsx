@@ -87,16 +87,16 @@ const DetailsRow: React.FC<{
                 className="bg-v2-card-dark border-v2-ring max-w-xs"
               >
                 <div className="space-y-0.5">
-                  <div className="text-xs font-semibold text-zinc-100">
+                  <div className="text-xs font-semibold text-v2-canvas">
                     {kpi.label}
                   </div>
-                  <div className="text-[10px] text-zinc-400">
+                  <div className="text-[10px] text-v2-ink-subtle">
                     {section.category}
                   </div>
                   {kpi.intensity?.target != null && (
-                    <div className="text-[10px] text-zinc-400">
+                    <div className="text-[10px] text-v2-ink-subtle">
                       Target:{" "}
-                      <span className="font-mono tabular-nums text-zinc-200">
+                      <span className="font-mono tabular-nums text-v2-canvas">
                         {kpi.intensity.target}
                         {kpi.intensity.direction === "lower_better" ? "↓" : "↑"}
                       </span>

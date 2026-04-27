@@ -18,7 +18,7 @@ export function RoadmapProgressHeader({
   const allDone = stats.requiredTotal > 0 && stats.percent === 100;
 
   return (
-    <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+    <div className="flex items-center gap-3 bg-v2-card rounded-lg px-3 py-2 border border-v2-ring dark:border-v2-ring">
       <Button
         variant="ghost"
         size="sm"
@@ -29,7 +29,7 @@ export function RoadmapProgressHeader({
         <ArrowLeft className="h-4 w-4" />
       </Button>
 
-      <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate min-w-0">
+      <h1 className="text-sm font-semibold text-v2-ink dark:text-v2-ink truncate min-w-0">
         {roadmap.title}
       </h1>
 
@@ -45,11 +45,11 @@ export function RoadmapProgressHeader({
       <div className="flex items-center gap-3 shrink-0">
         <div className="flex items-center gap-2 w-32">
           <Progress value={stats.percent} className="h-1.5 flex-1" />
-          <span className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100 tabular-nums w-8 text-right">
+          <span className="text-[11px] font-bold text-v2-ink dark:text-v2-ink tabular-nums w-8 text-right">
             {stats.percent}%
           </span>
         </div>
-        <div className="text-[10px] text-zinc-500 dark:text-zinc-400 hidden sm:block">
+        <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hidden sm:block">
           {stats.requiredDone}/{stats.requiredTotal} required
           {stats.optionalTotal > 0 && (
             <>

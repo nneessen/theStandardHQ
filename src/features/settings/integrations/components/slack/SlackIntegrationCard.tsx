@@ -483,7 +483,7 @@ function WorkspaceCard({
 
       {/* Expanded Settings */}
       {isExpanded && isConnected && (
-        <div className="p-3 bg-v2-canvas dark:bg-zinc-800/30 space-y-4">
+        <div className="p-3 bg-v2-canvas dark:bg-v2-card-tinted/30 space-y-4">
           {/* Channel Settings - Admin Only for Editing */}
           <div className="space-y-3">
             <h5 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
@@ -778,7 +778,7 @@ function WorkspaceCard({
 
       {/* Disconnected State */}
       {isExpanded && !isConnected && (
-        <div className="p-3 bg-v2-canvas dark:bg-zinc-800/30">
+        <div className="p-3 bg-v2-canvas dark:bg-v2-card-tinted/30">
           <p className="text-[10px] text-v2-ink-muted">
             This workspace is disconnected. Remove it or reconnect by adding it
             again.

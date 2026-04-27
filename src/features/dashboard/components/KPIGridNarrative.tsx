@@ -131,16 +131,16 @@ export const KPIGridNarrative: React.FC<DetailedKPIGridProps> = ({
   const _supportingKPIs = allKPIs.slice(1);
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-      <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800">
-        <h3 className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+    <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring">
+      <div className="px-3 py-2 border-b border-v2-ring dark:border-v2-ring">
+        <h3 className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider">
           Performance Story
         </h3>
       </div>
       <div className="p-3 space-y-4">
         {/* Hero Metric */}
         {heroKPI && (
-          <div className="pb-4 mb-4 border-b border-zinc-200 dark:border-zinc-700">
+          <div className="pb-4 mb-4 border-b border-v2-ring dark:border-v2-ring-strong">
             <NarrativeInsight
               label={heroKPI.label}
               value={heroKPI.value}
@@ -161,7 +161,7 @@ export const KPIGridNarrative: React.FC<DetailedKPIGridProps> = ({
           {sections.map((section, sectionIndex) => (
             <div key={sectionIndex} className="space-y-3">
               {/* Category Header */}
-              <h3 className="text-[10px] uppercase tracking-wider font-bold text-zinc-500 dark:text-zinc-400 mb-2">
+              <h3 className="text-[10px] uppercase tracking-wider font-bold text-v2-ink-muted dark:text-v2-ink-subtle mb-2">
                 {section.category}
               </h3>
 
@@ -187,10 +187,10 @@ export const KPIGridNarrative: React.FC<DetailedKPIGridProps> = ({
         </div>
 
         {/* Actionable Summary */}
-        <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-700">
-          <div className="flex items-start gap-3 p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50">
-            <div className="text-[11px] leading-relaxed text-zinc-500 dark:text-zinc-400">
-              <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+        <div className="mt-6 pt-4 border-t border-v2-ring dark:border-v2-ring-strong">
+          <div className="flex items-start gap-3 p-3 rounded-lg bg-v2-canvas dark:bg-v2-card-tinted/50">
+            <div className="text-[11px] leading-relaxed text-v2-ink-muted dark:text-v2-ink-subtle">
+              <span className="font-semibold text-v2-ink dark:text-v2-ink">
                 Key Takeaway:
               </span>{" "}
               Your metrics show overall positive momentum. Continue monitoring

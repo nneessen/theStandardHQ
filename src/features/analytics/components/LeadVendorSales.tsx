@@ -25,11 +25,11 @@ export function LeadVendorSales() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+      <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring p-3">
+        <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider">
           Lead Vendor Sales
         </div>
-        <div className="p-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-3 text-center text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Loading...
         </div>
       </div>
@@ -69,18 +69,18 @@ export function LeadVendorSales() {
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+    <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring p-3">
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+        <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider">
           Lead Vendor Sales
         </div>
-        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+        <span className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted">
           {policies.length} policies
         </span>
       </div>
 
       {policies.length === 0 ? (
-        <div className="p-3 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-3 text-center text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
           No lead-linked sales in this period
         </div>
       ) : (
@@ -88,26 +88,26 @@ export function LeadVendorSales() {
           {/* Recent Sales Table */}
           <Table className="text-[11px] mb-3">
             <TableHeader>
-              <TableRow className="h-7 border-b border-zinc-200 dark:border-zinc-800">
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+              <TableRow className="h-7 border-b border-v2-ring dark:border-v2-ring">
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle bg-v2-canvas dark:bg-v2-card-tinted/50">
                   Date
                 </TableHead>
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle bg-v2-canvas dark:bg-v2-card-tinted/50">
                   Client
                 </TableHead>
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle bg-v2-canvas dark:bg-v2-card-tinted/50">
                   Product
                 </TableHead>
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle bg-v2-canvas dark:bg-v2-card-tinted/50 text-right">
                   AP
                 </TableHead>
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle bg-v2-canvas dark:bg-v2-card-tinted/50">
                   Vendor
                 </TableHead>
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle bg-v2-canvas dark:bg-v2-card-tinted/50">
                   Type
                 </TableHead>
-                <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle bg-v2-canvas dark:bg-v2-card-tinted/50">
                   Status
                 </TableHead>
               </TableRow>
@@ -116,21 +116,21 @@ export function LeadVendorSales() {
               {policies.slice(0, 10).map((p) => (
                 <TableRow
                   key={p.policyId}
-                  className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  className="border-b border-v2-ring dark:border-v2-ring/50 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50"
                 >
-                  <TableCell className="p-1.5 font-mono text-zinc-600 dark:text-zinc-300">
+                  <TableCell className="p-1.5 font-mono text-v2-ink-muted dark:text-v2-ink-muted">
                     {formatDate(p.effectiveDate)}
                   </TableCell>
-                  <TableCell className="p-1.5 text-zinc-900 dark:text-zinc-100 truncate max-w-[100px]">
+                  <TableCell className="p-1.5 text-v2-ink dark:text-v2-ink truncate max-w-[100px]">
                     {p.clientName}
                   </TableCell>
-                  <TableCell className="p-1.5 text-zinc-600 dark:text-zinc-400 truncate max-w-[80px]">
+                  <TableCell className="p-1.5 text-v2-ink-muted dark:text-v2-ink-subtle truncate max-w-[80px]">
                     {p.product}
                   </TableCell>
-                  <TableCell className="p-1.5 text-right font-mono text-zinc-900 dark:text-zinc-100">
+                  <TableCell className="p-1.5 text-right font-mono text-v2-ink dark:text-v2-ink">
                     {formatCurrency(p.annualPremium)}
                   </TableCell>
-                  <TableCell className="p-1.5 text-zinc-600 dark:text-zinc-400 truncate max-w-[80px]">
+                  <TableCell className="p-1.5 text-v2-ink-muted dark:text-v2-ink-subtle truncate max-w-[80px]">
                     {p.vendorName}
                   </TableCell>
                   <TableCell className="p-1.5">
@@ -146,7 +146,7 @@ export function LeadVendorSales() {
                     </span>
                   </TableCell>
                   <TableCell className="p-1.5">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                       {p.status}
                     </span>
                   </TableCell>
@@ -158,24 +158,24 @@ export function LeadVendorSales() {
           {/* Weekly Vendor Breakdown */}
           {weeklyBreakdown.vendors.length > 0 && (
             <>
-              <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+              <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mb-1">
                 Weekly Breakdown by Vendor
               </div>
               <Table className="text-[11px]">
                 <TableHeader>
-                  <TableRow className="h-7 border-b border-zinc-200 dark:border-zinc-800">
-                    <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                  <TableRow className="h-7 border-b border-v2-ring dark:border-v2-ring">
+                    <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle bg-v2-canvas dark:bg-v2-card-tinted/50">
                       Vendor
                     </TableHead>
                     {weeklyBreakdown.weeks.map((week) => (
                       <TableHead
                         key={week.label}
-                        className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-center"
+                        className="p-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle bg-v2-canvas dark:bg-v2-card-tinted/50 text-center"
                       >
                         {week.label}
                       </TableHead>
                     ))}
-                    <TableHead className="p-1.5 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-center">
+                    <TableHead className="p-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle bg-v2-canvas dark:bg-v2-card-tinted/50 text-center">
                       Total
                     </TableHead>
                   </TableRow>
@@ -184,9 +184,9 @@ export function LeadVendorSales() {
                   {weeklyBreakdown.vendors.map((vendor) => (
                     <TableRow
                       key={vendor.name}
-                      className="border-b border-zinc-100 dark:border-zinc-800/50"
+                      className="border-b border-v2-ring dark:border-v2-ring/50"
                     >
-                      <TableCell className="p-1.5 text-zinc-900 dark:text-zinc-100 truncate max-w-[100px]">
+                      <TableCell className="p-1.5 text-v2-ink dark:text-v2-ink truncate max-w-[100px]">
                         {vendor.name}
                       </TableCell>
                       {weeklyBreakdown.weeks.map((week) => {
@@ -199,8 +199,8 @@ export function LeadVendorSales() {
                             <span
                               className={cn(
                                 count > 0
-                                  ? "text-zinc-900 dark:text-zinc-100"
-                                  : "text-zinc-300 dark:text-zinc-700",
+                                  ? "text-v2-ink dark:text-v2-ink"
+                                  : "text-v2-ink-subtle dark:text-v2-ink",
                               )}
                             >
                               {count}
@@ -208,7 +208,7 @@ export function LeadVendorSales() {
                           </TableCell>
                         );
                       })}
-                      <TableCell className="p-1.5 text-center font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                      <TableCell className="p-1.5 text-center font-mono font-bold text-v2-ink dark:text-v2-ink">
                         {vendor.total}
                       </TableCell>
                     </TableRow>

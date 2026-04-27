@@ -53,7 +53,7 @@ const SOURCE_POOL_COLORS: Record<SourcePool, string> = {
   clients: "bg-green-500/10 text-green-600 border-green-500/20",
   leads: "bg-amber-500/10 text-amber-600 border-amber-500/20",
   external: "bg-violet-500/10 text-violet-600 border-violet-500/20",
-  mixed: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20",
+  mixed: "bg-zinc-500/10 text-v2-ink-muted border-zinc-500/20",
 };
 
 type ViewMode = "audiences" | "external";

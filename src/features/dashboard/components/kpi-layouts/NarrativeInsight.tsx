@@ -60,7 +60,7 @@ export const NarrativeInsight: React.FC<NarrativeInsightProps> = ({
       ? "text-emerald-600 dark:text-emerald-400"
       : trend === "down"
         ? "text-red-600 dark:text-red-400"
-        : "text-zinc-500 dark:text-zinc-400";
+        : "text-v2-ink-muted dark:text-v2-ink-subtle";
 
   return (
     <div className={cn("relative pl-3 py-2", className)}>
@@ -76,20 +76,20 @@ export const NarrativeInsight: React.FC<NarrativeInsightProps> = ({
       <div className="space-y-1">
         {/* Label */}
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+          <span className="text-[11px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
             {label}
           </span>
           <TrendIcon size={14} className={cn(trendColor)} />
         </div>
 
         {/* Value */}
-        <div className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
+        <div className="text-2xl font-bold tracking-tight text-v2-ink dark:text-v2-ink">
           {value}
         </div>
 
         {/* Progress bar (if provided) */}
         {progress !== undefined && (
-          <div className="h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+          <div className="h-1.5 bg-v2-ring dark:bg-v2-ring-strong rounded-full overflow-hidden">
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-500 bg-gradient-to-r",
@@ -106,7 +106,7 @@ export const NarrativeInsight: React.FC<NarrativeInsightProps> = ({
 
         {/* Insight text */}
         {insight && (
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
             {insight}
           </p>
         )}

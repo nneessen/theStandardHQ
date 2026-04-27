@@ -63,10 +63,7 @@ import type { Workflow } from "@/types/workflow.types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useImo } from "@/contexts/ImoContext";
 import { cn } from "@/lib/utils";
-import {
-  useCurrentUserProfile,
-  useAuthorizationStatus,
-} from "@/hooks/admin";
+import { useCurrentUserProfile, useAuthorizationStatus } from "@/hooks/admin";
 
 export default function WorkflowManager() {
   const { user } = useAuth();
@@ -150,12 +147,14 @@ export default function WorkflowManager() {
   };
 
   const statusColors = {
-    draft: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+    draft:
+      "bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted",
     active:
       "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
     paused:
       "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-    archived: "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-500",
+    archived:
+      "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-muted",
   };
 
   const triggerIcons = {
@@ -169,7 +168,7 @@ export default function WorkflowManager() {
     completed: "text-emerald-600 dark:text-emerald-400",
     failed: "text-red-600 dark:text-red-400",
     running: "text-blue-600 dark:text-blue-400",
-    pending: "text-zinc-500 dark:text-zinc-400",
+    pending: "text-v2-ink-muted dark:text-v2-ink-subtle",
     cancelled: "text-orange-600 dark:text-orange-400",
   };
 
@@ -182,10 +181,10 @@ export default function WorkflowManager() {
         className="h-full flex flex-col"
       >
         <div className="flex items-center justify-between mb-2">
-          <TabsList className="h-7 bg-zinc-100 dark:bg-zinc-800">
+          <TabsList className="h-7 bg-v2-card-tinted dark:bg-v2-card-tinted">
             <TabsTrigger
               value="workflows"
-              className="text-[11px] h-6 data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900"
+              className="text-[11px] h-6 data-[state=active]:bg-white dark:data-[state=active]:bg-v2-card"
             >
               Workflows
             </TabsTrigger>
@@ -193,14 +192,14 @@ export default function WorkflowManager() {
               <>
                 <TabsTrigger
                   value="templates"
-                  className="text-[11px] h-6 data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900"
+                  className="text-[11px] h-6 data-[state=active]:bg-white dark:data-[state=active]:bg-v2-card"
                 >
                   <Mail className="h-3 w-3 mr-1" />
                   Email Templates
                 </TabsTrigger>
                 <TabsTrigger
                   value="events"
-                  className="text-[11px] h-6 data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-900"
+                  className="text-[11px] h-6 data-[state=active]:bg-white dark:data-[state=active]:bg-v2-card"
                 >
                   <Shield className="h-3 w-3 mr-1" />
                   Event Types
@@ -230,22 +229,22 @@ export default function WorkflowManager() {
             {/* Workflow Stats Header */}
             <div className="flex items-center gap-3 mb-2 text-[11px]">
               <div className="flex items-center gap-1">
-                <Zap className="h-3 w-3 text-zinc-400" />
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                <Zap className="h-3 w-3 text-v2-ink-subtle" />
+                <span className="font-medium text-v2-ink dark:text-v2-ink">
                   {workflows.length}
                 </span>
-                <span className="text-zinc-500 dark:text-zinc-400">
+                <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                   workflow{workflows.length !== 1 ? "s" : ""}
                 </span>
               </div>
               {runs.length > 0 && (
                 <>
-                  <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+                  <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
                   <button
                     onClick={() => setShowRecentRuns(!showRecentRuns)}
-                    className="flex items-center gap-1 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors cursor-pointer"
+                    className="flex items-center gap-1 text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-ink-subtle transition-colors cursor-pointer"
                   >
-                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                    <span className="font-medium text-v2-ink dark:text-v2-ink">
                       {runs.length}
                     </span>
                     <span>recent run{runs.length !== 1 ? "s" : ""}</span>
@@ -259,8 +258,8 @@ export default function WorkflowManager() {
 
             {/* Recent Runs - Collapsible inline view */}
             {showRecentRuns && runs.length > 0 && (
-              <div className="mb-2 rounded-lg border border-zinc-200 dark:border-zinc-700 px-2.5 py-2 bg-zinc-50 dark:bg-zinc-800/50">
-                <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase mb-1">
+              <div className="mb-2 rounded-lg border border-v2-ring dark:border-v2-ring-strong px-2.5 py-2 bg-v2-canvas dark:bg-v2-card-tinted/50">
+                <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle uppercase mb-1">
                   Recent Activity
                 </div>
                 <div className="space-y-0.5">
@@ -282,10 +281,10 @@ export default function WorkflowManager() {
                               ? "✗"
                               : "○"}
                         </span>
-                        <span className="text-zinc-600 dark:text-zinc-300">
+                        <span className="text-v2-ink-muted dark:text-v2-ink-muted">
                           {run.workflow?.name || "Unknown"}
                         </span>
-                        <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                        <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                           {run.startedAt
                             ? new Date(run.startedAt).toLocaleString("en-US", {
                                 month: "short",
@@ -297,7 +296,7 @@ export default function WorkflowManager() {
                         </span>
                       </div>
                       {run.completedAt && run.startedAt && (
-                        <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                        <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                           {Math.round(
                             (new Date(run.completedAt).getTime() -
                               new Date(run.startedAt).getTime()) /
@@ -313,17 +312,17 @@ export default function WorkflowManager() {
             )}
 
             {/* Workflows Table - Full width */}
-            <div className="flex-1 rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-auto">
+            <div className="flex-1 rounded-lg border border-v2-ring dark:border-v2-ring-strong overflow-auto">
               {workflows.length === 0 ? (
                 <div className="text-center py-8">
-                  <Zap className="h-6 w-6 mx-auto mb-2 text-zinc-400" />
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mb-2">
+                  <Zap className="h-6 w-6 mx-auto mb-2 text-v2-ink-subtle" />
+                  <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle mb-2">
                     No workflows created yet
                   </p>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-6 text-[10px] border-zinc-200 dark:border-zinc-700"
+                    className="h-6 text-[10px] border-v2-ring dark:border-v2-ring-strong"
                     onClick={() => setShowDialog(true)}
                   >
                     Create Your First Workflow
@@ -332,20 +331,20 @@ export default function WorkflowManager() {
               ) : (
                 <Table>
                   <TableHeader>
-                    <TableRow className="h-7 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-700">
-                      <TableHead className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 py-1">
+                    <TableRow className="h-7 bg-v2-canvas dark:bg-v2-card-tinted/50 border-b border-v2-ring dark:border-v2-ring-strong">
+                      <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted py-1">
                         Name
                       </TableHead>
-                      <TableHead className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 py-1">
+                      <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted py-1">
                         Description
                       </TableHead>
-                      <TableHead className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 py-1">
+                      <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted py-1">
                         Type
                       </TableHead>
-                      <TableHead className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 py-1">
+                      <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted py-1">
                         Status
                       </TableHead>
-                      <TableHead className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 py-1">
+                      <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted py-1">
                         Last Run
                       </TableHead>
                       <TableHead className="text-[10px] py-1 w-8"></TableHead>
@@ -359,7 +358,7 @@ export default function WorkflowManager() {
                       return (
                         <TableRow
                           key={workflow.id}
-                          className="h-8 border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                          className="h-8 border-b border-v2-ring dark:border-v2-ring hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50"
                         >
                           <TableCell className="py-1">
                             <div className="flex items-center gap-1.5">
@@ -371,18 +370,18 @@ export default function WorkflowManager() {
                                   Template
                                 </Badge>
                               )}
-                              <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                              <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
                                 {workflow.name}
                               </span>
                             </div>
                           </TableCell>
                           <TableCell className="py-1">
-                            <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate max-w-[300px]">
+                            <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate max-w-[300px]">
                               {workflow.description || "—"}
                             </div>
                           </TableCell>
                           <TableCell className="py-1">
-                            <div className="flex items-center gap-1 text-zinc-600 dark:text-zinc-400">
+                            <div className="flex items-center gap-1 text-v2-ink-muted dark:text-v2-ink-subtle">
                               {triggerIcons[workflow.triggerType]}
                               <span className="text-[10px]">
                                 {workflow.triggerType}
@@ -411,7 +410,7 @@ export default function WorkflowManager() {
                                 >
                                   {lastRun.status}
                                 </span>
-                                <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                                <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                                   {lastRun.startedAt
                                     ? new Date(
                                         lastRun.startedAt,
@@ -420,7 +419,7 @@ export default function WorkflowManager() {
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                              <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                                 Never
                               </span>
                             )}

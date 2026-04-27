@@ -197,7 +197,7 @@ export function LandingPageSettingsTab() {
       {/* Main content */}
       <div className="flex flex-1 min-h-0">
         {/* Sidebar navigation */}
-        <div className="w-48 border-r border-v2-ring bg-v2-canvas dark:bg-zinc-900/50">
+        <div className="w-48 border-r border-v2-ring bg-v2-canvas dark:bg-v2-card/50">
           <ScrollArea className="h-full">
             <div className="p-2 space-y-1">
               {SECTIONS.map((section) => {
@@ -210,7 +210,7 @@ export function LandingPageSettingsTab() {
                     className={`w-full flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-md transition-colors ${
                       isActive
                         ? "bg-v2-card text-v2-ink shadow-sm"
-                        : "text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-card/50 dark:hover:bg-zinc-800/50"
+                        : "text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-card/50 dark:hover:bg-v2-card-tinted/50"
                     }`}
                   >
                     <Icon className="h-3.5 w-3.5" />
@@ -558,7 +558,7 @@ function StatsSection({ theme, updateField }: SectionProps) {
           {theme.stats_data.map((stat, index) => (
             <div
               key={index}
-              className="p-3 border rounded-md bg-v2-canvas dark:bg-zinc-900 space-y-2"
+              className="p-3 border rounded-md bg-v2-canvas dark:bg-v2-card space-y-2"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-v2-ink-muted">
@@ -792,7 +792,7 @@ function GallerySection({ theme, updateField }: SectionProps) {
             {theme.gallery_images.map((image, index) => (
               <div
                 key={index}
-                className="p-3 border rounded-md bg-v2-canvas dark:bg-zinc-900 space-y-2"
+                className="p-3 border rounded-md bg-v2-canvas dark:bg-v2-card space-y-2"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-v2-ink-muted">
@@ -939,7 +939,7 @@ function OpportunitySection({ theme, updateField }: SectionProps) {
             {theme.opportunity_steps.map((step, index) => (
               <div
                 key={index}
-                className="p-3 border rounded-md bg-v2-canvas dark:bg-zinc-900 space-y-2"
+                className="p-3 border rounded-md bg-v2-canvas dark:bg-v2-card space-y-2"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-v2-ink-muted">
@@ -1097,7 +1097,7 @@ function RequirementsSection({ theme, updateField }: SectionProps) {
             {theme.requirements_items.map((item, index) => (
               <div
                 key={index}
-                className="p-3 border rounded-md bg-v2-canvas dark:bg-zinc-900 space-y-2"
+                className="p-3 border rounded-md bg-v2-canvas dark:bg-v2-card space-y-2"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-v2-ink-muted">
@@ -1238,7 +1238,7 @@ function TechSection({ theme, updateField }: SectionProps) {
             {theme.tech_features.map((feature, index) => (
               <div
                 key={index}
-                className="p-3 border rounded-md bg-v2-canvas dark:bg-zinc-900 space-y-2"
+                className="p-3 border rounded-md bg-v2-canvas dark:bg-v2-card space-y-2"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-v2-ink-muted">
@@ -1392,7 +1392,7 @@ function TestimonialsSection({ theme, updateField }: SectionProps) {
             {theme.testimonials.map((testimonial, index) => (
               <div
                 key={index}
-                className="p-3 border rounded-md bg-v2-canvas dark:bg-zinc-900 space-y-2"
+                className="p-3 border rounded-md bg-v2-canvas dark:bg-v2-card space-y-2"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-v2-ink-muted">
@@ -1555,7 +1555,7 @@ function FaqSection({ theme, updateField }: SectionProps) {
             {theme.faq_items.map((faq, index) => (
               <div
                 key={index}
-                className="p-3 border rounded-md bg-v2-canvas dark:bg-zinc-900 space-y-2"
+                className="p-3 border rounded-md bg-v2-canvas dark:bg-v2-card space-y-2"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-v2-ink-muted">

@@ -67,7 +67,7 @@ export function MyAgencyRequestStatus({ request }: MyAgencyRequestStatusProps) {
         return (
           <Badge
             variant="outline"
-            className="text-[10px] h-4 px-1 bg-v2-canvas text-v2-ink-muted border-v2-ring dark:bg-zinc-800 dark:text-v2-ink-subtle dark:border-zinc-700"
+            className="text-[10px] h-4 px-1 bg-v2-canvas text-v2-ink-muted border-v2-ring dark:bg-v2-card-tinted dark:text-v2-ink-subtle dark:border-v2-ring-strong"
           >
             Cancelled
           </Badge>

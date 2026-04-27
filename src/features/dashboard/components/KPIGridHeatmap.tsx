@@ -45,10 +45,10 @@ function intensityScore(hint: KPIIntensity | undefined): number | null {
 
 /** Small dot rendered after the value, color-coded by intensity score. */
 function intensityDotClass(score: number | null): string {
-  if (score == null) return "bg-zinc-300 dark:bg-zinc-700";
+  if (score == null) return "bg-zinc-300 dark:bg-v2-ring-strong";
   if (score >= 0.5) return "bg-emerald-500";
   if (score >= 0.15) return "bg-emerald-400";
-  if (score > -0.15) return "bg-zinc-400 dark:bg-zinc-500";
+  if (score > -0.15) return "bg-v2-ink-subtle";
   if (score > -0.5) return "bg-amber-500";
   return "bg-red-500";
 }
@@ -68,7 +68,7 @@ const SectionContent: React.FC<{
   sectionIndex: number;
 }> = ({ section, sectionIndex }) => (
   <>
-    <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
+    <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide mb-2">
       {section.category}
     </div>
     <div className="space-y-0.5">
@@ -84,10 +84,10 @@ const SectionContent: React.FC<{
                   "hover:brightness-95 dark:hover:brightness-110",
                 )}
               >
-                <span className="text-zinc-600 dark:text-zinc-400 truncate">
+                <span className="text-v2-ink-muted dark:text-v2-ink-subtle truncate">
                   {kpi.label}
                 </span>
-                <span className="font-mono tabular-nums font-semibold text-zinc-900 dark:text-zinc-100">
+                <span className="font-mono tabular-nums font-semibold text-v2-ink dark:text-v2-ink">
                   {kpi.value}
                 </span>
                 <span
@@ -101,25 +101,25 @@ const SectionContent: React.FC<{
             </TooltipTrigger>
             <TooltipContent
               side="top"
-              className="max-w-xs bg-zinc-900 dark:bg-zinc-800 border-zinc-700"
+              className="max-w-xs bg-v2-ink dark:bg-v2-card-tinted border-v2-ring-strong"
             >
               <div className="space-y-1">
-                <div className="text-xs font-semibold text-zinc-100">
+                <div className="text-xs font-semibold text-v2-canvas">
                   {kpi.label}
                 </div>
-                <div className="text-[10px] text-zinc-400">
+                <div className="text-[10px] text-v2-ink-subtle">
                   Category: {section.category}
                 </div>
-                <div className="text-[10px] text-zinc-400">
+                <div className="text-[10px] text-v2-ink-subtle">
                   Value:{" "}
-                  <span className="font-mono tabular-nums text-zinc-200">
+                  <span className="font-mono tabular-nums text-v2-canvas">
                     {kpi.value}
                   </span>
                 </div>
                 {kpi.intensity?.target != null && (
-                  <div className="text-[10px] text-zinc-400">
+                  <div className="text-[10px] text-v2-ink-subtle">
                     Target:{" "}
-                    <span className="font-mono tabular-nums text-zinc-200">
+                    <span className="font-mono tabular-nums text-v2-canvas">
                       {kpi.intensity.target}
                       {kpi.intensity.direction === "lower_better" ? "↓" : "↑"}
                     </span>
@@ -145,10 +145,10 @@ export const KPIGridHeatmap: React.FC<KPIGridHeatmapProps> = ({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+        <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider">
           {title}
         </div>
-        <div className="flex items-center gap-2 text-[9px] text-zinc-400 dark:text-zinc-500">
+        <div className="flex items-center gap-2 text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
           <div className="flex items-center gap-1">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
             <span>Above target</span>
@@ -164,7 +164,7 @@ export const KPIGridHeatmap: React.FC<KPIGridHeatmapProps> = ({
         </div>
       </div>
       <TooltipProvider delayDuration={200}>
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-zinc-200 dark:divide-zinc-800">
+        <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-v2-ring dark:divide-v2-ring">
           {sections.map((section, sectionIndex) => (
             <div key={sectionIndex} className="p-3 min-w-0">
               {section.gated ? (

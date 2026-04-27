@@ -66,18 +66,18 @@ export function RoadmapSectionAccordion({
       <button
         type="button"
         onClick={() => setCollapsed(!collapsed)}
-        className="flex items-center gap-2 w-full text-left bg-white dark:bg-zinc-900 rounded-lg px-3 py-2.5 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all group"
+        className="flex items-center gap-2 w-full text-left bg-v2-card rounded-lg px-3 py-2.5 border border-v2-ring dark:border-v2-ring hover:border-v2-ring-strong dark:hover:border-v2-ring-strong transition-all group"
       >
         {collapsed ? (
-          <ChevronRight className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
+          <ChevronRight className="h-3.5 w-3.5 text-v2-ink-subtle dark:text-v2-ink-muted" />
         ) : (
-          <ChevronDown className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
+          <ChevronDown className="h-3.5 w-3.5 text-v2-ink-subtle dark:text-v2-ink-muted" />
         )}
         <h2
           className={`text-sm font-semibold ${
             sectionComplete
-              ? "text-zinc-500 dark:text-zinc-400"
-              : "text-zinc-900 dark:text-zinc-100"
+              ? "text-v2-ink-muted dark:text-v2-ink-subtle"
+              : "text-v2-ink dark:text-v2-ink"
           }`}
         >
           {section.title}
@@ -87,19 +87,19 @@ export function RoadmapSectionAccordion({
             Done
           </span>
         )}
-        <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 tabular-nums ml-auto">
+        <span className="text-[11px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle tabular-nums ml-auto">
           {sectionStats.requiredDone}/{sectionStats.requiredTotal}
         </span>
       </button>
 
       {section.description && !collapsed && (
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 ml-8 mt-1">
+        <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle ml-8 mt-1">
           {section.description}
         </p>
       )}
 
       {!collapsed && (
-        <div className="space-y-1.5 mt-2 ml-3 pl-3 border-l-2 border-zinc-200 dark:border-zinc-700">
+        <div className="space-y-1.5 mt-2 ml-3 pl-3 border-l-2 border-v2-ring dark:border-v2-ring-strong">
           {visibleItems.map((item) => (
             <RoadmapItemCard
               key={item.id}

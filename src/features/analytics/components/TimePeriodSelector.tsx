@@ -183,7 +183,7 @@ export function TimePeriodSelector({
 
   return (
     <div className="relative">
-      <div className="flex items-center gap-0.5 bg-zinc-200/50 dark:bg-zinc-800/50 rounded-md p-0.5 overflow-x-auto">
+      <div className="flex items-center gap-0.5 bg-v2-card-tinted dark:bg-v2-card-tinted/50 rounded-md p-0.5 overflow-x-auto">
         {periods.map(({ value, label }) => (
           <button
             key={value}
@@ -198,8 +198,8 @@ export function TimePeriodSelector({
             className={cn(
               "px-2 py-1 text-[10px] font-medium rounded transition-all whitespace-nowrap",
               selectedPeriod === value
-                ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+                ? "bg-v2-card shadow-sm text-v2-ink dark:text-v2-ink"
+                : "text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-ink-subtle",
             )}
           >
             {label}
@@ -213,11 +213,11 @@ export function TimePeriodSelector({
         onCustomRangeChange && (
           <div
             ref={pickerRef}
-            className="absolute top-full right-0 mt-2 p-3 bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-lg z-50"
+            className="absolute top-full right-0 mt-2 p-3 bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring shadow-lg z-50"
           >
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                <label className="block text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mb-1">
                   Start Date
                 </label>
                 <input
@@ -237,11 +237,11 @@ export function TimePeriodSelector({
                       endDate: customRange?.endDate || new Date(),
                     });
                   }}
-                  className="w-full px-2 py-1 text-[11px] text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded"
+                  className="w-full px-2 py-1 text-[11px] text-v2-ink dark:text-v2-ink bg-v2-canvas dark:bg-v2-card-tinted border border-v2-ring dark:border-v2-ring-strong rounded"
                 />
               </div>
               <div>
-                <label className="block text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1">
+                <label className="block text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mb-1">
                   End Date
                 </label>
                 <input
@@ -269,13 +269,13 @@ export function TimePeriodSelector({
                       endDate: newEnd,
                     });
                   }}
-                  className="w-full px-2 py-1 text-[11px] text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded"
+                  className="w-full px-2 py-1 text-[11px] text-v2-ink dark:text-v2-ink bg-v2-canvas dark:bg-v2-card-tinted border border-v2-ring dark:border-v2-ring-strong rounded"
                 />
               </div>
             </div>
             <button
               onClick={() => setShowCustomPicker(false)}
-              className="mt-2 w-full px-3 py-1 text-[11px] font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 rounded hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-colors"
+              className="mt-2 w-full px-3 py-1 text-[11px] font-medium text-white bg-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink rounded hover:bg-v2-ink-muted dark:hover:bg-v2-ring transition-colors"
             >
               Apply
             </button>

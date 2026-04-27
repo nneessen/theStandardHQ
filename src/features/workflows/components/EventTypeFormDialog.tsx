@@ -81,7 +81,7 @@ export default function EventTypeFormDialog({
           <DialogTitle className="text-sm font-semibold">
             {isNew ? "Create New Event Type" : "Edit Event Type"}
           </DialogTitle>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-0.5">
             {isNew
               ? "Define a new event that can trigger workflows"
               : "Update the event type configuration"}
@@ -92,12 +92,12 @@ export default function EventTypeFormDialog({
           {/* Event Name & Category Row */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 Event Name
               </Label>
               <Input
                 className={cn(
-                  "h-7 text-[11px] border-zinc-200 dark:border-zinc-700",
+                  "h-7 text-[11px] border-v2-ring dark:border-v2-ring-strong",
                   errors.eventName && "border-red-400 dark:border-red-600",
                 )}
                 placeholder="category.action_name"
@@ -115,7 +115,7 @@ export default function EventTypeFormDialog({
               )}
             </div>
             <div>
-              <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 Category
               </Label>
               <Select
@@ -124,7 +124,7 @@ export default function EventTypeFormDialog({
               >
                 <SelectTrigger
                   className={cn(
-                    "h-7 text-[11px] border-zinc-200 dark:border-zinc-700",
+                    "h-7 text-[11px] border-v2-ring dark:border-v2-ring-strong",
                     errors.category && "border-red-400 dark:border-red-600",
                   )}
                 >
@@ -148,12 +148,12 @@ export default function EventTypeFormDialog({
 
           {/* Description */}
           <div>
-            <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Description
             </Label>
             <Input
               className={cn(
-                "h-7 text-[11px] border-zinc-200 dark:border-zinc-700",
+                "h-7 text-[11px] border-v2-ring dark:border-v2-ring-strong",
                 errors.description && "border-red-400 dark:border-red-600",
               )}
               placeholder="Brief description of when this event fires"
@@ -173,12 +173,12 @@ export default function EventTypeFormDialog({
 
           {/* Available Variables */}
           <div>
-            <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Available Variables (JSON)
             </Label>
             <Textarea
               className={cn(
-                "min-h-[80px] text-[11px] font-mono border-zinc-200 dark:border-zinc-700",
+                "min-h-[80px] text-[11px] font-mono border-v2-ring dark:border-v2-ring-strong",
                 errors.availableVariables &&
                   "border-red-400 dark:border-red-600",
               )}
@@ -200,7 +200,7 @@ export default function EventTypeFormDialog({
                 {errors.availableVariables}
               </p>
             )}
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
+            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-1">
               Define variables that will be available to workflows when this
               event fires
             </p>
@@ -215,7 +215,7 @@ export default function EventTypeFormDialog({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+        <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
           <Button
             size="sm"
             variant="ghost"

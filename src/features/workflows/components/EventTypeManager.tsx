@@ -61,7 +61,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   email:
     "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400 border-0",
   system:
-    "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-400 border-0",
+    "bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-subtle border-0",
   custom:
     "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400 border-0",
 };
@@ -263,7 +263,7 @@ export default function EventTypeManager() {
 
   if (isLoading) {
     return (
-      <div className="p-3 text-[11px] text-zinc-500 dark:text-zinc-400">
+      <div className="p-3 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
         Loading event types...
       </div>
     );
@@ -272,12 +272,12 @@ export default function EventTypeManager() {
   return (
     <div className="space-y-2.5">
       {/* Header */}
-      <div className="flex items-center justify-between p-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
+      <div className="flex items-center justify-between p-2.5 bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-lg border border-v2-ring dark:border-v2-ring-strong">
         <div>
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <h3 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
             Event Type Management
           </h3>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Define events that can trigger workflows
           </p>
         </div>
@@ -291,13 +291,13 @@ export default function EventTypeManager() {
       <div className="space-y-2">
         {/* Search Input */}
         <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
+          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
           <Input
             type="text"
             placeholder="Search events by name, description, or category..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 h-8 text-xs border-zinc-200 dark:border-zinc-700"
+            className="pl-8 h-8 text-xs border-v2-ring dark:border-v2-ring-strong"
           />
         </div>
 
@@ -324,7 +324,7 @@ export default function EventTypeManager() {
               </Button>
             ))}
           </div>
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
+          <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle whitespace-nowrap">
             Showing {filteredEvents.length} of {eventTypes.length} events
             {filterCount > 0 &&
               ` • ${filterCount} filter${filterCount > 1 ? "s" : ""} active`}
@@ -335,11 +335,11 @@ export default function EventTypeManager() {
       {/* Event Categories - Wrapped in ScrollArea */}
       {Object.keys(groupedEvents).length === 0 ? (
         <div className="py-12 text-center">
-          <Zap className="h-10 w-10 mx-auto mb-3 text-zinc-400 dark:text-zinc-500" />
-          <p className="text-sm text-zinc-600 dark:text-zinc-400 font-medium">
+          <Zap className="h-10 w-10 mx-auto mb-3 text-v2-ink-subtle dark:text-v2-ink-muted" />
+          <p className="text-sm text-v2-ink-muted dark:text-v2-ink-subtle font-medium">
             No events found
           </p>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle mt-1">
             {searchQuery || selectedCategory
               ? "Try adjusting your search or filters"
               : "Create your first event type to get started"}
@@ -360,28 +360,28 @@ export default function EventTypeManager() {
                   >
                     {category}
                   </Badge>
-                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     {events.length} event{events.length !== 1 ? "s" : ""}
                   </span>
                 </div>
 
-                <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
+                <div className="rounded-lg border border-v2-ring dark:border-v2-ring-strong overflow-hidden">
                   <Table>
                     <TableHeader>
-                      <TableRow className="h-6 bg-zinc-50 dark:bg-zinc-800/50">
-                        <TableHead className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-300">
+                      <TableRow className="h-6 bg-v2-canvas dark:bg-v2-card-tinted/50">
+                        <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
                           Event Name
                         </TableHead>
-                        <TableHead className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-300">
+                        <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
                           Description
                         </TableHead>
-                        <TableHead className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-300">
+                        <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
                           Variables
                         </TableHead>
-                        <TableHead className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 text-center">
+                        <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted text-center">
                           Status
                         </TableHead>
-                        <TableHead className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 text-right">
+                        <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted text-right">
                           Actions
                         </TableHead>
                       </TableRow>
@@ -390,13 +390,13 @@ export default function EventTypeManager() {
                       {events.map((event) => (
                         <TableRow
                           key={event.id}
-                          className="h-8 border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                          className="h-8 border-b border-v2-ring dark:border-v2-ring hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50"
                         >
                           {editingId === event.id && editData ? (
                             <>
                               <TableCell className="py-1">
                                 <Input
-                                  className="h-5 text-[11px] border-zinc-200 dark:border-zinc-700"
+                                  className="h-5 text-[11px] border-v2-ring dark:border-v2-ring-strong"
                                   value={editData.eventName}
                                   onChange={(e) =>
                                     updateEditField("eventName", e.target.value)
@@ -405,7 +405,7 @@ export default function EventTypeManager() {
                               </TableCell>
                               <TableCell className="py-1">
                                 <Input
-                                  className="h-5 text-[11px] border-zinc-200 dark:border-zinc-700"
+                                  className="h-5 text-[11px] border-v2-ring dark:border-v2-ring-strong"
                                   value={editData.description}
                                   onChange={(e) =>
                                     updateEditField(
@@ -417,7 +417,7 @@ export default function EventTypeManager() {
                               </TableCell>
                               <TableCell className="py-1">
                                 <Textarea
-                                  className="h-5 text-[10px] font-mono p-1 border-zinc-200 dark:border-zinc-700"
+                                  className="h-5 text-[10px] font-mono p-1 border-v2-ring dark:border-v2-ring-strong"
                                   value={JSON.stringify(
                                     editData.availableVariables,
                                     null,
@@ -471,15 +471,15 @@ export default function EventTypeManager() {
                           ) : (
                             <>
                               <TableCell className="text-[11px] font-mono">
-                                <div className="flex items-center gap-1 text-zinc-900 dark:text-zinc-100">
+                                <div className="flex items-center gap-1 text-v2-ink dark:text-v2-ink">
                                   <Zap className="h-3 w-3 text-amber-500" />
                                   {event.eventName}
                                 </div>
                               </TableCell>
-                              <TableCell className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                              <TableCell className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                                 {event.description}
                               </TableCell>
-                              <TableCell className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
+                              <TableCell className="text-[10px] font-mono text-v2-ink-muted dark:text-v2-ink-subtle">
                                 {event.availableVariables
                                   ? Object.keys(
                                       event.availableVariables as object,
@@ -495,7 +495,7 @@ export default function EventTypeManager() {
                                     "h-5 px-1",
                                     event.isActive
                                       ? "text-emerald-600 dark:text-emerald-400"
-                                      : "text-zinc-400 dark:text-zinc-500",
+                                      : "text-v2-ink-subtle dark:text-v2-ink-muted",
                                   )}
                                 >
                                   {event.isActive ? (
@@ -511,7 +511,7 @@ export default function EventTypeManager() {
                                     size="sm"
                                     variant="ghost"
                                     onClick={() => handleEdit(event)}
-                                    className="h-5 px-1 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                                    className="h-5 px-1 text-v2-ink-muted hover:text-v2-ink dark:text-v2-ink-subtle dark:hover:text-v2-canvas"
                                   >
                                     <Edit2 className="h-3 w-3" />
                                   </Button>

@@ -23,7 +23,7 @@ export function ForecastChart({
 }: ForecastChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="p-10 text-center text-zinc-400 dark:text-zinc-500 text-xs">
+      <div className="p-10 text-center text-v2-ink-subtle dark:text-v2-ink-muted text-xs">
         No forecast data available
       </div>
     );
@@ -123,7 +123,7 @@ export function ForecastChart({
   return (
     <div className="w-full">
       {/* Title */}
-      <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-4">
+      <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mb-4">
         {title}
       </div>
 
@@ -318,7 +318,7 @@ export function ForecastChart({
       </div>
 
       {/* Legend */}
-      <div className="mt-5 flex gap-4 text-xs text-zinc-500 dark:text-zinc-400 flex-wrap">
+      <div className="mt-5 flex gap-4 text-xs text-v2-ink-muted dark:text-v2-ink-subtle flex-wrap">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 bg-emerald-500 rounded-full" />
           <span>High Confidence</span>

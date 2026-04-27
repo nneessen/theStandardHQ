@@ -102,7 +102,6 @@ export default function WorkflowWizard({
           },
           status: (workflow.status as WorkflowStatus) || "draft",
         });
-
       } else {
         // Reset for new workflow
         setFormData({
@@ -422,13 +421,13 @@ export default function WorkflowWizard({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-lg max-h-[90vh] p-3 flex flex-col bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
+        className="max-w-lg max-h-[90vh] p-3 flex flex-col bg-v2-card border-v2-ring dark:border-v2-ring"
         hideCloseButton
       >
         {/* Header - compact but readable */}
-        <div className="shrink-0 pb-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 -m-3 mb-2 p-3 rounded-t-lg">
+        <div className="shrink-0 pb-2 border-b border-v2-ring dark:border-v2-ring bg-v2-canvas dark:bg-v2-card-tinted/50 -m-3 mb-2 p-3 rounded-t-lg">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <DialogTitle className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
               {workflow ? "Edit" : "Create"} Workflow
             </DialogTitle>
           </div>
@@ -451,13 +450,13 @@ export default function WorkflowWizard({
                   key={step.id}
                   className={cn(
                     "flex items-center gap-1",
-                    isActive && "font-medium text-zinc-900 dark:text-zinc-100",
+                    isActive && "font-medium text-v2-ink dark:text-v2-ink",
                     isCompleted &&
                       !isActive &&
-                      "text-zinc-500 dark:text-zinc-400",
+                      "text-v2-ink-muted dark:text-v2-ink-subtle",
                     !isActive &&
                       !isCompleted &&
-                      "text-zinc-400 dark:text-zinc-500",
+                      "text-v2-ink-subtle dark:text-v2-ink-muted",
                     hasError && "text-red-600 dark:text-red-400",
                   )}
                 >
@@ -465,13 +464,13 @@ export default function WorkflowWizard({
                     className={cn(
                       "flex items-center justify-center w-5 h-5 rounded-full text-[10px]",
                       isActive &&
-                        "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900",
+                        "bg-v2-ink dark:bg-v2-card-tinted text-white dark:text-v2-ink",
                       isCompleted &&
                         !isActive &&
                         "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400",
                       !isActive &&
                         !isCompleted &&
-                        "bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400",
+                        "bg-v2-ring dark:bg-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-subtle",
                       hasError &&
                         "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400",
                     )}
@@ -484,7 +483,7 @@ export default function WorkflowWizard({
                   </span>
                   <span className="text-[11px]">{step.label}</span>
                   {index < WIZARD_STEPS.length - 1 && (
-                    <span className="text-zinc-300 dark:text-zinc-600 text-[11px] ml-1">
+                    <span className="text-v2-ink-subtle dark:text-v2-ink-muted text-[11px] ml-1">
                       →
                     </span>
                   )}
@@ -509,14 +508,14 @@ export default function WorkflowWizard({
         </div>
 
         {/* Footer - fixed at bottom, compact */}
-        <div className="shrink-0 pt-2 mt-2 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/30 -m-3 p-3 rounded-b-lg">
+        <div className="shrink-0 pt-2 mt-2 border-t border-v2-ring dark:border-v2-ring bg-v2-canvas dark:bg-v2-card-tinted/30 -m-3 p-3 rounded-b-lg">
           <div className="flex items-center justify-end gap-1.5">
             <Button
               variant="outline"
               onClick={handleBack}
               disabled={currentStep === 0 || isSubmitting}
               size="sm"
-              className="h-6 text-[10px] px-2 border-zinc-200 dark:border-zinc-700"
+              className="h-6 text-[10px] px-2 border-v2-ring dark:border-v2-ring-strong"
             >
               <ArrowLeft className="h-3 w-3 mr-1" />
               Back

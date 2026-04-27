@@ -83,7 +83,7 @@ export function RoadmapLandingPage() {
   if (!agencyId) {
     return (
       <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -91,10 +91,10 @@ export function RoadmapLandingPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
       {/* ── Header bar ─────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring dark:border-v2-ring">
         <div className="flex items-center gap-2">
-          <Compass className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <Compass className="h-4 w-4 text-v2-ink dark:text-v2-ink" />
+          <h1 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
             Agent Roadmap
           </h1>
         </div>
@@ -104,23 +104,27 @@ export function RoadmapLandingPage() {
               <div className="flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3 text-emerald-500" />
                 <span className="font-medium">{stats.completed}</span>
-                <span className="text-zinc-500 dark:text-zinc-400">done</span>
+                <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+                  done
+                </span>
               </div>
             )}
             {stats.inProgress > 0 && (
               <div className="flex items-center gap-1">
                 <Clock className="h-3 w-3 text-blue-500" />
                 <span className="font-medium">{stats.inProgress}</span>
-                <span className="text-zinc-500 dark:text-zinc-400">
+                <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                   in progress
                 </span>
               </div>
             )}
             {stats.notStarted > 0 && (
               <div className="flex items-center gap-1">
-                <Circle className="h-3 w-3 text-zinc-400" />
+                <Circle className="h-3 w-3 text-v2-ink-subtle" />
                 <span className="font-medium">{stats.notStarted}</span>
-                <span className="text-zinc-500 dark:text-zinc-400">to do</span>
+                <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+                  to do
+                </span>
               </div>
             )}
           </div>
@@ -128,16 +132,16 @@ export function RoadmapLandingPage() {
       </div>
 
       {/* ── Welcome / guide section for new agents ─────────────────── */}
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 px-4 py-3">
+      <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring px-4 py-3">
         <div className="flex items-start gap-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-v2-ink dark:bg-v2-card-tinted text-white dark:text-v2-ink">
             <BookOpen className="h-4 w-4" />
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1">
+            <h2 className="text-sm font-bold text-v2-ink dark:text-v2-ink mb-1">
               Welcome to your onboarding roadmap
             </h2>
-            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed mb-2.5">
+            <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed mb-2.5">
               These are step-by-step checklists built by your manager to help
               you get set up. Work through them at your own pace — your progress
               saves automatically and is visible to your team lead.
@@ -147,7 +151,7 @@ export function RoadmapLandingPage() {
                 <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400">
                   <Star className="h-2.5 w-2.5 fill-current" />
                 </div>
-                <span className="text-zinc-700 dark:text-zinc-300">
+                <span className="text-v2-ink dark:text-v2-ink-muted">
                   Start with the <strong>★ marked</strong> roadmap first
                 </span>
               </div>
@@ -155,7 +159,7 @@ export function RoadmapLandingPage() {
                 <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400">
                   <CheckCircle2 className="h-2.5 w-2.5" />
                 </div>
-                <span className="text-zinc-700 dark:text-zinc-300">
+                <span className="text-v2-ink dark:text-v2-ink-muted">
                   Check off each step as you complete it
                 </span>
               </div>
@@ -163,7 +167,7 @@ export function RoadmapLandingPage() {
                 <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
                   <Eye className="h-2.5 w-2.5" />
                 </div>
-                <span className="text-zinc-700 dark:text-zinc-300">
+                <span className="text-v2-ink dark:text-v2-ink-muted">
                   Your manager can see your progress
                 </span>
               </div>
@@ -179,7 +183,7 @@ export function RoadmapLandingPage() {
             {[1, 2, 3, 4].map((n) => (
               <div
                 key={n}
-                className="h-32 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 animate-pulse"
+                className="h-32 rounded-lg bg-v2-card border border-v2-ring dark:border-v2-ring animate-pulse"
               />
             ))}
           </div>
@@ -188,7 +192,7 @@ export function RoadmapLandingPage() {
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
-                  <ListChecks className="h-5 w-5 text-zinc-400" />
+                  <ListChecks className="h-5 w-5 text-v2-ink-subtle" />
                 </EmptyMedia>
                 <EmptyTitle>No roadmaps yet</EmptyTitle>
                 <EmptyDescription>
@@ -242,12 +246,12 @@ function RoadmapCard({ roadmap, summary, index, onClick }: RoadmapCardProps) {
     <button
       type="button"
       onClick={onClick}
-      className={`group w-full text-left rounded-lg border overflow-hidden transition-all hover:border-zinc-300 dark:hover:border-zinc-600 ${
+      className={`group w-full text-left rounded-lg border overflow-hidden transition-all hover:border-v2-ring-strong dark:hover:border-v2-ring-strong ${
         roadmap.is_default
-          ? "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 ring-1 ring-amber-200 dark:ring-amber-800"
+          ? "border-v2-ring dark:border-v2-ring bg-v2-card ring-1 ring-amber-200 dark:ring-amber-800"
           : isComplete
-            ? "border-emerald-200 dark:border-emerald-800 bg-white dark:bg-zinc-900"
-            : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+            ? "border-emerald-200 dark:border-emerald-800 bg-v2-card"
+            : "border-v2-ring dark:border-v2-ring bg-v2-card"
       }`}
     >
       {/* Top color strip — visual identity for each card */}
@@ -259,14 +263,14 @@ function RoadmapCard({ roadmap, summary, index, onClick }: RoadmapCardProps) {
               ? "bg-blue-500"
               : roadmap.is_default
                 ? "bg-amber-400"
-                : "bg-zinc-200 dark:bg-zinc-700"
+                : "bg-v2-ring dark:bg-v2-ring-strong"
         }`}
       />
 
       <div className="px-4 py-3">
         {/* Row 1: number + badges */}
         <div className="flex items-center gap-2 mb-1.5">
-          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 text-[10px] font-bold text-zinc-600 dark:text-zinc-400">
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted text-[10px] font-bold text-v2-ink-muted dark:text-v2-ink-subtle">
             {index}
           </span>
           {roadmap.is_default && (
@@ -289,13 +293,13 @@ function RoadmapCard({ roadmap, summary, index, onClick }: RoadmapCardProps) {
         </div>
 
         {/* Row 2: title */}
-        <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 leading-snug mb-0.5 group-hover:underline underline-offset-2">
+        <h3 className="text-sm font-bold text-v2-ink dark:text-v2-ink leading-snug mb-0.5 group-hover:underline underline-offset-2">
           {roadmap.title}
         </h3>
 
         {/* Row 3: description */}
         {roadmap.description && (
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed mb-2">
+          <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle line-clamp-2 leading-relaxed mb-2">
             {roadmap.description}
           </p>
         )}
@@ -305,11 +309,11 @@ function RoadmapCard({ roadmap, summary, index, onClick }: RoadmapCardProps) {
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <Progress value={percent} className="h-1.5 flex-1" />
-              <span className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100 tabular-nums w-8 text-right">
+              <span className="text-[11px] font-bold text-v2-ink dark:text-v2-ink tabular-nums w-8 text-right">
                 {percent}%
               </span>
             </div>
-            <div className="flex items-center gap-3 text-[10px] text-zinc-500 dark:text-zinc-400">
+            <div className="flex items-center gap-3 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               <span>
                 {summary!.requiredDone}/{summary!.requiredTotal} required
               </span>
@@ -324,22 +328,22 @@ function RoadmapCard({ roadmap, summary, index, onClick }: RoadmapCardProps) {
             </div>
           </div>
         ) : (
-          <p className="text-[10px] text-zinc-400 dark:text-zinc-500 italic">
+          <p className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted italic">
             Coming soon
           </p>
         )}
       </div>
 
       {/* Bottom action hint */}
-      <div className="flex items-center justify-between px-4 py-2 bg-zinc-50 dark:bg-zinc-800/30 border-t border-zinc-100 dark:border-zinc-800">
-        <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+      <div className="flex items-center justify-between px-4 py-2 bg-v2-canvas dark:bg-v2-card-tinted/30 border-t border-v2-ring dark:border-v2-ring">
+        <span className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
           {isComplete
             ? "Review completed items"
             : isInProgress
               ? "Continue where you left off"
               : "Click to get started"}
         </span>
-        <ChevronRight className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200 group-hover:translate-x-0.5 transition-all" />
+        <ChevronRight className="h-3.5 w-3.5 text-v2-ink-subtle group-hover:text-v2-ink dark:group-hover:text-v2-canvas group-hover:translate-x-0.5 transition-all" />
       </div>
     </button>
   );

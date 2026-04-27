@@ -38,15 +38,15 @@ export const Masthead: React.FC<MastheadProps> = ({
   const isCurrent = periodOffset === 0;
 
   return (
-    <header className="border-b border-zinc-900 dark:border-zinc-100">
+    <header className="border-b border-v2-ink dark:border-v2-ring">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between pb-2">
         {/* Title block */}
         <div className="flex items-baseline gap-3 min-w-0">
-          <h1 className="font-mono tabular-nums text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 truncate">
+          <h1 className="font-mono tabular-nums text-xl sm:text-2xl font-semibold tracking-tight text-v2-ink dark:text-v2-ink truncate">
             {title}
           </h1>
           {subtitle && (
-            <span className="text-[11px] italic text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
+            <span className="text-[11px] italic text-v2-ink-muted dark:text-v2-ink-subtle whitespace-nowrap">
               {subtitle}
             </span>
           )}
@@ -61,7 +61,7 @@ export const Masthead: React.FC<MastheadProps> = ({
                 {i > 0 && (
                   <span
                     aria-hidden
-                    className="text-zinc-300 dark:text-zinc-700"
+                    className="text-v2-ink-subtle dark:text-v2-ink"
                   >
                     ·
                   </span>
@@ -72,8 +72,8 @@ export const Masthead: React.FC<MastheadProps> = ({
                   className={cn(
                     "transition-colors",
                     timePeriod === p.id
-                      ? "text-zinc-900 dark:text-zinc-100 underline underline-offset-4 decoration-2"
-                      : "text-zinc-400 dark:text-zinc-600 hover:text-zinc-700 dark:hover:text-zinc-300",
+                      ? "text-v2-ink dark:text-v2-ink underline underline-offset-4 decoration-2"
+                      : "text-v2-ink-subtle dark:text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle",
                   )}
                 >
                   {p.label}
@@ -83,11 +83,11 @@ export const Masthead: React.FC<MastheadProps> = ({
           </nav>
 
           {/* Period nav */}
-          <div className="flex items-center gap-1 text-[10px] uppercase tracking-[0.18em] font-semibold text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center gap-1 text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
             <button
               type="button"
               onClick={() => onOffsetChange(periodOffset - 1)}
-              className="p-0.5 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+              className="p-0.5 hover:text-v2-ink dark:hover:text-v2-canvas transition-colors"
               aria-label="Previous period"
             >
               <ChevronLeft className="h-3 w-3" />
@@ -99,8 +99,8 @@ export const Masthead: React.FC<MastheadProps> = ({
               className={cn(
                 "px-1 transition-colors",
                 isCurrent
-                  ? "text-zinc-300 dark:text-zinc-700 cursor-default"
-                  : "hover:text-zinc-900 dark:hover:text-zinc-100",
+                  ? "text-v2-ink-subtle dark:text-v2-ink cursor-default"
+                  : "hover:text-v2-ink dark:hover:text-v2-canvas",
               )}
             >
               Today
@@ -112,8 +112,8 @@ export const Masthead: React.FC<MastheadProps> = ({
               className={cn(
                 "p-0.5 transition-colors",
                 isCurrent
-                  ? "text-zinc-300 dark:text-zinc-700 cursor-default"
-                  : "hover:text-zinc-900 dark:hover:text-zinc-100",
+                  ? "text-v2-ink-subtle dark:text-v2-ink cursor-default"
+                  : "hover:text-v2-ink dark:hover:text-v2-canvas",
               )}
               aria-label="Next period"
             >
@@ -124,9 +124,9 @@ export const Masthead: React.FC<MastheadProps> = ({
       </div>
 
       {/* Hairline period-elapsed indicator */}
-      <div className="relative h-px bg-zinc-200 dark:bg-zinc-800">
+      <div className="relative h-px bg-v2-ring dark:bg-v2-card-tinted">
         <div
-          className="absolute inset-y-0 left-0 bg-zinc-900 dark:bg-zinc-100"
+          className="absolute inset-y-0 left-0 bg-v2-ink dark:bg-v2-card-tinted"
           style={{ width: `${Math.max(0, Math.min(1, elapsedPct)) * 100}%` }}
         />
       </div>

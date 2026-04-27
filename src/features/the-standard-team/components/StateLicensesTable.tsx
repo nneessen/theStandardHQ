@@ -117,18 +117,18 @@ export function StateLicensesTable({
           }}
         >
           <thead className="sticky top-0 z-10">
-            <tr className="bg-zinc-100 dark:bg-zinc-800">
-              <th className="sticky left-0 z-20 bg-zinc-100 dark:bg-zinc-800 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wide text-left px-3 py-2 border-b border-zinc-200 dark:border-zinc-700 min-w-[120px] w-[120px]">
+            <tr className="bg-v2-card-tinted dark:bg-v2-card-tinted">
+              <th className="sticky left-0 z-20 bg-v2-card-tinted dark:bg-v2-card-tinted text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wide text-left px-3 py-2 border-b border-v2-ring dark:border-v2-ring-strong min-w-[120px] w-[120px]">
                 State
               </th>
-              <th className="sticky left-[120px] z-20 bg-zinc-100 dark:bg-zinc-800 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wide text-center px-2 py-2 border-b border-zinc-200 dark:border-zinc-700 w-[40px] min-w-[40px]">
+              <th className="sticky left-[120px] z-20 bg-v2-card-tinted dark:bg-v2-card-tinted text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wide text-center px-2 py-2 border-b border-v2-ring dark:border-v2-ring-strong w-[40px] min-w-[40px]">
                 Color
               </th>
               {agents.map((agent) => (
                 <th
                   key={agent.id}
                   className={cn(
-                    "text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wide text-center px-2 py-2 border-b border-zinc-200 dark:border-zinc-700 min-w-[80px] w-[80px]",
+                    "text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wide text-center px-2 py-2 border-b border-v2-ring dark:border-v2-ring-strong min-w-[80px] w-[80px]",
                     agent.id === selectedAgentId &&
                       "bg-blue-100/70 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300",
                   )}
@@ -150,31 +150,31 @@ export function StateLicensesTable({
                 <tr
                   key={state.value}
                   className={cn(
-                    "hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30",
+                    "hover:bg-v2-canvas/50 dark:hover:bg-v2-card-tinted/30",
                     bgClass ||
                       (idx % 2 === 0
-                        ? "bg-white dark:bg-zinc-900"
-                        : "bg-zinc-50/50 dark:bg-zinc-900/50"),
+                        ? "bg-v2-card"
+                        : "bg-v2-canvas/50 dark:bg-v2-card/50"),
                   )}
                 >
                   <td
                     className={cn(
-                      "sticky left-0 z-10 text-[11px] font-medium text-zinc-900 dark:text-zinc-100 px-3 py-1.5 border-b border-zinc-100 dark:border-zinc-800",
+                      "sticky left-0 z-10 text-[11px] font-medium text-v2-ink dark:text-v2-ink px-3 py-1.5 border-b border-v2-ring dark:border-v2-ring",
                       bgClass ||
                         (idx % 2 === 0
-                          ? "bg-white dark:bg-zinc-900"
-                          : "bg-zinc-50/50 dark:bg-zinc-900/50"),
+                          ? "bg-v2-card"
+                          : "bg-v2-canvas/50 dark:bg-v2-card/50"),
                     )}
                   >
                     {state.label}
                   </td>
                   <td
                     className={cn(
-                      "sticky left-[120px] z-10 text-center py-1.5 border-b border-zinc-100 dark:border-zinc-800",
+                      "sticky left-[120px] z-10 text-center py-1.5 border-b border-v2-ring dark:border-v2-ring",
                       bgClass ||
                         (idx % 2 === 0
-                          ? "bg-white dark:bg-zinc-900"
-                          : "bg-zinc-50/50 dark:bg-zinc-900/50"),
+                          ? "bg-v2-card"
+                          : "bg-v2-canvas/50 dark:bg-v2-card/50"),
                     )}
                   >
                     <button
@@ -184,7 +184,7 @@ export function StateLicensesTable({
                         onEditClassification(state.value, state.label);
                       }}
                       disabled={!canEditClassifications}
-                      className="p-1 rounded hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent"
+                      className="p-1 rounded hover:bg-v2-ring/50 dark:hover:bg-v2-ring-strong/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent dark:disabled:hover:bg-transparent"
                       title={
                         canEditClassifications
                           ? `Set ${state.label} classification (current: ${classification || "neutral"})`
@@ -201,7 +201,7 @@ export function StateLicensesTable({
                           classification === "red" &&
                             "bg-red-500 border-red-600",
                           (!classification || classification === "neutral") &&
-                            "bg-zinc-300 border-zinc-400 dark:bg-zinc-600 dark:border-zinc-500",
+                            "bg-zinc-300 border-zinc-400 dark:bg-v2-ring-strong dark:border-zinc-500",
                         )}
                       />
                     </button>
@@ -214,7 +214,7 @@ export function StateLicensesTable({
                       <td
                         key={agent.id}
                         className={cn(
-                          "text-center py-1 px-2 border-b border-zinc-100 dark:border-zinc-800",
+                          "text-center py-1 px-2 border-b border-v2-ring dark:border-v2-ring",
                           bgClass,
                           agent.id === selectedAgentId &&
                             "bg-blue-50/70 dark:bg-blue-950/15",

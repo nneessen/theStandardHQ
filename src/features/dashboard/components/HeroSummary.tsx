@@ -65,13 +65,13 @@ export const HeroSummary: React.FC<HeroSummaryProps> = ({
   return (
     <section className="py-6 sm:py-8">
       {/* Tiny eyebrow label */}
-      <div className="text-[10px] uppercase tracking-[0.2em] font-semibold text-zinc-500 dark:text-zinc-400">
+      <div className="text-[10px] uppercase tracking-[0.2em] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
         {periodLabel} · Commissions Paid
       </div>
 
       {/* The headline number */}
       <div className="mt-1.5 flex items-end gap-3 sm:gap-5 flex-wrap">
-        <span className="font-mono tabular-nums text-5xl sm:text-7xl font-medium tracking-tight leading-none text-zinc-900 dark:text-zinc-100">
+        <span className="font-mono tabular-nums text-5xl sm:text-7xl font-medium tracking-tight leading-none text-v2-ink dark:text-v2-ink">
           {formatCompactCurrency(primaryValue)}
         </span>
 
@@ -91,10 +91,10 @@ export const HeroSummary: React.FC<HeroSummaryProps> = ({
       </div>
 
       {/* Thick accent rule — only as wide as visual emphasis */}
-      <div className="mt-4 h-[3px] w-16 bg-zinc-900 dark:bg-zinc-100" />
+      <div className="mt-4 h-[3px] w-16 bg-v2-ink dark:bg-v2-card-tinted" />
 
       {/* Italic editorial caption */}
-      <p className="mt-3 text-[13px] leading-relaxed italic text-zinc-600 dark:text-zinc-400 max-w-3xl">
+      <p className="mt-3 text-[13px] leading-relaxed italic text-v2-ink-muted dark:text-v2-ink-subtle max-w-3xl">
         <span
           className={cn(
             "not-italic font-mono tabular-nums font-semibold",

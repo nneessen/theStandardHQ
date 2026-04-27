@@ -287,7 +287,7 @@ export function EmailComposer({
                 onKeyDown={(e) => handleKeyDown(e, "to")}
                 onBlur={() => addRecipient("to")}
                 disabled={isSending}
-                className="flex-1 min-w-[150px] h-7 text-sm border-0 shadow-none focus-visible:ring-0 px-1 bg-white dark:bg-zinc-900"
+                className="flex-1 min-w-[150px] h-7 text-sm border-0 shadow-none focus-visible:ring-0 px-1 bg-v2-card"
               />
             </div>
             <div className="flex items-center gap-1">
@@ -350,7 +350,7 @@ export function EmailComposer({
                   onKeyDown={(e) => handleKeyDown(e, "cc")}
                   onBlur={() => addRecipient("cc")}
                   disabled={isSending}
-                  className="flex-1 min-w-[150px] h-7 text-sm border-0 shadow-none focus-visible:ring-0 px-1 bg-white dark:bg-zinc-900"
+                  className="flex-1 min-w-[150px] h-7 text-sm border-0 shadow-none focus-visible:ring-0 px-1 bg-v2-card"
                 />
               </div>
             </div>
@@ -364,7 +364,7 @@ export function EmailComposer({
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Enter subject..."
               disabled={isSending}
-              className="flex-1 h-7 text-sm border-0 shadow-none focus-visible:ring-0 px-1 bg-white dark:bg-zinc-900"
+              className="flex-1 h-7 text-sm border-0 shadow-none focus-visible:ring-0 px-1 bg-v2-card"
             />
           </div>
         </div>

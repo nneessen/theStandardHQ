@@ -258,7 +258,7 @@ export function IntegrationsTab() {
                   <button
                     key={type}
                     onClick={() => handleAdd(type)}
-                    className="flex items-center gap-2.5 p-2.5 bg-v2-card rounded-md border border-dashed border-v2-ring dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-v2-ring transition-colors text-left"
+                    className="flex items-center gap-2.5 p-2.5 bg-v2-card rounded-md border border-dashed border-v2-ring dark:border-v2-ring-strong hover:border-v2-ring-strong dark:hover:border-v2-ring transition-colors text-left"
                   >
                     <div className={`p-1.5 rounded ${colorClass} bg-v2-ring`}>
                       <Icon className="h-4 w-4" />

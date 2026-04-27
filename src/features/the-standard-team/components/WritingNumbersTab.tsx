@@ -205,19 +205,19 @@ function AgentWritingNumbersPanel({
         className={cn(
           "rounded-lg border p-2.5",
           hasSavedValue
-            ? "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/20"
+            ? "border-v2-ring dark:border-v2-ring bg-white dark:bg-v2-canvas/20"
             : "border-amber-200 dark:border-amber-900/40 bg-amber-50/60 dark:bg-amber-950/10",
         )}
       >
         <div className="flex items-start justify-between gap-2 mb-2">
           <div className="min-w-0">
             <p
-              className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100 truncate"
+              className="text-[11px] font-medium text-v2-ink dark:text-v2-ink truncate"
               title={row.carrier.name}
             >
               {row.carrier.name}
             </p>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               {hasSavedValue
                 ? `Saved: #${row.normalizedExisting}`
                 : "No writing number saved"}
@@ -282,14 +282,14 @@ function AgentWritingNumbersPanel({
 
   return (
     <div className="h-full min-h-0 min-w-0 flex flex-col">
-      <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2 flex-wrap">
+      <div className="px-3 py-2 border-b border-v2-ring dark:border-v2-ring flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div>
-            <p className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+            <p className="text-xs font-semibold text-v2-ink dark:text-v2-ink">
               {[agent.first_name, agent.last_name].filter(Boolean).join(" ") ||
                 agent.email}
             </p>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Writing # Focus Workspace
             </p>
           </div>
@@ -309,13 +309,13 @@ function AgentWritingNumbersPanel({
 
       <div className="flex-1 min-h-0 overflow-auto">
         <div className="p-3 space-y-3">
-          <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/20 p-3 space-y-3">
+          <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-white dark:bg-v2-canvas/20 p-3 space-y-3">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-700 dark:text-zinc-200">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
                   Filters And Coverage
                 </p>
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   Search carriers, filter the list, and track completion while
                   you edit.
                 </p>
@@ -338,7 +338,7 @@ function AgentWritingNumbersPanel({
 
             <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_auto] gap-2 items-start">
               <div className="relative min-w-0">
-                <Search className="h-3.5 w-3.5 text-zinc-400 absolute left-2 top-1/2 -translate-y-1/2" />
+                <Search className="h-3.5 w-3.5 text-v2-ink-subtle absolute left-2 top-1/2 -translate-y-1/2" />
                 <Input
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -383,7 +383,7 @@ function AgentWritingNumbersPanel({
             </div>
 
             <div className="space-y-1">
-              <div className="h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
+              <div className="h-1.5 rounded-full bg-v2-ring dark:bg-v2-card-tinted overflow-hidden">
                 <div
                   className={cn(
                     "h-full transition-all",
@@ -396,7 +396,7 @@ function AgentWritingNumbersPanel({
                   style={{ width: `${coveragePercent}%` }}
                 />
               </div>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 `Clear` removes the saved writing number for a carrier.
               </p>
             </div>
@@ -404,7 +404,7 @@ function AgentWritingNumbersPanel({
 
           <div className="min-w-0 space-y-2">
             {filteredRows.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 py-12 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+              <div className="rounded-lg border border-dashed border-v2-ring-strong dark:border-v2-ring-strong py-12 text-center text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 No carriers match the current filters
               </div>
             ) : (
@@ -426,9 +426,9 @@ function AgentWritingNumbersPanel({
                 )}
 
                 {filteredSavedRows.length > 0 && (
-                  <section className="min-w-0 space-y-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50/40 dark:bg-zinc-900/20 p-2.5">
+                  <section className="min-w-0 space-y-2 rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-canvas/40 dark:bg-v2-card/20 p-2.5">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-muted">
                         Saved Writing Numbers
                       </p>
                       <Badge variant="outline" size="sm">
@@ -525,12 +525,12 @@ function TeamWritingNumbersBoard({
 
   return (
     <div className="h-full min-h-0 min-w-0 flex flex-col">
-      <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2 flex-wrap">
+      <div className="px-3 py-2 border-b border-v2-ring dark:border-v2-ring flex items-center justify-between gap-2 flex-wrap">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
             Coverage Board
           </p>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Edit the selected agent quickly while seeing team coverage and
             missing carriers at a glance.
           </p>
@@ -579,17 +579,17 @@ function TeamWritingNumbersBoard({
             return (
               <div
                 key={carrier.id}
-                className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-900/40 p-3 space-y-2.5"
+                className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-canvas/70 dark:bg-v2-card/40 p-3 space-y-2.5"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p
-                      className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 truncate"
+                      className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink truncate"
                       title={carrier.name}
                     >
                       {carrier.name}
                     </p>
-                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                       {assigned.length}/{totalAgentCount} agents have a writing
                       #
                     </p>
@@ -609,7 +609,7 @@ function TeamWritingNumbersBoard({
                   </div>
                 </div>
 
-                <div className="h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
+                <div className="h-1.5 rounded-full bg-v2-ring dark:bg-v2-card-tinted overflow-hidden">
                   <div
                     className={cn(
                       "h-full transition-all",
@@ -623,12 +623,12 @@ function TeamWritingNumbersBoard({
                   />
                 </div>
 
-                <div className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white/90 dark:bg-zinc-950/30 p-2">
+                <div className="rounded-md border border-v2-ring dark:border-v2-ring bg-white/90 dark:bg-v2-canvas/30 p-2">
                   <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <p className="text-[10px] font-medium text-zinc-700 dark:text-zinc-200 truncate">
+                    <p className="text-[10px] font-medium text-v2-ink dark:text-v2-ink truncate">
                       Selected Agent Quick Edit
                     </p>
-                    <p className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate">
+                    <p className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
                       {selectedAgentLabel}
                     </p>
                   </div>
@@ -665,7 +665,7 @@ function TeamWritingNumbersBoard({
                   </div>
                 </div>
 
-                <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   {missing.length === 0 ? (
                     <span className="text-emerald-600 dark:text-emerald-400">
                       All visible agents have a writing # for this carrier.
@@ -793,11 +793,11 @@ export function WritingNumbersTab({
   if (isLoading) {
     return (
       <div className="p-3 space-y-2">
-        <Skeleton className="h-8 w-full bg-zinc-200 dark:bg-zinc-700" />
-        <Skeleton className="h-8 w-full bg-zinc-200 dark:bg-zinc-700" />
-        <Skeleton className="h-8 w-full bg-zinc-200 dark:bg-zinc-700" />
-        <Skeleton className="h-8 w-full bg-zinc-200 dark:bg-zinc-700" />
-        <Skeleton className="h-8 w-full bg-zinc-200 dark:bg-zinc-700" />
+        <Skeleton className="h-8 w-full bg-v2-ring dark:bg-v2-ring-strong" />
+        <Skeleton className="h-8 w-full bg-v2-ring dark:bg-v2-ring-strong" />
+        <Skeleton className="h-8 w-full bg-v2-ring dark:bg-v2-ring-strong" />
+        <Skeleton className="h-8 w-full bg-v2-ring dark:bg-v2-ring-strong" />
+        <Skeleton className="h-8 w-full bg-v2-ring dark:bg-v2-ring-strong" />
       </div>
     );
   }
@@ -805,8 +805,8 @@ export function WritingNumbersTab({
   if (agents.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-4">
-        <FileText className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-2" />
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+        <FileText className="h-8 w-8 text-v2-ink-subtle dark:text-v2-ink-muted mb-2" />
+        <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
           No agents found in your hierarchy
         </p>
       </div>
@@ -816,8 +816,8 @@ export function WritingNumbersTab({
   if (carriers.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-4">
-        <FileText className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-2" />
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+        <FileText className="h-8 w-8 text-v2-ink-subtle dark:text-v2-ink-muted mb-2" />
+        <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
           No active carriers found
         </p>
       </div>
@@ -847,9 +847,9 @@ export function WritingNumbersTab({
 
   return (
     <div className="h-full min-h-0 min-w-0 flex flex-col">
-      <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 flex-shrink-0 space-y-2">
+      <div className="px-3 py-2 border-b border-v2-ring dark:border-v2-ring flex-shrink-0 space-y-2">
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div className="text-[10px] text-zinc-500 dark:text-zinc-400 min-w-0">
+          <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle min-w-0">
             Coverage Board is the default view for quick selected-agent edits
             and team coverage gaps. Switch to Matrix for bulk grid editing.
           </div>
@@ -864,7 +864,7 @@ export function WritingNumbersTab({
         </div>
         <div className="flex flex-col gap-2 min-w-0 xl:flex-row xl:items-center">
           <div className="relative flex-1 min-w-0">
-            <Search className="h-3.5 w-3.5 text-zinc-400 absolute left-2 top-1/2 -translate-y-1/2" />
+            <Search className="h-3.5 w-3.5 text-v2-ink-subtle absolute left-2 top-1/2 -translate-y-1/2" />
             <Input
               value={carrierSearch}
               onChange={(e) => setCarrierSearch(e.target.value)}
@@ -944,7 +944,7 @@ export function WritingNumbersTab({
         />
       ) : (
         <div className="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden">
-          <div className="px-3 py-1.5 border-b border-zinc-100 dark:border-zinc-800 text-[10px] text-zinc-500 dark:text-zinc-400">
+          <div className="px-3 py-1.5 border-b border-v2-ring dark:border-v2-ring text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Matrix mode supports horizontal scrolling. Use trackpad/touchpad
             horizontal scroll or Shift + mouse wheel.
           </div>

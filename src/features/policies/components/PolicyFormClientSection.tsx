@@ -19,7 +19,10 @@ import {
   CollapsibleContent,
 } from "@/components/ui/collapsible";
 import { US_STATES } from "@/constants/states";
-import { VALID_TERM_LENGTHS, type TermCommissionModifiers } from "../../../types/product.types";
+import {
+  VALID_TERM_LENGTHS,
+  type TermCommissionModifiers,
+} from "../../../types/product.types";
 import { NewPolicyForm } from "../../../types/policy.types";
 
 interface Carrier {
@@ -43,13 +46,17 @@ interface PolicyFormClientSectionProps {
   termModifiers: TermCommissionModifiers | null;
   showContactDetails: boolean;
   onShowContactDetailsChange: (show: boolean) => void;
-  onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onInputChange: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => void;
   onSelectChange: (name: string, value: string) => void;
   onPhoneChange: (value: string) => void;
   onDOBChange: (value: string) => void;
 }
 
-export const PolicyFormClientSection: React.FC<PolicyFormClientSectionProps> = ({
+export const PolicyFormClientSection: React.FC<
+  PolicyFormClientSectionProps
+> = ({
   formData,
   displayErrors,
   carriers,
@@ -67,9 +74,9 @@ export const PolicyFormClientSection: React.FC<PolicyFormClientSectionProps> = (
   const selectedProduct = products.find((p) => p.id === formData.productId);
 
   return (
-    <div className="bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200/80 dark:border-zinc-700/60 shadow-sm">
+    <div className="bg-v2-card-tinted rounded-lg border border-v2-ring/80 dark:border-v2-ring-strong/60 shadow-sm">
       {/* Section header strip */}
-      <div className="flex items-center gap-2 px-3 py-2 rounded-t-lg bg-gradient-to-r from-amber-50 to-transparent dark:from-amber-950/30 dark:to-transparent border-b border-zinc-200/60 dark:border-zinc-700/40">
+      <div className="flex items-center gap-2 px-3 py-2 rounded-t-lg bg-gradient-to-r from-amber-50 to-transparent dark:from-amber-950/30 dark:to-transparent border-b border-v2-ring/60 dark:border-v2-ring-strong/40">
         <User className="h-3 w-3 text-amber-600 dark:text-amber-400" />
         <span className="text-[10px] font-semibold text-amber-800 dark:text-amber-300 uppercase tracking-wider">
           Client Information
@@ -78,8 +85,10 @@ export const PolicyFormClientSection: React.FC<PolicyFormClientSectionProps> = (
 
       <div className="p-3 space-y-3">
         {/* Client Details Group */}
-        <div className="space-y-2.5 p-2.5 rounded-md bg-zinc-50/80 dark:bg-zinc-900/40 border border-zinc-100 dark:border-zinc-700/30">
-          <p className="text-[9px] font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Client Details</p>
+        <div className="space-y-2.5 p-2.5 rounded-md bg-v2-canvas/80 dark:bg-v2-card/40 border border-v2-ring dark:border-v2-ring-strong/30">
+          <p className="text-[9px] font-medium text-v2-ink-subtle dark:text-v2-ink-muted uppercase tracking-wider">
+            Client Details
+          </p>
 
           {/* Client Name */}
           <div className="space-y-1">
@@ -95,7 +104,7 @@ export const PolicyFormClientSection: React.FC<PolicyFormClientSectionProps> = (
               name="clientName"
               value={formData.clientName}
               onChange={onInputChange}
-              className={`h-8 text-xs bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 ${displayErrors.clientName ? "border-destructive" : ""}`}
+              className={`h-8 text-xs bg-v2-card-tinted border-v2-ring dark:border-v2-ring-strong ${displayErrors.clientName ? "border-destructive" : ""}`}
               placeholder="John Smith"
             />
             {displayErrors.clientName && (
@@ -179,8 +188,10 @@ export const PolicyFormClientSection: React.FC<PolicyFormClientSectionProps> = (
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-2">
-            <div className="space-y-2.5 p-2.5 rounded-md bg-zinc-50/80 dark:bg-zinc-900/40 border border-zinc-100 dark:border-zinc-700/30">
-              <p className="text-[9px] font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Contact & Address</p>
+            <div className="space-y-2.5 p-2.5 rounded-md bg-v2-canvas/80 dark:bg-v2-card/40 border border-v2-ring dark:border-v2-ring-strong/30">
+              <p className="text-[9px] font-medium text-v2-ink-subtle dark:text-v2-ink-muted uppercase tracking-wider">
+                Contact & Address
+              </p>
               <div className="grid grid-cols-2 gap-2">
                 <div className="flex flex-col gap-1">
                   <Label
@@ -195,7 +206,7 @@ export const PolicyFormClientSection: React.FC<PolicyFormClientSectionProps> = (
                     name="clientEmail"
                     value={formData.clientEmail || ""}
                     onChange={onInputChange}
-                    className="h-8 text-[11px] bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                    className="h-8 text-[11px] bg-v2-card-tinted border-v2-ring dark:border-v2-ring-strong"
                     placeholder="client@email.com"
                   />
                 </div>
@@ -213,7 +224,7 @@ export const PolicyFormClientSection: React.FC<PolicyFormClientSectionProps> = (
                     name="clientPhone"
                     value={formData.clientPhone || ""}
                     onChange={(e) => onPhoneChange(e.target.value)}
-                    className="h-8 text-[11px] bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                    className="h-8 text-[11px] bg-v2-card-tinted border-v2-ring dark:border-v2-ring-strong"
                     placeholder="(555) 123-4567"
                   />
                 </div>
@@ -231,7 +242,7 @@ export const PolicyFormClientSection: React.FC<PolicyFormClientSectionProps> = (
                   name="clientStreet"
                   value={formData.clientStreet || ""}
                   onChange={onInputChange}
-                  className="h-8 text-[11px] bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                  className="h-8 text-[11px] bg-v2-card-tinted border-v2-ring dark:border-v2-ring-strong"
                   placeholder="123 Main St"
                 />
               </div>
@@ -249,7 +260,7 @@ export const PolicyFormClientSection: React.FC<PolicyFormClientSectionProps> = (
                     name="clientCity"
                     value={formData.clientCity || ""}
                     onChange={onInputChange}
-                    className="h-8 text-[11px] bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                    className="h-8 text-[11px] bg-v2-card-tinted border-v2-ring dark:border-v2-ring-strong"
                     placeholder="Anytown"
                   />
                 </div>
@@ -268,7 +279,7 @@ export const PolicyFormClientSection: React.FC<PolicyFormClientSectionProps> = (
                     name="clientZipCode"
                     value={formData.clientZipCode || ""}
                     onChange={onInputChange}
-                    className="h-8 text-[11px] bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                    className="h-8 text-[11px] bg-v2-card-tinted border-v2-ring dark:border-v2-ring-strong"
                     placeholder="12345"
                   />
                 </div>
@@ -278,8 +289,10 @@ export const PolicyFormClientSection: React.FC<PolicyFormClientSectionProps> = (
         </Collapsible>
 
         {/* Product Selection Group */}
-        <div className="space-y-2.5 p-2.5 rounded-md bg-zinc-50/80 dark:bg-zinc-900/40 border border-zinc-100 dark:border-zinc-700/30">
-          <p className="text-[9px] font-medium text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Product Selection</p>
+        <div className="space-y-2.5 p-2.5 rounded-md bg-v2-canvas/80 dark:bg-v2-card/40 border border-v2-ring dark:border-v2-ring-strong/30">
+          <p className="text-[9px] font-medium text-v2-ink-subtle dark:text-v2-ink-muted uppercase tracking-wider">
+            Product Selection
+          </p>
 
           {/* Carrier Select */}
           <div className="flex flex-col gap-1">
@@ -358,55 +371,58 @@ export const PolicyFormClientSection: React.FC<PolicyFormClientSectionProps> = (
                 {displayErrors.productId}
               </span>
             )}
-            {formData.carrierId && !productsLoading && products.length === 0 && (
-              <span className="text-[10px] text-destructive">
-                This carrier has no products configured. Please contact admin or
-                select a different carrier.
-              </span>
-            )}
+            {formData.carrierId &&
+              !productsLoading &&
+              products.length === 0 && (
+                <span className="text-[10px] text-destructive">
+                  This carrier has no products configured. Please contact admin
+                  or select a different carrier.
+                </span>
+              )}
           </div>
 
           {/* Term Length Selector - only show for term_life products */}
-          {formData.productId && selectedProduct?.product_type === "term_life" && (
-            <div className="flex flex-col gap-1">
-              <Label
-                htmlFor="termLength"
-                className="text-[11px] text-muted-foreground"
-              >
-                Term Length *
-              </Label>
-              <Select
-                value={formData.termLength?.toString() ?? ""}
-                onValueChange={(value) => onSelectChange("termLength", value)}
-              >
-                <SelectTrigger
-                  id="termLength"
-                  className={`h-8 text-[11px] ${displayErrors.termLength ? "border-destructive" : "border-input"}`}
+          {formData.productId &&
+            selectedProduct?.product_type === "term_life" && (
+              <div className="flex flex-col gap-1">
+                <Label
+                  htmlFor="termLength"
+                  className="text-[11px] text-muted-foreground"
                 >
-                  <SelectValue placeholder="Select term length" />
-                </SelectTrigger>
-                <SelectContent>
-                  {VALID_TERM_LENGTHS.map((term) => {
-                    const modifier = termModifiers?.[term] ?? 0;
-                    const modifierText =
-                      modifier !== 0
-                        ? ` (${modifier > 0 ? "+" : ""}${(modifier * 100).toFixed(0)}%)`
-                        : "";
-                    return (
-                      <SelectItem key={term} value={term.toString()}>
-                        {term} Years{modifierText}
-                      </SelectItem>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
-              {displayErrors.termLength && (
-                <span className="text-[10px] text-destructive">
-                  {displayErrors.termLength}
-                </span>
-              )}
-            </div>
-          )}
+                  Term Length *
+                </Label>
+                <Select
+                  value={formData.termLength?.toString() ?? ""}
+                  onValueChange={(value) => onSelectChange("termLength", value)}
+                >
+                  <SelectTrigger
+                    id="termLength"
+                    className={`h-8 text-[11px] ${displayErrors.termLength ? "border-destructive" : "border-input"}`}
+                  >
+                    <SelectValue placeholder="Select term length" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {VALID_TERM_LENGTHS.map((term) => {
+                      const modifier = termModifiers?.[term] ?? 0;
+                      const modifierText =
+                        modifier !== 0
+                          ? ` (${modifier > 0 ? "+" : ""}${(modifier * 100).toFixed(0)}%)`
+                          : "";
+                      return (
+                        <SelectItem key={term} value={term.toString()}>
+                          {term} Years{modifierText}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+                {displayErrors.termLength && (
+                  <span className="text-[10px] text-destructive">
+                    {displayErrors.termLength}
+                  </span>
+                )}
+              </div>
+            )}
         </div>
 
         {/* Notes */}
@@ -421,7 +437,7 @@ export const PolicyFormClientSection: React.FC<PolicyFormClientSectionProps> = (
             onChange={onInputChange}
             rows={2}
             placeholder="Optional notes..."
-            className="text-[11px] resize-vertical min-h-[50px] bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+            className="text-[11px] resize-vertical min-h-[50px] bg-v2-card-tinted border-v2-ring dark:border-v2-ring-strong"
           />
         </div>
       </div>

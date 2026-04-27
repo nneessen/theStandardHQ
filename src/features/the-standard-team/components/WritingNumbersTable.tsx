@@ -113,10 +113,10 @@ export function WritingNumbersTable({
       <td
         key={`${agentId}-${carrierId}`}
         className={cn(
-          "text-[11px] text-center px-1 py-1 border-b border-zinc-100 dark:border-zinc-800 align-top",
+          "text-[11px] text-center px-1 py-1 border-b border-v2-ring dark:border-v2-ring align-top",
           widthClass,
           !isEditing &&
-            "cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-700/50",
+            "cursor-pointer hover:bg-v2-card-tinted dark:hover:bg-v2-ring-strong/50",
           agentId === selectedAgentId && "bg-blue-50/70 dark:bg-blue-950/15",
         )}
         onClick={() => !isEditing && handleCellClick(agentId, carrierId)}
@@ -153,8 +153,8 @@ export function WritingNumbersTable({
           <span
             className={cn(
               writingNumber?.writing_number
-                ? "text-zinc-900 dark:text-zinc-100"
-                : "text-zinc-300 dark:text-zinc-600",
+                ? "text-v2-ink dark:text-v2-ink"
+                : "text-v2-ink-subtle dark:text-v2-ink-muted",
             )}
           >
             {writingNumber?.writing_number || "—"}
@@ -176,14 +176,14 @@ export function WritingNumbersTable({
             }}
           >
             <thead className="sticky top-0 z-10">
-              <tr className="bg-zinc-100 dark:bg-zinc-800">
-                <th className="sticky left-0 z-20 bg-zinc-100 dark:bg-zinc-800 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wide text-left px-3 py-2 border-b border-zinc-200 dark:border-zinc-700 min-w-[160px] w-[160px]">
+              <tr className="bg-v2-card-tinted dark:bg-v2-card-tinted">
+                <th className="sticky left-0 z-20 bg-v2-card-tinted dark:bg-v2-card-tinted text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wide text-left px-3 py-2 border-b border-v2-ring dark:border-v2-ring-strong min-w-[160px] w-[160px]">
                   Agent
                 </th>
                 {carriers.map((carrier) => (
                   <th
                     key={carrier.id}
-                    className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wide text-center px-2 py-2 border-b border-zinc-200 dark:border-zinc-700 min-w-[100px] w-[100px] whitespace-nowrap"
+                    className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wide text-center px-2 py-2 border-b border-v2-ring dark:border-v2-ring-strong min-w-[100px] w-[100px] whitespace-nowrap"
                   >
                     {carrier.name}
                   </th>
@@ -195,17 +195,17 @@ export function WritingNumbersTable({
                 <tr
                   key={agent.id}
                   className={cn(
-                    "hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+                    "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50",
                     idx % 2 === 0
-                      ? "bg-white dark:bg-zinc-900"
-                      : "bg-zinc-50/50 dark:bg-zinc-900/50",
+                      ? "bg-v2-card"
+                      : "bg-v2-canvas/50 dark:bg-v2-card/50",
                     agent.id === selectedAgentId &&
                       "bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100/70 dark:hover:bg-blue-950/30",
                   )}
                 >
                   <td
                     className={cn(
-                      "sticky left-0 z-10 bg-inherit text-[11px] font-medium text-zinc-900 dark:text-zinc-100 px-3 py-1.5 border-b border-zinc-100 dark:border-zinc-800",
+                      "sticky left-0 z-10 bg-inherit text-[11px] font-medium text-v2-ink dark:text-v2-ink px-3 py-1.5 border-b border-v2-ring dark:border-v2-ring",
                       agent.id === selectedAgentId &&
                         "text-blue-700 dark:text-blue-300",
                     )}
@@ -239,15 +239,15 @@ export function WritingNumbersTable({
           }}
         >
           <thead className="sticky top-0 z-10">
-            <tr className="bg-zinc-100 dark:bg-zinc-800">
-              <th className="sticky left-0 z-20 bg-zinc-100 dark:bg-zinc-800 text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wide text-left px-3 py-2 border-b border-zinc-200 dark:border-zinc-700 min-w-[180px] w-[180px]">
+            <tr className="bg-v2-card-tinted dark:bg-v2-card-tinted">
+              <th className="sticky left-0 z-20 bg-v2-card-tinted dark:bg-v2-card-tinted text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wide text-left px-3 py-2 border-b border-v2-ring dark:border-v2-ring-strong min-w-[180px] w-[180px]">
                 Carrier
               </th>
               {agents.map((agent) => (
                 <th
                   key={agent.id}
                   className={cn(
-                    "text-[10px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wide text-center px-2 py-2 border-b border-zinc-200 dark:border-zinc-700 min-w-[92px] w-[92px] whitespace-nowrap",
+                    "text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wide text-center px-2 py-2 border-b border-v2-ring dark:border-v2-ring-strong min-w-[92px] w-[92px] whitespace-nowrap",
                     agent.id === selectedAgentId &&
                       "bg-blue-100/70 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300",
                   )}
@@ -265,13 +265,13 @@ export function WritingNumbersTable({
               <tr
                 key={carrier.id}
                 className={cn(
-                  "hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+                  "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50",
                   idx % 2 === 0
-                    ? "bg-white dark:bg-zinc-900"
-                    : "bg-zinc-50/50 dark:bg-zinc-900/50",
+                    ? "bg-v2-card"
+                    : "bg-v2-canvas/50 dark:bg-v2-card/50",
                 )}
               >
-                <td className="sticky left-0 z-10 bg-inherit text-[11px] font-medium text-zinc-900 dark:text-zinc-100 px-3 py-1.5 border-b border-zinc-100 dark:border-zinc-800">
+                <td className="sticky left-0 z-10 bg-inherit text-[11px] font-medium text-v2-ink dark:text-v2-ink px-3 py-1.5 border-b border-v2-ring dark:border-v2-ring">
                   <div className="truncate max-w-[170px]" title={carrier.name}>
                     {carrier.name}
                   </div>

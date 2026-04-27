@@ -177,9 +177,9 @@ export default function WorkflowDiagnostic() {
   };
 
   return (
-    <div className="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900">
-      <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 rounded-t-lg">
-        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+    <div className="w-full rounded-lg border border-v2-ring dark:border-v2-ring-strong bg-v2-card">
+      <div className="px-3 py-2 border-b border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-t-lg">
+        <h3 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
           Workflow System Diagnostic
         </h3>
       </div>
@@ -206,11 +206,11 @@ export default function WorkflowDiagnostic() {
         {results && (
           <div className="space-y-3">
             {/* Authentication Status */}
-            <div className="p-2 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/30">
+            <div className="p-2 rounded-md border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/30">
               <div className="flex items-start gap-2">
-                <AlertCircle className="h-3.5 w-3.5 mt-0.5 text-zinc-500" />
+                <AlertCircle className="h-3.5 w-3.5 mt-0.5 text-v2-ink-muted" />
                 <div className="text-[11px]">
-                  <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                  <span className="font-medium text-v2-ink dark:text-v2-ink-muted">
                     Authentication:
                   </span>{" "}
                   {results.auth.isAuthenticated ? (
@@ -227,18 +227,18 @@ export default function WorkflowDiagnostic() {
             </div>
 
             {/* Database Status */}
-            <div className="p-2 rounded-md border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/30">
+            <div className="p-2 rounded-md border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/30">
               <div className="flex items-start gap-2">
-                <AlertCircle className="h-3.5 w-3.5 mt-0.5 text-zinc-500" />
+                <AlertCircle className="h-3.5 w-3.5 mt-0.5 text-v2-ink-muted" />
                 <div className="text-[11px]">
-                  <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                  <span className="font-medium text-v2-ink dark:text-v2-ink-muted">
                     Database Workflows:
                   </span>{" "}
-                  <span className="text-zinc-600 dark:text-zinc-400">
+                  <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                     {results.database.workflowCount} workflows found
                   </span>
                   {results.database.workflows?.length > 0 && (
-                    <ul className="mt-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+                    <ul className="mt-1 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any -- workflow data type */}
                       {results.database.workflows.slice(0, 3).map((wf: any) => (
                         <li key={wf.id}>
@@ -253,14 +253,14 @@ export default function WorkflowDiagnostic() {
 
             {/* Recommendations */}
             <div>
-              <h4 className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+              <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink-muted mb-1">
                 Recommendations:
               </h4>
               <div className="space-y-0.5">
                 {results.recommendations.map((rec: string, idx: number) => (
                   <div
                     key={idx}
-                    className="text-[11px] text-zinc-600 dark:text-zinc-400"
+                    className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
                   >
                     {rec}
                   </div>
@@ -270,10 +270,10 @@ export default function WorkflowDiagnostic() {
 
             {/* Raw Data (collapsible) */}
             <details className="text-[10px]">
-              <summary className="cursor-pointer font-medium text-zinc-600 dark:text-zinc-400">
+              <summary className="cursor-pointer font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                 Raw Diagnostic Data
               </summary>
-              <pre className="mt-2 p-2 bg-zinc-100 dark:bg-zinc-800 rounded-md overflow-auto text-zinc-700 dark:text-zinc-300">
+              <pre className="mt-2 p-2 bg-v2-card-tinted dark:bg-v2-card-tinted rounded-md overflow-auto text-v2-ink dark:text-v2-ink-muted">
                 {JSON.stringify(results, null, 2)}
               </pre>
             </details>

@@ -16,7 +16,7 @@ interface SecondaryMetricsRowProps {
 }
 
 const TONE_CLASS: Record<NonNullable<SecondaryMetric["tone"]>, string> = {
-  default: "text-zinc-900 dark:text-zinc-100",
+  default: "text-v2-ink dark:text-v2-ink",
   good: "text-emerald-700 dark:text-emerald-400",
   warn: "text-amber-700 dark:text-amber-400",
   bad: "text-red-700 dark:text-red-400",
@@ -29,13 +29,13 @@ export const SecondaryMetricsRow: React.FC<SecondaryMetricsRowProps> = ({
   return (
     <section
       className={cn(
-        "grid gap-x-8 gap-y-5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 py-5 border-t border-zinc-200 dark:border-zinc-800",
+        "grid gap-x-8 gap-y-5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 py-5 border-t border-v2-ring dark:border-v2-ring",
         className,
       )}
     >
       {metrics.map((m, i) => (
         <div key={i} className="flex flex-col min-w-0">
-          <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-zinc-500 dark:text-zinc-400">
+          <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
             {m.label}
           </span>
           <span
@@ -48,7 +48,7 @@ export const SecondaryMetricsRow: React.FC<SecondaryMetricsRowProps> = ({
             {m.value}
           </span>
           {m.caption && (
-            <span className="text-[11px] italic text-zinc-500 dark:text-zinc-400 mt-0.5 truncate">
+            <span className="text-[11px] italic text-v2-ink-muted dark:text-v2-ink-subtle mt-0.5 truncate">
               {m.caption}
             </span>
           )}

@@ -128,8 +128,8 @@ export function RoadmapItemCard({
         isCompleted
           ? "border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20"
           : isSkipped
-            ? "border-zinc-200 dark:border-zinc-800 bg-zinc-100/50 dark:bg-zinc-800/30 opacity-75"
-            : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700"
+            ? "border-v2-ring dark:border-v2-ring bg-v2-card-tinted/50 dark:bg-v2-card-tinted/30 opacity-75"
+            : "border-v2-ring dark:border-v2-ring bg-v2-card hover:border-v2-ring-strong dark:hover:border-v2-ring-strong"
       }`}
     >
       {/* Top row: checkbox + title + meta + chevron */}
@@ -141,7 +141,7 @@ export function RoadmapItemCard({
           className={`mt-0.5 shrink-0 h-5 w-5 rounded-full flex items-center justify-center border-2 transition-all ${
             isCompleted
               ? "bg-emerald-500 border-emerald-500 text-white hover:bg-emerald-600 active:scale-95"
-              : "border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-900 hover:border-emerald-500 active:scale-95"
+              : "border-v2-ring-strong dark:border-v2-ring-strong bg-v2-card hover:border-emerald-500 active:scale-95"
           }`}
           aria-label={isCompleted ? "Mark as not complete" : "Mark as complete"}
         >
@@ -157,10 +157,10 @@ export function RoadmapItemCard({
             <span
               className={`text-sm font-semibold ${
                 isCompleted
-                  ? "text-zinc-400 dark:text-zinc-500 line-through"
+                  ? "text-v2-ink-subtle dark:text-v2-ink-muted line-through"
                   : isSkipped
-                    ? "text-zinc-400 dark:text-zinc-500"
-                    : "text-zinc-900 dark:text-zinc-100"
+                    ? "text-v2-ink-subtle dark:text-v2-ink-muted"
+                    : "text-v2-ink dark:text-v2-ink"
               }`}
             >
               {item.title}
@@ -200,17 +200,17 @@ export function RoadmapItemCard({
         </button>
 
         {expanded ? (
-          <ChevronDown className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500 mt-0.5 shrink-0" />
+          <ChevronDown className="h-3.5 w-3.5 text-v2-ink-subtle dark:text-v2-ink-muted mt-0.5 shrink-0" />
         ) : (
-          <ChevronRight className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500 mt-0.5 shrink-0" />
+          <ChevronRight className="h-3.5 w-3.5 text-v2-ink-subtle dark:text-v2-ink-muted mt-0.5 shrink-0" />
         )}
       </div>
 
       {/* Expanded body: content blocks + notes + actions */}
       {expanded && (
-        <div className="border-t border-zinc-200 dark:border-zinc-800 px-3 py-3 space-y-3 bg-zinc-50/50 dark:bg-zinc-800/20">
+        <div className="border-t border-v2-ring dark:border-v2-ring px-3 py-3 space-y-3 bg-v2-canvas/50 dark:bg-v2-card-tinted/20">
           {item.summary && (
-            <p className="text-[11px] text-zinc-700 dark:text-zinc-300 font-medium">
+            <p className="text-[11px] text-v2-ink dark:text-v2-ink-muted font-medium">
               {item.summary}
             </p>
           )}

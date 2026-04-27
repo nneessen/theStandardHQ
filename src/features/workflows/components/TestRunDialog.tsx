@@ -166,11 +166,11 @@ export default function TestRunDialog({
         );
       case "skipped":
         return (
-          <SkipForward className="h-3 w-3 text-zinc-400 dark:text-zinc-500 shrink-0" />
+          <SkipForward className="h-3 w-3 text-v2-ink-subtle dark:text-v2-ink-muted shrink-0" />
         );
       default:
         return (
-          <Clock className="h-3 w-3 text-zinc-400 dark:text-zinc-500 shrink-0" />
+          <Clock className="h-3 w-3 text-v2-ink-subtle dark:text-v2-ink-muted shrink-0" />
         );
     }
   };
@@ -225,10 +225,10 @@ export default function TestRunDialog({
         {/* Actions Executed */}
         {run.actionsExecuted && run.actionsExecuted.length > 0 && (
           <div className="space-y-1">
-            <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+            <p className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide">
               Actions
             </p>
-            <div className="rounded-md border border-zinc-200 dark:border-zinc-700 divide-y divide-zinc-100 dark:divide-zinc-800">
+            <div className="rounded-md border border-v2-ring dark:border-v2-ring-strong divide-y divide-v2-ring dark:divide-v2-ring">
               {run.actionsExecuted.map((action, idx) => {
                 // Match the executed action to the workflow definition for context
                 const workflowAction = workflow.actions[idx];
@@ -242,7 +242,7 @@ export default function TestRunDialog({
                     {renderActionStatusIcon(action.status)}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1">
-                        <span className="text-[10px] font-medium text-zinc-700 dark:text-zinc-300">
+                        <span className="text-[10px] font-medium text-v2-ink dark:text-v2-ink-muted">
                           {actionTypeLabel(actionType)}
                         </span>
                         <span
@@ -251,7 +251,7 @@ export default function TestRunDialog({
                               ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
                               : action.status === "failed"
                                 ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
-                                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
+                                : "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-subtle"
                           }`}
                         >
                           {action.status}
@@ -260,7 +260,7 @@ export default function TestRunDialog({
 
                       {/* Email-specific details */}
                       {actionType === "send_email" && action.result && (
-                        <div className="flex items-center gap-1 mt-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+                        <div className="flex items-center gap-1 mt-0.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                           <Mail className="h-2.5 w-2.5" />
                           <span>
                             {action.result.recipientEmail ||
@@ -285,28 +285,28 @@ export default function TestRunDialog({
         )}
 
         {/* Summary stats */}
-        <div className="rounded-md bg-zinc-50 dark:bg-zinc-800/50 p-2 grid grid-cols-3 gap-2">
+        <div className="rounded-md bg-v2-canvas dark:bg-v2-card-tinted/50 p-2 grid grid-cols-3 gap-2">
           <div className="text-center">
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Completed
             </p>
-            <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+            <p className="text-xs font-medium text-v2-ink dark:text-v2-ink-muted">
               {run.actionsCompleted ?? 0}
             </p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Failed
             </p>
-            <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+            <p className="text-xs font-medium text-v2-ink dark:text-v2-ink-muted">
               {run.actionsFailed ?? 0}
             </p>
           </div>
           <div className="text-center">
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Emails
             </p>
-            <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+            <p className="text-xs font-medium text-v2-ink dark:text-v2-ink-muted">
               {run.emailsSent ?? 0}
             </p>
           </div>
@@ -317,7 +317,7 @@ export default function TestRunDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-sm p-3 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+      <DialogContent className="max-w-sm p-3 bg-v2-card border-v2-ring dark:border-v2-ring">
         <DialogHeader className="pb-2">
           <DialogTitle className="text-sm font-semibold flex items-center gap-1.5">
             <TestTube className="h-3.5 w-3.5" />
@@ -331,7 +331,7 @@ export default function TestRunDialog({
             <>
               {/* Recipient Email */}
               <div className="space-y-1">
-                <Label className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   Recipient Email
                 </Label>
                 <Input
@@ -341,7 +341,7 @@ export default function TestRunDialog({
                   className="h-7 text-xs"
                   type="email"
                 />
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   Who should receive emails from this workflow run
                 </p>
               </div>
@@ -349,10 +349,10 @@ export default function TestRunDialog({
               {/* Dry Run Toggle */}
               <div className="flex items-center justify-between py-1">
                 <div>
-                  <Label className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                  <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     Dry Run (Test Mode)
                   </Label>
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     Simulate without sending real emails
                   </p>
                 </div>
@@ -364,28 +364,28 @@ export default function TestRunDialog({
               </div>
 
               {/* Workflow Info */}
-              <div className="rounded-md bg-zinc-50 dark:bg-zinc-800/50 p-2 space-y-0.5">
+              <div className="rounded-md bg-v2-canvas dark:bg-v2-card-tinted/50 p-2 space-y-0.5">
                 <div className="flex justify-between text-[10px]">
-                  <span className="text-zinc-500 dark:text-zinc-400">
+                  <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                     Trigger
                   </span>
-                  <span className="text-zinc-700 dark:text-zinc-300">
+                  <span className="text-v2-ink dark:text-v2-ink-muted">
                     {workflow.triggerType}
                   </span>
                 </div>
                 <div className="flex justify-between text-[10px]">
-                  <span className="text-zinc-500 dark:text-zinc-400">
+                  <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                     Actions
                   </span>
-                  <span className="text-zinc-700 dark:text-zinc-300">
+                  <span className="text-v2-ink dark:text-v2-ink-muted">
                     {workflow.actions.length}
                   </span>
                 </div>
                 <div className="flex justify-between text-[10px]">
-                  <span className="text-zinc-500 dark:text-zinc-400">
+                  <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                     Status
                   </span>
-                  <span className="text-zinc-700 dark:text-zinc-300">
+                  <span className="text-v2-ink dark:text-v2-ink-muted">
                     {workflow.status}
                   </span>
                 </div>
@@ -404,13 +404,13 @@ export default function TestRunDialog({
           {/* Phase: Running — show spinner */}
           {phase === "running" && (
             <div className="flex flex-col items-center gap-2 py-6">
-              <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              <Loader2 className="h-6 w-6 animate-spin text-v2-ink-subtle" />
+              <p className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle">
                 {isDryRun
                   ? "Running dry run simulation..."
                   : "Executing workflow..."}
               </p>
-              <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
+              <p className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted">
                 Waiting for results
               </p>
             </div>
