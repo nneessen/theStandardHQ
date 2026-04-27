@@ -95,7 +95,7 @@ export function TargetInputDialog({
               ? "Welcome to Your Targets Dashboard"
               : "Set Your Annual Income Target"}
           </DialogTitle>
-          <DialogDescription className="text-zinc-500 dark:text-zinc-400">
+          <DialogDescription className="text-v2-ink-muted">
             {isFirstTime ? (
               <>
                 Let's start by setting your commission income goal for{" "}
@@ -132,14 +132,11 @@ export function TargetInputDialog({
           )}
 
           <div className="space-y-2">
-            <Label
-              htmlFor="annual-target"
-              className="text-zinc-900 dark:text-zinc-100"
-            >
+            <Label htmlFor="annual-target" className="text-v2-ink">
               Annual Commission Income Target for {targetYear}
             </Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 dark:text-zinc-400">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-v2-ink-muted">
                 $
               </span>
               <Input
@@ -162,20 +159,20 @@ export function TargetInputDialog({
             {error && (
               <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             )}
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-v2-ink-muted">
               This is your total commission income goal for the year, not
               including expenses.
             </p>
           </div>
 
-          <div className="rounded-lg bg-zinc-100 dark:bg-zinc-800 p-3 space-y-2">
+          <div className="rounded-lg bg-v2-ring p-3 space-y-2">
             <div className="flex items-start gap-2">
-              <Calculator className="h-4 w-4 text-zinc-500 dark:text-zinc-400 mt-0.5" />
+              <Calculator className="h-4 w-4 text-v2-ink-muted mt-0.5" />
               <div className="text-sm">
-                <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                <p className="font-medium text-v2-ink">
                   What we'll calculate for you:
                 </p>
-                <ul className="mt-1 space-y-0.5 text-zinc-500 dark:text-zinc-400">
+                <ul className="mt-1 space-y-0.5 text-v2-ink-muted">
                   <li>• Quarterly target: Annual ÷ 4</li>
                   <li>• Monthly target: Annual ÷ 12</li>
                   <li>

@@ -8,8 +8,8 @@ import {
 } from "../../hooks/targets";
 import { useHistoricalAverages } from "../../hooks/targets/useHistoricalAverages";
 import { useUserCommissionProfile } from "../../hooks/commissions/useUserCommissionProfile";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PillButton } from "@/components/v2";
 import { Edit2, Target, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatPercent } from "../../lib/format";
@@ -106,17 +106,15 @@ export function TargetsPage() {
 
   if (isLoading || averagesLoading) {
     return (
-      <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="text-zinc-500 dark:text-zinc-400 text-sm">
-          Loading targets...
-        </div>
+      <div className="flex items-center justify-center py-16">
+        <div className="text-v2-ink-muted text-sm">Loading targets…</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
+      <div className="flex items-center justify-center py-16">
         <div className="text-red-600 dark:text-red-400 text-sm">
           Error: {error.message}
         </div>
@@ -139,18 +137,15 @@ export function TargetsPage() {
   if (isFirstTime || !calculatedTargets) {
     return (
       <>
-        <div className="h-[calc(100vh-4rem)] flex flex-col p-3">
-          {/* Header Card - matches app styling */}
-          <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800 mb-4">
-            <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-              <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+        <div className="flex flex-col gap-3">
+          <header className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <Target className="h-4 w-4 text-v2-ink" />
+              <h1 className="text-base font-semibold tracking-tight text-v2-ink">
                 Income Targets {targetYear}
               </h1>
             </div>
-          </div>
-
-          {/* Welcome Content - First-time user experience */}
+          </header>
           <WelcomeTargetCard
             targetYear={targetYear}
             onGetStarted={() => setShowInputDialog(true)}
@@ -181,44 +176,49 @@ export function TargetsPage() {
 
   return (
     <>
-      <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
-        {/* Compact Header */}
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center gap-2">
-            <Target className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-            <div>
-              <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+      <div className="flex flex-col gap-3">
+        {/* Compact header — title + inline annual target chip + edit */}
+        <header className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3 min-w-0 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <Target className="h-4 w-4 text-v2-ink" />
+              <h1 className="text-base font-semibold tracking-tight text-v2-ink">
                 Income Targets {targetYear}
               </h1>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 hidden sm:block">
+            </div>
+            <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-v2-ink-muted flex-wrap leading-tight">
+              <span>
                 Based on{" "}
-                {calculatedTargets.calculationMethod === "historical"
-                  ? "your historical data"
-                  : "industry averages"}
-              </p>
+                <span className="text-v2-ink font-semibold">
+                  {calculatedTargets.calculationMethod === "historical"
+                    ? "your historical data"
+                    : "industry averages"}
+                </span>
+              </span>
             </div>
           </div>
           {!isEditingInline ? (
             <div className="flex items-center gap-2">
-              <div className="text-right">
-                <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase">
+              <div className="text-right leading-tight">
+                <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
                   NET Annual Target
                 </div>
-                <div className="text-lg font-bold font-mono text-zinc-900 dark:text-zinc-100">
+                <div className="text-base font-semibold font-mono text-v2-ink">
                   {formatCurrency(calculatedTargets.annualIncomeTarget)}
                 </div>
               </div>
-              <Button
+              <PillButton
+                tone="ghost"
                 size="sm"
-                variant="ghost"
                 onClick={handleInlineEdit}
-                className="h-6 w-6 p-0"
+                className="h-7 w-7 px-0"
+                aria-label="Edit annual target"
               >
                 <Edit2 className="h-3 w-3" />
-              </Button>
+              </PillButton>
             </div>
           ) : (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               <Input
                 type="text"
                 value={inlineEditValue}
@@ -227,41 +227,32 @@ export function TargetsPage() {
                   if (e.key === "Enter") handleInlineSave();
                   if (e.key === "Escape") handleInlineCancel();
                 }}
-                className="w-32 h-7 text-sm font-bold"
+                className="w-32 h-8 text-sm font-bold bg-v2-card border-v2-ring focus-visible:ring-v2-accent rounded-v2-pill"
                 autoFocus
               />
-              <Button
-                size="sm"
-                onClick={handleInlineSave}
-                className="h-7 px-2 text-xs"
-              >
+              <PillButton tone="black" size="sm" onClick={handleInlineSave}>
                 Save
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleInlineCancel}
-                className="h-7 px-2 text-xs"
-              >
+              </PillButton>
+              <PillButton tone="ghost" size="sm" onClick={handleInlineCancel}>
                 Cancel
-              </Button>
+              </PillButton>
             </div>
           )}
-        </div>
+        </header>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-auto">
-          <div className="space-y-2">
+        <div className="flex-1">
+          <div className="space-y-2.5">
             {/* NET vs GROSS Breakdown - New Section */}
-            <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-              <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+            <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+              <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em] mb-2">
                 Income Calculation Breakdown
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <div className="space-y-1">
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-zinc-500 dark:text-zinc-400">
+                      <span className="text-v2-ink-muted">
                         NET Income Target (Take Home)
                       </span>
                       <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
@@ -269,19 +260,19 @@ export function TargetsPage() {
                       </span>
                     </div>
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-zinc-500 dark:text-zinc-400">
+                      <span className="text-v2-ink-muted">
                         + Annual Expenses
                       </span>
-                      <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                      <span className="font-mono text-v2-ink">
                         {formatCurrency(calculatedTargets.annualExpenses)}
                       </span>
                     </div>
-                    <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+                    <div className="h-px bg-v2-ring my-1" />
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-zinc-500 dark:text-zinc-400 font-semibold">
+                      <span className="text-v2-ink-muted font-semibold">
                         = GROSS Commission Needed
                       </span>
-                      <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                      <span className="font-mono font-bold text-v2-ink">
                         {formatCurrency(
                           calculatedTargets.annualIncomeTarget +
                             calculatedTargets.annualExpenses,
@@ -291,13 +282,13 @@ export function TargetsPage() {
                   </div>
                 </div>
 
-                <div className="border-t pt-3 md:border-t-0 md:pt-0 md:border-l md:pl-4 border-zinc-200 dark:border-zinc-800">
+                <div className="border-t pt-3 md:border-t-0 md:pt-0 md:border-l md:pl-4 border-v2-ring">
                   <div className="space-y-1">
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-zinc-500 dark:text-zinc-400">
+                      <span className="text-v2-ink-muted">
                         Gross Commission
                       </span>
-                      <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                      <span className="font-mono text-v2-ink">
                         {formatCurrency(
                           calculatedTargets.annualIncomeTarget +
                             calculatedTargets.annualExpenses,
@@ -305,47 +296,43 @@ export function TargetsPage() {
                       </span>
                     </div>
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-zinc-500 dark:text-zinc-400">
+                      <span className="text-v2-ink-muted">
                         ÷ Commission Rate
                       </span>
-                      <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                      <span className="font-mono font-semibold text-v2-ink">
                         {(calculatedTargets.avgCommissionRate * 100).toFixed(1)}
                         %
                       </span>
                     </div>
-                    <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+                    <div className="h-px bg-v2-ring my-1" />
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-zinc-500 dark:text-zinc-400 font-semibold">
+                      <span className="text-v2-ink-muted font-semibold">
                         = Premium Needed
                       </span>
-                      <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                      <span className="font-mono font-bold text-v2-ink">
                         {formatCurrency(calculatedTargets.totalPremiumNeeded)}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="border-t pt-3 md:border-t-0 md:pt-0 md:border-l md:pl-4 border-zinc-200 dark:border-zinc-800">
+                <div className="border-t pt-3 md:border-t-0 md:pt-0 md:border-l md:pl-4 border-v2-ring">
                   <div className="space-y-1">
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        Premium Needed
-                      </span>
-                      <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                      <span className="text-v2-ink-muted">Premium Needed</span>
+                      <span className="font-mono text-v2-ink">
                         {formatCurrency(calculatedTargets.totalPremiumNeeded)}
                       </span>
                     </div>
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        ÷ Avg Premium
-                      </span>
-                      <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                      <span className="text-v2-ink-muted">÷ Avg Premium</span>
+                      <span className="font-mono font-semibold text-v2-ink">
                         {formatCurrency(calculatedTargets.avgPolicyPremium)}
                       </span>
                     </div>
-                    <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+                    <div className="h-px bg-v2-ring my-1" />
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-zinc-500 dark:text-zinc-400 font-semibold">
+                      <span className="text-v2-ink-muted font-semibold">
                         = Policies Needed
                       </span>
                       <span className="font-mono font-bold text-blue-600 dark:text-blue-400">
@@ -360,17 +347,15 @@ export function TargetsPage() {
             {/* Top Section: Income & Policy Breakdown */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {/* Income Targets - Compact */}
-              <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-                <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+              <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+                <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em] mb-2">
                   NET Income Targets
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Annual
-                    </span>
+                    <span className="text-v2-ink-muted">Annual</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                      <span className="font-mono font-bold text-v2-ink">
                         {formatCurrency(calculatedTargets.annualIncomeTarget)}
                       </span>
                       <span
@@ -389,11 +374,9 @@ export function TargetsPage() {
                   </div>
 
                   <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Quarterly
-                    </span>
+                    <span className="text-v2-ink-muted">Quarterly</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                      <span className="font-mono font-bold text-v2-ink">
                         {formatCurrency(
                           calculatedTargets.quarterlyIncomeTarget,
                         )}
@@ -414,11 +397,9 @@ export function TargetsPage() {
                   </div>
 
                   <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Monthly
-                    </span>
+                    <span className="text-v2-ink-muted">Monthly</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                      <span className="font-mono font-bold text-v2-ink">
                         {formatCurrency(calculatedTargets.monthlyIncomeTarget)}
                       </span>
                       <span
@@ -436,21 +417,17 @@ export function TargetsPage() {
                     </div>
                   </div>
 
-                  <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+                  <div className="h-px bg-v2-ring my-1" />
 
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Weekly
-                    </span>
-                    <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">Weekly</span>
+                    <span className="font-mono text-v2-ink">
                       {formatCurrency(calculatedTargets.weeklyIncomeTarget)}
                     </span>
                   </div>
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Daily
-                    </span>
-                    <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">Daily</span>
+                    <span className="font-mono text-v2-ink">
                       {formatCurrency(calculatedTargets.dailyIncomeTarget)}
                     </span>
                   </div>
@@ -458,17 +435,15 @@ export function TargetsPage() {
               </div>
 
               {/* Policy Targets - Compact */}
-              <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-                <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+              <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+                <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em] mb-2">
                   Policy Targets
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Annual
-                    </span>
+                    <span className="text-v2-ink-muted">Annual</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                      <span className="font-mono font-bold text-v2-ink">
                         {calculatedTargets.annualPoliciesTarget}
                       </span>
                       <span
@@ -487,25 +462,21 @@ export function TargetsPage() {
                   </div>
 
                   <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Quarterly
-                    </span>
+                    <span className="text-v2-ink-muted">Quarterly</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                      <span className="font-mono font-bold text-v2-ink">
                         {calculatedTargets.quarterlyPoliciesTarget}
                       </span>
-                      <span className="font-mono text-[10px] text-zinc-400 dark:text-zinc-500">
+                      <span className="font-mono text-[10px] text-v2-ink-subtle">
                         ({Math.floor(actualMetrics.ytdPolicies / 4)} avg)
                       </span>
                     </div>
                   </div>
 
                   <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Monthly
-                    </span>
+                    <span className="text-v2-ink-muted">Monthly</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                      <span className="font-mono font-bold text-v2-ink">
                         {calculatedTargets.monthlyPoliciesTarget}
                       </span>
                       <span
@@ -523,21 +494,17 @@ export function TargetsPage() {
                     </div>
                   </div>
 
-                  <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+                  <div className="h-px bg-v2-ring my-1" />
 
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Weekly
-                    </span>
-                    <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">Weekly</span>
+                    <span className="font-mono text-v2-ink">
                       {calculatedTargets.weeklyPoliciesTarget}
                     </span>
                   </div>
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Daily
-                    </span>
-                    <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">Daily</span>
+                    <span className="font-mono text-v2-ink">
                       {calculatedTargets.dailyPoliciesTarget}
                     </span>
                   </div>
@@ -548,23 +515,19 @@ export function TargetsPage() {
             {/* Bottom Section: Expenses Breakdown, Metrics, Persistency */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {/* Expense Breakdown - More Detail */}
-              <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-                <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+              <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+                <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em] mb-2">
                   Expense Analysis
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Monthly Target
-                    </span>
-                    <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">Monthly Target</span>
+                    <span className="font-mono font-semibold text-v2-ink">
                       {formatCurrency(calculatedTargets.monthlyExpenseTarget)}
                     </span>
                   </div>
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      MTD Actual
-                    </span>
+                    <span className="text-v2-ink-muted">MTD Actual</span>
                     <span
                       className={cn(
                         "font-mono",
@@ -577,24 +540,20 @@ export function TargetsPage() {
                       {formatCurrency(actualMetrics.mtdExpenses)}
                     </span>
                   </div>
-                  <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+                  <div className="h-px bg-v2-ring my-1" />
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Annual Total
-                    </span>
-                    <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">Annual Total</span>
+                    <span className="font-mono text-v2-ink">
                       {formatCurrency(calculatedTargets.annualExpenses)}
                     </span>
                   </div>
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Expense Ratio
-                    </span>
-                    <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">Expense Ratio</span>
+                    <span className="font-mono font-bold text-v2-ink">
                       {formatPercent(calculatedTargets.expenseRatio * 100)}
                     </span>
                   </div>
-                  <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+                  <div className="h-px bg-v2-ring my-1" />
                   <div
                     className={cn(
                       "text-[10px]",
@@ -611,13 +570,13 @@ export function TargetsPage() {
               </div>
 
               {/* Key Metrics */}
-              <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-                <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+              <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+                <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em] mb-2">
                   Key Metrics
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+                    <span className="text-v2-ink-muted flex items-center gap-1">
                       Commission Rate
                       {commissionProfile?.dataQuality === "HIGH" && (
                         <span
@@ -660,22 +619,18 @@ export function TargetsPage() {
                         </span>
                       )}
                     </span>
-                    <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                    <span className="font-mono font-semibold text-v2-ink">
                       {(calculatedTargets.avgCommissionRate * 100).toFixed(1)}%
                     </span>
                   </div>
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Avg Premium
-                    </span>
-                    <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">Avg Premium</span>
+                    <span className="font-mono font-semibold text-v2-ink">
                       {formatCurrency(calculatedTargets.avgPolicyPremium)}
                     </span>
                   </div>
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Current Avg
-                    </span>
+                    <span className="text-v2-ink-muted">Current Avg</span>
                     <span
                       className={cn(
                         "font-mono",
@@ -688,11 +643,9 @@ export function TargetsPage() {
                       {formatCurrency(actualMetrics.currentAvgPremium)}
                     </span>
                   </div>
-                  <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+                  <div className="h-px bg-v2-ring my-1" />
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Data Confidence
-                    </span>
+                    <span className="text-v2-ink-muted">Data Confidence</span>
                     <span
                       className={cn(
                         "font-semibold text-[10px]",
@@ -707,15 +660,13 @@ export function TargetsPage() {
                     </span>
                   </div>
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Method
-                    </span>
-                    <span className="text-[10px] font-medium text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">Method</span>
+                    <span className="text-[10px] font-medium text-v2-ink">
                       {calculatedTargets.calculationMethod}
                     </span>
                   </div>
                   {commissionProfile?.dataQuality === "HIGH" && (
-                    <div className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                    <div className="mt-2 pt-2 border-t border-v2-ring">
                       <div className="text-[9px] text-emerald-600 dark:text-emerald-400">
                         ✓ Commission rate calculated from your sales mix (high
                         confidence)
@@ -723,7 +674,7 @@ export function TargetsPage() {
                     </div>
                   )}
                   {commissionProfile?.dataQuality === "MEDIUM" && (
-                    <div className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                    <div className="mt-2 pt-2 border-t border-v2-ring">
                       <div className="text-[9px] text-blue-600 dark:text-blue-400">
                         ℹ️ Commission rate based on limited data. Add more
                         policies for better accuracy.
@@ -731,7 +682,7 @@ export function TargetsPage() {
                     </div>
                   )}
                   {commissionProfile?.dataQuality === "LOW" && (
-                    <div className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                    <div className="mt-2 pt-2 border-t border-v2-ring">
                       <div className="text-[9px] text-amber-600 dark:text-amber-400">
                         ⚠ Commission rate based on very limited data. Add more
                         policies for accuracy.
@@ -739,7 +690,7 @@ export function TargetsPage() {
                     </div>
                   )}
                   {commissionProfile?.dataQuality === "DEFAULT" && (
-                    <div className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                    <div className="mt-2 pt-2 border-t border-v2-ring">
                       <div className="text-[9px] text-amber-600 dark:text-amber-400">
                         ⚠ Commission rate is using defaults. Add policies to get
                         your actual rate.
@@ -747,7 +698,7 @@ export function TargetsPage() {
                     </div>
                   )}
                   {commissionProfile?.dataQuality === "NONE" && (
-                    <div className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                    <div className="mt-2 pt-2 border-t border-v2-ring">
                       <div className="text-[9px] text-red-600 dark:text-red-400">
                         ❌ No commission data available. Contact admin to
                         configure rates.
@@ -758,26 +709,22 @@ export function TargetsPage() {
               </div>
 
               {/* Persistency */}
-              <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-                <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+              <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+                <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em] mb-2">
                   Persistency Rates
                 </div>
                 <div className="space-y-2">
                   <div>
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        13-Month Target
-                      </span>
-                      <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                      <span className="text-v2-ink-muted">13-Month Target</span>
+                      <span className="font-mono text-v2-ink">
                         {formatPercent(
                           calculatedTargets.persistency13MonthTarget * 100,
                         )}
                       </span>
                     </div>
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        13-Month Actual
-                      </span>
+                      <span className="text-v2-ink-muted">13-Month Actual</span>
                       <span
                         className={cn(
                           "font-mono font-semibold",
@@ -792,22 +739,18 @@ export function TargetsPage() {
                       </span>
                     </div>
                   </div>
-                  <div className="h-px bg-zinc-200 dark:bg-zinc-800 my-1" />
+                  <div className="h-px bg-v2-ring my-1" />
                   <div>
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        25-Month Target
-                      </span>
-                      <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                      <span className="text-v2-ink-muted">25-Month Target</span>
+                      <span className="font-mono text-v2-ink">
                         {formatPercent(
                           calculatedTargets.persistency25MonthTarget * 100,
                         )}
                       </span>
                     </div>
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        25-Month Actual
-                      </span>
+                      <span className="text-v2-ink-muted">25-Month Actual</span>
                       <span
                         className={cn(
                           "font-mono font-semibold",
@@ -849,7 +792,7 @@ export function TargetsPage() {
                 validation.recommendations.length > 0
               ) {
                 return (
-                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-2 flex items-start gap-2">
+                  <div className="bg-v2-accent-soft border border-v2-accent-strong/20 rounded-lg p-2 flex items-start gap-2">
                     <AlertCircle className="h-3 w-3 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                     <div className="space-y-0.5">
                       {validation.warnings.map((warning, i) => (

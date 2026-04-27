@@ -135,25 +135,23 @@ export function PersistencyScenarios({
   const formatPercent = (value: number) => `${value.toFixed(1)}%`;
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-3 py-2 border-b border-zinc-200 dark:border-zinc-800">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between px-3 py-2 border-b border-v2-ring">
         <div className="flex items-center gap-1.5">
-          <Target className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-          <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+          <Target className="h-3.5 w-3.5 text-v2-ink-muted" />
+          <span className="text-sm font-medium text-v2-ink">
             What-If Scenarios
           </span>
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400 hidden sm:inline">
+          <span className="text-[10px] text-v2-ink-muted hidden sm:inline">
             — Persistency
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <span className="text-[10px] text-v2-ink-muted">
             Current: {formatPercent(currentPersistency * 100)}
           </span>
           <div className="flex items-center gap-1">
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-              Custom:
-            </span>
+            <span className="text-[10px] text-v2-ink-muted">Custom:</span>
             <Input
               type="number"
               value={customPersistency}
@@ -163,9 +161,7 @@ export function PersistencyScenarios({
               max="100"
               step="5"
             />
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-              %
-            </span>
+            <span className="text-[10px] text-v2-ink-muted">%</span>
           </div>
         </div>
       </div>
@@ -183,29 +179,29 @@ export function PersistencyScenarios({
         </div>
 
         {/* Scenarios Table */}
-        <div className="rounded-md border border-zinc-200 dark:border-zinc-800 overflow-x-auto">
+        <div className="rounded-md border border-v2-ring overflow-x-auto">
           <Table className="min-w-[480px]">
             <TableHeader>
-              <TableRow className="h-7 border-b border-zinc-200 dark:border-zinc-800">
-                <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 w-20">
+              <TableRow className="h-7 border-b border-v2-ring">
+                <TableHead className="text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas w-20">
                   Persistency
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-center">
+                <TableHead className="text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-center">
                   Annual Policies
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-center">
+                <TableHead className="text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-center">
                   Monthly
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-center hidden sm:table-cell">
+                <TableHead className="text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-center hidden sm:table-cell">
                   Weekly
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-center hidden sm:table-cell">
+                <TableHead className="text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-center hidden sm:table-cell">
                   Daily
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-center">
+                <TableHead className="text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-center">
                   Extra for Churn
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 text-right">
+                <TableHead className="text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas text-right">
                   Impact
                 </TableHead>
               </TableRow>
@@ -223,7 +219,7 @@ export function PersistencyScenarios({
                   <TableRow
                     key={scenario.persistencyRate}
                     className={cn(
-                      "h-7 border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+                      "h-7 border-b border-v2-ring/60 hover:bg-v2-canvas",
                       getRowHighlight(scenario.persistencyRate),
                       isCustom && "ring-1 ring-blue-500 ring-inset",
                     )}
@@ -238,7 +234,7 @@ export function PersistencyScenarios({
                           {formatPercent(scenario.persistencyRate)}
                         </span>
                         {isCurrent && (
-                          <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
+                          <span className="text-[9px] text-v2-ink-subtle">
                             (current)
                           </span>
                         )}
@@ -251,19 +247,19 @@ export function PersistencyScenarios({
                       </div>
                     </TableCell>
 
-                    <TableCell className="text-[11px] text-center p-2 font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                    <TableCell className="text-[11px] text-center p-2 font-mono font-semibold text-v2-ink">
                       {scenario.annualPoliciesNeeded}
                     </TableCell>
 
-                    <TableCell className="text-[11px] text-center p-2 font-mono text-zinc-500 dark:text-zinc-400">
+                    <TableCell className="text-[11px] text-center p-2 font-mono text-v2-ink-muted">
                       {scenario.monthlyPoliciesNeeded}
                     </TableCell>
 
-                    <TableCell className="text-[11px] text-center p-2 font-mono text-zinc-500 dark:text-zinc-400 hidden sm:table-cell">
+                    <TableCell className="text-[11px] text-center p-2 font-mono text-v2-ink-muted hidden sm:table-cell">
                       {scenario.weeklyPoliciesNeeded}
                     </TableCell>
 
-                    <TableCell className="text-[11px] text-center p-2 font-mono text-zinc-500 dark:text-zinc-400 hidden sm:table-cell">
+                    <TableCell className="text-[11px] text-center p-2 font-mono text-v2-ink-muted hidden sm:table-cell">
                       {scenario.dailyPoliciesNeeded}
                     </TableCell>
 
@@ -273,9 +269,7 @@ export function PersistencyScenarios({
                           +{scenario.extraPoliciesForChurn}
                         </span>
                       ) : (
-                        <span className="text-zinc-400 dark:text-zinc-500">
-                          —
-                        </span>
+                        <span className="text-v2-ink-subtle">—</span>
                       )}
                     </TableCell>
 
@@ -295,9 +289,7 @@ export function PersistencyScenarios({
                           </span>
                         </div>
                       ) : (
-                        <span className="text-zinc-400 dark:text-zinc-500">
-                          —
-                        </span>
+                        <span className="text-v2-ink-subtle">—</span>
                       )}
                     </TableCell>
                   </TableRow>
@@ -309,8 +301,8 @@ export function PersistencyScenarios({
 
         {/* Key Insights */}
         <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div className="p-2 rounded-md bg-zinc-100 dark:bg-zinc-800">
-            <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+          <div className="p-2 rounded-md bg-v2-ring">
+            <div className="text-[10px] font-medium text-v2-ink-muted mb-1">
               Best Case (95% Persistency)
             </div>
             <div className="text-[11px] font-mono font-bold text-emerald-600 dark:text-emerald-400">
@@ -318,13 +310,13 @@ export function PersistencyScenarios({
                 ?.annualPoliciesNeeded || baseAnnualPolicies}{" "}
               policies/year
             </div>
-            <div className="text-[9px] text-zinc-400 dark:text-zinc-500">
+            <div className="text-[9px] text-v2-ink-subtle">
               Minimal churn, easiest to achieve targets
             </div>
           </div>
 
-          <div className="p-2 rounded-md bg-zinc-100 dark:bg-zinc-800">
-            <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+          <div className="p-2 rounded-md bg-v2-ring">
+            <div className="text-[10px] font-medium text-v2-ink-muted mb-1">
               Worst Case (80% Persistency)
             </div>
             <div className="text-[11px] font-mono font-bold text-red-600 dark:text-red-400">
@@ -333,7 +325,7 @@ export function PersistencyScenarios({
                 Math.ceil(baseAnnualPolicies * 1.25)}{" "}
               policies/year
             </div>
-            <div className="text-[9px] text-zinc-400 dark:text-zinc-500">
+            <div className="text-[9px] text-v2-ink-subtle">
               High churn, requires {formatPercent(25)} more sales effort
             </div>
           </div>

@@ -18,7 +18,7 @@ export function WelcomeTargetCard({
 }: WelcomeTargetCardProps) {
   return (
     <div className="flex-1 flex items-center justify-center">
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-4 max-w-sm w-full shadow-sm">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4 max-w-sm w-full shadow-sm">
         {/* Icon */}
         <div className="flex justify-center mb-3">
           <div className="p-2.5 bg-muted rounded-full">
@@ -27,12 +27,12 @@ export function WelcomeTargetCard({
         </div>
 
         {/* Title */}
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 text-center mb-1.5">
+        <h2 className="text-sm font-semibold text-v2-ink text-center mb-1.5">
           Set Your {targetYear} Income Target
         </h2>
 
         {/* Description */}
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 text-center mb-4 leading-relaxed">
+        <p className="text-[11px] text-v2-ink-muted text-center mb-4 leading-relaxed">
           Enter your annual net income goal to get started. We'll automatically
           calculate monthly, weekly, and daily targets based on your historical
           performance data.
