@@ -190,15 +190,15 @@ export function PremiumAddonsSection() {
 
   if (addonsLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-1.5 px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
+        <div className="flex items-center gap-1.5 px-3 py-2 border-b border-v2-ring/60">
           <Sparkles className="h-3.5 w-3.5 text-purple-500" />
-          <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+          <span className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
             Premium Add-ons
           </span>
         </div>
         <div className="p-6 flex items-center justify-center">
-          <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+          <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
         </div>
       </div>
     );
@@ -209,15 +209,15 @@ export function PremiumAddonsSection() {
   }
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-      <div className="flex items-center gap-1.5 px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
+      <div className="flex items-center gap-1.5 px-3 py-2 border-b border-v2-ring/60">
         <Sparkles className="h-3.5 w-3.5 text-purple-500" />
-        <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+        <span className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
           Premium Add-ons
         </span>
       </div>
       <div className="p-3">
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-3">
+        <p className="text-[10px] text-v2-ink-muted mb-3">
           {isTeamPlan
             ? "Your Team plan includes UW Wizard with seat assignment for your agents."
             : "Enhance your experience with premium features that work alongside any subscription plan."}
@@ -273,25 +273,25 @@ export function PremiumAddonsSection() {
                         <Wand2 className="h-5 w-5 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                        <h3 className="text-sm font-semibold text-v2-ink">
                           {addon.display_name}
                         </h3>
-                        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        <p className="text-[11px] text-v2-ink-muted mt-0.5">
                           {addon.description}
                         </p>
 
                         {/* Usage Display */}
                         {uwUsage && (
-                          <div className="mt-3 p-2 bg-white dark:bg-zinc-800 rounded border border-purple-200 dark:border-purple-800">
+                          <div className="mt-3 p-2 bg-white dark:bg-v2-ring rounded border border-purple-200 dark:border-purple-800">
                             <div className="flex items-center justify-between mb-1">
-                              <span className="text-[10px] font-medium text-zinc-700 dark:text-zinc-300">
+                              <span className="text-[10px] font-medium text-v2-ink-muted">
                                 {uwUsage.tier_name}
                               </span>
-                              <span className="text-[10px] text-zinc-500">
+                              <span className="text-[10px] text-v2-ink-muted">
                                 {uwUsage.runs_used} / {uwUsage.runs_limit} runs
                               </span>
                             </div>
-                            <div className="h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                            <div className="h-1.5 bg-v2-ring rounded-full overflow-hidden">
                               <div
                                 className={cn(
                                   "h-full rounded-full transition-all",
@@ -306,7 +306,7 @@ export function PremiumAddonsSection() {
                                 }}
                               />
                             </div>
-                            <p className="text-[9px] text-zinc-400 mt-1">
+                            <p className="text-[9px] text-v2-ink-subtle mt-1">
                               {uwUsage.runs_remaining} runs remaining this month
                             </p>
                           </div>
@@ -365,10 +365,10 @@ export function PremiumAddonsSection() {
                           <AddonIcon className="h-5 w-5 text-white" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                          <h3 className="text-sm font-semibold text-v2-ink">
                             {addon.display_name}
                           </h3>
-                          <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+                          <p className="mt-0.5 text-[11px] text-v2-ink-muted">
                             {addon.description}
                           </p>
                           <div className="mt-3 flex flex-wrap gap-2">
@@ -376,7 +376,7 @@ export function PremiumAddonsSection() {
                               (label) => (
                                 <span
                                   key={label}
-                                  className="rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                                  className="rounded bg-v2-ring px-1.5 py-0.5 text-[9px] text-v2-ink-muted dark:bg-v2-ring dark:text-v2-ink-subtle"
                                 >
                                   {label}
                                 </span>
@@ -386,7 +386,7 @@ export function PremiumAddonsSection() {
                               {getTierAllowanceLabel(addon.name, currentTier)}
                             </span>
                           </div>
-                          <p className="mt-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+                          <p className="mt-2 text-[10px] text-v2-ink-muted">
                             Current tier: {currentTier.name}
                           </p>
                         </div>
@@ -402,7 +402,7 @@ export function PremiumAddonsSection() {
                       "rounded-lg border p-3",
                       comingSoon
                         ? "border-amber-200 bg-amber-50/60 dark:border-amber-800/70 dark:bg-amber-950/10"
-                        : "border-zinc-200 dark:border-zinc-700",
+                        : "border-v2-ring",
                     )}
                   >
                     <div className="mb-3 flex items-start gap-3">
@@ -411,7 +411,7 @@ export function PremiumAddonsSection() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                          <h3 className="text-sm font-semibold text-v2-ink">
                             {addon.display_name}
                           </h3>
                           {comingSoon && (
@@ -420,7 +420,7 @@ export function PremiumAddonsSection() {
                             </Badge>
                           )}
                         </div>
-                        <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+                        <p className="mt-0.5 text-[11px] text-v2-ink-muted">
                           {addon.description ||
                             "Enhance your subscription with a premium add-on tier."}
                         </p>
@@ -436,7 +436,7 @@ export function PremiumAddonsSection() {
                     <div className="mb-3">
                       <div className="mb-2 flex items-center gap-1.5">
                         <Zap className="h-3 w-3 text-amber-500" />
-                        <span className="text-[10px] font-medium text-zinc-700 dark:text-zinc-300">
+                        <span className="text-[10px] font-medium text-v2-ink-muted">
                           Choose Your Plan
                         </span>
                       </div>
@@ -454,19 +454,19 @@ export function PremiumAddonsSection() {
                                 "rounded-lg border p-2 text-left transition-all",
                                 isSelected
                                   ? "border-purple-500 bg-purple-50 dark:bg-purple-950/30"
-                                  : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600",
+                                  : "border-v2-ring hover:border-v2-ring  ",
                               )}
                             >
-                              <div className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+                              <div className="text-[11px] font-semibold text-v2-ink">
                                 {tier.name}
                               </div>
-                              <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                              <div className="text-lg font-bold text-v2-ink">
                                 {formatPrice(tier.price_monthly)}
-                                <span className="text-[9px] font-normal text-zinc-500">
+                                <span className="text-[9px] font-normal text-v2-ink-muted">
                                   /mo
                                 </span>
                               </div>
-                              <div className="text-[9px] text-zinc-500 dark:text-zinc-400">
+                              <div className="text-[9px] text-v2-ink-muted">
                                 {getTierAllowanceLabel(addon.name, tier)}
                               </div>
                               {isSelected && (
@@ -486,7 +486,7 @@ export function PremiumAddonsSection() {
                       {highlights.map((label) => (
                         <span
                           key={label}
-                          className="rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                          className="rounded bg-v2-ring px-1.5 py-0.5 text-[9px] text-v2-ink-muted dark:bg-v2-ring dark:text-v2-ink-subtle"
                         >
                           {label}
                         </span>
@@ -496,8 +496,8 @@ export function PremiumAddonsSection() {
                       </span>
                     </div>
 
-                    <div className="flex items-center justify-between border-t border-zinc-100 pt-3 dark:border-zinc-800">
-                      <p className="text-[9px] text-zinc-400">
+                    <div className="flex items-center justify-between border-t border-v2-ring/60 pt-3 ">
+                      <p className="text-[9px] text-v2-ink-subtle">
                         Billed with your plan
                       </p>
 
@@ -538,7 +538,7 @@ export function PremiumAddonsSection() {
                     "relative p-3 rounded-lg border",
                     hasAccess
                       ? "border-purple-300 dark:border-purple-700 bg-purple-50/50 dark:bg-purple-950/20"
-                      : "border-zinc-200 dark:border-zinc-700",
+                      : "border-v2-ring",
                   )}
                 >
                   {hasAccess && (
@@ -556,27 +556,29 @@ export function PremiumAddonsSection() {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                      <h3 className="text-sm font-semibold text-v2-ink">
                         {addon.display_name}
                       </h3>
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                      <p className="text-[11px] text-v2-ink-muted mt-0.5">
                         {addon.description}
                       </p>
                     </div>
 
                     {!hasAccess && (
                       <div className="flex-shrink-0 text-right">
-                        <div className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                        <div className="text-lg font-bold text-v2-ink">
                           {formatPrice(addon.price_monthly)}
                         </div>
-                        <div className="text-[10px] text-zinc-500">/month</div>
+                        <div className="text-[10px] text-v2-ink-muted">
+                          /month
+                        </div>
                       </div>
                     )}
                   </div>
 
                   {!hasAccess && (
-                    <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-                      <p className="text-[9px] text-zinc-400">
+                    <div className="mt-3 pt-3 border-t border-v2-ring/60 flex items-center justify-between">
+                      <p className="text-[9px] text-v2-ink-subtle">
                         Billed with your plan
                       </p>
 

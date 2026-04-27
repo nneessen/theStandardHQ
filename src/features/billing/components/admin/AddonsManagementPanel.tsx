@@ -58,7 +58,7 @@ export function AddonsManagementPanel({ addons }: AddonsManagementPanelProps) {
         ))}
 
         {addons.length === 0 && (
-          <div className="col-span-2 text-center py-12 text-zinc-500">
+          <div className="col-span-2 text-center py-12 text-v2-ink-muted">
             <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No add-ons configured</p>
           </div>
@@ -124,7 +124,7 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
     <Card
       className={`${
         !addon.is_active
-          ? "opacity-60 border-zinc-300 dark:border-zinc-700"
+          ? "opacity-60 border-v2-ring "
           : "border-purple-200 dark:border-purple-800"
       }`}
     >
@@ -140,7 +140,7 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
             </Badge>
           )}
         </div>
-        <p className="text-[11px] text-zinc-500">
+        <p className="text-[11px] text-v2-ink-muted">
           {addon.description || "No description"}
         </p>
       </CardHeader>
@@ -151,11 +151,11 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
             {formatPrice(addon.price_monthly)}
           </span>
           {addon.price_monthly > 0 && (
-            <span className="text-xs text-zinc-500">/month</span>
+            <span className="text-xs text-v2-ink-muted">/month</span>
           )}
         </div>
         {addon.price_annual > 0 && (
-          <p className="text-[10px] text-zinc-500">
+          <p className="text-[10px] text-v2-ink-muted">
             {formatPrice(addon.price_annual)}/year (
             {Math.round(
               (1 - addon.price_annual / (addon.price_monthly * 12)) * 100,
@@ -180,7 +180,7 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
                   `${users?.length || 0} users`
                 )}
               </span>
-              <span className="text-[10px] text-zinc-400">
+              <span className="text-[10px] text-v2-ink-subtle">
                 {isUsersOpen ? "Hide" : "Show"}
               </span>
             </Button>
@@ -191,24 +191,24 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
                 {users.map((user) => (
                   <div
                     key={user.userId}
-                    className="rounded border border-zinc-200 bg-zinc-50 px-2.5 py-2 text-[10px] dark:border-zinc-800 dark:bg-zinc-900"
+                    className="rounded border border-v2-ring bg-v2-canvas px-2.5 py-2 text-[10px]  dark:bg-v2-card-dark"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <div className="truncate font-medium text-zinc-800 dark:text-zinc-100">
+                        <div className="truncate font-medium text-v2-ink dark:text-v2-canvas">
                           {user.fullName}
                         </div>
-                        <div className="truncate text-[9px] text-zinc-500 dark:text-zinc-400">
+                        <div className="truncate text-[9px] text-v2-ink-muted">
                           {user.email || user.userId}
                         </div>
                         {isPremiumVoice && (
                           <>
-                            <div className="truncate pt-1 font-mono text-[9px] text-zinc-500 dark:text-zinc-400">
+                            <div className="truncate pt-1 font-mono text-[9px] text-v2-ink-muted">
                               Agent: {user.standardChatBotAgentId || "Unmapped"}
                             </div>
                             {(user.voiceLastSyncedAt ||
                               user.voiceLastSyncAttemptAt) && (
-                              <div className="pt-0.5 text-[9px] text-zinc-500 dark:text-zinc-400">
+                              <div className="pt-0.5 text-[9px] text-v2-ink-muted">
                                 {user.voiceLastSyncedAt
                                   ? `Last synced ${formatSyncTime(user.voiceLastSyncedAt)}`
                                   : `Last attempt ${formatSyncTime(user.voiceLastSyncAttemptAt)}`}
@@ -220,7 +220,7 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
                               );
                               if (!snapshot) return null;
                               return (
-                                <div className="pt-0.5 text-[9px] text-zinc-500 dark:text-zinc-400">
+                                <div className="pt-0.5 text-[9px] text-v2-ink-muted">
                                   Entitlement: {snapshot.status || "unknown"}
                                   {typeof snapshot.includedMinutes === "number"
                                     ? ` • ${snapshot.includedMinutes} min`
@@ -269,7 +269,7 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
                 ))}
               </div>
             ) : (
-              <p className="text-[10px] text-zinc-500 text-center py-2">
+              <p className="text-[10px] text-v2-ink-muted text-center py-2">
                 No users with this add-on
               </p>
             )}
@@ -460,7 +460,7 @@ function AddonEditorDialog({
                     }
                     className="h-7 text-xs"
                   />
-                  <p className="text-[9px] text-zinc-500">
+                  <p className="text-[9px] text-v2-ink-muted">
                     ${(priceMonthly / 100).toFixed(2)}/mo
                   </p>
                 </div>
@@ -477,7 +477,7 @@ function AddonEditorDialog({
                     }
                     className="h-7 text-xs"
                   />
-                  <p className="text-[9px] text-zinc-500">
+                  <p className="text-[9px] text-v2-ink-muted">
                     ${(priceAnnual / 100).toFixed(2)}/yr
                   </p>
                 </div>

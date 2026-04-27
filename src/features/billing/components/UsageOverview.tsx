@@ -18,21 +18,21 @@ export function UsageOverview() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
         <div className="animate-pulse space-y-2">
-          <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-1/4" />
-          <div className="h-12 bg-zinc-200 dark:bg-zinc-700 rounded" />
+          <div className="h-4 bg-v2-ring rounded w-1/4" />
+          <div className="h-12 bg-v2-ring rounded" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
       {/* Header */}
-      <div className="flex items-center gap-1.5 px-3 py-2 border-b border-zinc-100 dark:border-zinc-800">
-        <Activity className="h-3.5 w-3.5 text-zinc-400" />
-        <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+      <div className="flex items-center gap-1.5 px-3 py-2 border-b border-v2-ring/60">
+        <Activity className="h-3.5 w-3.5 text-v2-ink-subtle" />
+        <span className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
           Usage This Month
         </span>
       </div>
@@ -41,9 +41,9 @@ export function UsageOverview() {
       <div className="p-3 space-y-3">
         {/* No access state */}
         {!hasEmailAccess && !hasSmsAccess && (
-          <div className="flex items-center gap-2 p-2 bg-zinc-50 dark:bg-zinc-800 rounded">
-            <Mail className="h-3.5 w-3.5 text-zinc-400" />
-            <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <div className="flex items-center gap-2 p-2 bg-v2-canvas rounded">
+            <Mail className="h-3.5 w-3.5 text-v2-ink-subtle" />
+            <div className="text-[10px] text-v2-ink-muted">
               <p className="font-medium">Email & SMS not available</p>
               <p>Upgrade to Pro or Team to unlock.</p>
             </div>
@@ -113,23 +113,23 @@ function UsageMeter({
         <div className="flex items-center gap-1.5">
           <span
             className={cn(
-              "text-zinc-400",
+              "text-v2-ink-subtle",
               isOverLimit && "text-red-500",
               isWarning && !isOverLimit && "text-amber-500",
             )}
           >
             {icon}
           </span>
-          <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+          <span className="text-[11px] font-medium text-v2-ink-muted">
             {label}
           </span>
         </div>
 
         {isUsageBased ? (
-          <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <span className="text-[11px] text-v2-ink-muted">
             {used} sent
             {totalCost !== undefined && totalCost > 0 && (
-              <span className="ml-1 text-zinc-400">
+              <span className="ml-1 text-v2-ink-subtle">
                 (${(totalCost / 100).toFixed(2)})
               </span>
             )}
@@ -142,7 +142,7 @@ function UsageMeter({
                 ? "text-red-600 dark:text-red-400 font-medium"
                 : isWarning
                   ? "text-amber-600 dark:text-amber-400"
-                  : "text-zinc-500 dark:text-zinc-400",
+                  : "text-v2-ink-muted",
             )}
           >
             {used.toLocaleString()} / {limit.toLocaleString()}
@@ -152,7 +152,7 @@ function UsageMeter({
 
       {/* Progress bar */}
       {!isUsageBased && limit > 0 && (
-        <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-v2-ring rounded-full overflow-hidden">
           <div
             className={cn(
               "h-full rounded-full transition-all",
@@ -190,7 +190,7 @@ function UsageMeter({
 
       {/* Usage-based pricing info */}
       {isUsageBased && (
-        <p className="text-[10px] text-zinc-400">$0.05 per SMS</p>
+        <p className="text-[10px] text-v2-ink-subtle">$0.05 per SMS</p>
       )}
     </div>
   );

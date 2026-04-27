@@ -175,14 +175,14 @@ export function TemporaryAccessSettings() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
+        <Loader2 className="h-6 w-6 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
 
   if (!settings) {
     return (
-      <div className="text-center py-8 text-zinc-500">
+      <div className="text-center py-8 text-v2-ink-muted">
         <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
         <p>Failed to load settings</p>
       </div>
@@ -206,13 +206,13 @@ export function TemporaryAccessSettings() {
           "border-2",
           enabled && !isExpired
             ? "border-emerald-500/50 bg-emerald-50/50 dark:bg-emerald-950/20"
-            : "border-zinc-200 dark:border-zinc-800",
+            : "border-v2-ring",
         )}
       >
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-zinc-500" />
+              <Clock className="h-4 w-4 text-v2-ink-muted" />
               <CardTitle className="text-sm">Temporary Free Access</CardTitle>
             </div>
             <div className="flex items-center gap-3">
@@ -245,7 +245,7 @@ export function TemporaryAccessSettings() {
               <span className="font-medium">
                 {daysRemaining} days remaining
               </span>
-              <span className="text-zinc-400">
+              <span className="text-v2-ink-subtle">
                 (ends {new Date(settings.endDate).toLocaleDateString()})
               </span>
             </div>
@@ -282,7 +282,7 @@ export function TemporaryAccessSettings() {
                 className="h-8 text-xs"
                 disabled={updateSettings.isPending}
               />
-              <p className="text-[10px] text-zinc-500">
+              <p className="text-[10px] text-v2-ink-muted">
                 Temporary access ends at midnight UTC on this date
               </p>
             </div>
@@ -293,7 +293,7 @@ export function TemporaryAccessSettings() {
                 <Lock className="h-3 w-3" />
                 Excluded Features
               </Label>
-              <p className="text-[10px] text-zinc-500 mb-2">
+              <p className="text-[10px] text-v2-ink-muted mb-2">
                 These features still require a paid subscription during the
                 temporary access period
               </p>
@@ -305,7 +305,7 @@ export function TemporaryAccessSettings() {
                     <label
                       key={key}
                       className={cn(
-                        "flex items-center gap-2 p-1.5 rounded text-xs cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                        "flex items-center gap-2 p-1.5 rounded text-xs cursor-pointer hover:bg-v2-ring dark:hover:bg-v2-ring",
                         isExcluded && "bg-amber-50 dark:bg-amber-950/30",
                       )}
                     >
@@ -370,14 +370,14 @@ export function TemporaryAccessSettings() {
             {/* Email List */}
             <div className="space-y-1.5 max-h-64 overflow-y-auto">
               {testEmails.length === 0 ? (
-                <p className="text-xs text-zinc-400 text-center py-4">
+                <p className="text-xs text-v2-ink-subtle text-center py-4">
                   No test accounts configured
                 </p>
               ) : (
                 testEmails.map((email) => (
                   <div
                     key={email}
-                    className="flex items-center justify-between p-2 bg-zinc-50 dark:bg-zinc-800 rounded text-xs"
+                    className="flex items-center justify-between p-2 bg-v2-canvas rounded text-xs"
                   >
                     <span className="font-mono">{email}</span>
                     <Button
@@ -385,7 +385,7 @@ export function TemporaryAccessSettings() {
                       size="sm"
                       onClick={() => handleRemoveEmail(email)}
                       disabled={updateSettings.isPending}
-                      className="h-6 w-6 p-0 text-zinc-400 hover:text-red-500"
+                      className="h-6 w-6 p-0 text-v2-ink-subtle hover:text-red-500"
                     >
                       {updateSettings.isPending ? (
                         <Loader2 className="h-3 w-3 animate-spin" />
@@ -398,7 +398,7 @@ export function TemporaryAccessSettings() {
               )}
             </div>
 
-            <p className="text-[10px] text-zinc-500">
+            <p className="text-[10px] text-v2-ink-muted">
               {testEmails.length} test account{testEmails.length !== 1 && "s"}{" "}
               configured
             </p>

@@ -2,13 +2,7 @@
 // Plans table with stats, refactored from SubscriptionPlansTab
 
 import { useState } from "react";
-import {
-  Plus,
-  Edit2,
-  Users,
-  Mail,
-  BarChart3,
-} from "lucide-react";
+import { Plus, Edit2, Users, Mail, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -19,7 +13,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useAdminSubscriptionAddons, type SubscriptionPlan } from "@/hooks/admin";
+import {
+  useAdminSubscriptionAddons,
+  type SubscriptionPlan,
+} from "@/hooks/admin";
 import { PlanEditorDialog } from "./PlanEditorDialog";
 import { CreatePlanDialog } from "./CreatePlanDialog";
 import { cn } from "@/lib/utils";
@@ -74,16 +71,12 @@ export function PlansOverview({ plans }: PlansOverviewProps) {
       </div>
 
       {/* Plans Table */}
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-zinc-50 dark:bg-zinc-800/50">
-              <TableHead className="text-[11px] font-semibold w-8">
-                #
-              </TableHead>
-              <TableHead className="text-[11px] font-semibold">
-                Plan
-              </TableHead>
+            <TableRow className="bg-v2-canvas">
+              <TableHead className="text-[11px] font-semibold w-8">#</TableHead>
+              <TableHead className="text-[11px] font-semibold">Plan</TableHead>
               <TableHead className="text-[11px] font-semibold text-center">
                 Status
               </TableHead>
@@ -123,19 +116,19 @@ export function PlansOverview({ plans }: PlansOverviewProps) {
                   className={cn(
                     "group",
                     !plan.is_active &&
-                      "opacity-50 bg-zinc-50 dark:bg-zinc-900",
+                      "opacity-50 bg-v2-canvas dark:bg-v2-card-dark",
                   )}
                 >
-                  <TableCell className="text-[11px] text-zinc-400 font-mono">
+                  <TableCell className="text-[11px] text-v2-ink-subtle font-mono">
                     {plan.sort_order}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <div>
-                        <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                        <div className="text-sm font-semibold text-v2-ink">
                           {plan.display_name}
                         </div>
-                        <div className="text-[10px] text-zinc-500 font-mono">
+                        <div className="text-[10px] text-v2-ink-muted font-mono">
                           {plan.name}
                         </div>
                       </div>
@@ -157,9 +150,7 @@ export function PlansOverview({ plans }: PlansOverviewProps) {
                       {formatPrice(plan.price_monthly)}
                     </span>
                     {plan.price_monthly > 0 && (
-                      <span className="text-[10px] text-zinc-500">
-                        /mo
-                      </span>
+                      <span className="text-[10px] text-v2-ink-muted">/mo</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
@@ -170,9 +161,7 @@ export function PlansOverview({ plans }: PlansOverviewProps) {
                       <span className="text-[10px] text-emerald-600 ml-1">
                         (
                         {Math.round(
-                          (1 -
-                            plan.price_annual /
-                              (plan.price_monthly * 12)) *
+                          (1 - plan.price_annual / (plan.price_monthly * 12)) *
                             100,
                         )}
                         % off)
@@ -202,8 +191,8 @@ export function PlansOverview({ plans }: PlansOverviewProps) {
                       <span className="text-xs font-medium">
                         {featureCount}
                       </span>
-                      <span className="text-[10px] text-zinc-400">/</span>
-                      <span className="text-xs text-zinc-500">
+                      <span className="text-[10px] text-v2-ink-subtle">/</span>
+                      <span className="text-xs text-v2-ink-muted">
                         {analyticsCount}
                       </span>
                     </div>
@@ -230,27 +219,27 @@ export function PlansOverview({ plans }: PlansOverviewProps) {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-          <div className="text-[10px] text-zinc-500 uppercase tracking-wide mb-1">
+        <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+          <div className="text-[10px] text-v2-ink-muted uppercase tracking-wide mb-1">
             Active Plans
           </div>
-          <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+          <div className="text-2xl font-bold text-v2-ink">
             {activePlans.length}
           </div>
         </div>
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-          <div className="text-[10px] text-zinc-500 uppercase tracking-wide mb-1">
+        <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+          <div className="text-[10px] text-v2-ink-muted uppercase tracking-wide mb-1">
             Total Features
           </div>
-          <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+          <div className="text-2xl font-bold text-v2-ink">
             {Object.keys(activePlans[0]?.features || {}).length}
           </div>
         </div>
-        <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-          <div className="text-[10px] text-zinc-500 uppercase tracking-wide mb-1">
+        <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+          <div className="text-[10px] text-v2-ink-muted uppercase tracking-wide mb-1">
             Add-ons Available
           </div>
-          <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+          <div className="text-2xl font-bold text-v2-ink">
             {addons?.filter((a) => a.is_active).length || 0}
           </div>
         </div>

@@ -75,10 +75,10 @@ export function PlanComparisonTable() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
         <div className="animate-pulse space-y-2">
-          <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-1/4" />
-          <div className="h-40 bg-zinc-200 dark:bg-zinc-700 rounded" />
+          <div className="h-4 bg-v2-ring rounded w-1/4" />
+          <div className="h-40 bg-v2-ring rounded" />
         </div>
       </div>
     );
@@ -86,19 +86,19 @@ export function PlanComparisonTable() {
 
   return (
     <Collapsible.Root open={isOpen} onOpenChange={setIsOpen}>
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
         {/* Collapsible Trigger Header */}
         <Collapsible.Trigger asChild>
-          <button className="flex items-center justify-between w-full px-3 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors rounded-lg">
+          <button className="flex items-center justify-between w-full px-3 py-2 hover:bg-v2-canvas transition-colors rounded-lg">
             <div className="flex items-center gap-1.5">
-              <Layers className="h-3.5 w-3.5 text-zinc-400" />
-              <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+              <Layers className="h-3.5 w-3.5 text-v2-ink-subtle" />
+              <span className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
                 Compare All Features
               </span>
             </div>
             <ChevronRight
               className={cn(
-                "h-3.5 w-3.5 text-zinc-400 transition-transform duration-200",
+                "h-3.5 w-3.5 text-v2-ink-subtle transition-transform duration-200",
                 isOpen && "rotate-90",
               )}
             />
@@ -107,12 +107,12 @@ export function PlanComparisonTable() {
 
         {/* Collapsible Content */}
         <Collapsible.Content>
-          <div className="border-t border-zinc-100 dark:border-zinc-800">
+          <div className="border-t border-v2-ring/60">
             {/* Table */}
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                  <TableRow className="bg-v2-canvas hover:bg-v2-canvas">
                     <TableHead className="text-[11px] font-semibold w-40">
                       Feature
                     </TableHead>
@@ -121,8 +121,7 @@ export function PlanComparisonTable() {
                         key={plan.id}
                         className={cn(
                           "text-[11px] font-semibold text-center min-w-[80px]",
-                          plan.name === currentPlanName &&
-                            "bg-zinc-100 dark:bg-zinc-800",
+                          plan.name === currentPlanName && "bg-v2-ring",
                         )}
                       >
                         <div className="flex flex-col items-center gap-0.5">
@@ -132,7 +131,7 @@ export function PlanComparisonTable() {
                             </span>
                           )}
                           <span>{plan.display_name}</span>
-                          <span className="text-[10px] font-normal text-zinc-500">
+                          <span className="text-[10px] font-normal text-v2-ink-muted">
                             {plan.price_monthly === 0
                               ? "Free"
                               : `${formatPrice(plan.price_monthly)}/mo`}
@@ -145,8 +144,8 @@ export function PlanComparisonTable() {
 
                 <TableBody>
                   {/* Analytics Row */}
-                  <TableRow className="bg-zinc-50/50 dark:bg-zinc-800/30">
-                    <TableCell className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+                  <TableRow className="bg-v2-canvas dark:bg-v2-ring/30">
+                    <TableCell className="text-[11px] font-medium text-v2-ink-muted">
                       Analytics Sections
                     </TableCell>
                     {plans.map((plan) => (
@@ -155,7 +154,7 @@ export function PlanComparisonTable() {
                         className={cn(
                           "text-[11px] text-center font-medium",
                           plan.name === currentPlanName &&
-                            "bg-zinc-100/50 dark:bg-zinc-800/50",
+                            "bg-v2-ring/50 dark:bg-v2-ring/50",
                         )}
                       >
                         {analyticsCountByTier[plan.name] || 0}/9
@@ -165,7 +164,7 @@ export function PlanComparisonTable() {
 
                   {/* UW Wizard Row */}
                   <TableRow>
-                    <TableCell className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+                    <TableCell className="text-[11px] font-medium text-v2-ink-muted">
                       UW Wizard (built-in)
                     </TableCell>
                     {plans.map((plan) => (
@@ -174,20 +173,20 @@ export function PlanComparisonTable() {
                         className={cn(
                           "text-center",
                           plan.name === currentPlanName &&
-                            "bg-zinc-100/50 dark:bg-zinc-800/50",
+                            "bg-v2-ring/50 dark:bg-v2-ring/50",
                         )}
                       >
                         {plan.name === "team" ? (
                           <div className="flex flex-col items-center">
                             <Check className="h-3.5 w-3.5 text-emerald-500" />
-                            <span className="text-[9px] text-zinc-500">
+                            <span className="text-[9px] text-v2-ink-muted">
                               500 runs/mo
                             </span>
                           </div>
                         ) : (
                           <div className="flex flex-col items-center">
-                            <X className="h-3.5 w-3.5 text-zinc-300 dark:text-zinc-600" />
-                            <span className="text-[9px] text-zinc-400">
+                            <X className="h-3.5 w-3.5 text-v2-ink-subtle" />
+                            <span className="text-[9px] text-v2-ink-subtle">
                               Add-on
                             </span>
                           </div>
@@ -198,7 +197,7 @@ export function PlanComparisonTable() {
 
                   {/* Agent Seats Row */}
                   <TableRow>
-                    <TableCell className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+                    <TableCell className="text-[11px] font-medium text-v2-ink-muted">
                       Agent Seats (UW Wizard)
                     </TableCell>
                     {plans.map((plan) => (
@@ -207,18 +206,18 @@ export function PlanComparisonTable() {
                         className={cn(
                           "text-center",
                           plan.name === currentPlanName &&
-                            "bg-zinc-100/50 dark:bg-zinc-800/50",
+                            "bg-v2-ring/50 dark:bg-v2-ring/50",
                         )}
                       >
                         {plan.name === "team" ? (
                           <div className="flex flex-col items-center">
                             <Check className="h-3.5 w-3.5 text-emerald-500" />
-                            <span className="text-[9px] text-zinc-500">
+                            <span className="text-[9px] text-v2-ink-muted">
                               5 included
                             </span>
                           </div>
                         ) : (
-                          <X className="h-3.5 w-3.5 text-zinc-300 dark:text-zinc-600 mx-auto" />
+                          <X className="h-3.5 w-3.5 text-v2-ink-subtle mx-auto" />
                         )}
                       </TableCell>
                     ))}
@@ -228,10 +227,10 @@ export function PlanComparisonTable() {
                   {featureGroups.map((group) => (
                     <React.Fragment key={group.category}>
                       {/* Group Header */}
-                      <TableRow className="bg-zinc-100/50 dark:bg-zinc-800/50 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50">
+                      <TableRow className="bg-v2-ring/50 dark:bg-v2-ring/50 hover:bg-v2-ring/50 dark:hover:bg-v2-ring/50">
                         <TableCell
                           colSpan={plans.length + 1}
-                          className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide py-1"
+                          className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide py-1"
                         >
                           {group.label}
                         </TableCell>
@@ -240,7 +239,7 @@ export function PlanComparisonTable() {
                       {/* Features */}
                       {group.features.map((feature) => (
                         <TableRow key={feature.key}>
-                          <TableCell className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                          <TableCell className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                             {feature.displayName}
                           </TableCell>
                           {plans.map((plan) => {
@@ -260,20 +259,20 @@ export function PlanComparisonTable() {
                                 className={cn(
                                   "text-center",
                                   plan.name === currentPlanName &&
-                                    "bg-zinc-100/50 dark:bg-zinc-800/50",
+                                    "bg-v2-ring/50 dark:bg-v2-ring/50",
                                 )}
                               >
                                 {hasFeature ? (
                                   <div className="flex flex-col items-center">
                                     <Check className="h-3.5 w-3.5 text-emerald-500" />
                                     {emailLimit && (
-                                      <span className="text-[9px] text-zinc-500">
+                                      <span className="text-[9px] text-v2-ink-muted">
                                         {emailLimit}/mo
                                       </span>
                                     )}
                                   </div>
                                 ) : (
-                                  <X className="h-3.5 w-3.5 text-zinc-300 dark:text-zinc-600 mx-auto" />
+                                  <X className="h-3.5 w-3.5 text-v2-ink-subtle mx-auto" />
                                 )}
                               </TableCell>
                             );
@@ -287,8 +286,8 @@ export function PlanComparisonTable() {
             </div>
 
             {/* Footer */}
-            <div className="px-3 py-2 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800">
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <div className="px-3 py-2 bg-v2-canvas border-t border-v2-ring/60">
+              <p className="text-[10px] text-v2-ink-muted">
                 Training Hub and Admin access are role-based, not tier-based.
                 Annual billing saves ~17%.
               </p>

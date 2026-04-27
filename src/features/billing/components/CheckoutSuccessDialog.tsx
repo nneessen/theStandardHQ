@@ -193,10 +193,10 @@ export function CheckoutSuccessDialog({
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <DialogTitle className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+              <DialogTitle className="text-base font-semibold text-v2-ink">
                 Welcome to {displayName}!
               </DialogTitle>
-              <DialogDescription className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <DialogDescription className="text-[11px] text-v2-ink-muted mt-0.5">
                 {activationStatus === "active"
                   ? "Your subscription is active and ready to go."
                   : activationStatus === "polling"
@@ -234,22 +234,20 @@ export function CheckoutSuccessDialog({
         </div>
 
         {/* Plan Details Card */}
-        <div className="mx-5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 p-3">
+        <div className="mx-5 rounded-v2-md border border-v2-ring bg-v2-canvas dark:bg-v2-card-dark/50 p-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Crown className="h-3.5 w-3.5 text-amber-500" />
-              <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+              <span className="text-xs font-semibold text-v2-ink">
                 {displayName}
               </span>
             </div>
             {displayPrice !== null && (
               <div className="text-right">
-                <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                <span className="text-sm font-bold text-v2-ink">
                   ${(displayPrice / 100).toFixed(2)}
                 </span>
-                <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                  /mo
-                </span>
+                <span className="text-[10px] text-v2-ink-muted">/mo</span>
                 {billingInterval === "annual" && (
                   <span className="ml-1.5 text-[9px] font-medium text-emerald-600 dark:text-emerald-400">
                     billed annually
@@ -260,7 +258,7 @@ export function CheckoutSuccessDialog({
           </div>
           {activationStatus === "active" &&
             subscription?.current_period_end && (
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1.5">
+              <p className="text-[10px] text-v2-ink-muted mt-1.5">
                 Next renewal:{" "}
                 {new Date(subscription.current_period_end).toLocaleDateString(
                   "en-US",
@@ -273,7 +271,7 @@ export function CheckoutSuccessDialog({
         {/* What's Included */}
         {enabledFeatures.length > 0 && (
           <div className="mx-5 mt-3">
-            <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide mb-2">
+            <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide mb-2">
               What's Included
             </h3>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
@@ -285,7 +283,7 @@ export function CheckoutSuccessDialog({
                     className="flex items-center gap-1.5 py-0.5"
                   >
                     <Zap className="h-2.5 w-2.5 text-emerald-500 flex-shrink-0" />
-                    <span className="text-[11px] text-zinc-700 dark:text-zinc-300 truncate">
+                    <span className="text-[11px] text-v2-ink-muted truncate">
                       {feature.displayName}
                     </span>
                   </div>
@@ -297,7 +295,7 @@ export function CheckoutSuccessDialog({
 
         {/* What's Next */}
         <div className="mx-5 mt-3">
-          <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide mb-2">
+          <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide mb-2">
             What's Next
           </h3>
           <div className="space-y-2">
@@ -339,7 +337,7 @@ export function CheckoutSuccessDialog({
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 px-5 pb-5 pt-3 border-t border-zinc-100 dark:border-zinc-800 mt-3">
+        <div className="flex items-center justify-end gap-2 px-5 pb-5 pt-3 border-t border-v2-ring/60 mt-3">
           <Button variant="ghost" size="sm" onClick={handleStayOnBilling}>
             Stay on Billing
           </Button>
@@ -369,16 +367,12 @@ function NextStep({
 }) {
   return (
     <div className="flex items-start gap-2.5">
-      <span className="flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[10px] font-bold">
+      <span className="flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-v2-card-dark dark:bg-v2-ring text-white dark:text-v2-ink text-[10px] font-bold">
         {number}
       </span>
       <div className="min-w-0">
-        <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
-          {title}
-        </p>
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-          {description}
-        </p>
+        <p className="text-[11px] font-medium text-v2-ink">{title}</p>
+        <p className="text-[10px] text-v2-ink-muted">{description}</p>
       </div>
     </div>
   );

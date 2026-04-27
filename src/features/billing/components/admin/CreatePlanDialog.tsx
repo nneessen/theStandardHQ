@@ -133,7 +133,7 @@ export function CreatePlanDialog({
                 onChange={(e) => setPriceMonthly(parseInt(e.target.value) || 0)}
                 className="h-8 text-sm"
               />
-              <p className="text-[10px] text-zinc-500">
+              <p className="text-[10px] text-v2-ink-muted">
                 ${(priceMonthly / 100).toFixed(2)} / month
               </p>
             </div>
@@ -148,7 +148,7 @@ export function CreatePlanDialog({
                 onChange={(e) => setPriceAnnual(parseInt(e.target.value) || 0)}
                 className="h-8 text-sm"
               />
-              <p className="text-[10px] text-zinc-500">
+              <p className="text-[10px] text-v2-ink-muted">
                 ${(priceAnnual / 100).toFixed(2)} / year
               </p>
             </div>

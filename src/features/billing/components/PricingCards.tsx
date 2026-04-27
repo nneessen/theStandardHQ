@@ -143,15 +143,15 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
   const visiblePlans = plans;
 
   return (
-    <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+    <div className="rounded-v2-md border border-v2-ring overflow-hidden">
       {/* Hero header */}
-      <div className="px-5 py-4 bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
+      <div className="px-5 py-4 bg-v2-card-dark">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 className="text-base font-bold text-white tracking-tight">
               Choose Your Plan
             </h2>
-            <p className="text-[11px] text-zinc-400 mt-0.5">
+            <p className="text-[11px] text-v2-ink-subtle mt-0.5">
               Pick the plan that fits your agency size and goals.
             </p>
             {isGrandfathered && (
@@ -163,14 +163,14 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
           </div>
 
           {/* Billing toggle — white-on-dark styling */}
-          <div className="flex items-center gap-1 bg-zinc-700/60 rounded-md p-0.5 self-start sm:self-center flex-shrink-0">
+          <div className="flex items-center gap-1 bg-v2-card-dark/60 rounded-md p-0.5 self-start sm:self-center flex-shrink-0">
             <button
               onClick={() => setBillingInterval("monthly")}
               className={cn(
                 "px-3 py-1.5 text-[11px] font-medium rounded transition-colors",
                 billingInterval === "monthly"
-                  ? "bg-white text-zinc-900 shadow-sm"
-                  : "text-zinc-400 hover:text-zinc-200",
+                  ? "bg-white text-v2-ink shadow-sm"
+                  : "text-v2-ink-subtle hover:text-v2-ink-subtle",
               )}
             >
               Monthly
@@ -180,8 +180,8 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
               className={cn(
                 "px-3 py-1.5 text-[11px] font-medium rounded transition-colors",
                 billingInterval === "annual"
-                  ? "bg-white text-zinc-900 shadow-sm"
-                  : "text-zinc-400 hover:text-zinc-200",
+                  ? "bg-white text-v2-ink shadow-sm"
+                  : "text-v2-ink-subtle hover:text-v2-ink-subtle",
               )}
             >
               Annual{" "}
@@ -201,7 +201,7 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
       </div>
 
       {/* Cards section */}
-      <div className="bg-white dark:bg-zinc-900 p-4">
+      <div className="bg-v2-card p-4">
         {/* Plan Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {visiblePlans.map((plan) => {
@@ -223,14 +223,14 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
                   isCurrent
                     ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20"
                     : isPopular
-                      ? "border-zinc-900 dark:border-zinc-100"
-                      : "border-zinc-200 dark:border-zinc-700",
+                      ? "border-v2-ink"
+                      : "border-v2-ring",
                 )}
               >
                 {/* Popular badge */}
                 {isPopular && !isCurrent && (
                   <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center gap-0.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-0.5 bg-v2-card-dark dark:bg-v2-ring text-white dark:text-v2-ink text-[9px] font-semibold px-2 py-0.5 rounded-full">
                       <Star className="h-2.5 w-2.5" />
                       Popular
                     </span>
@@ -249,26 +249,24 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
 
                 {/* Plan header */}
                 <div className="mt-1 mb-3">
-                  <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  <h3 className="text-sm font-bold text-v2-ink">
                     {plan.display_name}
                   </h3>
                   <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                    <span className="text-xl font-bold text-v2-ink">
                       {isPaid ? subscriptionService.formatPrice(price) : "$0"}
                     </span>
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                      /mo
-                    </span>
+                    <span className="text-[10px] text-v2-ink-muted">/mo</span>
                   </div>
                   {isPaid && billingInterval === "annual" && (
-                    <p className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                    <p className="text-[9px] text-v2-ink-subtle mt-0.5">
                       Billed{" "}
                       {subscriptionService.formatPrice(plan.price_annual)}
                       /year
                     </p>
                   )}
                   {!isPaid && (
-                    <p className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                    <p className="text-[9px] text-v2-ink-subtle mt-0.5">
                       Free forever
                     </p>
                   )}
@@ -277,14 +275,14 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
                 {/* Features list */}
                 <div className="flex-1 space-y-1.5 mb-3">
                   {inherited && (
-                    <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-1">
+                    <p className="text-[10px] font-medium text-v2-ink-muted mb-1">
                       Everything in {inherited}, plus:
                     </p>
                   )}
                   {features.map((feature) => (
                     <div key={feature} className="flex items-start gap-1.5">
                       <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                      <span className="text-[10px] text-v2-ink-muted">
                         {feature}
                       </span>
                     </div>
@@ -294,7 +292,7 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
                   {plan.team_size_limit === null && plan.name === "team" && (
                     <div className="flex items-start gap-1.5">
                       <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                      <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                      <span className="text-[10px] text-v2-ink-muted">
                         Unlimited team size
                       </span>
                     </div>
@@ -309,8 +307,8 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
                     isCurrent
                       ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 hover:bg-emerald-100 cursor-default"
                       : isPaid
-                        ? "bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900"
-                        : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700",
+                        ? "bg-v2-card-dark hover:bg-v2-ring dark:bg-v2-ring dark:hover:bg-v2-ring dark:text-v2-ink"
+                        : "bg-v2-ring text-v2-ink hover:bg-v2-ring dark:text-v2-ink-subtle dark:hover:bg-v2-card-dark",
                   )}
                   disabled={isCurrent || isLoading}
                   onClick={() => handleSelectPlan(plan)}
@@ -337,8 +335,8 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
 
         {/* Discount Code */}
         {visiblePlans.some((p) => subscriptionService.isPaidPlan(p)) && (
-          <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
-            <Tag className="h-3 w-3 text-zinc-400" />
+          <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-v2-ring/60">
+            <Tag className="h-3 w-3 text-v2-ink-subtle" />
             <Input
               type="text"
               placeholder="Discount code"

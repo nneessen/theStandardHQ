@@ -51,10 +51,10 @@ export function CurrentPlanCard() {
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 px-3 py-2">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft px-3 py-2">
         <div className="animate-pulse flex items-center gap-3">
-          <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-24" />
-          <div className="h-4 bg-zinc-200 dark:bg-zinc-700 rounded w-16" />
+          <div className="h-4 bg-v2-ring rounded w-24" />
+          <div className="h-4 bg-v2-ring rounded w-16" />
         </div>
       </div>
     );
@@ -66,19 +66,19 @@ export function CurrentPlanCard() {
   const displayTierName = isSuperAdmin ? "Super Admin" : tierName;
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
       {/* Main status row */}
       <div className="flex items-center justify-between px-3 py-2 gap-3 flex-wrap">
         {/* Left: Plan info */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <Crown className="h-3.5 w-3.5 text-zinc-400" />
-            <span className="text-[12px] font-bold text-zinc-900 dark:text-zinc-100">
+            <Crown className="h-3.5 w-3.5 text-v2-ink-subtle" />
+            <span className="text-[12px] font-bold text-v2-ink">
               {displayTierName}
             </span>
           </div>
 
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+          <span className="text-[10px] text-v2-ink-subtle">
             {isSuperAdmin
               ? "Full Access"
               : totalPrice === 0
@@ -110,7 +110,7 @@ export function CurrentPlanCard() {
 
           {/* Renewal / Expiry date */}
           {subscription?.current_period_end && !isGrandfathered && (
-            <div className="flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+            <div className="flex items-center gap-1 text-[10px] text-v2-ink-muted">
               <Calendar className="h-2.5 w-2.5" />
               <span>
                 {subscription.cancel_at_period_end ? "Expires" : "Renews"}{" "}

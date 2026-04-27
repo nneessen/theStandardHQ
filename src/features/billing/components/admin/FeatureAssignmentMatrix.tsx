@@ -320,18 +320,16 @@ export function FeatureAssignmentMatrix({
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-6 text-[10px] text-zinc-500 px-2"
+                className="h-6 text-[10px] text-v2-ink-muted px-2"
                 onClick={expandAll}
               >
                 Expand All
               </Button>
-              <span className="text-zinc-300 dark:text-zinc-700 text-[10px]">
-                /
-              </span>
+              <span className="text-v2-ink-subtle text-[10px]">/</span>
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-6 text-[10px] text-zinc-500 px-2"
+                className="h-6 text-[10px] text-v2-ink-muted px-2"
                 onClick={collapseAll}
               >
                 Collapse All
@@ -376,16 +374,16 @@ export function FeatureAssignmentMatrix({
         <div className="overflow-x-auto">
           {/* Column Headers */}
           <div
-            className="grid items-end border-b border-zinc-200 dark:border-zinc-800 pb-2 mb-1"
+            className="grid items-end border-b border-v2-ring pb-2 mb-1"
             style={{ gridTemplateColumns: gridCols }}
           >
-            <div className="text-xs font-medium text-zinc-500 pr-4">
+            <div className="text-xs font-medium text-v2-ink-muted pr-4">
               Feature / Section
             </div>
             {plans.map((plan) => (
               <div key={plan.id} className="text-center">
                 <div className="flex flex-col items-center gap-1">
-                  <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+                  <span className="text-xs font-medium text-v2-ink uppercase tracking-wide">
                     {plan.display_name}
                   </span>
                   {hasPendingChanges(plan.id) && (
@@ -437,7 +435,7 @@ export function FeatureAssignmentMatrix({
                   >
                     {/* Category Header Row */}
                     <div
-                      className="grid items-center rounded-md bg-zinc-50 dark:bg-zinc-900/60 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                      className="grid items-center rounded-md bg-v2-canvas dark:bg-v2-card-dark/60 hover:bg-v2-ring dark:hover:bg-v2-card-dark"
                       style={{ gridTemplateColumns: gridCols }}
                     >
                       <CollapsibleTrigger asChild>
@@ -445,17 +443,17 @@ export function FeatureAssignmentMatrix({
                           <span
                             className={`h-2 w-2 rounded-full shrink-0 ${accentColor}`}
                           />
-                          <CategoryIcon className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+                          <CategoryIcon className="h-3.5 w-3.5 text-v2-ink-muted shrink-0" />
                           <div className="flex flex-col min-w-0">
-                            <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">
+                            <span className="text-xs font-semibold text-v2-ink dark:text-v2-ink-subtle truncate">
                               {FEATURE_CATEGORIES[category].label}
                             </span>
-                            <span className="text-[10px] text-zinc-500 truncate">
+                            <span className="text-[10px] text-v2-ink-muted truncate">
                               {FEATURE_CATEGORIES[category].description}
                             </span>
                           </div>
                           <ChevronDown
-                            className={`h-3.5 w-3.5 text-zinc-400 shrink-0 transition-transform ${
+                            className={`h-3.5 w-3.5 text-v2-ink-subtle shrink-0 transition-transform ${
                               isOpen ? "" : "-rotate-90"
                             }`}
                           />
@@ -495,7 +493,7 @@ export function FeatureAssignmentMatrix({
                               onClick={(e) => e.stopPropagation()}
                               className="cursor-pointer"
                             />
-                            <span className="text-[9px] text-zinc-400 tabular-nums">
+                            <span className="text-[9px] text-v2-ink-subtle tabular-nums">
                               {enabledCount}/{features.length}
                             </span>
                           </div>
@@ -508,19 +506,19 @@ export function FeatureAssignmentMatrix({
                       {features.map((feature, idx) => (
                         <div
                           key={feature.key}
-                          className={`grid items-center border-l-2 ${borderColor} ml-2 pl-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/30 ${
+                          className={`grid items-center border-l-2 ${borderColor} ml-2 pl-4 hover:bg-v2-canvas dark:hover:bg-v2-card-dark/30 ${
                             idx % 2 === 0
                               ? "bg-white dark:bg-transparent"
-                              : "bg-zinc-50/50 dark:bg-zinc-900/20"
+                              : "bg-v2-canvas dark:bg-v2-card-dark/20"
                           }`}
                           style={{ gridTemplateColumns: gridCols }}
                         >
                           <div className="py-1.5 pr-4">
                             <div className="flex flex-col">
-                              <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                              <span className="text-xs font-medium text-v2-ink-muted">
                                 {feature.displayName}
                               </span>
-                              <span className="text-[10px] text-zinc-500">
+                              <span className="text-[10px] text-v2-ink-muted">
                                 {feature.description}
                               </span>
                             </div>
@@ -562,10 +560,10 @@ export function FeatureAssignmentMatrix({
             {/* Analytics Section Separator */}
             <div className="relative py-3">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-zinc-200 dark:border-zinc-800" />
+                <div className="w-full border-t border-v2-ring" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-white dark:bg-zinc-950 px-3 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+                <span className="bg-v2-card px-3 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em]">
                   Analytics Dashboard Sections
                 </span>
               </div>
@@ -584,17 +582,17 @@ export function FeatureAssignmentMatrix({
                 <CollapsibleTrigger asChild>
                   <button className="flex items-center gap-2 py-2 px-2 text-left w-full group">
                     <span className="h-2 w-2 rounded-full shrink-0 bg-rose-500" />
-                    <BarChart3 className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+                    <BarChart3 className="h-3.5 w-3.5 text-v2-ink-muted shrink-0" />
                     <div className="flex flex-col min-w-0">
-                      <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">
+                      <span className="text-xs font-semibold text-v2-ink dark:text-v2-ink-subtle truncate">
                         Analytics Sections
                       </span>
-                      <span className="text-[10px] text-zinc-500 truncate">
+                      <span className="text-[10px] text-v2-ink-muted truncate">
                         Individual dashboard sections to enable
                       </span>
                     </div>
                     <ChevronDown
-                      className={`h-3.5 w-3.5 text-zinc-400 shrink-0 transition-transform ${
+                      className={`h-3.5 w-3.5 text-v2-ink-subtle shrink-0 transition-transform ${
                         openCategories.has("__analytics__") ? "" : "-rotate-90"
                       }`}
                     />
@@ -623,7 +621,7 @@ export function FeatureAssignmentMatrix({
                         onClick={(e) => e.stopPropagation()}
                         className="cursor-pointer"
                       />
-                      <span className="text-[9px] text-zinc-400 tabular-nums">
+                      <span className="text-[9px] text-v2-ink-subtle tabular-nums">
                         {enabledCount}/{analyticsSections.length}
                       </span>
                     </div>
@@ -636,19 +634,19 @@ export function FeatureAssignmentMatrix({
                 {analyticsSections.map((section, idx) => (
                   <div
                     key={section.key}
-                    className={`grid items-center border-l-2 border-l-rose-500/40 ml-2 pl-4 hover:bg-zinc-50 dark:hover:bg-zinc-900/30 ${
+                    className={`grid items-center border-l-2 border-l-rose-500/40 ml-2 pl-4 hover:bg-v2-canvas dark:hover:bg-v2-card-dark/30 ${
                       idx % 2 === 0
                         ? "bg-white dark:bg-transparent"
-                        : "bg-zinc-50/50 dark:bg-zinc-900/20"
+                        : "bg-v2-canvas dark:bg-v2-card-dark/20"
                     }`}
                     style={{ gridTemplateColumns: gridCols }}
                   >
                     <div className="py-1.5 pr-4">
                       <div className="flex flex-col">
-                        <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                        <span className="text-xs font-medium text-v2-ink-muted">
                           {section.displayName}
                         </span>
-                        <span className="text-[10px] text-zinc-500">
+                        <span className="text-[10px] text-v2-ink-muted">
                           {section.description}
                         </span>
                       </div>

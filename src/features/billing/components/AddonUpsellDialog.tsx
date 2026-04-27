@@ -84,7 +84,7 @@ export function AddonUpsellDialog({
 
         <div className="flex items-center justify-center py-6">
           {isLoading ? (
-            <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
+            <Loader2 className="h-6 w-6 animate-spin text-v2-ink-subtle" />
           ) : (
             <Button size="sm" className="text-[11px]" onClick={onClose}>
               <ExternalLink className="h-3 w-3 mr-1" />

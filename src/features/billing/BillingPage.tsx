@@ -118,39 +118,39 @@ export function BillingPage() {
   ).toFixed(0)}/mo`;
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
-      {/* Header */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-2">
-          <Wallet className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+    <div className="flex flex-col gap-3">
+      {/* Compact header — title + inline subtitle */}
+      <header className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-1.5">
+          <Wallet className="h-4 w-4 text-v2-ink" />
+          <h1 className="text-base font-semibold tracking-tight text-v2-ink">
             Billing
           </h1>
         </div>
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+        <p className="text-[11px] text-v2-ink-muted">
           Manage your subscription, add-ons, and usage
         </p>
-      </div>
+      </header>
 
-      {/* Scrollable content */}
-      <div className="flex-1 overflow-y-auto space-y-3">
+      {/* Sections */}
+      <div className="flex-1 flex flex-col gap-3">
         {/* Pricing Cards — primary focus, top of page */}
         <PricingCards onPlanSelect={handlePlanSelect} />
 
         {/* What's Coming */}
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
+        <div className="rounded-v2-md border border-v2-ring shadow-v2-soft bg-v2-card overflow-hidden">
           {/* Header */}
-          <div className="px-4 py-3 bg-gradient-to-r from-zinc-900 to-zinc-800 dark:from-zinc-800 dark:to-zinc-900">
+          <div className="px-4 py-3 bg-gradient-to-r from-v2-card-dark to-v2-card-dark ">
             <div className="flex items-center gap-2 mb-1">
               <FlaskConical className="h-3.5 w-3.5 text-amber-400" />
-              <span className="text-[11px] font-bold text-white uppercase tracking-wider">
+              <span className="text-[11px] font-bold text-white uppercase tracking-[0.18em]">
                 What's Coming
               </span>
-              <span className="text-[9px] font-medium bg-amber-400 text-zinc-900 rounded-full px-2 py-0.5 ml-1">
+              <span className="text-[9px] font-medium bg-amber-400 text-v2-ink rounded-full px-2 py-0.5 ml-1">
                 Team gets early access
               </span>
             </div>
-            <p className="text-[11px] text-zinc-300 leading-snug">
+            <p className="text-[11px] text-v2-ink-subtle leading-snug">
               This is just the beginning. The roadmap ahead is massive — and
               heavily AI-driven. Team subscribers get every new feature first,
               the moment it ships.
@@ -158,12 +158,12 @@ export function BillingPage() {
           </div>
 
           {/* Feature columns */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-zinc-100 dark:divide-zinc-800">
+          <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-v2-ring/60">
             {/* AI Suite */}
             <div className="px-4 py-3 space-y-2">
               <div className="flex items-center gap-1.5 mb-2">
                 <Brain className="h-3.5 w-3.5 text-indigo-500" />
-                <p className="text-[10px] font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wide">
+                <p className="text-[10px] font-bold text-v2-ink dark:text-v2-ink-subtle uppercase tracking-wide">
                   AI Suite
                 </p>
               </div>
@@ -176,7 +176,7 @@ export function BillingPage() {
               ].map((item) => (
                 <div key={item} className="flex items-start gap-1.5">
                   <Sparkles className="h-3 w-3 text-indigo-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-[10px] text-zinc-600 dark:text-zinc-400 leading-tight">
+                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-tight">
                     {item}
                   </p>
                 </div>
@@ -187,7 +187,7 @@ export function BillingPage() {
             <div className="px-4 py-3 space-y-2">
               <div className="flex items-center gap-1.5 mb-2">
                 <Plug2 className="h-3.5 w-3.5 text-emerald-500" />
-                <p className="text-[10px] font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wide">
+                <p className="text-[10px] font-bold text-v2-ink dark:text-v2-ink-subtle uppercase tracking-wide">
                   CRM Integrations
                 </p>
               </div>
@@ -200,7 +200,7 @@ export function BillingPage() {
               ].map((item) => (
                 <div key={item} className="flex items-start gap-1.5">
                   <Sparkles className="h-3 w-3 text-emerald-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-[10px] text-zinc-600 dark:text-zinc-400 leading-tight">
+                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-tight">
                     {item}
                   </p>
                 </div>
@@ -211,7 +211,7 @@ export function BillingPage() {
             <div className="px-4 py-3 space-y-2">
               <div className="flex items-center gap-1.5 mb-2">
                 <BarChart3 className="h-3.5 w-3.5 text-amber-500" />
-                <p className="text-[10px] font-bold text-zinc-800 dark:text-zinc-200 uppercase tracking-wide">
+                <p className="text-[10px] font-bold text-v2-ink dark:text-v2-ink-subtle uppercase tracking-wide">
                   Power Tools
                 </p>
               </div>
@@ -224,7 +224,7 @@ export function BillingPage() {
               ].map((item) => (
                 <div key={item} className="flex items-start gap-1.5">
                   <Sparkles className="h-3 w-3 text-amber-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-[10px] text-zinc-600 dark:text-zinc-400 leading-tight">
+                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-tight">
                     {item}
                   </p>
                 </div>
@@ -233,8 +233,8 @@ export function BillingPage() {
           </div>
 
           {/* Footer note */}
-          <div className="px-4 py-2 bg-zinc-50 dark:bg-zinc-800/50 border-t border-zinc-100 dark:border-zinc-800">
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 text-center">
+          <div className="px-4 py-2 bg-v2-canvas border-t border-v2-ring/60">
+            <p className="text-[10px] text-v2-ink-muted text-center">
               Features roll out to{" "}
               <span className="font-semibold text-violet-600 dark:text-violet-400">
                 Team
@@ -264,27 +264,27 @@ export function BillingPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden">
-          <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-zinc-100 dark:border-zinc-800">
+        <div className="rounded-v2-md border border-v2-ring shadow-v2-soft bg-v2-card overflow-hidden">
+          <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-v2-ring/60">
             <div className="flex items-start gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 text-white flex-shrink-0">
                 <PhoneCall className="h-5 w-5" />
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  <h2 className="text-sm font-semibold text-v2-ink">
                     Premium Voice
                   </h2>
                   <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-amber-700 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
                     Coming Soon
                   </span>
                 </div>
-                <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400 max-w-2xl leading-relaxed">
+                <p className="mt-1 text-[11px] text-v2-ink-muted max-w-2xl leading-relaxed">
                   AI-powered call follow-up for missed appointments,
                   reschedules, and after-hours inbound coverage for your
                   standard-chat-bot.
                 </p>
-                <p className="mt-2 text-[10px] font-medium text-zinc-700 dark:text-zinc-300">
+                <p className="mt-2 text-[10px] font-medium text-v2-ink-muted">
                   Launch plan: Voice Pro at {premiumVoiceLaunchPrice} with 500
                   included minutes.
                 </p>
@@ -301,13 +301,13 @@ export function BillingPage() {
               ].map((label) => (
                 <span
                   key={label}
-                  className="rounded bg-zinc-100 px-1.5 py-0.5 text-[9px] text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                  className="rounded bg-v2-ring px-1.5 py-0.5 text-[9px] text-v2-ink-muted dark:bg-v2-ring dark:text-v2-ink-subtle"
                 >
                   {label}
                 </span>
               ))}
             </div>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted">
               {PREMIUM_VOICE_COMING_SOON_MESSAGE} Team subscribers will get
               first access when rollout opens.
             </p>
@@ -325,18 +325,18 @@ export function BillingPage() {
 
         {/* FAQ (collapsible) */}
         <Collapsible.Root open={faqOpen} onOpenChange={setFaqOpen}>
-          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+          <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
             <Collapsible.Trigger asChild>
-              <button className="flex items-center justify-between w-full px-3 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors rounded-lg">
+              <button className="flex items-center justify-between w-full px-3 py-2 hover:bg-v2-canvas transition-colors rounded-lg">
                 <div className="flex items-center gap-1.5">
-                  <HelpCircle className="h-3.5 w-3.5 text-zinc-400" />
-                  <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+                  <HelpCircle className="h-3.5 w-3.5 text-v2-ink-subtle" />
+                  <span className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
                     FAQ
                   </span>
                 </div>
                 <ChevronRight
                   className={cn(
-                    "h-3.5 w-3.5 text-zinc-400 transition-transform duration-200",
+                    "h-3.5 w-3.5 text-v2-ink-subtle transition-transform duration-200",
                     faqOpen && "rotate-90",
                   )}
                 />
@@ -344,7 +344,7 @@ export function BillingPage() {
             </Collapsible.Trigger>
 
             <Collapsible.Content>
-              <div className="px-3 pb-3 space-y-2 border-t border-zinc-100 dark:border-zinc-800 pt-2">
+              <div className="px-3 pb-3 space-y-2 border-t border-v2-ring/60 pt-2">
                 <FaqItem
                   q="What happens when grandfathered period ends?"
                   a="You'll move to Free tier unless you subscribe. All data is preserved."
@@ -392,11 +392,9 @@ export function BillingPage() {
 
 function FaqItem({ q, a }: { q: string; a: string }) {
   return (
-    <div className="pb-2 border-b border-zinc-100 dark:border-zinc-800 last:border-0 last:pb-0">
-      <p className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
-        {q}
-      </p>
-      <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">{a}</p>
+    <div className="pb-2 border-b border-v2-ring/60 last:border-0 last:pb-0">
+      <p className="text-[11px] font-medium text-v2-ink-muted">{q}</p>
+      <p className="text-[10px] text-v2-ink-muted mt-0.5">{a}</p>
     </div>
   );
 }

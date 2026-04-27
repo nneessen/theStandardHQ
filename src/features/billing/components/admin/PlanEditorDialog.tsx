@@ -175,7 +175,7 @@ export function PlanEditorDialog({
             </div>
 
             <div className="border-t pt-4 mt-4">
-              <h4 className="text-xs font-medium text-zinc-500 mb-3">
+              <h4 className="text-xs font-medium text-v2-ink-muted mb-3">
                 Stripe Integration
               </h4>
               <div className="grid grid-cols-2 gap-4">
@@ -204,7 +204,7 @@ export function PlanEditorDialog({
                   />
                 </div>
               </div>
-              <p className="text-[10px] text-zinc-500 mt-2">
+              <p className="text-[10px] text-v2-ink-muted mt-2">
                 These IDs link this plan to Stripe prices for checkout.
               </p>
             </div>
@@ -242,7 +242,7 @@ export function PlanEditorDialog({
                   }
                   className="h-8 text-sm"
                 />
-                <p className="text-[10px] text-zinc-500">
+                <p className="text-[10px] text-v2-ink-muted">
                   ${(priceMonthly / 100).toFixed(2)} / month
                 </p>
               </div>
@@ -259,15 +259,15 @@ export function PlanEditorDialog({
                   }
                   className="h-8 text-sm"
                 />
-                <p className="text-[10px] text-zinc-500">
+                <p className="text-[10px] text-v2-ink-muted">
                   ${(priceAnnual / 100).toFixed(2)} / year
                 </p>
               </div>
             </div>
 
             {priceMonthly > 0 && priceAnnual > 0 && (
-              <div className="p-3 bg-zinc-100 dark:bg-zinc-800 rounded-md">
-                <p className="text-xs text-zinc-600 dark:text-zinc-400">
+              <div className="p-3 bg-v2-ring rounded-md">
+                <p className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle">
                   Annual savings:{" "}
                   <span className="font-semibold text-emerald-600">
                     {Math.round((1 - priceAnnual / (priceMonthly * 12)) * 100)}%
@@ -307,7 +307,7 @@ export function PlanEditorDialog({
                 onChange={(e) => setEmailLimit(parseInt(e.target.value) || 0)}
                 className="h-8 text-sm"
               />
-              <p className="text-[10px] text-zinc-500">
+              <p className="text-[10px] text-v2-ink-muted">
                 0 = no email access, -1 = unlimited
               </p>
             </div>
@@ -317,7 +317,7 @@ export function PlanEditorDialog({
                 <Label htmlFor="smsEnabled" className="text-xs">
                   SMS Enabled
                 </Label>
-                <p className="text-[10px] text-zinc-500">
+                <p className="text-[10px] text-v2-ink-muted">
                   Allow SMS messaging for this plan
                 </p>
               </div>
@@ -344,7 +344,7 @@ export function PlanEditorDialog({
                 className="h-8 text-sm"
                 placeholder="No limit"
               />
-              <p className="text-[10px] text-zinc-500">
+              <p className="text-[10px] text-v2-ink-muted">
                 Leave empty for no limit
               </p>
             </div>
@@ -370,7 +370,7 @@ export function PlanEditorDialog({
           <TabsContent value="history" className="mt-4">
             {historyLoading ? (
               <div className="flex items-center justify-center h-32">
-                <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+                <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
               </div>
             ) : history && history.length > 0 ? (
               <ScrollArea className="h-64">
@@ -378,24 +378,24 @@ export function PlanEditorDialog({
                   {history.map((change) => (
                     <div
                       key={change.id}
-                      className="p-2 border border-zinc-200 dark:border-zinc-800 rounded-md"
+                      className="p-2 border border-v2-ring rounded-md"
                     >
                       <div className="flex items-center justify-between mb-1">
                         <Badge variant="outline" className="text-[10px]">
                           {change.change_type}
                         </Badge>
-                        <span className="text-[10px] text-zinc-500">
+                        <span className="text-[10px] text-v2-ink-muted">
                           {formatChangeDate(change.created_at || "")}
                         </span>
                       </div>
-                      <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                      <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                         Changed by:{" "}
                         {change.changer
                           ? `${change.changer.first_name} ${change.changer.last_name}`
                           : "Unknown"}
                       </p>
                       {change.notes && (
-                        <p className="text-[10px] text-zinc-500 mt-1">
+                        <p className="text-[10px] text-v2-ink-muted mt-1">
                           {change.notes}
                         </p>
                       )}
@@ -404,7 +404,7 @@ export function PlanEditorDialog({
                 </div>
               </ScrollArea>
             ) : (
-              <div className="text-center py-8 text-zinc-500 text-sm">
+              <div className="text-center py-8 text-v2-ink-muted text-sm">
                 No change history yet
               </div>
             )}

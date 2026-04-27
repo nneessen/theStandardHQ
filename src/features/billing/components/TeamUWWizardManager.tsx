@@ -75,7 +75,7 @@ export function TeamUWWizardManager() {
   if (seatsLoading) {
     return (
       <div className="p-4 flex items-center justify-center">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -86,7 +86,7 @@ export function TeamUWWizardManager() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <Wand2 className="h-3.5 w-3.5 text-purple-500" />
-          <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <span className="text-[11px] font-semibold text-v2-ink">
             UW Wizard — Team Access
           </span>
         </div>
@@ -108,14 +108,14 @@ export function TeamUWWizardManager() {
       {ownerUsage && (
         <div className="p-2 bg-purple-50/50 dark:bg-purple-950/20 rounded border border-purple-200 dark:border-purple-800">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-medium text-zinc-700 dark:text-zinc-300">
+            <span className="text-[10px] font-medium text-v2-ink-muted">
               Your Usage (Owner)
             </span>
-            <span className="text-[10px] text-zinc-500">
+            <span className="text-[10px] text-v2-ink-muted">
               {ownerUsage.runs_used} / {ownerUsage.runs_limit} runs
             </span>
           </div>
-          <div className="h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+          <div className="h-1.5 bg-v2-ring rounded-full overflow-hidden">
             <div
               className={cn(
                 "h-full rounded-full transition-all",
@@ -135,17 +135,17 @@ export function TeamUWWizardManager() {
 
       {/* Agent Seats Table */}
       {seats && seats.length > 0 && (
-        <div className="border border-zinc-200 dark:border-zinc-700 rounded overflow-hidden">
+        <div className="border border-v2-ring rounded overflow-hidden">
           <table className="w-full text-[10px]">
             <thead>
-              <tr className="bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-700">
-                <th className="text-left px-2 py-1.5 font-medium text-zinc-500 dark:text-zinc-400">
+              <tr className="bg-v2-canvas border-b border-v2-ring">
+                <th className="text-left px-2 py-1.5 font-medium text-v2-ink-muted">
                   Agent
                 </th>
-                <th className="text-right px-2 py-1.5 font-medium text-zinc-500 dark:text-zinc-400">
+                <th className="text-right px-2 py-1.5 font-medium text-v2-ink-muted">
                   Usage
                 </th>
-                <th className="text-right px-2 py-1.5 font-medium text-zinc-500 dark:text-zinc-400 w-16">
+                <th className="text-right px-2 py-1.5 font-medium text-v2-ink-muted w-16">
                   Action
                 </th>
               </tr>
@@ -154,10 +154,10 @@ export function TeamUWWizardManager() {
               {seats.map((seat) => (
                 <tr
                   key={seat.id}
-                  className="border-b border-zinc-100 dark:border-zinc-800 last:border-0"
+                  className="border-b border-v2-ring/60 last:border-0"
                 >
                   <td className="px-2 py-1.5">
-                    <div className="text-zinc-900 dark:text-zinc-100 font-medium">
+                    <div className="text-v2-ink font-medium">
                       {seat.agent
                         ? `${seat.agent.first_name || ""} ${seat.agent.last_name || ""}`.trim() ||
                           seat.agent.email ||
@@ -165,16 +165,16 @@ export function TeamUWWizardManager() {
                         : "Unknown"}
                     </div>
                     {seat.agent?.email && (
-                      <div className="text-[9px] text-zinc-400">
+                      <div className="text-[9px] text-v2-ink-subtle">
                         {seat.agent.email}
                       </div>
                     )}
                   </td>
-                  <td className="px-2 py-1.5 text-right text-zinc-600 dark:text-zinc-400">
-                    <div className="font-medium text-zinc-900 dark:text-zinc-100">
+                  <td className="px-2 py-1.5 text-right text-v2-ink-muted dark:text-v2-ink-subtle">
+                    <div className="font-medium text-v2-ink">
                       {seat.runs_used} / {seat.runs_limit}
                     </div>
-                    <div className="text-[9px] text-zinc-400">
+                    <div className="text-[9px] text-v2-ink-subtle">
                       {seat.runs_remaining} left
                     </div>
                   </td>
@@ -196,7 +196,7 @@ export function TeamUWWizardManager() {
       )}
 
       {seats && seats.length === 0 && (
-        <p className="text-[10px] text-zinc-400 text-center py-2">
+        <p className="text-[10px] text-v2-ink-subtle text-center py-2">
           No agents assigned yet. Use the dropdown below to add agents.
         </p>
       )}
@@ -207,7 +207,7 @@ export function TeamUWWizardManager() {
           <select
             value={selectedAgentId}
             onChange={(e) => setSelectedAgentId(e.target.value)}
-            className="flex-1 h-7 text-[10px] rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-2 text-zinc-900 dark:text-zinc-100"
+            className="flex-1 h-7 text-[10px] rounded border border-v2-ring bg-white dark:bg-v2-ring px-2 text-v2-ink"
           >
             <option value="">Select agent...</option>
             {eligibleAgents.map((agent) => (
@@ -238,7 +238,7 @@ export function TeamUWWizardManager() {
         eligibleAgents &&
         eligibleAgents.length === 0 &&
         seatCount > 0 && (
-          <p className="text-[10px] text-zinc-400">
+          <p className="text-[10px] text-v2-ink-subtle">
             All eligible downline agents have been assigned seats.
           </p>
         )}
