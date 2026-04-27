@@ -196,18 +196,18 @@ export default function AddUserDialog({
         <div className="px-5 py-4 space-y-3 overflow-y-auto flex-1 min-h-0">
           {/* Email */}
           <div>
-            <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            <Label className="text-[11px] text-v2-ink-muted">
               Email <span className="text-red-500">*</span>
             </Label>
             <div className="relative">
-              <Mail className="absolute left-2 top-1.5 h-3 w-3 text-zinc-400" />
+              <Mail className="absolute left-2 top-1.5 h-3 w-3 text-v2-ink-subtle" />
               <Input
                 type="email"
                 value={formData.email}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, email: e.target.value }))
                 }
-                className={`h-7 text-[11px] pl-7 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 ${errors.email ? "border-red-500" : ""}`}
+                className={`h-7 text-[11px] pl-7 bg-v2-card border-v2-ring ${errors.email ? "border-red-500" : ""}`}
                 placeholder="user@email.com"
               />
             </div>
@@ -219,11 +219,11 @@ export default function AddUserDialog({
           {/* First Name & Last Name */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <Label className="text-[11px] text-v2-ink-muted">
                 First Name <span className="text-red-500">*</span>
               </Label>
               <div className="relative">
-                <User className="absolute left-2 top-1.5 h-3 w-3 text-zinc-400" />
+                <User className="absolute left-2 top-1.5 h-3 w-3 text-v2-ink-subtle" />
                 <Input
                   value={formData.first_name}
                   onChange={(e) =>
@@ -232,7 +232,7 @@ export default function AddUserDialog({
                       first_name: e.target.value,
                     }))
                   }
-                  className={`h-7 text-[11px] pl-7 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 ${errors.first_name ? "border-red-500" : ""}`}
+                  className={`h-7 text-[11px] pl-7 bg-v2-card border-v2-ring ${errors.first_name ? "border-red-500" : ""}`}
                   placeholder="First"
                 />
               </div>
@@ -244,7 +244,7 @@ export default function AddUserDialog({
             </div>
 
             <div>
-              <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <Label className="text-[11px] text-v2-ink-muted">
                 Last Name <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -255,7 +255,7 @@ export default function AddUserDialog({
                     last_name: e.target.value,
                   }))
                 }
-                className={`h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 ${errors.last_name ? "border-red-500" : ""}`}
+                className={`h-7 text-[11px] bg-v2-card border-v2-ring ${errors.last_name ? "border-red-500" : ""}`}
                 placeholder="Last"
               />
               {errors.last_name && (
@@ -269,27 +269,23 @@ export default function AddUserDialog({
           {/* Phone & Upline */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                Phone
-              </Label>
+              <Label className="text-[11px] text-v2-ink-muted">Phone</Label>
               <div className="relative">
-                <Phone className="absolute left-2 top-1.5 h-3 w-3 text-zinc-400" />
+                <Phone className="absolute left-2 top-1.5 h-3 w-3 text-v2-ink-subtle" />
                 <Input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, phone: e.target.value }))
                   }
-                  className="h-7 text-[11px] pl-7 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                  className="h-7 text-[11px] pl-7 bg-v2-card border-v2-ring"
                   placeholder="(555) 123-4567"
                 />
               </div>
             </div>
 
             <div>
-              <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                Upline
-              </Label>
+              <Label className="text-[11px] text-v2-ink-muted">Upline</Label>
               <UserSearchCombobox
                 value={formData.upline_id ?? null}
                 onChange={(id) =>
@@ -313,9 +309,7 @@ export default function AddUserDialog({
               {/* IMO Selection - Only for super admins */}
               {isSuperAdmin && (
                 <div>
-                  <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                    IMO
-                  </Label>
+                  <Label className="text-[11px] text-v2-ink-muted">IMO</Label>
                   <Select
                     value={selectedImoId || "none"}
                     onValueChange={(value) => {
@@ -329,8 +323,8 @@ export default function AddUserDialog({
                     }}
                     disabled={isLoadingImos}
                   >
-                    <SelectTrigger className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
-                      <Building2 className="h-3 w-3 text-zinc-400 mr-1.5" />
+                    <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
+                      <Building2 className="h-3 w-3 text-v2-ink-subtle mr-1.5" />
                       <SelectValue placeholder="Select IMO" />
                     </SelectTrigger>
                     <SelectContent>
@@ -353,9 +347,7 @@ export default function AddUserDialog({
 
               {/* Agency Selection */}
               <div className={isSuperAdmin ? "" : "col-span-2"}>
-                <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                  Agency
-                </Label>
+                <Label className="text-[11px] text-v2-ink-muted">Agency</Label>
                 <Select
                   value={formData.agency_id || "none"}
                   onValueChange={(value) =>
@@ -368,8 +360,8 @@ export default function AddUserDialog({
                     (isSuperAdmin && !selectedImoId) || isLoadingAgencies
                   }
                 >
-                  <SelectTrigger className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
-                    <Building2 className="h-3 w-3 text-zinc-400 mr-1.5" />
+                  <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
+                    <Building2 className="h-3 w-3 text-v2-ink-subtle mr-1.5" />
                     <SelectValue
                       placeholder={
                         isSuperAdmin && !selectedImoId
@@ -405,13 +397,13 @@ export default function AddUserDialog({
           {/* Roles - Compact Inline Checkboxes */}
           {/* Filter out 'recruit' - this is managed by the status toggle */}
           <div>
-            <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            <Label className="text-[11px] text-v2-ink-muted">
               Additional Roles
               {errors.roles && (
                 <span className="text-red-500 ml-1">({errors.roles})</span>
               )}
             </Label>
-            <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-1.5 bg-zinc-100 dark:bg-zinc-800/50 p-2 rounded border border-zinc-200 dark:border-zinc-700/50">
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-1.5 bg-v2-canvas p-2 rounded border border-v2-ring/50">
               {roles
                 ?.filter((role) => !["recruit"].includes(role.name))
                 .map((role) => (
@@ -426,7 +418,7 @@ export default function AddUserDialog({
                     />
                     <Label
                       htmlFor={`role-${role.id}`}
-                      className="cursor-pointer text-[11px] font-normal text-zinc-700 dark:text-zinc-300"
+                      className="cursor-pointer text-[11px] font-normal text-v2-ink-muted"
                       title={role.description ?? undefined}
                     >
                       {role.display_name}
@@ -435,7 +427,7 @@ export default function AddUserDialog({
                 ))}
             </div>
             {!isStaffRoleSelected && (
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <p className="text-[10px] text-v2-ink-muted mt-0.5">
                 Base role (agent/recruit) is set by status below
               </p>
             )}
@@ -452,9 +444,7 @@ export default function AddUserDialog({
           ) : (
             <>
               <div>
-                <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                  Status
-                </Label>
+                <Label className="text-[11px] text-v2-ink-muted">Status</Label>
                 <div className="grid grid-cols-2 gap-1 mt-1">
                   <Button
                     type="button"
@@ -518,7 +508,7 @@ export default function AddUserDialog({
                     Pending (Recruit)
                   </Button>
                 </div>
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
+                <p className="text-[10px] text-v2-ink-muted mt-1">
                   {formData.approval_status === "approved"
                     ? "User appears in Users & Access"
                     : "User appears in Recruiting Pipeline"}
@@ -527,8 +517,8 @@ export default function AddUserDialog({
 
               {/* Onboarding Status - Only when Pending */}
               {formData.approval_status === "pending" && (
-                <div className="bg-zinc-100 dark:bg-zinc-800/50 p-2 rounded border border-zinc-200 dark:border-zinc-700/50">
-                  <Label className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <div className="bg-v2-canvas p-2 rounded border border-v2-ring/50">
+                  <Label className="text-[10px] text-v2-ink-muted">
                     Onboarding Status
                   </Label>
                   <div className="grid grid-cols-3 gap-1 mt-1">

@@ -204,11 +204,11 @@ export function PermissionManagementPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
       {/* Compact Header with inline stats */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
         <div className="flex items-center gap-5">
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-            <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <Shield className="h-4 w-4 text-v2-ink" />
+            <h1 className="text-sm font-semibold text-v2-ink">
               Permission Management
             </h1>
           </div>
@@ -216,34 +216,32 @@ export function PermissionManagementPage() {
           {/* Inline compact stats */}
           <div className="flex items-center gap-3 text-[11px]">
             <div className="flex items-center gap-1">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              <span className="font-medium text-v2-ink">
                 {permissions.length}
               </span>
-              <span className="text-zinc-500 dark:text-zinc-400">total</span>
+              <span className="text-v2-ink-muted">total</span>
             </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+            <div className="h-3 w-px bg-v2-ring" />
             <div className="flex items-center gap-1">
-              <Lock className="h-3 w-3 text-zinc-400" />
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              <Lock className="h-3 w-3 text-v2-ink-subtle" />
+              <span className="font-medium text-v2-ink">
                 {systemPermsCount}
               </span>
-              <span className="text-zinc-500 dark:text-zinc-400">system</span>
+              <span className="text-v2-ink-muted">system</span>
             </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+            <div className="h-3 w-px bg-v2-ring" />
             <div className="flex items-center gap-1">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              <span className="font-medium text-v2-ink">
                 {customPermsCount}
               </span>
-              <span className="text-zinc-500 dark:text-zinc-400">custom</span>
+              <span className="text-v2-ink-muted">custom</span>
             </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+            <div className="h-3 w-px bg-v2-ring" />
             <div className="flex items-center gap-1">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              <span className="font-medium text-v2-ink">
                 {uniqueResources.length}
               </span>
-              <span className="text-zinc-500 dark:text-zinc-400">
-                resources
-              </span>
+              <span className="text-v2-ink-muted">resources</span>
             </div>
           </div>
         </div>
@@ -261,16 +259,16 @@ export function PermissionManagementPage() {
       {/* Filters */}
       <div className="flex items-center gap-2">
         <div className="relative w-64">
-          <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-zinc-400" />
+          <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-v2-ink-subtle" />
           <Input
             placeholder="Search permissions..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-7 h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
+            className="pl-7 h-7 text-[11px] bg-v2-card border-v2-ring"
           />
         </div>
         <Select value={resourceFilter} onValueChange={setResourceFilter}>
-          <SelectTrigger className="w-40 h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+          <SelectTrigger className="w-40 h-7 text-[11px] bg-v2-card border-v2-ring">
             <SelectValue placeholder="Filter by resource" />
           </SelectTrigger>
           <SelectContent>
@@ -291,32 +289,32 @@ export function PermissionManagementPage() {
       </div>
 
       {/* Permissions Table */}
-      <div className="flex-1 overflow-auto rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+      <div className="flex-1 overflow-auto rounded-lg bg-v2-card border border-v2-ring">
         <Table>
-          <TableHeader className="sticky top-0 bg-zinc-50 dark:bg-zinc-800/50 z-10">
-            <TableRow className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-transparent">
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[200px]">
+          <TableHeader className="sticky top-0 bg-v2-canvas z-10">
+            <TableRow className="border-b border-v2-ring hover:bg-transparent">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[200px]">
                 Permission Code
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[100px]">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px]">
                 Resource
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[80px]">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px]">
                 Action
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[80px]">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px]">
                 Scope
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                 Description
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[80px]">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px]">
                 Roles
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[80px]">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px]">
                 Type
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[80px] text-right">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px] text-right">
                 Actions
               </TableHead>
             </TableRow>
@@ -329,17 +327,17 @@ export function PermissionManagementPage() {
               return (
                 <TableRow
                   key={permission.id}
-                  className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/50"
+                  className="hover:bg-v2-canvas border-b border-v2-ring/60"
                 >
                   <TableCell className="py-1.5">
-                    <code className="text-[10px] font-mono font-medium text-zinc-900 dark:text-zinc-100 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded">
+                    <code className="text-[10px] font-mono font-medium text-v2-ink bg-v2-ring px-1.5 py-0.5 rounded">
                       {permission.code}
                     </code>
                   </TableCell>
                   <TableCell className="py-1.5">
                     <Badge
                       variant="secondary"
-                      className="text-[10px] h-4 px-1 bg-zinc-100 dark:bg-zinc-800"
+                      className="text-[10px] h-4 px-1 bg-v2-ring"
                     >
                       {permission.resource}
                     </Badge>
@@ -347,7 +345,7 @@ export function PermissionManagementPage() {
                   <TableCell className="py-1.5">
                     <Badge
                       variant="outline"
-                      className="text-[10px] h-4 px-1 border-zinc-300 dark:border-zinc-600"
+                      className="text-[10px] h-4 px-1 border-v2-ring "
                     >
                       {permission.action}
                     </Badge>
@@ -355,18 +353,18 @@ export function PermissionManagementPage() {
                   <TableCell className="py-1.5">
                     <Badge
                       variant="outline"
-                      className="text-[10px] h-4 px-1 border-zinc-300 dark:border-zinc-600"
+                      className="text-[10px] h-4 px-1 border-v2-ring "
                     >
                       {permission.scope}
                     </Badge>
                   </TableCell>
                   <TableCell className="py-1.5">
-                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 truncate block max-w-xs">
+                    <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate block max-w-xs">
                       {permission.description || "-"}
                     </span>
                   </TableCell>
                   <TableCell className="py-1.5">
-                    <span className="text-[11px] text-zinc-700 dark:text-zinc-300">
+                    <span className="text-[11px] text-v2-ink-muted">
                       {assignedRoles.length}
                     </span>
                   </TableCell>
@@ -374,7 +372,7 @@ export function PermissionManagementPage() {
                     {isSystemPermission ? (
                       <Badge
                         variant="outline"
-                        className="text-[10px] h-4 px-1 border-zinc-300 dark:border-zinc-600"
+                        className="text-[10px] h-4 px-1 border-v2-ring "
                       >
                         <Lock className="h-2.5 w-2.5 mr-0.5" />
                         System
@@ -393,7 +391,7 @@ export function PermissionManagementPage() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-5 px-1.5 text-[10px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                        className="h-5 px-1.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
                         onClick={() => handleOpenEditDialog(permission)}
                         disabled={isSystemPermission}
                       >
@@ -419,7 +417,7 @@ export function PermissionManagementPage() {
               <TableRow>
                 <TableCell
                   colSpan={8}
-                  className="text-center text-[11px] text-zinc-500 dark:text-zinc-400 py-6"
+                  className="text-center text-[11px] text-v2-ink-muted py-6"
                 >
                   No permissions found matching your filters
                 </TableCell>
@@ -431,18 +429,18 @@ export function PermissionManagementPage() {
 
       {/* Create Permission Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-md p-3 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+        <DialogContent className="max-w-md p-3 bg-v2-card border-v2-ring">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <DialogTitle className="text-sm font-semibold text-v2-ink">
               Create Permission
             </DialogTitle>
-            <DialogDescription className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <DialogDescription className="text-[10px] text-v2-ink-muted">
               Create a new custom permission. Code format: resource:action
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1">
-              <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <Label className="text-[11px] text-v2-ink-muted">
                 Permission Code <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -451,12 +449,12 @@ export function PermissionManagementPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, code: e.target.value })
                 }
-                className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                className="h-7 text-[11px] bg-v2-card border-v2-ring"
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                <Label className="text-[11px] text-v2-ink-muted">
                   Resource <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -465,11 +463,11 @@ export function PermissionManagementPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, resource: e.target.value })
                   }
-                  className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                  className="h-7 text-[11px] bg-v2-card border-v2-ring"
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                <Label className="text-[11px] text-v2-ink-muted">
                   Action <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -478,12 +476,12 @@ export function PermissionManagementPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, action: e.target.value })
                   }
-                  className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                  className="h-7 text-[11px] bg-v2-card border-v2-ring"
                 />
               </div>
             </div>
             <div className="space-y-1">
-              <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <Label className="text-[11px] text-v2-ink-muted">
                 Scope <span className="text-red-500">*</span>
               </Label>
               <Select
@@ -492,7 +490,7 @@ export function PermissionManagementPage() {
                   setFormData({ ...formData, scope: value as PermissionScope })
                 }
               >
-                <SelectTrigger className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
+                <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -512,7 +510,7 @@ export function PermissionManagementPage() {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <Label className="text-[11px] text-v2-ink-muted">
                 Description
               </Label>
               <Textarea
@@ -522,7 +520,7 @@ export function PermissionManagementPage() {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 rows={2}
-                className="text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 resize-none"
+                className="text-[11px] bg-v2-card border-v2-ring resize-none"
               />
             </div>
           </div>
@@ -557,29 +555,29 @@ export function PermissionManagementPage() {
 
       {/* Edit Permission Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md p-3 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+        <DialogContent className="max-w-md p-3 bg-v2-card border-v2-ring">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <DialogTitle className="text-sm font-semibold text-v2-ink">
               Edit Permission
             </DialogTitle>
-            <DialogDescription className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <DialogDescription className="text-[10px] text-v2-ink-muted">
               Update permission details. Code cannot be changed.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1">
-              <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <Label className="text-[11px] text-v2-ink-muted">
                 Permission Code (Read-only)
               </Label>
               <Input
                 value={formData.code}
                 disabled
-                className="h-7 text-[11px] bg-zinc-100 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                className="h-7 text-[11px] bg-v2-ring border-v2-ring"
               />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                <Label className="text-[11px] text-v2-ink-muted">
                   Resource <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -587,11 +585,11 @@ export function PermissionManagementPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, resource: e.target.value })
                   }
-                  className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                  className="h-7 text-[11px] bg-v2-card border-v2-ring"
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                <Label className="text-[11px] text-v2-ink-muted">
                   Action <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -599,12 +597,12 @@ export function PermissionManagementPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, action: e.target.value })
                   }
-                  className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                  className="h-7 text-[11px] bg-v2-card border-v2-ring"
                 />
               </div>
             </div>
             <div className="space-y-1">
-              <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <Label className="text-[11px] text-v2-ink-muted">
                 Scope <span className="text-red-500">*</span>
               </Label>
               <Select
@@ -613,7 +611,7 @@ export function PermissionManagementPage() {
                   setFormData({ ...formData, scope: value as PermissionScope })
                 }
               >
-                <SelectTrigger className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
+                <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -633,7 +631,7 @@ export function PermissionManagementPage() {
               </Select>
             </div>
             <div className="space-y-1">
-              <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <Label className="text-[11px] text-v2-ink-muted">
                 Description
               </Label>
               <Textarea
@@ -642,7 +640,7 @@ export function PermissionManagementPage() {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 rows={2}
-                className="text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 resize-none"
+                className="text-[11px] bg-v2-card border-v2-ring resize-none"
               />
             </div>
           </div>
@@ -676,23 +674,23 @@ export function PermissionManagementPage() {
 
       {/* Delete Permission Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="max-w-sm p-3 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+        <DialogContent className="max-w-sm p-3 bg-v2-card border-v2-ring">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <DialogTitle className="text-sm font-semibold text-v2-ink">
               Delete Permission
             </DialogTitle>
-            <DialogDescription className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <DialogDescription className="text-[10px] text-v2-ink-muted">
               Are you sure you want to delete this permission? This cannot be
               undone.
             </DialogDescription>
           </DialogHeader>
           {selectedPermission && (
             <div className="py-2">
-              <code className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-900 dark:text-zinc-100">
+              <code className="text-[10px] font-mono bg-v2-ring px-1.5 py-0.5 rounded text-v2-ink">
                 {selectedPermission.code}
               </code>
               {selectedPermission.description && (
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
+                <p className="text-[10px] text-v2-ink-muted mt-1">
                   {selectedPermission.description}
                 </p>
               )}

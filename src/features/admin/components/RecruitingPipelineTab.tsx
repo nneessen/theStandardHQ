@@ -44,19 +44,15 @@ export function RecruitingPipelineTab({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 text-[11px]">
           <div className="flex items-center gap-1.5">
-            <UserPlus className="h-3.5 w-3.5 text-zinc-400" />
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">
-              {pendingCount}
-            </span>
-            <span className="text-zinc-500 dark:text-zinc-400">
-              pending recruits
-            </span>
+            <UserPlus className="h-3.5 w-3.5 text-v2-ink-subtle" />
+            <span className="font-medium text-v2-ink">{pendingCount}</span>
+            <span className="text-v2-ink-muted">pending recruits</span>
           </div>
         </div>
       </div>
 
       {/* Recruits table */}
-      <div className="flex-1 overflow-auto rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+      <div className="flex-1 overflow-auto rounded-lg bg-v2-card border border-v2-ring">
         {isLoading ? (
           <div className="p-3 space-y-1">
             {[1, 2, 3, 4, 5].map((i) => (
@@ -65,24 +61,24 @@ export function RecruitingPipelineTab({
           </div>
         ) : (
           <Table>
-            <TableHeader className="sticky top-0 bg-zinc-50 dark:bg-zinc-800/50 z-10">
-              <TableRow className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-transparent">
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[180px]">
+            <TableHeader className="sticky top-0 bg-v2-canvas z-10">
+              <TableRow className="border-b border-v2-ring hover:bg-transparent">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[180px]">
                   Recruit
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[130px]">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[130px]">
                   Upline
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[100px]">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px]">
                   Resident State
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[90px]">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[90px]">
                   Applied
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[100px]">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px]">
                   Phase
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[100px] text-right">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px] text-right">
                   Actions
                 </TableHead>
               </TableRow>
@@ -113,7 +109,7 @@ export function RecruitingPipelineTab({
                 return (
                   <TableRow
                     key={recruit.id}
-                    className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/50"
+                    className="hover:bg-v2-canvas border-b border-v2-ring/60"
                   >
                     <TableCell className="py-1.5">
                       <div className="flex items-center gap-1.5">
@@ -121,10 +117,10 @@ export function RecruitingPipelineTab({
                           {recruitName.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <div className="font-medium text-[11px] text-zinc-900 dark:text-zinc-100 truncate leading-tight">
+                          <div className="font-medium text-[11px] text-v2-ink truncate leading-tight">
                             {recruitName}
                           </div>
-                          <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate leading-tight">
+                          <div className="text-[10px] text-v2-ink-muted truncate leading-tight">
                             {recruit.email}
                           </div>
                         </div>
@@ -132,22 +128,22 @@ export function RecruitingPipelineTab({
                     </TableCell>
                     <TableCell className="py-1.5">
                       {uplineName ? (
-                        <div className="text-[10px] text-zinc-600 dark:text-zinc-400 truncate">
+                        <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
                           {uplineName}
                         </div>
                       ) : (
-                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                        <span className="text-[10px] text-v2-ink-subtle">
                           -
                         </span>
                       )}
                     </TableCell>
                     <TableCell className="py-1.5">
-                      <span className="text-[10px] text-zinc-600 dark:text-zinc-400">
+                      <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                         {recruit.resident_state || recruit.state || "-"}
                       </span>
                     </TableCell>
                     <TableCell className="py-1.5">
-                      <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                      <span className="text-[10px] text-v2-ink-muted">
                         {recruit.created_at
                           ? new Date(recruit.created_at).toLocaleDateString()
                           : "-"}
@@ -166,7 +162,7 @@ export function RecruitingPipelineTab({
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-5 px-1.5 text-[10px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                          className="h-5 px-1.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
                           onClick={() => onEditRecruit(recruit)}
                           title="View/Edit full profile"
                         >
@@ -200,7 +196,7 @@ export function RecruitingPipelineTab({
                 <TableRow>
                   <TableCell
                     colSpan={6}
-                    className="text-center text-[11px] text-zinc-500 dark:text-zinc-400 py-6"
+                    className="text-center text-[11px] text-v2-ink-muted py-6"
                   >
                     No pending recruits
                   </TableCell>

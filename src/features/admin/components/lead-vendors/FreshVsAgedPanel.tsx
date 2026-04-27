@@ -1,7 +1,11 @@
 // src/features/admin/components/lead-vendors/FreshVsAgedPanel.tsx
 
 import { cn } from "@/lib/utils";
-import { formatCompactCurrency, formatCurrency, formatPercent } from "@/lib/format";
+import {
+  formatCompactCurrency,
+  formatCurrency,
+  formatPercent,
+} from "@/lib/format";
 import type { FreshAgedAggregates } from "./LeadIntelligenceDashboard";
 
 interface FreshVsAgedPanelProps {
@@ -51,25 +55,27 @@ export function FreshVsAgedPanel({ aggregates }: FreshVsAgedPanelProps) {
   const hasData = fresh.count > 0 || aged.count > 0;
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide">
+        <span className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-wide">
           Fresh vs Aged
         </span>
         <div className="flex items-center gap-2 text-[9px]">
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-blue-500" />
-            <span className="text-zinc-500">Fresh ({fresh.count})</span>
+            <span className="text-v2-ink-muted">Fresh ({fresh.count})</span>
           </span>
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-amber-500" />
-            <span className="text-zinc-500">Aged ({aged.count})</span>
+            <span className="text-v2-ink-muted">Aged ({aged.count})</span>
           </span>
         </div>
       </div>
 
       {!hasData ? (
-        <div className="text-[11px] text-zinc-400 text-center py-3">No data</div>
+        <div className="text-[11px] text-v2-ink-subtle text-center py-3">
+          No data
+        </div>
       ) : (
         <div className="space-y-1.5">
           {rows.map((row) => (
@@ -92,7 +98,7 @@ function ComparisonBar({ row }: { row: ComparisonRow }) {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[10px] text-zinc-500 dark:text-zinc-400 w-[36px] text-right flex-shrink-0">
+      <span className="text-[10px] text-v2-ink-muted w-[36px] text-right flex-shrink-0">
         {row.label}
       </span>
       <span
@@ -100,12 +106,12 @@ function ComparisonBar({ row }: { row: ComparisonRow }) {
           "text-[10px] font-medium w-[52px] text-right flex-shrink-0",
           freshBetter
             ? "text-blue-600 dark:text-blue-400"
-            : "text-zinc-500 dark:text-zinc-400",
+            : "text-v2-ink-muted",
         )}
       >
         {row.format(row.freshValue)}
       </span>
-      <div className="flex-1 flex h-[6px] rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+      <div className="flex-1 flex h-[6px] rounded-full overflow-hidden bg-v2-ring">
         <div
           className="bg-blue-500 transition-all duration-300"
           style={{ width: `${freshPct}%` }}
@@ -120,7 +126,7 @@ function ComparisonBar({ row }: { row: ComparisonRow }) {
           "text-[10px] font-medium w-[52px] flex-shrink-0",
           !freshBetter && row.freshValue !== row.agedValue
             ? "text-amber-600 dark:text-amber-400"
-            : "text-zinc-500 dark:text-zinc-400",
+            : "text-v2-ink-muted",
         )}
       >
         {row.format(row.agedValue)}

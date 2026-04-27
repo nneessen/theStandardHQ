@@ -184,7 +184,7 @@ export const UserManagementDashboard: React.FC = () => {
             <>
               {/* Scope Indicator */}
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   {filterCount > 0 ? "Filtered Users" : "All Users"}
                 </span>
                 {filterCount > 0 && (

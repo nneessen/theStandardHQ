@@ -79,15 +79,15 @@ export function GraduateToAgentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-3 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+      <DialogContent className="max-w-md p-3 bg-v2-card border-v2-ring">
         <DialogHeader className="space-y-1">
           <div className="flex items-center gap-1.5">
             <GraduationCap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            <DialogTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <DialogTitle className="text-sm font-semibold text-v2-ink">
               Graduate to Agent
             </DialogTitle>
           </div>
-          <DialogDescription className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <DialogDescription className="text-[10px] text-v2-ink-muted">
             Promote {recruit.first_name} {recruit.last_name} from recruit to
             licensed agent.
           </DialogDescription>
@@ -116,14 +116,14 @@ export function GraduateToAgentDialog({
           <div className="space-y-1">
             <Label
               htmlFor="contract-level"
-              className="text-[11px] text-zinc-500 dark:text-zinc-400"
+              className="text-[11px] text-v2-ink-muted"
             >
               Initial Contract Level
             </Label>
             <Select value={contractLevel} onValueChange={setContractLevel}>
               <SelectTrigger
                 id="contract-level"
-                className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                className="h-7 text-[11px] bg-v2-card border-v2-ring"
               >
                 <SelectValue />
               </SelectTrigger>
@@ -139,17 +139,14 @@ export function GraduateToAgentDialog({
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted">
               Determines commission percentage on new business
             </p>
           </div>
 
           {/* Graduation Notes */}
           <div className="space-y-1">
-            <Label
-              htmlFor="notes"
-              className="text-[11px] text-zinc-500 dark:text-zinc-400"
-            >
+            <Label htmlFor="notes" className="text-[11px] text-v2-ink-muted">
               Graduation Notes (Optional)
             </Label>
             <Textarea
@@ -158,24 +155,22 @@ export function GraduateToAgentDialog({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700 resize-none"
+              className="text-[11px] bg-v2-card border-v2-ring resize-none"
             />
           </div>
 
           {/* Recruit Info - compact */}
-          <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded p-2 border border-zinc-200 dark:border-zinc-700/50">
+          <div className="bg-v2-canvas rounded p-2 border border-v2-ring/50">
             <div className="flex items-center gap-1.5 mb-1.5">
               <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-              <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+              <span className="text-[11px] font-medium text-v2-ink">
                 Recruit Information
               </span>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px]">
               <div>
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Started:{" "}
-                </span>
-                <span className="text-zinc-700 dark:text-zinc-300">
+                <span className="text-v2-ink-muted">Started: </span>
+                <span className="text-v2-ink-muted">
                   {format(
                     new Date(recruit.created_at || new Date()),
                     "MMM d, yyyy",
@@ -183,20 +178,14 @@ export function GraduateToAgentDialog({
                 </span>
               </div>
               <div>
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Phase:{" "}
-                </span>
-                <span className="text-zinc-700 dark:text-zinc-300">
+                <span className="text-v2-ink-muted">Phase: </span>
+                <span className="text-v2-ink-muted">
                   {recruit.current_onboarding_phase?.replace(/_/g, " ") || "-"}
                 </span>
               </div>
               <div className="col-span-2">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Email:{" "}
-                </span>
-                <span className="text-zinc-700 dark:text-zinc-300">
-                  {recruit.email}
-                </span>
+                <span className="text-v2-ink-muted">Email: </span>
+                <span className="text-v2-ink-muted">{recruit.email}</span>
               </div>
             </div>
           </div>

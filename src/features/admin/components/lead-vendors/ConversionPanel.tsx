@@ -10,11 +10,7 @@ import {
   Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  formatCurrency,
-  formatPercent,
-  formatNumber,
-} from "@/lib/format";
+import { formatCurrency, formatPercent, formatNumber } from "@/lib/format";
 import type { LeadPackRow } from "@/types/lead-purchase.types";
 import type { FreshAgedAggregates } from "./LeadIntelligenceDashboard";
 
@@ -44,7 +40,7 @@ const roiColor = (roi: number) =>
     ? "text-emerald-600 dark:text-emerald-400"
     : roi < 0
       ? "text-red-600 dark:text-red-400"
-      : "text-zinc-500";
+      : "text-v2-ink-muted";
 
 export function ConversionPanel({
   filteredPacks,
@@ -74,9 +70,7 @@ export function ConversionPanel({
     const avgPoliciesPerPack =
       filteredPacks.length > 0 ? totalPolicies / filteredPacks.length : 0;
     const overallRoi =
-      totalSpend > 0
-        ? ((totalCommission - totalSpend) / totalSpend) * 100
-        : 0;
+      totalSpend > 0 ? ((totalCommission - totalSpend) / totalSpend) * 100 : 0;
 
     return {
       totalLeads,
@@ -95,11 +89,11 @@ export function ConversionPanel({
   const freshWins = fresh.convRate > aged.convRate;
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       <div className="grid grid-cols-2 gap-x-6 gap-y-0.5">
         {/* Left column: Funnel */}
         <div className="space-y-1">
-          <div className="text-[9px] uppercase text-zinc-400 font-semibold tracking-wider mb-1">
+          <div className="text-[9px] uppercase text-v2-ink-subtle font-semibold tracking-wider mb-1">
             Funnel
           </div>
           <MetricRow
@@ -125,14 +119,14 @@ export function ConversionPanel({
             icon={BarChart3}
             label="Zero-Sale Packs"
             value={`${metrics.zeroSalePacks} (${formatPercent(metrics.zeroSalePct, 0)})`}
-            iconColor="text-zinc-400"
+            iconColor="text-v2-ink-subtle"
             valueColor={zeroSaleColor(metrics.zeroSalePct)}
           />
         </div>
 
         {/* Right column: Efficiency */}
         <div className="space-y-1">
-          <div className="text-[9px] uppercase text-zinc-400 font-semibold tracking-wider mb-1">
+          <div className="text-[9px] uppercase text-v2-ink-subtle font-semibold tracking-wider mb-1">
             Efficiency
           </div>
           <MetricRow
@@ -165,8 +159,8 @@ export function ConversionPanel({
 
       {/* Fresh vs Aged Conversion comparison */}
       {(fresh.count > 0 || aged.count > 0) && (
-        <div className="mt-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-          <div className="text-[9px] uppercase text-zinc-400 font-semibold tracking-wider mb-1.5">
+        <div className="mt-3 pt-2 border-t border-v2-ring/60">
+          <div className="text-[9px] uppercase text-v2-ink-subtle font-semibold tracking-wider mb-1.5">
             Fresh vs Aged Conversion
           </div>
           <div className="flex items-center gap-4">
@@ -175,12 +169,12 @@ export function ConversionPanel({
                 "flex-1 rounded px-2 py-1",
                 freshWins
                   ? "bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800"
-                  : "bg-zinc-50 dark:bg-zinc-800/50",
+                  : "bg-v2-canvas",
               )}
             >
               <div className="flex items-center gap-1 mb-0.5">
                 <span className="h-2 w-2 rounded-full bg-blue-500" />
-                <span className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">
+                <span className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                   Fresh
                 </span>
               </div>
@@ -190,12 +184,12 @@ export function ConversionPanel({
                     "text-[11px] font-semibold",
                     freshWins
                       ? "text-blue-600 dark:text-blue-400"
-                      : "text-zinc-600 dark:text-zinc-400",
+                      : "text-v2-ink-muted dark:text-v2-ink-subtle",
                   )}
                 >
                   {formatPercent(fresh.convRate)} conv
                 </span>
-                <span className="text-[10px] text-zinc-400">
+                <span className="text-[10px] text-v2-ink-subtle">
                   {formatPercent(fresh.roi)} ROI
                 </span>
               </div>
@@ -205,12 +199,12 @@ export function ConversionPanel({
                 "flex-1 rounded px-2 py-1",
                 !freshWins && fresh.count > 0 && aged.count > 0
                   ? "bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800"
-                  : "bg-zinc-50 dark:bg-zinc-800/50",
+                  : "bg-v2-canvas",
               )}
             >
               <div className="flex items-center gap-1 mb-0.5">
                 <span className="h-2 w-2 rounded-full bg-amber-500" />
-                <span className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">
+                <span className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                   Aged
                 </span>
               </div>
@@ -220,12 +214,12 @@ export function ConversionPanel({
                     "text-[11px] font-semibold",
                     !freshWins && fresh.count > 0 && aged.count > 0
                       ? "text-amber-600 dark:text-amber-400"
-                      : "text-zinc-600 dark:text-zinc-400",
+                      : "text-v2-ink-muted dark:text-v2-ink-subtle",
                   )}
                 >
                   {formatPercent(aged.convRate)} conv
                 </span>
-                <span className="text-[10px] text-zinc-400">
+                <span className="text-[10px] text-v2-ink-subtle">
                   {formatPercent(aged.roi)} ROI
                 </span>
               </div>
@@ -256,21 +250,19 @@ function MetricRow({
     <div className="flex items-center justify-between py-0.5">
       <div className="flex items-center gap-1.5">
         <Icon className={cn("h-3 w-3", iconColor)} />
-        <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-          {label}
-        </span>
+        <span className="text-[11px] text-v2-ink-muted">{label}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <span
           className={cn(
             "text-[12px] font-semibold",
-            valueColor || "text-zinc-900 dark:text-zinc-100",
+            valueColor || "text-v2-ink",
           )}
         >
           {value}
         </span>
         {subValue && (
-          <span className="text-[10px] text-zinc-400">{subValue}</span>
+          <span className="text-[10px] text-v2-ink-subtle">{subValue}</span>
         )}
       </div>
     </div>

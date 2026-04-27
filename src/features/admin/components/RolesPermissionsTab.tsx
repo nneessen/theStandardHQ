@@ -125,13 +125,11 @@ export function RolesPermissionsTab({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 text-[11px]">
           <div className="flex items-center gap-1.5">
-            <ScrollText className="h-3.5 w-3.5 text-zinc-400" />
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">
+            <ScrollText className="h-3.5 w-3.5 text-v2-ink-subtle" />
+            <span className="font-medium text-v2-ink">
               {roles?.length || 0}
             </span>
-            <span className="text-zinc-500 dark:text-zinc-400">
-              total roles
-            </span>
+            <span className="text-v2-ink-muted">total roles</span>
           </div>
         </div>
         {isSuperAdmin && (
@@ -146,26 +144,26 @@ export function RolesPermissionsTab({
         )}
       </div>
 
-      <div className="flex-1 overflow-auto rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+      <div className="flex-1 overflow-auto rounded-lg bg-v2-card border border-v2-ring">
         <Table>
-          <TableHeader className="sticky top-0 bg-zinc-50 dark:bg-zinc-800/50 z-10">
-            <TableRow className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-transparent">
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[200px]">
+          <TableHeader className="sticky top-0 bg-v2-canvas z-10">
+            <TableRow className="border-b border-v2-ring hover:bg-transparent">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[200px]">
                 Role Name
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                 Description
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[100px]">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px]">
                 Permissions
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[100px]">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px]">
                 Users
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[120px]">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[120px]">
                 System Role
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[100px] text-right">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px] text-right">
                 Actions
               </TableHead>
             </TableRow>
@@ -174,28 +172,28 @@ export function RolesPermissionsTab({
             {roles?.map((role) => (
               <TableRow
                 key={role.id}
-                className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/50"
+                className="hover:bg-v2-canvas border-b border-v2-ring/60"
               >
                 <TableCell className="py-1.5">
-                  <div className="font-medium text-[11px] text-zinc-900 dark:text-zinc-100">
+                  <div className="font-medium text-[11px] text-v2-ink">
                     {role.display_name}
                   </div>
-                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <div className="text-[10px] text-v2-ink-muted">
                     {role.name}
                   </div>
                 </TableCell>
                 <TableCell className="py-1.5">
-                  <div className="text-[11px] text-zinc-600 dark:text-zinc-400 truncate max-w-md">
+                  <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle truncate max-w-md">
                     {role.description || "-"}
                   </div>
                 </TableCell>
                 <TableCell className="py-1.5">
-                  <span className="text-[11px] text-zinc-700 dark:text-zinc-300">
+                  <span className="text-[11px] text-v2-ink-muted">
                     {role.permissions?.length || 0}
                   </span>
                 </TableCell>
                 <TableCell className="py-1.5">
-                  <span className="text-[11px] text-zinc-700 dark:text-zinc-300">
+                  <span className="text-[11px] text-v2-ink-muted">
                     {activeAgents?.filter((u: UserProfile) =>
                       u.roles?.includes(role.name as RoleName),
                     ).length || 0}
@@ -205,7 +203,7 @@ export function RolesPermissionsTab({
                   {role.is_system_role && (
                     <Badge
                       variant="outline"
-                      className="text-[10px] h-4 px-1 border-zinc-300 dark:border-zinc-600"
+                      className="text-[10px] h-4 px-1 border-v2-ring "
                     >
                       System
                     </Badge>
@@ -217,7 +215,7 @@ export function RolesPermissionsTab({
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-5 px-1.5 text-[10px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                        className="h-5 px-1.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
                         onClick={() => openEditRoleDialog(role)}
                         title="Manage role permissions"
                       >

@@ -134,11 +134,11 @@ export function UserManagementPage() {
       office_staff:
         "bg-pink-100 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300",
       view_only:
-        "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+        "bg-v2-ring text-v2-ink dark:bg-v2-ring dark:text-v2-ink-subtle",
     };
     return (
       colors[roleName] ||
-      "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+      "bg-v2-ring text-v2-ink dark:bg-v2-ring dark:text-v2-ink-subtle"
     );
   };
 
@@ -215,11 +215,11 @@ export function UserManagementPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
       {/* Compact Header with inline stats */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
         <div className="flex items-center gap-5">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-            <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <Users className="h-4 w-4 text-v2-ink" />
+            <h1 className="text-sm font-semibold text-v2-ink">
               User Management
             </h1>
           </div>
@@ -227,34 +227,26 @@ export function UserManagementPage() {
           {/* Inline compact stats */}
           <div className="flex items-center gap-3 text-[11px]">
             <div className="flex items-center gap-1">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {totalUsers}
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">total</span>
+              <span className="font-medium text-v2-ink">{totalUsers}</span>
+              <span className="text-v2-ink-muted">total</span>
             </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+            <div className="h-3 w-px bg-v2-ring" />
             <div className="flex items-center gap-1">
               <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {approvedUsers}
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">approved</span>
+              <span className="font-medium text-v2-ink">{approvedUsers}</span>
+              <span className="text-v2-ink-muted">approved</span>
             </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+            <div className="h-3 w-px bg-v2-ring" />
             <div className="flex items-center gap-1">
               <Shield className="h-3 w-3 text-red-500" />
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {adminCount}
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">admins</span>
+              <span className="font-medium text-v2-ink">{adminCount}</span>
+              <span className="text-v2-ink-muted">admins</span>
             </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+            <div className="h-3 w-px bg-v2-ring" />
             <div className="flex items-center gap-1">
               <UserCog className="h-3 w-3 text-blue-500" />
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {agentCount}
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">agents</span>
+              <span className="font-medium text-v2-ink">{agentCount}</span>
+              <span className="text-v2-ink-muted">agents</span>
             </div>
           </div>
         </div>
@@ -263,34 +255,34 @@ export function UserManagementPage() {
       {/* Search */}
       <div className="flex items-center gap-2">
         <div className="relative w-64">
-          <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-zinc-400" />
+          <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-v2-ink-subtle" />
           <Input
             placeholder="Search by name or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-7 h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
+            className="pl-7 h-7 text-[11px] bg-v2-card border-v2-ring"
           />
         </div>
       </div>
 
       {/* Users Table */}
-      <div className="flex-1 overflow-auto rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+      <div className="flex-1 overflow-auto rounded-lg bg-v2-card border border-v2-ring">
         <Table>
-          <TableHeader className="sticky top-0 bg-zinc-50 dark:bg-zinc-800/50 z-10">
-            <TableRow className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-transparent">
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[200px]">
+          <TableHeader className="sticky top-0 bg-v2-canvas z-10">
+            <TableRow className="border-b border-v2-ring hover:bg-transparent">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[200px]">
                 User
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
                 Roles
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[120px]">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[120px]">
                 Upline
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[100px]">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px]">
                 Status
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[100px] text-right">
+              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px] text-right">
                 Actions
               </TableHead>
             </TableRow>
@@ -299,19 +291,19 @@ export function UserManagementPage() {
             {filteredUsers?.map((user: UserProfile) => (
               <TableRow
                 key={user.id}
-                className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/50"
+                className="hover:bg-v2-canvas border-b border-v2-ring/60"
               >
                 <TableCell className="py-1.5">
                   <div className="flex items-center gap-1.5">
-                    <div className="h-5 w-5 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 shrink-0">
+                    <div className="h-5 w-5 rounded-full bg-v2-ring flex items-center justify-center text-[10px] font-semibold text-v2-ink-muted shrink-0">
                       {user.first_name?.charAt(0)?.toUpperCase() ||
                         user.email?.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <div className="font-medium text-[11px] text-zinc-900 dark:text-zinc-100 truncate leading-tight">
+                      <div className="font-medium text-[11px] text-v2-ink truncate leading-tight">
                         {getDisplayName(user)}
                       </div>
-                      <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate leading-tight">
+                      <div className="text-[10px] text-v2-ink-muted truncate leading-tight">
                         {user.email}
                       </div>
                     </div>
@@ -331,20 +323,20 @@ export function UserManagementPage() {
                     {(user.roles?.length || 0) > 3 && (
                       <Badge
                         variant="outline"
-                        className="text-[10px] px-1 py-0 h-4 border-zinc-300 dark:border-zinc-600"
+                        className="text-[10px] px-1 py-0 h-4 border-v2-ring "
                       >
                         +{(user.roles?.length || 0) - 3}
                       </Badge>
                     )}
                     {(!user.roles || user.roles.length === 0) && (
-                      <span className="text-[10px] text-zinc-400 italic">
+                      <span className="text-[10px] text-v2-ink-subtle italic">
                         No roles
                       </span>
                     )}
                   </div>
                 </TableCell>
                 <TableCell className="py-1.5">
-                  <span className="text-[11px] text-zinc-700 dark:text-zinc-300">
+                  <span className="text-[11px] text-v2-ink-muted">
                     {user.upline
                       ? `${user.upline.first_name || ""} ${user.upline.last_name || ""}`.trim() ||
                         "-"
@@ -374,7 +366,7 @@ export function UserManagementPage() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-5 px-1.5 text-[10px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                    className="h-5 px-1.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
                     onClick={() => openEditDialog(user)}
                   >
                     <Shield className="h-2.5 w-2.5 mr-0.5" />
@@ -387,7 +379,7 @@ export function UserManagementPage() {
               <TableRow>
                 <TableCell
                   colSpan={5}
-                  className="text-center text-[11px] text-zinc-500 dark:text-zinc-400 py-6"
+                  className="text-center text-[11px] text-v2-ink-muted py-6"
                 >
                   No users found matching "{searchQuery}"
                 </TableCell>
@@ -399,12 +391,12 @@ export function UserManagementPage() {
 
       {/* Edit Roles Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto p-3 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto p-3 bg-v2-card border-v2-ring">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <DialogTitle className="text-sm font-semibold text-v2-ink">
               Edit User Roles
             </DialogTitle>
-            <DialogDescription className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <DialogDescription className="text-[10px] text-v2-ink-muted">
               Assign roles to {selectedUser ? getDisplayName(selectedUser) : ""}
             </DialogDescription>
           </DialogHeader>
@@ -412,7 +404,7 @@ export function UserManagementPage() {
           <div className="space-y-3 py-2">
             {/* Role Selection */}
             <div className="space-y-2">
-              <div className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
+              <div className="text-[11px] font-semibold text-v2-ink-muted">
                 Available Roles
               </div>
               {roles?.map((role) => {
@@ -422,7 +414,7 @@ export function UserManagementPage() {
                 return (
                   <div
                     key={role.id}
-                    className={`border rounded p-2 ${isSelected ? "border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-900/10" : "border-zinc-200 dark:border-zinc-700"}`}
+                    className={`border rounded p-2 ${isSelected ? "border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-900/10" : "border-v2-ring"}`}
                   >
                     <div className="flex items-start space-x-2">
                       <Checkbox
@@ -437,7 +429,7 @@ export function UserManagementPage() {
                           className="cursor-pointer"
                         >
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                            <span className="text-[11px] font-medium text-v2-ink">
                               {role.display_name}
                             </span>
                             <Badge
@@ -448,14 +440,14 @@ export function UserManagementPage() {
                             </Badge>
                             <Badge
                               variant="outline"
-                              className="text-[9px] h-3.5 px-1 border-zinc-300 dark:border-zinc-600"
+                              className="text-[9px] h-3.5 px-1 border-v2-ring "
                             >
                               {permissionCount} perms
                             </Badge>
                           </div>
                         </Label>
                         {role.description && (
-                          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                          <p className="text-[10px] text-v2-ink-muted mt-0.5">
                             {role.description}
                           </p>
                         )}
@@ -465,7 +457,7 @@ export function UserManagementPage() {
                           role.permissions &&
                           role.permissions.length > 0 && (
                             <Collapsible>
-                              <CollapsibleTrigger className="flex items-center gap-0.5 text-[10px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 mt-1">
+                              <CollapsibleTrigger className="flex items-center gap-0.5 text-[10px] text-v2-ink-muted hover:text-v2-ink mt-1">
                                 <ChevronRight className="h-2.5 w-2.5" />
                                 View {permissionCount} permission
                                 {permissionCount !== 1 ? "s" : ""}
@@ -474,9 +466,9 @@ export function UserManagementPage() {
                                 {role.permissions.map((perm) => (
                                   <div
                                     key={perm.id}
-                                    className="text-[9px] text-zinc-500 dark:text-zinc-400"
+                                    className="text-[9px] text-v2-ink-muted"
                                   >
-                                    <code className="bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">
+                                    <code className="bg-v2-ring px-1 py-0.5 rounded">
                                       {perm.code}
                                     </code>
                                   </div>
@@ -492,35 +484,29 @@ export function UserManagementPage() {
             </div>
 
             {/* Permission Preview - Compact */}
-            <div className="bg-zinc-100 dark:bg-zinc-800/50 rounded p-2 border border-zinc-200 dark:border-zinc-700/50">
-              <div className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">
+            <div className="bg-v2-canvas rounded p-2 border border-v2-ring/50">
+              <div className="text-[11px] font-semibold text-v2-ink-muted mb-1.5">
                 Permission Summary
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div>
-                  <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  <div className="text-sm font-bold text-v2-ink">
                     {permissionPreview.total}
                   </div>
-                  <div className="text-[9px] text-zinc-500 dark:text-zinc-400">
-                    Total
-                  </div>
+                  <div className="text-[9px] text-v2-ink-muted">Total</div>
                 </div>
                 <div>
                   <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                     +{permissionPreview.added.length}
                   </div>
-                  <div className="text-[9px] text-zinc-500 dark:text-zinc-400">
-                    Added
-                  </div>
+                  <div className="text-[9px] text-v2-ink-muted">Added</div>
                 </div>
                 <div>
                   <div className="text-sm font-bold text-red-600 dark:text-red-400">
                     -{permissionPreview.removed.length}
                   </div>
-                  <div className="text-[9px] text-zinc-500 dark:text-zinc-400">
-                    Removed
-                  </div>
+                  <div className="text-[9px] text-v2-ink-muted">Removed</div>
                 </div>
               </div>
 
@@ -543,7 +529,7 @@ export function UserManagementPage() {
                           </code>
                         ))}
                         {permissionPreview.added.length > 5 && (
-                          <span className="text-zinc-500">
+                          <span className="text-v2-ink-muted">
                             +{permissionPreview.added.length - 5} more
                           </span>
                         )}
@@ -565,7 +551,7 @@ export function UserManagementPage() {
                           </code>
                         ))}
                         {permissionPreview.removed.length > 5 && (
-                          <span className="text-zinc-500">
+                          <span className="text-v2-ink-muted">
                             +{permissionPreview.removed.length - 5} more
                           </span>
                         )}
@@ -577,7 +563,7 @@ export function UserManagementPage() {
 
               {permissionPreview.added.length === 0 &&
                 permissionPreview.removed.length === 0 && (
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400 text-center mt-1">
+                  <p className="text-[10px] text-v2-ink-muted text-center mt-1">
                     No permission changes
                   </p>
                 )}

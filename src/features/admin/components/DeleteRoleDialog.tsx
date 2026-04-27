@@ -56,11 +56,11 @@ export function DeleteRoleDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="py-3">
-          <p className="text-[11px] text-zinc-700 dark:text-zinc-300">
+          <p className="text-[11px] text-v2-ink-muted">
             Are you sure you want to delete the role{" "}
             <strong>"{role?.display_name}"</strong>?
           </p>
-          <p className="text-[10px] text-zinc-500 mt-2">
+          <p className="text-[10px] text-v2-ink-muted mt-2">
             Users with this role will lose it. Make sure no users are assigned
             to this role before deleting.
           </p>

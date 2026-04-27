@@ -93,7 +93,7 @@ export function UsersAccessTab({
     };
     return (
       colors[roleName] ||
-      "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+      "bg-v2-ring text-v2-ink dark:bg-v2-ring dark:text-v2-ink-subtle"
     );
   };
 
@@ -151,7 +151,7 @@ export function UsersAccessTab({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="relative w-64">
-            <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-zinc-400" />
+            <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-v2-ink-subtle" />
             <Input
               placeholder="Search users..."
               value={searchQuery}
@@ -159,11 +159,11 @@ export function UsersAccessTab({
                 setSearchQuery(e.target.value);
                 setCurrentPage(1);
               }}
-              className="pl-7 h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
+              className="pl-7 h-7 text-[11px] bg-v2-card border-v2-ring"
             />
           </div>
           <div className="flex items-center gap-2 text-[11px]">
-            <span className="text-zinc-500 dark:text-zinc-400">Show</span>
+            <span className="text-v2-ink-muted">Show</span>
             <Select
               value={String(itemsPerPage)}
               onValueChange={(v) => {
@@ -171,7 +171,7 @@ export function UsersAccessTab({
                 setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="h-7 w-16 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+              <SelectTrigger className="h-7 w-16 text-[11px] bg-v2-card border-v2-ring">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -189,7 +189,7 @@ export function UsersAccessTab({
       </div>
 
       {/* Data table */}
-      <div className="flex-1 overflow-auto rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800">
+      <div className="flex-1 overflow-auto rounded-lg bg-v2-card border border-v2-ring">
         {isLoading ? (
           <div className="p-3 space-y-1">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
@@ -198,32 +198,32 @@ export function UsersAccessTab({
           </div>
         ) : (
           <Table>
-            <TableHeader className="sticky top-0 bg-zinc-50 dark:bg-zinc-800/50 z-10">
-              <TableRow className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-transparent">
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[180px]">
+            <TableHeader className="sticky top-0 bg-v2-canvas z-10">
+              <TableRow className="border-b border-v2-ring hover:bg-transparent">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[180px]">
                   User
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[120px]">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[120px]">
                   Roles
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[120px]">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[120px]">
                   Upline
                 </TableHead>
                 {isSuperAdmin && (
-                  <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[70px]">
+                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[70px]">
                     IMO
                   </TableHead>
                 )}
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[80px]">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px]">
                   Agency
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[65px]">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[65px]">
                   Status
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[55px]">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[55px]">
                   Level
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 w-[60px] text-right">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[60px] text-right">
                   Actions
                 </TableHead>
               </TableRow>
@@ -232,19 +232,19 @@ export function UsersAccessTab({
               {paginatedUsers?.map((user: UserProfile) => (
                 <TableRow
                   key={user.id}
-                  className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/50"
+                  className="hover:bg-v2-canvas border-b border-v2-ring/60"
                 >
                   <TableCell className="py-1.5">
                     <div className="flex items-center gap-1.5">
-                      <div className="h-5 w-5 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 shrink-0">
+                      <div className="h-5 w-5 rounded-full bg-v2-ring flex items-center justify-center text-[10px] font-semibold text-v2-ink-muted shrink-0">
                         {user.first_name?.charAt(0)?.toUpperCase() ||
                           user.email?.charAt(0).toUpperCase()}
                       </div>
                       <div className="min-w-0">
-                        <div className="font-medium text-[11px] text-zinc-900 dark:text-zinc-100 truncate leading-tight">
+                        <div className="font-medium text-[11px] text-v2-ink truncate leading-tight">
                           {getDisplayName(user)}
                         </div>
-                        <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate leading-tight">
+                        <div className="text-[10px] text-v2-ink-muted truncate leading-tight">
                           {user.email}
                         </div>
                       </div>
@@ -264,7 +264,7 @@ export function UsersAccessTab({
                       {(user.roles?.length || 0) > 2 && (
                         <Badge
                           variant="outline"
-                          className="text-[10px] px-1 py-0 h-4 border-zinc-300 dark:border-zinc-600"
+                          className="text-[10px] px-1 py-0 h-4 border-v2-ring "
                         >
                           +{(user.roles?.length || 0) - 2}
                         </Badge>
@@ -272,7 +272,7 @@ export function UsersAccessTab({
                     </div>
                   </TableCell>
                   <TableCell className="py-1.5">
-                    <span className="text-[11px] text-zinc-700 dark:text-zinc-300">
+                    <span className="text-[11px] text-v2-ink-muted">
                       {user.upline
                         ? `${user.upline.first_name || ""} ${user.upline.last_name || ""}`.trim() ||
                           "-"
@@ -281,13 +281,13 @@ export function UsersAccessTab({
                   </TableCell>
                   {isSuperAdmin && (
                     <TableCell className="py-1.5">
-                      <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-mono">
+                      <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle font-mono">
                         {getImoName(user.imo_id)}
                       </span>
                     </TableCell>
                   )}
                   <TableCell className="py-1.5">
-                    <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-mono">
+                    <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle font-mono">
                       {getAgencyName(user.agency_id)}
                     </span>
                   </TableCell>
@@ -309,7 +309,7 @@ export function UsersAccessTab({
                     )}
                   </TableCell>
                   <TableCell className="py-1.5">
-                    <span className="text-[11px] text-zinc-700 dark:text-zinc-300">
+                    <span className="text-[11px] text-v2-ink-muted">
                       {user.contract_level || "-"}%
                     </span>
                   </TableCell>
@@ -318,7 +318,7 @@ export function UsersAccessTab({
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-5 px-1.5 text-[10px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                        className="h-5 px-1.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
                         onClick={() => onEditUser(user)}
                         title="Edit user"
                       >
@@ -344,7 +344,7 @@ export function UsersAccessTab({
                 <TableRow>
                   <TableCell
                     colSpan={isSuperAdmin ? 8 : 7}
-                    className="text-center text-[11px] text-zinc-500 dark:text-zinc-400 py-6"
+                    className="text-center text-[11px] text-v2-ink-muted py-6"
                   >
                     No users found
                   </TableCell>
@@ -358,7 +358,7 @@ export function UsersAccessTab({
       {/* Pagination controls */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-[11px]">
-          <div className="text-zinc-500 dark:text-zinc-400">
+          <div className="text-v2-ink-muted">
             Showing {(currentPage - 1) * itemsPerPage + 1}-
             {Math.min(currentPage * itemsPerPage, filteredUsers?.length || 0)}{" "}
             of {filteredUsers?.length || 0} users
@@ -367,7 +367,7 @@ export function UsersAccessTab({
             <Button
               size="sm"
               variant="outline"
-              className="h-6 px-2 border-zinc-200 dark:border-zinc-700"
+              className="h-6 px-2 border-v2-ring"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
             >
@@ -385,7 +385,7 @@ export function UsersAccessTab({
                 .map((page, idx, arr) => (
                   <span key={`page-${page}`}>
                     {idx > 0 && arr[idx - 1] !== page - 1 && (
-                      <span className="px-1 text-zinc-400">...</span>
+                      <span className="px-1 text-v2-ink-subtle">...</span>
                     )}
                     <Button
                       size="sm"
@@ -401,7 +401,7 @@ export function UsersAccessTab({
             <Button
               size="sm"
               variant="outline"
-              className="h-6 px-2 border-zinc-200 dark:border-zinc-700"
+              className="h-6 px-2 border-v2-ring"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
             >

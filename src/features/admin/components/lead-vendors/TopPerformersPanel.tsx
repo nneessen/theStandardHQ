@@ -17,7 +17,7 @@ const roiColor = (roi: number) =>
     ? "text-emerald-600 dark:text-emerald-400"
     : roi < 0
       ? "text-red-600 dark:text-red-400"
-      : "text-zinc-500";
+      : "text-v2-ink-muted";
 
 export function TopPerformersPanel({
   filteredPacks,
@@ -25,9 +25,7 @@ export function TopPerformersPanel({
 }: TopPerformersPanelProps) {
   // Best converting vendor
   const bestVendor = useMemo(() => {
-    const candidates = vendorIntelligenceRows.filter(
-      (v) => v.totalLeads > 0,
-    );
+    const candidates = vendorIntelligenceRows.filter((v) => v.totalLeads > 0);
     if (candidates.length === 0) return null;
     return candidates.reduce((best, v) =>
       v.conversionRate > best.conversionRate ? v : best,
@@ -80,8 +78,8 @@ export function TopPerformersPanel({
 
   if (!hasData) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-        <div className="flex items-center justify-center h-[100px] text-[11px] text-zinc-400">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+        <div className="flex items-center justify-center h-[100px] text-[11px] text-v2-ink-subtle">
           No performance data available
         </div>
       </div>
@@ -89,7 +87,7 @@ export function TopPerformersPanel({
   }
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       {/* Best Converting Vendor Callout */}
       {bestVendor && (
         <div className="mb-3 rounded-md bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 px-3 py-2">
@@ -100,15 +98,16 @@ export function TopPerformersPanel({
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+            <span className="text-[12px] font-semibold text-v2-ink">
               {bestVendor.vendorName}
             </span>
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                 {formatPercent(bestVendor.conversionRate)} conv
               </span>
-              <span className="text-[10px] text-zinc-400">
-                {formatNumber(bestVendor.totalPolicies)}/{formatNumber(bestVendor.totalLeads)} leads
+              <span className="text-[10px] text-v2-ink-subtle">
+                {formatNumber(bestVendor.totalPolicies)}/
+                {formatNumber(bestVendor.totalLeads)} leads
               </span>
             </div>
           </div>
@@ -121,12 +120,12 @@ export function TopPerformersPanel({
         <div>
           <div className="flex items-center gap-1 mb-1.5">
             <Award className="h-3 w-3 text-blue-500" />
-            <span className="text-[9px] uppercase text-zinc-400 font-semibold tracking-wider">
+            <span className="text-[9px] uppercase text-v2-ink-subtle font-semibold tracking-wider">
               Top Agents
             </span>
           </div>
           {topAgents.length === 0 ? (
-            <div className="text-[10px] text-zinc-400 py-2">No data</div>
+            <div className="text-[10px] text-v2-ink-subtle py-2">No data</div>
           ) : (
             <div className="space-y-1">
               {topAgents.map((agent, i) => (
@@ -146,12 +145,12 @@ export function TopPerformersPanel({
         <div>
           <div className="flex items-center gap-1 mb-1.5">
             <Star className="h-3 w-3 text-amber-500" />
-            <span className="text-[9px] uppercase text-zinc-400 font-semibold tracking-wider">
+            <span className="text-[9px] uppercase text-v2-ink-subtle font-semibold tracking-wider">
               Top Vendors (ROI)
             </span>
           </div>
           {topVendors.length === 0 ? (
-            <div className="text-[10px] text-zinc-400 py-2">No data</div>
+            <div className="text-[10px] text-v2-ink-subtle py-2">No data</div>
           ) : (
             <div className="space-y-1">
               {topVendors.map((vendor, i) => (
@@ -172,12 +171,12 @@ export function TopPerformersPanel({
         <div>
           <div className="flex items-center gap-1 mb-1.5">
             <Star className="h-3 w-3 text-violet-500" />
-            <span className="text-[9px] uppercase text-zinc-400 font-semibold tracking-wider">
+            <span className="text-[9px] uppercase text-v2-ink-subtle font-semibold tracking-wider">
               Top Packs (ROI)
             </span>
           </div>
           {topPacks.length === 0 ? (
-            <div className="text-[10px] text-zinc-400 py-2">No data</div>
+            <div className="text-[10px] text-v2-ink-subtle py-2">No data</div>
           ) : (
             <div className="space-y-1">
               {topPacks.map((pack, i) => (
@@ -213,24 +212,24 @@ function RankedItem({
 }) {
   return (
     <div className="flex items-start gap-1.5 py-0.5">
-      <span className="text-[10px] font-semibold text-zinc-400 w-3 flex-shrink-0 text-right">
+      <span className="text-[10px] font-semibold text-v2-ink-subtle w-3 flex-shrink-0 text-right">
         {rank}
       </span>
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-1">
-          <span className="text-[11px] font-medium text-zinc-800 dark:text-zinc-200 truncate">
+          <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-subtle truncate">
             {name}
           </span>
           <span
             className={cn(
               "text-[10px] font-semibold flex-shrink-0",
-              primaryColor || "text-zinc-700 dark:text-zinc-300",
+              primaryColor || "text-v2-ink-muted",
             )}
           >
             {primary}
           </span>
         </div>
-        <span className="text-[9px] text-zinc-400">{secondary}</span>
+        <span className="text-[9px] text-v2-ink-subtle">{secondary}</span>
       </div>
     </div>
   );

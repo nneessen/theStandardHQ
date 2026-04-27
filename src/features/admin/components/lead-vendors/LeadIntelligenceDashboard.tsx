@@ -425,7 +425,7 @@ export function LeadIntelligenceDashboard() {
   if (isLoading && !vendors) {
     return (
       <div className="flex items-center justify-center h-48">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -457,14 +457,14 @@ export function LeadIntelligenceDashboard() {
       />
 
       {/* View Toggle */}
-      <div className="flex items-center gap-0.5 border border-zinc-200 dark:border-zinc-700 rounded overflow-hidden w-fit">
+      <div className="flex items-center gap-0.5 border border-v2-ring rounded overflow-hidden w-fit">
         <button
           onClick={() => setViewMode("vendor")}
           className={cn(
             "px-2 py-1 text-[11px] font-medium transition-colors",
             viewMode === "vendor"
-              ? "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900"
-              : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+              ? "bg-v2-ring text-white dark:bg-v2-ring dark:text-v2-ink"
+              : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
           )}
         >
           By Vendor
@@ -474,8 +474,8 @@ export function LeadIntelligenceDashboard() {
           className={cn(
             "px-2 py-1 text-[11px] font-medium transition-colors",
             viewMode === "purchases"
-              ? "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900"
-              : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+              ? "bg-v2-ring text-white dark:bg-v2-ring dark:text-v2-ink"
+              : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
           )}
         >
           All Purchases
@@ -485,8 +485,8 @@ export function LeadIntelligenceDashboard() {
           className={cn(
             "px-2 py-1 text-[11px] font-medium transition-colors",
             viewMode === "policies"
-              ? "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900"
-              : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+              ? "bg-v2-ring text-white dark:bg-v2-ring dark:text-v2-ink"
+              : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
           )}
         >
           Sold Policies

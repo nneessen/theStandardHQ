@@ -119,21 +119,21 @@ export function VendorIntelligenceTable({
       ? "text-emerald-600 dark:text-emerald-400"
       : roi < 0
         ? "text-red-600 dark:text-red-400"
-        : "text-zinc-500";
+        : "text-v2-ink-muted";
 
   if (isLoading && rows.length === 0) {
     return (
       <div className="flex items-center justify-center h-32">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
       {/* Header */}
-      <div className="px-3 py-1.5 border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-2">
-        <span className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
+      <div className="px-3 py-1.5 border-b border-v2-ring flex items-center gap-2">
+        <span className="text-[11px] font-semibold text-v2-ink-muted">
           Vendor Intelligence
         </span>
         <Badge variant="outline" className="text-[9px]">
@@ -145,7 +145,7 @@ export function VendorIntelligenceTable({
       <div className="overflow-auto">
         <Table>
           <TableHeader>
-            <TableRow className="bg-zinc-50 dark:bg-zinc-800/50">
+            <TableRow className="bg-v2-canvas">
               <SortableHead
                 field="heat"
                 label="Heat"
@@ -228,7 +228,7 @@ export function VendorIntelligenceTable({
               <TableRow>
                 <TableCell
                   colSpan={11}
-                  className="text-center text-[11px] text-zinc-500 py-6"
+                  className="text-center text-[11px] text-v2-ink-muted py-6"
                 >
                   No vendors match your filters
                 </TableCell>
@@ -260,15 +260,15 @@ export function VendorIntelligenceTable({
 
       {/* Pagination */}
       {sorted.length > 0 && (
-        <div className="px-3 py-1.5 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
-          <span className="text-[10px] text-zinc-500">
+        <div className="px-3 py-1.5 border-t border-v2-ring flex items-center justify-between">
+          <span className="text-[10px] text-v2-ink-muted">
             Showing {(page - 1) * pageSize + 1}&ndash;
             {Math.min(page * pageSize, sorted.length)} of {sorted.length}
           </span>
 
           <div className="flex items-center gap-2">
             {/* Page size selector */}
-            <div className="flex items-center gap-0.5 border border-zinc-200 dark:border-zinc-700 rounded overflow-hidden">
+            <div className="flex items-center gap-0.5 border border-v2-ring rounded overflow-hidden">
               {PAGE_SIZES.map((size) => (
                 <button
                   key={size}
@@ -276,8 +276,8 @@ export function VendorIntelligenceTable({
                   className={cn(
                     "px-1.5 py-0.5 text-[10px] transition-colors",
                     pageSize === size
-                      ? "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900"
-                      : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                      ? "bg-v2-ring text-white dark:bg-v2-ring dark:text-v2-ink"
+                      : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
                   )}
                 >
                   {size}
@@ -290,7 +290,7 @@ export function VendorIntelligenceTable({
               <button
                 onClick={() => onPageChange(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="px-1.5 py-0.5 text-[10px] text-zinc-500 hover:text-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="px-1.5 py-0.5 text-[10px] text-v2-ink-muted hover:text-v2-ink disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 &lsaquo;
               </button>
@@ -314,7 +314,7 @@ export function VendorIntelligenceTable({
                   item === "ellipsis" ? (
                     <span
                       key={`e-${idx}`}
-                      className="px-1 text-[10px] text-zinc-400"
+                      className="px-1 text-[10px] text-v2-ink-subtle"
                     >
                       &hellip;
                     </span>
@@ -325,8 +325,8 @@ export function VendorIntelligenceTable({
                       className={cn(
                         "px-1.5 py-0.5 text-[10px] rounded transition-colors",
                         page === item
-                          ? "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900"
-                          : "text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                          ? "bg-v2-ring text-white dark:bg-v2-ring dark:text-v2-ink"
+                          : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
                       )}
                     >
                       {item}
@@ -336,7 +336,7 @@ export function VendorIntelligenceTable({
               <button
                 onClick={() => onPageChange(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className="px-1.5 py-0.5 text-[10px] text-zinc-500 hover:text-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="px-1.5 py-0.5 text-[10px] text-v2-ink-muted hover:text-v2-ink disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 &rsaquo;
               </button>
@@ -371,25 +371,25 @@ function VendorTableRow({
   return (
     <>
       <TableRow
-        className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer"
+        className="hover:bg-v2-canvas transition-colors cursor-pointer"
         onClick={onToggle}
       >
         <TableCell className="p-1.5 text-center">
           <PackHeatBadge heat={row.heat} />
         </TableCell>
-        <TableCell className="p-1.5 text-[11px] font-medium text-zinc-900 dark:text-zinc-100 max-w-[200px] truncate">
+        <TableCell className="p-1.5 text-[11px] font-medium text-v2-ink max-w-[200px] truncate">
           {row.vendorName}
         </TableCell>
-        <TableCell className="p-1.5 text-right text-[11px] text-zinc-700 dark:text-zinc-300">
+        <TableCell className="p-1.5 text-right text-[11px] text-v2-ink-muted">
           {row.totalPacks}
         </TableCell>
-        <TableCell className="p-1.5 text-right text-[11px] text-zinc-700 dark:text-zinc-300">
+        <TableCell className="p-1.5 text-right text-[11px] text-v2-ink-muted">
           {row.uniqueUsers}
         </TableCell>
-        <TableCell className="p-1.5 text-right text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+        <TableCell className="p-1.5 text-right text-[11px] font-medium text-v2-ink-muted">
           {formatPercent(row.winRate)}
         </TableCell>
-        <TableCell className="p-1.5 text-right text-[11px] text-zinc-700 dark:text-zinc-300">
+        <TableCell className="p-1.5 text-right text-[11px] text-v2-ink-muted">
           {formatPercent(row.conversionRate)}
         </TableCell>
         <TableCell
@@ -400,13 +400,13 @@ function VendorTableRow({
         >
           {formatPercent(row.avgRoi)}
         </TableCell>
-        <TableCell className="p-1.5 text-right text-[11px] text-zinc-700 dark:text-zinc-300">
+        <TableCell className="p-1.5 text-right text-[11px] text-v2-ink-muted">
           {formatCompactCurrency(row.avgPremPerUser)}
         </TableCell>
         {/* Fresh/Aged split bar */}
         <TableCell className="p-1.5">
           <div className="flex items-center gap-1">
-            <div className="flex-1 h-[5px] rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-700 flex">
+            <div className="flex-1 h-[5px] rounded-full overflow-hidden bg-v2-ring flex">
               <div
                 className="bg-blue-500 h-full"
                 style={{ width: `${freshPct}%` }}
@@ -416,7 +416,7 @@ function VendorTableRow({
                 style={{ width: `${100 - freshPct}%` }}
               />
             </div>
-            <span className="text-[9px] text-zinc-400 flex-shrink-0 w-[24px] text-right">
+            <span className="text-[9px] text-v2-ink-subtle flex-shrink-0 w-[24px] text-right">
               {row.freshCount}/{row.agedCount}
             </span>
           </div>
@@ -426,9 +426,9 @@ function VendorTableRow({
         </TableCell>
         <TableCell className="p-1.5 text-center">
           {isExpanded ? (
-            <ChevronDown className="h-3 w-3 text-zinc-400" />
+            <ChevronDown className="h-3 w-3 text-v2-ink-subtle" />
           ) : (
-            <ChevronRight className="h-3 w-3 text-zinc-400" />
+            <ChevronRight className="h-3 w-3 text-v2-ink-subtle" />
           )}
         </TableCell>
       </TableRow>

@@ -67,10 +67,7 @@ export function SpeedPanel({
     }
 
     // Sales last 30d
-    const salesLast30d = packMetrics.reduce(
-      (s, pm) => s + pm.salesLast30d,
-      0,
-    );
+    const salesLast30d = packMetrics.reduce((s, pm) => s + pm.salesLast30d, 0);
 
     // Fastest vendor by avg daysToFirstSale
     const vendorDays = new Map<string, number[]>();
@@ -149,11 +146,11 @@ export function SpeedPanel({
   const hasData = metrics.totalWithSales > 0;
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       <div className="grid grid-cols-2 gap-x-6 gap-y-0.5">
         {/* Left column: Time to First Sale */}
         <div className="space-y-1">
-          <div className="text-[9px] uppercase text-zinc-400 font-semibold tracking-wider mb-1">
+          <div className="text-[9px] uppercase text-v2-ink-subtle font-semibold tracking-wider mb-1">
             Time to First Sale
           </div>
           <MetricRow
@@ -168,7 +165,7 @@ export function SpeedPanel({
             valueColor={
               metrics.avgDays !== null
                 ? daysColor(metrics.avgDays)
-                : "text-zinc-400"
+                : "text-v2-ink-subtle"
             }
           />
           <MetricRow
@@ -183,14 +180,14 @@ export function SpeedPanel({
             valueColor={
               metrics.medianDays !== null
                 ? daysColor(metrics.medianDays)
-                : "text-zinc-400"
+                : "text-v2-ink-subtle"
             }
           />
         </div>
 
         {/* Right column: Velocity */}
         <div className="space-y-1">
-          <div className="text-[9px] uppercase text-zinc-400 font-semibold tracking-wider mb-1">
+          <div className="text-[9px] uppercase text-v2-ink-subtle font-semibold tracking-wider mb-1">
             Velocity
           </div>
           <MetricRow
@@ -203,9 +200,7 @@ export function SpeedPanel({
             icon={TrendingUp}
             label="Fastest Vendor"
             value={
-              metrics.fastestVendor
-                ? metrics.fastestVendor.name
-                : "\u2014"
+              metrics.fastestVendor ? metrics.fastestVendor.name : "\u2014"
             }
             subValue={
               metrics.fastestVendor
@@ -216,17 +211,13 @@ export function SpeedPanel({
             valueColor={
               metrics.fastestVendor
                 ? daysColor(metrics.fastestVendor.days)
-                : "text-zinc-400"
+                : "text-v2-ink-subtle"
             }
           />
           <MetricRow
             icon={User}
             label="Fastest Agent"
-            value={
-              metrics.fastestAgent
-                ? metrics.fastestAgent.name
-                : "\u2014"
-            }
+            value={metrics.fastestAgent ? metrics.fastestAgent.name : "\u2014"}
             subValue={
               metrics.fastestAgent
                 ? `${Math.round(metrics.fastestAgent.days)}d`
@@ -236,7 +227,7 @@ export function SpeedPanel({
             valueColor={
               metrics.fastestAgent
                 ? daysColor(metrics.fastestAgent.days)
-                : "text-zinc-400"
+                : "text-v2-ink-subtle"
             }
           />
         </div>
@@ -244,11 +235,11 @@ export function SpeedPanel({
 
       {/* Distribution bar */}
       {hasData && (
-        <div className="mt-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-          <div className="text-[9px] uppercase text-zinc-400 font-semibold tracking-wider mb-1.5">
+        <div className="mt-3 pt-2 border-t border-v2-ring/60">
+          <div className="text-[9px] uppercase text-v2-ink-subtle font-semibold tracking-wider mb-1.5">
             Distribution
           </div>
-          <div className="flex h-[6px] rounded-full overflow-hidden bg-zinc-100 dark:bg-zinc-800">
+          <div className="flex h-[6px] rounded-full overflow-hidden bg-v2-ring">
             {BUCKETS.map((bucket, i) => {
               const pct =
                 metrics.totalWithSales > 0
@@ -273,12 +264,15 @@ export function SpeedPanel({
               return (
                 <div key={bucket.label} className="flex items-center gap-1">
                   <span
-                    className={cn("h-2 w-2 rounded-full flex-shrink-0", bucket.color)}
+                    className={cn(
+                      "h-2 w-2 rounded-full flex-shrink-0",
+                      bucket.color,
+                    )}
                   />
-                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <span className="text-[10px] text-v2-ink-muted">
                     {bucket.label}
                   </span>
-                  <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300">
+                  <span className="text-[10px] font-semibold text-v2-ink-muted">
                     {pct.toFixed(0)}%
                   </span>
                 </div>
@@ -310,21 +304,19 @@ function MetricRow({
     <div className="flex items-center justify-between py-0.5">
       <div className="flex items-center gap-1.5">
         <Icon className={cn("h-3 w-3", iconColor)} />
-        <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-          {label}
-        </span>
+        <span className="text-[11px] text-v2-ink-muted">{label}</span>
       </div>
       <div className="flex items-center gap-1.5">
         <span
           className={cn(
             "text-[12px] font-semibold",
-            valueColor || "text-zinc-900 dark:text-zinc-100",
+            valueColor || "text-v2-ink",
           )}
         >
           {value}
         </span>
         {subValue && (
-          <span className="text-[10px] text-zinc-400">{subValue}</span>
+          <span className="text-[10px] text-v2-ink-subtle">{subValue}</span>
         )}
       </div>
     </div>

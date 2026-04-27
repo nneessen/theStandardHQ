@@ -27,7 +27,7 @@ export function SortableHead<T extends string>({
   return (
     <TableHead
       className={cn(
-        "text-[10px] font-semibold p-1.5 cursor-pointer select-none hover:bg-zinc-100 dark:hover:bg-zinc-700/50 transition-colors",
+        "text-[10px] font-semibold p-1.5 cursor-pointer select-none hover:bg-v2-ring dark:hover:bg-v2-card-dark/50 transition-colors",
         className,
       )}
       onClick={() => handleSort(field)}
@@ -36,12 +36,12 @@ export function SortableHead<T extends string>({
         {label}
         {isActive ? (
           sortDir === "asc" ? (
-            <ArrowUp className="h-2.5 w-2.5 text-zinc-600 dark:text-zinc-300" />
+            <ArrowUp className="h-2.5 w-2.5 text-v2-ink-muted" />
           ) : (
-            <ArrowDown className="h-2.5 w-2.5 text-zinc-600 dark:text-zinc-300" />
+            <ArrowDown className="h-2.5 w-2.5 text-v2-ink-muted" />
           )
         ) : (
-          <ArrowUpDown className="h-2.5 w-2.5 text-zinc-400" />
+          <ArrowUpDown className="h-2.5 w-2.5 text-v2-ink-subtle" />
         )}
       </span>
     </TableHead>

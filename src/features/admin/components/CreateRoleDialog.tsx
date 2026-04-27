@@ -86,7 +86,7 @@ export function CreateRoleDialog({
                 }))
               }
             />
-            <p className="text-[10px] text-zinc-500">
+            <p className="text-[10px] text-v2-ink-muted">
               Lowercase, underscores only. Used internally.
             </p>
           </div>

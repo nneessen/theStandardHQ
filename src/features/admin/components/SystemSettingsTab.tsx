@@ -14,10 +14,10 @@ export function SystemSettingsTab() {
               <Zap className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <h2 className="text-sm font-semibold text-v2-ink">
                 System Automations
               </h2>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-v2-ink-muted">
                 Configure automated communications for system-level events
               </p>
             </div>

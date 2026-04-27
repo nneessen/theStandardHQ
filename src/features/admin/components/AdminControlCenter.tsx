@@ -2,15 +2,7 @@
 // Orchestration layer for Admin Center - manages tabs, shared state, and dialogs
 
 import { useState, useMemo } from "react";
-import {
-  Users,
-  Shield,
-  Settings,
-  UserCog,
-  CheckCircle2,
-  XCircle,
-  UserPlus,
-} from "lucide-react";
+import { Users, Shield, UserCog, CheckCircle2, XCircle } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAllUsers, useCreateUser } from "@/hooks/admin";
 import {
@@ -22,7 +14,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import AddUserDialog, { type NewUserData } from "./AddUserDialog";
 import EditUserDialog from "./EditUserDialog";
-import { Badge } from "@/components/ui/badge";
+import { PillNav } from "@/components/v2";
 import type { RoleName } from "@/types/permissions.types";
 import type { UserProfile } from "@/types/user.types";
 import { hasStaffRole } from "@/constants/roles";
@@ -150,116 +142,67 @@ export default function AdminControlCenter() {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
-      {/* Compact Header with inline stats */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-5">
-          <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-            <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+    <div className="flex flex-col gap-3">
+      {/* Compact header — title + inline metric chips + tab nav in one band */}
+      <header className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <Shield className="h-4 w-4 text-v2-ink" />
+            <h1 className="text-base font-semibold tracking-tight text-v2-ink">
               Admin Center
             </h1>
           </div>
-
-          {/* Inline compact stats */}
-          <div className="flex items-center gap-3 text-[11px]">
-            <div className="flex items-center gap-1">
-              <Users className="h-3 w-3 text-zinc-400" />
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {totalUsers}
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">users</span>
-            </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
-            <div className="flex items-center gap-1">
+          <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-v2-ink-muted flex-wrap leading-tight">
+            <span className="inline-flex items-center gap-1">
+              <Users className="h-3 w-3 text-v2-ink-subtle" />
+              <span className="text-v2-ink font-semibold">{totalUsers}</span>
+              users
+            </span>
+            <span className="text-v2-ink-subtle">·</span>
+            <span className="inline-flex items-center gap-1">
               <Shield className="h-3 w-3 text-red-500" />
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {admins}
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">admins</span>
-            </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
-            <div className="flex items-center gap-1">
+              <span className="text-v2-ink font-semibold">{admins}</span>
+              admins
+            </span>
+            <span className="text-v2-ink-subtle">·</span>
+            <span className="inline-flex items-center gap-1">
               <UserCog className="h-3 w-3 text-blue-500" />
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {agents}
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">agents</span>
-            </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
-            <div className="flex items-center gap-1">
+              <span className="text-v2-ink font-semibold">{agents}</span>
+              agents
+            </span>
+            <span className="text-v2-ink-subtle">·</span>
+            <span className="inline-flex items-center gap-1">
               <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {approved}
-              </span>
-            </div>
-            <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
-            <div className="flex items-center gap-1">
+              <span className="text-v2-ink font-semibold">{approved}</span>
+              approved
+            </span>
+            <span className="text-v2-ink-subtle">·</span>
+            <span className="inline-flex items-center gap-1">
               <XCircle className="h-3 w-3 text-amber-500" />
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {pending}
-              </span>
-              <span className="text-zinc-500 dark:text-zinc-400">pending</span>
-            </div>
+              <span className="text-v2-ink font-semibold">{pending}</span>
+              pending
+            </span>
           </div>
         </div>
-      </div>
 
-      {/* Compact tabs */}
-      <div className="flex items-center gap-0.5 bg-zinc-200/50 dark:bg-zinc-800/50 rounded-md p-0.5">
-        <button
-          onClick={() => setActiveView("users")}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all ${
-            activeView === "users"
-              ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-          }`}
-        >
-          <Users className="h-3.5 w-3.5" />
-          Users & Access
-        </button>
-        <button
-          onClick={() => setActiveView("recruits")}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all ${
-            activeView === "recruits"
-              ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-          }`}
-        >
-          <UserPlus className="h-3.5 w-3.5" />
-          Recruiting Pipeline
-          {pending > 0 && (
-            <Badge variant="destructive" className="ml-1 h-4 px-1 text-[10px]">
-              {pending}
-            </Badge>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveView("roles")}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all ${
-            activeView === "roles"
-              ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-          }`}
-        >
-          <Shield className="h-3.5 w-3.5" />
-          Roles & Permissions
-        </button>
-        <button
-          onClick={() => setActiveView("system")}
-          className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all ${
-            activeView === "system"
-              ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
-          }`}
-        >
-          <Settings className="h-3.5 w-3.5" />
-          System Settings
-        </button>
-      </div>
+        <PillNav
+          size="sm"
+          activeValue={activeView}
+          onChange={(v) => setActiveView(v as typeof activeView)}
+          items={[
+            { label: "Users & Access", value: "users" },
+            {
+              label: pending > 0 ? `Recruiting (${pending})` : "Recruiting",
+              value: "recruits",
+            },
+            { label: "Roles & Permissions", value: "roles" },
+            { label: "System", value: "system" },
+          ]}
+        />
+      </header>
 
       {/* Content area - Tab components */}
-      <div className="flex-1 flex flex-col overflow-y-auto">
+      <div className="flex-1 flex flex-col min-w-0">
         {activeView === "users" && (
           <UsersAccessTab
             users={activeAgents}

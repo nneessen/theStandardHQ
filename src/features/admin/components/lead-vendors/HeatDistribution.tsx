@@ -29,11 +29,11 @@ export function HeatDistribution({ counts, total }: HeatDistributionProps) {
   // If no data, show placeholder
   if (data.length === 0 || total === 0) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-        <div className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide mb-2">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+        <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-wide mb-2">
           Heat Distribution
         </div>
-        <div className="flex items-center justify-center h-[100px] text-[11px] text-zinc-400">
+        <div className="flex items-center justify-center h-[100px] text-[11px] text-v2-ink-subtle">
           No pack data
         </div>
       </div>
@@ -41,8 +41,8 @@ export function HeatDistribution({ counts, total }: HeatDistributionProps) {
   }
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-      <div className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide mb-1">
+    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+      <div className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-wide mb-1">
         Heat Distribution
       </div>
       <div className="flex items-center gap-3">
@@ -69,10 +69,10 @@ export function HeatDistribution({ counts, total }: HeatDistributionProps) {
                 className="h-2 w-2 rounded-full flex-shrink-0"
                 style={{ backgroundColor: HEAT_CONFIG[level].color }}
               />
-              <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <span className="text-[10px] text-v2-ink-muted">
                 {HEAT_CONFIG[level].label}
               </span>
-              <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300">
+              <span className="text-[10px] font-semibold text-v2-ink-muted">
                 {counts[level]}
               </span>
             </div>

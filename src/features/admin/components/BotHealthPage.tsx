@@ -145,15 +145,13 @@ export function BotHealthPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-3 overflow-y-auto">
       {/* Header row */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <Activity className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-            <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              Bot Health
-            </h1>
+            <Activity className="h-4 w-4 text-v2-ink" />
+            <h1 className="text-sm font-semibold text-v2-ink">Bot Health</h1>
           </div>
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <span className="text-[10px] text-v2-ink-muted">
             standard-chat-bot · system-wide monitoring
           </span>
         </div>
@@ -172,7 +170,7 @@ export function BotHealthPage() {
               computed: {computedLevel}
             </Badge>
           )}
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400 hidden sm:inline">
+          <span className="text-[10px] text-v2-ink-muted hidden sm:inline">
             updated {lastUpdatedLabel}
           </span>
           <Button
@@ -225,7 +223,7 @@ export function BotHealthPage() {
       {/* Initial loading state */}
       {isLoading && !data && (
         <Card variant="outlined">
-          <CardContent className="flex items-center justify-center gap-2 p-10 text-zinc-500">
+          <CardContent className="flex items-center justify-center gap-2 p-10 text-v2-ink-muted">
             <Loader2 className="h-4 w-4 animate-spin" />
             <span className="text-xs">Loading bot health…</span>
           </CardContent>
@@ -287,7 +285,7 @@ export function BotHealthPage() {
           {/* Per-queue breakdown */}
           <Card variant="outlined">
             <CardHeader className="p-4 pb-2">
-              <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <CardTitle className="text-xs font-semibold uppercase tracking-[0.18em] text-v2-ink-muted">
                 Queue breakdown
               </CardTitle>
             </CardHeader>
@@ -318,7 +316,7 @@ export function BotHealthPage() {
                     <TableRow>
                       <TableCell
                         colSpan={6}
-                        className="text-center text-[11px] text-zinc-500 py-4"
+                        className="text-center text-[11px] text-v2-ink-muted py-4"
                       >
                         No queues reported.
                       </TableCell>
@@ -357,7 +355,7 @@ export function BotHealthPage() {
                       >
                         {formatNumber(q.failed24h)}
                       </TableCell>
-                      <TableCell className="py-1.5 text-[10px] text-right text-zinc-500 font-mono">
+                      <TableCell className="py-1.5 text-[10px] text-right text-v2-ink-muted font-mono">
                         {q.threshold.warn} / {q.threshold.critical}
                       </TableCell>
                       <TableCell className="py-1.5 text-right">
@@ -380,7 +378,7 @@ export function BotHealthPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Card variant="outlined">
               <CardHeader className="p-4 pb-2">
-                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                <CardTitle className="text-xs font-semibold uppercase tracking-[0.18em] text-v2-ink-muted flex items-center gap-1.5">
                   <TimerReset className="h-3.5 w-3.5" />
                   Process
                 </CardTitle>
@@ -408,7 +406,7 @@ export function BotHealthPage() {
 
             <Card variant="outlined">
               <CardHeader className="p-4 pb-2">
-                <CardTitle className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 flex items-center gap-1.5">
+                <CardTitle className="text-xs font-semibold uppercase tracking-[0.18em] text-v2-ink-muted flex items-center gap-1.5">
                   <Users className="h-3.5 w-3.5" />
                   Agents
                 </CardTitle>
@@ -431,7 +429,7 @@ export function BotHealthPage() {
           </div>
 
           {/* Full-width timestamp footer */}
-          <div className="text-[10px] text-zinc-500 dark:text-zinc-400 text-center pt-1">
+          <div className="text-[10px] text-v2-ink-muted text-center pt-1">
             Last snapshot:{" "}
             <span className="font-mono">
               {new Date(data.timestamp).toLocaleString()}
@@ -471,7 +469,7 @@ function HeroCard({
   return (
     <Card variant="outlined">
       <CardContent className="p-4 space-y-1">
-        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.18em] text-v2-ink-muted">
           {icon}
           {label}
         </div>
@@ -486,7 +484,7 @@ function HeroCard({
         {secondary && (
           <div
             className={cn(
-              "text-[11px] text-zinc-500 dark:text-zinc-400",
+              "text-[11px] text-v2-ink-muted",
               secondaryLevel && heroNumberClass(secondaryLevel),
             )}
           >
@@ -496,7 +494,7 @@ function HeroCard({
         {footer && (
           <div
             className={cn(
-              "text-[10px] text-zinc-400 dark:text-zinc-500",
+              "text-[10px] text-v2-ink-subtle",
               footerLevel && heroNumberClass(footerLevel),
             )}
           >
@@ -519,12 +517,10 @@ function StatPair({
 }) {
   return (
     <div className={cn("flex flex-col", className)}>
-      <span className="text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+      <span className="text-[10px] uppercase tracking-[0.18em] text-v2-ink-muted">
         {label}
       </span>
-      <span className="font-mono text-xs text-zinc-900 dark:text-zinc-100 truncate">
-        {value}
-      </span>
+      <span className="font-mono text-xs text-v2-ink truncate">{value}</span>
     </div>
   );
 }
