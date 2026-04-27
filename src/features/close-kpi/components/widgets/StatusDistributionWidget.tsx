@@ -10,18 +10,18 @@ interface StatusDistributionWidgetProps {
 
 // Muted zinc palette — no rainbow
 const SEGMENT_COLORS = [
-  "bg-zinc-500",
-  "bg-zinc-400",
-  "bg-zinc-600",
-  "bg-zinc-350 bg-zinc-300",
-  "bg-zinc-700",
+  "bg-v2-canvas",
+  "bg-v2-ring-strong",
+  "bg-v2-ink-muted",
+  "bg-v2-ring bg-v2-ring",
+  "bg-v2-card-dark",
 ];
 const LEGEND_DOTS = [
-  "bg-zinc-500",
-  "bg-zinc-400",
-  "bg-zinc-600",
-  "bg-zinc-300",
-  "bg-zinc-700",
+  "bg-v2-canvas",
+  "bg-v2-ring-strong",
+  "bg-v2-ink-muted",
+  "bg-v2-ring",
+  "bg-v2-card-dark",
 ];
 
 const MAX_VISIBLE = 5;
@@ -47,7 +47,7 @@ export const StatusDistributionWidget: React.FC<
     <div className="flex h-full flex-col gap-1.5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+        <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           {label ?? "Lead Pipeline"}
         </span>
         <span className="font-mono text-[10px] text-muted-foreground">
@@ -71,7 +71,7 @@ export const StatusDistributionWidget: React.FC<
         })}
         {otherCount > 0 && (
           <div
-            className="bg-zinc-200 dark:bg-zinc-800 transition-all"
+            className="bg-v2-ring transition-all"
             style={{ width: `${(otherCount / total) * 100}%`, minWidth: "2px" }}
             title={`Other: ${otherCount}`}
           />
@@ -100,7 +100,7 @@ export const StatusDistributionWidget: React.FC<
         })}
         {otherCount > 0 && (
           <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <span className="inline-block h-2 w-2 shrink-0 rounded-sm bg-zinc-200 dark:bg-zinc-800" />
+            <span className="inline-block h-2 w-2 shrink-0 rounded-sm bg-v2-ring" />
             <span>Other ({otherItems.length})</span>
             <span className="font-mono font-semibold text-foreground">
               {otherCount.toLocaleString()}

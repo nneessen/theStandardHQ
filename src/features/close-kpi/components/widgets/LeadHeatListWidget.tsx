@@ -206,7 +206,7 @@ export const LeadHeatListWidget: React.FC<LeadHeatListWidgetProps> = ({
                       {lead.displayName}
                     </span>
                     {lead.currentStatus && (
-                      <span className="text-[9px] text-muted-foreground bg-zinc-100 dark:bg-zinc-800 rounded px-1 py-0.5 shrink-0 truncate max-w-[100px]">
+                      <span className="text-[9px] text-muted-foreground bg-v2-ring rounded px-1 py-0.5 shrink-0 truncate max-w-[100px]">
                         {lead.currentStatus}
                       </span>
                     )}

@@ -181,7 +181,7 @@ export const WidgetConfigSheet: React.FC<WidgetConfigSheetProps> = ({
           </div>
 
           {/* Divider */}
-          <div className="border-t border-zinc-200 dark:border-zinc-800" />
+          <div className="border-t border-v2-ring" />
 
           {/* Config Form */}
           {ConfigForm && config ? (
@@ -193,7 +193,7 @@ export const WidgetConfigSheet: React.FC<WidgetConfigSheetProps> = ({
           )}
         </div>
 
-        <SheetFooter className="flex-shrink-0 border-t border-zinc-200 dark:border-zinc-800 pt-3 gap-2">
+        <SheetFooter className="flex-shrink-0 border-t border-v2-ring pt-3 gap-2">
           {/* Delete */}
           <Button
             variant="destructive"

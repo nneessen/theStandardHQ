@@ -25,7 +25,7 @@ export const FollowUpGapsWidget: React.FC<FollowUpGapsWidgetProps> = ({
       <div className="flex h-full flex-col justify-center">
         <div className="flex items-center gap-1.5">
           <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Follow-up Gaps
           </span>
         </div>
@@ -47,7 +47,7 @@ export const FollowUpGapsWidget: React.FC<FollowUpGapsWidgetProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Follow-up Gaps
           </span>
         </div>
@@ -98,7 +98,7 @@ export const FollowUpGapsWidget: React.FC<FollowUpGapsWidgetProps> = ({
                   className={`absolute inset-y-0 left-0 rounded-sm transition-all ${
                     isUrgent
                       ? "bg-amber-200 dark:bg-amber-800/40"
-                      : "bg-zinc-200 dark:bg-zinc-700"
+                      : "bg-v2-ring"
                   }`}
                   style={{
                     width: `${Math.max(barWidth, needsAttention > 0 ? 4 : 0)}%`,

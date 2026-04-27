@@ -40,7 +40,7 @@ export function UploadResultSummary({
   const isFailed = job.status === "failed";
 
   return (
-    <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 space-y-3">
+    <div className="rounded-lg border border-v2-ring bg-v2-card p-4 space-y-3">
       {/* Header */}
       <div className="flex items-center gap-2">
         {isComplete ? (
@@ -48,7 +48,7 @@ export function UploadResultSummary({
         ) : (
           <XCircle className="h-4 w-4 text-red-500" />
         )}
-        <span className="text-xs font-medium text-zinc-800 dark:text-zinc-200">
+        <span className="text-xs font-medium text-v2-ink dark:text-v2-ink-subtle">
           {isComplete ? "Processing Complete" : "Processing Failed"}
         </span>
       </div>
@@ -57,16 +57,16 @@ export function UploadResultSummary({
       {isComplete && (totalTx > 0 || totalStmts > 0) && (
         <div className="flex items-center gap-4 text-[11px]">
           {totalTx > 0 && (
-            <span className="text-zinc-600 dark:text-zinc-400">
-              <strong className="text-zinc-800 dark:text-zinc-200">
+            <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+              <strong className="text-v2-ink dark:text-v2-ink-subtle">
                 {totalTx}
               </strong>{" "}
               transactions
             </span>
           )}
           {totalStmts > 0 && (
-            <span className="text-zinc-600 dark:text-zinc-400">
-              <strong className="text-zinc-800 dark:text-zinc-200">
+            <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+              <strong className="text-v2-ink dark:text-v2-ink-subtle">
                 {totalStmts}
               </strong>{" "}
               statements
@@ -92,7 +92,7 @@ export function UploadResultSummary({
                   ? "bg-emerald-50 dark:bg-emerald-900/10"
                   : f.status === "error"
                     ? "bg-red-50 dark:bg-red-900/10"
-                    : "bg-zinc-50 dark:bg-zinc-800/30",
+                    : "bg-v2-canvas/30",
               )}
             >
               {f.status === "imported" ? (
@@ -100,18 +100,16 @@ export function UploadResultSummary({
               ) : f.status === "error" ? (
                 <XCircle className="h-3 w-3 text-red-500 shrink-0" />
               ) : (
-                <AlertCircle className="h-3 w-3 text-zinc-400 shrink-0" />
+                <AlertCircle className="h-3 w-3 text-v2-ink-subtle shrink-0" />
               )}
-              <span className="text-zinc-700 dark:text-zinc-300 truncate">
-                {f.filename}
-              </span>
+              <span className="text-v2-ink-muted truncate">{f.filename}</span>
               {f.transactions_count != null && (
-                <span className="text-zinc-500 ml-auto shrink-0">
+                <span className="text-v2-ink-muted ml-auto shrink-0">
                   {f.transactions_count} txns
                 </span>
               )}
               {f.reason && (
-                <span className="text-zinc-400 ml-auto shrink-0">
+                <span className="text-v2-ink-subtle ml-auto shrink-0">
                   {f.reason}
                 </span>
               )}
@@ -150,7 +148,7 @@ export function UploadResultSummary({
         <Button
           size="sm"
           variant="ghost"
-          className="h-7 text-[11px] text-zinc-500"
+          className="h-7 text-[11px] text-v2-ink-muted"
           onClick={onReset}
         >
           Upload More

@@ -44,7 +44,7 @@ export const CallAnalyticsConfig: React.FC<CallAnalyticsConfigProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              <SelectLabel className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 Volume
               </SelectLabel>
               {CALL_METRICS.filter((m) =>
@@ -63,7 +63,7 @@ export const CallAnalyticsConfig: React.FC<CallAnalyticsConfigProps> = ({
               ))}
             </SelectGroup>
             <SelectGroup>
-              <SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              <SelectLabel className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 Duration
               </SelectLabel>
               {CALL_METRICS.filter((m) =>
@@ -75,7 +75,7 @@ export const CallAnalyticsConfig: React.FC<CallAnalyticsConfigProps> = ({
               ))}
             </SelectGroup>
             <SelectGroup>
-              <SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              <SelectLabel className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 Performance
               </SelectLabel>
               {CALL_METRICS.filter((m) =>

@@ -57,16 +57,12 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
       <div className="flex items-start gap-2">
         <div
           className={`flex items-center justify-center flex-shrink-0 mt-0.5 rounded-md ${
-            isHero
-              ? "w-8 h-8 bg-primary/10"
-              : "w-6 h-6 bg-zinc-100 dark:bg-zinc-800"
+            isHero ? "w-8 h-8 bg-primary/10" : "w-6 h-6 bg-v2-ring"
           }`}
         >
           <IconComponent
             className={
-              isHero
-                ? "h-4 w-4 text-primary"
-                : "h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400"
+              isHero ? "h-4 w-4 text-primary" : "h-3.5 w-3.5 text-v2-ink-muted"
             }
           />
         </div>
@@ -82,7 +78,7 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
               {title}
             </h2>
             {isHero && (
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-primary">
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-primary">
                 <Sparkles className="h-2.5 w-2.5" />
                 AI-Powered
               </span>

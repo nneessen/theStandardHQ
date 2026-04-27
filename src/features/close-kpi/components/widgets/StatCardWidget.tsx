@@ -47,7 +47,7 @@ export const StatCardWidget: React.FC<StatCardWidgetProps> = ({
     <div className="flex h-full flex-col justify-between gap-2">
       {/* Primary metric */}
       <div>
-        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-0.5">
+        <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground mb-0.5">
           {label}
         </p>
         <div className="flex items-center gap-2">
@@ -61,7 +61,7 @@ export const StatCardWidget: React.FC<StatCardWidgetProps> = ({
                   ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300"
                   : trend === "down"
                     ? "bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400"
-                    : "bg-zinc-100 dark:bg-zinc-800 text-muted-foreground"
+                    : "bg-v2-ring text-muted-foreground"
               }`}
             >
               {trend === "up" ? (

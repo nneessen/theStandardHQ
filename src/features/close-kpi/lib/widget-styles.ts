@@ -20,12 +20,12 @@ export interface AccentStyle {
 
 export const ACCENT_STYLES: Record<WidgetAccentColor, AccentStyle> = {
   zinc: {
-    border: "border-l-zinc-400",
-    bgTint: "bg-zinc-50/40 dark:bg-zinc-800/20",
-    headerBg: "bg-zinc-50/60 dark:bg-zinc-800/30",
-    text: "text-zinc-600 dark:text-zinc-400",
-    dot: "bg-zinc-400",
-    ring: "ring-zinc-400",
+    border: "border-l-v2-ring-strong",
+    bgTint: "bg-v2-canvas",
+    headerBg: "bg-v2-canvas",
+    text: "text-v2-ink-muted ",
+    dot: "bg-v2-ring-strong",
+    ring: "ring-v2-ring-strong",
   },
   violet: {
     border: "border-l-violet-400",
@@ -101,14 +101,14 @@ export const SUB_METRIC_BG: Record<string, string> = {
   destructive:
     "bg-red-50/60 dark:bg-red-950/20 text-red-700 dark:text-red-300 border-red-200/50 dark:border-red-800/30",
   muted:
-    "bg-zinc-50/60 dark:bg-zinc-800/30 text-zinc-600 dark:text-zinc-400 border-zinc-200/50 dark:border-zinc-700/30",
+    "bg-v2-canvas text-v2-ink-muted  border-v2-ring/60 dark:border-v2-ring/30",
 };
 
 export const SUB_METRIC_DOT: Record<string, string> = {
   success: "bg-emerald-500",
   warning: "bg-amber-500",
   destructive: "bg-red-500",
-  muted: "bg-zinc-400",
+  muted: "bg-v2-ring-strong",
 };
 
 // ─── Date Range Labels ────────────────────────────────────────────
@@ -132,7 +132,7 @@ export const ACCENT_SWATCHES: {
   label: string;
   swatch: string;
 }[] = [
-  { color: "zinc", label: "Default", swatch: "bg-zinc-400" },
+  { color: "zinc", label: "Default", swatch: "bg-v2-ring-strong" },
   { color: "violet", label: "Violet", swatch: "bg-violet-400" },
   { color: "emerald", label: "Emerald", swatch: "bg-emerald-400" },
   { color: "amber", label: "Amber", swatch: "bg-amber-400" },

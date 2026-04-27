@@ -32,10 +32,10 @@ export function InstitutionRequestForm() {
   };
 
   return (
-    <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 space-y-2">
+    <div className="rounded-lg border border-v2-ring bg-v2-card p-3 space-y-2">
       <div className="flex items-center gap-1.5">
-        <Building2 className="h-3.5 w-3.5 text-zinc-500" />
-        <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+        <Building2 className="h-3.5 w-3.5 text-v2-ink-muted" />
+        <span className="text-[11px] font-medium text-v2-ink-muted">
           Request Institution Support
         </span>
       </div>
@@ -46,12 +46,12 @@ export function InstitutionRequestForm() {
           placeholder="Institution name *"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="h-7 px-2 text-[11px] border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 flex-1 min-w-[160px]"
+          className="h-7 px-2 text-[11px] border border-v2-ring  rounded bg-v2-card text-v2-ink-muted placeholder:text-v2-ink-subtle flex-1 min-w-[160px]"
         />
         <select
           value={accountType}
           onChange={(e) => setAccountType(e.target.value)}
-          className="h-7 px-2 text-[11px] border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300"
+          className="h-7 px-2 text-[11px] border border-v2-ring  rounded bg-v2-card text-v2-ink-muted"
         >
           <option value="">Account type</option>
           <option value="bank">Bank</option>
@@ -66,7 +66,7 @@ export function InstitutionRequestForm() {
         value={details}
         onChange={(e) => setDetails(e.target.value)}
         rows={2}
-        className="w-full px-2 py-1.5 text-[11px] border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 resize-none"
+        className="w-full px-2 py-1.5 text-[11px] border border-v2-ring  rounded bg-v2-card text-v2-ink-muted placeholder:text-v2-ink-subtle resize-none"
       />
 
       <Button

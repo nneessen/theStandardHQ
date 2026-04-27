@@ -43,7 +43,7 @@ export function ExportButton() {
       <Button
         size="sm"
         variant="ghost"
-        className="h-7 text-[11px] text-zinc-500"
+        className="h-7 text-[11px] text-v2-ink-muted"
         onClick={() => setShowReview(!showReview)}
         title="Upload corrected workbook"
       >

@@ -20,7 +20,7 @@ const HEAT_COLORS: Record<LeadHeatLevel, string> = {
   warming:
     "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800",
   neutral:
-    "bg-zinc-100 text-zinc-500 border-zinc-200 dark:bg-zinc-800/30 dark:text-zinc-400 dark:border-zinc-700",
+    "bg-v2-ring text-v2-ink-muted border-v2-ring dark:bg-v2-ring/30 dark:text-v2-ink-subtle ",
   cooling:
     "bg-sky-50 text-sky-600 border-sky-200 dark:bg-sky-950/30 dark:text-sky-400 dark:border-sky-800",
   cold: "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800",

@@ -166,7 +166,7 @@ export const CustomFieldBreakdownConfig: React.FC<
           </SelectTrigger>
           <SelectContent className="max-h-[300px]">
             <SelectGroup>
-              <SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              <SelectLabel className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 Policy & Coverage
               </SelectLabel>
               {POLICY_FIELDS.map((f) => (
@@ -176,7 +176,7 @@ export const CustomFieldBreakdownConfig: React.FC<
               ))}
             </SelectGroup>
             <SelectGroup>
-              <SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              <SelectLabel className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 Lead & Source
               </SelectLabel>
               {LEAD_FIELDS.map((f) => (
@@ -186,7 +186,7 @@ export const CustomFieldBreakdownConfig: React.FC<
               ))}
             </SelectGroup>
             <SelectGroup>
-              <SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              <SelectLabel className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 Demographics
               </SelectLabel>
               {DEMOGRAPHIC_FIELDS.map((f) => (

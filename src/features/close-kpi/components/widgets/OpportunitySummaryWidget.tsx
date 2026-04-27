@@ -23,8 +23,8 @@ const TYPE_STYLES: Record<
   { bg: string; text: string; icon: React.ReactNode }
 > = {
   active: {
-    bg: "bg-zinc-100 dark:bg-zinc-800",
-    text: "text-zinc-600 dark:text-zinc-400",
+    bg: "bg-v2-ring",
+    text: "text-v2-ink-muted dark:text-v2-ink-subtle",
     icon: <Circle className="h-2 w-2 fill-current" />,
   },
   won: {
@@ -79,7 +79,7 @@ export const OpportunitySummaryWidget: React.FC<
           </span>
         </div>
         {pipelineName && (
-          <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             {pipelineName}
           </span>
         )}
@@ -142,7 +142,7 @@ export const OpportunitySummaryWidget: React.FC<
       {/* Pipeline Health signals */}
       {pipelineHealth && hasHealthWarnings && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 rounded bg-amber-50/50 px-1.5 py-0.5 dark:bg-amber-950/20">
-          <span className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+          <span className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">
             <AlertTriangle className="h-2.5 w-2.5" />
             Signals
           </span>

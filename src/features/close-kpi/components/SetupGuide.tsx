@@ -136,7 +136,7 @@ export const SetupGuide: React.FC<SetupGuideProps> = ({
                       ? "bg-emerald-100 border-emerald-500 dark:bg-emerald-900/30 dark:border-emerald-500"
                       : status === "current"
                         ? "bg-primary/10 border-primary"
-                        : "bg-zinc-100 border-zinc-300 dark:bg-zinc-800 dark:border-zinc-600"
+                        : "bg-v2-ring border-v2-ring dark:bg-v2-ring "
                   }`}
                 >
                   {status === "complete" ? (
@@ -144,7 +144,9 @@ export const SetupGuide: React.FC<SetupGuideProps> = ({
                   ) : (
                     <Icon
                       className={`h-4 w-4 ${
-                        status === "current" ? "text-primary" : "text-zinc-400"
+                        status === "current"
+                          ? "text-primary"
+                          : "text-v2-ink-subtle"
                       }`}
                     />
                   )}
@@ -154,7 +156,7 @@ export const SetupGuide: React.FC<SetupGuideProps> = ({
                     className={`w-0.5 flex-1 min-h-[2rem] ${
                       status === "complete"
                         ? "bg-emerald-300 dark:bg-emerald-700"
-                        : "bg-zinc-200 dark:bg-zinc-700"
+                        : "bg-v2-ring"
                     }`}
                   />
                 )}
@@ -253,15 +255,12 @@ export const SetupGuide: React.FC<SetupGuideProps> = ({
       )}
 
       {/* FAQ Section */}
-      <div className="border-t border-zinc-200 dark:border-zinc-800 pt-4 space-y-1">
-        <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+      <div className="border-t border-v2-ring pt-4 space-y-1">
+        <h3 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-2">
           Common Questions
         </h3>
         {FAQ_ITEMS.map((faq) => (
-          <div
-            key={faq.q}
-            className="rounded-md border border-zinc-200 dark:border-zinc-800"
-          >
+          <div key={faq.q} className="rounded-md border border-v2-ring">
             <button
               className="flex items-center justify-between w-full px-3 py-2 text-left"
               onClick={() =>

@@ -40,15 +40,15 @@ export function WorkbookReview() {
   };
 
   return (
-    <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 space-y-2">
+    <div className="rounded-lg border border-v2-ring bg-v2-card p-3 space-y-2">
       <div className="flex items-center gap-1.5">
-        <FileSpreadsheet className="h-3.5 w-3.5 text-zinc-500" />
-        <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+        <FileSpreadsheet className="h-3.5 w-3.5 text-v2-ink-muted" />
+        <span className="text-[11px] font-medium text-v2-ink-muted">
           Upload Corrected Workbook
         </span>
       </div>
 
-      <p className="text-[10px] text-zinc-500">
+      <p className="text-[10px] text-v2-ink-muted">
         After exporting and reviewing your workbook, upload the corrected
         version to apply changes.
       </p>
@@ -59,7 +59,7 @@ export function WorkbookReview() {
           "border border-dashed rounded p-3 text-center cursor-pointer transition-colors",
           dragOver
             ? "border-teal-500 bg-teal-50/50 dark:bg-teal-900/20"
-            : "border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600",
+            : "border-v2-ring  hover:border-v2-ring-strong dark:hover:border-v2-ring",
           reviewWorkbook.isPending && "opacity-50 pointer-events-none",
         )}
         onDragOver={(e) => {
@@ -88,23 +88,21 @@ export function WorkbookReview() {
         {file ? (
           <div className="flex items-center justify-center gap-2">
             <FileSpreadsheet className="h-4 w-4 text-teal-500" />
-            <span className="text-[11px] text-zinc-700 dark:text-zinc-300">
-              {file.name}
-            </span>
+            <span className="text-[11px] text-v2-ink-muted">{file.name}</span>
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 setFile(null);
               }}
-              className="text-zinc-400 hover:text-zinc-600"
+              className="text-v2-ink-subtle hover:text-v2-ink-muted"
             >
               <X className="h-3 w-3" />
             </button>
           </div>
         ) : (
           <>
-            <Upload className="h-4 w-4 mx-auto text-zinc-400 mb-1" />
-            <p className="text-[10px] text-zinc-500">
+            <Upload className="h-4 w-4 mx-auto text-v2-ink-subtle mb-1" />
+            <p className="text-[10px] text-v2-ink-muted">
               Drop .xlsx file or click to browse
             </p>
           </>

@@ -37,20 +37,18 @@ export default function BusinessToolsPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5 bg-zinc-50 dark:bg-zinc-950">
+    <div className="min-h-screen flex flex-col p-3 space-y-2.5 bg-v2-canvas">
       {/* Header */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
         <div className="flex items-center gap-2">
-          <Briefcase className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            Business Tools
-          </h1>
+          <Briefcase className="h-4 w-4 text-v2-ink" />
+          <h1 className="text-sm font-semibold text-v2-ink">Business Tools</h1>
         </div>
         <ExportButton />
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-0.5 bg-zinc-200/50 dark:bg-zinc-800/50 rounded-md p-0.5">
+      <div className="flex items-center gap-0.5 bg-v2-canvas rounded-md p-0.5">
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -58,8 +56,8 @@ export default function BusinessToolsPage() {
             className={cn(
               "flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
               activeTab === tab.id
-                ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+                ? "bg-v2-card shadow-sm text-v2-ink"
+                : "text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle",
             )}
           >
             <tab.icon className="h-3 w-3" />

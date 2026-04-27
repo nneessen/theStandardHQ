@@ -85,7 +85,7 @@ export function UploadTab({ onSwitchTab }: UploadTabProps) {
               "relative border-2 border-dashed rounded-lg p-6 text-center transition-colors",
               dragOver
                 ? "border-teal-500 bg-teal-50/50 dark:bg-teal-900/20"
-                : "border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600",
+                : "border-v2-ring  hover:border-v2-ring-strong dark:hover:border-v2-ring",
               isProcessing && "opacity-50 pointer-events-none",
             )}
             onDragOver={(e) => {
@@ -108,11 +108,11 @@ export function UploadTab({ onSwitchTab }: UploadTabProps) {
               className="hidden"
               onChange={(e) => e.target.files && addFiles(e.target.files)}
             />
-            <Upload className="h-6 w-6 mx-auto text-zinc-400 mb-2" />
-            <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+            <Upload className="h-6 w-6 mx-auto text-v2-ink-subtle mb-2" />
+            <p className="text-xs font-medium text-v2-ink-muted">
               Drop files here or click to browse
             </p>
-            <p className="text-[10px] text-zinc-500 mt-1">
+            <p className="text-[10px] text-v2-ink-muted mt-1">
               PDF or CSV, max 4MB per file
             </p>
           </div>
@@ -123,14 +123,14 @@ export function UploadTab({ onSwitchTab }: UploadTabProps) {
               {files.map((f, i) => (
                 <div
                   key={`${f.name}-${i}`}
-                  className="flex items-center justify-between px-2.5 py-1.5 bg-white dark:bg-zinc-900 rounded border border-zinc-200 dark:border-zinc-800"
+                  className="flex items-center justify-between px-2.5 py-1.5 bg-v2-card rounded border border-v2-ring"
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <FileText className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
-                    <span className="text-[11px] text-zinc-700 dark:text-zinc-300 truncate">
+                    <FileText className="h-3.5 w-3.5 text-v2-ink-subtle shrink-0" />
+                    <span className="text-[11px] text-v2-ink-muted truncate">
                       {f.name}
                     </span>
-                    <span className="text-[10px] text-zinc-400 shrink-0">
+                    <span className="text-[10px] text-v2-ink-subtle shrink-0">
                       {(f.size / 1024).toFixed(0)}KB
                     </span>
                   </div>
@@ -139,7 +139,7 @@ export function UploadTab({ onSwitchTab }: UploadTabProps) {
                       e.stopPropagation();
                       removeFile(i);
                     }}
-                    className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                    className="text-v2-ink-subtle hover:text-v2-ink-muted dark:hover:text-v2-ink-subtle"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -150,7 +150,7 @@ export function UploadTab({ onSwitchTab }: UploadTabProps) {
 
           {/* Filing month */}
           <div className="flex items-center gap-3">
-            <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 shrink-0">
+            <label className="text-[11px] font-medium text-v2-ink-muted shrink-0">
               Filing Month
             </label>
             <input
@@ -158,7 +158,7 @@ export function UploadTab({ onSwitchTab }: UploadTabProps) {
               value={filingMonth}
               onChange={(e) => setFilingMonth(e.target.value)}
               disabled={isProcessing}
-              className="h-7 px-2 text-[11px] border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100"
+              className="h-7 px-2 text-[11px] border border-v2-ring  rounded bg-v2-card text-v2-ink"
             />
           </div>
 
@@ -184,14 +184,14 @@ export function UploadTab({ onSwitchTab }: UploadTabProps) {
 
           {/* Job progress (while processing) */}
           {isProcessing && job && (
-            <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 space-y-3">
+            <div className="rounded-lg border border-v2-ring bg-v2-card p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin text-teal-500" />
-                <span className="text-xs font-medium text-zinc-800 dark:text-zinc-200">
+                <span className="text-xs font-medium text-v2-ink dark:text-v2-ink-subtle">
                   Processing...
                 </span>
               </div>
-              <div className="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-1.5">
+              <div className="w-full bg-v2-ring rounded-full h-1.5">
                 <div
                   className="h-1.5 rounded-full transition-all bg-teal-500"
                   style={{
@@ -199,7 +199,7 @@ export function UploadTab({ onSwitchTab }: UploadTabProps) {
                   }}
                 />
               </div>
-              <p className="text-[10px] text-zinc-500">
+              <p className="text-[10px] text-v2-ink-muted">
                 {job.progress_message ||
                   `Stage ${job.progress_stage} of ${job.progress_total}`}
               </p>
@@ -212,14 +212,14 @@ export function UploadTab({ onSwitchTab }: UploadTabProps) {
       {institutionsData?.institutions &&
         institutionsData.institutions.length > 0 && (
           <div className="pt-2">
-            <p className="text-[10px] font-medium text-zinc-500 mb-1.5">
+            <p className="text-[10px] font-medium text-v2-ink-muted mb-1.5">
               Supported Institutions
             </p>
             <div className="flex flex-wrap gap-1.5">
               {institutionsData.institutions.map((inst) => (
                 <span
                   key={inst.key}
-                  className="px-2 py-0.5 text-[10px] rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400"
+                  className="px-2 py-0.5 text-[10px] rounded bg-v2-ring text-v2-ink-muted dark:text-v2-ink-subtle"
                 >
                   {inst.name}
                 </span>

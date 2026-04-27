@@ -69,7 +69,7 @@ export function StatementsTab() {
   if (isLoading && !isPlaceholderData) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -80,7 +80,7 @@ export function StatementsTab() {
         <p className="text-xs font-medium text-red-600 dark:text-red-400">
           Failed to load statements
         </p>
-        <p className="text-[10px] text-zinc-500">
+        <p className="text-[10px] text-v2-ink-muted">
           {error instanceof Error
             ? error.message
             : "The business tools service may be unavailable. Try again later."}
@@ -96,7 +96,7 @@ export function StatementsTab() {
         <select
           value={query.trust_state ?? "all"}
           onChange={(e) => setFilter("trust_state", e.target.value)}
-          className="h-7 px-2 text-[11px] border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300"
+          className="h-7 px-2 text-[11px] border border-v2-ring  rounded bg-v2-card text-v2-ink-muted"
         >
           <option value="all">All States</option>
           <option value="needs_review">Needs Review</option>
@@ -107,7 +107,7 @@ export function StatementsTab() {
         <select
           value={query.account_type ?? "all"}
           onChange={(e) => setFilter("account_type", e.target.value)}
-          className="h-7 px-2 text-[11px] border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300"
+          className="h-7 px-2 text-[11px] border border-v2-ring  rounded bg-v2-card text-v2-ink-muted"
         >
           {ACCOUNT_TYPES.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -116,7 +116,7 @@ export function StatementsTab() {
           ))}
         </select>
 
-        <span className="text-[10px] text-zinc-400 ml-auto tabular-nums">
+        <span className="text-[10px] text-v2-ink-subtle ml-auto tabular-nums">
           {total.toLocaleString()} total
           {isPlaceholderData && (
             <Loader2 className="inline h-3 w-3 animate-spin ml-1" />
@@ -127,36 +127,36 @@ export function StatementsTab() {
       {/* Table */}
       {statements.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-v2-ink-muted">
             {query.trust_state || query.account_type
               ? "No statements match the current filters."
               : "No statements yet. Upload files on the Upload tab."}
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded border border-zinc-200 dark:border-zinc-800">
+        <div className="overflow-x-auto rounded border border-v2-ring">
           <table className="w-full text-[11px]">
             <thead>
-              <tr className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-                <th className="text-left px-2 py-1.5 font-medium text-zinc-500">
+              <tr className="bg-v2-canvas dark:bg-v2-card-dark border-b border-v2-ring">
+                <th className="text-left px-2 py-1.5 font-medium text-v2-ink-muted">
                   File
                 </th>
-                <th className="text-left px-2 py-1.5 font-medium text-zinc-500">
+                <th className="text-left px-2 py-1.5 font-medium text-v2-ink-muted">
                   Institution
                 </th>
-                <th className="text-left px-2 py-1.5 font-medium text-zinc-500">
+                <th className="text-left px-2 py-1.5 font-medium text-v2-ink-muted">
                   Account
                 </th>
-                <th className="text-left px-2 py-1.5 font-medium text-zinc-500">
+                <th className="text-left px-2 py-1.5 font-medium text-v2-ink-muted">
                   Type
                 </th>
-                <th className="text-left px-2 py-1.5 font-medium text-zinc-500">
+                <th className="text-left px-2 py-1.5 font-medium text-v2-ink-muted">
                   End Date
                 </th>
-                <th className="text-center px-2 py-1.5 font-medium text-zinc-500">
+                <th className="text-center px-2 py-1.5 font-medium text-v2-ink-muted">
                   Status
                 </th>
-                <th className="text-center px-2 py-1.5 font-medium text-zinc-500">
+                <th className="text-center px-2 py-1.5 font-medium text-v2-ink-muted">
                   Actions
                 </th>
               </tr>
@@ -166,23 +166,23 @@ export function StatementsTab() {
                 <tr
                   key={stmt.id}
                   className={cn(
-                    "border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-900/30",
-                    idx % 2 === 1 && "bg-zinc-50/50 dark:bg-zinc-900/10",
+                    "border-b border-v2-ring/60 hover:bg-v2-canvas dark:hover:bg-v2-card-dark/30",
+                    idx % 2 === 1 && "bg-v2-canvas/50 dark:bg-v2-card-dark/10",
                   )}
                 >
-                  <td className="px-2 py-1.5 text-zinc-800 dark:text-zinc-200 max-w-[200px] truncate">
+                  <td className="px-2 py-1.5 text-v2-ink dark:text-v2-ink-subtle max-w-[200px] truncate">
                     {stmt.source_file}
                   </td>
-                  <td className="px-2 py-1.5 text-zinc-700 dark:text-zinc-300">
+                  <td className="px-2 py-1.5 text-v2-ink-muted">
                     {stmt.institution_name}
                   </td>
-                  <td className="px-2 py-1.5 text-zinc-700 dark:text-zinc-300">
+                  <td className="px-2 py-1.5 text-v2-ink-muted">
                     {stmt.account_name}
                   </td>
-                  <td className="px-2 py-1.5 text-zinc-600 dark:text-zinc-400 capitalize">
+                  <td className="px-2 py-1.5 text-v2-ink-muted dark:text-v2-ink-subtle capitalize">
                     {stmt.account_type}
                   </td>
-                  <td className="px-2 py-1.5 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">
+                  <td className="px-2 py-1.5 text-v2-ink-muted dark:text-v2-ink-subtle whitespace-nowrap">
                     {stmt.statement_end_date || "—"}
                   </td>
                   <td className="px-2 py-1.5 text-center">
@@ -219,7 +219,7 @@ export function StatementsTab() {
       {/* Pagination controls */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-1">
-          <span className="text-[10px] text-zinc-500 tabular-nums">
+          <span className="text-[10px] text-v2-ink-muted tabular-nums">
             Page {page + 1} of {totalPages}
           </span>
           <div className="flex items-center gap-1">

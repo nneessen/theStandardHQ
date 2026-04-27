@@ -39,7 +39,7 @@ export const GlobalDateRange: React.FC<GlobalDateRangeProps> = ({
         value={value}
         onValueChange={(v) => onChange(v as DateRangePreset)}
       >
-        <SelectTrigger className="h-7 w-[130px] text-[10px] border-zinc-200 dark:border-zinc-700">
+        <SelectTrigger className="h-7 w-[130px] text-[10px] border-v2-ring">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

@@ -55,7 +55,7 @@ export const SpeedToLeadWidget: React.FC<SpeedToLeadWidgetProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <Zap className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Speed to Lead
           </span>
         </div>
@@ -106,7 +106,7 @@ export const SpeedToLeadWidget: React.FC<SpeedToLeadWidgetProps> = ({
       {/* Channel breakdown */}
       {firstContactChannel && firstContactChannel.length > 0 && (
         <div className="flex items-center gap-2 border-t border-border/40 pt-1">
-          <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             1st touch
           </span>
           {firstContactChannel.map((ch) => (

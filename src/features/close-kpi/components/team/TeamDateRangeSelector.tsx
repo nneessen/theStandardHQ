@@ -93,7 +93,7 @@ export const TeamDateRangeSelector: React.FC<TeamDateRangeSelectorProps> = ({
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="flex items-center gap-0.5 bg-zinc-100 dark:bg-zinc-800/50 rounded-md p-0.5">
+      <div className="flex items-center gap-0.5 bg-v2-canvas rounded-md p-0.5">
         {TEAM_CALL_PRESETS.map((preset) => (
           <button
             key={preset.id}
@@ -102,8 +102,8 @@ export const TeamDateRangeSelector: React.FC<TeamDateRangeSelectorProps> = ({
             className={cn(
               "px-2.5 py-1 text-[10px] font-medium rounded transition-all whitespace-nowrap",
               value.preset === preset.id
-                ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+                ? "bg-v2-card shadow-sm text-v2-ink"
+                : "text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle",
             )}
           >
             {preset.label}
@@ -115,8 +115,8 @@ export const TeamDateRangeSelector: React.FC<TeamDateRangeSelectorProps> = ({
           className={cn(
             "px-2.5 py-1 text-[10px] font-medium rounded transition-all whitespace-nowrap",
             value.preset === "custom"
-              ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+              ? "bg-v2-card shadow-sm text-v2-ink"
+              : "text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle",
           )}
         >
           Custom

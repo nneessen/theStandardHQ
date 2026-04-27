@@ -143,7 +143,7 @@ export const CloseKpiPage: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col p-2 sm:p-3 space-y-2 bg-zinc-50 dark:bg-zinc-950">
+    <div className="flex flex-col p-2 sm:p-3 space-y-2 bg-v2-canvas">
       {/* Hero Header */}
       <div className="relative overflow-hidden rounded-xl bg-foreground flex-shrink-0">
         <div className="absolute inset-0 opacity-[0.03]">
@@ -196,7 +196,7 @@ export const CloseKpiPage: React.FC = () => {
       </div>
 
       {/* Tab Bar */}
-      <div className="flex items-center gap-0.5 bg-zinc-200/50 dark:bg-zinc-800/50 rounded-md p-0.5 flex-shrink-0">
+      <div className="flex items-center gap-0.5 bg-v2-canvas rounded-md p-0.5 flex-shrink-0">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -204,8 +204,8 @@ export const CloseKpiPage: React.FC = () => {
             className={cn(
               "flex items-center justify-center gap-1 px-2.5 py-1.5 text-[10px] font-medium rounded transition-all whitespace-nowrap flex-1 sm:flex-initial",
               activeTab === tab.id
-                ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+                ? "bg-v2-card shadow-sm text-v2-ink"
+                : "text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle",
             )}
           >
             <tab.icon className="h-3 w-3" />
@@ -238,7 +238,7 @@ export const CloseKpiPage: React.FC = () => {
             {/* Dashboard header with mode segmented control */}
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               {/* Left: Segmented control for dashboard mode */}
-              <div className="flex items-center gap-0.5 bg-zinc-100 dark:bg-zinc-800/50 rounded-md p-0.5">
+              <div className="flex items-center gap-0.5 bg-v2-canvas rounded-md p-0.5">
                 {dashboardModes.map((mode) => (
                   <button
                     key={mode.id}
@@ -246,8 +246,8 @@ export const CloseKpiPage: React.FC = () => {
                     className={cn(
                       "px-2.5 py-1 text-[10px] font-medium rounded transition-all whitespace-nowrap",
                       dashboardMode === mode.id
-                        ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-                        : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+                        ? "bg-v2-card shadow-sm text-v2-ink"
+                        : "text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle",
                     )}
                   >
                     {mode.label}

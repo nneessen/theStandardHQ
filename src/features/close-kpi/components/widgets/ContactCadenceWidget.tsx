@@ -36,7 +36,7 @@ export const ContactCadenceWidget: React.FC<ContactCadenceWidgetProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <Repeat className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Contact Cadence
           </span>
         </div>
@@ -45,7 +45,7 @@ export const ContactCadenceWidget: React.FC<ContactCadenceWidgetProps> = ({
       {/* Primary metrics */}
       <div className="grid grid-cols-3 gap-1.5">
         <div className="rounded bg-muted/50 px-1.5 py-1">
-          <p className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+          <p className="text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Avg Gap
           </p>
           <p className="font-mono text-sm font-semibold text-foreground">
@@ -53,7 +53,7 @@ export const ContactCadenceWidget: React.FC<ContactCadenceWidgetProps> = ({
           </p>
         </div>
         <div className="rounded bg-muted/50 px-1.5 py-1">
-          <p className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+          <p className="text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Median Gap
           </p>
           <p className="font-mono text-sm font-semibold text-foreground">
@@ -61,7 +61,7 @@ export const ContactCadenceWidget: React.FC<ContactCadenceWidgetProps> = ({
           </p>
         </div>
         <div className="rounded bg-muted/50 px-1.5 py-1">
-          <p className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+          <p className="text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Avg Touches
           </p>
           <p className="font-mono text-sm font-semibold text-foreground">
@@ -72,7 +72,7 @@ export const ContactCadenceWidget: React.FC<ContactCadenceWidgetProps> = ({
 
       {/* Touch distribution */}
       <div className="flex-1 space-y-0.5">
-        <p className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+        <p className="text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           Touches per Lead
         </p>
         {touchDistribution.map((d) => (
@@ -99,7 +99,7 @@ export const ContactCadenceWidget: React.FC<ContactCadenceWidgetProps> = ({
       {/* Channel mix */}
       {channelMix && channelMix.length > 0 && (
         <div className="flex items-center gap-2 border-t border-border/40 pt-1">
-          <span className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Mix
           </span>
           {channelMix.map((ch) => {

@@ -54,7 +54,7 @@ const CARDS: Array<{
     key: "personal_expense_cents",
     label: "Personal Expenses",
     icon: User,
-    color: "text-zinc-600 dark:text-zinc-400",
+    color: "text-v2-ink-muted dark:text-v2-ink-subtle",
     format: "dollar",
   },
   {
@@ -85,11 +85,11 @@ export function SummaryCards({ totals }: SummaryCardsProps) {
         return (
           <div
             key={card.key}
-            className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3"
+            className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4"
           >
             <div className="flex items-center gap-1.5 mb-1">
               <card.icon className={`h-3 w-3 ${card.color}`} />
-              <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+              <span className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-[0.18em]">
                 {card.label}
               </span>
             </div>

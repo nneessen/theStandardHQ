@@ -103,7 +103,7 @@ const SortableHeader: React.FC<SortableHeaderProps> = ({
         active ? (direction === "asc" ? "ascending" : "descending") : "none"
       }
       className={cn(
-        "px-2 py-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground select-none",
+        "px-2 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground select-none",
         align === "right" ? "text-right" : "text-left",
       )}
     >
@@ -248,7 +248,7 @@ export const TeamCallStatsTable: React.FC<TeamCallStatsTableProps> = ({
                       {displayName(r)}
                     </span>
                     {r.isSelf && (
-                      <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground bg-muted px-1 py-0.5 rounded flex-shrink-0">
+                      <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground bg-muted px-1 py-0.5 rounded flex-shrink-0">
                         You
                       </span>
                     )}

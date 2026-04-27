@@ -103,15 +103,15 @@ const WidgetCard: React.FC<WidgetCardProps> = ({
   return (
     <div
       className={cn(
-        "rounded-lg border border-zinc-200/80 dark:border-zinc-800 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border-l-[3px]",
+        "rounded-lg border border-v2-ring/80  shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border-l-[3px]",
         accent.border,
-        isEditMode && "ring-1 ring-zinc-300 dark:ring-zinc-700",
+        isEditMode && "ring-1 ring-v2-ring",
       )}
     >
       {/* Header — tinted background */}
       <div
         className={cn(
-          "flex items-center justify-between px-2.5 py-1.5 border-b border-zinc-200/60 dark:border-zinc-800/60",
+          "flex items-center justify-between px-2.5 py-1.5 border-b border-v2-ring/60 /60",
           accent.headerBg,
         )}
       >
@@ -145,7 +145,7 @@ const WidgetCard: React.FC<WidgetCardProps> = ({
               </SelectContent>
             </Select>
           ) : (
-            <span className="inline-flex items-center gap-0.5 text-[9px] text-muted-foreground bg-zinc-100/60 dark:bg-zinc-800/40 rounded px-1.5 py-0.5">
+            <span className="inline-flex items-center gap-0.5 text-[9px] text-muted-foreground bg-v2-ring/60 dark:bg-v2-ring/40 rounded px-1.5 py-0.5">
               <Calendar className="h-2.5 w-2.5" />
               {dateLabel}
             </span>
@@ -155,7 +155,7 @@ const WidgetCard: React.FC<WidgetCardProps> = ({
             <>
               <button
                 onClick={() => onConfigure(widget)}
-                className="flex h-5 w-5 items-center justify-center rounded hover:bg-zinc-200/60 dark:hover:bg-zinc-700/60 transition-colors"
+                className="flex h-5 w-5 items-center justify-center rounded hover:bg-v2-ring/60 dark:hover:bg-v2-card-dark/60 transition-colors"
                 title="Configure"
               >
                 <Settings className="h-3 w-3 text-muted-foreground" />
@@ -182,7 +182,7 @@ const WidgetCard: React.FC<WidgetCardProps> = ({
         className={cn(
           "p-2.5",
           isLoading && !data ? minHeightClass : "",
-          "bg-white dark:bg-zinc-900",
+          "bg-v2-card",
         )}
       >
         {isLoading && !data ? (
@@ -265,8 +265,8 @@ export const CustomDashboard: React.FC = () => {
           <h2 className="text-xs font-bold text-foreground">My Dashboard</h2>
         </div>
 
-        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/50 py-12">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800 mb-3">
+        <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-v2-ring  bg-v2-canvas/50 dark:bg-v2-card-dark/50 py-12">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-v2-ring mb-3">
             <Plus className="h-5 w-5 text-muted-foreground" />
           </div>
           <p className="text-[11px] font-medium text-foreground mb-1">

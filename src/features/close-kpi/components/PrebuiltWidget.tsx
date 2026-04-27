@@ -46,10 +46,10 @@ export const PrebuiltWidget: React.FC<PrebuiltWidgetProps> = ({
 
   return (
     <div
-      className={`bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm ${colSpan ?? ""}`}
+      className={`bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft shadow-sm ${colSpan ?? ""}`}
     >
       {/* Header */}
-      <div className="flex h-7 items-center justify-between border-b border-zinc-200 dark:border-zinc-800 px-2">
+      <div className="flex h-7 items-center justify-between border-b border-v2-ring px-2">
         <div className="flex items-center gap-1 min-w-0">
           <span className="truncate text-[11px] font-semibold text-foreground">
             {title}

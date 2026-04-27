@@ -301,7 +301,7 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
           onClick={() => setPanelOpen((v) => !v)}
           className={
             isHero
-              ? "flex w-full items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
+              ? "flex w-full items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
               : "flex w-full items-center gap-1 text-[10px] font-semibold uppercase text-muted-foreground hover:text-foreground transition-colors"
           }
         >
@@ -419,7 +419,7 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
                                   {/* AI suggestion if present */}
                                   {aiRec?.reason && (
                                     <div className="px-3 py-2 bg-violet-100/60 dark:bg-violet-950/60 border-t border-violet-200 dark:border-violet-800">
-                                      <div className="font-bold text-violet-700 dark:text-violet-300 text-[10px] uppercase tracking-wider mb-0.5">
+                                      <div className="font-bold text-violet-700 dark:text-violet-300 text-[10px] uppercase tracking-[0.18em] mb-0.5">
                                         AI Suggestion (
                                         {aiRec.multiplier.toFixed(2)}x)
                                       </div>

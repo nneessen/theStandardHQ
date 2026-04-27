@@ -95,7 +95,7 @@ export const CloseSettings: React.FC = () => {
       <ConnectionCard
         title="Close CRM"
         icon={
-          <CloseCrmIcon className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+          <CloseCrmIcon className="h-4 w-4 text-v2-ink-muted dark:text-v2-ink-subtle" />
         }
         connected={isConnected}
         statusLabel={
@@ -112,10 +112,10 @@ export const CloseSettings: React.FC = () => {
       />
 
       {/* Instructions */}
-      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 p-3 space-y-2">
+      <div className="rounded-lg border border-v2-ring bg-v2-canvas dark:bg-v2-card-dark/50 p-3 space-y-2">
         <div className="flex items-center gap-1.5">
           <KeyRound className="h-3 w-3 text-muted-foreground" />
-          <h3 className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <h3 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             How to get your API key
           </h3>
         </div>
@@ -134,7 +134,7 @@ export const CloseSettings: React.FC = () => {
           </li>
           <li>Copy the key and paste it above</li>
         </ol>
-        <div className="flex items-start gap-1.5 pt-1 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="flex items-start gap-1.5 pt-1 border-t border-v2-ring">
           <Shield className="h-3 w-3 text-muted-foreground mt-0.5 shrink-0" />
           <p className="text-[10px] text-muted-foreground">
             Your key is encrypted with AES-256 and never shared with other

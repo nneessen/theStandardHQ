@@ -190,7 +190,7 @@ export function LeadDropPage() {
 
       {connection?.connected && (
         <Tabs defaultValue="drop" className="space-y-4">
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-xl bg-zinc-200/70 p-1 dark:bg-zinc-800/70">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-xl bg-v2-ring/70 p-1 dark:bg-v2-ring/70">
             <TabsTrigger value="drop" className="text-xs">
               Drop
             </TabsTrigger>

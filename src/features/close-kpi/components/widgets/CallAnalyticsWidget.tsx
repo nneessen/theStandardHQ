@@ -38,7 +38,7 @@ export const CallAnalyticsWidget: React.FC<CallAnalyticsWidgetProps> = ({
       {/* Disposition breakdown */}
       <div className="grid grid-cols-3 gap-1.5">
         <div className="rounded bg-muted/50 px-1.5 py-1">
-          <p className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+          <p className="text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Answered
           </p>
           <p className="font-mono text-sm font-semibold text-foreground">
@@ -46,7 +46,7 @@ export const CallAnalyticsWidget: React.FC<CallAnalyticsWidgetProps> = ({
           </p>
         </div>
         <div className="rounded bg-muted/50 px-1.5 py-1">
-          <p className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+          <p className="text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Voicemail
           </p>
           <p className="font-mono text-sm font-semibold text-foreground">
@@ -54,7 +54,7 @@ export const CallAnalyticsWidget: React.FC<CallAnalyticsWidgetProps> = ({
           </p>
         </div>
         <div className="rounded bg-muted/50 px-1.5 py-1">
-          <p className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+          <p className="text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Missed
           </p>
           <p className="font-mono text-sm font-semibold text-foreground">

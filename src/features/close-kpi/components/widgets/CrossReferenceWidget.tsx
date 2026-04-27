@@ -13,14 +13,14 @@ interface CrossReferenceWidgetProps {
 
 // Muted color palette for status bars — cycles through these for variety
 const BAR_COLORS = [
-  "bg-zinc-500",
-  "bg-zinc-400",
-  "bg-zinc-600",
-  "bg-zinc-350",
-  "bg-zinc-700",
-  "bg-zinc-300",
-  "bg-zinc-500/80",
-  "bg-zinc-400/80",
+  "bg-v2-canvas",
+  "bg-v2-ring-strong",
+  "bg-v2-ink-muted",
+  "bg-v2-ring",
+  "bg-v2-card-dark",
+  "bg-v2-ring",
+  "bg-v2-canvas/80",
+  "bg-v2-ring-strong/80",
 ];
 
 export const CrossReferenceWidget: React.FC<CrossReferenceWidgetProps> = ({
@@ -81,7 +81,7 @@ export const CrossReferenceWidget: React.FC<CrossReferenceWidgetProps> = ({
       {/* Header */}
       <div className="flex items-center gap-1.5">
         <Grid3X3 className="h-3 w-3 text-muted-foreground" />
-        <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+        <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           Smart View × Status
         </span>
         <span className="ml-auto font-mono text-[10px] text-muted-foreground">
@@ -100,12 +100,12 @@ export const CrossReferenceWidget: React.FC<CrossReferenceWidgetProps> = ({
           return (
             <div
               key={sv.smartViewId}
-              className="rounded-md border border-zinc-200/60 dark:border-zinc-800/60 overflow-hidden"
+              className="rounded-md border border-v2-ring/60 /60 overflow-hidden"
             >
               {/* Smart view header row — always visible */}
               <button
                 onClick={() => toggleExpanded(sv.smartViewId)}
-                className="flex items-center gap-2 w-full px-2.5 py-1.5 hover:bg-zinc-50/60 dark:hover:bg-zinc-800/30 transition-colors text-left"
+                className="flex items-center gap-2 w-full px-2.5 py-1.5 hover:bg-v2-canvas/60 dark:hover:bg-v2-ring/30 transition-colors text-left"
               >
                 {isExpanded ? (
                   <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
@@ -150,7 +150,7 @@ export const CrossReferenceWidget: React.FC<CrossReferenceWidgetProps> = ({
 
               {/* Expanded: full status breakdown */}
               {isExpanded && (
-                <div className="border-t border-zinc-200/40 dark:border-zinc-800/40 bg-zinc-50/30 dark:bg-zinc-900/30 px-2.5 py-1.5">
+                <div className="border-t border-v2-ring/40 /40 bg-v2-canvas/30 dark:bg-v2-card-dark/30 px-2.5 py-1.5">
                   {sv.statuses.length === 0 ? (
                     <p className="text-[9px] text-muted-foreground py-1">
                       No leads in this smart view
@@ -178,7 +178,7 @@ export const CrossReferenceWidget: React.FC<CrossReferenceWidgetProps> = ({
                             {/* Bar */}
                             <div className="flex-1 h-2 rounded-sm bg-muted/15 overflow-hidden">
                               <div
-                                className="h-full rounded-sm bg-zinc-500 dark:bg-zinc-400"
+                                className="h-full rounded-sm bg-v2-canvas dark:bg-v2-ring-strong"
                                 style={{
                                   width: `${barWidth}%`,
                                   opacity: 0.7,
@@ -236,10 +236,10 @@ const StatusTotalsSummary: React.FC<{
   if (sortedStatuses.length === 0) return null;
 
   return (
-    <div className="border-t border-zinc-200/40 dark:border-zinc-800/40 pt-1.5">
+    <div className="border-t border-v2-ring/40 /40 pt-1.5">
       <button
         onClick={() => setExpanded((p) => !p)}
-        className="flex items-center gap-1 text-[9px] font-medium uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+        className="flex items-center gap-1 text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground hover:text-foreground transition-colors"
       >
         {expanded ? (
           <ChevronDown className="h-2.5 w-2.5" />
@@ -265,7 +265,7 @@ const StatusTotalsSummary: React.FC<{
                 </span>
                 <div className="flex-1 h-2 rounded-sm bg-muted/15 overflow-hidden">
                   <div
-                    className="h-full rounded-sm bg-zinc-400 dark:bg-zinc-500"
+                    className="h-full rounded-sm bg-v2-ring-strong "
                     style={{ width: `${barWidth}%`, opacity: 0.6 }}
                   />
                 </div>

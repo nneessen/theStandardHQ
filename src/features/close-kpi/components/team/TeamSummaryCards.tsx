@@ -58,7 +58,7 @@ const Tile: React.FC<TileProps> = ({ icon: Icon, label, value, subLabel }) => (
   <div className="flex flex-col gap-1 rounded-md border border-border bg-background px-3 py-2">
     <div className="flex items-center gap-1.5 text-muted-foreground">
       <Icon className="h-3 w-3" />
-      <span className="text-[10px] font-medium uppercase tracking-wider">
+      <span className="text-[10px] font-medium uppercase tracking-[0.18em]">
         {label}
       </span>
     </div>

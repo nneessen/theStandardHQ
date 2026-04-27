@@ -57,7 +57,8 @@ const TRUST_BADGE: Record<string, { label: string; className: string }> = {
   },
   excluded: {
     label: "Excluded",
-    className: "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400",
+    className:
+      "bg-v2-ring text-v2-ink-muted dark:bg-v2-ring dark:text-v2-ink-subtle",
   },
   rejected: {
     label: "Rejected",
@@ -108,10 +109,10 @@ const TransactionRow = React.memo(function TransactionRow({
     <Fragment>
       <tr
         className={cn(
-          "border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-900/30 cursor-pointer",
-          idx % 2 === 1 && "bg-zinc-50/50 dark:bg-zinc-900/10",
+          "border-b border-v2-ring/60 hover:bg-v2-canvas dark:hover:bg-v2-card-dark/30 cursor-pointer",
+          idx % 2 === 1 && "bg-v2-canvas/50 dark:bg-v2-card-dark/10",
           txn.excluded_from_totals && "opacity-50",
-          isExpanded && "bg-zinc-50 dark:bg-zinc-900/40",
+          isExpanded && "bg-v2-canvas dark:bg-v2-card-dark/40",
         )}
         onClick={() => onToggleExpand(txn.id)}
       >
@@ -121,17 +122,17 @@ const TransactionRow = React.memo(function TransactionRow({
             onCheckedChange={() => onToggleSelect(txn.id)}
           />
         </td>
-        <td className="px-1 py-1 text-zinc-400">
+        <td className="px-1 py-1 text-v2-ink-subtle">
           {isExpanded ? (
             <ChevronUp className="h-3 w-3" />
           ) : (
             <ChevronDown className="h-3 w-3" />
           )}
         </td>
-        <td className="px-2 py-1 text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
+        <td className="px-2 py-1 text-v2-ink-muted whitespace-nowrap">
           {txn.transaction_date}
         </td>
-        <td className="px-2 py-1 text-zinc-800 dark:text-zinc-200 max-w-[240px] truncate">
+        <td className="px-2 py-1 text-v2-ink dark:text-v2-ink-subtle max-w-[240px] truncate">
           {txn.description_normalized || txn.description_raw}
         </td>
         <td
@@ -139,7 +140,7 @@ const TransactionRow = React.memo(function TransactionRow({
             "px-2 py-1 text-right tabular-nums whitespace-nowrap",
             txn.direction === "income"
               ? "text-emerald-600 dark:text-emerald-400"
-              : "text-zinc-800 dark:text-zinc-200",
+              : "text-v2-ink dark:text-v2-ink-subtle",
           )}
         >
           {txn.direction === "income" ? "+" : "-"}
@@ -155,7 +156,7 @@ const TransactionRow = React.memo(function TransactionRow({
                   category: e.target.value,
                 })
               }
-              className="h-5 px-1 text-[10px] border border-zinc-200 dark:border-zinc-700 rounded bg-transparent text-zinc-700 dark:text-zinc-300 max-w-[120px]"
+              className="h-5 px-1 text-[10px] border border-v2-ring rounded bg-transparent text-v2-ink-muted max-w-[120px]"
             >
               {categories.categories.map((c: string) => (
                 <option key={c} value={c}>
@@ -164,10 +165,10 @@ const TransactionRow = React.memo(function TransactionRow({
               ))}
             </select>
           ) : (
-            <span className="text-zinc-500">{txn.category}</span>
+            <span className="text-v2-ink-muted">{txn.category}</span>
           )}
         </td>
-        <td className="px-2 py-1 text-right tabular-nums text-zinc-600 dark:text-zinc-400">
+        <td className="px-2 py-1 text-right tabular-nums text-v2-ink-muted dark:text-v2-ink-subtle">
           {(txn.business_split_bps / 100).toFixed(0)}%
         </td>
         <td className="px-2 py-1 text-center">
@@ -189,7 +190,7 @@ const TransactionRow = React.memo(function TransactionRow({
             {txn.trust_state !== "excluded" && (
               <button
                 onClick={() => onExclude({ id: txn.id })}
-                className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500"
+                className="p-0.5 rounded hover:bg-v2-ring dark:hover:bg-v2-ring text-v2-ink-muted"
                 title="Exclude"
               >
                 <X className="h-3 w-3" />
@@ -326,7 +327,7 @@ export function TransactionsTab() {
   if (isLoading && !isPlaceholderData) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -337,7 +338,7 @@ export function TransactionsTab() {
         <p className="text-xs font-medium text-red-600 dark:text-red-400">
           Failed to load transactions
         </p>
-        <p className="text-[10px] text-zinc-500">
+        <p className="text-[10px] text-v2-ink-muted">
           {error instanceof Error
             ? error.message
             : "Service unavailable. Try again later."}
@@ -353,7 +354,7 @@ export function TransactionsTab() {
         <select
           value={query.trust_state ?? "all"}
           onChange={(e) => setFilter("trust_state", e.target.value)}
-          className="h-7 px-2 text-[11px] border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300"
+          className="h-7 px-2 text-[11px] border border-v2-ring  rounded bg-v2-card text-v2-ink-muted"
         >
           <option value="all">All States</option>
           <option value="needs_review">Needs Review</option>
@@ -367,7 +368,7 @@ export function TransactionsTab() {
           <select
             value={query.category ?? "all"}
             onChange={(e) => setFilter("category", e.target.value)}
-            className="h-7 px-2 text-[11px] border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300"
+            className="h-7 px-2 text-[11px] border border-v2-ring  rounded bg-v2-card text-v2-ink-muted"
           >
             <option value="all">All Categories</option>
             {categories.categories.map((c: string) => (
@@ -379,17 +380,17 @@ export function TransactionsTab() {
         )}
 
         <div className="relative">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400" />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
           <input
             type="text"
             placeholder="Search descriptions..."
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            className="h-7 pl-6 pr-2 text-[11px] border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 placeholder:text-zinc-400 w-48"
+            className="h-7 pl-6 pr-2 text-[11px] border border-v2-ring  rounded bg-v2-card text-v2-ink-muted placeholder:text-v2-ink-subtle w-48"
           />
         </div>
 
-        <span className="text-[10px] text-zinc-400 ml-auto tabular-nums">
+        <span className="text-[10px] text-v2-ink-subtle ml-auto tabular-nums">
           {searchText ? `${transactions.length} matches / ` : ""}
           {total.toLocaleString()} total
           {isPlaceholderData && (
@@ -418,13 +419,13 @@ export function TransactionsTab() {
                 });
                 setSelected(new Set());
               }}
-              className="px-2 py-0.5 text-[10px] rounded-full bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
+              className="px-2 py-0.5 text-[10px] rounded-full bg-white dark:bg-v2-ring border border-v2-ring  text-v2-ink-muted hover:bg-v2-canvas dark:hover:bg-v2-card-dark transition-colors"
             >
               {preset.label}
             </button>
           ))}
 
-          <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-600 mx-0.5" />
+          <div className="h-4 w-px bg-v2-ring mx-0.5" />
 
           <Button
             size="sm"
@@ -456,7 +457,7 @@ export function TransactionsTab() {
           {categories && (
             <div className="relative">
               <select
-                className="h-6 px-2 text-[10px] border border-zinc-300 dark:border-zinc-700 rounded bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 appearance-none pr-5"
+                className="h-6 px-2 text-[10px] border border-v2-ring  rounded bg-v2-card text-v2-ink-muted appearance-none pr-5"
                 defaultValue=""
                 onChange={(e) => {
                   if (e.target.value) {
@@ -477,7 +478,7 @@ export function TransactionsTab() {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-1 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400 pointer-events-none" />
+              <ChevronDown className="absolute right-1 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle pointer-events-none" />
             </div>
           )}
         </div>
@@ -486,17 +487,17 @@ export function TransactionsTab() {
       {/* Table */}
       {transactions.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-v2-ink-muted">
             {query.trust_state || query.category || searchText
               ? "No transactions match the current filters."
               : "No transactions yet. Upload a statement to get started."}
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded border border-zinc-200 dark:border-zinc-800">
+        <div className="overflow-x-auto rounded border border-v2-ring">
           <table className="w-full text-[11px]">
             <thead>
-              <tr className="bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+              <tr className="bg-v2-canvas dark:bg-v2-card-dark border-b border-v2-ring">
                 <th className="w-8 px-2 py-1.5">
                   <Checkbox
                     checked={
@@ -511,25 +512,25 @@ export function TransactionsTab() {
                   />
                 </th>
                 <th className="w-6 px-1 py-1.5" />
-                <th className="text-left px-2 py-1.5 font-medium text-zinc-500">
+                <th className="text-left px-2 py-1.5 font-medium text-v2-ink-muted">
                   Date
                 </th>
-                <th className="text-left px-2 py-1.5 font-medium text-zinc-500">
+                <th className="text-left px-2 py-1.5 font-medium text-v2-ink-muted">
                   Description
                 </th>
-                <th className="text-right px-2 py-1.5 font-medium text-zinc-500">
+                <th className="text-right px-2 py-1.5 font-medium text-v2-ink-muted">
                   Amount
                 </th>
-                <th className="text-left px-2 py-1.5 font-medium text-zinc-500">
+                <th className="text-left px-2 py-1.5 font-medium text-v2-ink-muted">
                   Category
                 </th>
-                <th className="text-right px-2 py-1.5 font-medium text-zinc-500">
+                <th className="text-right px-2 py-1.5 font-medium text-v2-ink-muted">
                   Biz%
                 </th>
-                <th className="text-center px-2 py-1.5 font-medium text-zinc-500">
+                <th className="text-center px-2 py-1.5 font-medium text-v2-ink-muted">
                   Status
                 </th>
-                <th className="text-center px-2 py-1.5 font-medium text-zinc-500">
+                <th className="text-center px-2 py-1.5 font-medium text-v2-ink-muted">
                   Actions
                 </th>
               </tr>
@@ -558,7 +559,7 @@ export function TransactionsTab() {
       {/* Pagination controls */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between pt-1">
-          <span className="text-[10px] text-zinc-500 tabular-nums">
+          <span className="text-[10px] text-v2-ink-muted tabular-nums">
             Page {page + 1} of {totalPages}
           </span>
           <div className="flex items-center gap-1">

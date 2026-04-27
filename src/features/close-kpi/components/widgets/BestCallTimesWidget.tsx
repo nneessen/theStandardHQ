@@ -25,7 +25,7 @@ export const BestCallTimesWidget: React.FC<BestCallTimesWidgetProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Best Time to Call
           </span>
         </div>

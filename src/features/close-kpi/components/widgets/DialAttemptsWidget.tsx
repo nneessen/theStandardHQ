@@ -30,7 +30,7 @@ export const DialAttemptsWidget: React.FC<DialAttemptsWidgetProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <PhoneCall className="h-3.5 w-3.5 text-muted-foreground" />
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             Dial Attempts to Connect
           </span>
         </div>
@@ -58,7 +58,7 @@ export const DialAttemptsWidget: React.FC<DialAttemptsWidgetProps> = ({
 
       {/* Attempt-by-attempt success rates */}
       <div className="flex-1 space-y-0.5">
-        <p className="text-[9px] font-medium uppercase tracking-wider text-muted-foreground">
+        <p className="text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           Connect Rate by Attempt #
         </p>
         {attemptRates.map((a) => (

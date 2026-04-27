@@ -28,7 +28,7 @@ export const VmRateSmartViewWidget: React.FC<VmRateSmartViewWidgetProps> = ({
       {/* Overall summary bar */}
       <div className="mb-1.5 flex items-center justify-between border-b border-border pb-1.5">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             First-Call VM Rate
           </span>
           {data.overall.vmRate > vmThreshold && (
@@ -55,7 +55,7 @@ export const VmRateSmartViewWidget: React.FC<VmRateSmartViewWidgetProps> = ({
       <div>
         <table className="w-full">
           <thead>
-            <tr className="text-[9px] uppercase tracking-wider text-muted-foreground">
+            <tr className="text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
               <th className="pb-1 text-left font-medium">Smart View</th>
               <th className="pb-1 text-right font-medium">Calls</th>
               <th className="pb-1 text-right font-medium">VM</th>

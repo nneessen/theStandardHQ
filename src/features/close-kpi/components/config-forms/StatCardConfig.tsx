@@ -65,7 +65,7 @@ export const StatCardConfig: React.FC<StatCardConfigProps> = ({
           <SelectContent className="max-h-[300px]">
             {metricsByCategory.map((cat) => (
               <SelectGroup key={cat.id}>
-                <SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                <SelectLabel className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                   {cat.label}
                 </SelectLabel>
                 {cat.metrics.map((m) => (

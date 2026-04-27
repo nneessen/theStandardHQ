@@ -46,7 +46,7 @@ export const OpportunitySummaryConfig: React.FC<
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              <SelectLabel className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 Pipeline
               </SelectLabel>
               {OPP_METRICS.filter((m) =>
@@ -69,7 +69,7 @@ export const OpportunitySummaryConfig: React.FC<
               ))}
             </SelectGroup>
             <SelectGroup>
-              <SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              <SelectLabel className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 Performance
               </SelectLabel>
               {OPP_METRICS.filter((m) =>
@@ -91,7 +91,7 @@ export const OpportunitySummaryConfig: React.FC<
               ))}
             </SelectGroup>
             <SelectGroup>
-              <SelectLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              <SelectLabel className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                 Closed Deals
               </SelectLabel>
               {OPP_METRICS.filter((m) =>

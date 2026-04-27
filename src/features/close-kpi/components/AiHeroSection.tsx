@@ -54,8 +54,8 @@ const LEVEL_COLORS: Record<
     fill: "#f97316",
   },
   neutral: {
-    bg: "bg-zinc-400",
-    text: "text-zinc-500",
+    bg: "bg-v2-ring-strong",
+    text: "text-v2-ink-muted",
     label: "Neutral",
     fill: "#a1a1aa",
   },
@@ -130,11 +130,11 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
       : avgScore >= 40
         ? "text-orange-500"
         : avgScore >= 20
-          ? "text-zinc-500"
+          ? "text-v2-ink-muted"
           : "text-blue-500";
 
   return (
-    <div className="rounded-xl border border-violet-200/80 dark:border-violet-500/20 bg-gradient-to-br from-violet-50/60 via-white to-indigo-50/40 dark:from-violet-950/30 dark:via-zinc-900 dark:to-indigo-950/20 shadow-sm shadow-violet-200/30 dark:shadow-violet-900/20 overflow-hidden ring-1 ring-violet-100/50 dark:ring-violet-800/20">
+    <div className="rounded-xl border border-violet-200/80 dark:border-violet-500/20 bg-gradient-to-br from-violet-50/60 via-white to-indigo-50/40 dark:from-violet-950/30  dark:to-indigo-950/20 shadow-sm shadow-violet-200/30 dark:shadow-violet-900/20 overflow-hidden ring-1 ring-violet-100/50 dark:ring-violet-800/20">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-violet-200/40 dark:border-violet-800/30">
         <div className="flex items-center gap-2">
@@ -146,7 +146,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
               <h2 className="text-sm font-bold text-foreground">
                 AI Lead Scoring
               </h2>
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-violet-100 dark:bg-violet-900/40 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-violet-700 dark:text-violet-300">
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-violet-100 dark:bg-violet-900/40 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-violet-700 dark:text-violet-300">
                 <Sparkles className="h-2 w-2" />
                 AI-Powered
               </span>
@@ -287,7 +287,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                     >
                       {avgScore}
                     </span>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">
+                    <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground mt-1">
                       avg score
                     </span>
                     <span
@@ -514,7 +514,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                 <div className="rounded-md border border-violet-200/60 dark:border-violet-800/40 bg-violet-50/30 dark:bg-violet-950/10 px-2.5 py-2">
                   <div className="flex items-center gap-1 mb-1">
                     <Target className="h-2.5 w-2.5 text-violet-600 dark:text-violet-400" />
-                    <span className="text-[9px] font-semibold uppercase tracking-wider text-violet-600 dark:text-violet-400">
+                    <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-violet-600 dark:text-violet-400">
                       Recommendation
                     </span>
                   </div>
@@ -529,7 +529,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                 <div className="rounded-md border border-amber-200/60 dark:border-amber-800/40 bg-amber-50/30 dark:bg-amber-950/10 px-2.5 py-2">
                   <div className="flex items-center gap-1 mb-1">
                     <AlertTriangle className="h-2.5 w-2.5 text-amber-600 dark:text-amber-400" />
-                    <span className="text-[9px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+                    <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">
                       Attention
                     </span>
                   </div>
@@ -546,7 +546,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
             {/* Additional recommendations list */}
             {insightsData && insightsData.recommendations.length > 1 && (
               <div className="space-y-1">
-                <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   More Actions
                 </span>
                 {insightsData.recommendations.slice(1, 4).map((rec, i) => (

@@ -34,7 +34,7 @@ interface ChartRow {
 export function CategoryChart({ data }: CategoryChartProps) {
   if (!data.length) {
     return (
-      <div className="flex items-center justify-center h-full text-[11px] text-zinc-400">
+      <div className="flex items-center justify-center h-full text-[11px] text-v2-ink-subtle">
         No category data yet
       </div>
     );
@@ -95,7 +95,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
             if (!active || !payload?.length) return null;
             const row = payload[0]?.payload as ChartRow;
             return (
-              <div className="bg-zinc-900 border border-zinc-700 rounded-md px-2.5 py-1.5 text-[11px] text-zinc-100 space-y-0.5">
+              <div className="bg-v2-card-dark border border-v2-ring rounded-md px-2.5 py-1.5 text-[11px] text-v2-canvas space-y-0.5">
                 <p className="font-medium">{label}</p>
                 {row.income > 0 && (
                   <p className="text-emerald-400">
@@ -107,7 +107,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
                     Expenses: {formatDollars(row.expense)}
                   </p>
                 )}
-                <p className="text-zinc-400">{row.count} transactions</p>
+                <p className="text-v2-ink-subtle">{row.count} transactions</p>
               </div>
             );
           }}

@@ -54,7 +54,7 @@ interface ChartRow {
 export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
   if (!data.length) {
     return (
-      <div className="flex items-center justify-center h-full text-[11px] text-zinc-400">
+      <div className="flex items-center justify-center h-full text-[11px] text-v2-ink-subtle">
         No monthly data yet
       </div>
     );
@@ -103,7 +103,7 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
             if (!active || !payload?.length) return null;
             const row = payload[0]?.payload as ChartRow;
             return (
-              <div className="bg-zinc-900 border border-zinc-700 rounded-md px-2.5 py-1.5 text-[11px] text-zinc-100 space-y-0.5">
+              <div className="bg-v2-card-dark border border-v2-ring rounded-md px-2.5 py-1.5 text-[11px] text-v2-canvas space-y-0.5">
                 <p className="font-medium">{row.month}</p>
                 <p className="text-emerald-400">
                   Income: {formatDollars(row.income)}
@@ -111,7 +111,7 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
                 <p className="text-blue-400">
                   Biz Expenses: {formatDollars(row.business)}
                 </p>
-                <p className="text-zinc-400">
+                <p className="text-v2-ink-subtle">
                   Personal: {formatDollars(row.personal)}
                 </p>
                 <p className="text-amber-400">

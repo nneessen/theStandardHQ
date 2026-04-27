@@ -23,7 +23,7 @@ export const LifecycleVelocityWidget: React.FC<
   if (!transitions || transitions.length === 0) {
     return (
       <div className="flex h-full flex-col justify-center">
-        <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+        <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           Lifecycle Velocity
         </p>
         <p className="mt-2 text-[11px] text-muted-foreground">
@@ -39,7 +39,7 @@ export const LifecycleVelocityWidget: React.FC<
     <div className="flex h-full flex-col gap-1">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+        <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           Lifecycle Velocity
         </span>
         {totalChanges != null && (
@@ -71,7 +71,7 @@ export const LifecycleVelocityWidget: React.FC<
               {/* Bar */}
               <div className="relative h-3.5 flex-1 overflow-hidden rounded-sm bg-muted/30">
                 <div
-                  className="absolute inset-y-0 left-0 rounded-sm bg-zinc-200 dark:bg-zinc-700 transition-all"
+                  className="absolute inset-y-0 left-0 rounded-sm bg-v2-ring transition-all"
                   style={{
                     width: `${Math.max(barWidth, t.sampleSize > 0 ? 4 : 0)}%`,
                   }}
