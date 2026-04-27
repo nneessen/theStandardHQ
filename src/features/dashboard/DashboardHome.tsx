@@ -197,6 +197,26 @@ export const DashboardHome: React.FC = () => {
     targetAvgPremium: constants?.avgAP || 1500,
   });
 
+  // Always-on MTD and YTD metrics for the hero pace bars (independent of
+  // the selected period switcher). Sum of paid + pending so the value is
+  // never artificially $0 just because the carrier hasn't disbursed yet.
+  const mtdMetrics = useMetricsWithDateRange({
+    timePeriod: "monthly",
+    periodOffset: 0,
+  });
+  const ytdMetrics = useMetricsWithDateRange({
+    timePeriod: "yearly",
+    periodOffset: 0,
+  });
+  const mtdCommissionTotal =
+    (mtdMetrics.periodCommissions.paid ?? 0) +
+    (mtdMetrics.periodCommissions.pending ?? 0);
+  const ytdCommissionTotal =
+    (ytdMetrics.periodCommissions.paid ?? 0) +
+    (ytdMetrics.periodCommissions.pending ?? 0);
+  const mtdAPTotal = mtdMetrics.periodPolicies.premiumWritten;
+  const ytdAPTotal = ytdMetrics.periodPolicies.premiumWritten;
+
   const createExpense = useCreateExpense();
   const createPolicy = useCreatePolicy();
   const createOrFindClient = useCreateOrFindClient();
@@ -268,7 +288,7 @@ export const DashboardHome: React.FC = () => {
   const commissionTarget = periodAnalytics.paceMetrics.monthlyTarget || null;
   const policyTarget =
     periodPolicies.newCount + Math.max(0, Math.ceil(policiesNeededDisplay));
-  const premiumTarget =
+  const _premiumTarget =
     constants?.avgAP && policyTarget > 0
       ? constants.avgAP * policyTarget
       : null;
@@ -276,7 +296,7 @@ export const DashboardHome: React.FC = () => {
   const paceLines: PaceLine[] = [
     {
       label: "Commissions",
-      current: periodCommissions.paid,
+      current: (periodCommissions.paid ?? 0) + (periodCommissions.pending ?? 0),
       target: commissionTarget,
       unit: "$",
     },
@@ -285,18 +305,6 @@ export const DashboardHome: React.FC = () => {
       current: periodPolicies.newCount,
       target: policyTarget > 0 ? policyTarget : null,
       unit: "#",
-    },
-    {
-      label: "Premium",
-      current: periodPolicies.premiumWritten,
-      target: premiumTarget,
-      unit: "$",
-    },
-    {
-      label: "Avg Premium",
-      current: periodPolicies.averagePremium,
-      target: constants?.avgAP || null,
-      unit: "$",
     },
   ];
 
@@ -413,28 +421,35 @@ export const DashboardHome: React.FC = () => {
     dashboardFeatures.isImoAdmin ||
     dashboardFeatures.isAgencyOwner;
 
-  // V2 metric percentages
-  // AP submit pace = annual premium submitted vs. AP target for the period.
-  // This is the agent's LEADING indicator (what they've put on the books).
-  const apPacePct =
-    premiumTarget && premiumTarget > 0
-      ? Math.min(1, periodPolicies.premiumWritten / premiumTarget)
-      : expectedPct;
-  // Commission pace = $ earned (not just paid out) vs. commission target.
-  // Lagging indicator — what they'll actually be paid for this period.
-  const commissionEarned = periodCommissions.earned ?? periodCommissions.paid;
-  const commissionPacePct =
-    commissionTarget && commissionTarget > 0
-      ? Math.min(1, commissionEarned / commissionTarget)
-      : expectedPct;
-  const persistencyPct = Math.max(0, 1 - derivedMetrics.lapsedRate / 100);
-  const pipelineFillPct =
-    commissionTarget && commissionTarget > 0
-      ? Math.min(1, currentState.pendingPipeline / commissionTarget)
-      : Math.min(
-          1,
-          currentState.pendingPipeline / Math.max(1, commissionEarned),
-        );
+  // Hero pace bars — always show MTD and YTD totals.
+  // Bar fill ratio = current value vs. period target where one is configured.
+  // Commission target comes from paceMetrics.monthlyTarget. AP target is
+  // not directly tracked — proxy via the highest YTD AP seen so each new
+  // month's bar grows naturally; if YTD is 0, show the bar full so the
+  // chip ($ value) reads cleanly.
+  const monthlyCommTarget =
+    mtdMetrics.periodAnalytics?.paceMetrics?.monthlyTarget ?? 0;
+  const yearlyCommTarget = monthlyCommTarget > 0 ? monthlyCommTarget * 12 : 0;
+
+  const apMtdPct =
+    ytdAPTotal > 0
+      ? Math.min(1, mtdAPTotal / (ytdAPTotal / 12))
+      : mtdAPTotal > 0
+        ? 1
+        : 0;
+  const apYtdPct = ytdAPTotal > 0 ? 1 : 0;
+  const commMtdPct =
+    monthlyCommTarget > 0
+      ? Math.min(1, mtdCommissionTotal / monthlyCommTarget)
+      : mtdCommissionTotal > 0
+        ? 1
+        : 0;
+  const commYtdPct =
+    yearlyCommTarget > 0
+      ? Math.min(1, ytdCommissionTotal / yearlyCommTarget)
+      : ytdCommissionTotal > 0
+        ? 1
+        : 0;
 
   const greetingName =
     user?.email
@@ -458,14 +473,14 @@ export const DashboardHome: React.FC = () => {
             onTimePeriodChange={handleTimePeriodChange}
             periodOffset={periodOffset}
             onOffsetChange={setPeriodOffset}
-            apPacePct={apPacePct}
-            commissionPacePct={commissionPacePct}
-            persistencyPct={persistencyPct}
-            elapsedPct={expectedPct}
-            pipelineFillPct={pipelineFillPct}
-            apPaceDisplay={formatCompactDollar(periodPolicies.premiumWritten)}
-            commissionPaceDisplay={formatCompactDollar(commissionEarned)}
-            pipelineDisplay={formatCompactDollar(currentState.pendingPipeline)}
+            apMtdPct={apMtdPct}
+            apMtdDisplay={formatCompactDollar(mtdAPTotal)}
+            apYtdPct={apYtdPct}
+            apYtdDisplay={formatCompactDollar(ytdAPTotal)}
+            commMtdPct={commMtdPct}
+            commMtdDisplay={formatCompactDollar(mtdCommissionTotal)}
+            commYtdPct={commYtdPct}
+            commYtdDisplay={formatCompactDollar(ytdCommissionTotal)}
             policiesCount={periodPolicies.newCount}
             premiumWritten={periodPolicies.premiumWritten}
             pendingPipeline={currentState.pendingPipeline}

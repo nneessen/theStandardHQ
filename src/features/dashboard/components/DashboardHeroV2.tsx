@@ -25,19 +25,17 @@ interface DashboardHeroV2Props {
   periodOffset: number;
   onOffsetChange: (n: number) => void;
 
-  /** 0..1 metric bars (left column).
-   * apPacePct = AP submitted / AP target.
-   * commissionPacePct = commissions earned / commission target. */
-  apPacePct: number;
-  commissionPacePct: number;
-  persistencyPct: number;
-  elapsedPct: number;
-  pipelineFillPct: number;
-
-  /** Formatted display values for bars that should show $ instead of % */
-  apPaceDisplay?: string;
-  commissionPaceDisplay?: string;
-  pipelineDisplay?: string;
+  /** Always-on pace bars showing AP submitted + Commissions for both MTD and YTD.
+   *  pct values 0..1 control bar fill (vs. monthly/yearly target where available),
+   *  display values are the formatted $ amount shown in the chip. */
+  apMtdPct: number;
+  apMtdDisplay: string;
+  apYtdPct: number;
+  apYtdDisplay: string;
+  commMtdPct: number;
+  commMtdDisplay: string;
+  commYtdPct: number;
+  commYtdDisplay: string;
 
   /** stat tiles (right column) */
   policiesCount: number;
@@ -78,14 +76,14 @@ export const DashboardHeroV2: React.FC<DashboardHeroV2Props> = ({
   onTimePeriodChange,
   periodOffset,
   onOffsetChange,
-  apPacePct,
-  commissionPacePct,
-  persistencyPct,
-  elapsedPct: _elapsedPct,
-  pipelineFillPct,
-  apPaceDisplay,
-  commissionPaceDisplay,
-  pipelineDisplay,
+  apMtdPct,
+  apMtdDisplay,
+  apYtdPct,
+  apYtdDisplay,
+  commMtdPct,
+  commMtdDisplay,
+  commYtdPct,
+  commYtdDisplay,
   policiesCount,
   premiumWritten,
   pendingPipeline,
@@ -161,23 +159,28 @@ export const DashboardHeroV2: React.FC<DashboardHeroV2Props> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
         <div className="lg:col-span-7 space-y-2.5">
           <MetricBar
-            label="AP submit pace"
-            value={apPacePct}
+            label="AP MTD"
+            value={apMtdPct}
             tone="ink"
-            display={apPaceDisplay}
+            display={apMtdDisplay}
           />
           <MetricBar
-            label="Commission pace"
-            value={commissionPacePct}
+            label="AP YTD"
+            value={apYtdPct}
+            tone="muted"
+            display={apYtdDisplay}
+          />
+          <MetricBar
+            label="Commissions MTD"
+            value={commMtdPct}
             tone="yellow"
-            display={commissionPaceDisplay}
+            display={commMtdDisplay}
           />
-          <MetricBar label="Persistency" value={persistencyPct} tone="muted" />
           <MetricBar
-            label="Pipeline fill"
-            value={pipelineFillPct}
-            tone="ink"
-            display={pipelineDisplay}
+            label="Commissions YTD"
+            value={commYtdPct}
+            tone="muted"
+            display={commYtdDisplay}
           />
         </div>
         <div className="lg:col-span-5 grid grid-cols-3 gap-4 lg:justify-items-end">
