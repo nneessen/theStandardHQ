@@ -48,8 +48,7 @@ const DOCUMENT_STATUS_STYLES: Record<string, string> = {
     "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800",
   rejected:
     "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800",
-  expired:
-    "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700",
+  expired: "bg-v2-ring text-v2-ink-muted border-v2-ring  -subtle ",
 };
 
 export function DocumentManager({
@@ -147,7 +146,7 @@ export function DocumentManager({
     <div className="space-y-2">
       {/* Header with Upload Button */}
       <div className="flex items-center justify-between">
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+        <p className="text-[10px] text-v2-ink-muted">
           {documents && documents.length > 0
             ? `${documents.length} document${documents.length > 1 ? "s" : ""}`
             : "No documents"}
@@ -168,46 +167,40 @@ export function DocumentManager({
           {documents.map((doc) => (
             <div
               key={doc.id}
-              className="p-2 rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-600 transition-all"
+              className="p-2 rounded-md border border-v2-ring bg-v2-card hover:border-v2-ring  transition-all"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-2 flex-1 min-w-0">
-                  <div className="p-1.5 rounded bg-zinc-100 dark:bg-zinc-800">
-                    <FileText className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-400" />
+                  <div className="p-1.5 rounded bg-v2-ring">
+                    <FileText className="h-3.5 w-3.5 text-v2-ink-muted -subtle" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-0.5">
-                      <h4 className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                      <h4 className="text-[11px] font-medium text-v2-ink truncate">
                         {doc.document_name}
                       </h4>
                       {doc.required && (
                         <Badge
                           variant="outline"
-                          className="text-[9px] h-3.5 px-1 border-zinc-300 text-zinc-600 dark:border-zinc-600 dark:text-zinc-400"
+                          className="text-[9px] h-3.5 px-1 border-v2-ring text-v2-ink-muted  -subtle"
                         >
                           Required
                         </Badge>
                       )}
                     </div>
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-v2-ink-muted">
                       <span className="capitalize">
                         {doc.document_type.replace(/_/g, " ")}
                       </span>
-                      <span className="text-zinc-300 dark:text-zinc-600">
-                        •
-                      </span>
+                      <span className="text-v2-ink-subtle">•</span>
                       <span>{formatFileSize(doc.file_size || 0)}</span>
-                      <span className="text-zinc-300 dark:text-zinc-600">
-                        •
-                      </span>
+                      <span className="text-v2-ink-subtle">•</span>
                       <span>
                         {new Date(doc.uploaded_at).toLocaleDateString()}
                       </span>
                       {doc.expires_at && (
                         <>
-                          <span className="text-zinc-300 dark:text-zinc-600">
-                            •
-                          </span>
+                          <span className="text-v2-ink-subtle">•</span>
                           <span
                             className={
                               new Date(doc.expires_at) < new Date()
@@ -286,7 +279,7 @@ export function DocumentManager({
               </div>
 
               {doc.notes && (
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1.5 italic ml-7">
+                <p className="text-[10px] text-v2-ink-muted mt-1.5 italic ml-7">
                   {doc.notes}
                 </p>
               )}
@@ -295,11 +288,11 @@ export function DocumentManager({
         </div>
       ) : (
         <div className="py-6 text-center">
-          <FolderOpen className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-          <p className="text-[11px] text-zinc-600 dark:text-zinc-400 mb-0.5">
+          <FolderOpen className="h-8 w-8 text-v2-ink-subtle mx-auto mb-2" />
+          <p className="text-[11px] text-v2-ink-muted -subtle mb-0.5">
             No documents uploaded yet
           </p>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-500">
+          <p className="text-[10px] text-v2-ink-muted -muted">
             Click "Upload" to add documents
           </p>
         </div>

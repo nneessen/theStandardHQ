@@ -108,7 +108,7 @@ export function VideoEmbedItem({
       <div className="space-y-2">
         {/* Video embed - still show it so they can rewatch */}
         {embedUrl && (
-          <div className="relative aspect-video w-full rounded overflow-hidden bg-zinc-900">
+          <div className="relative aspect-video w-full rounded overflow-hidden bg-v2-card-dark">
             <iframe
               src={embedUrl}
               title={metadata.title || `${platformName} Video`}
@@ -125,7 +125,7 @@ export function VideoEmbedItem({
             Video watched
           </span>
           {existingResponse.watched_at && (
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <span className="text-[10px] text-v2-ink-muted">
               {new Date(existingResponse.watched_at).toLocaleDateString()}
             </span>
           )}
@@ -139,14 +139,12 @@ export function VideoEmbedItem({
     <div className="space-y-2">
       {/* Video title */}
       {metadata.title && (
-        <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
-          {metadata.title}
-        </p>
+        <p className="text-xs font-medium text-v2-ink">{metadata.title}</p>
       )}
 
       {/* Video embed */}
       {embedUrl ? (
-        <div className="relative aspect-video w-full rounded overflow-hidden bg-zinc-900">
+        <div className="relative aspect-video w-full rounded overflow-hidden bg-v2-card-dark">
           <iframe
             src={embedUrl}
             title={metadata.title || `${platformName} Video`}
@@ -156,8 +154,8 @@ export function VideoEmbedItem({
           />
         </div>
       ) : (
-        <div className="aspect-video w-full rounded bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
-          <div className="text-center text-zinc-500 dark:text-zinc-400">
+        <div className="aspect-video w-full rounded bg-v2-ring flex items-center justify-center">
+          <div className="text-center text-v2-ink-muted">
             <AlertCircle className="h-5 w-5 mx-auto mb-1" />
             <p className="text-xs">Video unavailable</p>
           </div>

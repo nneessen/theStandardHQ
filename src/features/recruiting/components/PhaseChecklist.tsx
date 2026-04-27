@@ -727,9 +727,7 @@ export function PhaseChecklist({
           <CarrierContractingItem
             progressId={progress.id}
             metadata={contractingMetadata}
-            existingResponse={
-              responseData as CarrierContractingResponse | null
-            }
+            existingResponse={responseData as CarrierContractingResponse | null}
             recruitId={userId}
             isUpline={isUpline}
             onComplete={onComplete}
@@ -747,10 +745,10 @@ export function PhaseChecklist({
       return (
         <div className="py-8 text-center">
           <Clock className="h-10 w-10 text-amber-400 dark:text-amber-500 mx-auto mb-3" />
-          <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+          <p className="text-sm font-medium text-v2-ink-muted mb-1">
             Waiting for Admin Action
           </p>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-v2-ink-muted">
             Some required items must be completed by your recruiter or admin.
           </p>
         </div>
@@ -758,8 +756,8 @@ export function PhaseChecklist({
     }
     return (
       <div className="py-8 text-center">
-        <FileText className="h-10 w-10 text-zinc-300 dark:text-zinc-600 mx-auto mb-3" />
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <FileText className="h-10 w-10 text-v2-ink-subtle mx-auto mb-3" />
+        <p className="text-sm text-v2-ink-muted">
           No checklist items for this phase
         </p>
       </div>
@@ -794,8 +792,8 @@ export function PhaseChecklist({
                 : isRejected
                   ? "border-l-red-500 bg-red-50/30 dark:bg-red-950/10"
                   : checkboxState.isEnabled
-                    ? "border-l-blue-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-                    : "border-l-zinc-300 bg-zinc-50/50 opacity-60 dark:bg-zinc-900/30"
+                    ? "border-l-blue-500 hover:bg-v2-canvas"
+                    : "border-l-v2-ring bg-v2-canvas/50 opacity-60 /30"
             }`}
           >
             <div className="flex items-center gap-2">
@@ -808,10 +806,10 @@ export function PhaseChecklist({
                   ) : status === "rejected" ? (
                     <XCircle className="h-4 w-4 text-red-500" />
                   ) : (
-                    <Upload className="h-4 w-4 text-zinc-400" />
+                    <Upload className="h-4 w-4 text-v2-ink-subtle" />
                   )
                 ) : loadingItemIds.has(item.id) ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+                  <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
                 ) : (
                   <Checkbox
                     checked={isCompleted}
@@ -828,27 +826,38 @@ export function PhaseChecklist({
                   !checkboxState.isEnabled &&
                   !loadingItemIds.has(item.id) && (
                     <div className="absolute -top-0.5 -right-0.5">
-                      <Lock className="h-2.5 w-2.5 text-zinc-400" />
+                      <Lock className="h-2.5 w-2.5 text-v2-ink-subtle" />
                     </div>
                   )}
               </div>
 
               <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
-                <span className={`text-sm font-medium ${isCompleted ? "line-through text-zinc-500" : "text-zinc-900 dark:text-zinc-100"}`}>
+                <span
+                  className={`text-sm font-medium ${isCompleted ? "line-through text-v2-ink-muted" : "text-v2-ink"}`}
+                >
                   {item.item_name}
                 </span>
                 {item.is_required && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-zinc-300 text-zinc-600 flex-shrink-0">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] px-1.5 py-0.5 border-v2-ring text-v2-ink-muted flex-shrink-0"
+                  >
                     Req
                   </Badge>
                 )}
                 {!isRecruitViewer && isHiddenFromRecruit(item) && (
-                  <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-amber-300 text-amber-600 flex-shrink-0">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] px-1.5 py-0.5 border-amber-300 text-amber-600 flex-shrink-0"
+                  >
                     <EyeOff className="h-2.5 w-2.5 mr-0.5" />
                     Hidden
                   </Badge>
                 )}
-                <Badge variant="secondary" className={`text-[10px] px-1.5 py-0.5 flex-shrink-0 ${CHECKLIST_STATUS_COLORS[status]}`}>
+                <Badge
+                  variant="secondary"
+                  className={`text-[10px] px-1.5 py-0.5 flex-shrink-0 ${CHECKLIST_STATUS_COLORS[status]}`}
+                >
                   {status.replace(/_/g, " ")}
                 </Badge>
               </div>
@@ -860,14 +869,15 @@ export function PhaseChecklist({
 
             {/* All additional content outside main row */}
             {item.item_description && (
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 ml-6">
+              <p className="text-xs text-v2-ink-muted mt-1 ml-6">
                 {item.item_description}
               </p>
             )}
 
             {/* Scheduling instructions */}
             {item.item_type === "scheduling_booking" &&
-              (item.metadata as SchedulingChecklistMetadata | null)?.instructions && (
+              (item.metadata as SchedulingChecklistMetadata | null)
+                ?.instructions && (
                 <p className="text-xs text-blue-600 dark:text-blue-400 ml-6 mt-1">
                   {(item.metadata as SchedulingChecklistMetadata).instructions}
                 </p>
@@ -876,7 +886,11 @@ export function PhaseChecklist({
             {/* Interactive component - compact */}
             {INTERACTIVE_ITEM_TYPES.has(item.item_type) && (
               <div className="mt-1 ml-6">
-                {renderInteractiveComponent(item, progress, !checkboxState.isEnabled)}
+                {renderInteractiveComponent(
+                  item,
+                  progress,
+                  !checkboxState.isEnabled,
+                )}
               </div>
             )}
 
@@ -884,7 +898,7 @@ export function PhaseChecklist({
             {!checkboxState.isEnabled &&
               checkboxState.disabledReason &&
               checkboxState.disabledReason !== "Use upload button" && (
-                <p className="text-[10px] text-zinc-500 ml-6 mt-0.5">
+                <p className="text-[10px] text-v2-ink-muted ml-6 mt-0.5">
                   <AlertCircle className="h-2.5 w-2.5 inline mr-0.5" />
                   {checkboxState.disabledReason}
                 </p>
@@ -899,15 +913,18 @@ export function PhaseChecklist({
 
             {/* Notes - compact */}
             {progress?.notes && !progress.rejection_reason && (
-              <p className="text-[10px] text-zinc-500 italic ml-6 mt-0.5">
+              <p className="text-[10px] text-v2-ink-muted italic ml-6 mt-0.5">
                 {progress.notes}
               </p>
             )}
 
             {/* Completed timestamp - inline with icon */}
             {progress?.completed_at && (
-              <span className="text-[10px] text-zinc-400 ml-6 block">
-                {new Date(progress.completed_at).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })}
+              <span className="text-[10px] text-v2-ink-subtle ml-6 block">
+                {new Date(progress.completed_at).toLocaleDateString("en-US", {
+                  month: "numeric",
+                  day: "numeric",
+                })}
               </span>
             )}
           </div>

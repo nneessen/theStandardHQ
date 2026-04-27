@@ -473,7 +473,7 @@ export function RecruitActionBar({
 
   return (
     <TooltipProvider delayDuration={250}>
-      <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+      <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-v2-ring">
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           {isInvitation ? (
             <InvitationActionBar

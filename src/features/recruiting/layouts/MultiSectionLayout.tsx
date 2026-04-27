@@ -176,7 +176,9 @@ export function MultiSectionLayout({
             onClick={scrollToForm}
             className="flex flex-col items-center gap-2 text-white/50 hover:text-white/80 transition-colors"
           >
-            <span className="text-xs uppercase tracking-wider">Learn More</span>
+            <span className="text-xs uppercase tracking-[0.18em]">
+              Learn More
+            </span>
             <ArrowDown className="h-5 w-5 animate-bounce" />
           </button>
         </div>

@@ -344,7 +344,7 @@ export function LeadInterestForm({
                 onValueChange={(value) => field.handleChange(value)}
               >
                 <SelectTrigger
-                  className={`h-9 text-sm bg-background border-2 border-zinc-300 dark:border-zinc-700 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
+                  className={`h-9 text-sm bg-background border-2 border-v2-ring  ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
                 >
                   <SelectValue placeholder="Select state" />
                 </SelectTrigger>
@@ -392,7 +392,7 @@ export function LeadInterestForm({
                 <RadioGroupItem
                   value="full_time"
                   id="full_time"
-                  className="border-2 border-zinc-300 dark:border-zinc-600 bg-background"
+                  className="border-2 border-v2-ring  bg-background"
                 />
                 <Label htmlFor="full_time" className="text-sm font-normal">
                   Full-time
@@ -402,7 +402,7 @@ export function LeadInterestForm({
                 <RadioGroupItem
                   value="part_time"
                   id="part_time"
-                  className="border-2 border-zinc-300 dark:border-zinc-600 bg-background"
+                  className="border-2 border-v2-ring  bg-background"
                 />
                 <Label htmlFor="part_time" className="text-sm font-normal">
                   Part-time
@@ -412,7 +412,7 @@ export function LeadInterestForm({
                 <RadioGroupItem
                   value="exploring"
                   id="exploring"
-                  className="border-2 border-zinc-300 dark:border-zinc-600 bg-background"
+                  className="border-2 border-v2-ring  bg-background"
                 />
                 <Label htmlFor="exploring" className="text-sm font-normal">
                   Just exploring
@@ -434,7 +434,7 @@ export function LeadInterestForm({
               value={field.state.value}
               onValueChange={(value) => field.handleChange(value)}
             >
-              <SelectTrigger className="h-9 text-sm bg-background border-2 border-zinc-300 dark:border-zinc-700">
+              <SelectTrigger className="h-9 text-sm bg-background border-2 border-v2-ring ">
                 <SelectValue placeholder="Select income goal (optional)" />
               </SelectTrigger>
               <SelectContent>
@@ -476,7 +476,7 @@ export function LeadInterestForm({
                 <RadioGroupItem
                   value="none"
                   id="exp_none"
-                  className="border-2 border-zinc-300 dark:border-zinc-600 bg-background"
+                  className="border-2 border-v2-ring  bg-background"
                 />
                 <Label htmlFor="exp_none" className="text-sm font-normal">
                   No experience
@@ -486,7 +486,7 @@ export function LeadInterestForm({
                 <RadioGroupItem
                   value="less_than_1_year"
                   id="exp_less_1"
-                  className="border-2 border-zinc-300 dark:border-zinc-600 bg-background"
+                  className="border-2 border-v2-ring  bg-background"
                 />
                 <Label htmlFor="exp_less_1" className="text-sm font-normal">
                   Less than 1 year
@@ -496,7 +496,7 @@ export function LeadInterestForm({
                 <RadioGroupItem
                   value="1_to_3_years"
                   id="exp_1_3"
-                  className="border-2 border-zinc-300 dark:border-zinc-600 bg-background"
+                  className="border-2 border-v2-ring  bg-background"
                 />
                 <Label htmlFor="exp_1_3" className="text-sm font-normal">
                   1-3 years
@@ -506,7 +506,7 @@ export function LeadInterestForm({
                 <RadioGroupItem
                   value="3_plus_years"
                   id="exp_3_plus"
-                  className="border-2 border-zinc-300 dark:border-zinc-600 bg-background"
+                  className="border-2 border-v2-ring  bg-background"
                 />
                 <Label htmlFor="exp_3_plus" className="text-sm font-normal">
                   3+ years
@@ -534,7 +534,7 @@ export function LeadInterestForm({
                   <RadioGroupItem
                     value="yes"
                     id="licensed_yes"
-                    className="border-2 border-zinc-300 dark:border-zinc-600 bg-background"
+                    className="border-2 border-v2-ring  bg-background"
                   />
                   <Label htmlFor="licensed_yes" className="text-sm font-normal">
                     Yes
@@ -544,7 +544,7 @@ export function LeadInterestForm({
                   <RadioGroupItem
                     value="no"
                     id="licensed_no"
-                    className="border-2 border-zinc-300 dark:border-zinc-600 bg-background"
+                    className="border-2 border-v2-ring  bg-background"
                   />
                   <Label htmlFor="licensed_no" className="text-sm font-normal">
                     No
@@ -633,7 +633,7 @@ export function LeadInterestForm({
               id="whyInterested"
               variant="ghost"
               placeholder="Tell us a bit about yourself and what draws you to this opportunity..."
-              className={`min-h-[56px] text-sm resize-none bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-2 border-zinc-300 dark:border-zinc-700 rounded-lg focus:border-zinc-900 dark:focus:border-zinc-100 focus:bg-white dark:focus:bg-zinc-800 ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
+              className={`min-h-[56px] text-sm resize-none bg-white  text-v2-ink border-2 border-v2-ring  rounded-lg focus:border-v2-ink  focus:bg-white  ${field.state.meta.errors?.length ? "border-destructive" : ""}`}
               value={field.state.value}
               onChange={(e) => field.handleChange(e.target.value)}
               onBlur={field.handleBlur}

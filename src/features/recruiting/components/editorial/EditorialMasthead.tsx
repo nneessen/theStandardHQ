@@ -21,7 +21,7 @@ export const EditorialMasthead: React.FC<EditorialMastheadProps> = ({
   return (
     <header
       className={cn(
-        "relative overflow-hidden rounded-2xl bg-white dark:bg-stone-900 shadow-md dark:shadow-none ring-1 ring-stone-200/70 dark:ring-stone-800",
+        "relative overflow-hidden rounded-2xl bg-white dark:bg-v2-card shadow-md dark:shadow-none ring-1 ring-v2-ring ",
         className,
       )}
     >
@@ -43,13 +43,13 @@ export const EditorialMasthead: React.FC<EditorialMastheadProps> = ({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0 flex-1">
             <h1
-              className="text-3xl sm:text-4xl font-bold tracking-tight text-stone-900 dark:text-stone-100 leading-[1.05]"
+              className="text-3xl sm:text-4xl font-bold tracking-tight text-v2-ink  leading-[1.05]"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
               {title}
             </h1>
             {subtitle && (
-              <p className="mt-3 text-[14px] text-stone-700 dark:text-stone-300 max-w-2xl leading-relaxed">
+              <p className="mt-3 text-[14px] text-v2-ink dark:text-v2-ink-subtle max-w-2xl leading-relaxed">
                 {subtitle}
               </p>
             )}

@@ -164,8 +164,8 @@ export function PipelineTemplatesList({
 
   if (isLoading) {
     return (
-      <div className="p-8 flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+      <div className="p-8 flex items-center justify-center border border-v2-ring bg-v2-card rounded-lg">
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -173,8 +173,8 @@ export function PipelineTemplatesList({
   return (
     <div className="space-y-2.5">
       {/* Actions */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
+        <p className="text-[11px] text-v2-ink-muted">
           Manage pipeline templates and their phases
         </p>
         <Button
@@ -192,23 +192,23 @@ export function PipelineTemplatesList({
       </div>
 
       {/* Templates Table */}
-      <div className="border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg overflow-hidden">
+      <div className="border border-v2-ring bg-v2-card rounded-lg overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="h-8 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-700">
-              <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            <TableRow className="h-8 bg-v2-canvas border-b border-v2-ring">
+              <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
                 Name
               </TableHead>
-              <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
                 Description
               </TableHead>
-              <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 w-20">
+              <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted w-20">
                 Status
               </TableHead>
-              <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 w-20">
+              <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted w-20">
                 Default
               </TableHead>
-              <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 w-24">
+              <TableHead className="p-2 text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted w-24">
                 Actions
               </TableHead>
             </TableRow>
@@ -218,8 +218,8 @@ export function PipelineTemplatesList({
               <TableRow>
                 <TableCell colSpan={5} className="p-8">
                   <div className="text-center">
-                    <Inbox className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                    <Inbox className="h-8 w-8 text-v2-ink-subtle mx-auto mb-2" />
+                    <p className="text-[11px] text-v2-ink-muted">
                       No templates found. Create one to get started.
                     </p>
                   </div>
@@ -229,12 +229,12 @@ export function PipelineTemplatesList({
             {templates?.map((template) => (
               <TableRow
                 key={template.id}
-                className="h-9 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800 last:border-0"
+                className="h-9 hover:bg-v2-canvas border-b border-v2-ring/60 last:border-0"
               >
-                <TableCell className="p-2 text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                <TableCell className="p-2 text-[11px] font-medium text-v2-ink">
                   {template.name}
                 </TableCell>
-                <TableCell className="p-2 text-[11px] text-zinc-500 dark:text-zinc-400 truncate max-w-64">
+                <TableCell className="p-2 text-[11px] text-v2-ink-muted truncate max-w-64">
                   {template.description || "-"}
                 </TableCell>
                 <TableCell className="p-2">
@@ -261,7 +261,7 @@ export function PipelineTemplatesList({
                           : undefined
                       }
                     >
-                      <Star className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
+                      <Star className="h-3.5 w-3.5 text-v2-ink-subtle" />
                     </Button>
                   )}
                 </TableCell>
@@ -282,7 +282,7 @@ export function PipelineTemplatesList({
                       }
                     >
                       <Edit2
-                        className={`h-3 w-3 ${canModifyTemplate(template.created_by, template.name) ? "text-zinc-600 dark:text-zinc-400" : "text-zinc-300 dark:text-zinc-600"}`}
+                        className={`h-3 w-3 ${canModifyTemplate(template.created_by, template.name) ? "text-v2-ink-muted dark:text-v2-ink-subtle" : "text-v2-ink-subtle"}`}
                       />
                     </Button>
                     <Button
@@ -301,7 +301,7 @@ export function PipelineTemplatesList({
                       }
                     >
                       <Copy
-                        className={`h-3 w-3 ${isRegularUser ? "text-zinc-300 dark:text-zinc-600" : "text-zinc-600 dark:text-zinc-400"}`}
+                        className={`h-3 w-3 ${isRegularUser ? "text-v2-ink-subtle" : "text-v2-ink-muted dark:text-v2-ink-subtle"}`}
                       />
                     </Button>
                     <Button
@@ -333,7 +333,7 @@ export function PipelineTemplatesList({
 
       {/* Create Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-md p-3 bg-white dark:bg-zinc-900">
+        <DialogContent className="max-w-md p-3 bg-v2-card">
           <DialogHeader>
             <DialogTitle className="text-sm">
               Create Pipeline Template
@@ -341,7 +341,7 @@ export function PipelineTemplatesList({
           </DialogHeader>
           <div className="space-y-3 py-3">
             <div className="space-y-1.5">
-              <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 Name
               </Label>
               <Input
@@ -350,11 +350,11 @@ export function PipelineTemplatesList({
                   setNewTemplate({ ...newTemplate, name: e.target.value })
                 }
                 placeholder="e.g., Insurance Agent Onboarding"
-                className="h-7 text-[11px] bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                className="h-7 text-[11px] bg-v2-canvas border-v2-ring"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 Description (optional)
               </Label>
               <Textarea
@@ -366,7 +366,7 @@ export function PipelineTemplatesList({
                   })
                 }
                 placeholder="Describe this pipeline template..."
-                className="text-[11px] min-h-16 bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                className="text-[11px] min-h-16 bg-v2-canvas border-v2-ring"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -379,7 +379,7 @@ export function PipelineTemplatesList({
               />
               <label
                 htmlFor="is_active"
-                className="text-[11px] text-zinc-700 dark:text-zinc-300 cursor-pointer"
+                className="text-[11px] text-v2-ink-muted cursor-pointer"
               >
                 Active (can be assigned to recruits)
               </label>
@@ -414,11 +414,11 @@ export function PipelineTemplatesList({
         open={!!deleteConfirmId}
         onOpenChange={() => setDeleteConfirmId(null)}
       >
-        <DialogContent className="max-w-sm p-3 bg-white dark:bg-zinc-900">
+        <DialogContent className="max-w-sm p-3 bg-v2-card">
           <DialogHeader>
             <DialogTitle className="text-sm">Delete Template?</DialogTitle>
           </DialogHeader>
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[11px] text-v2-ink-muted">
             This will permanently delete this template including all phases,
             checklist items, and recruit progress records. Users will be
             un-enrolled from this pipeline. This action cannot be undone.
@@ -453,7 +453,7 @@ export function PipelineTemplatesList({
         open={consultationWarningOpen}
         onOpenChange={setConsultationWarningOpen}
       >
-        <DialogContent className="max-w-md p-4 bg-white dark:bg-zinc-900">
+        <DialogContent className="max-w-md p-4 bg-v2-card">
           <DialogHeader>
             <DialogTitle className="text-sm flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-500" />
@@ -461,11 +461,11 @@ export function PipelineTemplatesList({
             </DialogTitle>
           </DialogHeader>
           <div className="py-2">
-            <p className="text-[11px] text-zinc-600 dark:text-zinc-300 mb-2">
+            <p className="text-[11px] text-v2-ink-muted mb-2">
               Pipelines are powerful tools with many configuration options that
               directly affect your recruiting workflow.
             </p>
-            <p className="text-[11px] text-zinc-600 dark:text-zinc-300 font-medium">
+            <p className="text-[11px] text-v2-ink-muted font-medium">
               You must consult with Teagan Keyser or Nick Neessen before
               creating a new pipeline to ensure it&apos;s set up correctly for
               your needs.
@@ -499,23 +499,23 @@ export function PipelineTemplatesList({
         open={!!duplicateTemplateId}
         onOpenChange={() => setDuplicateTemplateId(null)}
       >
-        <DialogContent className="max-w-md p-3 bg-white dark:bg-zinc-900">
+        <DialogContent className="max-w-md p-3 bg-v2-card">
           <DialogHeader>
             <DialogTitle className="text-sm">Duplicate Template</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-3">
             <div className="space-y-1.5">
-              <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 New Template Name
               </Label>
               <Input
                 value={duplicateName}
                 onChange={(e) => setDuplicateName(e.target.value)}
                 placeholder="Enter unique name"
-                className="h-7 text-[11px] bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                className="h-7 text-[11px] bg-v2-canvas border-v2-ring"
               />
             </div>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted">
               This will create a copy of the template with all phases, checklist
               items, and automations.
             </p>

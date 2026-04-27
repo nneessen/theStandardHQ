@@ -363,7 +363,7 @@ export function RecruitDetailPanel({
         <p className="text-sm text-red-600 font-medium mb-1">
           Failed to load pipeline data
         </p>
-        <p className="text-xs text-zinc-500">
+        <p className="text-xs text-v2-ink-muted">
           {(progressError || currentPhaseError)?.message || "Unknown error"}
         </p>
       </div>
@@ -413,9 +413,9 @@ export function RecruitDetailPanel({
   const canRevert = canRevertViewingPhase || hasCompletedPhaseBefore;
 
   return (
-    <div className="h-full flex flex-col bg-zinc-50 dark:bg-zinc-950">
+    <div className="h-full flex flex-col bg-v2-canvas ">
       {/* Header */}
-      <div className="px-3 py-2.5 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="px-3 py-2.5 bg-v2-card border-b border-v2-ring">
         <RecruitDetailHeader
           recruit={recruit}
           displayName={displayName || ""}
@@ -483,9 +483,9 @@ export function RecruitDetailPanel({
 
       {/* No Pipeline State */}
       {!isInvitation && !hasPipelineProgress && (
-        <div className="px-3 py-4 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-center">
-          <Circle className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-2">
+        <div className="px-3 py-4 bg-v2-card border-b border-v2-ring text-center">
+          <Circle className="h-8 w-8 text-v2-ink-subtle mx-auto mb-2" />
+          <p className="text-xs text-v2-ink-muted mb-2">
             Pipeline not initialized
           </p>
           {permissions.canInitialize && (
@@ -506,12 +506,12 @@ export function RecruitDetailPanel({
 
       {/* Invitation Pending State */}
       {isInvitation && (
-        <div className="px-3 py-4 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 text-center">
+        <div className="px-3 py-4 bg-v2-card border-b border-v2-ring text-center">
           <Mail className="h-8 w-8 text-amber-400 dark:text-amber-500 mx-auto mb-2" />
-          <p className="text-xs text-zinc-600 dark:text-zinc-300 font-medium mb-1">
+          <p className="text-xs text-v2-ink-muted font-medium mb-1">
             Awaiting Registration
           </p>
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[11px] text-v2-ink-muted">
             This person has been invited but hasn&apos;t completed their
             registration form yet.
           </p>
@@ -524,17 +524,17 @@ export function RecruitDetailPanel({
         onValueChange={setActiveTab}
         className="flex-1 flex flex-col min-h-0"
       >
-        <TabsList className="mx-4 mt-3 mb-1 flex h-auto items-center gap-4 sm:gap-5 bg-transparent p-0 rounded-none border-b border-zinc-200 dark:border-zinc-800 justify-start overflow-x-auto">
+        <TabsList className="mx-4 mt-3 mb-1 flex h-auto items-center gap-4 sm:gap-5 bg-transparent p-0 rounded-none border-b border-v2-ring justify-start overflow-x-auto">
           <TabsTrigger
             value="checklist"
-            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
+            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-v2-ink-muted hover:text-v2-ink data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-v2-ink dark:data-[state=active]:text-v2-canvas data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
           >
             <ListChecks className="h-3 w-3 mr-1.5" />
             Tasks
           </TabsTrigger>
           <TabsTrigger
             value="contracting"
-            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
+            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-v2-ink-muted hover:text-v2-ink data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-v2-ink dark:data-[state=active]:text-v2-canvas data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
           >
             <Briefcase className="h-3 w-3 mr-1.5" />
             Contracts
@@ -546,21 +546,21 @@ export function RecruitDetailPanel({
           </TabsTrigger>
           <TabsTrigger
             value="documents"
-            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
+            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-v2-ink-muted hover:text-v2-ink data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-v2-ink dark:data-[state=active]:text-v2-canvas data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
           >
             <FolderOpen className="h-3 w-3 mr-1.5" />
             Docs
           </TabsTrigger>
           <TabsTrigger
             value="emails"
-            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
+            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-v2-ink-muted hover:text-v2-ink data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-v2-ink dark:data-[state=active]:text-v2-canvas data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
           >
             <Mail className="h-3 w-3 mr-1.5" />
             Email
           </TabsTrigger>
           <TabsTrigger
             value="activity"
-            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-zinc-900 dark:data-[state=active]:text-zinc-100 data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
+            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-v2-ink-muted hover:text-v2-ink data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-v2-ink dark:data-[state=active]:text-v2-canvas data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
           >
             <Activity className="h-3 w-3 mr-1.5" />
             Log
@@ -586,8 +586,8 @@ export function RecruitDetailPanel({
               />
             ) : (
               <div className="py-8 text-center">
-                <ListChecks className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-                <p className="text-xs text-zinc-500">
+                <ListChecks className="h-8 w-8 text-v2-ink-subtle mx-auto mb-2" />
+                <p className="text-xs text-v2-ink-muted">
                   {hasPipelineProgress
                     ? "No tasks for this phase"
                     : "Initialize pipeline to view tasks"}
@@ -603,8 +603,8 @@ export function RecruitDetailPanel({
           <TabsContent value="documents" className="mt-0">
             {isInvitation ? (
               <div className="py-8 text-center">
-                <FolderOpen className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-                <p className="text-xs text-zinc-500">
+                <FolderOpen className="h-8 w-8 text-v2-ink-subtle mx-auto mb-2" />
+                <p className="text-xs text-v2-ink-muted">
                   Available after registration
                 </p>
               </div>
@@ -621,8 +621,8 @@ export function RecruitDetailPanel({
           <TabsContent value="emails" className="mt-0">
             {isInvitation ? (
               <div className="py-8 text-center">
-                <Mail className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-                <p className="text-xs text-zinc-500">
+                <Mail className="h-8 w-8 text-v2-ink-subtle mx-auto mb-2" />
+                <p className="text-xs text-v2-ink-muted">
                   Available after registration
                 </p>
               </div>

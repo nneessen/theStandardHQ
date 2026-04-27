@@ -109,13 +109,13 @@ export function SendInviteDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto p-0 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
-        <DialogHeader className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50">
-          <DialogTitle className="text-sm font-semibold flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
+      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto p-0 bg-v2-card border-v2-ring">
+        <DialogHeader className="px-4 py-3 border-b border-v2-ring bg-v2-canvas">
+          <DialogTitle className="text-sm font-semibold flex items-center gap-2 text-v2-ink">
             <Mail className="h-4 w-4" />
             Send Registration Invite
           </DialogTitle>
-          <DialogDescription className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <DialogDescription className="text-[10px] text-v2-ink-muted">
             Send an email invitation for the recruit to fill out their own
             registration information.
           </DialogDescription>
@@ -124,14 +124,11 @@ export function SendInviteDialog({
         <form onSubmit={handleSubmit(onSubmit)} className="px-4 py-3 space-y-3">
           {/* Email */}
           <div className="space-y-1">
-            <Label
-              htmlFor="email"
-              className="text-[10px] text-zinc-500 dark:text-zinc-400"
-            >
+            <Label htmlFor="email" className="text-[10px] text-v2-ink-muted">
               Email Address <span className="text-red-500">*</span>
             </Label>
             <div className="relative">
-              <Mail className="absolute left-2 top-1.5 h-3 w-3 text-zinc-400" />
+              <Mail className="absolute left-2 top-1.5 h-3 w-3 text-v2-ink-subtle" />
               <Input
                 id="email"
                 type="email"
@@ -139,10 +136,8 @@ export function SendInviteDialog({
                 {...register("email")}
                 disabled={!!existingEmail}
                 className={`h-7 text-[11px] pl-7 ${
-                  existingEmail
-                    ? "bg-zinc-100 dark:bg-zinc-800"
-                    : "bg-white dark:bg-zinc-900"
-                } border-zinc-200 dark:border-zinc-700`}
+                  existingEmail ? "bg-v2-ring" : "bg-v2-card"
+                } border-v2-ring`}
               />
             </div>
             {errors.email && (
@@ -155,7 +150,7 @@ export function SendInviteDialog({
             <div className="space-y-1">
               <Label
                 htmlFor="first_name"
-                className="text-[10px] text-zinc-500 dark:text-zinc-400"
+                className="text-[10px] text-v2-ink-muted"
               >
                 First Name
               </Label>
@@ -163,13 +158,13 @@ export function SendInviteDialog({
                 id="first_name"
                 placeholder="John"
                 {...register("first_name")}
-                className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                className="h-7 text-[11px] bg-v2-card border-v2-ring"
               />
             </div>
             <div className="space-y-1">
               <Label
                 htmlFor="last_name"
-                className="text-[10px] text-zinc-500 dark:text-zinc-400"
+                className="text-[10px] text-v2-ink-muted"
               >
                 Last Name
               </Label>
@@ -177,7 +172,7 @@ export function SendInviteDialog({
                 id="last_name"
                 placeholder="Doe"
                 {...register("last_name")}
-                className="h-7 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                className="h-7 text-[11px] bg-v2-card border-v2-ring"
               />
             </div>
           </div>
@@ -186,7 +181,7 @@ export function SendInviteDialog({
           <div className="space-y-1">
             <Label
               htmlFor="upline_id"
-              className="text-[10px] text-zinc-500 dark:text-zinc-400"
+              className="text-[10px] text-v2-ink-muted"
             >
               Assign Upline
             </Label>
@@ -199,17 +194,14 @@ export function SendInviteDialog({
               showNoUplineOption={false}
               className="h-7"
             />
-            <p className="text-[9px] text-zinc-400">
+            <p className="text-[9px] text-v2-ink-subtle">
               The recruit will be assigned to this person as their upline.
             </p>
           </div>
 
           {/* Personal Message */}
           <div className="space-y-1">
-            <Label
-              htmlFor="message"
-              className="text-[10px] text-zinc-500 dark:text-zinc-400"
-            >
+            <Label htmlFor="message" className="text-[10px] text-v2-ink-muted">
               Personal Message (Optional)
             </Label>
             <Textarea
@@ -217,20 +209,20 @@ export function SendInviteDialog({
               placeholder="Add a personal note to include in the invitation email..."
               rows={3}
               {...register("message")}
-              className="resize-none text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+              className="resize-none text-[11px] bg-v2-card border-v2-ring"
             />
             {errors.message && (
               <p className="text-[10px] text-red-500">
                 {errors.message.message}
               </p>
             )}
-            <p className="text-[9px] text-zinc-400">
+            <p className="text-[9px] text-v2-ink-subtle">
               {watch("message")?.length || 0}/500 characters
             </p>
           </div>
         </form>
 
-        <DialogFooter className="px-4 py-2.5 gap-1.5 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50">
+        <DialogFooter className="px-4 py-2.5 gap-1.5 border-t border-v2-ring bg-v2-canvas">
           <Button
             type="button"
             variant="ghost"

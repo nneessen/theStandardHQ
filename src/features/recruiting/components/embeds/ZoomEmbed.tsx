@@ -37,10 +37,10 @@ export function ZoomEmbed({
   if (!url) {
     return (
       <div
-        className={`flex flex-col items-center justify-center p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg ${className}`}
+        className={`flex flex-col items-center justify-center p-6 bg-v2-canvas rounded-lg ${className}`}
       >
         <AlertCircle className="h-8 w-8 text-amber-500 mb-3" />
-        <p className="text-[11px] text-zinc-600 dark:text-zinc-400 text-center">
+        <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle text-center">
           No Zoom link provided
         </p>
       </div>
@@ -49,7 +49,7 @@ export function ZoomEmbed({
 
   return (
     <div
-      className={`flex flex-col items-center p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg ${className}`}
+      className={`flex flex-col items-center p-6 bg-v2-canvas rounded-lg ${className}`}
     >
       {/* Zoom Icon */}
       <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
@@ -57,13 +57,11 @@ export function ZoomEmbed({
       </div>
 
       {/* Title */}
-      <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-2">
-        Zoom Meeting
-      </h3>
+      <h3 className="text-sm font-semibold text-v2-ink mb-2">Zoom Meeting</h3>
 
       {/* Instructions */}
       {instructions && (
-        <p className="text-[11px] text-zinc-600 dark:text-zinc-400 text-center mb-4 max-w-sm">
+        <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle text-center mb-4 max-w-sm">
           {instructions}
         </p>
       )}
@@ -72,14 +70,12 @@ export function ZoomEmbed({
       <div className="w-full max-w-sm space-y-2 mb-4">
         {/* Meeting ID */}
         {meetingId && (
-          <div className="flex items-center justify-between p-2 bg-white dark:bg-zinc-900 rounded-lg">
+          <div className="flex items-center justify-between p-2 bg-v2-card rounded-lg">
             <div>
-              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+              <span className="text-[10px] text-v2-ink-muted uppercase tracking-wide">
                 Meeting ID
               </span>
-              <p className="text-[11px] font-mono text-zinc-900 dark:text-zinc-100">
-                {meetingId}
-              </p>
+              <p className="text-[11px] font-mono text-v2-ink">{meetingId}</p>
             </div>
             <Button
               variant="ghost"
@@ -90,7 +86,7 @@ export function ZoomEmbed({
               {copiedField === "Meeting ID" ? (
                 <Check className="h-3.5 w-3.5 text-green-500" />
               ) : (
-                <Copy className="h-3.5 w-3.5 text-zinc-400" />
+                <Copy className="h-3.5 w-3.5 text-v2-ink-subtle" />
               )}
             </Button>
           </div>
@@ -98,14 +94,12 @@ export function ZoomEmbed({
 
         {/* Passcode */}
         {passcode && (
-          <div className="flex items-center justify-between p-2 bg-white dark:bg-zinc-900 rounded-lg">
+          <div className="flex items-center justify-between p-2 bg-v2-card rounded-lg">
             <div>
-              <span className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+              <span className="text-[10px] text-v2-ink-muted uppercase tracking-wide">
                 Passcode
               </span>
-              <p className="text-[11px] font-mono text-zinc-900 dark:text-zinc-100">
-                {passcode}
-              </p>
+              <p className="text-[11px] font-mono text-v2-ink">{passcode}</p>
             </div>
             <Button
               variant="ghost"
@@ -116,7 +110,7 @@ export function ZoomEmbed({
               {copiedField === "Passcode" ? (
                 <Check className="h-3.5 w-3.5 text-green-500" />
               ) : (
-                <Copy className="h-3.5 w-3.5 text-zinc-400" />
+                <Copy className="h-3.5 w-3.5 text-v2-ink-subtle" />
               )}
             </Button>
           </div>
@@ -135,7 +129,7 @@ export function ZoomEmbed({
       <Button
         variant="ghost"
         size="sm"
-        className="h-7 text-[10px] mt-2 text-zinc-500"
+        className="h-7 text-[10px] mt-2 text-v2-ink-muted"
         onClick={() => copyToClipboard(url, "Link")}
       >
         {copiedField === "Link" ? (

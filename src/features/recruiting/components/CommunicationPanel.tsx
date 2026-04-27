@@ -133,8 +133,8 @@ export function CommunicationPanel({
         {/* Inbox Header */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
-            <Inbox className="h-3.5 w-3.5 text-zinc-500" />
-            <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+            <Inbox className="h-3.5 w-3.5 text-v2-ink-muted" />
+            <span className="text-[11px] font-medium text-v2-ink">
               Messages ({messages?.length || 0})
             </span>
           </div>
@@ -153,7 +153,7 @@ export function CommunicationPanel({
         <div className="flex-1 overflow-auto">
           {messagesLoading ? (
             <div className="flex items-center justify-center py-6">
-              <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+              <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
             </div>
           ) : messages && messages.length > 0 ? (
             <div className="space-y-1.5">
@@ -166,17 +166,17 @@ export function CommunicationPanel({
                   ) : message.status === "failed" ? (
                     <AlertCircle className="h-3 w-3 text-red-600 dark:text-red-500" />
                   ) : (
-                    <Clock className="h-3 w-3 text-zinc-400 dark:text-zinc-500" />
+                    <Clock className="h-3 w-3 text-v2-ink-subtle" />
                   );
 
                 return (
                   <div
                     key={message.id}
-                    className="p-2 rounded-md border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                    className="p-2 rounded-md border border-v2-ring bg-v2-card hover:bg-v2-canvas transition-colors"
                   >
                     <div className="flex items-start gap-2">
                       <Avatar className="h-6 w-6 shrink-0">
-                        <AvatarFallback className="text-[9px] bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
+                        <AvatarFallback className="text-[9px] bg-v2-ring text-v2-ink  dark:text-v2-ink-subtle">
                           {isSent ? (
                             <Send className="h-3 w-3" />
                           ) : (
@@ -186,20 +186,20 @@ export function CommunicationPanel({
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <p className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">
+                          <p className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                             {isSent ? "Sent" : "Received"}
                           </p>
                           {statusIcon}
-                          <span className="text-[9px] text-zinc-400 dark:text-zinc-500 ml-auto">
+                          <span className="text-[9px] text-v2-ink-subtle ml-auto">
                             {message.sent_at
                               ? formatRelativeTime(message.sent_at)
                               : formatRelativeTime(message.created_at)}
                           </span>
                         </div>
-                        <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100 truncate mt-0.5">
+                        <p className="text-[11px] font-medium text-v2-ink truncate mt-0.5">
                           {message.subject || "(No subject)"}
                         </p>
-                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 line-clamp-1 mt-0.5">
+                        <p className="text-[10px] text-v2-ink-muted line-clamp-1 mt-0.5">
                           {message.body_text}
                         </p>
                       </div>
@@ -210,8 +210,8 @@ export function CommunicationPanel({
             </div>
           ) : (
             <div className="text-center py-8">
-              <Inbox className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-              <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+              <Inbox className="h-8 w-8 text-v2-ink-subtle mx-auto mb-2" />
+              <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 No messages yet
               </p>
             </div>
@@ -226,8 +226,8 @@ export function CommunicationPanel({
       {/* Compose Header with Inbox Toggle */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
-          <Send className="h-3.5 w-3.5 text-zinc-500" />
-          <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+          <Send className="h-3.5 w-3.5 text-v2-ink-muted" />
+          <span className="text-[11px] font-medium text-v2-ink">
             New Message
           </span>
         </div>
@@ -242,7 +242,7 @@ export function CommunicationPanel({
           {inboxCount > 0 && (
             <Badge
               variant="secondary"
-              className="ml-1 h-4 px-1 text-[9px] bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300"
+              className="ml-1 h-4 px-1 text-[9px] bg-v2-ring text-v2-ink-muted  dark:text-v2-ink-subtle"
             >
               {inboxCount}
             </Badge>
@@ -253,19 +253,19 @@ export function CommunicationPanel({
       {/* Recipient */}
       <div className="shrink-0 mb-2">
         {upline ? (
-          <div className="flex items-center gap-2 p-1.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-md">
+          <div className="flex items-center gap-2 p-1.5 bg-v2-canvas rounded-md">
             <Avatar className="h-6 w-6">
               <AvatarImage src={upline.profile_photo_url || undefined} />
-              <AvatarFallback className="text-[9px] bg-zinc-200 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-300">
+              <AvatarFallback className="text-[9px] bg-v2-ring text-v2-ink  dark:text-v2-ink-subtle">
                 {upline.first_name?.[0]}
                 {upline.last_name?.[0]}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100 truncate">
+              <p className="text-[11px] font-medium text-v2-ink truncate">
                 To: {recruiterName}
               </p>
-              <p className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate">
+              <p className="text-[9px] text-v2-ink-muted truncate">
                 {upline.email}
               </p>
             </div>

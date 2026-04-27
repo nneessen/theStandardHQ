@@ -197,10 +197,10 @@ export function QuizItem({
             <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
           )}
           <div>
-            <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+            <p className="text-xs font-medium text-v2-ink">
               {lastAttemptResult.passed ? "Quiz Passed!" : "Quiz Not Passed"}
             </p>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted">
               Score: {lastAttemptResult.score}% (required:{" "}
               {metadata.passing_score_percent}%)
             </p>
@@ -209,7 +209,7 @@ export function QuizItem({
 
         {lastAttemptResult.canRetry && (
           <div className="flex items-center gap-2">
-            <p className="text-[10px] text-zinc-600 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               {lastAttemptResult.attemptsRemaining !== null
                 ? `${lastAttemptResult.attemptsRemaining} attempt(s) remaining`
                 : "Unlimited retries"}
@@ -243,9 +243,7 @@ export function QuizItem({
     <div className="space-y-2">
       {/* Quiz header */}
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
-          {metadata.title}
-        </h3>
+        <h3 className="text-xs font-semibold text-v2-ink">{metadata.title}</h3>
         <Badge variant="outline" className="h-4 text-[10px] px-1.5">
           {metadata.passing_score_percent}% pass
         </Badge>
@@ -253,7 +251,7 @@ export function QuizItem({
 
       {/* Progress */}
       <div className="space-y-0.5">
-        <div className="flex justify-between text-[10px] text-zinc-500 dark:text-zinc-400">
+        <div className="flex justify-between text-[10px] text-v2-ink-muted">
           <span>
             Q{currentQuestionIndex + 1}/{totalQuestions}
           </span>
@@ -269,13 +267,11 @@ export function QuizItem({
 
       {/* Question */}
       <div className="space-y-1">
-        <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+        <p className="text-xs font-medium text-v2-ink">
           {currentQuestion.question_text}
         </p>
         {hasMultipleCorrect && (
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-            Select all that apply
-          </p>
+          <p className="text-[10px] text-v2-ink-muted">Select all that apply</p>
         )}
 
         {/* Options */}
@@ -289,7 +285,7 @@ export function QuizItem({
                 className={`flex items-start gap-2 p-1.5 rounded border cursor-pointer transition-colors ${
                   isSelected
                     ? "bg-primary/10 border-primary"
-                    : "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300"
+                    : "bg-white  border-v2-ring hover:border-v2-ring"
                 }`}
                 onClick={() =>
                   handleToggleOption(
@@ -306,7 +302,7 @@ export function QuizItem({
                     className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
                       isSelected
                         ? "border-primary bg-primary"
-                        : "border-zinc-300 dark:border-zinc-600"
+                        : "border-v2-ring "
                     }`}
                   >
                     {isSelected && (
@@ -314,9 +310,7 @@ export function QuizItem({
                     )}
                   </div>
                 )}
-                <span className="text-xs text-zinc-900 dark:text-zinc-100">
-                  {option.label}
-                </span>
+                <span className="text-xs text-v2-ink">{option.label}</span>
               </div>
             );
           })}

@@ -124,15 +124,13 @@ export function FileDownloadItem({
     <div className="flex items-start gap-2 flex-wrap">
       {/* File info with download button */}
       <div className="flex items-center gap-2 flex-1 min-w-0">
-        <File className="h-4 w-4 text-zinc-400 flex-shrink-0" />
+        <File className="h-4 w-4 text-v2-ink-subtle flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <div className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate">
+          <div className="text-xs font-medium text-v2-ink truncate">
             {metadata.file_name}
           </div>
           {fileInfo && (
-            <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
-              {fileInfo}
-            </div>
+            <div className="text-[10px] text-v2-ink-muted">{fileInfo}</div>
           )}
         </div>
         <Button
@@ -166,7 +164,7 @@ export function FileDownloadItem({
           />
           <label
             htmlFor={`file-ack-${progressId}`}
-            className="text-xs text-zinc-700 dark:text-zinc-300 cursor-pointer flex-1"
+            className="text-xs text-v2-ink-muted cursor-pointer flex-1"
           >
             {metadata.acknowledgment_text}
           </label>

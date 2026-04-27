@@ -77,7 +77,7 @@ export function TextResponseItem({
           <CheckCircle2 className="h-3.5 w-3.5" />
           Response submitted
         </span>
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 italic line-clamp-2 pl-5">
+        <p className="text-[10px] text-v2-ink-muted italic line-clamp-2 pl-5">
           "{existingResponse.text}"
         </p>
       </div>
@@ -89,9 +89,7 @@ export function TextResponseItem({
   return (
     <div className="space-y-1">
       {/* Prompt */}
-      <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
-        {metadata.prompt}
-      </p>
+      <p className="text-xs font-medium text-v2-ink">{metadata.prompt}</p>
 
       {/* Text Area */}
       <div className="space-y-1">
@@ -103,7 +101,7 @@ export function TextResponseItem({
           disabled={isSubmitting}
           maxLength={maxLength}
         />
-        <div className="flex justify-between items-center text-[10px] text-zinc-500 dark:text-zinc-400">
+        <div className="flex justify-between items-center text-[10px] text-v2-ink-muted">
           <span>
             {minLength > 0 && characterCount < minLength && (
               <span className="text-amber-600">

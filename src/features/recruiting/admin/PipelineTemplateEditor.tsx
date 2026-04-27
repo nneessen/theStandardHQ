@@ -95,19 +95,17 @@ export function PipelineTemplateEditor({
 
   if (isLoading) {
     return (
-      <div className="p-8 flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+      <div className="p-8 flex items-center justify-center border border-v2-ring bg-v2-card rounded-lg">
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
 
   if (!template) {
     return (
-      <div className="p-8 text-center border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-        <AlertCircle className="h-6 w-6 text-zinc-400 mx-auto mb-2" />
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-          Template not found
-        </p>
+      <div className="p-8 text-center border border-v2-ring bg-v2-card rounded-lg">
+        <AlertCircle className="h-6 w-6 text-v2-ink-subtle mx-auto mb-2" />
+        <p className="text-[11px] text-v2-ink-muted">Template not found</p>
       </div>
     );
   }
@@ -126,7 +124,7 @@ export function PipelineTemplateEditor({
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -137,8 +135,8 @@ export function PipelineTemplateEditor({
             <ArrowLeft className="h-3 w-3 mr-1.5" />
             Back to Templates
           </Button>
-          <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-700" />
-          <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+          <div className="h-4 w-px bg-v2-ring" />
+          <span className="text-[11px] font-medium text-v2-ink">
             {template.name}
           </span>
           {template.is_default && (
@@ -168,13 +166,13 @@ export function PipelineTemplateEditor({
       </div>
 
       {/* Template Details */}
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-        <h3 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-3">
+      <div className="p-3 border border-v2-ring bg-v2-card rounded-lg">
+        <h3 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted mb-3">
           Template Details
         </h3>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Name
             </Label>
             {/* WARNING: Any template name containing "DEFAULT" (case-insensitive) is
@@ -185,11 +183,11 @@ export function PipelineTemplateEditor({
               value={name}
               onChange={(e) => handleFieldChange("name", e.target.value)}
               disabled={!canModify}
-              className="h-7 text-[11px] bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+              className="h-7 text-[11px] bg-v2-canvas border-v2-ring"
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Status
             </Label>
             <div className="flex items-center gap-2 h-7">
@@ -200,13 +198,13 @@ export function PipelineTemplateEditor({
                 }
                 disabled={!canModify}
               />
-              <span className="text-[11px] text-zinc-700 dark:text-zinc-300">
+              <span className="text-[11px] text-v2-ink-muted">
                 {isActive ? "Active" : "Inactive"}
               </span>
             </div>
           </div>
           <div className="col-span-2 space-y-1.5">
-            <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Description
             </Label>
             <Textarea
@@ -214,14 +212,14 @@ export function PipelineTemplateEditor({
               onChange={(e) => handleFieldChange("description", e.target.value)}
               placeholder="Optional description..."
               disabled={!canModify}
-              className="text-[11px] min-h-14 bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+              className="text-[11px] min-h-14 bg-v2-canvas border-v2-ring"
             />
           </div>
         </div>
       </div>
 
       {/* Phases Editor */}
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+      <div className="p-3 border border-v2-ring bg-v2-card rounded-lg">
         <PhaseEditor templateId={templateId} readOnly={!canModify} />
       </div>
     </div>

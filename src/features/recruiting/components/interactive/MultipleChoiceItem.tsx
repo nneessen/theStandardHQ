@@ -133,7 +133,7 @@ export function MultipleChoiceItem({
           <CheckCircle2 className="h-3.5 w-3.5" />
           Selection submitted
         </span>
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 pl-5">
+        <p className="text-[10px] text-v2-ink-muted pl-5">
           {selectedLabels.join(", ")}
         </p>
       </div>
@@ -159,13 +159,13 @@ export function MultipleChoiceItem({
   return (
     <div className="space-y-1">
       {/* Question */}
-      <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+      <p className="text-xs font-medium text-v2-ink">
         {metadata?.question_text}
       </p>
 
       {/* Selection hint */}
       {isMultiSelect && (
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+        <p className="text-[10px] text-v2-ink-muted">
           {minSelections > 1
             ? `Select at least ${minSelections}`
             : "Select all that apply"}
@@ -185,7 +185,7 @@ export function MultipleChoiceItem({
               className={`flex items-start gap-2 p-1.5 rounded border cursor-pointer transition-colors ${
                 isSelected
                   ? "bg-primary/10 border-primary"
-                  : "bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300"
+                  : "bg-white  border-v2-ring hover:border-v2-ring"
               }`}
               onClick={() => !isSubmitting && handleToggleOption(option.id)}
             >
@@ -198,9 +198,7 @@ export function MultipleChoiceItem({
               ) : (
                 <div
                   className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center mt-0.5 ${
-                    isSelected
-                      ? "border-primary bg-primary"
-                      : "border-zinc-300 dark:border-zinc-600"
+                    isSelected ? "border-primary bg-primary" : "border-v2-ring "
                   }`}
                 >
                   {isSelected && (
@@ -210,15 +208,13 @@ export function MultipleChoiceItem({
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs text-zinc-900 dark:text-zinc-100">
-                    {option.label}
-                  </span>
+                  <span className="text-xs text-v2-ink">{option.label}</span>
                   {isDisqualifying && isSelected && (
                     <AlertTriangle className="h-3 w-3 text-amber-500" />
                   )}
                 </div>
                 {option.description && (
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                  <p className="text-[10px] text-v2-ink-muted mt-0.5">
                     {option.description}
                   </p>
                 )}
@@ -231,9 +227,7 @@ export function MultipleChoiceItem({
       {/* Shuffle note and submit button inline */}
       <div className="flex items-center gap-2 flex-wrap">
         {metadata.randomize_order && (
-          <p className="text-[10px] text-zinc-400 dark:text-zinc-500 italic">
-            Random order
-          </p>
+          <p className="text-[10px] text-v2-ink-subtle italic">Random order</p>
         )}
 
         {/* Submit Button */}

@@ -116,17 +116,17 @@ export function BooleanQuestionConfig({
   const defaults = BOOLEAN_QUESTION_DEFAULT_LABELS[questionStyle];
 
   return (
-    <div className="space-y-3 p-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <HelpCircle className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <HelpCircle className="h-3.5 w-3.5 text-v2-ink-muted" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
           Boolean Question Configuration
         </span>
       </div>
 
       {/* Question Text */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Question Text <span className="text-red-500">*</span>
         </Label>
         <Textarea
@@ -145,7 +145,7 @@ export function BooleanQuestionConfig({
 
       {/* Question Style */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Answer Style
         </Label>
         <Select
@@ -167,7 +167,7 @@ export function BooleanQuestionConfig({
             )}
           </SelectContent>
         </Select>
-        <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+        <p className="text-[9px] text-v2-ink-muted">
           Preview: {defaults.positive} / {defaults.negative}
         </p>
       </div>
@@ -176,7 +176,7 @@ export function BooleanQuestionConfig({
       {questionStyle === "custom" && (
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
-            <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Positive Label
             </Label>
             <Input
@@ -188,7 +188,7 @@ export function BooleanQuestionConfig({
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Negative Label
             </Label>
             <Input
@@ -205,10 +205,10 @@ export function BooleanQuestionConfig({
       {/* Require Positive Answer */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Require Positive Answer
           </Label>
-          <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[9px] text-v2-ink-muted">
             Must select "{defaults.positive}" to complete this item
           </p>
         </div>
@@ -222,10 +222,10 @@ export function BooleanQuestionConfig({
       {/* Require Explanation */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Require Explanation
           </Label>
-          <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[9px] text-v2-ink-muted">
             Ask recruit to explain their answer
           </p>
         </div>
@@ -239,7 +239,7 @@ export function BooleanQuestionConfig({
       {/* Explanation Prompt (only shown if explanation required) */}
       {explanationRequired && (
         <div className="space-y-1">
-          <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Explanation Prompt (Optional)
           </Label>
           <Input

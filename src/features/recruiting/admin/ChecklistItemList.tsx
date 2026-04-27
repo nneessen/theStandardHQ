@@ -100,14 +100,14 @@ function ChecklistItemListComponent({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-2">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
 
   if (sortedItems.length === 0) {
     return (
-      <div className="text-[10px] text-zinc-500 dark:text-zinc-400 text-center py-2">
+      <div className="text-[10px] text-v2-ink-muted text-center py-2">
         No checklist items
       </div>
     );

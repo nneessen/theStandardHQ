@@ -49,7 +49,7 @@ const CHECKLIST_STATUS_COLORS: Record<string, string> = {
     "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
   in_progress:
     "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-  not_started: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+  not_started: "bg-v2-ring text-v2-ink-muted  -subtle",
   rejected: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
   pending:
     "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
@@ -85,11 +85,7 @@ function PhaseChecklist({
   );
 
   if (isLoading) {
-    return (
-      <p className="text-[10px] text-zinc-400 dark:text-zinc-500 py-1">
-        Loading…
-      </p>
-    );
+    return <p className="text-[10px] text-v2-ink-subtle py-1">Loading…</p>;
   }
 
   if (isError) {
@@ -102,7 +98,7 @@ function PhaseChecklist({
 
   if (items.length === 0) {
     return (
-      <p className="text-[10px] text-zinc-400 dark:text-zinc-500 py-1">
+      <p className="text-[10px] text-v2-ink-subtle py-1">
         No checklist items for this phase.
       </p>
     );
@@ -118,9 +114,9 @@ function PhaseChecklist({
         return (
           <div
             key={item.id}
-            className="flex items-center justify-between px-2 py-1 rounded bg-zinc-50 dark:bg-zinc-800/60"
+            className="flex items-center justify-between px-2 py-1 rounded bg-v2-canvas/60"
           >
-            <span className="text-[10px] text-zinc-700 dark:text-zinc-300 flex-1 truncate">
+            <span className="text-[10px] text-v2-ink-muted flex-1 truncate">
               {item.item_name}
             </span>
             <Badge
@@ -320,27 +316,27 @@ export function RecruitBottomPanel({
   return (
     <div className="relative flex flex-col h-full overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-v2-ring shrink-0">
         <div className="flex items-center gap-3">
           <Avatar className="h-9 w-9">
             <AvatarImage src={recruit.profile_photo_url || undefined} />
-            <AvatarFallback className="text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+            <AvatarFallback className="text-[10px] bg-v2-ring text-v2-ink-muted -subtle">
               {initials}
             </AvatarFallback>
           </Avatar>
           <div>
-            <h3 className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+            <h3 className="text-[12px] font-semibold text-v2-ink">
               {displayName}
             </h3>
             <div className="flex items-center gap-3 mt-0.5">
               {recruit.email && (
-                <span className="flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+                <span className="flex items-center gap-1 text-[10px] text-v2-ink-muted">
                   <Mail className="h-3 w-3" />
                   {recruit.email}
                 </span>
               )}
               {recruit.phone && (
-                <span className="flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+                <span className="flex items-center gap-1 text-[10px] text-v2-ink-muted">
                   <Phone className="h-3 w-3" />
                   {recruit.phone}
                 </span>
@@ -381,7 +377,7 @@ export function RecruitBottomPanel({
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 w-6 p-0 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+            className="h-6 w-6 p-0 text-v2-ink-subtle hover:text-v2-ink-muted dark:hover:text-v2-ink-subtle"
             onClick={onClose}
           >
             <X className="h-4 w-4" />
@@ -394,7 +390,7 @@ export function RecruitBottomPanel({
         {!hasPipeline ? (
           /* --- Not enrolled --- */
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+            <div className="flex items-center gap-2 text-[11px] text-v2-ink-muted">
               <ListChecks className="h-4 w-4" />
               <span>Not enrolled in a pipeline</span>
             </div>
@@ -406,8 +402,8 @@ export function RecruitBottomPanel({
                     key={t.id}
                     className={cn(
                       "flex items-center justify-between w-full px-3 py-2.5 rounded-lg border text-left transition-colors",
-                      "border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500",
-                      "hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+                      "border-v2-ring hover:border-v2-ring-strong ",
+                      "hover:bg-v2-canvas",
                       enrollingTemplateId === t.id &&
                         "border-blue-400 bg-blue-50 dark:border-blue-600 dark:bg-blue-950/30",
                     )}
@@ -415,11 +411,11 @@ export function RecruitBottomPanel({
                     onClick={() => handleEnroll(t.id)}
                   >
                     <div>
-                      <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                      <p className="text-[11px] font-medium text-v2-ink">
                         {t.name}
                       </p>
                       {t.description && (
-                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        <p className="text-[10px] text-v2-ink-muted mt-0.5">
                           {t.description}
                         </p>
                       )}
@@ -427,13 +423,13 @@ export function RecruitBottomPanel({
                     {enrollingTemplateId === t.id ? (
                       <Loader2 className="h-4 w-4 animate-spin text-blue-500 shrink-0 ml-2" />
                     ) : (
-                      <ChevronRight className="h-4 w-4 text-zinc-400 shrink-0 ml-2" />
+                      <ChevronRight className="h-4 w-4 text-v2-ink-subtle shrink-0 ml-2" />
                     )}
                   </button>
                 ))}
               </div>
             ) : (
-              <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
+              <p className="text-[10px] text-v2-ink-subtle">
                 No active pipeline templates available. Contact your admin to
                 set up a pipeline.
               </p>
@@ -443,23 +439,23 @@ export function RecruitBottomPanel({
           /* --- Enrolled in pipeline --- */
           <div className="space-y-4">
             {/* Pipeline info card */}
-            <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-3 space-y-3">
+            <div className="rounded-lg border border-v2-ring p-3 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                  <p className="text-[10px] text-v2-ink-muted uppercase tracking-[0.18em]">
                     Pipeline
                   </p>
-                  <p className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100 mt-0.5">
+                  <p className="text-[12px] font-medium text-v2-ink mt-0.5">
                     {pipelineTemplate?.name || "Unknown Pipeline"}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   {pipelineStarted && (
                     <div className="text-right">
-                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                      <p className="text-[10px] text-v2-ink-muted uppercase tracking-[0.18em]">
                         Started
                       </p>
-                      <p className="text-[11px] text-zinc-700 dark:text-zinc-300 mt-0.5">
+                      <p className="text-[11px] text-v2-ink-muted mt-0.5">
                         {formatDistanceToNow(new Date(pipelineStarted), {
                           addSuffix: true,
                         })}
@@ -469,7 +465,7 @@ export function RecruitBottomPanel({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 px-2 text-[10px] text-zinc-400 hover:text-red-600 dark:hover:text-red-400 gap-1"
+                    className="h-7 px-2 text-[10px] text-v2-ink-subtle hover:text-red-600 dark:hover:text-red-400 gap-1"
                     onClick={() => setConfirmUnenroll(true)}
                     disabled={unenrollFromPipeline.isPending}
                     title="Unenroll from pipeline"
@@ -483,14 +479,14 @@ export function RecruitBottomPanel({
               {/* Phase progress bar — each segment is clickable */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] text-v2-ink-muted">
                     {isAllCompleted
                       ? "All phases completed"
                       : currentPhase
                         ? `Phase ${currentPhaseIndex + 1} of ${totalPhases}: ${currentPhase.phase_name}`
                         : "Waiting to start"}
                   </p>
-                  <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                  <span className="text-[10px] text-v2-ink-subtle">
                     {isAllCompleted ? totalPhases : currentPhaseIndex + 1}/
                     {totalPhases}
                   </span>
@@ -509,14 +505,14 @@ export function RecruitBottomPanel({
                           "h-3 flex-1 rounded-full transition-all focus:outline-none",
                           "hover:opacity-80 hover:scale-y-125",
                           isSelected &&
-                            "ring-2 ring-offset-1 ring-zinc-400 dark:ring-zinc-500",
+                            "ring-2 ring-offset-1 ring-v2-ring-strong ",
                           status === "completed"
                             ? "bg-emerald-500"
                             : status === "in_progress"
                               ? "bg-blue-500"
                               : status === "blocked"
                                 ? "bg-red-400"
-                                : "bg-zinc-200 dark:bg-zinc-700",
+                                : "bg-v2-ring",
                         )}
                         title={`${phase.phase_name} — ${status.replace(/_/g, " ")} (click to view)`}
                         onClick={() => handlePhaseBarClick(phase.id)}
@@ -534,8 +530,8 @@ export function RecruitBottomPanel({
                     return (
                       <div className="mt-2 px-1">
                         <div className="flex items-center gap-1 mb-1">
-                          <ChevronDown className="h-3 w-3 text-zinc-400" />
-                          <p className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">
+                          <ChevronDown className="h-3 w-3 text-v2-ink-subtle" />
+                          <p className="text-[10px] font-medium text-v2-ink-muted -subtle">
                             {selPhase?.phase_name}
                           </p>
                         </div>
@@ -548,8 +544,8 @@ export function RecruitBottomPanel({
                   })()}
 
                 {/* Documents Section */}
-                <div className="border-t border-zinc-100 dark:border-zinc-800 pt-2 mt-2">
-                  <h4 className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400 mb-1 px-1">
+                <div className="border-t border-v2-ring/60 pt-2 mt-2">
+                  <h4 className="text-[10px] font-medium text-v2-ink-muted -subtle mb-1 px-1">
                     Documents
                   </h4>
                   {documents && documents.length > 0 ? (
@@ -557,17 +553,17 @@ export function RecruitBottomPanel({
                       {documents.slice(0, 3).map((doc) => (
                         <div
                           key={doc.id}
-                          className="flex items-center gap-2 text-[10px] px-1 py-0.5 rounded hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                          className="flex items-center gap-2 text-[10px] px-1 py-0.5 rounded hover:bg-v2-canvas"
                         >
-                          <FileText className="h-3 w-3 text-zinc-400 flex-shrink-0" />
-                          <span className="flex-1 truncate text-zinc-700 dark:text-zinc-300">
+                          <FileText className="h-3 w-3 text-v2-ink-subtle flex-shrink-0" />
+                          <span className="flex-1 truncate text-v2-ink-muted">
                             {doc.document_name}
                           </span>
                           <Badge
                             className={`px-1 py-0 text-[9px] h-4 ${
-                              String(doc.status) === 'active'
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-gray-100 text-gray-700'
+                              String(doc.status) === "active"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-gray-100 text-gray-700"
                             }`}
                           >
                             {String(doc.status)}
@@ -581,7 +577,7 @@ export function RecruitBottomPanel({
                       )}
                     </div>
                   ) : (
-                    <div className="text-[10px] text-zinc-400 dark:text-zinc-500 px-1">
+                    <div className="text-[10px] text-v2-ink-subtle px-1">
                       No documents uploaded yet.
                     </div>
                   )}
@@ -590,26 +586,26 @@ export function RecruitBottomPanel({
 
               {/* Current phase details */}
               {currentPhase && currentProgress && (
-                <div className="flex items-center gap-3 pt-1 border-t border-zinc-100 dark:border-zinc-800">
+                <div className="flex items-center gap-3 pt-1 border-t border-v2-ring/60">
                   <div className="flex-1">
-                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    <p className="text-[10px] text-v2-ink-muted">
                       Current Phase
                     </p>
-                    <p className="text-[11px] font-medium text-zinc-800 dark:text-zinc-200">
+                    <p className="text-[11px] font-medium text-v2-ink -subtle">
                       {currentPhase.phase_name}
                     </p>
                     {currentPhase.phase_description && (
-                      <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                      <p className="text-[10px] text-v2-ink-subtle mt-0.5">
                         {currentPhase.phase_description}
                       </p>
                     )}
                   </div>
                   {currentProgress.started_at && (
                     <div className="text-right">
-                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                      <p className="text-[10px] text-v2-ink-muted">
                         Days in phase
                       </p>
-                      <p className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+                      <p className="text-[11px] font-medium text-v2-ink-muted">
                         {Math.ceil(
                           (Date.now() -
                             new Date(currentProgress.started_at).getTime()) /
@@ -672,16 +668,14 @@ export function RecruitBottomPanel({
       {/* Unenroll confirmation — rendered inline inside the panel (avoids z-index portal issues) */}
       {confirmUnenroll && (
         <div className="absolute inset-0 rounded-t-xl bg-black/50 flex items-center justify-center px-4 z-10">
-          <div className="w-full max-w-sm bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-700 shadow-xl p-4">
-            <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <div className="w-full max-w-sm bg-v2-card rounded-lg border border-v2-ring shadow-xl p-4">
+            <p className="text-[12px] font-semibold text-v2-ink">
               Unenroll from Pipeline?
             </p>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-1.5">
+            <p className="text-[11px] text-v2-ink-muted mt-1.5">
               This will remove all phase and checklist progress for{" "}
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {displayName}
-              </span>
-              . They can then be enrolled in a different pipeline.
+              <span className="font-medium text-v2-ink">{displayName}</span>.
+              They can then be enrolled in a different pipeline.
             </p>
             <div className="flex gap-2 mt-3">
               <Button

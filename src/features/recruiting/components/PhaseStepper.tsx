@@ -35,12 +35,12 @@ export function PhaseStepper({
   const viewingPhase = sortedPhases.find((p) => p.id === viewingPhaseId);
 
   return (
-    <div className="px-3 py-2 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+    <div className="px-3 py-2 bg-v2-card border-b border-v2-ring">
       <div className="flex items-center justify-between mb-1.5">
-        <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+        <span className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
           Pipeline Progress
         </span>
-        <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+        <span className="text-[10px] text-v2-ink-muted">
           {completedCount}/{sortedPhases.length} complete
         </span>
       </div>
@@ -67,9 +67,8 @@ export function PhaseStepper({
                         "bg-amber-500 hover:bg-amber-600",
                       status === "blocked" && "bg-red-500 hover:bg-red-600",
                       status === "not_started" &&
-                        "bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600",
-                      isActive &&
-                        "ring-2 ring-zinc-900 dark:ring-zinc-100 ring-offset-1",
+                        "bg-v2-ring hover:bg-v2-ring-strong ",
+                      isActive && "ring-2 ring-v2-ink  ring-offset-1",
                       isHidden &&
                         "ring-1 ring-dashed ring-amber-400 dark:ring-amber-600",
                     )}
@@ -93,7 +92,7 @@ export function PhaseStepper({
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs">
                   <p className="font-medium">{phase.phase_name}</p>
-                  <p className="text-zinc-400 capitalize">
+                  <p className="text-v2-ink-subtle capitalize">
                     {status.replace("_", " ")}
                   </p>
                   {isHidden && (
@@ -109,7 +108,7 @@ export function PhaseStepper({
       </TooltipProvider>
       {viewingPhase && (
         <div className="mt-1.5 flex items-center justify-between">
-          <span className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+          <span className="text-xs font-medium text-v2-ink">
             {viewingPhase.phase_name}
           </span>
           {viewingPhaseId &&

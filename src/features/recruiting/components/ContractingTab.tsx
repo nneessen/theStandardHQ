@@ -69,8 +69,10 @@ export function ContractingTab({ entity, permissions }: ContractingTabProps) {
   if (entity.kind === "invitation") {
     return (
       <div className="py-8 text-center">
-        <Briefcase className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-        <p className="text-xs text-zinc-500">Available after registration</p>
+        <Briefcase className="h-8 w-8 text-v2-ink-subtle mx-auto mb-2" />
+        <p className="text-xs text-v2-ink-muted">
+          Available after registration
+        </p>
       </div>
     );
   }
@@ -87,8 +89,8 @@ export function ContractingTab({ entity, permissions }: ContractingTabProps) {
   if (isLoading) {
     return (
       <div className="py-8 text-center">
-        <Briefcase className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2 animate-pulse" />
-        <p className="text-xs text-zinc-500">Loading contracts...</p>
+        <Briefcase className="h-8 w-8 text-v2-ink-subtle mx-auto mb-2 animate-pulse" />
+        <p className="text-xs text-v2-ink-muted">Loading contracts...</p>
       </div>
     );
   }
@@ -129,7 +131,7 @@ export function ContractingTab({ entity, permissions }: ContractingTabProps) {
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+        <h3 className="text-xs font-medium text-v2-ink-muted uppercase tracking-wide">
           Carrier Contracts
         </h3>
         {permissions.isStaff && (
@@ -145,20 +147,18 @@ export function ContractingTab({ entity, permissions }: ContractingTabProps) {
 
       {/* Upline context banner */}
       {uplineId && uplineName && (
-        <div className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-zinc-50 dark:bg-zinc-800/50 mb-2">
-          <Info className="h-3 w-3 text-zinc-400 flex-shrink-0" />
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-v2-canvas mb-2">
+          <Info className="h-3 w-3 text-v2-ink-subtle flex-shrink-0" />
+          <p className="text-[10px] text-v2-ink-muted">
             Carriers available through{" "}
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
-              {uplineName}
-            </span>
+            <span className="font-medium text-v2-ink-muted">{uplineName}</span>
             &apos;s contracts ({uplineCarrierCount} active)
           </p>
           {permissions.isStaff && (
             <Button
               variant="ghost"
               size="sm"
-              className="h-5 text-[10px] px-1.5 ml-auto text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+              className="h-5 text-[10px] px-1.5 ml-auto text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle"
               onClick={handleRequestUpdate}
               disabled={requestingUpdate}
             >
@@ -173,9 +173,9 @@ export function ContractingTab({ entity, permissions }: ContractingTabProps) {
         </div>
       )}
       {!uplineId && (
-        <div className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-zinc-50 dark:bg-zinc-800/50 mb-2">
-          <Info className="h-3 w-3 text-zinc-400 flex-shrink-0" />
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-v2-canvas mb-2">
+          <Info className="h-3 w-3 text-v2-ink-subtle flex-shrink-0" />
+          <p className="text-[10px] text-v2-ink-muted">
             No upline assigned — all carriers available
           </p>
         </div>

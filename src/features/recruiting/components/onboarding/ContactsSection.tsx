@@ -79,24 +79,24 @@ export function ContactsSection({
       rightSlot={rightSlot}
     >
       {showSmsForm && (
-        <div className="mb-5 rounded-xl bg-stone-50 dark:bg-stone-800/40 ring-1 ring-stone-200 dark:ring-stone-800 p-4">
+        <div className="mb-5 rounded-xl bg-v2-canvas dark:bg-v2-ring/40 ring-1 ring-v2-ring  p-4">
           <textarea
             value={smsMessage}
             onChange={(e) => setSmsMessage(e.target.value)}
             placeholder="Type a quick message to your recruiter..."
-            className="w-full bg-white dark:bg-stone-900 rounded-lg ring-1 ring-stone-200 dark:ring-stone-700 p-3 text-sm text-stone-900 dark:text-stone-100 placeholder:text-stone-400 dark:placeholder:text-stone-600 resize-none focus:outline-none focus:ring-amber-500 dark:focus:ring-amber-400"
+            className="w-full bg-white dark:bg-v2-card rounded-lg ring-1 ring-v2-ring  p-3 text-sm text-v2-ink  placeholder:text-v2-ink-subtle dark:placeholder:text-v2-ink-muted resize-none focus:outline-none focus:ring-amber-500 dark:focus:ring-amber-400"
             rows={3}
             disabled={sendingSms}
           />
           <div className="flex items-center justify-between mt-3">
-            <span className="text-[11px] font-mono text-stone-500 dark:text-stone-400">
+            <span className="text-[11px] font-mono text-v2-ink-muted dark:text-v2-ink-subtle">
               To: {RECRUITER_SMS_NUMBER}
             </span>
             <button
               type="button"
               onClick={handleSendSms}
               disabled={sendingSms || !smsMessage.trim()}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-stone-900 px-3.5 py-2 text-[12px] font-semibold transition-all hover:-translate-y-px hover:shadow-md active:translate-y-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-v2-ink px-3.5 py-2 text-[12px] font-semibold transition-all hover:-translate-y-px hover:shadow-md active:translate-y-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
             >
               {sendingSms ? (
                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -136,7 +136,7 @@ export function ContactsSection({
           })}
         </ul>
       ) : (
-        <p className="text-[13px] italic text-stone-500 dark:text-stone-400">
+        <p className="text-[13px] italic text-v2-ink-muted dark:text-v2-ink-subtle">
           No contacts available yet — they will appear here once your recruiter
           assigns them.
         </p>
@@ -168,9 +168,9 @@ function ContactRow({
 }: ContactRowProps) {
   return (
     <li className="flex items-start gap-3 py-1">
-      <Avatar className="h-9 w-9 ring-1 ring-stone-200 dark:ring-stone-700 flex-shrink-0">
+      <Avatar className="h-9 w-9 ring-1 ring-v2-ring  flex-shrink-0">
         <AvatarImage src={photoUrl || undefined} />
-        <AvatarFallback className="text-[11px] font-mono bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
+        <AvatarFallback className="text-[11px] font-mono bg-v2-ring dark:bg-v2-ring text-v2-ink dark:text-v2-ink-subtle">
           {name
             .split(" ")
             .map((n) => n[0])
@@ -181,14 +181,14 @@ function ContactRow({
       </Avatar>
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2 flex-wrap">
-          <span className="text-[14px] font-semibold tracking-tight text-stone-900 dark:text-stone-100 truncate">
+          <span className="text-[14px] font-semibold tracking-tight text-v2-ink  truncate">
             {name}
           </span>
           <span
             className={
               isPrimary
                 ? "text-[10px] uppercase tracking-[0.18em] font-bold text-amber-700 dark:text-amber-400"
-                : "text-[10px] uppercase tracking-[0.18em] font-bold text-stone-500 dark:text-stone-400"
+                : "text-[10px] uppercase tracking-[0.18em] font-bold text-v2-ink-muted dark:text-v2-ink-subtle"
             }
           >
             {role}
@@ -198,7 +198,7 @@ function ContactRow({
           {email && (
             <a
               href={`mailto:${email}`}
-              className="inline-flex items-center gap-1 text-[12px] text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
+              className="inline-flex items-center gap-1 text-[12px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-canvas transition-colors"
             >
               <Mail className="h-3 w-3" />
               <span className="font-mono">Email</span>
@@ -207,7 +207,7 @@ function ContactRow({
           {phone && (
             <a
               href={`tel:${phone}`}
-              className="inline-flex items-center gap-1 text-[12px] text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
+              className="inline-flex items-center gap-1 text-[12px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-canvas transition-colors"
             >
               <Phone className="h-3 w-3" />
               <span className="font-mono">Call</span>

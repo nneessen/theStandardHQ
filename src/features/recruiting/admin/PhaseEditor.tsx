@@ -383,7 +383,7 @@ export function PhaseEditor({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -391,7 +391,7 @@ export function PhaseEditor({
   return (
     <div className="space-y-2.5">
       <div className="flex items-center justify-between">
-        <h3 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <h3 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
           Pipeline Phases ({sortedPhases.length})
         </h3>
         {!readOnly && (
@@ -408,7 +408,7 @@ export function PhaseEditor({
       </div>
 
       {sortedPhases.length === 0 ? (
-        <div className="text-center py-6 text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="text-center py-6 text-[11px] text-v2-ink-muted">
           No phases yet. Add your first phase to get started.
         </div>
       ) : (
@@ -445,13 +445,13 @@ export function PhaseEditor({
 
       {/* Create Phase Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-md p-3 bg-white dark:bg-zinc-900">
+        <DialogContent className="max-w-md p-3 bg-v2-card">
           <DialogHeader>
             <DialogTitle className="text-sm">Add Phase</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-3">
             <div className="space-y-1.5">
-              <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 Phase Name
               </Label>
               <Input
@@ -460,11 +460,11 @@ export function PhaseEditor({
                   setPhaseForm({ ...phaseForm, phase_name: e.target.value })
                 }
                 placeholder="e.g., Background Check"
-                className="h-7 text-[11px] bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                className="h-7 text-[11px] bg-v2-canvas border-v2-ring"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 Description
               </Label>
               <Textarea
@@ -476,11 +476,11 @@ export function PhaseEditor({
                   })
                 }
                 placeholder="Optional description..."
-                className="text-[11px] min-h-14 bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                className="text-[11px] min-h-14 bg-v2-canvas border-v2-ring"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 Estimated Days
               </Label>
               <Input
@@ -492,7 +492,7 @@ export function PhaseEditor({
                     estimated_days: parseInt(e.target.value) || 7,
                   })
                 }
-                className="h-7 text-[11px] w-20 bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                className="h-7 text-[11px] w-20 bg-v2-canvas border-v2-ring"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -505,7 +505,7 @@ export function PhaseEditor({
               />
               <label
                 htmlFor="auto_advance"
-                className="text-[11px] text-zinc-700 dark:text-zinc-300 cursor-pointer"
+                className="text-[11px] text-v2-ink-muted cursor-pointer"
               >
                 Auto-advance when all items complete
               </label>
@@ -520,7 +520,7 @@ export function PhaseEditor({
               />
               <label
                 htmlFor="visible_to_recruit"
-                className="text-[11px] text-zinc-700 dark:text-zinc-300 cursor-pointer"
+                className="text-[11px] text-v2-ink-muted cursor-pointer"
               >
                 Visible to recruits
               </label>
@@ -558,14 +558,14 @@ export function PhaseEditor({
 
       {/* Edit Phase Dialog */}
       <Dialog open={!!editingPhase} onOpenChange={() => setEditingPhase(null)}>
-        <DialogContent className="max-w-md p-3 bg-white dark:bg-zinc-900">
+        <DialogContent className="max-w-md p-3 bg-v2-card">
           <DialogHeader>
             <DialogTitle className="text-sm">Edit Phase</DialogTitle>
           </DialogHeader>
           {editingPhase && (
             <div className="space-y-3 py-3">
               <div className="space-y-1.5">
-                <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+                <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   Phase Name
                 </Label>
                 <Input
@@ -576,11 +576,11 @@ export function PhaseEditor({
                       phase_name: e.target.value,
                     })
                   }
-                  className="h-7 text-[11px] bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                  className="h-7 text-[11px] bg-v2-canvas border-v2-ring"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+                <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   Description
                 </Label>
                 <Textarea
@@ -591,11 +591,11 @@ export function PhaseEditor({
                       phase_description: e.target.value,
                     })
                   }
-                  className="text-[11px] min-h-14 bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                  className="text-[11px] min-h-14 bg-v2-canvas border-v2-ring"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+                <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   Estimated Days
                 </Label>
                 <Input
@@ -607,7 +607,7 @@ export function PhaseEditor({
                       estimated_days: parseInt(e.target.value) || 7,
                     })
                   }
-                  className="h-7 text-[11px] w-20 bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                  className="h-7 text-[11px] w-20 bg-v2-canvas border-v2-ring"
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -623,7 +623,7 @@ export function PhaseEditor({
                 />
                 <label
                   htmlFor="edit_auto_advance"
-                  className="text-[11px] text-zinc-700 dark:text-zinc-300 cursor-pointer"
+                  className="text-[11px] text-v2-ink-muted cursor-pointer"
                 >
                   Auto-advance when all items complete
                 </label>
@@ -641,7 +641,7 @@ export function PhaseEditor({
                 />
                 <label
                   htmlFor="edit_visible_to_recruit"
-                  className="text-[11px] text-zinc-700 dark:text-zinc-300 cursor-pointer"
+                  className="text-[11px] text-v2-ink-muted cursor-pointer"
                 >
                   Visible to recruits
                 </label>
@@ -683,11 +683,11 @@ export function PhaseEditor({
         open={!!deleteConfirmId}
         onOpenChange={() => setDeleteConfirmId(null)}
       >
-        <DialogContent className="max-w-sm p-3 bg-white dark:bg-zinc-900">
+        <DialogContent className="max-w-sm p-3 bg-v2-card">
           <DialogHeader>
             <DialogTitle className="text-sm">Delete Phase?</DialogTitle>
           </DialogHeader>
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[11px] text-v2-ink-muted">
             This will permanently delete this phase and all its checklist items.
           </p>
           <DialogFooter>

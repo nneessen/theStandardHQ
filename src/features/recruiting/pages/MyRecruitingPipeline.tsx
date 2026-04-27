@@ -360,10 +360,10 @@ export function MyRecruitingPipeline() {
 
   if (authLoading || profileLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#fafaf7] dark:bg-[#0c0a09]">
+      <div className="flex items-center justify-center min-h-screen bg-v2-canvas ">
         <div className="text-center">
           <Loader2 className="h-6 w-6 animate-spin mx-auto mb-3 text-amber-600 dark:text-amber-400" />
-          <p className="text-[11px] uppercase tracking-[0.2em] font-bold text-stone-500 dark:text-stone-400">
+          <p className="text-[11px] uppercase tracking-[0.2em] font-bold text-v2-ink-muted dark:text-v2-ink-subtle">
             Loading your pipeline…
           </p>
         </div>
@@ -373,13 +373,13 @@ export function MyRecruitingPipeline() {
 
   if (profileError) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#fafaf7] dark:bg-[#0c0a09]">
-        <div className="bg-white dark:bg-stone-900 rounded-2xl ring-1 ring-stone-200/70 dark:ring-stone-800 shadow-md dark:shadow-none p-6 max-w-sm text-center">
+      <div className="flex items-center justify-center min-h-screen bg-v2-canvas ">
+        <div className="bg-white dark:bg-v2-card rounded-2xl ring-1 ring-v2-ring  shadow-md dark:shadow-none p-6 max-w-sm text-center">
           <AlertCircle className="h-6 w-6 text-red-700 dark:text-red-400 mx-auto mb-3" />
-          <h2 className="text-base font-bold text-stone-900 dark:text-stone-100 mb-1">
+          <h2 className="text-base font-bold text-v2-ink  mb-1">
             Couldn&apos;t load your profile
           </h2>
-          <p className="text-[13px] text-stone-600 dark:text-stone-400">
+          <p className="text-[13px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Refresh the page to try again. If this keeps happening, message your
             recruiter.
           </p>
@@ -390,13 +390,13 @@ export function MyRecruitingPipeline() {
 
   if (!profile) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#fafaf7] dark:bg-[#0c0a09]">
-        <div className="bg-white dark:bg-stone-900 rounded-2xl ring-1 ring-stone-200/70 dark:ring-stone-800 shadow-md dark:shadow-none p-6 max-w-sm text-center">
+      <div className="flex items-center justify-center min-h-screen bg-v2-canvas ">
+        <div className="bg-white dark:bg-v2-card rounded-2xl ring-1 ring-v2-ring  shadow-md dark:shadow-none p-6 max-w-sm text-center">
           <AlertCircle className="h-6 w-6 text-amber-600 dark:text-amber-400 mx-auto mb-3" />
-          <h2 className="text-base font-bold text-stone-900 dark:text-stone-100 mb-1">
+          <h2 className="text-base font-bold text-v2-ink  mb-1">
             Profile not found
           </h2>
-          <p className="text-[13px] text-stone-600 dark:text-stone-400">
+          <p className="text-[13px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Please contact support.
           </p>
         </div>
@@ -409,7 +409,7 @@ export function MyRecruitingPipeline() {
   const subtitle = (
     <>
       You&apos;re{" "}
-      <span className="font-mono tabular-nums font-bold text-stone-900 dark:text-stone-100">
+      <span className="font-mono tabular-nums font-bold text-v2-ink ">
         {progressPercentage}%
       </span>{" "}
       through your onboarding with {agencyName}.{" "}
@@ -420,7 +420,7 @@ export function MyRecruitingPipeline() {
   );
 
   return (
-    <div className="min-h-screen bg-[#fafaf7] dark:bg-[#0c0a09]">
+    <div className="min-h-screen bg-v2-canvas ">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-16 flex flex-col gap-5 md:gap-6">
         <EditorialMasthead
           icon={Compass}
@@ -527,7 +527,7 @@ export function MyRecruitingPipeline() {
                 }
               />
             ) : (
-              <p className="text-[13px] text-stone-500 dark:text-stone-400">
+              <p className="text-[13px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 No phases yet — they will appear here as soon as your recruiter
                 sets up your pipeline.
               </p>
@@ -555,7 +555,7 @@ export function MyRecruitingPipeline() {
           title="Talk to your recruiter"
           caption="Anything that doesn't fit a checklist box belongs here — questions, scheduling, voice memos."
         >
-          <div className="rounded-xl ring-1 ring-stone-200/70 dark:ring-stone-800 overflow-hidden">
+          <div className="rounded-xl ring-1 ring-v2-ring  overflow-hidden">
             <CommunicationPanel
               userId={profile.id}
               upline={upline}
@@ -572,7 +572,7 @@ export function MyRecruitingPipeline() {
           caption="A clear headshot helps your recruiter and trainers match a face to the name. Keep it under 5 MB."
           compact
         >
-          <label className="inline-flex items-center gap-2 cursor-pointer rounded-lg bg-stone-900 hover:bg-stone-800 dark:bg-stone-100 dark:hover:bg-white text-white dark:text-stone-900 px-4 py-2.5 text-[13px] font-semibold transition-colors">
+          <label className="inline-flex items-center gap-2 cursor-pointer rounded-lg bg-v2-card hover:bg-v2-ring dark:bg-v2-ring  text-white dark:text-v2-ink px-4 py-2.5 text-[13px] font-semibold transition-colors">
             {uploadingPhoto ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (

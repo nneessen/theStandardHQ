@@ -18,7 +18,7 @@ const VALUE_SIZE: Record<NonNullable<EditorialStatProps["size"]>, string> = {
 };
 
 const TONE: Record<NonNullable<EditorialStatProps["tone"]>, string> = {
-  default: "text-stone-900 dark:text-stone-100",
+  default: "text-v2-ink ",
   brand: "text-amber-700 dark:text-amber-400",
   success: "text-emerald-700 dark:text-emerald-400",
   progress: "text-sky-700 dark:text-sky-400",
@@ -36,7 +36,7 @@ export const EditorialStat: React.FC<EditorialStatProps> = ({
 }) => {
   return (
     <div className={cn("flex flex-col", className)}>
-      <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-500 dark:text-stone-400">
+      <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-v2-ink-muted dark:text-v2-ink-subtle">
         {label}
       </span>
       <span
@@ -49,7 +49,7 @@ export const EditorialStat: React.FC<EditorialStatProps> = ({
         {value}
       </span>
       {caption && (
-        <span className="mt-1.5 text-[11px] text-stone-600 dark:text-stone-400 leading-relaxed">
+        <span className="mt-1.5 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
           {caption}
         </span>
       )}

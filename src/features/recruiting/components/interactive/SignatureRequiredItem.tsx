@@ -73,7 +73,7 @@ const STATUS_CONFIG: Record<SubmissionStatus, StatusConfig> = {
   },
   voided: {
     label: "Voided",
-    color: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+    color: "bg-v2-ring text-v2-ink  dark:text-v2-ink-subtle",
     icon: XCircle,
   },
 };
@@ -213,7 +213,7 @@ export function SignatureRequiredItem({
   // Loading state
   if (submissionLoading && !existingResponse) {
     return (
-      <div className="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
+      <div className="flex items-center gap-1 text-xs text-v2-ink-muted">
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
         Loading...
       </div>
@@ -236,7 +236,7 @@ export function SignatureRequiredItem({
           All signatures complete ({signersTotal}/{signersTotal})
         </span>
         {existingResponse?.completed_at && (
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <span className="text-[10px] text-v2-ink-muted">
             {new Date(existingResponse.completed_at).toLocaleDateString()}
           </span>
         )}
@@ -249,9 +249,9 @@ export function SignatureRequiredItem({
     return (
       <div className="space-y-1">
         <div className="flex items-start gap-2">
-          <PenTool className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500 mt-0.5" />
+          <PenTool className="h-3.5 w-3.5 text-v2-ink-subtle mt-0.5" />
           <div className="space-y-1">
-            <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+            <p className="text-xs font-medium text-v2-ink-muted">
               E-Signature Required
             </p>
             <div className="flex flex-wrap gap-1">
@@ -267,7 +267,7 @@ export function SignatureRequiredItem({
               ))}
             </div>
             {metadata.custom_message && (
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 italic">
+              <p className="text-[10px] text-v2-ink-muted italic">
                 "{metadata.custom_message}"
               </p>
             )}
@@ -281,7 +281,7 @@ export function SignatureRequiredItem({
             size="sm"
             className="h-7 text-xs px-3 gap-1.5 bg-emerald-600 hover:bg-emerald-700"
           >
-            {(isInitiating || createSubmission.isPending) ? (
+            {isInitiating || createSubmission.isPending ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (
               <Send className="h-3.5 w-3.5" />
@@ -290,7 +290,7 @@ export function SignatureRequiredItem({
           </Button>
 
           {metadata.expires_in_days && (
-            <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+            <span className="text-[10px] text-v2-ink-subtle">
               Expires in {metadata.expires_in_days} days
             </span>
           )}
@@ -308,12 +308,12 @@ export function SignatureRequiredItem({
       {/* Status Header */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
-          <StatusIcon className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
+          <StatusIcon className="h-3.5 w-3.5 text-v2-ink-muted" />
           <Badge className={`${statusConfig.color} h-4 text-[10px] px-1.5`}>
             {statusConfig.label}
           </Badge>
         </div>
-        <div className="flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center gap-1 text-[10px] text-v2-ink-muted">
           <Users className="h-3 w-3" />
           {signersCompleted}/{signersTotal}
         </div>
@@ -321,13 +321,13 @@ export function SignatureRequiredItem({
 
       {/* Progress Bar */}
       <div className="space-y-0.5">
-        <div className="h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-v2-ring rounded-full overflow-hidden">
           <div
             className="h-full bg-primary transition-all duration-300"
             style={{ width: `${(signersCompleted / signersTotal) * 100}%` }}
           />
         </div>
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+        <p className="text-[10px] text-v2-ink-muted">
           Waiting for signatures...
         </p>
       </div>
@@ -339,9 +339,9 @@ export function SignatureRequiredItem({
           return (
             <div
               key={role}
-              className="flex items-center justify-between p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded text-[10px]"
+              className="flex items-center justify-between p-1 bg-v2-canvas rounded text-[10px]"
             >
-              <span className="text-zinc-600 dark:text-zinc-400">
+              <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                 {SIGNER_ROLE_LABELS[role]}
               </span>
               {hasSigned ? (
@@ -350,7 +350,7 @@ export function SignatureRequiredItem({
                   Signed
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-0.5 text-zinc-500 dark:text-zinc-400">
+                <span className="inline-flex items-center gap-0.5 text-v2-ink-muted">
                   <Clock className="h-2.5 w-2.5" />
                   Pending
                 </span>

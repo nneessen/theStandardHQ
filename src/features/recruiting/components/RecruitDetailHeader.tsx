@@ -49,13 +49,13 @@ export function RecruitDetailHeader({
     <div className="flex items-center gap-2.5">
       <Avatar className="h-9 w-9 shrink-0">
         <AvatarImage src={recruit.profile_photo_url || undefined} />
-        <AvatarFallback className="text-xs font-medium bg-zinc-200 dark:bg-zinc-700">
+        <AvatarFallback className="text-xs font-medium bg-v2-ring">
           {initials}
         </AvatarFallback>
       </Avatar>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+          <h2 className="text-sm font-semibold text-v2-ink truncate">
             {displayName}
           </h2>
           <Badge
@@ -71,11 +71,11 @@ export function RecruitDetailHeader({
             {recruit.onboarding_status?.replace(/_/g, " ") || "New"}
           </Badge>
         </div>
-        <div className="flex items-center gap-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center gap-2 text-[11px] text-v2-ink-muted">
           {recruit.email && (
             <a
               href={`mailto:${recruit.email}`}
-              className="flex items-center gap-0.5 hover:text-zinc-700 dark:hover:text-zinc-300 truncate"
+              className="flex items-center gap-0.5 hover:text-v2-ink dark:hover:text-v2-ink-subtle truncate"
             >
               <Mail className="h-3 w-3" />
               <span className="truncate max-w-[140px]">{recruit.email}</span>
@@ -84,7 +84,7 @@ export function RecruitDetailHeader({
           {recruit.phone && (
             <a
               href={`tel:${recruit.phone}`}
-              className="flex items-center gap-0.5 hover:text-zinc-700 dark:hover:text-zinc-300"
+              className="flex items-center gap-0.5 hover:text-v2-ink dark:hover:text-v2-ink-subtle"
             >
               <Phone className="h-3 w-3" />
               {recruit.phone}
@@ -92,10 +92,10 @@ export function RecruitDetailHeader({
           )}
           {onUpdateNpn && (
             <>
-              <span className="text-zinc-300 dark:text-zinc-600">|</span>
+              <span className="text-v2-ink-subtle">|</span>
               {editingNpn ? (
                 <div className="flex items-center gap-1">
-                  <IdCard className="h-3 w-3 text-zinc-400" />
+                  <IdCard className="h-3 w-3 text-v2-ink-subtle" />
                   <Input
                     value={npnValue}
                     onChange={(e) => setNpnValue(e.target.value)}
@@ -109,10 +109,10 @@ export function RecruitDetailHeader({
                     }}
                     placeholder="NPN #"
                     autoFocus
-                    className="h-4 w-24 text-[11px] px-1 py-0 border-zinc-300"
+                    className="h-4 w-24 text-[11px] px-1 py-0 border-v2-ring"
                   />
                   {isUpdatingNpn && (
-                    <Loader2 className="h-3 w-3 animate-spin text-zinc-400" />
+                    <Loader2 className="h-3 w-3 animate-spin text-v2-ink-subtle" />
                   )}
                 </div>
               ) : (
@@ -123,9 +123,9 @@ export function RecruitDetailHeader({
                     setEditingNpn(true);
                   }}
                   className={cn(
-                    "flex items-center gap-0.5 hover:text-zinc-700 dark:hover:text-zinc-300",
+                    "flex items-center gap-0.5 hover:text-v2-ink dark:hover:text-v2-ink-subtle",
                     recruit.npn
-                      ? "text-zinc-500 dark:text-zinc-400"
+                      ? "text-v2-ink-muted"
                       : "text-amber-500 dark:text-amber-400",
                   )}
                   title={recruit.npn ? "Edit NPN" : "Set NPN"}

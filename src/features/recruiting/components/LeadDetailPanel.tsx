@@ -82,7 +82,7 @@ export function LeadDetailPanel({
     <>
       <Sheet open={true} onOpenChange={onClose}>
         <SheetContent className="w-[450px] p-0 overflow-hidden">
-          <SheetHeader className="p-4 border-b border-zinc-200 dark:border-zinc-800">
+          <SheetHeader className="p-4 border-b border-v2-ring">
             <div className="flex items-start justify-between">
               <div>
                 <SheetTitle className="text-base font-semibold">
@@ -95,7 +95,7 @@ export function LeadDetailPanel({
                   >
                     {STATUS_LABELS[lead.status as LeadStatus]}
                   </Badge>
-                  <span className="text-[10px] text-zinc-500">
+                  <span className="text-[10px] text-v2-ink-muted">
                     Submitted{" "}
                     {formatDistanceToNow(new Date(lead.submitted_at), {
                       addSuffix: true,
@@ -116,46 +116,46 @@ export function LeadDetailPanel({
 
           <div className="overflow-y-auto h-[calc(100vh-180px)]">
             {/* Contact Info */}
-            <div className="p-4 border-b border-zinc-200 dark:border-zinc-800">
-              <h3 className="text-[11px] font-semibold text-zinc-500 uppercase mb-3">
+            <div className="p-4 border-b border-v2-ring">
+              <h3 className="text-[11px] font-semibold text-v2-ink-muted uppercase mb-3">
                 Contact Information
               </h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="h-7 w-7 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0">
-                    <Mail className="h-3.5 w-3.5 text-zinc-500" />
+                  <div className="h-7 w-7 rounded-md bg-v2-ring flex items-center justify-center flex-shrink-0">
+                    <Mail className="h-3.5 w-3.5 text-v2-ink-muted" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-zinc-500">Email</p>
+                    <p className="text-[10px] text-v2-ink-muted">Email</p>
                     <a
                       href={`mailto:${lead.email}`}
-                      className="text-[12px] text-zinc-900 dark:text-zinc-100 hover:underline"
+                      className="text-[12px] text-v2-ink hover:underline"
                     >
                       {lead.email}
                     </a>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="h-7 w-7 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0">
-                    <Phone className="h-3.5 w-3.5 text-zinc-500" />
+                  <div className="h-7 w-7 rounded-md bg-v2-ring flex items-center justify-center flex-shrink-0">
+                    <Phone className="h-3.5 w-3.5 text-v2-ink-muted" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-zinc-500">Phone</p>
+                    <p className="text-[10px] text-v2-ink-muted">Phone</p>
                     <a
                       href={`tel:${lead.phone}`}
-                      className="text-[12px] text-zinc-900 dark:text-zinc-100 hover:underline"
+                      className="text-[12px] text-v2-ink hover:underline"
                     >
                       {lead.phone}
                     </a>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="h-7 w-7 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0">
-                    <MapPin className="h-3.5 w-3.5 text-zinc-500" />
+                  <div className="h-7 w-7 rounded-md bg-v2-ring flex items-center justify-center flex-shrink-0">
+                    <MapPin className="h-3.5 w-3.5 text-v2-ink-muted" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-zinc-500">Location</p>
-                    <p className="text-[12px] text-zinc-900 dark:text-zinc-100">
+                    <p className="text-[10px] text-v2-ink-muted">Location</p>
+                    <p className="text-[12px] text-v2-ink">
                       {lead.city}, {lead.state}
                     </p>
                   </div>
@@ -164,18 +164,20 @@ export function LeadDetailPanel({
             </div>
 
             {/* Qualification Info */}
-            <div className="p-4 border-b border-zinc-200 dark:border-zinc-800">
-              <h3 className="text-[11px] font-semibold text-zinc-500 uppercase mb-3">
+            <div className="p-4 border-b border-v2-ring">
+              <h3 className="text-[11px] font-semibold text-v2-ink-muted uppercase mb-3">
                 Qualification Details
               </h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="h-7 w-7 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0">
-                    <Clock className="h-3.5 w-3.5 text-zinc-500" />
+                  <div className="h-7 w-7 rounded-md bg-v2-ring flex items-center justify-center flex-shrink-0">
+                    <Clock className="h-3.5 w-3.5 text-v2-ink-muted" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-zinc-500">Availability</p>
-                    <p className="text-[12px] text-zinc-900 dark:text-zinc-100">
+                    <p className="text-[10px] text-v2-ink-muted">
+                      Availability
+                    </p>
+                    <p className="text-[12px] text-v2-ink">
                       {
                         AVAILABILITY_LABELS[
                           lead.availability as keyof typeof AVAILABILITY_LABELS
@@ -185,14 +187,14 @@ export function LeadDetailPanel({
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="h-7 w-7 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0">
-                    <Briefcase className="h-3.5 w-3.5 text-zinc-500" />
+                  <div className="h-7 w-7 rounded-md bg-v2-ring flex items-center justify-center flex-shrink-0">
+                    <Briefcase className="h-3.5 w-3.5 text-v2-ink-muted" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-zinc-500">
+                    <p className="text-[10px] text-v2-ink-muted">
                       Insurance Experience
                     </p>
-                    <p className="text-[12px] text-zinc-900 dark:text-zinc-100">
+                    <p className="text-[12px] text-v2-ink">
                       {
                         EXPERIENCE_LABELS[
                           lead.insurance_experience as keyof typeof EXPERIENCE_LABELS
@@ -203,12 +205,14 @@ export function LeadDetailPanel({
                 </div>
                 {lead.income_goals && (
                   <div className="flex items-center gap-3">
-                    <div className="h-7 w-7 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0">
-                      <Target className="h-3.5 w-3.5 text-zinc-500" />
+                    <div className="h-7 w-7 rounded-md bg-v2-ring flex items-center justify-center flex-shrink-0">
+                      <Target className="h-3.5 w-3.5 text-v2-ink-muted" />
                     </div>
                     <div>
-                      <p className="text-[10px] text-zinc-500">Income Goals</p>
-                      <p className="text-[12px] text-zinc-900 dark:text-zinc-100">
+                      <p className="text-[10px] text-v2-ink-muted">
+                        Income Goals
+                      </p>
+                      <p className="text-[12px] text-v2-ink">
                         {lead.income_goals}
                       </p>
                     </div>
@@ -218,23 +222,23 @@ export function LeadDetailPanel({
             </div>
 
             {/* Why Interested */}
-            <div className="p-4 border-b border-zinc-200 dark:border-zinc-800">
-              <h3 className="text-[11px] font-semibold text-zinc-500 uppercase mb-3">
+            <div className="p-4 border-b border-v2-ring">
+              <h3 className="text-[11px] font-semibold text-v2-ink-muted uppercase mb-3">
                 Why They&apos;re Interested
               </h3>
               <div className="flex items-start gap-3">
-                <div className="h-7 w-7 rounded-md bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <MessageSquare className="h-3.5 w-3.5 text-zinc-500" />
+                <div className="h-7 w-7 rounded-md bg-v2-ring flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <MessageSquare className="h-3.5 w-3.5 text-v2-ink-muted" />
                 </div>
-                <p className="text-[12px] text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                <p className="text-[12px] text-v2-ink-muted leading-relaxed">
                   {lead.why_interested}
                 </p>
               </div>
             </div>
 
             {/* Timeline */}
-            <div className="p-4 border-b border-zinc-200 dark:border-zinc-800">
-              <h3 className="text-[11px] font-semibold text-zinc-500 uppercase mb-3">
+            <div className="p-4 border-b border-v2-ring">
+              <h3 className="text-[11px] font-semibold text-v2-ink-muted uppercase mb-3">
                 Timeline
               </h3>
               <div className="space-y-3">
@@ -243,8 +247,8 @@ export function LeadDetailPanel({
                     <Calendar className="h-3.5 w-3.5 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-[10px] text-zinc-500">Submitted</p>
-                    <p className="text-[12px] text-zinc-900 dark:text-zinc-100">
+                    <p className="text-[10px] text-v2-ink-muted">Submitted</p>
+                    <p className="text-[12px] text-v2-ink">
                       {format(
                         new Date(lead.submitted_at),
                         "MMM d, yyyy 'at' h:mm a",
@@ -259,10 +263,10 @@ export function LeadDetailPanel({
                         <Phone className="h-3.5 w-3.5 text-blue-600" />
                       </div>
                       <div>
-                        <p className="text-[10px] text-zinc-500">
+                        <p className="text-[10px] text-v2-ink-muted">
                           Discovery Call Scheduled
                         </p>
-                        <p className="text-[12px] text-zinc-900 dark:text-zinc-100">
+                        <p className="text-[12px] text-v2-ink">
                           {format(
                             new Date(lead.discovery_call_scheduled_at),
                             "MMM d, yyyy 'at' h:mm a",
@@ -287,10 +291,10 @@ export function LeadDetailPanel({
                       )}
                     </div>
                     <div>
-                      <p className="text-[10px] text-zinc-500">
+                      <p className="text-[10px] text-v2-ink-muted">
                         {lead.status === "accepted" ? "Accepted" : "Rejected"}
                       </p>
-                      <p className="text-[12px] text-zinc-900 dark:text-zinc-100">
+                      <p className="text-[12px] text-v2-ink">
                         {format(
                           new Date(lead.reviewed_at),
                           "MMM d, yyyy 'at' h:mm a",
@@ -304,11 +308,11 @@ export function LeadDetailPanel({
 
             {/* Rejection Reason */}
             {lead.status === "rejected" && lead.rejection_reason && (
-              <div className="p-4 border-b border-zinc-200 dark:border-zinc-800">
-                <h3 className="text-[11px] font-semibold text-zinc-500 uppercase mb-3">
+              <div className="p-4 border-b border-v2-ring">
+                <h3 className="text-[11px] font-semibold text-v2-ink-muted uppercase mb-3">
                   Rejection Reason
                 </h3>
-                <p className="text-[12px] text-zinc-700 dark:text-zinc-300 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/50 rounded-md p-3">
+                <p className="text-[12px] text-v2-ink-muted bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/50 rounded-md p-3">
                   {lead.rejection_reason}
                 </p>
               </div>
@@ -316,8 +320,8 @@ export function LeadDetailPanel({
 
             {/* Converted Recruit Link */}
             {lead.status === "accepted" && lead.converted_recruit_id && (
-              <div className="p-4 border-b border-zinc-200 dark:border-zinc-800">
-                <h3 className="text-[11px] font-semibold text-zinc-500 uppercase mb-3">
+              <div className="p-4 border-b border-v2-ring">
+                <h3 className="text-[11px] font-semibold text-v2-ink-muted uppercase mb-3">
                   Converted Recruit
                 </h3>
                 <Button
@@ -338,7 +342,7 @@ export function LeadDetailPanel({
             {/* UTM Tracking */}
             {(lead.utm_source || lead.utm_medium || lead.utm_campaign) && (
               <div className="p-4">
-                <h3 className="text-[11px] font-semibold text-zinc-500 uppercase mb-3">
+                <h3 className="text-[11px] font-semibold text-v2-ink-muted uppercase mb-3">
                   Source Tracking
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -364,7 +368,7 @@ export function LeadDetailPanel({
 
           {/* Actions Footer */}
           {isPending && (
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800">
+            <div className="absolute bottom-0 left-0 right-0 p-4 bg-v2-card border-t border-v2-ring">
               <div className="flex gap-2">
                 <Button
                   className="flex-1 h-9"

@@ -1,9 +1,9 @@
 // src/features/recruiting/components/contracting/ContractingRequestCard.tsx
-import { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Check, AlertCircle, Trash2 } from 'lucide-react';
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Check, AlertCircle, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,7 +13,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 
 interface ContractingRequestCardProps {
   request: {
@@ -32,17 +32,24 @@ interface ContractingRequestCardProps {
 }
 
 const statusColors: Record<string, string> = {
-  requested: 'bg-gray-100 text-gray-700',
-  in_progress: 'bg-blue-100 text-blue-700',
-  writing_received: 'bg-green-100 text-green-700',
-  completed: 'bg-emerald-100 text-emerald-700',
-  rejected: 'bg-red-100 text-red-700',
-  cancelled: 'bg-gray-100 text-gray-500',
+  requested: "bg-gray-100 text-gray-700",
+  in_progress: "bg-blue-100 text-blue-700",
+  writing_received: "bg-green-100 text-green-700",
+  completed: "bg-emerald-100 text-emerald-700",
+  rejected: "bg-red-100 text-red-700",
+  cancelled: "bg-gray-100 text-gray-500",
 };
 
-export function ContractingRequestCard({ request, onUpdate, onDelete, isStaff }: ContractingRequestCardProps) {
+export function ContractingRequestCard({
+  request,
+  onUpdate,
+  onDelete,
+  isStaff,
+}: ContractingRequestCardProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [writingNumber, setWritingNumber] = useState(request.writing_number || '');
+  const [writingNumber, setWritingNumber] = useState(
+    request.writing_number || "",
+  );
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleSaveWritingNumber = async () => {
@@ -50,15 +57,16 @@ export function ContractingRequestCard({ request, onUpdate, onDelete, isStaff }:
       await onUpdate(request.id, {
         writing_number: writingNumber || null,
         // Only auto-update status if transitioning from requested/in_progress to writing_received
-        ...(writingNumber && (request.status === 'requested' || request.status === 'in_progress')
-          ? { status: 'writing_received' }
+        ...(writingNumber &&
+        (request.status === "requested" || request.status === "in_progress")
+          ? { status: "writing_received" }
           : {}),
       });
       setIsEditing(false);
     } catch (error) {
-      console.error('Failed to save writing number:', error);
+      console.error("Failed to save writing number:", error);
       // Reset to original value on error
-      setWritingNumber(request.writing_number || '');
+      setWritingNumber(request.writing_number || "");
       setIsEditing(false);
     }
   };
@@ -69,7 +77,7 @@ export function ContractingRequestCard({ request, onUpdate, onDelete, isStaff }:
         await onDelete(request.id);
         setShowDeleteDialog(false);
       } catch (error) {
-        console.error('Failed to delete contract request:', error);
+        console.error("Failed to delete contract request:", error);
         setShowDeleteDialog(false);
       }
     }
@@ -78,12 +86,12 @@ export function ContractingRequestCard({ request, onUpdate, onDelete, isStaff }:
   return (
     <>
       {/* Single row - everything inline */}
-      <div className="py-1.5 px-2 border-l-2 border-l-blue-500 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+      <div className="py-1.5 px-2 border-l-2 border-l-blue-500 hover:bg-v2-canvas transition-colors">
         <div className="flex items-center gap-2 text-xs">
           {/* Carrier Name */}
           <div className="w-32 flex-shrink-0">
             <span className="font-medium text-xs truncate block">
-              {request.carrier?.name || 'Unknown Carrier'}
+              {request.carrier?.name || "Unknown Carrier"}
             </span>
           </div>
 
@@ -94,20 +102,20 @@ export function ContractingRequestCard({ request, onUpdate, onDelete, isStaff }:
                 value={writingNumber}
                 onChange={(e) => setWritingNumber(e.target.value)}
                 placeholder="Writing #"
-                className="h-6 text-xs px-2 w-full bg-white dark:bg-zinc-900"
+                className="h-6 text-xs px-2 w-full bg-v2-card"
                 onFocus={() => setIsEditing(true)}
                 onBlur={() => {
-                  if (writingNumber !== (request.writing_number || '')) {
+                  if (writingNumber !== (request.writing_number || "")) {
                     handleSaveWritingNumber();
                   } else {
                     setIsEditing(false);
                   }
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
+                  if (e.key === "Enter") {
                     handleSaveWritingNumber();
-                  } else if (e.key === 'Escape') {
-                    setWritingNumber(request.writing_number || '');
+                  } else if (e.key === "Escape") {
+                    setWritingNumber(request.writing_number || "");
                     setIsEditing(false);
                   }
                 }}
@@ -126,14 +134,20 @@ export function ContractingRequestCard({ request, onUpdate, onDelete, isStaff }:
           )}
 
           {/* Status Badge */}
-          <Badge className={`text-[10px] px-2 py-0.5 h-5 whitespace-nowrap ${statusColors[request.status] || 'bg-gray-100 text-gray-700'}`}>
-            {request.status.replace(/_/g, ' ')}
+          <Badge
+            className={`text-[10px] px-2 py-0.5 h-5 whitespace-nowrap ${statusColors[request.status] || "bg-gray-100 text-gray-700"}`}
+          >
+            {request.status.replace(/_/g, " ")}
           </Badge>
 
           {/* Received Date */}
           {request.writing_received_date && (
             <span className="text-[10px] text-green-600 whitespace-nowrap">
-              ✓ {new Date(request.writing_received_date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })}
+              ✓{" "}
+              {new Date(request.writing_received_date).toLocaleDateString(
+                "en-US",
+                { month: "numeric", day: "numeric" },
+              )}
             </span>
           )}
 
@@ -170,14 +184,17 @@ export function ContractingRequestCard({ request, onUpdate, onDelete, isStaff }:
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Contract Request?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this carrier contract request for{' '}
-              <strong>{request.carrier?.name || 'this carrier'}</strong>?
-              This action cannot be undone.
+              Are you sure you want to delete this carrier contract request for{" "}
+              <strong>{request.carrier?.name || "this carrier"}</strong>? This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

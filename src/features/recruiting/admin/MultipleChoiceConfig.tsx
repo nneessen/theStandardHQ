@@ -140,17 +140,17 @@ export function MultipleChoiceConfig({
   const validOptionsCount = options.filter((o) => o.label.trim()).length;
 
   return (
-    <div className="space-y-3 p-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <List className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <List className="h-3.5 w-3.5 text-v2-ink-muted" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
           Multiple Choice Configuration
         </span>
       </div>
 
       {/* Question Text */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Question Text <span className="text-red-500">*</span>
         </Label>
         <Textarea
@@ -169,7 +169,7 @@ export function MultipleChoiceConfig({
 
       {/* Selection Type */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Selection Type
         </Label>
         <Select
@@ -196,7 +196,7 @@ export function MultipleChoiceConfig({
       {/* Options */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Options <span className="text-red-500">*</span> (min 2)
           </Label>
           <Button
@@ -215,9 +215,9 @@ export function MultipleChoiceConfig({
           {options.map((option, index) => (
             <div
               key={option.id}
-              className="flex items-start gap-2 p-2 bg-white dark:bg-zinc-900 rounded border"
+              className="flex items-start gap-2 p-2 bg-v2-card rounded border"
             >
-              <GripVertical className="h-4 w-4 text-zinc-400 mt-1.5 flex-shrink-0" />
+              <GripVertical className="h-4 w-4 text-v2-ink-subtle mt-1.5 flex-shrink-0" />
               <div className="flex-1 space-y-1">
                 <Input
                   type="text"
@@ -237,7 +237,7 @@ export function MultipleChoiceConfig({
                 />
                 <div className="flex items-center gap-3">
                   {requireCorrect && (
-                    <label className="flex items-center gap-1 text-[9px] text-zinc-500">
+                    <label className="flex items-center gap-1 text-[9px] text-v2-ink-muted">
                       <Checkbox
                         checked={option.is_correct ?? false}
                         onCheckedChange={(checked) =>
@@ -248,7 +248,7 @@ export function MultipleChoiceConfig({
                       Correct
                     </label>
                   )}
-                  <label className="flex items-center gap-1 text-[9px] text-zinc-500">
+                  <label className="flex items-center gap-1 text-[9px] text-v2-ink-muted">
                     <Checkbox
                       checked={option.is_disqualifying ?? false}
                       onCheckedChange={(checked) =>
@@ -270,7 +270,7 @@ export function MultipleChoiceConfig({
                 size="sm"
                 onClick={() => removeOption(index)}
                 disabled={options.length <= 2}
-                className="h-6 w-6 p-0 text-zinc-400 hover:text-red-500"
+                className="h-6 w-6 p-0 text-v2-ink-subtle hover:text-red-500"
               >
                 <Trash2 className="h-3 w-3" />
               </Button>
@@ -290,7 +290,7 @@ export function MultipleChoiceConfig({
       {selectionType === "multiple" && (
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
-            <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Min Selections
             </Label>
             <Input
@@ -305,7 +305,7 @@ export function MultipleChoiceConfig({
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Max Selections
             </Label>
             <Input
@@ -325,10 +325,10 @@ export function MultipleChoiceConfig({
       {/* Require Correct Answer */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Require Correct Answer
           </Label>
-          <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[9px] text-v2-ink-muted">
             Must select the marked correct option(s) to complete
           </p>
         </div>
@@ -342,10 +342,10 @@ export function MultipleChoiceConfig({
       {/* Randomize Order */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Randomize Option Order
           </Label>
-          <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[9px] text-v2-ink-muted">
             Shuffle options each time the question is displayed
           </p>
         </div>

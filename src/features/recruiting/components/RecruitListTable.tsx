@@ -63,7 +63,7 @@ interface RecruitListTableProps {
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
 
 const headerCellCls =
-  "text-[10px] uppercase tracking-[0.18em] font-semibold text-zinc-500 dark:text-zinc-400";
+  "text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted";
 
 export function RecruitListTable({
   recruits,
@@ -132,10 +132,7 @@ export function RecruitListTable({
     return (
       <div className="space-y-2 py-4">
         {[...Array(8)].map((_, i) => (
-          <Skeleton
-            key={i}
-            className="h-10 w-full bg-zinc-200/70 dark:bg-zinc-800/70"
-          />
+          <Skeleton key={i} className="h-10 w-full bg-v2-ring/70 /70" />
         ))}
       </div>
     );
@@ -146,7 +143,7 @@ export function RecruitListTable({
       {/* Filter row */}
       <div className="flex items-center gap-2 sm:gap-3 py-2 flex-wrap">
         <Select value={phaseFilter} onValueChange={setPhaseFilter}>
-          <SelectTrigger className="h-7 w-[130px] text-[11px] bg-transparent border-zinc-200 dark:border-zinc-800">
+          <SelectTrigger className="h-7 w-[130px] text-[11px] bg-transparent border-v2-ring">
             <SelectValue placeholder="Phase" />
           </SelectTrigger>
           <SelectContent>
@@ -187,7 +184,7 @@ export function RecruitListTable({
         </Select>
 
         <Select value={recruiterFilter} onValueChange={setRecruiterFilter}>
-          <SelectTrigger className="h-7 w-[140px] text-[11px] bg-transparent border-zinc-200 dark:border-zinc-800">
+          <SelectTrigger className="h-7 w-[140px] text-[11px] bg-transparent border-v2-ring">
             <SelectValue placeholder="Recruiter" />
           </SelectTrigger>
           <SelectContent>
@@ -202,7 +199,7 @@ export function RecruitListTable({
           </SelectContent>
         </Select>
 
-        <span className="text-[11px] italic text-zinc-500 dark:text-zinc-400 ml-auto">
+        <span className="text-[11px] italic text-v2-ink-muted ml-auto">
           {filteredRecruits.length} recruit
           {filteredRecruits.length === 1 ? "" : "s"} shown
         </span>
@@ -211,9 +208,9 @@ export function RecruitListTable({
       {/* Mobile card list */}
       <ul className="md:hidden flex flex-col">
         {paginatedRecruits.length === 0 && (
-          <li className="border-t border-zinc-200 dark:border-zinc-800 py-10 text-center">
-            <Users className="h-6 w-6 text-zinc-300 dark:text-zinc-700 mx-auto mb-2" />
-            <p className="text-[12px] italic text-zinc-500 dark:text-zinc-400">
+          <li className="border-t border-v2-ring py-10 text-center">
+            <Users className="h-6 w-6 text-v2-ink-subtle mx-auto mb-2" />
+            <p className="text-[12px] italic text-v2-ink-muted">
               {filteredRecruits.length === 0 && recruits.length > 0
                 ? "No recruits match your filters."
                 : "No recruits yet."}
@@ -232,33 +229,29 @@ export function RecruitListTable({
             recruit.onboarding_status === "dropped" ||
             recruit.onboarding_status === "withdrawn";
           return (
-            <li
-              key={recruit.id}
-              className={cn("border-t border-zinc-200 dark:border-zinc-800")}
-            >
+            <li key={recruit.id} className={cn("border-t border-v2-ring")}>
               <button
                 type="button"
                 onClick={() => onSelectRecruit(recruit)}
                 className={cn(
-                  "w-full flex items-center gap-3 py-3 px-1 text-left hover:bg-zinc-100/60 dark:hover:bg-zinc-800/40 transition-colors",
-                  selectedRecruitId === recruit.id &&
-                    "bg-zinc-100 dark:bg-zinc-800/60",
+                  "w-full flex items-center gap-3 py-3 px-1 text-left hover:bg-v2-ring/60 /40 transition-colors",
+                  selectedRecruitId === recruit.id && "bg-v2-ring/60",
                 )}
               >
                 <Avatar className="h-9 w-9 flex-shrink-0">
                   <AvatarImage src={recruit.profile_photo_url || undefined} />
-                  <AvatarFallback className="text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                  <AvatarFallback className="text-[10px] bg-v2-ring text-v2-ink-muted -subtle">
                     {(recruit.first_name?.[0] || "").toUpperCase()}
                     {(recruit.last_name?.[0] || "").toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[14px] font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 truncate">
+                  <div className="text-[14px] font-semibold tracking-tight text-v2-ink truncate">
                     {recruit.first_name && recruit.last_name
                       ? `${recruit.first_name} ${recruit.last_name}`
                       : recruit.email?.split("@")[0] || "Unknown"}
                   </div>
-                  <div className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
+                  <div className="mt-0.5 text-[11px] text-v2-ink-muted truncate">
                     {isTerminal ? (
                       <span
                         className={cn(
@@ -282,7 +275,7 @@ export function RecruitListTable({
                     )}
                   </div>
                 </div>
-                <Chev className="h-4 w-4 text-zinc-400 flex-shrink-0" />
+                <Chev className="h-4 w-4 text-v2-ink-subtle flex-shrink-0" />
               </button>
             </li>
           );
@@ -293,7 +286,7 @@ export function RecruitListTable({
       <div className="hidden md:block">
         <Table>
           <TableHeader>
-            <TableRow className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-transparent">
+            <TableRow className="border-b border-v2-ring hover:bg-transparent">
               <TableHead className={cn(headerCellCls, "w-12")}> </TableHead>
               <TableHead className={headerCellCls}>Name</TableHead>
               <TableHead className={headerCellCls}>Email</TableHead>
@@ -317,8 +310,8 @@ export function RecruitListTable({
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-10">
                   <div className="flex flex-col items-center">
-                    <Users className="h-7 w-7 text-zinc-300 dark:text-zinc-700 mb-3" />
-                    <p className="text-[12px] italic text-zinc-500 dark:text-zinc-400">
+                    <Users className="h-7 w-7 text-v2-ink-subtle mb-3" />
+                    <p className="text-[12px] italic text-v2-ink-muted">
                       {filteredRecruits.length === 0 && recruits.length > 0
                         ? "No recruits match your filters."
                         : "No recruits yet — send an invite or add one to start your pipeline."}
@@ -358,10 +351,10 @@ export function RecruitListTable({
                     key={recruit.id}
                     onClick={() => onSelectRecruit(recruit)}
                     className={cn(
-                      "cursor-pointer border-b border-zinc-100 dark:border-zinc-900 transition-colors",
+                      "cursor-pointer border-b border-v2-ring/60 transition-colors",
                       selectedRecruitId === recruit.id
-                        ? "bg-zinc-100 dark:bg-zinc-800/60"
-                        : "hover:bg-zinc-100/50 dark:hover:bg-zinc-900/40",
+                        ? "bg-v2-ring/60"
+                        : "hover:bg-v2-ring/50 ",
                     )}
                   >
                     <TableCell className="py-2 align-middle">
@@ -369,21 +362,21 @@ export function RecruitListTable({
                         <AvatarImage
                           src={recruit.profile_photo_url || undefined}
                         />
-                        <AvatarFallback className="text-[9px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                        <AvatarFallback className="text-[9px] bg-v2-ring text-v2-ink-muted -subtle">
                           {(recruit.first_name?.[0] || "").toUpperCase()}
                           {(recruit.last_name?.[0] || "").toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                     </TableCell>
-                    <TableCell className="py-2 text-[13px] font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+                    <TableCell className="py-2 text-[13px] font-semibold tracking-tight text-v2-ink">
                       {recruit.first_name && recruit.last_name
                         ? `${recruit.first_name} ${recruit.last_name}`
                         : recruit.email?.split("@")[0] || "Unknown"}
                     </TableCell>
-                    <TableCell className="py-2 text-[12px] text-zinc-600 dark:text-zinc-400 truncate max-w-[200px]">
+                    <TableCell className="py-2 text-[12px] text-v2-ink-muted -subtle truncate max-w-[200px]">
                       {recruit.email || "—"}
                     </TableCell>
-                    <TableCell className="py-2 text-[12px] font-mono tabular-nums text-zinc-600 dark:text-zinc-400">
+                    <TableCell className="py-2 text-[12px] font-mono tabular-nums text-v2-ink-muted -subtle">
                       {recruit.phone || "—"}
                     </TableCell>
                     <TableCell className="py-2.5">
@@ -395,7 +388,7 @@ export function RecruitListTable({
                               ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 ring-emerald-200 dark:ring-emerald-900"
                               : recruit.onboarding_status === "dropped"
                                 ? "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 ring-red-200 dark:ring-red-900"
-                                : "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 ring-stone-200 dark:ring-stone-700",
+                                : "bg-v2-ring dark:bg-v2-ring text-v2-ink -subtle ring-v2-ring ",
                           )}
                         >
                           {recruit.onboarding_status?.replace(/_/g, " ")}
@@ -403,18 +396,18 @@ export function RecruitListTable({
                       ) : (
                         <div className="flex items-center gap-2">
                           <div className="flex-1 min-w-0">
-                            <div className="text-[12px] font-semibold text-stone-800 dark:text-stone-200 truncate">
+                            <div className="text-[12px] font-semibold text-v2-ink -subtle truncate">
                               {phaseName}
                             </div>
                             {summary && summary.totalItems > 0 && (
                               <div className="mt-1.5 flex items-center gap-2">
-                                <div className="flex-1 h-1 bg-stone-200 dark:bg-stone-800 rounded-full relative overflow-hidden">
+                                <div className="flex-1 h-1 bg-v2-ring dark:bg-v2-ring rounded-full relative overflow-hidden">
                                   <div
                                     className="absolute inset-y-0 left-0 bg-amber-500 rounded-full transition-all"
                                     style={{ width: `${pct}%` }}
                                   />
                                 </div>
-                                <span className="text-[10px] font-mono tabular-nums text-stone-500 dark:text-stone-400">
+                                <span className="text-[10px] font-mono tabular-nums text-v2-ink-muted -subtle">
                                   {summary.completedItems}/{summary.totalItems}
                                 </span>
                               </div>
@@ -423,7 +416,7 @@ export function RecruitListTable({
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="py-2 text-[12px] text-zinc-600 dark:text-zinc-400">
+                    <TableCell className="py-2 text-[12px] text-v2-ink-muted -subtle">
                       {recruitWithRelations.recruiter?.first_name
                         ? `${recruitWithRelations.recruiter.first_name[0]}. ${
                             recruitWithRelations.recruiter.last_name || ""
@@ -432,10 +425,10 @@ export function RecruitListTable({
                             "@",
                           )[0] || "—"}
                     </TableCell>
-                    <TableCell className="py-2 text-[12px] font-mono tabular-nums text-center text-zinc-600 dark:text-zinc-400">
+                    <TableCell className="py-2 text-[12px] font-mono tabular-nums text-center text-v2-ink-muted -subtle">
                       {daysInPipeline}
                     </TableCell>
-                    <TableCell className="py-2 text-[11px] font-mono text-zinc-500 dark:text-zinc-400">
+                    <TableCell className="py-2 text-[11px] font-mono text-v2-ink-muted">
                       {formatDistanceToNow(updatedDate, { addSuffix: false })
                         .replace("about ", "")
                         .replace(" days", "d")
@@ -454,16 +447,16 @@ export function RecruitListTable({
       </div>
 
       {/* Pagination */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-zinc-200 dark:border-zinc-800 py-2 mt-2">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-t border-v2-ring py-2 mt-2">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-zinc-500 dark:text-zinc-400">
+          <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted">
             Show
           </span>
           <Select
             value={pageSize.toString()}
             onValueChange={(val) => setPageSize(parseInt(val))}
           >
-            <SelectTrigger className="h-6 w-[60px] text-[11px] bg-transparent border-zinc-200 dark:border-zinc-800">
+            <SelectTrigger className="h-6 w-[60px] text-[11px] bg-transparent border-v2-ring">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -480,12 +473,12 @@ export function RecruitListTable({
           </Select>
         </div>
 
-        <div className="flex items-center gap-3 text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center gap-3 text-[11px] text-v2-ink-muted">
           <button
             type="button"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="inline-flex items-center disabled:opacity-30 disabled:cursor-not-allowed hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+            className="inline-flex items-center disabled:opacity-30 disabled:cursor-not-allowed hover:text-v2-ink transition-colors"
             aria-label="Previous page"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -497,14 +490,14 @@ export function RecruitListTable({
             type="button"
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages || totalPages === 0}
-            className="inline-flex items-center disabled:opacity-30 disabled:cursor-not-allowed hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+            className="inline-flex items-center disabled:opacity-30 disabled:cursor-not-allowed hover:text-v2-ink transition-colors"
             aria-label="Next page"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
         </div>
 
-        <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-zinc-500 dark:text-zinc-400">
+        <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted">
           {paginatedRecruits.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
           {Math.min(currentPage * pageSize, filteredRecruits.length)} of{" "}
           {filteredRecruits.length}

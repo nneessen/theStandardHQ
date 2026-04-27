@@ -102,17 +102,17 @@ export function AcknowledgmentConfig({
   };
 
   return (
-    <div className="space-y-3 p-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <FileCheck className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <FileCheck className="h-3.5 w-3.5 text-v2-ink-muted" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
           Acknowledgment Configuration
         </span>
       </div>
 
       {/* Content Type */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Content Type
         </Label>
         <Select
@@ -140,7 +140,7 @@ export function AcknowledgmentConfig({
       {(contentType === "document_url" ||
         contentType === "terms_reference") && (
         <div className="space-y-1">
-          <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Document Title
           </Label>
           <Input
@@ -155,7 +155,7 @@ export function AcknowledgmentConfig({
 
       {/* Content */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           {getContentLabel()} <span className="text-red-500">*</span>
         </Label>
         {contentType === "inline_text" ? (
@@ -184,7 +184,7 @@ export function AcknowledgmentConfig({
 
       {/* Acknowledgment Text */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Acknowledgment Checkbox Text <span className="text-red-500">*</span>
         </Label>
         <Input
@@ -200,7 +200,7 @@ export function AcknowledgmentConfig({
             Acknowledgment text is required
           </div>
         )}
-        <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+        <p className="text-[9px] text-v2-ink-muted">
           This text appears next to the checkbox the recruit must check
         </p>
       </div>
@@ -209,10 +209,10 @@ export function AcknowledgmentConfig({
       {contentType === "inline_text" && (
         <div className="flex items-center justify-between py-1">
           <div className="space-y-0.5">
-            <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Require Scroll to Bottom
             </Label>
-            <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[9px] text-v2-ink-muted">
               Recruit must scroll through entire content before acknowledging
             </p>
           </div>

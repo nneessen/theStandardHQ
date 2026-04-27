@@ -1167,7 +1167,7 @@ export function AutomationDialog({
                       key={category}
                       className={`border-l-2 ${borderColor} pl-2 space-y-1`}
                     >
-                      <span className="text-[10px] font-semibold text-foreground uppercase tracking-wider block">
+                      <span className="text-[10px] font-semibold text-foreground uppercase tracking-[0.18em] block">
                         {category}
                       </span>
                       <div className="flex flex-wrap gap-1">
@@ -1205,7 +1205,7 @@ export function AutomationDialog({
 
               {/* Emoji Shortcuts */}
               <div className="pt-2 border-t border-border">
-                <span className="text-[10px] font-semibold text-foreground uppercase tracking-wider block mb-1.5">
+                <span className="text-[10px] font-semibold text-foreground uppercase tracking-[0.18em] block mb-1.5">
                   Emojis
                 </span>
                 <div className="flex flex-wrap gap-1">

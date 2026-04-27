@@ -60,9 +60,9 @@ export function SchedulingBookingModal({
   const renderEmbed = () => {
     if (!isValidUrl) {
       return (
-        <div className="flex flex-col items-center justify-center p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg h-full">
+        <div className="flex flex-col items-center justify-center p-6 bg-v2-canvas rounded-lg h-full">
           <AlertCircle className="h-8 w-8 text-amber-500 mb-3" />
-          <p className="text-[11px] text-zinc-600 dark:text-zinc-400 text-center mb-3">
+          <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle text-center mb-3">
             Invalid booking URL. Please contact your recruiter.
           </p>
         </div>
@@ -102,9 +102,9 @@ export function SchedulingBookingModal({
         );
       default:
         return (
-          <div className="flex flex-col items-center justify-center p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg h-full">
+          <div className="flex flex-col items-center justify-center p-6 bg-v2-canvas rounded-lg h-full">
             <AlertCircle className="h-8 w-8 text-amber-500 mb-3" />
-            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 text-center mb-3">
+            <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle text-center mb-3">
               Unsupported scheduling type
             </p>
             <Button
@@ -126,7 +126,7 @@ export function SchedulingBookingModal({
   return (
     <Sheet open={open} onOpenChange={handleClose}>
       <SheetContent side="right" size="xl" className="flex flex-col p-0">
-        <SheetHeader className="p-4 pb-2 border-b border-zinc-200 dark:border-zinc-800">
+        <SheetHeader className="p-4 pb-2 border-b border-v2-ring">
           <SheetTitle className="text-sm font-semibold">{itemName}</SheetTitle>
           <SheetDescription className="text-[10px]">
             {INTEGRATION_TYPE_LABELS[integrationType]} Scheduling
@@ -146,8 +146,8 @@ export function SchedulingBookingModal({
         <div className="flex-1 p-4 pt-2 overflow-hidden">{renderEmbed()}</div>
 
         {/* Footer */}
-        <div className="p-4 pt-2 border-t border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+        <div className="p-4 pt-2 border-t border-v2-ring flex items-center justify-between">
+          <p className="text-[10px] text-v2-ink-muted">
             {hasBooked
               ? "Booking confirmed! You can close this panel."
               : "Having trouble? "}
@@ -156,7 +156,7 @@ export function SchedulingBookingModal({
                 href={bookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-zinc-700 dark:text-zinc-300 underline hover:no-underline"
+                className="text-v2-ink-muted underline hover:no-underline"
               >
                 Open in new tab
               </a>

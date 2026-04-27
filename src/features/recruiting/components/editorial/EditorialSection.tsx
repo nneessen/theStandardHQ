@@ -18,7 +18,7 @@ const ICON_TONE: Record<
   string
 > = {
   stone:
-    "bg-stone-100 dark:bg-stone-800 ring-stone-200 dark:ring-stone-700 text-stone-700 dark:text-stone-300",
+    "bg-v2-ring dark:bg-v2-ring ring-v2-ring  text-v2-ink dark:text-v2-ink-subtle",
   brand:
     "bg-amber-50 dark:bg-amber-950/40 ring-amber-200 dark:ring-amber-900 text-amber-700 dark:text-amber-400",
   success:
@@ -43,7 +43,7 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
   return (
     <section
       className={cn(
-        "rounded-2xl bg-white dark:bg-stone-900 ring-1 ring-stone-200/70 dark:ring-stone-800 shadow-sm dark:shadow-none",
+        "rounded-2xl bg-white dark:bg-v2-card ring-1 ring-v2-ring  shadow-sm dark:shadow-none",
         compact ? "p-5 md:p-6" : "p-6 md:p-8",
         className,
       )}
@@ -61,19 +61,19 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
             </span>
           )}
           <div className="min-w-0 flex-1">
-            <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-500 dark:text-stone-400">
+            <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-v2-ink-muted dark:text-v2-ink-subtle">
               {eyebrow}
             </div>
             {title && (
               <h2
-                className="mt-1 text-xl font-bold tracking-tight text-stone-900 dark:text-stone-100"
+                className="mt-1 text-xl font-bold tracking-tight text-v2-ink "
                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}
               >
                 {title}
               </h2>
             )}
             {caption && (
-              <p className="mt-1.5 text-[13px] text-stone-600 dark:text-stone-400 max-w-2xl leading-relaxed">
+              <p className="mt-1.5 text-[13px] text-v2-ink-muted dark:text-v2-ink-subtle max-w-2xl leading-relaxed">
                 {caption}
               </p>
             )}

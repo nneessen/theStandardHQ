@@ -108,17 +108,17 @@ export function TextResponseConfig({
   };
 
   return (
-    <div className="space-y-3 p-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <MessageSquare className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <MessageSquare className="h-3.5 w-3.5 text-v2-ink-muted" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
           Text Response Configuration
         </span>
       </div>
 
       {/* Prompt */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Question/Prompt <span className="text-red-500">*</span>
         </Label>
         <Textarea
@@ -137,7 +137,7 @@ export function TextResponseConfig({
 
       {/* Response Type */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Response Type
         </Label>
         <Select
@@ -160,7 +160,7 @@ export function TextResponseConfig({
       {/* Length Constraints */}
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Minimum Characters
           </Label>
           <Input
@@ -173,7 +173,7 @@ export function TextResponseConfig({
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Maximum Characters
           </Label>
           <Input
@@ -189,7 +189,7 @@ export function TextResponseConfig({
 
       {/* Placeholder */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Placeholder Text (Optional)
         </Label>
         <Input
@@ -203,7 +203,7 @@ export function TextResponseConfig({
 
       {/* Required Keywords */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Required Keywords (Optional)
         </Label>
         <Input
@@ -213,14 +213,14 @@ export function TextResponseConfig({
           placeholder="e.g., commitment, growth, team (comma-separated)"
           className="h-7 text-[11px]"
         />
-        <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+        <p className="text-[9px] text-v2-ink-muted">
           Response must contain all specified keywords (comma-separated)
         </p>
       </div>
 
       {/* Validation Pattern (advanced) */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Validation Pattern (Optional, Advanced)
         </Label>
         <Input
@@ -230,7 +230,7 @@ export function TextResponseConfig({
           placeholder="e.g., ^[A-Za-z ]+$ (regex)"
           className="h-7 text-[11px]"
         />
-        <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+        <p className="text-[9px] text-v2-ink-muted">
           Regular expression pattern for validation (leave empty for no pattern
           validation)
         </p>

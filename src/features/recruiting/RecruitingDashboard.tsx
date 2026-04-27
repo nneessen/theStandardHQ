@@ -67,9 +67,9 @@ type RecruitWithRelations = UserProfile & {
 };
 
 const TOOLBAR_LINK_PRIMARY =
-  "inline-flex items-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-stone-900 px-3.5 py-2 text-[12px] font-semibold transition-all hover:-translate-y-px hover:shadow-md active:translate-y-0";
+  "inline-flex items-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-v2-ink px-3.5 py-2 text-[12px] font-semibold transition-all hover:-translate-y-px hover:shadow-md active:translate-y-0";
 const TOOLBAR_LINK_GHOST =
-  "inline-flex items-center gap-1.5 rounded-lg ring-1 ring-stone-200 dark:ring-stone-700 hover:ring-stone-300 dark:hover:ring-stone-600 hover:bg-stone-50 dark:hover:bg-stone-800 px-3 py-2 text-[12px] font-semibold text-stone-800 dark:text-stone-200 transition-colors";
+  "inline-flex items-center gap-1.5 rounded-lg ring-1 ring-v2-ring    hover:bg-v2-canvas dark:hover:bg-v2-ring px-3 py-2 text-[12px] font-semibold text-v2-ink dark:text-v2-ink-subtle transition-colors";
 
 function RecruitingDashboardContent() {
   const { user } = useAuth();
@@ -277,7 +277,7 @@ function RecruitingDashboardContent() {
     : null;
 
   return (
-    <div className="min-h-screen bg-[#fafaf7] dark:bg-[#0c0a09]">
+    <div className="min-h-screen bg-v2-canvas ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-12 flex flex-col gap-5 md:gap-6">
         <EditorialMasthead
           icon={Users}
@@ -317,11 +317,11 @@ function RecruitingDashboardContent() {
         <PipelineAttentionRow items={attentionItems} />
 
         {/* Recruit list — wrapped in a card */}
-        <section className="rounded-2xl bg-white dark:bg-stone-900 ring-1 ring-stone-200/70 dark:ring-stone-800 shadow-sm dark:shadow-none overflow-hidden">
+        <section className="rounded-2xl bg-white dark:bg-v2-card ring-1 ring-v2-ring  shadow-sm dark:shadow-none overflow-hidden">
           {/* Toolbar */}
-          <div className="px-5 md:px-6 py-4 border-b border-stone-200/70 dark:border-stone-800 bg-stone-50/40 dark:bg-stone-950/40 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:flex-wrap">
+          <div className="px-5 md:px-6 py-4 border-b border-v2-ring  bg-v2-canvas/40 dark:bg-v2-canvas/40 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:flex-wrap">
             <div className="flex items-baseline gap-3 flex-wrap">
-              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-500 dark:text-stone-400">
+              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-v2-ink-muted dark:text-v2-ink-subtle">
                 {statusFilter
                   ? `Filtered · ${statusFilter}`
                   : `Showing all ${stats.total}`}
@@ -330,17 +330,17 @@ function RecruitingDashboardContent() {
                 <button
                   type="button"
                   onClick={() => setStatusFilter(null)}
-                  className="text-[11px] text-stone-600 dark:text-stone-400 underline underline-offset-2 hover:text-stone-900 dark:hover:text-stone-100"
+                  className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle underline underline-offset-2 hover:text-v2-ink dark:hover:text-v2-canvas"
                 >
                   clear filter
                 </button>
               )}
-              <label className="ml-2 inline-flex items-center gap-1.5 text-[11px] text-stone-700 dark:text-stone-300 cursor-pointer">
+              <label className="ml-2 inline-flex items-center gap-1.5 text-[11px] text-v2-ink dark:text-v2-ink-subtle cursor-pointer">
                 <input
                   type="checkbox"
                   checked={hideProspects}
                   onChange={(e) => setHideProspects(e.target.checked)}
-                  className="h-3.5 w-3.5 rounded border-stone-300 dark:border-stone-700"
+                  className="h-3.5 w-3.5 rounded border-v2-ring "
                 />
                 Hide prospects
               </label>
@@ -396,7 +396,7 @@ function RecruitingDashboardContent() {
           {!isStaffRole && hasCustomBranding && (
             <div
               className={cn(
-                "px-5 md:px-6 py-3.5 border-b border-stone-200/70 dark:border-stone-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3",
+                "px-5 md:px-6 py-3.5 border-b border-v2-ring  flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3",
                 recruitingLinkUrl
                   ? "bg-amber-50/60 dark:bg-amber-950/30"
                   : "bg-amber-50/30 dark:bg-amber-950/20",
@@ -409,7 +409,7 @@ function RecruitingDashboardContent() {
                     <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-amber-700 dark:text-amber-400">
                       Your link
                     </span>
-                    <span className="text-[12px] font-mono text-stone-900 dark:text-stone-100 truncate">
+                    <span className="text-[12px] font-mono text-v2-ink  truncate">
                       {recruitingLinkUrl}
                     </span>
                   </div>
@@ -438,7 +438,7 @@ function RecruitingDashboardContent() {
                 <>
                   <div className="flex items-center gap-2 min-w-0">
                     <Link2 className="h-3.5 w-3.5 text-amber-700 dark:text-amber-400 flex-shrink-0" />
-                    <span className="text-[12px] text-stone-800 dark:text-stone-200">
+                    <span className="text-[12px] text-v2-ink dark:text-v2-ink-subtle">
                       Set up your personal recruiting link to share on social
                       media.
                     </span>
@@ -464,7 +464,7 @@ function RecruitingDashboardContent() {
 
           {filteredRecruits.length === 0 && !recruitsLoading && (
             <div className="px-5 md:px-6 pb-8 pt-2 text-center">
-              <p className="text-[14px] text-stone-700 dark:text-stone-300 mb-4">
+              <p className="text-[14px] text-v2-ink dark:text-v2-ink-subtle mb-4">
                 {statusFilter
                   ? `No recruits match the "${statusFilter}" filter.`
                   : "No recruits yet — send an invite or add one to start your pipeline."}
@@ -598,7 +598,7 @@ function FreeUplineRecruitingView() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafaf7] dark:bg-[#0c0a09]">
+    <div className="min-h-screen bg-v2-canvas ">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-12 flex flex-col gap-5 md:gap-6">
         <EditorialMasthead
           icon={Users}
@@ -640,8 +640,8 @@ function FreeUplineRecruitingView() {
           }
         />
 
-        <section className="rounded-2xl bg-white dark:bg-stone-900 ring-1 ring-stone-200/70 dark:ring-stone-800 shadow-sm dark:shadow-none overflow-hidden">
-          <div className="px-5 md:px-6 py-4 border-b border-stone-200/70 dark:border-stone-800 bg-stone-50/40 dark:bg-stone-950/40 flex items-center justify-end gap-2 flex-wrap">
+        <section className="rounded-2xl bg-white dark:bg-v2-card ring-1 ring-v2-ring  shadow-sm dark:shadow-none overflow-hidden">
+          <div className="px-5 md:px-6 py-4 border-b border-v2-ring  bg-v2-canvas/40 dark:bg-v2-canvas/40 flex items-center justify-end gap-2 flex-wrap">
             <Link to="/billing" className={TOOLBAR_LINK_GHOST}>
               Upgrade for full pipeline
               <ArrowRight className="h-3.5 w-3.5" />
@@ -743,7 +743,7 @@ export function RecruitingDashboard() {
 
   if (loadingCustomPipeline || loadingBasicRecruiting) {
     return (
-      <div className="flex items-center justify-center h-64 text-[11px] uppercase tracking-[0.2em] font-semibold text-stone-500 dark:text-stone-400">
+      <div className="flex items-center justify-center h-64 text-[11px] uppercase tracking-[0.2em] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
         Loading…
       </div>
     );
@@ -767,7 +767,7 @@ export function RecruitingDashboard() {
 
   if (loadingOwnRecruits) {
     return (
-      <div className="flex items-center justify-center h-64 text-[11px] uppercase tracking-[0.2em] font-semibold text-stone-500 dark:text-stone-400">
+      <div className="flex items-center justify-center h-64 text-[11px] uppercase tracking-[0.2em] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
         Loading…
       </div>
     );

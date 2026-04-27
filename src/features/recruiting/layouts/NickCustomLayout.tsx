@@ -484,7 +484,7 @@ export function NickCustomLayout({
                 <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-3 tracking-tight">
                   You're In!
                 </h3>
-                <p className="text-zinc-400 text-sm">
+                <p className="text-v2-ink-subtle text-sm">
                   We'll be in touch within 24 hours.
                 </p>
               </div>
@@ -503,7 +503,7 @@ export function NickCustomLayout({
                   <h2 className="text-lg md:text-xl lg:text-2xl font-bold mb-1.5 md:mb-2 tracking-tight">
                     Ready to Learn More?
                   </h2>
-                  <p className="text-zinc-400 text-xs md:text-sm">
+                  <p className="text-v2-ink-subtle text-xs md:text-sm">
                     Drop your info and I'll reach out personally.
                   </p>
                 </div>
@@ -518,12 +518,12 @@ export function NickCustomLayout({
             )}
 
             {theme.disclaimer_text && (
-              <p className="mt-4 md:mt-6 text-center text-[9px] md:text-[10px] text-zinc-500 leading-relaxed max-w-sm mx-auto px-2">
+              <p className="mt-4 md:mt-6 text-center text-[9px] md:text-[10px] text-v2-ink-muted leading-relaxed max-w-sm mx-auto px-2">
                 {theme.disclaimer_text}
               </p>
             )}
 
-            <p className="mt-5 md:mt-8 text-center text-[9px] md:text-[10px] text-zinc-600 tracking-wide">
+            <p className="mt-5 md:mt-8 text-center text-[9px] md:text-[10px] text-v2-ink-muted tracking-wide">
               © {new Date().getFullYear()} The Standard. All rights reserved.
             </p>
           </div>

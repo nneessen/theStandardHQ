@@ -19,8 +19,7 @@ const TONE_SURFACE: Record<NextActionTone, string> = {
   primary:
     "bg-amber-50 dark:bg-amber-950/30 ring-amber-200/80 dark:ring-amber-900",
   warn: "bg-orange-50 dark:bg-orange-950/30 ring-orange-200/80 dark:ring-orange-900",
-  neutral:
-    "bg-stone-50 dark:bg-stone-900 ring-stone-200/80 dark:ring-stone-800",
+  neutral: "bg-v2-canvas dark:bg-v2-card ring-v2-ring/80 ",
   success:
     "bg-emerald-50 dark:bg-emerald-950/30 ring-emerald-200/80 dark:ring-emerald-900",
 };
@@ -28,37 +27,36 @@ const TONE_SURFACE: Record<NextActionTone, string> = {
 const TONE_RULE: Record<NextActionTone, string> = {
   primary: "bg-amber-500",
   warn: "bg-orange-500",
-  neutral: "bg-stone-500 dark:bg-stone-600",
+  neutral: "bg-v2-canvas ",
   success: "bg-emerald-500",
 };
 
 const TONE_LABEL: Record<NextActionTone, string> = {
   primary: "text-amber-800 dark:text-amber-300",
   warn: "text-orange-800 dark:text-orange-300",
-  neutral: "text-stone-700 dark:text-stone-300",
+  neutral: "text-v2-ink dark:text-v2-ink-subtle",
   success: "text-emerald-800 dark:text-emerald-300",
 };
 
 const TONE_CHIP: Record<NextActionTone, string> = {
-  primary: "bg-amber-500 hover:bg-amber-400 text-stone-900",
+  primary: "bg-amber-500 hover:bg-amber-400 text-v2-ink",
   warn: "bg-orange-500 hover:bg-orange-400 text-white",
-  neutral:
-    "bg-stone-800 hover:bg-stone-700 dark:bg-stone-200 dark:hover:bg-white text-white dark:text-stone-900",
+  neutral: "bg-v2-ring hover:bg-v2-card-dark   text-white dark:text-v2-ink",
   success: "bg-emerald-600 hover:bg-emerald-500 text-white",
 };
 
 const TONE_HEADLINE: Record<NextActionTone, string> = {
-  primary: "text-stone-900 dark:text-stone-100",
-  warn: "text-stone-900 dark:text-stone-100",
-  neutral: "text-stone-900 dark:text-stone-100",
-  success: "text-stone-900 dark:text-stone-100",
+  primary: "text-v2-ink ",
+  warn: "text-v2-ink ",
+  neutral: "text-v2-ink ",
+  success: "text-v2-ink ",
 };
 
 const TONE_BODY: Record<NextActionTone, string> = {
-  primary: "text-stone-700 dark:text-stone-300",
-  warn: "text-stone-700 dark:text-stone-300",
-  neutral: "text-stone-700 dark:text-stone-300",
-  success: "text-stone-700 dark:text-stone-300",
+  primary: "text-v2-ink dark:text-v2-ink-subtle",
+  warn: "text-v2-ink dark:text-v2-ink-subtle",
+  neutral: "text-v2-ink dark:text-v2-ink-subtle",
+  success: "text-v2-ink dark:text-v2-ink-subtle",
 };
 
 export const NextActionCard: React.FC<NextActionCardProps> = ({

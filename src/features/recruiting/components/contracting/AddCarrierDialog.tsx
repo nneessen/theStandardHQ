@@ -112,7 +112,7 @@ export function AddCarrierDialog({
           <DialogTitle className="text-base font-semibold">
             Add Carrier Contracts
           </DialogTitle>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-v2-ink-muted mt-1">
             Select carriers to request contracts for this recruit
           </p>
         </DialogHeader>
@@ -130,11 +130,11 @@ export function AddCarrierDialog({
                 </AlertDescription>
               </Alert>
             ) : (
-              <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center gap-1.5 text-[10px] text-v2-ink-muted">
                 <Info className="h-3 w-3 flex-shrink-0" />
                 <span>
                   Carriers available through{" "}
-                  <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                  <span className="font-medium text-v2-ink-muted">
                     {uplineName || "upline"}
                   </span>
                   &apos;s contracts ({uplineContractedCount} active)
@@ -150,7 +150,7 @@ export function AddCarrierDialog({
           !queryError &&
           sortedCarriers.length > 0 && (
             <div className="px-5 pt-3">
-              <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+              <div className="flex items-center gap-1.5 text-[10px] text-v2-ink-muted">
                 <Info className="h-3 w-3 flex-shrink-0" />
                 <span>No upline assigned — all carriers available</span>
               </div>
@@ -183,10 +183,8 @@ export function AddCarrierDialog({
         <div className="px-5 py-4">
           {isLoading && (
             <div className="py-12 text-center">
-              <Loader2 className="h-6 w-6 animate-spin text-zinc-400 mx-auto mb-2" />
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                Loading carriers...
-              </p>
+              <Loader2 className="h-6 w-6 animate-spin text-v2-ink-subtle mx-auto mb-2" />
+              <p className="text-sm text-v2-ink-muted">Loading carriers...</p>
             </div>
           )}
 
@@ -203,10 +201,10 @@ export function AddCarrierDialog({
                       flex items-center gap-3 px-3 py-2.5 rounded border-2 transition-all
                       ${
                         isBlocked
-                          ? "border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 cursor-not-allowed opacity-60"
+                          ? "border-v2-ring/60 bg-v2-canvas /50 cursor-not-allowed opacity-60"
                           : isSelected
                             ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 cursor-pointer"
-                            : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 bg-white dark:bg-zinc-900 cursor-pointer"
+                            : "border-v2-ring hover:border-v2-ring  bg-v2-card cursor-pointer"
                       }
                       ${isAdding ? "opacity-50 cursor-not-allowed" : ""}
                     `}
@@ -225,10 +223,10 @@ export function AddCarrierDialog({
                       <span
                         className={`text-sm font-medium block truncate ${
                           isBlocked
-                            ? "text-zinc-400 dark:text-zinc-600"
+                            ? "text-v2-ink-subtle -muted"
                             : isSelected
                               ? "text-emerald-900 dark:text-emerald-100"
-                              : "text-zinc-900 dark:text-zinc-100"
+                              : "text-v2-ink"
                         }`}
                       >
                         {carrier.name}
@@ -247,13 +245,13 @@ export function AddCarrierDialog({
 
           {!isLoading && !queryError && sortedCarriers.length === 0 && (
             <div className="py-12 text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 mb-3">
-                <AlertCircle className="h-5 w-5 text-zinc-400" />
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-v2-ring mb-3">
+                <AlertCircle className="h-5 w-5 text-v2-ink-subtle" />
               </div>
-              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100 mb-1">
+              <p className="text-sm font-medium text-v2-ink mb-1">
                 All Carriers Requested
               </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs text-v2-ink-muted">
                 This recruit has already requested contracts for all available
                 carriers
               </p>
@@ -263,10 +261,10 @@ export function AddCarrierDialog({
 
         {/* Footer with Add Button */}
         {!isLoading && !queryError && sortedCarriers.length > 0 && (
-          <DialogFooter className="px-5 py-3.5 border-t bg-zinc-50 dark:bg-zinc-900/50">
+          <DialogFooter className="px-5 py-3.5 border-t bg-v2-canvas /50">
             <div className="flex items-center justify-between w-full gap-3">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                <span className="text-xs font-medium text-v2-ink-muted">
                   {selectedCarrierIds.length} carrier
                   {selectedCarrierIds.length !== 1 ? "s" : ""} selected
                 </span>
@@ -274,7 +272,7 @@ export function AddCarrierDialog({
                   <button
                     onClick={() => setSelectedCarrierIds([])}
                     disabled={isAdding}
-                    className="text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 underline"
+                    className="text-xs text-v2-ink-muted hover:text-v2-ink -subtle dark:hover:text-v2-ink-subtle underline"
                   >
                     Clear
                   </button>

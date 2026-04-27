@@ -103,17 +103,17 @@ export function ExternalLinkConfig({
   };
 
   return (
-    <div className="space-y-3 p-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <ExternalLink className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <ExternalLink className="h-3.5 w-3.5 text-v2-ink-muted" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
           External Link Configuration
         </span>
       </div>
 
       {/* URL */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           External URL <span className="text-red-500">*</span>
         </Label>
         <Input
@@ -133,7 +133,7 @@ export function ExternalLinkConfig({
 
       {/* Link Text */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Button/Link Text <span className="text-red-500">*</span>
         </Label>
         <Input
@@ -153,7 +153,7 @@ export function ExternalLinkConfig({
 
       {/* Description */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Instructions for Recruit (Optional)
         </Label>
         <Textarea
@@ -167,10 +167,10 @@ export function ExternalLinkConfig({
       {/* Open in New Tab */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Open in New Tab
           </Label>
-          <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[9px] text-v2-ink-muted">
             Open link in a new browser tab
           </p>
         </div>
@@ -183,7 +183,7 @@ export function ExternalLinkConfig({
 
       {/* Completion Method */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Completion Method
         </Label>
         <Select
@@ -205,7 +205,7 @@ export function ExternalLinkConfig({
             )}
           </SelectContent>
         </Select>
-        <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+        <p className="text-[9px] text-v2-ink-muted">
           {completionMethod === "manual" &&
             "Recruit clicks a button to mark complete after visiting the link"}
           {completionMethod === "webhook" &&
@@ -217,7 +217,7 @@ export function ExternalLinkConfig({
 
       {/* Expected Duration */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Expected Duration (minutes)
         </Label>
         <Input
@@ -230,7 +230,7 @@ export function ExternalLinkConfig({
           placeholder="Optional (e.g., 15)"
           className="h-7 text-[11px]"
         />
-        <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+        <p className="text-[9px] text-v2-ink-muted">
           Shown to recruit to set expectations
         </p>
       </div>
@@ -238,7 +238,7 @@ export function ExternalLinkConfig({
       {/* Verification Instructions (for manual) */}
       {completionMethod === "manual" && (
         <div className="space-y-1">
-          <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Verification Instructions (for Admin)
           </Label>
           <Textarea
@@ -247,7 +247,7 @@ export function ExternalLinkConfig({
             placeholder="e.g., Check the background check portal to verify completion. Look for status 'Completed' in the candidate's profile."
             className="min-h-[50px] text-[11px] resize-none"
           />
-          <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[9px] text-v2-ink-muted">
             Notes for admin/upline on how to verify this was completed
           </p>
         </div>

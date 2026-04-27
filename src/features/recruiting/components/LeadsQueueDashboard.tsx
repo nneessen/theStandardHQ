@@ -115,9 +115,9 @@ export function LeadsQueueDashboard() {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col">
+    <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3">
+      <div className="flex-shrink-0 border-b border-v2-ring bg-v2-card p-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Button
@@ -129,12 +129,10 @@ export function LeadsQueueDashboard() {
               <ArrowLeft className="h-4 w-4 mr-1" />
               <span className="text-[11px]">Recruiting</span>
             </Button>
-            <div className="h-4 w-px bg-zinc-200 dark:bg-zinc-700" />
+            <div className="h-4 w-px bg-v2-ring" />
             <div>
-              <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Leads Queue
-              </h1>
-              <p className="text-[10px] text-zinc-500">
+              <h1 className="text-sm font-semibold text-v2-ink">Leads Queue</h1>
+              <p className="text-[10px] text-v2-ink-muted">
                 Manage incoming interest from your public funnel
               </p>
             </div>
@@ -144,22 +142,22 @@ export function LeadsQueueDashboard() {
           {!statsLoading && stats && (
             <div className="flex items-center gap-4 text-[11px]">
               <div className="flex items-center gap-1.5">
-                <Users className="h-3.5 w-3.5 text-zinc-400" />
-                <span className="text-zinc-500">Total:</span>
+                <Users className="h-3.5 w-3.5 text-v2-ink-subtle" />
+                <span className="text-v2-ink-muted">Total:</span>
                 <span className="font-medium">{stats.total}</span>
               </div>
-              <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+              <div className="h-3 w-px bg-v2-ring" />
               <div className="flex items-center gap-1.5">
                 <Clock className="h-3.5 w-3.5 text-amber-500" />
-                <span className="text-zinc-500">Pending:</span>
+                <span className="text-v2-ink-muted">Pending:</span>
                 <span className="font-medium text-amber-600">
                   {stats.pending}
                 </span>
               </div>
-              <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+              <div className="h-3 w-px bg-v2-ring" />
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                <span className="text-zinc-500">Accepted:</span>
+                <span className="text-v2-ink-muted">Accepted:</span>
                 <span className="font-medium text-emerald-600">
                   {stats.accepted}
                 </span>
@@ -207,7 +205,7 @@ export function LeadsQueueDashboard() {
       </div>
 
       {/* Filters */}
-      <div className="flex-shrink-0 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 p-3">
+      <div className="flex-shrink-0 border-b border-v2-ring bg-v2-canvas /50 p-3">
         <div className="flex items-center justify-between gap-3">
           <Tabs
             value={activeTab}
@@ -244,7 +242,7 @@ export function LeadsQueueDashboard() {
           </Tabs>
 
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-v2-ink-subtle" />
             <Input
               placeholder="Search by name or email..."
               value={searchQuery}
@@ -262,15 +260,13 @@ export function LeadsQueueDashboard() {
       <div className="flex-1 overflow-auto">
         {leadsLoading ? (
           <div className="flex items-center justify-center h-full">
-            <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
+            <Loader2 className="h-6 w-6 animate-spin text-v2-ink-subtle" />
           </div>
         ) : !leadsData?.leads.length ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <Inbox className="h-10 w-10 text-zinc-300 mb-3" />
-            <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-              No leads found
-            </h3>
-            <p className="text-[11px] text-zinc-500 mt-1 max-w-xs">
+            <Inbox className="h-10 w-10 text-v2-ink-subtle mb-3" />
+            <h3 className="text-sm font-medium text-v2-ink">No leads found</h3>
+            <p className="text-[11px] text-v2-ink-muted mt-1 max-w-xs">
               {activeTab === "pending"
                 ? "No pending leads to review. Share your link to start receiving interest."
                 : "No leads match your current filters."}
@@ -321,26 +317,28 @@ export function LeadsQueueDashboard() {
                 >
                   <TableCell className="py-2">
                     <div>
-                      <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                      <p className="text-[11px] font-medium text-v2-ink">
                         {lead.first_name} {lead.last_name}
                       </p>
                     </div>
                   </TableCell>
                   <TableCell className="py-2">
                     <div className="space-y-0.5">
-                      <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                      <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                         {lead.email}
                       </p>
-                      <p className="text-[10px] text-zinc-400">{lead.phone}</p>
+                      <p className="text-[10px] text-v2-ink-subtle">
+                        {lead.phone}
+                      </p>
                     </div>
                   </TableCell>
                   <TableCell className="py-2">
-                    <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                    <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                       {lead.city}, {lead.state}
                     </p>
                   </TableCell>
                   <TableCell className="py-2">
-                    <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                    <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                       {
                         EXPERIENCE_LABELS[
                           lead.insurance_experience as keyof typeof EXPERIENCE_LABELS
@@ -349,12 +347,12 @@ export function LeadsQueueDashboard() {
                     </p>
                   </TableCell>
                   <TableCell className="py-2">
-                    <p className="text-[11px] text-zinc-600 dark:text-zinc-400 capitalize">
+                    <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle capitalize">
                       {lead.availability.replace("_", "-")}
                     </p>
                   </TableCell>
                   <TableCell className="py-2">
-                    <p className="text-[10px] text-zinc-500">
+                    <p className="text-[10px] text-v2-ink-muted">
                       {formatDistanceToNow(new Date(lead.submitted_at), {
                         addSuffix: true,
                       })}
@@ -410,9 +408,9 @@ export function LeadsQueueDashboard() {
 
       {/* Pagination */}
       {leadsData && leadsData.totalPages > 1 && (
-        <div className="flex-shrink-0 border-t border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3">
+        <div className="flex-shrink-0 border-t border-v2-ring bg-v2-card p-3">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] text-zinc-500">
+            <p className="text-[10px] text-v2-ink-muted">
               Showing {(page - 1) * 25 + 1} -{" "}
               {Math.min(page * 25, leadsData.total)} of {leadsData.total} leads
             </p>
@@ -426,7 +424,7 @@ export function LeadsQueueDashboard() {
               >
                 Previous
               </Button>
-              <span className="text-[10px] text-zinc-500 px-2">
+              <span className="text-[10px] text-v2-ink-muted px-2">
                 Page {page} of {leadsData.totalPages}
               </span>
               <Button

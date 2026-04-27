@@ -28,7 +28,7 @@ export function DocumentsSection({
         className={
           allUploaded
             ? "inline-flex items-center font-mono tabular-nums text-[11px] uppercase tracking-[0.16em] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 ring-1 ring-emerald-200 dark:ring-emerald-900 rounded-full px-2.5 py-1"
-            : "inline-flex items-center font-mono tabular-nums text-[11px] uppercase tracking-[0.16em] font-bold text-stone-700 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 ring-1 ring-stone-200 dark:ring-stone-700 rounded-full px-2.5 py-1"
+            : "inline-flex items-center font-mono tabular-nums text-[11px] uppercase tracking-[0.16em] font-bold text-v2-ink dark:text-v2-ink-subtle bg-v2-ring dark:bg-v2-ring ring-1 ring-v2-ring  rounded-full px-2.5 py-1"
         }
       >
         {uploadedCount} / {totalCount} uploaded
@@ -45,7 +45,7 @@ export function DocumentsSection({
       rightSlot={rightSlot}
     >
       {(!documents || documents.length === 0) && (
-        <p className="text-[13px] text-stone-500 dark:text-stone-400">
+        <p className="text-[13px] text-v2-ink-muted dark:text-v2-ink-subtle">
           No documents required yet — they will appear here once your recruiter
           adds them to your phase.
         </p>

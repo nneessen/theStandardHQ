@@ -114,9 +114,9 @@ export function AcknowledgmentItem({
       {metadata.content && (
         <ScrollArea
           ref={scrollRef}
-          className="max-h-[120px] rounded border border-zinc-200 dark:border-zinc-700 p-2"
+          className="max-h-[120px] rounded border border-v2-ring p-2"
         >
-          <div className="text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
+          <div className="text-xs text-v2-ink-muted whitespace-pre-wrap">
             {metadata.content}
           </div>
         </ScrollArea>
@@ -143,7 +143,7 @@ export function AcknowledgmentItem({
           />
           <label
             htmlFor={`ack-${progressId}`}
-            className="text-xs text-zinc-700 dark:text-zinc-300 cursor-pointer leading-tight"
+            className="text-xs text-v2-ink-muted cursor-pointer leading-tight"
           >
             {metadata.acknowledgment_text}
           </label>

@@ -97,7 +97,7 @@ export function BooleanQuestionItem({
             <strong>{selectedAnswer ? positiveLabel : negativeLabel}</strong>
           </span>
           {existingResponse.explanation && (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 italic">
+            <p className="text-xs text-v2-ink-muted mt-0.5 italic">
               "{existingResponse.explanation}"
             </p>
           )}
@@ -109,7 +109,7 @@ export function BooleanQuestionItem({
   return (
     <div className="space-y-2">
       {/* Question text */}
-      <p className="text-xs font-medium text-zinc-900 dark:text-zinc-100">
+      <p className="text-xs font-medium text-v2-ink">
         {metadata.question_text}
       </p>
 
@@ -132,7 +132,9 @@ export function BooleanQuestionItem({
           variant={selectedAnswer === false ? "default" : "outline"}
           size="sm"
           className={`flex-1 h-7 text-xs ${
-            selectedAnswer === false ? "bg-zinc-600 hover:bg-zinc-700" : ""
+            selectedAnswer === false
+              ? "bg-v2-ring-strong hover:bg-v2-ink-muted"
+              : ""
           }`}
           onClick={() => setSelectedAnswer(false)}
           disabled={isSubmitting}
@@ -144,7 +146,7 @@ export function BooleanQuestionItem({
       {/* Explanation field - if required */}
       {metadata.explanation_required && (
         <div className="space-y-1">
-          <label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <label className="text-[10px] text-v2-ink-muted -subtle">
             {metadata.explanation_prompt || "Please explain your answer"}{" "}
             <span className="text-red-500">*</span>
           </label>

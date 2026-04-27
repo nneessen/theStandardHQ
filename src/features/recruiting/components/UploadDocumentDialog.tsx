@@ -150,10 +150,10 @@ export function UploadDocumentDialog({
             {!selectedFile ? (
               <label
                 htmlFor="file-upload"
-                className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-md cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-v2-ring rounded-md cursor-pointer hover:bg-v2-canvas transition-colors"
               >
-                <Upload className="h-4 w-4 text-zinc-400" />
-                <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                <Upload className="h-4 w-4 text-v2-ink-subtle" />
+                <span className="text-[11px] text-v2-ink-muted">
                   Click to select file
                 </span>
                 <Input
@@ -165,13 +165,13 @@ export function UploadDocumentDialog({
                 />
               </label>
             ) : (
-              <div className="flex items-center gap-2 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-md border border-zinc-200 dark:border-zinc-700">
-                <FileText className="h-4 w-4 text-zinc-500" />
+              <div className="flex items-center gap-2 p-2 bg-v2-canvas rounded-md border border-v2-ring">
+                <FileText className="h-4 w-4 text-v2-ink-muted" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                  <p className="text-[11px] font-medium text-v2-ink truncate">
                     {selectedFile.name}
                   </p>
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] text-v2-ink-muted">
                     {formatFileSize(selectedFile.size)}
                   </p>
                 </div>
@@ -249,8 +249,8 @@ export function UploadDocumentDialog({
           {/* Upload Progress */}
           {uploadProgress > 0 && uploadProgress < 100 && (
             <div className="space-y-1">
-              <p className="text-[10px] text-zinc-500">Uploading...</p>
-              <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-1.5">
+              <p className="text-[10px] text-v2-ink-muted">Uploading...</p>
+              <div className="w-full bg-v2-ring rounded-full h-1.5">
                 <div
                   className="bg-blue-600 h-1.5 rounded-full transition-all"
                   style={{ width: `${uploadProgress}%` }}

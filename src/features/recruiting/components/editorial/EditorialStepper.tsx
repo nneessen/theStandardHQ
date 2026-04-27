@@ -48,9 +48,9 @@ const ICON_RING: Record<StepperStatus, string> = {
   in_progress: "bg-sky-500 text-white ring-sky-100 dark:ring-sky-950",
   blocked: "bg-red-600 text-white ring-red-100 dark:ring-red-950",
   locked:
-    "bg-stone-200 dark:bg-stone-700 text-stone-500 dark:text-stone-400 ring-stone-100 dark:ring-stone-900",
+    "bg-v2-ring  text-v2-ink-muted dark:text-v2-ink-subtle ring-v2-ring/60 ",
   not_started:
-    "bg-white dark:bg-stone-900 text-stone-400 dark:text-stone-500 ring-stone-200 dark:ring-stone-800 border border-stone-200 dark:border-stone-700",
+    "bg-white dark:bg-v2-card text-v2-ink-subtle dark:text-v2-ink-muted ring-v2-ring  border border-v2-ring ",
 };
 
 const STATUS_PILL: Record<StepperStatus, string> = {
@@ -61,9 +61,9 @@ const STATUS_PILL: Record<StepperStatus, string> = {
   blocked:
     "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 ring-red-200 dark:ring-red-900",
   locked:
-    "bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400 ring-stone-200 dark:ring-stone-700",
+    "bg-v2-ring dark:bg-v2-ring text-v2-ink-muted dark:text-v2-ink-subtle ring-v2-ring ",
   not_started:
-    "bg-stone-50 dark:bg-stone-900 text-stone-500 dark:text-stone-400 ring-stone-200 dark:ring-stone-800",
+    "bg-v2-canvas dark:bg-v2-card text-v2-ink-muted dark:text-v2-ink-subtle ring-v2-ring ",
 };
 
 const STATUS_LABEL: Record<StepperStatus, string> = {
@@ -91,8 +91,8 @@ export const EditorialStepper: React.FC<EditorialStepperProps> = ({
           <li
             key={item.id}
             className={cn(
-              "rounded-xl bg-white dark:bg-stone-900 ring-1 ring-stone-200/70 dark:ring-stone-800 shadow-sm dark:shadow-none overflow-hidden transition-shadow",
-              isInteractive && "hover:shadow-md dark:hover:ring-stone-700",
+              "rounded-xl bg-white dark:bg-v2-card ring-1 ring-v2-ring  shadow-sm dark:shadow-none overflow-hidden transition-shadow",
+              isInteractive && "hover:shadow-md ",
             )}
           >
             <div
@@ -124,7 +124,7 @@ export const EditorialStepper: React.FC<EditorialStepperProps> = ({
               >
                 <Icon className="h-3.5 w-3.5" />
               </span>
-              <span className="font-mono tabular-nums text-[12px] font-bold text-stone-400 dark:text-stone-500 w-7 flex-shrink-0">
+              <span className="font-mono tabular-nums text-[12px] font-bold text-v2-ink-subtle dark:text-v2-ink-muted w-7 flex-shrink-0">
                 {String(item.index + 1).padStart(2, "0")}
               </span>
               <div className="min-w-0 flex-1">
@@ -132,14 +132,14 @@ export const EditorialStepper: React.FC<EditorialStepperProps> = ({
                   className={cn(
                     "text-[14px] sm:text-[15px] font-semibold tracking-tight truncate",
                     muted
-                      ? "text-stone-500 dark:text-stone-400"
-                      : "text-stone-900 dark:text-stone-100",
+                      ? "text-v2-ink-muted dark:text-v2-ink-subtle"
+                      : "text-v2-ink ",
                   )}
                 >
                   {item.name}
                 </div>
                 {item.caption && (
-                  <div className="mt-0.5 text-[12px] text-stone-500 dark:text-stone-400 leading-relaxed">
+                  <div className="mt-0.5 text-[12px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
                     {item.caption}
                   </div>
                 )}
@@ -155,14 +155,14 @@ export const EditorialStepper: React.FC<EditorialStepperProps> = ({
               {isInteractive && (
                 <ChevronDown
                   className={cn(
-                    "h-4 w-4 text-stone-400 dark:text-stone-500 transition-transform flex-shrink-0",
+                    "h-4 w-4 text-v2-ink-subtle dark:text-v2-ink-muted transition-transform flex-shrink-0",
                     isExpanded && "rotate-180",
                   )}
                 />
               )}
             </div>
             {isExpanded && item.detail && (
-              <div className="border-t border-stone-200/70 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-950/40 px-4 sm:px-5 py-4">
+              <div className="border-t border-v2-ring  bg-v2-canvas/50 dark:bg-v2-canvas/40 px-4 sm:px-5 py-4">
                 {item.detail}
               </div>
             )}

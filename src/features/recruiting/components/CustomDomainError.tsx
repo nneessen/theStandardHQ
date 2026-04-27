@@ -11,25 +11,25 @@ interface CustomDomainErrorProps {
 
 export function CustomDomainError({ hostname }: CustomDomainErrorProps) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 p-4">
-      <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white p-6 text-center shadow-sm">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100">
-          <Globe className="h-6 w-6 text-zinc-400" />
+    <div className="flex min-h-screen items-center justify-center bg-v2-canvas p-4">
+      <div className="w-full max-w-md rounded-lg border border-v2-ring bg-white p-6 text-center shadow-sm">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-v2-ring">
+          <Globe className="h-6 w-6 text-v2-ink-subtle" />
         </div>
 
-        <h1 className="mt-4 text-lg font-semibold text-zinc-900">
+        <h1 className="mt-4 text-lg font-semibold text-v2-ink">
           Domain Not Configured
         </h1>
 
-        <p className="mt-2 text-sm text-zinc-600">
+        <p className="mt-2 text-sm text-v2-ink-muted">
           The domain <strong className="font-medium">{hostname}</strong> is not
           connected to a recruiting page.
         </p>
 
-        <div className="mt-4 rounded-md bg-zinc-50 p-3">
+        <div className="mt-4 rounded-md bg-v2-canvas p-3">
           <div className="flex items-start gap-2">
-            <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-zinc-400" />
-            <div className="text-left text-xs text-zinc-600">
+            <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-v2-ink-subtle" />
+            <div className="text-left text-xs text-v2-ink-muted">
               <p className="font-medium">If you own this domain:</p>
               <ul className="mt-1 list-inside list-disc space-y-0.5">
                 <li>Verify DNS records are configured correctly</li>
@@ -48,11 +48,11 @@ export function CustomDomainError({ hostname }: CustomDomainErrorProps) {
             </a>
           </Button>
 
-          <p className="text-xs text-zinc-500">
+          <p className="text-xs text-v2-ink-muted">
             Need help?{" "}
             <a
               href="mailto:support@thestandardhq.com"
-              className="text-zinc-700 underline hover:text-zinc-900"
+              className="text-v2-ink underline hover:text-v2-ink"
             >
               Contact support
             </a>

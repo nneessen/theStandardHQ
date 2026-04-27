@@ -142,10 +142,10 @@ export function CalendlyEmbed({
   if (error) {
     return (
       <div
-        className={`flex flex-col items-center justify-center p-6 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg ${className}`}
+        className={`flex flex-col items-center justify-center p-6 bg-v2-canvas rounded-lg ${className}`}
       >
         <AlertCircle className="h-8 w-8 text-amber-500 mb-3" />
-        <p className="text-[11px] text-zinc-600 dark:text-zinc-400 text-center mb-3">
+        <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle text-center mb-3">
           {error}
         </p>
         <Button variant="outline" size="sm" className="h-7 text-[11px]" asChild>
@@ -161,10 +161,10 @@ export function CalendlyEmbed({
   return (
     <div className={`relative ${className}`} style={{ minHeight: 500 }}>
       {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-zinc-50 dark:bg-zinc-800/50 rounded-lg z-10">
+        <div className="absolute inset-0 flex items-center justify-center bg-v2-canvas rounded-lg z-10">
           <div className="flex flex-col items-center gap-2">
-            <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
-            <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            <Loader2 className="h-6 w-6 animate-spin text-v2-ink-subtle" />
+            <span className="text-[11px] text-v2-ink-muted">
               Loading calendar...
             </span>
           </div>

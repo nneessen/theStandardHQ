@@ -113,17 +113,17 @@ export function VideoItemConfig({ metadata, onChange }: VideoItemConfigProps) {
   };
 
   return (
-    <div className="space-y-3 p-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <PlayCircle className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <PlayCircle className="h-3.5 w-3.5 text-v2-ink-muted" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
           Video Configuration
         </span>
       </div>
 
       {/* Platform Selector */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Platform
         </Label>
         <Select
@@ -149,7 +149,7 @@ export function VideoItemConfig({ metadata, onChange }: VideoItemConfigProps) {
 
       {/* Video URL */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Video URL
         </Label>
         <Input
@@ -165,14 +165,14 @@ export function VideoItemConfig({ metadata, onChange }: VideoItemConfigProps) {
             {urlError}
           </div>
         )}
-        <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+        <p className="text-[9px] text-v2-ink-muted">
           Platform will be auto-detected from URL
         </p>
       </div>
 
       {/* Optional Title */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Video Title (Optional)
         </Label>
         <Input
@@ -187,10 +187,10 @@ export function VideoItemConfig({ metadata, onChange }: VideoItemConfigProps) {
       {/* Require Full Watch */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Require Full Watch
           </Label>
-          <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[9px] text-v2-ink-muted">
             Track progress and require 95%+ completion
           </p>
         </div>
@@ -204,10 +204,10 @@ export function VideoItemConfig({ metadata, onChange }: VideoItemConfigProps) {
       {/* Auto Complete */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Auto-Complete on Finish
           </Label>
-          <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[9px] text-v2-ink-muted">
             Automatically mark item as complete when video ends
           </p>
         </div>

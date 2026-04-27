@@ -227,9 +227,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-            Recruiting
-          </h1>
+          <h1 className="text-sm font-semibold text-v2-ink">Recruiting</h1>
           <Badge variant="secondary" className="text-[9px] h-4">
             {recruits.length} recruits
           </Badge>
@@ -248,7 +246,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
         open={showUpgradeDetails}
         onOpenChange={setShowUpgradeDetails}
       >
-        <div className="rounded-lg border-2 border-violet-200 dark:border-violet-800 bg-gradient-to-br from-violet-50 via-white to-indigo-50 dark:from-violet-950/40 dark:via-zinc-900 dark:to-indigo-950/30">
+        <div className="rounded-lg border-2 border-violet-200 dark:border-violet-800 bg-gradient-to-br from-violet-50 via-white to-indigo-50 dark:from-violet-950/40  dark:to-indigo-950/30">
           <CollapsibleTrigger asChild>
             <button
               type="button"
@@ -269,7 +267,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 text-violet-700 dark:text-violet-300 bg-white/80 dark:bg-zinc-900/60 border border-violet-200 dark:border-violet-800 rounded-md px-2.5 py-1 text-[10px] font-semibold flex-shrink-0">
+                <div className="flex items-center gap-1.5 text-violet-700 dark:text-violet-300 bg-white/80 /60 border border-violet-200 dark:border-violet-800 rounded-md px-2.5 py-1 text-[10px] font-semibold flex-shrink-0">
                   {showUpgradeDetails ? "Hide" : "View"}
                   {showUpgradeDetails ? (
                     <ChevronUp className="h-3 w-3" />
@@ -284,7 +282,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
           <CollapsibleContent className="px-4 pb-4">
             <div className="border-t border-violet-200/80 dark:border-violet-800/80 pt-3">
               <Link to="/billing" className="block group">
-                <div className="rounded-md border border-violet-100 dark:border-violet-900/50 bg-white/80 dark:bg-zinc-900/40 p-3 hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-sm transition-all cursor-pointer">
+                <div className="rounded-md border border-violet-100 dark:border-violet-900/50 bg-white/80 /40 p-3 hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-sm transition-all cursor-pointer">
                   {/* CTA row */}
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <p className="text-[10px] text-violet-700 dark:text-violet-300 leading-tight">
@@ -349,14 +347,14 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                     ).map(({ icon: Icon, label, desc }) => (
                       <div
                         key={label}
-                        className="flex items-start gap-2 p-2 rounded-md bg-white/80 dark:bg-zinc-800/60 border border-violet-100 dark:border-violet-900/50"
+                        className="flex items-start gap-2 p-2 rounded-md bg-white/80 /60 border border-violet-100 dark:border-violet-900/50"
                       >
                         <Icon className="h-3.5 w-3.5 text-violet-500 dark:text-violet-400 mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="text-[10px] font-semibold text-zinc-800 dark:text-zinc-200 leading-tight">
+                          <p className="text-[10px] font-semibold text-v2-ink -subtle leading-tight">
                             {label}
                           </p>
-                          <p className="text-[9px] text-zinc-500 dark:text-zinc-400 leading-tight mt-0.5">
+                          <p className="text-[9px] text-v2-ink-muted leading-tight mt-0.5">
                             {desc}
                           </p>
                         </div>
@@ -376,43 +374,43 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
       </Collapsible>
 
       {/* Recruiting Process Instructions */}
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
         <button
           onClick={() => setShowInstructions(!showInstructions)}
-          className="w-full flex items-center justify-between px-3 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded-lg transition-colors"
+          className="w-full flex items-center justify-between px-3 py-2 hover:bg-v2-canvas rounded-lg transition-colors"
         >
           <div className="flex items-center gap-2">
             <Info className="h-3.5 w-3.5 text-blue-500" />
-            <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+            <span className="text-[11px] font-medium text-v2-ink-muted">
               How the Recruiting Process Works
             </span>
           </div>
           {showInstructions ? (
-            <ChevronUp className="h-3.5 w-3.5 text-zinc-400" />
+            <ChevronUp className="h-3.5 w-3.5 text-v2-ink-subtle" />
           ) : (
-            <ChevronDown className="h-3.5 w-3.5 text-zinc-400" />
+            <ChevronDown className="h-3.5 w-3.5 text-v2-ink-subtle" />
           )}
         </button>
         {showInstructions && (
           <div className="px-3 pb-3 space-y-2">
-            <div className="border-t border-zinc-100 dark:border-zinc-800 pt-2" />
-            <ol className="space-y-1.5 text-[10px] text-zinc-600 dark:text-zinc-400 list-decimal list-inside">
+            <div className="border-t border-v2-ring/60 pt-2" />
+            <ol className="space-y-1.5 text-[10px] text-v2-ink-muted -subtle list-decimal list-inside">
               <li>
-                <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                <span className="font-medium text-v2-ink -subtle">
                   Add a new recruit
                 </span>{" "}
                 — Click "Add Recruit" and enter their name, email, and phone
                 number.
               </li>
               <li>
-                <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                <span className="font-medium text-v2-ink -subtle">
                   Recruit receives a password email
                 </span>{" "}
                 — They will be emailed a link to set their password and log in
                 to the system.
               </li>
               <li>
-                <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                <span className="font-medium text-v2-ink -subtle">
                   Licensing status determines next steps
                 </span>{" "}
                 — If the recruit is <em>not already licensed</em>, they are
@@ -420,14 +418,14 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                 Slack recruit channel.
               </li>
               <li>
-                <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                <span className="font-medium text-v2-ink -subtle">
                   Recruit enters the onboarding pipeline
                 </span>{" "}
                 — They are enrolled in the standard pipeline where you can track
                 their progress through each phase.
               </li>
               <li>
-                <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                <span className="font-medium text-v2-ink -subtle">
                   NPN received triggers a second notification
                 </span>{" "}
                 — When the recruit's NPN (National Producer Number) is entered,
@@ -435,7 +433,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                 sent.
               </li>
               <li>
-                <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                <span className="font-medium text-v2-ink -subtle">
                   Graduate to agent
                 </span>{" "}
                 — Once onboarding is complete, use the "Graduate" button to
@@ -447,16 +445,16 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
       </div>
 
       {/* Recruits Table */}
-      <div className="flex-1 overflow-hidden bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="flex-1 overflow-hidden bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
         {isLoading ? (
-          <div className="flex items-center justify-center h-32 text-[11px] text-zinc-500">
+          <div className="flex items-center justify-center h-32 text-[11px] text-v2-ink-muted">
             Loading recruits...
           </div>
         ) : recruits.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-32 gap-2 text-zinc-500">
-            <User className="h-8 w-8 text-zinc-300 dark:text-zinc-600" />
+          <div className="flex flex-col items-center justify-center h-32 gap-2 text-v2-ink-muted">
+            <User className="h-8 w-8 text-v2-ink-subtle" />
             <p className="text-[11px]">No recruits yet</p>
-            <p className="text-[10px] text-zinc-400">
+            <p className="text-[10px] text-v2-ink-subtle">
               Add your first recruit to get started
             </p>
           </div>
@@ -491,8 +489,8 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                   className={cn(
                     "cursor-pointer transition-colors",
                     selectedRecruit?.id === recruit.id
-                      ? "bg-zinc-100 dark:bg-zinc-800"
-                      : "hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+                      ? "bg-v2-ring"
+                      : "hover:bg-v2-canvas",
                   )}
                   onClick={() => handleSelectRecruit(recruit)}
                 >
@@ -502,12 +500,12 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                         <AvatarImage
                           src={recruit.profile_photo_url || undefined}
                         />
-                        <AvatarFallback className="text-[9px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                        <AvatarFallback className="text-[9px] bg-v2-ring text-v2-ink-muted -subtle">
                           {(recruit.first_name?.[0] || "").toUpperCase()}
                           {(recruit.last_name?.[0] || "").toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                      <span className="text-[11px] font-medium text-v2-ink">
                         {recruit.first_name} {recruit.last_name}
                       </span>
                     </div>
@@ -515,13 +513,13 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                   <TableCell className="py-2">
                     <div className="flex flex-col gap-0.5">
                       {recruit.email && (
-                        <div className="flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+                        <div className="flex items-center gap-1 text-[10px] text-v2-ink-muted">
                           <Mail className="h-3 w-3" />
                           {recruit.email}
                         </div>
                       )}
                       {recruit.phone && (
-                        <div className="flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+                        <div className="flex items-center gap-1 text-[10px] text-v2-ink-muted">
                           <Phone className="h-3 w-3" />
                           {recruit.phone}
                         </div>
@@ -531,14 +529,14 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                   <TableCell className="py-2">
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {(recruit as any).upline ? (
-                      <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                      <span className="text-[10px] text-v2-ink-muted">
                         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         {(recruit as any).upline.first_name}{" "}
                         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         {(recruit as any).upline.last_name}
                       </span>
                     ) : (
-                      <span className="text-[10px] text-zinc-400 dark:text-zinc-500 italic">
+                      <span className="text-[10px] text-v2-ink-subtle italic">
                         {recruit.upline_id ? "Loading..." : "Not assigned"}
                       </span>
                     )}
@@ -582,7 +580,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                     })()}
                   </TableCell>
                   <TableCell className="py-2">
-                    <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    <span className="text-[10px] text-v2-ink-muted">
                       {recruit.created_at
                         ? formatDistanceToNow(new Date(recruit.created_at), {
                             addSuffix: true,
@@ -622,7 +620,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-5 w-5 p-0 text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                        className="h-5 w-5 p-0 text-v2-ink-muted hover:text-v2-ink -subtle dark:hover:text-v2-ink-subtle"
                         onClick={() => setEditingRecruit(recruit)}
                       >
                         <Pencil className="h-3 w-3" />
@@ -630,7 +628,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-5 w-5 p-0 text-zinc-400 hover:text-red-600 dark:text-zinc-500 dark:hover:text-red-400"
+                        className="h-5 w-5 p-0 text-v2-ink-subtle hover:text-red-600 -muted dark:hover:text-red-400"
                         onClick={() => setDeletingRecruit(recruit)}
                       >
                         <Trash2 className="h-3 w-3" />
@@ -664,7 +662,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
             className="absolute inset-0 bg-black/40"
             onClick={() => setDetailSheetOpen(false)}
           />
-          <div className="absolute inset-x-0 bottom-0 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 rounded-t-xl shadow-2xl h-[60vh] animate-in slide-in-from-bottom duration-300">
+          <div className="absolute inset-x-0 bottom-0 bg-v2-card border-t border-v2-ring rounded-t-xl shadow-2xl h-[60vh] animate-in slide-in-from-bottom duration-300">
             <RecruitBottomPanel
               recruit={selectedRecruit}
               onClose={() => setDetailSheetOpen(false)}
@@ -787,7 +785,7 @@ function BasicEditRecruitDialog({
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle className="text-sm">Edit Recruit</DialogTitle>
-          <DialogDescription className="text-[11px] text-zinc-500">
+          <DialogDescription className="text-[11px] text-v2-ink-muted">
             Update {recruit.first_name} {recruit.last_name}&apos;s information.
           </DialogDescription>
         </DialogHeader>
@@ -925,7 +923,7 @@ function BasicEditRecruitDialog({
               >
                 <SelectTrigger
                   id="edit_contract_level"
-                  className="h-8 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                  className="h-8 text-[11px] bg-v2-card border-v2-ring"
                 >
                   <SelectValue placeholder="Select level" />
                 </SelectTrigger>
@@ -943,7 +941,7 @@ function BasicEditRecruitDialog({
               </Select>
             </div>
           </div>
-          <div className="flex items-center justify-between rounded-md border border-zinc-200 dark:border-zinc-700 px-3 py-2">
+          <div className="flex items-center justify-between rounded-md border border-v2-ring px-3 py-2">
             <Label
               htmlFor="edit_is_licensed"
               className="text-[10px] cursor-pointer"
@@ -1137,7 +1135,7 @@ function BasicAddRecruitDialog({
       <DialogTrigger asChild>
         <Button
           size="sm"
-          className="h-6 text-[10px] px-2 bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900"
+          className="h-6 text-[10px] px-2 bg-v2-card-dark hover:bg-black text-white dark:hover:bg-v2-ring "
         >
           <UserPlus className="h-3 w-3 mr-1" />
           Add Recruit
@@ -1146,19 +1144,17 @@ function BasicAddRecruitDialog({
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle className="text-sm">Add New Recruit</DialogTitle>
-          <DialogDescription className="text-[11px] text-zinc-500">
+          <DialogDescription className="text-[11px] text-v2-ink-muted">
             Add basic contact information for your new recruit.
           </DialogDescription>
         </DialogHeader>
 
         {/* Upline Assignment Info */}
-        <div className="flex items-center gap-2 px-3 py-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-md border border-zinc-200 dark:border-zinc-700">
-          <User className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+        <div className="flex items-center gap-2 px-3 py-2 bg-v2-canvas rounded-md border border-v2-ring">
+          <User className="h-4 w-4 text-v2-ink-muted" />
           <div className="flex-1">
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-              Assigned Upline
-            </p>
-            <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+            <p className="text-[10px] text-v2-ink-muted">Assigned Upline</p>
+            <p className="text-[11px] font-medium text-v2-ink">
               {user?.first_name} {user?.last_name}
             </p>
           </div>
@@ -1269,7 +1265,7 @@ function BasicAddRecruitDialog({
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center justify-between rounded-md border border-zinc-200 dark:border-zinc-700 px-3 py-2">
+            <div className="flex items-center justify-between rounded-md border border-v2-ring px-3 py-2">
               <Label
                 htmlFor="is_licensed"
                 className="text-[10px] cursor-pointer"
@@ -1300,7 +1296,7 @@ function BasicAddRecruitDialog({
               >
                 <SelectTrigger
                   id="contract_level"
-                  className="h-8 text-[11px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                  className="h-8 text-[11px] bg-v2-card border-v2-ring"
                 >
                   <SelectValue placeholder="Select level" />
                 </SelectTrigger>

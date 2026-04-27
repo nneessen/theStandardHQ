@@ -28,7 +28,7 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   requested: {
     label: "Requested",
     className:
-      "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700",
+      "bg-v2-ring text-v2-ink-muted border-v2-ring  dark:text-v2-ink-subtle ",
   },
   in_progress: {
     label: "In Progress",
@@ -53,7 +53,7 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   cancelled: {
     label: "Cancelled",
     className:
-      "bg-zinc-50 text-zinc-400 border-zinc-200 dark:bg-zinc-900 dark:text-zinc-500 dark:border-zinc-700",
+      "bg-v2-canvas text-v2-ink-subtle border-v2-ring  dark:text-v2-ink-muted ",
   },
 };
 
@@ -193,7 +193,7 @@ export function CarrierContractingItem({
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex items-center gap-1.5 text-xs text-zinc-400">
+      <div className="flex items-center gap-1.5 text-xs text-v2-ink-subtle">
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
         Loading carriers...
       </div>
@@ -213,7 +213,7 @@ export function CarrierContractingItem({
   // Empty state
   if (!contracts || contracts.length === 0) {
     return (
-      <div className="flex items-center gap-1.5 text-xs text-zinc-400 dark:text-zinc-500">
+      <div className="flex items-center gap-1.5 text-xs text-v2-ink-subtle">
         <FileText className="h-3.5 w-3.5" />
         No carriers assigned yet. Carriers are added via the Contracting tab.
       </div>
@@ -224,10 +224,10 @@ export function CarrierContractingItem({
     <div className="space-y-2">
       {/* Progress indicator */}
       <div className="flex items-center gap-2">
-        <span className="text-xs text-zinc-500 dark:text-zinc-400">
+        <span className="text-xs text-v2-ink-muted">
           {completedCount} of {requiredCount} carriers contracted
         </span>
-        <div className="flex-1 h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden max-w-[200px]">
+        <div className="flex-1 h-1.5 bg-v2-ring rounded-full overflow-hidden max-w-[200px]">
           <div
             className="h-full bg-emerald-500 rounded-full transition-all duration-300"
             style={{
@@ -239,7 +239,7 @@ export function CarrierContractingItem({
 
       {/* General instructions */}
       {metadata.general_instructions && (
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 italic">
+        <p className="text-xs text-v2-ink-muted italic">
           {metadata.general_instructions}
         </p>
       )}
@@ -258,7 +258,7 @@ export function CarrierContractingItem({
           return (
             <div key={contract.id} className="flex items-center gap-2 py-0.5">
               {/* Carrier name */}
-              <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300 min-w-[120px] truncate">
+              <span className="text-sm font-medium text-v2-ink-muted min-w-[120px] truncate">
                 {contract.carrier?.name ?? "Unknown Carrier"}
               </span>
 
@@ -297,7 +297,7 @@ export function CarrierContractingItem({
                   disabled={isSaving}
                 />
               ) : (
-                <span className="text-xs text-zinc-500 dark:text-zinc-400 min-w-[80px]">
+                <span className="text-xs text-v2-ink-muted min-w-[80px]">
                   {contract.writing_number || "—"}
                 </span>
               )}
@@ -309,7 +309,7 @@ export function CarrierContractingItem({
 
               {/* Saving indicator */}
               {isSaving && (
-                <Loader2 className="h-3 w-3 animate-spin text-zinc-400 flex-shrink-0" />
+                <Loader2 className="h-3 w-3 animate-spin text-v2-ink-subtle flex-shrink-0" />
               )}
             </div>
           );

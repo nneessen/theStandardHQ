@@ -141,17 +141,17 @@ export function SchedulingItemConfig({
   const Icon = INTEGRATION_ICONS[schedulingType];
 
   return (
-    <div className="space-y-3 p-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <Icon className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <Icon className="h-3.5 w-3.5 text-v2-ink-muted" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
           Scheduling Configuration
         </span>
       </div>
 
       {/* Scheduling Type */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Scheduling Type
         </Label>
         <Select
@@ -165,7 +165,7 @@ export function SchedulingItemConfig({
             }
           }}
         >
-          <SelectTrigger className="h-7 text-[11px] bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700">
+          <SelectTrigger className="h-7 text-[11px] bg-white  border-v2-ring">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -252,7 +252,7 @@ export function SchedulingItemConfig({
       {/* Custom URL Toggle & Input */}
       {(useCustomUrl || !selectedIntegration) && (
         <div className="space-y-1">
-          <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Custom Booking URL
             {!selectedIntegration && (
               <span className="text-red-500 ml-0.5">*</span>
@@ -262,7 +262,7 @@ export function SchedulingItemConfig({
             value={customUrl}
             onChange={(e) => handleCustomUrlChange(e.target.value)}
             placeholder={`https://${schedulingType === "zoom" ? "zoom.us/j/..." : schedulingType === "calendly" ? "calendly.com/..." : "calendar.google.com/..."}`}
-            className={`h-7 text-[11px] bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700 ${
+            className={`h-7 text-[11px] bg-white  border-v2-ring ${
               urlError ? "border-red-500 dark:border-red-500" : ""
             }`}
           />
@@ -275,7 +275,7 @@ export function SchedulingItemConfig({
                 setCustomUrl("");
                 setUrlError(null);
               }}
-              className="text-[10px] text-zinc-500 dark:text-zinc-400 underline hover:no-underline"
+              className="text-[10px] text-v2-ink-muted underline hover:no-underline"
             >
               Use configured integration instead
             </button>
@@ -285,17 +285,15 @@ export function SchedulingItemConfig({
 
       {/* Instructions */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Instructions for Recruit
-          <span className="text-zinc-400 dark:text-zinc-500 ml-1">
-            (optional)
-          </span>
+          <span className="text-v2-ink-subtle ml-1">(optional)</span>
         </Label>
         <Textarea
           value={instructions}
           onChange={(e) => setInstructions(e.target.value)}
           placeholder="e.g., Please book a 30-minute call at your earliest convenience."
-          className="text-[11px] min-h-12 bg-white dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+          className="text-[11px] min-h-12 bg-white  border-v2-ring"
         />
       </div>
     </div>

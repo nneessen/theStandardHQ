@@ -151,14 +151,14 @@ export function ExternalLinkItem({
 
       {/* Description - subtle, secondary */}
       {metadata.description && (
-        <p className="w-full text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
+        <p className="w-full text-xs text-v2-ink-muted mt-0.5">
           {metadata.description}
         </p>
       )}
 
       {/* Verification instructions - if needed */}
       {metadata.verification_instructions && hasClicked && (
-        <p className="w-full text-xs text-zinc-600 dark:text-zinc-300 mt-0.5 italic">
+        <p className="w-full text-xs text-v2-ink-muted mt-0.5 italic">
           {metadata.verification_instructions}
         </p>
       )}

@@ -164,7 +164,7 @@ export function SplitPanelLayout({
                         className="h-3.5 w-3.5"
                         style={{ color: theme.primary_color }}
                       />
-                      <span className="text-[10px] text-white/60 dark:text-black/60 uppercase tracking-wider">
+                      <span className="text-[10px] text-white/60 dark:text-black/60 uppercase tracking-[0.18em]">
                         {theme.default_city}
                         {theme.default_state && `, ${theme.default_state}`}
                       </span>

@@ -63,17 +63,22 @@ export function CarrierContractingConfig({
       prevMetadataRef.current = metadataString;
       onChangeRef.current(newMetadata);
     }
-  }, [allowRecruitEdit, completionCriteria, requiredCount, generalInstructions]);
+  }, [
+    allowRecruitEdit,
+    completionCriteria,
+    requiredCount,
+    generalInstructions,
+  ]);
 
   useEffect(() => {
     notifyChange();
   }, [notifyChange]);
 
   return (
-    <div className="space-y-3 p-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <Building2 className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <Building2 className="h-3.5 w-3.5 text-v2-ink-muted" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
           Carrier Contracting Configuration
         </span>
       </div>
@@ -81,10 +86,10 @@ export function CarrierContractingConfig({
       {/* Allow Recruit to Edit Writing Numbers */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Allow Recruit to Edit Writing Numbers
           </Label>
-          <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[9px] text-v2-ink-muted">
             Recruit can enter their own writing numbers from the checklist
           </p>
         </div>
@@ -97,7 +102,7 @@ export function CarrierContractingConfig({
 
       {/* Completion Criteria */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Completion Criteria
         </Label>
         <Select
@@ -123,7 +128,7 @@ export function CarrierContractingConfig({
       {/* Required Count (only for count criteria) */}
       {completionCriteria === "count" && (
         <div className="space-y-1">
-          <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Required Number of Carriers
           </Label>
           <Input
@@ -139,7 +144,7 @@ export function CarrierContractingConfig({
 
       {/* General Instructions */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Instructions (Optional)
         </Label>
         <Textarea

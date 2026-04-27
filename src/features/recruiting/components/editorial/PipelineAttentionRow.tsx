@@ -17,7 +17,7 @@ interface PipelineAttentionRowProps {
 }
 
 const COUNT_TONE: Record<NonNullable<AttentionItem["tone"]>, string> = {
-  default: "text-stone-900 dark:text-stone-100",
+  default: "text-v2-ink ",
   warn: "text-amber-700 dark:text-amber-400",
   error: "text-red-700 dark:text-red-400",
   success: "text-emerald-700 dark:text-emerald-400",
@@ -26,7 +26,7 @@ const COUNT_TONE: Record<NonNullable<AttentionItem["tone"]>, string> = {
 
 const PILL_TONE: Record<NonNullable<AttentionItem["tone"]>, string> = {
   default:
-    "bg-stone-50 dark:bg-stone-800 ring-stone-200 dark:ring-stone-700 hover:bg-stone-100 dark:hover:bg-stone-700",
+    "bg-v2-canvas dark:bg-v2-ring ring-v2-ring  hover:bg-v2-ring dark:hover:bg-v2-card-dark",
   warn: "bg-amber-50 dark:bg-amber-950/40 ring-amber-200 dark:ring-amber-900 hover:bg-amber-100 dark:hover:bg-amber-950/60",
   error:
     "bg-red-50 dark:bg-red-950/40 ring-red-200 dark:ring-red-900 hover:bg-red-100 dark:hover:bg-red-950/60",
@@ -37,7 +37,7 @@ const PILL_TONE: Record<NonNullable<AttentionItem["tone"]>, string> = {
 };
 
 const PILL_ACTIVE: Record<NonNullable<AttentionItem["tone"]>, string> = {
-  default: "bg-stone-100 dark:bg-stone-700 ring-stone-300 dark:ring-stone-600",
+  default: "bg-v2-ring  ring-v2-ring ",
   warn: "bg-amber-100 dark:bg-amber-950/60 ring-amber-300 dark:ring-amber-800",
   error: "bg-red-100 dark:bg-red-950/60 ring-red-300 dark:ring-red-800",
   success:
@@ -55,13 +55,13 @@ export const PipelineAttentionRow: React.FC<PipelineAttentionRowProps> = ({
   return (
     <section
       className={cn(
-        "rounded-2xl bg-white dark:bg-stone-900 ring-1 ring-stone-200/70 dark:ring-stone-800 shadow-sm dark:shadow-none p-5 md:p-6",
+        "rounded-2xl bg-white dark:bg-v2-card ring-1 ring-v2-ring  shadow-sm dark:shadow-none p-5 md:p-6",
         className,
       )}
     >
       <div className="flex items-center gap-2 mb-3">
         <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-        <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-700 dark:text-stone-300">
+        <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-v2-ink dark:text-v2-ink-subtle">
           Needs your attention
         </span>
       </div>
@@ -89,7 +89,7 @@ export const PipelineAttentionRow: React.FC<PipelineAttentionRowProps> = ({
               >
                 {item.count}
               </span>
-              <span className="text-[12px] text-stone-700 dark:text-stone-300">
+              <span className="text-[12px] text-v2-ink dark:text-v2-ink-subtle">
                 {item.label}
               </span>
             </Tag>
