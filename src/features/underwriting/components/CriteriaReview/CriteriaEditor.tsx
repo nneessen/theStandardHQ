@@ -133,10 +133,10 @@ export function CriteriaEditor({
           </Button>
           <Separator orientation="vertical" className="h-5" />
           <div>
-            <h3 className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+            <h3 className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
               {criteria.carrier?.name || "Unknown Carrier"}
             </h3>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               {criteria.guide?.name || "Unknown Guide"}
               {criteria.product?.name && ` • ${criteria.product.name}`}
             </p>
@@ -191,7 +191,7 @@ export function CriteriaEditor({
       </div>
 
       {/* Meta Info */}
-      <div className="flex flex-wrap items-center gap-3 text-[10px] text-zinc-500 dark:text-zinc-400">
+      <div className="flex flex-wrap items-center gap-3 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
         <div className="flex items-center gap-1">
           <Clock className="h-3 w-3" />
           <span>
@@ -379,10 +379,10 @@ export function CriteriaEditor({
         </div>
 
         {/* Source Excerpts - Right 1/3 */}
-        <div className="border border-zinc-200 dark:border-zinc-700 rounded-md p-3 bg-zinc-50/50 dark:bg-zinc-800/30">
+        <div className="border border-v2-ring dark:border-v2-ring-strong rounded-md p-3 bg-v2-canvas/50 dark:bg-v2-card-tinted/30">
           <div className="flex items-center gap-2 mb-3">
-            <FileSearch className="h-3.5 w-3.5 text-zinc-500" />
-            <h4 className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+            <FileSearch className="h-3.5 w-3.5 text-v2-ink-muted" />
+            <h4 className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
               Audit Trail
             </h4>
           </div>
@@ -420,7 +420,7 @@ function AgeLimitsSection({
   return (
     <div className="grid grid-cols-2 gap-4">
       <div>
-        <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+        <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide">
           Minimum Issue Age
         </label>
         {isEditing ? (
@@ -433,13 +433,13 @@ function AgeLimitsSection({
             className="h-7 text-[11px] mt-1"
           />
         ) : (
-          <p className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100">
+          <p className="text-[12px] font-medium text-v2-ink dark:text-v2-ink">
             {data.minIssueAge} years
           </p>
         )}
       </div>
       <div>
-        <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+        <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide">
           Maximum Issue Age
         </label>
         {isEditing ? (
@@ -452,7 +452,7 @@ function AgeLimitsSection({
             className="h-7 text-[11px] mt-1"
           />
         ) : (
-          <p className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100">
+          <p className="text-[12px] font-medium text-v2-ink dark:text-v2-ink">
             {data.maxIssueAge} years
           </p>
         )}
@@ -483,7 +483,7 @@ function FaceAmountSection({
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+          <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide">
             Minimum Face Amount
           </label>
           {isEditing ? (
@@ -496,13 +496,13 @@ function FaceAmountSection({
               className="h-7 text-[11px] mt-1"
             />
           ) : (
-            <p className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100">
+            <p className="text-[12px] font-medium text-v2-ink dark:text-v2-ink">
               {formatCurrency(data.minimum)}
             </p>
           )}
         </div>
         <div>
-          <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+          <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide">
             Maximum Face Amount
           </label>
           {isEditing ? (
@@ -515,7 +515,7 @@ function FaceAmountSection({
               className="h-7 text-[11px] mt-1"
             />
           ) : (
-            <p className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100">
+            <p className="text-[12px] font-medium text-v2-ink dark:text-v2-ink">
               {formatCurrency(data.maximum)}
             </p>
           )}
@@ -524,7 +524,7 @@ function FaceAmountSection({
 
       {data.ageTiers && data.ageTiers.length > 0 && (
         <div>
-          <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1 block">
+          <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide mb-1 block">
             Age-Based Tiers
           </label>
           <Table>
@@ -627,17 +627,17 @@ function BuildRequirementsSection({
   return (
     <div className="space-y-3">
       <div>
-        <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+        <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide">
           Measurement Type
         </label>
-        <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100 capitalize">
+        <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink capitalize">
           {data.type === "height_weight" ? "Height/Weight Chart" : "BMI-Based"}
         </p>
       </div>
       <div className="grid grid-cols-3 gap-3">
         {data.preferredPlusBmiMax && (
           <div>
-            <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+            <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide">
               Preferred Plus Max BMI
             </label>
             {isEditing ? (
@@ -654,7 +654,7 @@ function BuildRequirementsSection({
                 className="h-7 text-[11px] mt-1"
               />
             ) : (
-              <p className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100">
+              <p className="text-[12px] font-medium text-v2-ink dark:text-v2-ink">
                 {data.preferredPlusBmiMax}
               </p>
             )}
@@ -662,7 +662,7 @@ function BuildRequirementsSection({
         )}
         {data.preferredBmiMax && (
           <div>
-            <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+            <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide">
               Preferred Max BMI
             </label>
             {isEditing ? (
@@ -679,7 +679,7 @@ function BuildRequirementsSection({
                 className="h-7 text-[11px] mt-1"
               />
             ) : (
-              <p className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100">
+              <p className="text-[12px] font-medium text-v2-ink dark:text-v2-ink">
                 {data.preferredBmiMax}
               </p>
             )}
@@ -687,7 +687,7 @@ function BuildRequirementsSection({
         )}
         {data.standardBmiMax && (
           <div>
-            <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+            <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide">
               Standard Max BMI
             </label>
             {isEditing ? (
@@ -704,7 +704,7 @@ function BuildRequirementsSection({
                 className="h-7 text-[11px] mt-1"
               />
             ) : (
-              <p className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100">
+              <p className="text-[12px] font-medium text-v2-ink dark:text-v2-ink">
                 {data.standardBmiMax}
               </p>
             )}
@@ -725,7 +725,7 @@ function TobaccoRulesSection({
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <span className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Nicotine Test Required:
         </span>
         <Badge
@@ -739,7 +739,7 @@ function TobaccoRulesSection({
       {data.smokingClassifications &&
         data.smokingClassifications.length > 0 && (
           <div>
-            <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1 block">
+            <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide mb-1 block">
               Smoking Classifications
             </label>
             <Table>
@@ -827,9 +827,9 @@ function MedicationRestrictionsSection({
       {restrictions.map((r, idx) => (
         <div
           key={idx}
-          className="flex items-center justify-between p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded"
+          className="flex items-center justify-between p-2 bg-v2-canvas dark:bg-v2-card-tinted/50 rounded"
         >
-          <span className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             {r.label}
           </span>
           <Badge
@@ -855,7 +855,7 @@ function StateAvailabilitySection({
     <div className="space-y-3">
       {data.availableStates && data.availableStates.length > 0 && (
         <div>
-          <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1 block">
+          <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide mb-1 block">
             Available States ({data.availableStates.length})
           </label>
           <div className="flex flex-wrap gap-1">
@@ -873,7 +873,7 @@ function StateAvailabilitySection({
       )}
       {data.unavailableStates && data.unavailableStates.length > 0 && (
         <div>
-          <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1 block">
+          <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide mb-1 block">
             Excluded States ({data.unavailableStates.length})
           </label>
           <div className="flex flex-wrap gap-1">
@@ -909,7 +909,7 @@ function CoverageOptionsSection({
       <div className="grid grid-cols-2 gap-4">
         {data.productTypes && data.productTypes.length > 0 && (
           <div>
-            <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1 block">
+            <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide mb-1 block">
               Product Types
             </label>
             <div className="flex flex-wrap gap-1">
@@ -927,10 +927,10 @@ function CoverageOptionsSection({
         )}
         {data.underwritingType && (
           <div>
-            <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+            <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide">
               Underwriting Type
             </label>
-            <p className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100 capitalize">
+            <p className="text-[12px] font-medium text-v2-ink dark:text-v2-ink capitalize">
               {formatLabel(data.underwritingType)}
             </p>
           </div>
@@ -940,7 +940,7 @@ function CoverageOptionsSection({
       {/* Available Terms */}
       {data.availableTerms && data.availableTerms.length > 0 && (
         <div>
-          <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1 block">
+          <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide mb-1 block">
             Available Terms
           </label>
           <div className="flex flex-wrap gap-1">
@@ -962,7 +962,7 @@ function CoverageOptionsSection({
       {/* Rating Classes */}
       {data.ratingClasses && data.ratingClasses.length > 0 && (
         <div>
-          <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1 block">
+          <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide mb-1 block">
             Rating Classes
           </label>
           <div className="flex flex-wrap gap-1">
@@ -983,7 +983,7 @@ function CoverageOptionsSection({
       <div className="grid grid-cols-2 gap-4">
         {data.conversionPrivilege && (
           <div>
-            <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+            <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide">
               Conversion Privilege
             </label>
             <div className="flex items-center gap-2 mt-0.5">
@@ -996,12 +996,12 @@ function CoverageOptionsSection({
                 {data.conversionPrivilege.allowed ? "Allowed" : "Not Allowed"}
               </Badge>
               {data.conversionPrivilege.maxAge && (
-                <span className="text-[10px] text-zinc-500">
+                <span className="text-[10px] text-v2-ink-muted">
                   to age {data.conversionPrivilege.maxAge}
                 </span>
               )}
               {data.conversionPrivilege.maxYears && (
-                <span className="text-[10px] text-zinc-500">
+                <span className="text-[10px] text-v2-ink-muted">
                   within {data.conversionPrivilege.maxYears} yrs
                 </span>
               )}
@@ -1010,7 +1010,7 @@ function CoverageOptionsSection({
         )}
         {data.acceleratedUnderwriting !== undefined && (
           <div>
-            <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+            <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide">
               Accelerated Underwriting
             </label>
             <Badge
@@ -1026,7 +1026,7 @@ function CoverageOptionsSection({
       {/* Riders */}
       {data.riders && data.riders.length > 0 && (
         <div>
-          <label className="text-[9px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1 block">
+          <label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide mb-1 block">
             Riders ({data.riders.length})
           </label>
           <Table>
@@ -1047,7 +1047,7 @@ function CoverageOptionsSection({
                   <TableCell className="py-1.5 px-2 text-[10px] font-medium">
                     {rider.name}
                   </TableCell>
-                  <TableCell className="py-1.5 px-2 text-[10px] text-zinc-500">
+                  <TableCell className="py-1.5 px-2 text-[10px] text-v2-ink-muted">
                     {rider.description || "—"}
                   </TableCell>
                   <TableCell className="py-1.5 px-2">

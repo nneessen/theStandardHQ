@@ -79,10 +79,10 @@ export function SessionHistoryList() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h3 className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+          <h3 className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
             Session History
           </h3>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             {totalCount} session{totalCount !== 1 ? "s" : ""} found
           </p>
         </div>
@@ -98,32 +98,32 @@ export function SessionHistoryList() {
       </div>
 
       {/* Table */}
-      <div className="border border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden">
+      <div className="border border-v2-ring dark:border-v2-ring rounded-md overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-zinc-50 dark:bg-zinc-800/50">
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">
+            <TableRow className="bg-v2-canvas dark:bg-v2-card-tinted/50">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
                 <div className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
                   Date
                 </div>
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
                 <div className="flex items-center gap-1">
                   <User className="h-3 w-3" />
                   Client
                 </div>
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 text-center">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-center">
                 <div className="flex items-center justify-center gap-1">
                   <Activity className="h-3 w-3" />
                   Health Tier
                 </div>
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 text-right">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-right">
                 Face Amounts
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 w-[80px]">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle w-[80px]">
                 Actions
               </TableHead>
             </TableRow>
@@ -153,18 +153,18 @@ export function SessionHistoryList() {
               sessions.map((session) => (
                 <TableRow
                   key={session.session_id}
-                  className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30 cursor-pointer"
+                  className="hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/30 cursor-pointer"
                   onClick={() => handleViewSession(session)}
                 >
-                  <TableCell className="px-3 py-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <TableCell className="px-3 py-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     {formatSessionDate(session.created_at)}
                   </TableCell>
                   <TableCell className="px-3 py-2">
                     <div>
-                      <div className="text-[11px] text-zinc-900 dark:text-zinc-100 font-medium">
+                      <div className="text-[11px] text-v2-ink dark:text-v2-ink font-medium">
                         {session.client_name || "Unnamed Client"}
                       </div>
-                      <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                      <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                         {session.client_age} y/o {session.client_gender} •{" "}
                         {session.client_state}
                       </div>
@@ -179,7 +179,7 @@ export function SessionHistoryList() {
                         : "N/A"}
                     </Badge>
                   </TableCell>
-                  <TableCell className="px-3 py-2 text-[11px] text-zinc-700 dark:text-zinc-300 text-right font-medium">
+                  <TableCell className="px-3 py-2 text-[11px] text-v2-ink dark:text-v2-ink-muted text-right font-medium">
                     {formatRequestedFaceAmounts(session)}
                   </TableCell>
                   <TableCell className="px-3 py-2">
@@ -202,7 +202,7 @@ export function SessionHistoryList() {
               <TableRow>
                 <TableCell
                   colSpan={5}
-                  className="px-3 py-8 text-center text-[11px] text-zinc-500 dark:text-zinc-400"
+                  className="px-3 py-8 text-center text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
                 >
                   {search
                     ? "No sessions match your search."

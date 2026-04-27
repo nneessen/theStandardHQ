@@ -199,7 +199,7 @@ export function PredicateLeafBuilder({
               }
               disabled={disabled}
             />
-            <span className="text-[10px] text-zinc-500">to</span>
+            <span className="text-[10px] text-v2-ink-muted">to</span>
             <Input
               type="number"
               className="h-6 w-16 text-[11px]"
@@ -257,7 +257,7 @@ export function PredicateLeafBuilder({
             disabled={disabled}
             className="h-3.5 w-3.5"
           />
-          <span className="text-[10px] text-zinc-500">
+          <span className="text-[10px] text-v2-ink-muted">
             {condition.value ? "True" : "False"}
           </span>
         </div>
@@ -313,7 +313,7 @@ export function PredicateLeafBuilder({
                   className={`px-1.5 py-0.5 text-[10px] rounded ${
                     isSelected
                       ? "bg-blue-500 text-white"
-                      : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+                      : "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink dark:text-v2-ink-muted"
                   }`}
                 >
                   {opt.label}
@@ -405,7 +405,7 @@ export function PredicateLeafBuilder({
 
       {/* Unit display */}
       {fieldDef?.unit && (
-        <span className="text-[10px] text-zinc-400">{fieldDef.unit}</span>
+        <span className="text-[10px] text-v2-ink-subtle">{fieldDef.unit}</span>
       )}
 
       {/* Treat null as (not available for condition_presence) */}
@@ -444,7 +444,7 @@ export function PredicateLeafBuilder({
         size="sm"
         onClick={onDelete}
         disabled={disabled}
-        className="h-6 w-6 p-0 text-zinc-400 hover:text-red-500"
+        className="h-6 w-6 p-0 text-v2-ink-subtle hover:text-red-500"
       >
         <Trash2 className="h-3 w-3" />
       </Button>

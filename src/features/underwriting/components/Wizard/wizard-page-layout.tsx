@@ -113,7 +113,7 @@ export function WizardPageLayout({
                       status === "current" &&
                         "bg-amber-500 text-white shadow-sm",
                       status === "upcoming" &&
-                        "bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400",
+                        "bg-v2-ring dark:bg-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-subtle",
                     )}
                   >
                     {status === "completed" ? (
@@ -145,7 +145,7 @@ export function WizardPageLayout({
                       "w-6 lg:w-10 h-px mx-0.5",
                       index < currentStepIndex
                         ? "bg-amber-400 dark:bg-amber-500/50"
-                        : "bg-zinc-300 dark:bg-zinc-600",
+                        : "bg-v2-ring-strong dark:bg-v2-ring-strong",
                     )}
                   />
                 )}

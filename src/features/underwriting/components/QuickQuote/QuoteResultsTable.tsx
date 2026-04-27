@@ -131,7 +131,7 @@ export default function QuoteResultsTable({
     <Button
       variant="ghost"
       size="sm"
-      className="h-6 px-1 text-[10px] font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800"
+      className="h-6 px-1 text-[10px] font-medium hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted"
       onClick={() => handleSort(sortKeyValue)}
     >
       {children}
@@ -140,7 +140,7 @@ export default function QuoteResultsTable({
           "ml-1 h-3 w-3",
           sortKey === sortKeyValue
             ? "text-blue-600"
-            : "text-zinc-400 dark:text-zinc-600",
+            : "text-v2-ink-subtle dark:text-v2-ink-muted",
         )}
       />
     </Button>
@@ -172,7 +172,7 @@ export default function QuoteResultsTable({
       );
     }
     return (
-      <Badge className="bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 text-[9px] h-4 px-1">
+      <Badge className="bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted text-[9px] h-4 px-1">
         {productType.replace(/_/g, " ")}
       </Badge>
     );
@@ -205,10 +205,10 @@ export default function QuoteResultsTable({
 
   if (isLoading) {
     return (
-      <div className="border rounded-lg border-zinc-200 dark:border-zinc-800 overflow-hidden">
+      <div className="border rounded-lg border-v2-ring dark:border-v2-ring overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-zinc-50 dark:bg-zinc-900/50">
+            <TableRow className="bg-v2-canvas dark:bg-v2-card/50">
               <TableHead className="text-[10px] font-medium">Carrier</TableHead>
               <TableHead className="text-[10px] font-medium">Product</TableHead>
               <TableHead className="text-[10px] font-medium">Type</TableHead>
@@ -230,7 +230,7 @@ export default function QuoteResultsTable({
             {[...Array(5)].map((_, i) => (
               <TableRow key={i}>
                 <TableCell colSpan={7}>
-                  <div className="h-4 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse" />
+                  <div className="h-4 bg-v2-card-tinted dark:bg-v2-card-tinted rounded animate-pulse" />
                 </TableCell>
               </TableRow>
             ))}
@@ -242,12 +242,12 @@ export default function QuoteResultsTable({
 
   if (eligibleQuotes.length === 0) {
     return (
-      <div className="border rounded-lg border-zinc-200 dark:border-zinc-800 p-6 text-center">
-        <AlertCircle className="h-8 w-8 mx-auto mb-2 text-zinc-400" />
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <div className="border rounded-lg border-v2-ring dark:border-v2-ring p-6 text-center">
+        <AlertCircle className="h-8 w-8 mx-auto mb-2 text-v2-ink-subtle" />
+        <p className="text-sm text-v2-ink-muted dark:text-v2-ink-subtle">
           No eligible quotes found
         </p>
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-500 mt-1">
+        <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-muted mt-1">
           {ineligibleQuotes.length > 0
             ? `${ineligibleQuotes.length} products were excluded due to eligibility rules`
             : "Try adjusting your search criteria"}
@@ -259,7 +259,7 @@ export default function QuoteResultsTable({
   return (
     <div className="space-y-3">
       {/* Summary */}
-      <div className="flex items-center justify-between text-[11px] text-zinc-600 dark:text-zinc-400">
+      <div className="flex items-center justify-between text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
         <span>
           Found <span className="font-medium">{eligibleQuotes.length}</span>{" "}
           eligible quotes
@@ -288,17 +288,17 @@ export default function QuoteResultsTable({
           )}
         </span>
         {ineligibleQuotes.length > 0 && (
-          <span className="text-zinc-500">
+          <span className="text-v2-ink-muted">
             {ineligibleQuotes.length} products excluded
           </span>
         )}
       </div>
 
       {/* Main Table */}
-      <div className="border rounded-lg border-zinc-200 dark:border-zinc-800 overflow-hidden">
+      <div className="border rounded-lg border-v2-ring dark:border-v2-ring overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-zinc-50 dark:bg-zinc-900/50 hover:bg-zinc-50 dark:hover:bg-zinc-900/50">
+            <TableRow className="bg-v2-canvas dark:bg-v2-card/50 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted">
               <TableHead className="text-[10px] font-medium w-[120px]">
                 Carrier
               </TableHead>
@@ -334,10 +334,10 @@ export default function QuoteResultsTable({
                     "bg-yellow-50/30 dark:bg-yellow-900/10",
                 )}
               >
-                <TableCell className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+                <TableCell className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
                   {quote.carrierName}
                 </TableCell>
-                <TableCell className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                <TableCell className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   <div className="flex items-center gap-1">
                     {quote.productName}
                     {quote.eligibilityStatus === "rating_adjusted" && (
@@ -358,13 +358,13 @@ export default function QuoteResultsTable({
                 <TableCell>
                   {getProductTypeBadge(quote.productType, quote.termYears)}
                 </TableCell>
-                <TableCell className="text-[11px] text-right font-medium text-zinc-700 dark:text-zinc-300">
+                <TableCell className="text-[11px] text-right font-medium text-v2-ink dark:text-v2-ink-muted">
                   {formatCurrency(quote.faceAmount)}
                 </TableCell>
                 <TableCell className="text-[11px] text-right font-medium text-emerald-600 dark:text-emerald-400">
                   {formatCurrencyDecimal(quote.monthlyPremium)}
                 </TableCell>
-                <TableCell className="text-[11px] text-right text-zinc-500 dark:text-zinc-400">
+                <TableCell className="text-[11px] text-right text-v2-ink-muted dark:text-v2-ink-subtle">
                   ${quote.costPerThousand.toFixed(2)}
                 </TableCell>
                 <TableCell className="text-center">
@@ -378,10 +378,10 @@ export default function QuoteResultsTable({
 
       {/* Ineligible Products (Collapsible) */}
       {showIneligible && ineligibleQuotes.length > 0 && (
-        <div className="border rounded-lg border-zinc-200 dark:border-zinc-800 overflow-hidden">
+        <div className="border rounded-lg border-v2-ring dark:border-v2-ring overflow-hidden">
           <button
             onClick={() => setExpandedIneligible(!expandedIneligible)}
-            className="w-full flex items-center justify-between px-3 py-2 text-[11px] text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-900/50"
+            className="w-full flex items-center justify-between px-3 py-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-canvas dark:hover:bg-v2-card-tinted"
           >
             <span className="flex items-center gap-1.5">
               <AlertCircle className="h-3.5 w-3.5" />
@@ -401,10 +401,10 @@ export default function QuoteResultsTable({
                     key={`${quote.productId}-${quote.termYears}-ineligible`}
                     className="opacity-50 bg-red-50/30 dark:bg-red-900/10"
                   >
-                    <TableCell className="text-[11px] text-zinc-500 w-[120px]">
+                    <TableCell className="text-[11px] text-v2-ink-muted w-[120px]">
                       {quote.carrierName}
                     </TableCell>
-                    <TableCell className="text-[11px] text-zinc-500 w-[160px]">
+                    <TableCell className="text-[11px] text-v2-ink-muted w-[160px]">
                       {quote.productName}
                     </TableCell>
                     <TableCell

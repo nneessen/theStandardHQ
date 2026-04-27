@@ -7,7 +7,7 @@ import type { HealthTier } from "../../types/underwriting.types";
  */
 export function getHealthTierBadgeColor(tier: string | null): string {
   if (!tier)
-    return "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
+    return "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle";
 
   switch (tier) {
     case "preferred_plus":
@@ -22,7 +22,7 @@ export function getHealthTierBadgeColor(tier: string | null): string {
     case "decline":
       return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
     default:
-      return "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
+      return "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle";
   }
 }
 

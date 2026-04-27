@@ -101,7 +101,7 @@ export function OutcomeEditor({
       {/* Row 1: Eligibility + Health Class */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
-          <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Eligibility
           </Label>
           <Select
@@ -125,7 +125,7 @@ export function OutcomeEditor({
         </div>
 
         <div className="space-y-1">
-          <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Health Class
           </Label>
           <Select
@@ -151,7 +151,7 @@ export function OutcomeEditor({
 
       {/* Row 2: Table Rating */}
       <div className="space-y-1">
-        <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+        <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Table Rating
         </Label>
         <Select
@@ -177,7 +177,7 @@ export function OutcomeEditor({
       {/* Row 3: Flat Extra */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
-          <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Flat Extra ($/1000)
           </Label>
           <Input
@@ -200,7 +200,7 @@ export function OutcomeEditor({
         </div>
 
         <div className="space-y-1">
-          <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Duration (years)
           </Label>
           <Input
@@ -225,7 +225,7 @@ export function OutcomeEditor({
 
       {/* Row 4: Reason */}
       <div className="space-y-1">
-        <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+        <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Reason <span className="text-red-500">*</span>
         </Label>
         <Textarea
@@ -239,7 +239,7 @@ export function OutcomeEditor({
 
       {/* Row 5: Concerns */}
       <div className="space-y-1">
-        <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+        <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Concerns
         </Label>
         {value.concerns.length > 0 && (
@@ -247,14 +247,14 @@ export function OutcomeEditor({
             {value.concerns.map((concern, index) => (
               <span
                 key={index}
-                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] bg-zinc-100 dark:bg-zinc-800 rounded"
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] bg-v2-card-tinted dark:bg-v2-card-tinted rounded"
               >
                 {concern}
                 {!disabled && (
                   <button
                     type="button"
                     onClick={() => removeConcern(index)}
-                    className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                    className="text-v2-ink-subtle hover:text-v2-ink-muted dark:hover:text-v2-ink-subtle"
                   >
                     <X className="h-2.5 w-2.5" />
                   </button>

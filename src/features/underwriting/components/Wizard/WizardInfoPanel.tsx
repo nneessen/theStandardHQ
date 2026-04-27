@@ -185,12 +185,12 @@ export function WizardInfoPanel({
             </div>
             <div className="space-y-2">
               <h2
-                className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
+                className="text-xl font-semibold tracking-tight text-v2-ink dark:text-v2-ink"
                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}
               >
                 Decision support, not final underwriting authority.
               </h2>
-              <p className="text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+              <p className="text-sm leading-6 text-v2-ink dark:text-v2-ink-muted">
                 This wizard helps screen likely fits using stored underwriting
                 data, but the flow is still evolving. Favorable results should
                 be treated as directional until an agent verifies the case
@@ -217,7 +217,7 @@ export function WizardInfoPanel({
                   </CardDescription>
                   <CardTitle className="text-base">{guidance.title}</CardTitle>
                 </div>
-                <ClipboardList className="mt-0.5 h-4 w-4 text-zinc-400" />
+                <ClipboardList className="mt-0.5 h-4 w-4 text-v2-ink-subtle" />
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -225,14 +225,14 @@ export function WizardInfoPanel({
                 {guidance.body}
               </p>
               <div className="space-y-2">
-                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
+                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-v2-ink-muted">
                   What to do in this step
                 </div>
-                <ul className="space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                <ul className="space-y-2 text-sm text-v2-ink dark:text-v2-ink-muted">
                   {guidance.checklist.map((item) => (
                     <li
                       key={item}
-                      className="rounded-xl border border-zinc-200/80 bg-white/70 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/60"
+                      className="rounded-xl border border-v2-ring/80 bg-white/70 px-3 py-2 dark:border-v2-ring dark:bg-v2-card/60"
                     >
                       {item}
                     </li>
@@ -256,50 +256,50 @@ export function WizardInfoPanel({
                     Quick context for the case currently loaded in the wizard.
                   </CardDescription>
                 </div>
-                <Stethoscope className="h-4 w-4 text-zinc-400" />
+                <Stethoscope className="h-4 w-4 text-v2-ink-subtle" />
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-xl bg-zinc-100 px-3 py-2 dark:bg-zinc-900">
-                  <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">
+                <div className="rounded-xl bg-v2-card-tinted px-3 py-2 dark:bg-v2-card">
+                  <div className="text-[11px] uppercase tracking-[0.16em] text-v2-ink-muted">
                     Applicant
                   </div>
-                  <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  <div className="mt-1 text-sm font-medium text-v2-ink dark:text-v2-ink">
                     {formData.client.name || "Unnamed case"}
                   </div>
                 </div>
-                <div className="rounded-xl bg-zinc-100 px-3 py-2 dark:bg-zinc-900">
-                  <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">
+                <div className="rounded-xl bg-v2-card-tinted px-3 py-2 dark:bg-v2-card">
+                  <div className="text-[11px] uppercase tracking-[0.16em] text-v2-ink-muted">
                     Profile
                   </div>
-                  <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  <div className="mt-1 text-sm font-medium text-v2-ink dark:text-v2-ink">
                     {formData.client.age > 0
                       ? `Age ${formData.client.age}`
                       : "Age missing"}
                     {formData.client.state ? `, ${formData.client.state}` : ""}
                   </div>
                 </div>
-                <div className="rounded-xl bg-zinc-100 px-3 py-2 dark:bg-zinc-900">
-                  <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">
+                <div className="rounded-xl bg-v2-card-tinted px-3 py-2 dark:bg-v2-card">
+                  <div className="text-[11px] uppercase tracking-[0.16em] text-v2-ink-muted">
                     Conditions
                   </div>
-                  <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  <div className="mt-1 text-sm font-medium text-v2-ink dark:text-v2-ink">
                     {formData.health.conditions.length}
                   </div>
                 </div>
-                <div className="rounded-xl bg-zinc-100 px-3 py-2 dark:bg-zinc-900">
-                  <div className="text-[11px] uppercase tracking-[0.16em] text-zinc-500">
+                <div className="rounded-xl bg-v2-card-tinted px-3 py-2 dark:bg-v2-card">
+                  <div className="text-[11px] uppercase tracking-[0.16em] text-v2-ink-muted">
                     Med Signals
                   </div>
-                  <div className="mt-1 text-sm font-medium text-zinc-900 dark:text-zinc-100">
+                  <div className="mt-1 text-sm font-medium text-v2-ink dark:text-v2-ink">
                     {medicationSignals}
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
+                <div className="text-xs font-semibold uppercase tracking-[0.16em] text-v2-ink-muted">
                   Coverage targets
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -322,7 +322,7 @@ export function WizardInfoPanel({
               </div>
 
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-v2-ink-muted">
                   <Pill className="h-3.5 w-3.5" />
                   Product types
                 </div>
@@ -351,11 +351,11 @@ export function WizardInfoPanel({
                     verification.
                   </CardDescription>
                 </div>
-                <FileWarning className="h-4 w-4 text-zinc-400" />
+                <FileWarning className="h-4 w-4 text-v2-ink-subtle" />
               </div>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+              <ul className="space-y-2 text-sm text-v2-ink dark:text-v2-ink-muted">
                 {KNOWN_LIMITATIONS.map((item) => (
                   <li key={item} className="flex gap-2">
                     <span className="mt-1 h-1.5 w-1.5 rounded-full bg-amber-500" />

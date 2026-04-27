@@ -54,7 +54,7 @@ export default function ClientInfoStep({
 
   return (
     <div className="space-y-4 p-1">
-      <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+      <div className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle mb-3">
         Enter client demographic information. Only age, gender, and state are
         required for underwriting analysis.
       </div>
@@ -63,7 +63,7 @@ export default function ClientInfoStep({
       <div className="space-y-1">
         <Label
           htmlFor="name"
-          className="text-[11px] text-zinc-600 dark:text-zinc-400"
+          className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
         >
           Client Name (optional)
         </Label>
@@ -81,7 +81,7 @@ export default function ClientInfoStep({
         <div className="space-y-1">
           <Label
             htmlFor="dob"
-            className="text-[11px] text-zinc-600 dark:text-zinc-400"
+            className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
           >
             Date of Birth
           </Label>
@@ -96,7 +96,7 @@ export default function ClientInfoStep({
         <div className="space-y-1">
           <Label
             htmlFor="age"
-            className="text-[11px] text-zinc-600 dark:text-zinc-400"
+            className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
           >
             Age <span className="text-red-500">*</span>
           </Label>
@@ -118,7 +118,7 @@ export default function ClientInfoStep({
       {/* Gender and State */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
-          <Label className="text-[11px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Gender <span className="text-red-500">*</span>
           </Label>
           <Select
@@ -144,7 +144,7 @@ export default function ClientInfoStep({
         </div>
 
         <div className="space-y-1">
-          <Label className="text-[11px] text-zinc-600 dark:text-zinc-400">
+          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             State <span className="text-red-500">*</span>
           </Label>
           <Select
@@ -171,9 +171,9 @@ export default function ClientInfoStep({
       </div>
 
       {/* Height and Weight - BMI section */}
-      <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800">
+      <div className="pt-2 border-t border-v2-ring dark:border-v2-ring">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+          <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
             Build Information
           </span>
           {bmi > 0 && (
@@ -185,7 +185,7 @@ export default function ClientInfoStep({
 
         <div className="grid grid-cols-3 gap-3">
           <div className="space-y-1">
-            <Label className="text-[11px] text-zinc-600 dark:text-zinc-400">
+            <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Height (ft)
             </Label>
             <Select
@@ -208,7 +208,7 @@ export default function ClientInfoStep({
           </div>
 
           <div className="space-y-1">
-            <Label className="text-[11px] text-zinc-600 dark:text-zinc-400">
+            <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Height (in)
             </Label>
             <Select
@@ -233,7 +233,7 @@ export default function ClientInfoStep({
           <div className="space-y-1">
             <Label
               htmlFor="weight"
-              className="text-[11px] text-zinc-600 dark:text-zinc-400"
+              className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
             >
               Weight (lbs)
             </Label>

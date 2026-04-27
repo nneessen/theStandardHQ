@@ -103,7 +103,7 @@ function PresetConfigPopover({
   return (
     <div className="w-56 space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+        <span className="text-xs font-semibold text-v2-ink dark:text-v2-ink-muted">
           Configure Presets
         </span>
         <span className="text-[10px] text-muted-foreground tabular-nums">
@@ -117,16 +117,16 @@ function PresetConfigPopover({
           {presets.map((preset, idx) => (
             <div
               key={idx}
-              className="flex items-center justify-between rounded-md px-2 py-1 bg-zinc-50 dark:bg-zinc-800/50"
+              className="flex items-center justify-between rounded-md px-2 py-1 bg-v2-canvas dark:bg-v2-card-tinted/50"
             >
-              <span className="text-xs tabular-nums text-zinc-600 dark:text-zinc-400">
+              <span className="text-xs tabular-nums text-v2-ink-muted dark:text-v2-ink-subtle">
                 {formatPresetChip(preset, mode)}
               </span>
               <button
                 type="button"
                 onClick={() => onDelete(idx)}
                 disabled={isSaving}
-                className="text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors disabled:opacity-50"
+                className="text-v2-ink-subtle hover:text-red-500 dark:hover:text-red-400 transition-colors disabled:opacity-50"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -156,7 +156,7 @@ function PresetConfigPopover({
         type="button"
         onClick={onReset}
         disabled={isSaving}
-        className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors mx-auto disabled:opacity-50"
+        className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-v2-ink dark:hover:text-v2-ink-subtle transition-colors mx-auto disabled:opacity-50"
       >
         <RotateCcw className="h-2.5 w-2.5" />
         Reset to Defaults
@@ -246,7 +246,7 @@ export function QuickOptionsPresets({
       <Label className="text-[10px] text-muted-foreground">Quick Options</Label>
 
       {/* Segmented preset group with gear button */}
-      <div className="flex rounded-md border border-zinc-200 dark:border-zinc-700 overflow-hidden h-7">
+      <div className="flex rounded-md border border-v2-ring dark:border-v2-ring-strong overflow-hidden h-7">
         {activePresets.map((preset, idx) => {
           const isActive = tuplesEqual(preset, currentAmounts);
           return (
@@ -257,9 +257,9 @@ export function QuickOptionsPresets({
               className={cn(
                 "px-2.5 text-[11px] font-medium tabular-nums transition-colors whitespace-nowrap",
                 isActive
-                  ? "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900"
-                  : "bg-white text-zinc-500 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800",
-                idx > 0 && "border-l border-zinc-200 dark:border-zinc-700",
+                  ? "bg-v2-ink text-v2-canvas dark:bg-v2-canvas dark:text-v2-ink"
+                  : "bg-white text-v2-ink-muted hover:bg-v2-canvas dark:bg-v2-card dark:text-v2-ink-subtle dark:hover:bg-v2-card-tinted",
+                idx > 0 && "border-l border-v2-ring dark:border-v2-ring-strong",
               )}
             >
               {formatPresetChip(preset, mode)}
@@ -273,8 +273,8 @@ export function QuickOptionsPresets({
             <button
               type="button"
               className={cn(
-                "px-2 flex items-center justify-center transition-colors border-l border-zinc-200 dark:border-zinc-700",
-                "bg-white text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600 dark:bg-zinc-900 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-zinc-300",
+                "px-2 flex items-center justify-center transition-colors border-l border-v2-ring dark:border-v2-ring-strong",
+                "bg-white text-v2-ink-subtle hover:bg-v2-canvas hover:text-v2-ink-muted dark:bg-v2-card dark:text-v2-ink-muted dark:hover:bg-v2-card-tinted dark:hover:text-v2-ink-subtle",
               )}
             >
               <Settings className="h-3 w-3" />

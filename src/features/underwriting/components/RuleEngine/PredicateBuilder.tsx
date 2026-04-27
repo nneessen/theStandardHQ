@@ -35,7 +35,7 @@ export function PredicateBuilder({
   return (
     <Tabs value={mode} onValueChange={(v) => setMode(v as "visual" | "json")}>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+        <span className="text-[11px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
           Predicate
         </span>
         <TabsList className="h-6">

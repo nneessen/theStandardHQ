@@ -108,7 +108,7 @@ function AmountInput({
           onFocus={handleFocus}
           onKeyDown={handleKeyDown}
           className={cn(
-            "pl-5 text-right tabular-nums h-8 text-sm bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600",
+            "pl-5 text-right tabular-nums h-8 text-sm bg-v2-card-tinted border-v2-ring-strong dark:border-v2-ring-strong",
             mode === "budget" && "pr-9",
           )}
         />

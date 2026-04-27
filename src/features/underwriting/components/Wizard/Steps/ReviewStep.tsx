@@ -83,7 +83,7 @@ export default function ReviewStep({
 
   return (
     <div className="space-y-4 p-1">
-      <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+      <div className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle mb-3">
         Review the information below before submitting for AI analysis.
       </div>
 
@@ -127,41 +127,43 @@ export default function ReviewStep({
       </div>
 
       {/* Client Information */}
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden shadow-sm bg-white dark:bg-zinc-900">
-        <div className="px-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 flex items-center gap-2">
-          <User className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
-          <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+      <div className="border border-v2-ring dark:border-v2-ring-strong rounded-lg overflow-hidden shadow-sm bg-v2-card">
+        <div className="px-4 py-2.5 bg-v2-card-tinted dark:bg-v2-card-tinted border-b border-v2-ring dark:border-v2-ring-strong flex items-center gap-2">
+          <User className="h-4 w-4 text-v2-ink-muted dark:text-v2-ink-subtle" />
+          <span className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
             Client Information
           </span>
         </div>
-        <div className="p-4 bg-white dark:bg-zinc-900 grid grid-cols-2 gap-y-2.5 gap-x-4 text-sm">
+        <div className="p-4 bg-v2-card grid grid-cols-2 gap-y-2.5 gap-x-4 text-sm">
           {clientInfo.name && (
             <>
-              <span className="text-zinc-500">Name:</span>
-              <span className="text-zinc-700 dark:text-zinc-300">
+              <span className="text-v2-ink-muted">Name:</span>
+              <span className="text-v2-ink dark:text-v2-ink-muted">
                 {clientInfo.name}
               </span>
             </>
           )}
-          <span className="text-zinc-500">Age:</span>
-          <span className="text-zinc-700 dark:text-zinc-300">
+          <span className="text-v2-ink-muted">Age:</span>
+          <span className="text-v2-ink dark:text-v2-ink-muted">
             {clientInfo.age} years
           </span>
-          <span className="text-zinc-500">Gender:</span>
-          <span className="text-zinc-700 dark:text-zinc-300 capitalize">
+          <span className="text-v2-ink-muted">Gender:</span>
+          <span className="text-v2-ink dark:text-v2-ink-muted capitalize">
             {clientInfo.gender}
           </span>
-          <span className="text-zinc-500">State:</span>
-          <span className="text-zinc-700 dark:text-zinc-300">{stateName}</span>
-          <span className="text-zinc-500">Height:</span>
-          <span className="text-zinc-700 dark:text-zinc-300">
+          <span className="text-v2-ink-muted">State:</span>
+          <span className="text-v2-ink dark:text-v2-ink-muted">
+            {stateName}
+          </span>
+          <span className="text-v2-ink-muted">Height:</span>
+          <span className="text-v2-ink dark:text-v2-ink-muted">
             {formatHeight(clientInfo.heightFeet, clientInfo.heightInches)}
           </span>
-          <span className="text-zinc-500">Weight:</span>
-          <span className="text-zinc-700 dark:text-zinc-300">
+          <span className="text-v2-ink-muted">Weight:</span>
+          <span className="text-v2-ink dark:text-v2-ink-muted">
             {clientInfo.weight} lbs
           </span>
-          <span className="text-zinc-500">BMI:</span>
+          <span className="text-v2-ink-muted">BMI:</span>
           <span
             className={cn(
               bmi >= 30
@@ -177,17 +179,17 @@ export default function ReviewStep({
       </div>
 
       {/* Health Information */}
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden shadow-sm bg-white dark:bg-zinc-900">
-        <div className="px-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 flex items-center gap-2">
-          <Activity className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
-          <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+      <div className="border border-v2-ring dark:border-v2-ring-strong rounded-lg overflow-hidden shadow-sm bg-v2-card">
+        <div className="px-4 py-2.5 bg-v2-card-tinted dark:bg-v2-card-tinted border-b border-v2-ring dark:border-v2-ring-strong flex items-center gap-2">
+          <Activity className="h-4 w-4 text-v2-ink-muted dark:text-v2-ink-subtle" />
+          <span className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
             Health Information
           </span>
         </div>
-        <div className="p-4 bg-white dark:bg-zinc-900 space-y-3">
+        <div className="p-4 bg-v2-card space-y-3">
           {/* Conditions */}
           <div>
-            <span className="text-[10px] font-medium text-zinc-500 uppercase tracking-wide">
+            <span className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
               Conditions Reported
             </span>
             {healthInfo.conditions.length > 0 ? (
@@ -209,9 +211,9 @@ export default function ReviewStep({
           </div>
 
           {/* Tobacco */}
-          <div className="flex items-center gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-            <Cigarette className="h-3.5 w-3.5 text-zinc-400" />
-            <span className="text-xs text-zinc-500">Tobacco Use:</span>
+          <div className="flex items-center gap-2 pt-2 border-t border-v2-ring dark:border-v2-ring">
+            <Cigarette className="h-3.5 w-3.5 text-v2-ink-subtle" />
+            <span className="text-xs text-v2-ink-muted">Tobacco Use:</span>
             <span
               className={cn(
                 "text-xs",
@@ -227,33 +229,33 @@ export default function ReviewStep({
           </div>
 
           {/* Medications */}
-          <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-2">
+          <div className="pt-2 border-t border-v2-ring dark:border-v2-ring space-y-2">
             <div className="flex items-center gap-2">
-              <Pill className="h-3.5 w-3.5 text-zinc-400" />
-              <span className="text-[10px] font-medium text-zinc-500">
+              <Pill className="h-3.5 w-3.5 text-v2-ink-subtle" />
+              <span className="text-[10px] font-medium text-v2-ink-muted">
                 Medications
               </span>
             </div>
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs pl-5">
-              <span className="text-zinc-500">
+              <span className="text-v2-ink-muted">
                 BP Meds:{" "}
                 <span
                   className={cn(
                     healthInfo.medications.bpMedCount >= 2
                       ? "text-orange-600"
-                      : "text-zinc-700 dark:text-zinc-300",
+                      : "text-v2-ink dark:text-v2-ink-muted",
                   )}
                 >
                   {healthInfo.medications.bpMedCount}
                 </span>
               </span>
-              <span className="text-zinc-500">
+              <span className="text-v2-ink-muted">
                 Cholesterol:{" "}
                 <span
                   className={cn(
                     healthInfo.medications.cholesterolMedCount >= 2
                       ? "text-orange-600"
-                      : "text-zinc-700 dark:text-zinc-300",
+                      : "text-v2-ink dark:text-v2-ink-muted",
                   )}
                 >
                   {healthInfo.medications.cholesterolMedCount}
@@ -276,7 +278,7 @@ export default function ReviewStep({
                       : healthInfo.medications.painMedications ===
                           "prescribed_non_opioid"
                         ? "text-amber-600"
-                        : "text-zinc-600",
+                        : "text-v2-ink-muted",
                   )}
                 >
                   Pain:{" "}
@@ -294,16 +296,16 @@ export default function ReviewStep({
       </div>
 
       {/* Coverage Request */}
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden shadow-sm bg-white dark:bg-zinc-900">
-        <div className="px-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 flex items-center gap-2">
-          <DollarSign className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
-          <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+      <div className="border border-v2-ring dark:border-v2-ring-strong rounded-lg overflow-hidden shadow-sm bg-v2-card">
+        <div className="px-4 py-2.5 bg-v2-card-tinted dark:bg-v2-card-tinted border-b border-v2-ring dark:border-v2-ring-strong flex items-center gap-2">
+          <DollarSign className="h-4 w-4 text-v2-ink-muted dark:text-v2-ink-subtle" />
+          <span className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
             Coverage Request
           </span>
         </div>
-        <div className="p-4 bg-white dark:bg-zinc-900 space-y-2">
+        <div className="p-4 bg-v2-card space-y-2">
           <div className="flex items-start justify-between text-xs">
-            <span className="text-zinc-500">Face Amounts:</span>
+            <span className="text-v2-ink-muted">Face Amounts:</span>
             <div className="flex flex-wrap gap-1 justify-end">
               {(coverageRequest.faceAmounts || [])
                 .filter((a) => a >= 10000)
@@ -318,7 +320,7 @@ export default function ReviewStep({
             </div>
           </div>
           <div className="flex items-start justify-between text-xs">
-            <span className="text-zinc-500">Product Types:</span>
+            <span className="text-v2-ink-muted">Product Types:</span>
             <div className="flex flex-wrap gap-1 justify-end">
               {coverageRequest.productTypes.map((type) => (
                 <span

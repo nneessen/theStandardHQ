@@ -227,7 +227,7 @@ export function ApprovalActions({
           </DialogHeader>
 
           <div className="space-y-2">
-            <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Rejection Notes <span className="text-red-500">*</span>
             </Label>
             <Textarea

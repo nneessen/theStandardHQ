@@ -250,10 +250,10 @@ export function GuideList() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+          <h3 className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
             Underwriting Guides
           </h3>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Upload and manage carrier underwriting guide PDFs
           </p>
         </div>
@@ -268,29 +268,29 @@ export function GuideList() {
       </div>
 
       {/* Table */}
-      <div className="border border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden">
+      <div className="border border-v2-ring dark:border-v2-ring rounded-md overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-zinc-50 dark:bg-zinc-800/50">
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">
+            <TableRow className="bg-v2-canvas dark:bg-v2-card-tinted/50">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
                 Name
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
                 Carrier
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 text-center">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-center">
                 Size
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 text-center">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-center">
                 Parse
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 text-center">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-center">
                 Criteria
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
                 Uploaded
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 w-[80px]">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle w-[80px]">
                 Actions
               </TableHead>
             </TableRow>
@@ -326,27 +326,27 @@ export function GuideList() {
               guides.map((guide) => (
                 <TableRow
                   key={guide.id}
-                  className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30"
+                  className="hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/30"
                 >
                   <TableCell className="px-3 py-2">
                     <div className="flex items-center gap-1.5">
                       <FileText className="h-3.5 w-3.5 text-red-500 shrink-0" />
                       <div>
-                        <div className="text-[11px] text-zinc-900 dark:text-zinc-100 font-medium">
+                        <div className="text-[11px] text-v2-ink dark:text-v2-ink font-medium">
                           {guide.name}
                         </div>
-                        <div className="text-[9px] text-zinc-500 dark:text-zinc-400">
+                        <div className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
                           {guide.file_name}
                           {guide.version && ` • v${guide.version}`}
                         </div>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="px-3 py-2 text-[11px] text-zinc-700 dark:text-zinc-300">
+                  <TableCell className="px-3 py-2 text-[11px] text-v2-ink dark:text-v2-ink-muted">
                     {(guide as unknown as { carrier?: { name: string } })
                       .carrier?.name || "—"}
                   </TableCell>
-                  <TableCell className="px-3 py-2 text-[10px] text-zinc-500 dark:text-zinc-400 text-center">
+                  <TableCell className="px-3 py-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle text-center">
                     {formatFileSize(guide.file_size_bytes)}
                   </TableCell>
                   <TableCell className="px-3 py-2 text-center">
@@ -359,7 +359,7 @@ export function GuideList() {
                       onExtract={() => handleExtractClick(guide)}
                     />
                   </TableCell>
-                  <TableCell className="px-3 py-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <TableCell className="px-3 py-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     {formatSessionDate(guide.created_at)}
                   </TableCell>
                   <TableCell className="px-3 py-2">
@@ -429,7 +429,7 @@ export function GuideList() {
               <TableRow>
                 <TableCell
                   colSpan={7}
-                  className="px-3 py-8 text-center text-[11px] text-zinc-500 dark:text-zinc-400"
+                  className="px-3 py-8 text-center text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
                 >
                   <FileText className="h-8 w-8 mx-auto mb-2 opacity-30" />
                   No guides uploaded yet. Upload your first carrier underwriting
@@ -574,7 +574,7 @@ function GuideViewerDialog({
         <div className="py-4">
           {isLoading ? (
             <div className="flex items-center justify-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-900 dark:border-zinc-100" />
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-v2-ink dark:border-v2-ring" />
             </div>
           ) : signedUrl ? (
             <div className="space-y-3">
@@ -659,7 +659,7 @@ function CriteriaStatusCell({
             </TooltipTrigger>
             <TooltipContent side="top" className="text-[10px]">
               <p>Criteria extracted with {confidence} confidence</p>
-              <p className="text-zinc-400">
+              <p className="text-v2-ink-subtle">
                 Review: {criteria.review_status || "pending"}
               </p>
             </TooltipContent>
@@ -671,7 +671,7 @@ function CriteriaStatusCell({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-4 w-4 p-0 text-zinc-400 hover:text-violet-600"
+                className="h-4 w-4 p-0 text-v2-ink-subtle hover:text-violet-600"
                 onClick={onExtract}
                 disabled={!canExtract}
               >

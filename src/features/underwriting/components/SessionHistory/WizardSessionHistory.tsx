@@ -161,10 +161,10 @@ export function WizardSessionHistory({
               ))}
             </div>
           ) : sessions.length > 0 ? (
-            <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden">
+            <div className="border border-v2-ring dark:border-v2-ring-strong rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                  <TableRow className="bg-v2-canvas dark:bg-v2-card-tinted/50 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50">
                     <TableHead className="h-9 px-3 text-[10px] font-semibold">
                       <div className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
@@ -195,7 +195,7 @@ export function WizardSessionHistory({
                   {sessions.map((session) => (
                     <TableRow
                       key={session.session_id}
-                      className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30"
+                      className="hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/30"
                     >
                       <TableCell className="px-3 py-2 text-[10px] text-muted-foreground">
                         {formatSessionDate(session.created_at)}
@@ -538,7 +538,7 @@ function SessionDetailView({
                         (rec, i) => (
                           <div
                             key={i}
-                            className="bg-white dark:bg-zinc-900 rounded-lg p-3 border border-zinc-200 dark:border-zinc-700 shadow-sm"
+                            className="bg-v2-card rounded-lg p-3 border border-v2-ring dark:border-v2-ring-strong shadow-sm"
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div>
@@ -600,7 +600,7 @@ function SessionDetailView({
                         .map((rec, i) => (
                           <div
                             key={i}
-                            className="bg-white dark:bg-zinc-900 rounded-lg p-3 border border-zinc-200 dark:border-zinc-700 shadow-sm"
+                            className="bg-v2-card rounded-lg p-3 border border-v2-ring dark:border-v2-ring-strong shadow-sm"
                           >
                             <div className="flex items-start justify-between gap-2">
                               <div>

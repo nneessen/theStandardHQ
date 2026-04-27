@@ -351,21 +351,21 @@ export function PremiumMatrixGrid({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
 
   return (
-    <div className="border border-zinc-200 dark:border-zinc-800 rounded-md">
+    <div className="border border-v2-ring dark:border-v2-ring rounded-md">
       {/* Header */}
-      <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50">
+      <div className="px-3 py-2 border-b border-v2-ring dark:border-v2-ring bg-v2-canvas dark:bg-v2-card-tinted/50">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+            <div className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
               {productName}
             </div>
-            <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               {carrierName}
               {isTermProduct && selectedTerm && (
                 <span className="ml-1">• {selectedTerm} Year Term</span>
@@ -391,7 +391,7 @@ export function PremiumMatrixGrid({
           {/* Term Selector - Only for term products */}
           {isTermProduct && (
             <div>
-              <label className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 mb-0.5 block">
+              <label className="text-[9px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5 block">
                 Term
               </label>
               <Select
@@ -418,7 +418,7 @@ export function PremiumMatrixGrid({
 
           {/* Increment Selector */}
           <div>
-            <label className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 mb-0.5 block">
+            <label className="text-[9px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5 block">
               Increment
             </label>
             <Select
@@ -443,7 +443,7 @@ export function PremiumMatrixGrid({
           </div>
 
           <div>
-            <label className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 mb-0.5 block">
+            <label className="text-[9px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5 block">
               Gender
             </label>
             <Select
@@ -468,7 +468,7 @@ export function PremiumMatrixGrid({
           </div>
 
           <div>
-            <label className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 mb-0.5 block">
+            <label className="text-[9px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5 block">
               Tobacco
             </label>
             <Select
@@ -493,7 +493,7 @@ export function PremiumMatrixGrid({
           </div>
 
           <div>
-            <label className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400 mb-0.5 block">
+            <label className="text-[9px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5 block">
               Health Class
             </label>
             <Select
@@ -536,7 +536,7 @@ export function PremiumMatrixGrid({
         </div>
 
         {/* Premium Grid - Virtualized */}
-        <div className="border border-zinc-200 dark:border-zinc-700 rounded">
+        <div className="border border-v2-ring dark:border-v2-ring-strong rounded">
           {/* Scrollable container */}
           <div ref={scrollContainerRef} className="overflow-x-auto">
             {/* Virtual scroll area */}
@@ -547,9 +547,9 @@ export function PremiumMatrixGrid({
               }}
             >
               {/* Header row */}
-              <div className="flex bg-zinc-100 dark:bg-zinc-800">
+              <div className="flex bg-v2-card-tinted dark:bg-v2-card-tinted">
                 {/* Age header - sticky */}
-                <div className="sticky left-0 z-20 bg-zinc-100 dark:bg-zinc-800 px-1.5 py-1 text-[9px] font-semibold text-zinc-600 dark:text-zinc-400 text-left w-10 flex-shrink-0">
+                <div className="sticky left-0 z-20 bg-v2-card-tinted dark:bg-v2-card-tinted px-1.5 py-1 text-[9px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-left w-10 flex-shrink-0">
                   Age
                 </div>
                 {/* Virtualized column headers */}
@@ -565,7 +565,7 @@ export function PremiumMatrixGrid({
                     return (
                       <div
                         key={faceAmount}
-                        className="absolute top-0 h-full px-1 py-1 text-[9px] font-semibold text-zinc-600 dark:text-zinc-400 text-center"
+                        className="absolute top-0 h-full px-1 py-1 text-[9px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-center"
                         style={{
                           left: virtualColumn.start,
                           width: virtualColumn.size,
@@ -582,10 +582,10 @@ export function PremiumMatrixGrid({
               {gridAges.map((age, ageIndex) => (
                 <div
                   key={age}
-                  className="flex border-t border-zinc-100 dark:border-zinc-800"
+                  className="flex border-t border-v2-ring dark:border-v2-ring"
                 >
                   {/* Age cell - sticky */}
-                  <div className="sticky left-0 z-10 bg-white dark:bg-zinc-900 px-1.5 py-0.5 text-[10px] font-medium text-zinc-700 dark:text-zinc-300 w-10 flex-shrink-0 flex items-center">
+                  <div className="sticky left-0 z-10 bg-v2-card px-1.5 py-0.5 text-[10px] font-medium text-v2-ink dark:text-v2-ink-muted w-10 flex-shrink-0 flex items-center">
                     {age}
                   </div>
                   {/* Virtualized data cells */}
@@ -669,14 +669,14 @@ export function PremiumMatrixGrid({
         </div>
 
         {/* Legend & Help */}
-        <div className="flex items-center justify-between text-[9px] text-zinc-400 dark:text-zinc-500">
+        <div className="flex items-center justify-between text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
-              <div className="w-2.5 h-2.5 bg-green-50 dark:bg-green-950/20 rounded border border-zinc-200 dark:border-zinc-700" />
+              <div className="w-2.5 h-2.5 bg-green-50 dark:bg-green-950/20 rounded border border-v2-ring dark:border-v2-ring-strong" />
               <span>Saved</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2.5 h-2.5 bg-yellow-50 dark:bg-yellow-950/20 rounded border border-zinc-200 dark:border-zinc-700" />
+              <div className="w-2.5 h-2.5 bg-yellow-50 dark:bg-yellow-950/20 rounded border border-v2-ring dark:border-v2-ring-strong" />
               <span>Unsaved</span>
             </div>
           </div>

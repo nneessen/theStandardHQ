@@ -110,7 +110,7 @@ export function CoverageAuditView({ onOpenBuilder }: CoverageAuditViewProps) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-md border border-zinc-200 bg-zinc-50/70 p-3 dark:border-zinc-800 dark:bg-zinc-900/60">
+      <div className="rounded-md border border-v2-ring bg-v2-canvas/70 p-3 dark:border-v2-ring dark:bg-v2-card/60">
         <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
           <div className="space-y-1">
             <h3 className="text-[12px] font-semibold text-foreground">
@@ -156,7 +156,7 @@ export function CoverageAuditView({ onOpenBuilder }: CoverageAuditViewProps) {
         </div>
       </div>
 
-      <div className="rounded-md border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950">
+      <div className="rounded-md border border-v2-ring bg-white p-3 dark:border-v2-ring dark:bg-v2-canvas">
         <div className="mb-2 flex items-center justify-between">
           <h4 className="text-[11px] font-semibold text-foreground">
             Carrier Snapshot
@@ -169,7 +169,7 @@ export function CoverageAuditView({ onOpenBuilder }: CoverageAuditViewProps) {
           {report.carriers.map((carrier) => (
             <div
               key={carrier.carrierId}
-              className="flex items-center gap-2 rounded border border-zinc-200/80 px-2 py-1.5 text-[10px] dark:border-zinc-800"
+              className="flex items-center gap-2 rounded border border-v2-ring/80 px-2 py-1.5 text-[10px] dark:border-v2-ring"
             >
               <span className="min-w-0 flex-1 truncate font-medium text-foreground">
                 {carrier.carrierName}
@@ -188,7 +188,7 @@ export function CoverageAuditView({ onOpenBuilder }: CoverageAuditViewProps) {
         </div>
       </div>
 
-      <div className="rounded-md border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950">
+      <div className="rounded-md border border-v2-ring bg-white p-3 dark:border-v2-ring dark:bg-v2-canvas">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div className="relative md:w-80">
             <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
@@ -208,8 +208,8 @@ export function CoverageAuditView({ onOpenBuilder }: CoverageAuditViewProps) {
                 className={cn(
                   "rounded-full border px-2 py-1 text-[10px] font-medium transition-colors",
                   statusFilter === filter
-                    ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
-                    : "border-zinc-200 bg-white text-zinc-600 hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-300 dark:hover:border-zinc-700 dark:hover:text-zinc-100",
+                    ? "border-v2-ink bg-v2-ink text-v2-canvas dark:border-v2-ring dark:bg-v2-card-tinted dark:text-v2-ink"
+                    : "border-v2-ring bg-white text-v2-ink-muted hover:border-v2-ring-strong hover:text-v2-ink dark:border-v2-ring dark:bg-v2-canvas dark:text-v2-ink-muted dark:hover:border-v2-ring-strong dark:hover:text-v2-canvas",
                 )}
               >
                 {getStatusFilterLabel(filter)}
@@ -231,14 +231,14 @@ export function CoverageAuditView({ onOpenBuilder }: CoverageAuditViewProps) {
               return (
                 <div
                   key={productKey}
-                  className="overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-800"
+                  className="overflow-hidden rounded-md border border-v2-ring dark:border-v2-ring"
                 >
                   <button
                     type="button"
                     onClick={() =>
                       setExpandedProductId(isExpanded ? null : productKey)
                     }
-                    className="flex w-full items-start gap-3 px-3 py-2 text-left hover:bg-zinc-50 dark:hover:bg-zinc-900/60"
+                    className="flex w-full items-start gap-3 px-3 py-2 text-left hover:bg-v2-canvas dark:hover:bg-v2-card-tinted"
                   >
                     <div className="flex items-center pt-0.5">
                       {isExpanded ? (
@@ -298,7 +298,7 @@ export function CoverageAuditView({ onOpenBuilder }: CoverageAuditViewProps) {
                   </button>
 
                   {isExpanded ? (
-                    <div className="border-t border-zinc-200 bg-zinc-50/60 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/50">
+                    <div className="border-t border-v2-ring bg-v2-canvas/60 px-3 py-3 dark:border-v2-ring dark:bg-v2-canvas/50">
                       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                         <p className="text-[10px] leading-4 text-muted-foreground">
                           {getProductStatusDescription(product)}
@@ -380,7 +380,7 @@ function SummaryTile(props: {
   const { detail, label, tone, value } = props;
 
   return (
-    <div className="rounded-md border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950">
+    <div className="rounded-md border border-v2-ring bg-white px-3 py-2 dark:border-v2-ring dark:bg-v2-canvas">
       <div className="flex items-center justify-between gap-2">
         <span className="text-[10px] font-medium text-muted-foreground">
           {label}
@@ -414,12 +414,12 @@ function StatusIcon({
     return <ShieldX className="h-4 w-4 text-red-600" />;
   }
 
-  return <AlertTriangle className="h-4 w-4 text-zinc-500" />;
+  return <AlertTriangle className="h-4 w-4 text-v2-ink-muted" />;
 }
 
 function MetricChip({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded border border-zinc-200 bg-white px-2 py-1 dark:border-zinc-800 dark:bg-zinc-950">
+    <div className="rounded border border-v2-ring bg-white px-2 py-1 dark:border-v2-ring dark:bg-v2-canvas">
       <div className="text-[9px] uppercase tracking-wide text-muted-foreground">
         {label}
       </div>
@@ -437,7 +437,7 @@ function ConditionSection(props: {
   const { conditions, emptyLabel, title, tone } = props;
 
   return (
-    <div className="rounded-md border border-zinc-200 bg-white p-3 dark:border-zinc-800 dark:bg-zinc-950">
+    <div className="rounded-md border border-v2-ring bg-white p-3 dark:border-v2-ring dark:bg-v2-canvas">
       <div className="mb-2 flex items-center justify-between gap-2">
         <h5 className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
           {title}

@@ -172,11 +172,11 @@ export function RuleEditor({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
         {/* Header */}
-        <DialogHeader className="px-4 pt-4 pb-2 border-b border-zinc-100 dark:border-zinc-800">
+        <DialogHeader className="px-4 pt-4 pb-2 border-b border-v2-ring dark:border-v2-ring">
           <DialogTitle className="text-sm font-semibold">
             {isEditing ? "Edit Rule" : "Add Rule"}
             {conditionCode && (
-              <span className="text-zinc-400 font-normal ml-2">
+              <span className="text-v2-ink-subtle font-normal ml-2">
                 for {conditionName}
               </span>
             )}
@@ -188,7 +188,7 @@ export function RuleEditor({
           <div className="space-y-2">
             <div className="grid grid-cols-4 gap-2">
               <div className="col-span-3 space-y-1">
-                <Label className="text-[10px] text-zinc-500 uppercase tracking-wider">
+                <Label className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
                   Rule Name <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -201,7 +201,7 @@ export function RuleEditor({
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] text-zinc-500 uppercase tracking-wider">
+                <Label className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
                   Priority
                 </Label>
                 <Input
@@ -220,7 +220,7 @@ export function RuleEditor({
               </div>
             </div>
             <div className="space-y-1">
-              <Label className="text-[10px] text-zinc-500 uppercase tracking-wider">
+              <Label className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
                 Description
               </Label>
               <Textarea
@@ -302,35 +302,35 @@ export function RuleEditor({
 
           {/* Client Filters (Collapsible) */}
           <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
-            <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden">
-              <CollapsibleTrigger className="flex items-center gap-2 w-full bg-zinc-50 dark:bg-zinc-800/50 px-3 py-2 text-left">
+            <div className="border border-v2-ring dark:border-v2-ring-strong rounded-lg overflow-hidden">
+              <CollapsibleTrigger className="flex items-center gap-2 w-full bg-v2-canvas dark:bg-v2-card-tinted/50 px-3 py-2 text-left">
                 {filtersOpen ? (
-                  <ChevronDown className="h-3 w-3 text-zinc-400" />
+                  <ChevronDown className="h-3 w-3 text-v2-ink-subtle" />
                 ) : (
-                  <ChevronRight className="h-3 w-3 text-zinc-400" />
+                  <ChevronRight className="h-3 w-3 text-v2-ink-subtle" />
                 )}
-                <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                <span className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider">
                   Client Filters
                 </span>
-                <span className="text-[9px] text-zinc-400 ml-1">
+                <span className="text-[9px] text-v2-ink-subtle ml-1">
                   (optional - age, gender restrictions)
                 </span>
                 {hasFilters && !filtersOpen && (
-                  <span className="text-[9px] bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 px-1.5 py-0.5 rounded ml-auto">
+                  <span className="text-[9px] bg-v2-ring dark:bg-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-muted px-1.5 py-0.5 rounded ml-auto">
                     Active
                   </span>
                 )}
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="p-3 space-y-3">
-                  <p className="text-[10px] text-zinc-400">
+                  <p className="text-[10px] text-v2-ink-subtle">
                     Optionally restrict this rule to specific client
                     demographics. Leave blank to apply to all clients.
                   </p>
 
                   {/* Age Band */}
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-zinc-500 uppercase tracking-wider">
+                    <Label className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
                       Age Range
                     </Label>
                     <div className="flex items-center gap-2">
@@ -350,7 +350,7 @@ export function RuleEditor({
                         min={0}
                         max={120}
                       />
-                      <span className="text-[10px] text-zinc-400">to</span>
+                      <span className="text-[10px] text-v2-ink-subtle">to</span>
                       <Input
                         type="number"
                         className="h-6 w-16 text-[10px]"
@@ -367,13 +367,15 @@ export function RuleEditor({
                         min={0}
                         max={120}
                       />
-                      <span className="text-[10px] text-zinc-400">years</span>
+                      <span className="text-[10px] text-v2-ink-subtle">
+                        years
+                      </span>
                     </div>
                   </div>
 
                   {/* Gender */}
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-zinc-500 uppercase tracking-wider">
+                    <Label className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
                       Gender
                     </Label>
                     <Select
@@ -446,7 +448,7 @@ export function RuleEditor({
         </div>
 
         {/* Footer */}
-        <DialogFooter className="px-4 py-3 border-t border-zinc-100 dark:border-zinc-800 gap-2">
+        <DialogFooter className="px-4 py-3 border-t border-v2-ring dark:border-v2-ring gap-2">
           <Button
             type="button"
             variant="ghost"

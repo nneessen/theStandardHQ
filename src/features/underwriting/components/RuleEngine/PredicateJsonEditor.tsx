@@ -81,7 +81,7 @@ export function PredicateJsonEditor({
     <div className="space-y-2">
       {/* JSON Editor */}
       <Textarea
-        className="font-mono text-[11px] h-48 resize-y bg-zinc-900 text-zinc-100 dark:bg-zinc-950"
+        className="font-mono text-[11px] h-48 resize-y bg-zinc-900 text-v2-canvas dark:bg-v2-canvas"
         value={jsonText}
         onChange={(e) => handleChange(e.target.value)}
         disabled={disabled}
@@ -145,9 +145,9 @@ export function PredicateJsonEditor({
       )}
 
       {/* Help Text */}
-      <div className="text-[10px] text-zinc-400">
+      <div className="text-[10px] text-v2-ink-subtle">
         <details>
-          <summary className="cursor-pointer hover:text-zinc-300">
+          <summary className="cursor-pointer hover:text-v2-ink-subtle">
             JSON Schema Reference
           </summary>
           <pre className="mt-1 p-2 bg-zinc-800 rounded text-[9px] overflow-x-auto">

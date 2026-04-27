@@ -78,14 +78,14 @@ export function SessionDetailDialog({
             Session Details
           </DialogTitle>
           {session && (
-            <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               {formatSessionDateLong(session.created_at)}
             </div>
           )}
         </DialogHeader>
 
         {isLoading && (
-          <div className="py-6 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+          <div className="py-6 text-center text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Loading session details...
           </div>
         )}
@@ -149,7 +149,7 @@ export function SessionDetailDialog({
             >
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     Health Tier:
                   </span>
                   <Badge
@@ -163,7 +163,7 @@ export function SessionDetailDialog({
 
                 {conditionsReported.length > 0 && (
                   <div>
-                    <div className="text-[10px] font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                    <div className="text-[10px] font-medium text-v2-ink dark:text-v2-ink-muted mb-1">
                       Conditions Reported ({conditionsReported.length})
                     </div>
                     <div className="flex flex-wrap gap-1">
@@ -183,7 +183,7 @@ export function SessionDetailDialog({
 
                 {riskFactors.length > 0 && (
                   <div>
-                    <div className="text-[10px] font-medium text-zinc-700 dark:text-zinc-300 mb-1 flex items-center gap-1">
+                    <div className="text-[10px] font-medium text-v2-ink dark:text-v2-ink-muted mb-1 flex items-center gap-1">
                       <AlertTriangle className="h-3 w-3 text-amber-500" />
                       Risk Factors ({riskFactors.length})
                     </div>
@@ -191,7 +191,7 @@ export function SessionDetailDialog({
                       {riskFactors.map((factor, i) => (
                         <li
                           key={i}
-                          className="text-[10px] text-zinc-600 dark:text-zinc-400 flex items-start gap-1.5"
+                          className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle flex items-start gap-1.5"
                         >
                           <span className="text-amber-500 mt-0.5">•</span>
                           {factor}
@@ -242,14 +242,14 @@ export function SessionDetailDialog({
                       .map((rec, i) => (
                         <div
                           key={i}
-                          className="bg-zinc-50 dark:bg-zinc-800/50 rounded-md p-2 border border-zinc-200 dark:border-zinc-700"
+                          className="bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-md p-2 border border-v2-ring dark:border-v2-ring-strong"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div>
-                              <div className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                              <div className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
                                 {rec.carrierName}
                               </div>
-                              <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                              <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                                 {rec.productName}
                               </div>
                             </div>
@@ -260,7 +260,7 @@ export function SessionDetailDialog({
                               >
                                 {rec.expectedRating}
                               </Badge>
-                              <span className="text-[9px] text-zinc-500 dark:text-zinc-400">
+                              <span className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
                                 {(rec.confidence * 100).toFixed(0)}% confidence
                               </span>
                             </div>
@@ -290,7 +290,7 @@ export function SessionDetailDialog({
                             </div>
                           )}
                           {rec.notes && (
-                            <div className="mt-1.5 text-[9px] text-zinc-500 dark:text-zinc-400 italic">
+                            <div className="mt-1.5 text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle italic">
                               {rec.notes}
                             </div>
                           )}
@@ -308,7 +308,7 @@ export function SessionDetailDialog({
                   title="Notes"
                   icon={<FileText className="h-3.5 w-3.5" />}
                 >
-                  <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                  <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     {session.notes}
                   </p>
                 </Section>
@@ -335,9 +335,11 @@ function Section({
     <div>
       <div className="flex items-center gap-1.5 mb-2">
         {icon && (
-          <span className="text-zinc-500 dark:text-zinc-400">{icon}</span>
+          <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+            {icon}
+          </span>
         )}
-        <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <h3 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
           {title}
         </h3>
       </div>
@@ -357,11 +359,11 @@ function InfoRow({
 }) {
   return (
     <div className="flex justify-between items-baseline">
-      <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+      <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
         {label}
       </span>
       <span
-        className={`text-[11px] text-zinc-900 dark:text-zinc-100 ${valueClassName}`}
+        className={`text-[11px] text-v2-ink dark:text-v2-ink ${valueClassName}`}
       >
         {value}
       </span>

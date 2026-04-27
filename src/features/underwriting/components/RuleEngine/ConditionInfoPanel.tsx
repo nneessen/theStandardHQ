@@ -63,14 +63,14 @@ export function ConditionInfoPanel({
 
   if (fieldEntries.length === 0) {
     return (
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg p-3 bg-zinc-50 dark:bg-zinc-900/50">
+      <div className="border border-v2-ring dark:border-v2-ring-strong rounded-lg p-3 bg-v2-canvas dark:bg-v2-card/50">
         <div className="flex items-center gap-2 mb-2">
-          <Info className="h-3.5 w-3.5 text-zinc-400" />
-          <span className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider">
+          <Info className="h-3.5 w-3.5 text-v2-ink-subtle" />
+          <span className="text-[11px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wider">
             Follow-Up Questions
           </span>
         </div>
-        <p className="text-[10px] text-zinc-400">
+        <p className="text-[10px] text-v2-ink-subtle">
           No specific follow-up questions defined for this condition. Rules will
           use client demographics only.
         </p>
@@ -86,9 +86,9 @@ export function ConditionInfoPanel({
           Follow-Up Questions
         </span>
       </div>
-      <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-3">
+      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mb-3">
         When an applicant discloses{" "}
-        <span className="font-medium text-zinc-700 dark:text-zinc-300">
+        <span className="font-medium text-v2-ink dark:text-v2-ink-muted">
           {displayName}
         </span>
         , collect the following information:
@@ -98,10 +98,12 @@ export function ConditionInfoPanel({
         {fieldEntries.map(([key, field]) => (
           <div key={key} className="flex items-center gap-2 text-[10px]">
             <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
-            <span className="text-zinc-700 dark:text-zinc-300 font-medium">
+            <span className="text-v2-ink dark:text-v2-ink-muted font-medium">
               {field.label}
             </span>
-            <span className="text-zinc-400">({getFieldTypeLabel(field)})</span>
+            <span className="text-v2-ink-subtle">
+              ({getFieldTypeLabel(field)})
+            </span>
           </div>
         ))}
       </div>
@@ -109,21 +111,21 @@ export function ConditionInfoPanel({
       {/* Show options for set/array fields */}
       {fieldEntries.some(([_, f]) => f.options && f.options.length > 0) && (
         <div className="mt-3 pt-2 border-t border-blue-200/50 dark:border-blue-800/30">
-          <p className="text-[9px] text-zinc-400 uppercase tracking-wide mb-1.5">
+          <p className="text-[9px] text-v2-ink-subtle uppercase tracking-wide mb-1.5">
             Available Options
           </p>
           {fieldEntries
             .filter(([_, f]) => f.options && f.options.length > 0)
             .map(([key, field]) => (
               <div key={key} className="mb-2 last:mb-0">
-                <span className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">
+                <span className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                   {field.label}:
                 </span>
                 <div className="flex flex-wrap gap-1 mt-0.5">
                   {field.options!.map((opt) => (
                     <span
                       key={opt.value}
-                      className="px-1.5 py-0.5 text-[9px] bg-white dark:bg-zinc-800 border border-blue-200 dark:border-blue-800/50 rounded text-zinc-600 dark:text-zinc-300"
+                      className="px-1.5 py-0.5 text-[9px] bg-v2-card-tinted border border-blue-200 dark:border-blue-800/50 rounded text-v2-ink-muted dark:text-v2-ink-muted"
                     >
                       {opt.label}
                     </span>

@@ -84,19 +84,19 @@ function getProductTypeOrder(productType: QuickQuoteProductType): number {
 
 function GridSkeleton() {
   return (
-    <div className="rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden">
-      <div className="bg-zinc-800 dark:bg-zinc-900 px-4 py-2.5">
+    <div className="rounded-lg border border-v2-ring dark:border-v2-ring-strong overflow-hidden">
+      <div className="bg-zinc-800 dark:bg-v2-card px-4 py-2.5">
         <div className="grid grid-cols-4 gap-4">
-          <Skeleton className="h-5 bg-zinc-700" />
-          <Skeleton className="h-5 bg-zinc-700" />
-          <Skeleton className="h-5 bg-zinc-700" />
-          <Skeleton className="h-5 bg-zinc-700" />
+          <Skeleton className="h-5 bg-v2-ring-strong" />
+          <Skeleton className="h-5 bg-v2-ring-strong" />
+          <Skeleton className="h-5 bg-v2-ring-strong" />
+          <Skeleton className="h-5 bg-v2-ring-strong" />
         </div>
       </div>
       {[1, 2, 3, 4, 5].map((i) => (
         <div
           key={i}
-          className="px-4 py-3 border-t border-zinc-100 dark:border-zinc-800"
+          className="px-4 py-3 border-t border-v2-ring dark:border-v2-ring"
         >
           <div className="grid grid-cols-4 gap-4">
             <Skeleton className="h-8" />
@@ -116,7 +116,7 @@ function GridSkeleton() {
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="flex items-center justify-center p-12 text-center border border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg">
+    <div className="flex items-center justify-center p-12 text-center border border-dashed border-v2-ring-strong dark:border-v2-ring-strong rounded-lg">
       <p className="text-sm text-muted-foreground">{message}</p>
     </div>
   );
@@ -177,13 +177,13 @@ export function QuoteComparisonGrid({
           return (
             <div
               key={groupKey}
-              className="rounded-lg border border-zinc-200 dark:border-zinc-700 overflow-hidden shadow-sm"
+              className="rounded-lg border border-v2-ring dark:border-v2-ring-strong overflow-hidden shadow-sm"
             >
               {/* Column Headers */}
-              <div className="bg-zinc-800 dark:bg-zinc-900">
+              <div className="bg-zinc-800 dark:bg-v2-card">
                 <div className="grid grid-cols-[1fr_repeat(3,minmax(100px,140px))] items-center">
                   <div className="px-4 py-2.5">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-100">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-v2-canvas">
                       {getProductGroupLabel(
                         firstQuote.productType,
                         firstQuote.termYears,
@@ -193,9 +193,9 @@ export function QuoteComparisonGrid({
                   {amounts.map((amount, idx) => (
                     <div
                       key={idx}
-                      className="px-3 py-2.5 text-center border-l border-zinc-700"
+                      className="px-3 py-2.5 text-center border-l border-v2-ring-strong"
                     >
-                      <span className="text-[11px] font-semibold text-zinc-200 tabular-nums">
+                      <span className="text-[11px] font-semibold text-v2-canvas tabular-nums">
                         {mode === "coverage"
                           ? formatCurrencyCompact(amount)
                           : `${formatCurrency(amount)}/mo`}
@@ -253,22 +253,24 @@ function QuoteRow({
     return (
       <div
         className={cn(
-          "grid grid-cols-[1fr_repeat(3,minmax(100px,140px))] items-center border-t border-zinc-100 dark:border-zinc-800 opacity-40",
+          "grid grid-cols-[1fr_repeat(3,minmax(100px,140px))] items-center border-t border-v2-ring dark:border-v2-ring opacity-40",
           isEven
-            ? "bg-white dark:bg-zinc-950"
-            : "bg-zinc-50 dark:bg-zinc-900/50",
+            ? "bg-white dark:bg-v2-canvas"
+            : "bg-v2-canvas dark:bg-v2-card/50",
         )}
       >
         <div className="px-4 py-2.5">
-          <span className="text-xs font-medium text-zinc-500 truncate">
+          <span className="text-xs font-medium text-v2-ink-muted truncate">
             {quote.carrierName}
           </span>
-          <span className="text-[11px] text-zinc-400 ml-2 truncate">
+          <span className="text-[11px] text-v2-ink-subtle ml-2 truncate">
             {quote.productName}
           </span>
         </div>
-        <div className="col-span-3 text-center py-2.5 border-l border-zinc-100 dark:border-zinc-800">
-          <span className="text-[11px] text-zinc-400">No rates available</span>
+        <div className="col-span-3 text-center py-2.5 border-l border-v2-ring dark:border-v2-ring">
+          <span className="text-[11px] text-v2-ink-subtle">
+            No rates available
+          </span>
         </div>
       </div>
     );
@@ -277,16 +279,18 @@ function QuoteRow({
   return (
     <div
       className={cn(
-        "grid grid-cols-[1fr_repeat(3,minmax(100px,140px))] items-center border-t border-zinc-100 dark:border-zinc-800 transition-colors hover:bg-blue-50/40 dark:hover:bg-blue-950/20",
-        isEven ? "bg-white dark:bg-zinc-950" : "bg-zinc-50 dark:bg-zinc-900/50",
+        "grid grid-cols-[1fr_repeat(3,minmax(100px,140px))] items-center border-t border-v2-ring dark:border-v2-ring transition-colors hover:bg-blue-50/40 dark:hover:bg-blue-950/20",
+        isEven
+          ? "bg-white dark:bg-v2-canvas"
+          : "bg-v2-canvas dark:bg-v2-card/50",
       )}
     >
       {/* Carrier / Product */}
       <div className="px-4 py-2.5 min-w-0">
-        <div className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+        <div className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink truncate">
           {quote.carrierName}
         </div>
-        <div className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
+        <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
           {quote.productName}
         </div>
       </div>
@@ -307,7 +311,7 @@ function QuoteRow({
               "px-3 py-2.5 text-center border-l tabular-nums",
               isLowest
                 ? "bg-emerald-50 dark:bg-emerald-950/30 border-l-emerald-200 dark:border-l-emerald-800"
-                : "border-l-zinc-100 dark:border-l-zinc-800",
+                : "border-l-v2-ring dark:border-l-v2-ring",
             )}
           >
             {value !== null ? (
@@ -317,7 +321,7 @@ function QuoteRow({
                     "text-sm font-medium",
                     isLowest
                       ? "text-emerald-700 dark:text-emerald-400 font-bold"
-                      : "text-zinc-800 dark:text-zinc-200",
+                      : "text-v2-ink dark:text-v2-ink",
                   )}
                 >
                   {displayValue}
@@ -328,7 +332,7 @@ function QuoteRow({
                       "text-[10px] ml-0.5",
                       isLowest
                         ? "text-emerald-600/70 dark:text-emerald-500/70"
-                        : "text-zinc-400 dark:text-zinc-500",
+                        : "text-v2-ink-subtle dark:text-v2-ink-muted",
                     )}
                   >
                     /mo
@@ -338,7 +342,7 @@ function QuoteRow({
             ) : (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="text-[11px] text-zinc-300 dark:text-zinc-600">
+                  <span className="text-[11px] text-v2-ink-subtle dark:text-v2-ink-muted">
                     --
                   </span>
                 </TooltipTrigger>

@@ -151,8 +151,8 @@ export function PredicateGroupBuilder({
   // Background color for nesting
   const bgColor =
     depth % 2 === 0
-      ? "bg-zinc-50 dark:bg-zinc-900/50"
-      : "bg-zinc-100/50 dark:bg-zinc-800/30";
+      ? "bg-v2-canvas dark:bg-v2-card/50"
+      : "bg-v2-card-tinted/50 dark:bg-v2-card-tinted/30";
 
   return (
     <div className={`rounded-lg p-2 ${bgColor} ${depth > 0 ? "ml-3" : ""}`}>
@@ -182,7 +182,7 @@ export function PredicateGroupBuilder({
           </SelectContent>
         </Select>
 
-        <span className="text-[10px] text-zinc-400">
+        <span className="text-[10px] text-v2-ink-subtle">
           {groupType === "all" && "All conditions must match"}
           {groupType === "any" && "At least one must match"}
           {groupType === "not" && "Condition must not match"}
@@ -197,7 +197,7 @@ export function PredicateGroupBuilder({
             size="sm"
             onClick={onDelete}
             disabled={disabled}
-            className="h-5 w-5 p-0 ml-auto text-zinc-400 hover:text-red-500"
+            className="h-5 w-5 p-0 ml-auto text-v2-ink-subtle hover:text-red-500"
           >
             <Trash2 className="h-3 w-3" />
           </Button>
@@ -255,7 +255,7 @@ export function PredicateGroupBuilder({
             size="sm"
             onClick={addGroup}
             disabled={disabled}
-            className="h-6 px-2 text-[10px] text-zinc-500"
+            className="h-6 px-2 text-[10px] text-v2-ink-muted"
           >
             <Layers className="h-3 w-3 mr-1" />
             Add Group

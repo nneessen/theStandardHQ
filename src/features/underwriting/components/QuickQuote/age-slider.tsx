@@ -92,10 +92,10 @@ export function AgeSlider({
           onValueChange={([v]) => onChange(v)}
           className="relative flex w-full touch-none select-none items-center h-5"
         >
-          <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
+          <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-v2-ring dark:bg-v2-ring-strong">
             <SliderPrimitive.Range className="absolute h-full bg-zinc-600 dark:bg-zinc-400" />
           </SliderPrimitive.Track>
-          <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full border-2 border-zinc-600 dark:border-zinc-300 bg-white dark:bg-zinc-800 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1 hover:border-zinc-800 dark:hover:border-zinc-100 cursor-grab active:cursor-grabbing" />
+          <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full border-2 border-v2-ring-strong dark:border-v2-ring-strong bg-v2-card-tinted shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-v2-ring-strong focus-visible:ring-offset-1 hover:border-v2-ink dark:hover:border-v2-ring cursor-grab active:cursor-grabbing" />
         </SliderPrimitive.Root>
 
         {/* Tick marks */}
@@ -108,8 +108,8 @@ export function AgeSlider({
                 className="absolute flex flex-col items-center"
                 style={{ left: `${pct}%`, transform: "translateX(-50%)" }}
               >
-                <div className="w-px h-1 bg-zinc-300 dark:bg-zinc-600" />
-                <span className="text-[8px] tabular-nums text-zinc-400 dark:text-zinc-500 leading-none mt-px">
+                <div className="w-px h-1 bg-v2-ring-strong dark:bg-v2-ring-strong" />
+                <span className="text-[8px] tabular-nums text-v2-ink-subtle dark:text-v2-ink-muted leading-none mt-px">
                   {tick}
                 </span>
               </div>
@@ -129,13 +129,13 @@ export function AgeSlider({
           onChange={handleInputChange}
           onBlur={commitEdit}
           onKeyDown={handleKeyDown}
-          className="h-7 w-10 rounded-md border border-zinc-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-center text-xs font-semibold tabular-nums outline-none focus:ring-1 focus:ring-primary"
+          className="h-7 w-10 rounded-md border border-v2-ring-strong dark:border-v2-ring-strong bg-v2-card-tinted text-center text-xs font-semibold tabular-nums outline-none focus:ring-1 focus:ring-primary"
         />
       ) : (
         <button
           type="button"
           onClick={handleBadgeClick}
-          className="h-7 min-w-[36px] px-1.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-semibold tabular-nums text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-text"
+          className="h-7 min-w-[36px] px-1.5 rounded-md bg-v2-card-tinted dark:bg-v2-card-tinted border border-v2-ring dark:border-v2-ring-strong text-xs font-semibold tabular-nums text-v2-ink dark:text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring-strong transition-colors cursor-text"
           title="Click to type age"
         >
           {value}

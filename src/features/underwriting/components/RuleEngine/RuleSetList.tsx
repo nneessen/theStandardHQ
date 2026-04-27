@@ -71,7 +71,7 @@ export function RuleSetList({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -80,7 +80,7 @@ export function RuleSetList({
     <div className="space-y-2">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
           {ruleSets.length} rule set{ruleSets.length !== 1 ? "s" : ""}
         </div>
         <Button
@@ -96,31 +96,31 @@ export function RuleSetList({
 
       {/* Table */}
       {ruleSets.length === 0 ? (
-        <div className="text-center py-8 text-[11px] text-zinc-400 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg">
+        <div className="text-center py-8 text-[11px] text-v2-ink-subtle bg-v2-canvas dark:bg-v2-card/50 rounded-lg">
           No rule sets yet. Create your first rule set to define acceptance
           criteria.
         </div>
       ) : (
-        <div className="rounded-lg overflow-hidden bg-white dark:bg-zinc-900 shadow-sm">
+        <div className="rounded-lg overflow-hidden bg-v2-card shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow className="bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
-                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <TableRow className="bg-v2-canvas dark:bg-v2-card-tinted/50 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50">
+                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-v2-ink-muted dark:text-v2-ink-subtle">
                   Name
                 </TableHead>
-                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-v2-ink-muted dark:text-v2-ink-subtle">
                   Scope
                 </TableHead>
-                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-v2-ink-muted dark:text-v2-ink-subtle">
                   Condition
                 </TableHead>
-                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-v2-ink-muted dark:text-v2-ink-subtle">
                   Rules
                 </TableHead>
-                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-v2-ink-muted dark:text-v2-ink-subtle">
                   Active
                 </TableHead>
-                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-v2-ink-muted dark:text-v2-ink-subtle">
                   Updated
                 </TableHead>
                 <TableHead className="w-10 h-8"></TableHead>
@@ -130,15 +130,15 @@ export function RuleSetList({
               {ruleSets.map((rs) => (
                 <TableRow
                   key={rs.id}
-                  className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/30"
+                  className="cursor-pointer hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/30"
                   onClick={() => onSelect(rs)}
                 >
                   <TableCell className="py-2">
-                    <div className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                    <div className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
                       {rs.name}
                     </div>
                     {rs.description && (
-                      <div className="text-[10px] text-zinc-400 truncate max-w-48">
+                      <div className="text-[10px] text-v2-ink-subtle truncate max-w-48">
                         {rs.description}
                       </div>
                     )}
@@ -151,16 +151,16 @@ export function RuleSetList({
                       {rs.scope}
                     </Badge>
                   </TableCell>
-                  <TableCell className="py-2 text-[11px] text-zinc-600 dark:text-zinc-400">
+                  <TableCell className="py-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     {rs.condition_code ? (
                       <span className="capitalize">
                         {rs.condition_code.replace(/_/g, " ")}
                       </span>
                     ) : (
-                      <span className="text-zinc-400">—</span>
+                      <span className="text-v2-ink-subtle">—</span>
                     )}
                   </TableCell>
-                  <TableCell className="py-2 text-[11px] text-zinc-600 dark:text-zinc-400 font-mono">
+                  <TableCell className="py-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle font-mono">
                     {rs.rules?.length || 0}
                   </TableCell>
                   <TableCell
@@ -175,7 +175,7 @@ export function RuleSetList({
                       className="h-4 w-7"
                     />
                   </TableCell>
-                  <TableCell className="py-2 text-[10px] text-zinc-400">
+                  <TableCell className="py-2 text-[10px] text-v2-ink-subtle">
                     {rs.updated_at
                       ? formatDistanceToNow(new Date(rs.updated_at), {
                           addSuffix: true,

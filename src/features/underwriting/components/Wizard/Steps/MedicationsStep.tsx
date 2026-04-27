@@ -120,7 +120,7 @@ export default function MedicationsStep({
 
   return (
     <div className="space-y-3 p-1">
-      <div className="text-xs text-zinc-500 dark:text-zinc-400">
+      <div className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle">
         Select current medications. All fields optional but impacts product
         eligibility.
       </div>
@@ -130,9 +130,9 @@ export default function MedicationsStep({
         {MEDICATION_CATEGORIES.map((category) => (
           <div
             key={category.id}
-            className="space-y-1.5 p-2 bg-zinc-50 dark:bg-zinc-800/30 rounded border border-zinc-200 dark:border-zinc-700"
+            className="space-y-1.5 p-2 bg-v2-canvas dark:bg-v2-card-tinted/30 rounded border border-v2-ring dark:border-v2-ring-strong"
           >
-            <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+            <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide">
               {category.label}
             </div>
             <div className="space-y-1">
@@ -204,7 +204,7 @@ function MedicationField({ item, data, onChange }: MedicationFieldProps) {
             "text-[11px] cursor-pointer",
             checked
               ? "text-blue-700 dark:text-blue-300 font-medium"
-              : "text-zinc-600 dark:text-zinc-400",
+              : "text-v2-ink-muted dark:text-v2-ink-subtle",
           )}
         >
           {item.label}
@@ -218,7 +218,7 @@ function MedicationField({ item, data, onChange }: MedicationFieldProps) {
     const maxValue = item.max || 3;
     return (
       <div className="flex items-center gap-2">
-        <Label className="text-[11px] text-zinc-600 dark:text-zinc-400 min-w-[80px]">
+        <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle min-w-[80px]">
           {item.label}
         </Label>
         <Select
@@ -245,7 +245,7 @@ function MedicationField({ item, data, onChange }: MedicationFieldProps) {
     const value = data.painMedications;
     return (
       <div className="space-y-1">
-        <Label className="text-[11px] text-zinc-600 dark:text-zinc-400">
+        <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
           {item.label}
         </Label>
         <Select

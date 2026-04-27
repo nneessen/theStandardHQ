@@ -144,7 +144,7 @@ export default function RecommendationsStep({
     return (
       <div className="flex flex-col items-center justify-center p-8 gap-3">
         <div className="h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-        <span className="text-sm text-zinc-500">
+        <span className="text-sm text-v2-ink-muted">
           Analyzing client profile...
         </span>
       </div>
@@ -157,14 +157,14 @@ export default function RecommendationsStep({
     <div className="space-y-4 p-1">
       {/* Health Tier Summary (from AI) */}
       {isAILoading && !aiResult ? (
-        <div className="p-4 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50">
+        <div className="p-4 rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-canvas dark:bg-v2-card-tinted/50">
           <div className="flex items-center gap-3">
             <div className="h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
             <div className="flex-1">
-              <div className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              <div className="text-sm font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                 AI analyzing health classification...
               </div>
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-xs text-v2-ink-muted mt-1">
                 For {clientInfo.name || "this client"}, age {clientInfo.age}
               </p>
             </div>
@@ -185,7 +185,7 @@ export default function RecommendationsStep({
                 Estimated Health Classification:{" "}
                 {getHealthTierLabel(aiResult.healthTier)}
               </div>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+              <p className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle mt-1">
                 For {clientInfo.name || "this client"}, age {clientInfo.age}
                 {maxFaceAmount > 0 && (
                   <>
@@ -203,15 +203,15 @@ export default function RecommendationsStep({
 
           {/* Risk Factors */}
           {aiResult.riskFactors.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
-              <div className="text-[10px] font-medium text-zinc-500 uppercase tracking-wide mb-1">
+            <div className="mt-3 pt-3 border-t border-v2-ring dark:border-v2-ring-strong">
+              <div className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1">
                 Risk Factors Considered
               </div>
               <div className="flex flex-wrap gap-1">
                 {aiResult.riskFactors.map((factor, i) => (
                   <span
                     key={i}
-                    className="px-2 py-0.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded text-[10px] text-zinc-600 dark:text-zinc-400"
+                    className="px-2 py-0.5 bg-v2-card-tinted border border-v2-ring dark:border-v2-ring-strong rounded text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle"
                   >
                     {factor}
                   </span>
@@ -223,7 +223,7 @@ export default function RecommendationsStep({
       ) : null}
 
       {/* ========== SECTION 1: Decision Engine (Rate Table) Results ========== */}
-      <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg overflow-hidden">
+      <div className="border border-v2-ring dark:border-v2-ring rounded-lg overflow-hidden">
         <div className="px-4 py-3 bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-200 dark:border-indigo-800 flex items-center gap-2">
           <Database className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
           <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
@@ -236,9 +236,9 @@ export default function RecommendationsStep({
 
         {/* Term Length Selector */}
         {hasTermOptions && onTermChange && (
-          <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50">
+          <div className="px-3 py-2 border-b border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
             <div className="flex items-center gap-3">
-              <span className="text-[10px] font-medium text-zinc-500 uppercase tracking-wide">
+              <span className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
                 Term Length:
               </span>
               <div className="flex items-center gap-1">
@@ -254,7 +254,7 @@ export default function RecommendationsStep({
                         (displayedTerm === null &&
                           term === sortedTerms[sortedTerms.length - 1])
                         ? "bg-indigo-100 dark:bg-indigo-900/40 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300"
-                        : "bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-700",
+                        : "bg-v2-card-tinted border-v2-ring-strong dark:border-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-card-tinted dark:hover:bg-v2-ring-strong",
                       isDecisionEngineLoading &&
                         "opacity-50 cursor-not-allowed",
                     )}
@@ -274,7 +274,7 @@ export default function RecommendationsStep({
           {isDecisionEngineLoading ? (
             <div className="flex items-center gap-3 p-6 justify-center">
               <div className="h-5 w-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-              <span className="text-sm text-zinc-500">
+              <span className="text-sm text-v2-ink-muted">
                 Searching rate tables...
               </span>
             </div>
@@ -290,29 +290,35 @@ export default function RecommendationsStep({
               />
 
               {/* Stats Footer */}
-              <div className="pt-3 mt-3 border-t border-zinc-200 dark:border-zinc-700 text-xs text-zinc-500 dark:text-zinc-400 flex flex-wrap items-center gap-3">
+              <div className="pt-3 mt-3 border-t border-v2-ring dark:border-v2-ring-strong text-xs text-v2-ink-muted dark:text-v2-ink-subtle flex flex-wrap items-center gap-3">
                 <span>
                   Searched {decisionEngineResult.filtered.totalProducts}{" "}
                   products
                 </span>
-                <span className="text-zinc-300 dark:text-zinc-600">•</span>
+                <span className="text-v2-ink-subtle dark:text-v2-ink-muted">
+                  •
+                </span>
                 <span className="text-emerald-600 dark:text-emerald-400 font-medium">
                   {decisionEngineResult.filtered.passedEligibility} eligible
                 </span>
                 {decisionEngineResult.filtered.unknownEligibility > 0 && (
                   <>
-                    <span className="text-zinc-300 dark:text-zinc-600">•</span>
+                    <span className="text-v2-ink-subtle dark:text-v2-ink-muted">
+                      •
+                    </span>
                     <span className="text-yellow-600 dark:text-yellow-400 font-medium">
                       {decisionEngineResult.filtered.unknownEligibility} need
                       verification
                     </span>
                   </>
                 )}
-                <span className="text-zinc-300 dark:text-zinc-600">•</span>
+                <span className="text-v2-ink-subtle dark:text-v2-ink-muted">
+                  •
+                </span>
                 <span>
                   {decisionEngineResult.filtered.withPremiums} with rates
                 </span>
-                <span className="ml-auto text-zinc-400">
+                <span className="ml-auto text-v2-ink-subtle">
                   {decisionEngineResult.processingTime}ms
                 </span>
               </div>
@@ -321,23 +327,23 @@ export default function RecommendationsStep({
             <div className="p-4">
               <div className="flex items-center gap-2 mb-3">
                 <Database className="h-5 w-5 text-amber-500" />
-                <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                <span className="text-xs font-medium text-v2-ink dark:text-v2-ink-muted">
                   No Quoted Products Available
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-500 mb-3">
+              <p className="text-[11px] text-v2-ink-muted mb-3">
                 We evaluated {decisionEngineResult.filtered.totalProducts}{" "}
                 products but couldn't generate pricing for any of them.
               </p>
 
               {/* Pipeline breakdown */}
-              <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded p-2 mb-3">
-                <p className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400 mb-1.5">
+              <div className="bg-v2-canvas dark:bg-v2-card-tinted/50 rounded p-2 mb-3">
+                <p className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-1.5">
                   Pipeline Breakdown:
                 </p>
                 <div className="space-y-1 text-[10px]">
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-500">
+                    <span className="text-v2-ink-muted">
                       Stage 1 (Eligibility):
                     </span>
                     <span
@@ -351,7 +357,9 @@ export default function RecommendationsStep({
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-500">Stage 2 (Approval):</span>
+                    <span className="text-v2-ink-muted">
+                      Stage 2 (Approval):
+                    </span>
                     <span
                       className={
                         decisionEngineResult.filtered.passedAcceptance > 0
@@ -363,7 +371,7 @@ export default function RecommendationsStep({
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-500">
+                    <span className="text-v2-ink-muted">
                       Stage 3 (Premium Lookup):
                     </span>
                     <span
@@ -384,28 +392,28 @@ export default function RecommendationsStep({
               {/* Likely causes */}
               {decisionEngineResult.filtered.withPremiums === 0 &&
                 decisionEngineResult.filtered.passedAcceptance > 0 && (
-                  <div className="text-[10px] text-zinc-500 space-y-1">
-                    <p className="font-medium text-zinc-600 dark:text-zinc-400">
+                  <div className="text-[10px] text-v2-ink-muted space-y-1">
+                    <p className="font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                       Likely causes:
                     </p>
-                    <ul className="list-disc list-inside space-y-0.5 text-zinc-400">
+                    <ul className="list-disc list-inside space-y-0.5 text-v2-ink-subtle">
                       <li>Premium rates not yet loaded for these products</li>
                       <li>Health class not available in rate tables</li>
                       <li>Gender or tobacco class mismatch</li>
                       <li>Age/face amount outside rate grid</li>
                     </ul>
-                    <p className="mt-2 text-zinc-400 italic">
+                    <p className="mt-2 text-v2-ink-subtle italic">
                       Check browser console for detailed diagnostics.
                     </p>
                   </div>
                 )}
 
               {decisionEngineResult.filtered.passedEligibility === 0 && (
-                <div className="text-[10px] text-zinc-500 space-y-1">
-                  <p className="font-medium text-zinc-600 dark:text-zinc-400">
+                <div className="text-[10px] text-v2-ink-muted space-y-1">
+                  <p className="font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                     All products failed eligibility:
                   </p>
-                  <ul className="list-disc list-inside space-y-0.5 text-zinc-400">
+                  <ul className="list-disc list-inside space-y-0.5 text-v2-ink-subtle">
                     <li>Client age may be outside product age limits</li>
                     <li>Requested face amount may exceed product maximums</li>
                     <li>Client may have a knockout health condition</li>
@@ -416,8 +424,8 @@ export default function RecommendationsStep({
             </div>
           ) : (
             <div className="p-4 text-center">
-              <XCircle className="h-6 w-6 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-              <p className="text-xs text-zinc-500">
+              <XCircle className="h-6 w-6 text-v2-ink-subtle dark:text-v2-ink-muted mx-auto mb-2" />
+              <p className="text-xs text-v2-ink-muted">
                 Decision engine unavailable.
               </p>
             </div>
@@ -459,7 +467,7 @@ function AIAnalysisSummary({
       <div className="border border-purple-200 dark:border-purple-800 rounded-lg overflow-hidden">
         <div className="px-4 py-3 bg-purple-50 dark:bg-purple-900/20 flex items-center gap-2">
           <div className="h-4 w-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm text-zinc-500">AI analyzing...</span>
+          <span className="text-sm text-v2-ink-muted">AI analyzing...</span>
         </div>
       </div>
     );
@@ -489,7 +497,7 @@ function AIAnalysisSummary({
       </button>
       {isOpen && (
         <div className="p-4 border-t border-purple-200 dark:border-purple-800">
-          <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed whitespace-pre-wrap">
+          <p className="text-sm text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed whitespace-pre-wrap">
             {reasoning}
           </p>
         </div>
@@ -533,25 +541,25 @@ function DecisionEngineTable({
   if (allRecs.length === 0) return null;
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-700">
+    <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring-strong">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b-2 border-zinc-200 dark:border-zinc-700 text-left bg-zinc-50 dark:bg-zinc-800/50">
-            <th className="py-3 px-4 font-semibold text-zinc-600 dark:text-zinc-300">
+          <tr className="border-b-2 border-v2-ring dark:border-v2-ring-strong text-left bg-v2-canvas dark:bg-v2-card-tinted/50">
+            <th className="py-3 px-4 font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
               Product
             </th>
-            <th className="py-3 px-4 font-semibold text-zinc-600 dark:text-zinc-300 text-right">
+            <th className="py-3 px-4 font-semibold text-v2-ink-muted dark:text-v2-ink-muted text-right">
               Monthly Premium
             </th>
-            <th className="py-3 px-4 font-semibold text-zinc-600 dark:text-zinc-300 text-center">
+            <th className="py-3 px-4 font-semibold text-v2-ink-muted dark:text-v2-ink-muted text-center">
               Quoted Class
             </th>
-            <th className="py-3 px-4 font-semibold text-zinc-600 dark:text-zinc-300">
+            <th className="py-3 px-4 font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
               Coverage Options
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+        <tbody className="divide-y divide-v2-ring dark:divide-v2-ring">
           {allRecs.map((rec) => (
             <DecisionEngineRow
               key={`${rec.carrierId}-${rec.productId}`}
@@ -634,7 +642,7 @@ function getHealthClassBadge(healthClass: string): {
           .replace(/_/g, " ")
           .replace(/\b\w/g, (c) => c.toUpperCase()),
         className:
-          "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700",
+          "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-subtle border-v2-ring dark:border-v2-ring-strong",
       };
   }
 }
@@ -678,10 +686,10 @@ function DecisionEngineRow({
     </span>
   ) : hasNoRateMatrix ? (
     <div className="flex flex-col items-center gap-0.5">
-      <span className="inline-block rounded border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+      <span className="inline-block rounded border border-v2-ring bg-v2-card-tinted px-2 py-0.5 text-xs font-medium text-v2-ink-muted dark:border-v2-ring-strong dark:bg-v2-card-tinted dark:text-v2-ink-muted">
         No rates loaded
       </span>
-      <span className="text-[9px] text-zinc-400 text-center leading-tight">
+      <span className="text-[9px] text-v2-ink-subtle text-center leading-tight">
         UW {uwBadge.label}
       </span>
     </div>
@@ -698,19 +706,19 @@ function DecisionEngineRow({
       {recommendation.wasFallback &&
         requestedBadge &&
         recommendation.healthClassUsed && (
-          <span className="text-[9px] text-zinc-400 text-center leading-tight">
+          <span className="text-[9px] text-v2-ink-subtle text-center leading-tight">
             UW {requestedBadge.label}
             <span className="mx-0.5">→</span>
             Quote {badge.label}
           </span>
         )}
       {isSingleRateClass && (
-        <span className="text-[9px] text-zinc-400 text-center leading-tight">
+        <span className="text-[9px] text-v2-ink-subtle text-center leading-tight">
           Single rate class product
         </span>
       )}
       {isSI && (
-        <span className="text-[9px] text-zinc-400">Premium: Standard</span>
+        <span className="text-[9px] text-v2-ink-subtle">Premium: Standard</span>
       )}
     </div>
   );
@@ -718,7 +726,7 @@ function DecisionEngineRow({
   return (
     <tr
       className={cn(
-        "hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors bg-white dark:bg-zinc-900",
+        "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 transition-colors bg-v2-card",
         isUnknown && "bg-yellow-50 dark:bg-yellow-900/20",
       )}
     >
@@ -729,10 +737,10 @@ function DecisionEngineRow({
             <HelpCircle className="h-4 w-4 text-yellow-500 shrink-0" />
           )}
           <div className="min-w-0">
-            <div className="font-medium text-zinc-800 dark:text-zinc-200 truncate text-sm">
+            <div className="font-medium text-v2-ink dark:text-v2-ink truncate text-sm">
               {recommendation.carrierName}
             </div>
-            <div className="text-xs text-zinc-500 truncate">
+            <div className="text-xs text-v2-ink-muted truncate">
               {recommendation.productName}
               {recommendation.termYears !== null &&
                 recommendation.termYears !== undefined && (
@@ -754,28 +762,28 @@ function DecisionEngineRow({
       <td className="py-3 px-4 text-right">
         {recommendation.monthlyPremium !== null ? (
           <div>
-            <span className="font-bold text-base text-zinc-800 dark:text-zinc-200">
+            <span className="font-bold text-base text-v2-ink dark:text-v2-ink">
               {formatDECurrency(recommendation.monthlyPremium)}
             </span>
-            <span className="text-xs text-zinc-400 ml-0.5">/mo</span>
+            <span className="text-xs text-v2-ink-subtle ml-0.5">/mo</span>
           </div>
         ) : recommendation.buildRating?.startsWith("table_") ? (
           <div>
             <span className="text-xs font-medium text-orange-600 dark:text-orange-400">
               Substandard
             </span>
-            <div className="text-[9px] text-zinc-400 mt-0.5">
+            <div className="text-[9px] text-v2-ink-subtle mt-0.5">
               Call UW for rating
             </div>
           </div>
         ) : (
-          <span className="text-zinc-400 text-sm">TBD</span>
+          <span className="text-v2-ink-subtle text-sm">TBD</span>
         )}
       </td>
 
       {/* Health Class Column */}
       <td className="py-3 px-4 text-center">
-        <div className="inline-flex min-w-[112px] items-center justify-center rounded-md bg-zinc-100 px-2.5 py-1 dark:bg-zinc-800">
+        <div className="inline-flex min-w-[112px] items-center justify-center rounded-md bg-v2-card-tinted px-2.5 py-1 dark:bg-v2-card-tinted">
           {healthClassDisplay}
         </div>
       </td>
@@ -786,11 +794,11 @@ function DecisionEngineRow({
         recommendation.alternativeQuotes.length > 0 ? (
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-zinc-200 dark:border-zinc-700">
-                <th className="py-1 px-2 text-left font-medium text-zinc-500 dark:text-zinc-400">
+              <tr className="border-b border-v2-ring dark:border-v2-ring-strong">
+                <th className="py-1 px-2 text-left font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                   Face Amount
                 </th>
-                <th className="py-1 px-2 text-right font-medium text-zinc-500 dark:text-zinc-400">
+                <th className="py-1 px-2 text-right font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                   Monthly
                 </th>
               </tr>
@@ -803,7 +811,7 @@ function DecisionEngineRow({
                   <tr
                     key={idx}
                     className={cn(
-                      "border-b border-zinc-100 dark:border-zinc-800 last:border-0",
+                      "border-b border-v2-ring dark:border-v2-ring last:border-0",
                       isRequested && "bg-indigo-50 dark:bg-indigo-900/30",
                     )}
                   >
@@ -812,7 +820,7 @@ function DecisionEngineRow({
                         "py-1.5 px-2",
                         isRequested
                           ? "font-semibold text-indigo-600 dark:text-indigo-400"
-                          : "text-zinc-700 dark:text-zinc-300",
+                          : "text-v2-ink dark:text-v2-ink-muted",
                       )}
                     >
                       {formatDECurrency(quote.faceAmount)}
@@ -822,7 +830,7 @@ function DecisionEngineRow({
                         "py-1.5 px-2 text-right",
                         isRequested
                           ? "font-semibold text-indigo-600 dark:text-indigo-400"
-                          : "text-zinc-600 dark:text-zinc-400",
+                          : "text-v2-ink-muted dark:text-v2-ink-subtle",
                       )}
                     >
                       {formatDECurrency(quote.monthlyPremium)}/mo
@@ -833,7 +841,7 @@ function DecisionEngineRow({
             </tbody>
           </table>
         ) : (
-          <span className="text-xs text-zinc-400">—</span>
+          <span className="text-xs text-v2-ink-subtle">—</span>
         )}
       </td>
     </tr>

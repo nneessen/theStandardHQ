@@ -238,28 +238,28 @@ export function RuleCard({
   const isFromDocument = rule.source_type === "carrier_document";
 
   return (
-    <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors group">
+    <div className="border border-v2-ring dark:border-v2-ring-strong rounded-lg bg-v2-card hover:border-v2-ring-strong dark:hover:border-v2-ring-strong transition-colors group">
       {/* Header */}
-      <div className="flex items-start gap-2 p-2 border-b border-zinc-100 dark:border-zinc-800">
+      <div className="flex items-start gap-2 p-2 border-b border-v2-ring dark:border-v2-ring">
         {/* Priority & Move Controls */}
         <div className="flex flex-col items-center gap-0.5 pt-0.5">
           <button
             type="button"
             onClick={onMoveUp}
             disabled={index === 0 || isLoading}
-            className="text-zinc-300 hover:text-zinc-500 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="text-v2-ink-subtle hover:text-v2-ink-muted disabled:opacity-30 disabled:cursor-not-allowed"
             title="Move up"
           >
             <ChevronUp className="h-3 w-3" />
           </button>
-          <span className="text-[10px] font-bold text-zinc-400 w-4 text-center">
+          <span className="text-[10px] font-bold text-v2-ink-subtle w-4 text-center">
             {index + 1}
           </span>
           <button
             type="button"
             onClick={onMoveDown}
             disabled={index === totalRules - 1 || isLoading}
-            className="text-zinc-300 hover:text-zinc-500 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="text-v2-ink-subtle hover:text-v2-ink-muted disabled:opacity-30 disabled:cursor-not-allowed"
             title="Move down"
           >
             <ChevronDown className="h-3 w-3" />
@@ -275,7 +275,7 @@ export function RuleCard({
             >
               {getOutcomeLabel(rule.outcome_eligibility)}
             </Badge>
-            <span className="text-[11px] font-medium text-zinc-800 dark:text-zinc-200 truncate">
+            <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink truncate">
               {rule.name}
             </span>
             {isFromDocument && (
@@ -291,7 +291,7 @@ export function RuleCard({
             {rule.extraction_confidence !== null &&
               rule.extraction_confidence !== undefined && (
                 <span
-                  className="text-[9px] text-zinc-400"
+                  className="text-[9px] text-v2-ink-subtle"
                   title={`AI extraction confidence: ${Math.round(rule.extraction_confidence * 100)}%`}
                 >
                   {Math.round(rule.extraction_confidence * 100)}%
@@ -299,7 +299,7 @@ export function RuleCard({
               )}
           </div>
           {rule.description && (
-            <p className="text-[10px] text-zinc-400 truncate">
+            <p className="text-[10px] text-v2-ink-subtle truncate">
               {rule.description}
             </p>
           )}
@@ -336,10 +336,10 @@ export function RuleCard({
       <div className="p-2 space-y-1.5">
         {/* Condition Summary */}
         <div className="flex items-start gap-1.5">
-          <span className="text-[10px] text-zinc-400 uppercase tracking-wide flex-shrink-0 w-8 pt-0.5">
+          <span className="text-[10px] text-v2-ink-subtle uppercase tracking-wide flex-shrink-0 w-8 pt-0.5">
             IF
           </span>
-          <p className="text-[10px] text-zinc-600 dark:text-zinc-300 leading-relaxed">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-muted leading-relaxed">
             {conditionSummary}
           </p>
         </div>
@@ -347,26 +347,26 @@ export function RuleCard({
         {/* Filters */}
         {hasFilters && filterSummary && (
           <div className="flex items-start gap-1.5">
-            <span className="text-[10px] text-zinc-400 uppercase tracking-wide flex-shrink-0 w-8 pt-0.5">
+            <span className="text-[10px] text-v2-ink-subtle uppercase tracking-wide flex-shrink-0 w-8 pt-0.5">
               FOR
             </span>
-            <p className="text-[10px] text-zinc-500">{filterSummary}</p>
+            <p className="text-[10px] text-v2-ink-muted">{filterSummary}</p>
           </div>
         )}
 
         {/* Outcome Summary */}
         <div className="flex items-start gap-1.5">
-          <span className="text-[10px] text-zinc-400 uppercase tracking-wide flex-shrink-0 w-8 pt-0.5">
+          <span className="text-[10px] text-v2-ink-subtle uppercase tracking-wide flex-shrink-0 w-8 pt-0.5">
             →
           </span>
           <div className="flex-1">
             {outcomeSummary && (
-              <span className="text-[10px] font-medium text-zinc-700 dark:text-zinc-300">
+              <span className="text-[10px] font-medium text-v2-ink dark:text-v2-ink-muted">
                 {outcomeSummary}
               </span>
             )}
             {rule.outcome_reason && (
-              <p className="text-[10px] text-zinc-400 mt-0.5 italic">
+              <p className="text-[10px] text-v2-ink-subtle mt-0.5 italic">
                 "{rule.outcome_reason}"
               </p>
             )}

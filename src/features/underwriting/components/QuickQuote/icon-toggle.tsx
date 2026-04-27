@@ -31,7 +31,7 @@ export function IconToggle<T extends string>({
 }: IconToggleProps<T>) {
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex rounded-md border border-zinc-200 dark:border-zinc-700 overflow-hidden h-7">
+      <div className="flex rounded-md border border-v2-ring dark:border-v2-ring-strong overflow-hidden h-7">
         {options.map((opt, idx) => (
           <Tooltip key={opt.value}>
             <TooltipTrigger asChild>
@@ -41,10 +41,10 @@ export function IconToggle<T extends string>({
                 className={cn(
                   "px-2.5 flex items-center justify-center gap-1 text-xs font-medium transition-colors",
                   value === opt.value
-                    ? "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900"
-                    : "bg-white text-zinc-500 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800",
+                    ? "bg-v2-ink text-v2-canvas dark:bg-v2-canvas dark:text-v2-ink"
+                    : "bg-white text-v2-ink-muted hover:bg-v2-canvas dark:bg-v2-card dark:text-v2-ink-subtle dark:hover:bg-v2-card-tinted",
                   idx > 0 &&
-                    "border-l border-zinc-200 dark:border-zinc-700",
+                    "border-l border-v2-ring dark:border-v2-ring-strong",
                 )}
               >
                 {opt.content}

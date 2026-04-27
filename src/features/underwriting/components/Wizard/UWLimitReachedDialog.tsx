@@ -86,7 +86,7 @@ export function UWLimitReachedDialog({
           {/* Days Until Reset */}
           <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-zinc-500" />
+              <Calendar className="h-4 w-4 text-v2-ink-muted" />
               <span className="text-sm font-medium">Resets In</span>
             </div>
             <span className="text-sm text-muted-foreground">

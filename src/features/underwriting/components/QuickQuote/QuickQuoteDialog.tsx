@@ -122,7 +122,7 @@ function ProductPills({
   onToggle: (productType: QuickQuoteProductType, checked: boolean) => void;
 }) {
   return (
-    <div className="flex rounded-md border border-zinc-200 dark:border-zinc-700 overflow-hidden h-7">
+    <div className="flex rounded-md border border-v2-ring dark:border-v2-ring-strong overflow-hidden h-7">
       {PRODUCT_OPTIONS.map((opt, idx) => {
         const isActive = selected.includes(opt.value);
         return (
@@ -133,9 +133,9 @@ function ProductPills({
             className={cn(
               "px-3 text-xs font-medium transition-colors",
               isActive
-                ? "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900"
-                : "bg-white text-zinc-500 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800",
-              idx > 0 && "border-l border-zinc-200 dark:border-zinc-700",
+                ? "bg-v2-ink text-v2-canvas dark:bg-v2-canvas dark:text-v2-ink"
+                : "bg-white text-v2-ink-muted hover:bg-v2-canvas dark:bg-v2-card dark:text-v2-ink-subtle dark:hover:bg-v2-card-tinted",
+              idx > 0 && "border-l border-v2-ring dark:border-v2-ring-strong",
             )}
           >
             {opt.label}
@@ -155,15 +155,15 @@ function ModeToggle({
   onChange: (value: QuoteMode) => void;
 }) {
   return (
-    <div className="flex rounded-md border border-zinc-200 dark:border-zinc-700 overflow-hidden h-7">
+    <div className="flex rounded-md border border-v2-ring dark:border-v2-ring-strong overflow-hidden h-7">
       <button
         type="button"
         onClick={() => onChange("coverage")}
         className={cn(
           "px-3 text-xs font-medium transition-colors",
           value === "coverage"
-            ? "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900"
-            : "bg-white text-zinc-500 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800",
+            ? "bg-v2-ink text-v2-canvas dark:bg-v2-canvas dark:text-v2-ink"
+            : "bg-white text-v2-ink-muted hover:bg-v2-canvas dark:bg-v2-card dark:text-v2-ink-subtle dark:hover:bg-v2-card-tinted",
         )}
       >
         Face Amount
@@ -172,10 +172,10 @@ function ModeToggle({
         type="button"
         onClick={() => onChange("budget")}
         className={cn(
-          "px-3 text-xs font-medium transition-colors border-l border-zinc-200 dark:border-zinc-700",
+          "px-3 text-xs font-medium transition-colors border-l border-v2-ring dark:border-v2-ring-strong",
           value === "budget"
-            ? "bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-900"
-            : "bg-white text-zinc-500 hover:bg-zinc-50 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800",
+            ? "bg-v2-ink text-v2-canvas dark:bg-v2-canvas dark:text-v2-ink"
+            : "bg-white text-v2-ink-muted hover:bg-v2-canvas dark:bg-v2-card dark:text-v2-ink-subtle dark:hover:bg-v2-card-tinted",
         )}
       >
         Budget
@@ -460,7 +460,7 @@ function QuickQuoteContent({
       )}
 
       {/* Control Panel */}
-      <div className="flex-shrink-0 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 px-4 py-3 space-y-3">
+      <div className="flex-shrink-0 border-b border-v2-ring dark:border-v2-ring bg-v2-canvas dark:bg-v2-card/50 px-4 py-3 space-y-3">
         {/* Row 1: Age | Gender | Tobacco | Health Class | Term | Products */}
         <div className="flex flex-wrap items-end gap-3">
           {/* Age */}
@@ -473,7 +473,7 @@ function QuickQuoteContent({
           </div>
 
           {/* Vertical divider */}
-          <div className="h-7 w-px bg-zinc-200 dark:bg-zinc-700 self-end" />
+          <div className="h-7 w-px bg-v2-ring dark:bg-v2-ring-strong self-end" />
 
           {/* Gender */}
           <div className="space-y-1">
@@ -499,7 +499,7 @@ function QuickQuoteContent({
           </div>
 
           {/* Vertical divider */}
-          <div className="h-7 w-px bg-zinc-200 dark:bg-zinc-700 self-end" />
+          <div className="h-7 w-px bg-v2-ring dark:bg-v2-ring-strong self-end" />
 
           {/* Tobacco */}
           <div className="space-y-1">
@@ -535,7 +535,7 @@ function QuickQuoteContent({
           </div>
 
           {/* Vertical divider */}
-          <div className="h-7 w-px bg-zinc-200 dark:bg-zinc-700 self-end" />
+          <div className="h-7 w-px bg-v2-ring dark:bg-v2-ring-strong self-end" />
 
           {/* Health Class */}
           <div className="space-y-1">
@@ -551,7 +551,7 @@ function QuickQuoteContent({
                 }))
               }
             >
-              <SelectTrigger className="h-7 w-28 text-xs bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600">
+              <SelectTrigger className="h-7 w-28 text-xs bg-v2-card-tinted border-v2-ring-strong dark:border-v2-ring-strong">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -577,7 +577,7 @@ function QuickQuoteContent({
                   }))
                 }
               >
-                <SelectTrigger className="h-7 w-20 text-xs bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-600">
+                <SelectTrigger className="h-7 w-20 text-xs bg-v2-card-tinted border-v2-ring-strong dark:border-v2-ring-strong">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -592,7 +592,7 @@ function QuickQuoteContent({
           )}
 
           {/* Vertical divider */}
-          <div className="h-7 w-px bg-zinc-200 dark:bg-zinc-700 self-end" />
+          <div className="h-7 w-px bg-v2-ring dark:bg-v2-ring-strong self-end" />
 
           {/* Products */}
           <div className="space-y-1">
@@ -607,7 +607,7 @@ function QuickQuoteContent({
         </div>
 
         {/* Divider */}
-        <div className="border-t border-zinc-200 dark:border-zinc-800" />
+        <div className="border-t border-v2-ring dark:border-v2-ring" />
 
         {/* Row 2: Mode | Quick Options | 3x Amount Inputs */}
         <div className="flex flex-wrap items-end gap-4">
@@ -623,7 +623,7 @@ function QuickQuoteContent({
           </div>
 
           {/* Vertical divider */}
-          <div className="h-7 w-px bg-zinc-200 dark:bg-zinc-700 self-end" />
+          <div className="h-7 w-px bg-v2-ring dark:bg-v2-ring-strong self-end" />
 
           {/* Quick Options Presets */}
           <QuickOptionsPresets
@@ -643,7 +643,7 @@ function QuickQuoteContent({
           />
 
           {/* Vertical divider */}
-          <div className="h-7 w-px bg-zinc-200 dark:bg-zinc-700 self-end" />
+          <div className="h-7 w-px bg-v2-ring dark:bg-v2-ring-strong self-end" />
 
           {/* Amounts */}
           <ThreeAmountInputs
@@ -664,7 +664,7 @@ function QuickQuoteContent({
       {/* Results Area — fills remaining viewport */}
       <div className="flex-1 min-h-0 overflow-y-auto p-4">
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wide">
+          <span className="text-xs font-semibold text-v2-ink dark:text-v2-ink-muted uppercase tracking-wide">
             Results
           </span>
           {quotes.length > 0 && (
@@ -675,7 +675,7 @@ function QuickQuoteContent({
         </div>
 
         {!isValid ? (
-          <div className="flex items-center justify-center p-8 text-center border border-dashed border-zinc-300 dark:border-zinc-700 rounded-lg">
+          <div className="flex items-center justify-center p-8 text-center border border-dashed border-v2-ring-strong dark:border-v2-ring-strong rounded-lg">
             <p className="text-xs text-muted-foreground">
               Enter age, select gender, and choose at least one product
             </p>

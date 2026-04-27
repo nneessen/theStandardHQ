@@ -186,11 +186,11 @@ export function ConditionRuleSetView({
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="border-b border-zinc-200 dark:border-zinc-700 pb-3">
+      <div className="border-b border-v2-ring dark:border-v2-ring-strong pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-sm font-bold text-zinc-800 dark:text-zinc-100 uppercase tracking-wide">
+              <h2 className="text-sm font-bold text-v2-ink dark:text-v2-ink uppercase tracking-wide">
                 {displayConditionName}
               </h2>
               {getSourceBadge(ruleSet.source_type)}
@@ -202,12 +202,12 @@ export function ConditionRuleSetView({
               </Badge>
             </div>
             {carrierName && (
-              <p className="text-[11px] text-zinc-500">
+              <p className="text-[11px] text-v2-ink-muted">
                 Carrier: <span className="font-medium">{carrierName}</span>
               </p>
             )}
             {ruleSet.description && (
-              <p className="text-[10px] text-zinc-400 mt-1">
+              <p className="text-[10px] text-v2-ink-subtle mt-1">
                 {ruleSet.description}
               </p>
             )}
@@ -217,7 +217,7 @@ export function ConditionRuleSetView({
             variant="ghost"
             size="sm"
             onClick={() => setShowSettings(!showSettings)}
-            className="h-7 px-2 text-[10px] text-zinc-500"
+            className="h-7 px-2 text-[10px] text-v2-ink-muted"
           >
             <Settings2 className="h-3 w-3 mr-1" />
             Settings
@@ -240,10 +240,10 @@ export function ConditionRuleSetView({
 
         {/* Settings Panel */}
         {showSettings && (
-          <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700 space-y-2">
+          <div className="mt-3 pt-3 border-t border-v2-ring dark:border-v2-ring-strong space-y-2">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label className="text-[10px] text-zinc-500">Name</Label>
+                <Label className="text-[10px] text-v2-ink-muted">Name</Label>
                 <Input
                   className="h-7 text-[11px]"
                   value={editedName}
@@ -257,12 +257,16 @@ export function ConditionRuleSetView({
                     onCheckedChange={setEditedActive}
                     className="h-4 w-7"
                   />
-                  <Label className="text-[10px] text-zinc-500">Active</Label>
+                  <Label className="text-[10px] text-v2-ink-muted">
+                    Active
+                  </Label>
                 </div>
               </div>
             </div>
             <div className="space-y-1">
-              <Label className="text-[10px] text-zinc-500">Description</Label>
+              <Label className="text-[10px] text-v2-ink-muted">
+                Description
+              </Label>
               <Textarea
                 className="h-12 text-[11px] resize-none"
                 value={editedDescription}
@@ -301,7 +305,7 @@ export function ConditionRuleSetView({
             )}
 
             {onDeleteRuleSet && (
-              <div className="pt-3 mt-3 border-t border-zinc-200 dark:border-zinc-700">
+              <div className="pt-3 mt-3 border-t border-v2-ring dark:border-v2-ring-strong">
                 {!confirmDeleteRuleSet ? (
                   <Button
                     type="button"
@@ -365,13 +369,13 @@ export function ConditionRuleSetView({
       )}
 
       {/* Acceptance Rules Section */}
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden">
-        <div className="bg-zinc-50 dark:bg-zinc-800/50 px-3 py-2 border-b border-zinc-200 dark:border-zinc-700 flex items-center justify-between">
+      <div className="border border-v2-ring dark:border-v2-ring-strong rounded-lg overflow-hidden">
+        <div className="bg-v2-canvas dark:bg-v2-card-tinted/50 px-3 py-2 border-b border-v2-ring dark:border-v2-ring-strong flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider">
+            <span className="text-[11px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wider">
               Acceptance Rules
             </span>
-            <span className="text-[9px] text-zinc-400 ml-2">
+            <span className="text-[9px] text-v2-ink-subtle ml-2">
               Evaluated in priority order (top to bottom)
             </span>
           </div>
@@ -391,7 +395,7 @@ export function ConditionRuleSetView({
         <div className="p-2">
           {rules.length === 0 ? (
             <div className="py-8 text-center">
-              <p className="text-[11px] text-zinc-400 mb-3">
+              <p className="text-[11px] text-v2-ink-subtle mb-3">
                 No acceptance rules defined yet.
               </p>
               <Button
@@ -428,12 +432,12 @@ export function ConditionRuleSetView({
       </div>
 
       {/* Default Outcome Section */}
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden">
-        <div className="bg-zinc-50 dark:bg-zinc-800/50 px-3 py-2 border-b border-zinc-200 dark:border-zinc-700">
-          <span className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider">
+      <div className="border border-v2-ring dark:border-v2-ring-strong rounded-lg overflow-hidden">
+        <div className="bg-v2-canvas dark:bg-v2-card-tinted/50 px-3 py-2 border-b border-v2-ring dark:border-v2-ring-strong">
+          <span className="text-[11px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wider">
             Default Outcome
           </span>
-          <span className="text-[9px] text-zinc-400 ml-2">
+          <span className="text-[9px] text-v2-ink-subtle ml-2">
             Applied when no rules match
           </span>
         </div>
@@ -441,7 +445,7 @@ export function ConditionRuleSetView({
           <Badge variant="warning" className="text-[9px] h-4">
             REFER
           </Badge>
-          <span className="text-[10px] text-zinc-500">
+          <span className="text-[10px] text-v2-ink-muted">
             → Refer for manual underwriting review
           </span>
         </div>

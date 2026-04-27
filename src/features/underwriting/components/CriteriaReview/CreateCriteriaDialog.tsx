@@ -1,7 +1,15 @@
 // src/features/underwriting/components/CriteriaReview/CreateCriteriaDialog.tsx
 
 import { useState, useEffect } from "react";
-import { Plus, Loader2, Building, Package, Info, ChevronDown, ChevronRight } from "lucide-react";
+import {
+  Plus,
+  Loader2,
+  Building,
+  Package,
+  Info,
+  ChevronDown,
+  ChevronRight,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -58,7 +66,11 @@ const MEDICATION_CATEGORIES = {
       { key: "heartMeds", label: "Heart Medications" },
       { key: "oralDiabetesMeds", label: "Oral Diabetes Meds" },
       { key: "bpMedications", label: "BP Medications", isCount: true },
-      { key: "cholesterolMedications", label: "Cholesterol Medications", isCount: true },
+      {
+        key: "cholesterolMedications",
+        label: "Cholesterol Medications",
+        isCount: true,
+      },
     ],
   },
   mentalHealth: {
@@ -124,7 +136,10 @@ interface MedicationRestriction {
   maxCount?: number;
 }
 
-const getDefaultRestrictions = (): Record<MedicationKey, MedicationRestriction> => ({});
+const getDefaultRestrictions = (): Record<
+  MedicationKey,
+  MedicationRestriction
+> => ({});
 
 export function CreateCriteriaDialog({
   open,
@@ -138,14 +153,26 @@ export function CreateCriteriaDialog({
   const [carrierId, setCarrierId] = useState("");
   const [productId, setProductId] = useState(CARRIER_WIDE_VALUE);
   const [notes, setNotes] = useState("");
-  const [restrictions, setRestrictions] = useState<Record<MedicationKey, MedicationRestriction>>(getDefaultRestrictions);
+  const [restrictions, setRestrictions] = useState<
+    Record<MedicationKey, MedicationRestriction>
+  >(getDefaultRestrictions);
 
   // Expanded categories
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(["cardiovascular"]));
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    new Set(["cardiovascular"]),
+  );
 
   // Fetch carriers and products
-  const { data: carriers, isLoading: carriersLoading, error: carriersError } = useCarriers();
-  const { data: products, isLoading: productsLoading, error: productsError } = useProducts(carrierId || undefined);
+  const {
+    data: carriers,
+    isLoading: carriersLoading,
+    error: carriersError,
+  } = useCarriers();
+  const {
+    data: products,
+    isLoading: productsLoading,
+    error: productsError,
+  } = useProducts(carrierId || undefined);
 
   // Reset form when dialog closes
   useEffect(() => {
@@ -175,7 +202,10 @@ export function CreateCriteriaDialog({
     });
   };
 
-  const updateRestriction = (key: MedicationKey, updates: Partial<MedicationRestriction>) => {
+  const updateRestriction = (
+    key: MedicationKey,
+    updates: Partial<MedicationRestriction>,
+  ) => {
     setRestrictions((prev) => ({
       ...prev,
       [key]: { ...prev[key], ...updates },
@@ -220,7 +250,11 @@ export function CreateCriteriaDialog({
         };
       } else if (!restriction.allowed) {
         // Boolean restriction
-        const entry: { allowed: boolean; ratingImpact?: string; timeSinceUse?: number } = {
+        const entry: {
+          allowed: boolean;
+          ratingImpact?: string;
+          timeSinceUse?: number;
+        } = {
           allowed: false,
         };
         if (restriction.ratingImpact) {
@@ -237,7 +271,8 @@ export function CreateCriteriaDialog({
       criteria.medicationRestrictions = medRestrictions;
     }
 
-    const actualProductId = productId === CARRIER_WIDE_VALUE ? undefined : productId;
+    const actualProductId =
+      productId === CARRIER_WIDE_VALUE ? undefined : productId;
 
     try {
       await createMutation.mutateAsync({
@@ -296,7 +331,7 @@ export function CreateCriteriaDialog({
               <SelectContent>
                 {carriersLoading ? (
                   <div className="flex items-center justify-center py-4">
-                    <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+                    <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
                   </div>
                 ) : carriersError ? (
                   <div className="py-4 px-2 text-[10px] text-red-500">
@@ -304,7 +339,11 @@ export function CreateCriteriaDialog({
                   </div>
                 ) : (
                   carriers?.map((carrier) => (
-                    <SelectItem key={carrier.id} value={carrier.id} className="text-[11px]">
+                    <SelectItem
+                      key={carrier.id}
+                      value={carrier.id}
+                      className="text-[11px]"
+                    >
                       {carrier.name}
                     </SelectItem>
                   ))
@@ -321,25 +360,41 @@ export function CreateCriteriaDialog({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Info className="h-3 w-3 text-zinc-400 cursor-help" />
+                    <Info className="h-3 w-3 text-v2-ink-subtle cursor-help" />
                   </TooltipTrigger>
-                  <TooltipContent side="right" className="text-[10px] max-w-[200px]">
+                  <TooltipContent
+                    side="right"
+                    className="text-[10px] max-w-[200px]"
+                  >
                     Leave as carrier-wide to apply to all products.
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             </Label>
-            <Select value={productId} onValueChange={setProductId} disabled={!carrierId}>
+            <Select
+              value={productId}
+              onValueChange={setProductId}
+              disabled={!carrierId}
+            >
               <SelectTrigger className="h-8 text-[11px]">
-                <SelectValue placeholder={carrierId ? "All products (carrier-wide)" : "Select carrier first..."} />
+                <SelectValue
+                  placeholder={
+                    carrierId
+                      ? "All products (carrier-wide)"
+                      : "Select carrier first..."
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={CARRIER_WIDE_VALUE} className="text-[11px] text-zinc-500">
+                <SelectItem
+                  value={CARRIER_WIDE_VALUE}
+                  className="text-[11px] text-v2-ink-muted"
+                >
                   All products (carrier-wide)
                 </SelectItem>
                 {productsLoading ? (
                   <div className="flex items-center justify-center py-4">
-                    <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+                    <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
                   </div>
                 ) : productsError ? (
                   <div className="py-4 px-2 text-[10px] text-red-500">
@@ -347,7 +402,11 @@ export function CreateCriteriaDialog({
                   </div>
                 ) : (
                   products?.map((product) => (
-                    <SelectItem key={product.id} value={product.id} className="text-[11px]">
+                    <SelectItem
+                      key={product.id}
+                      value={product.id}
+                      className="text-[11px]"
+                    >
                       {product.name}
                     </SelectItem>
                   ))
@@ -357,118 +416,156 @@ export function CreateCriteriaDialog({
           </div>
 
           {/* Medication Restrictions */}
-          <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
-            <Label className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300">
+          <div className="space-y-2 pt-2 border-t border-v2-ring dark:border-v2-ring">
+            <Label className="text-[10px] font-semibold text-v2-ink dark:text-v2-ink-muted">
               Medication Restrictions
             </Label>
-            <p className="text-[9px] text-zinc-500">
-              Toggle switches OFF to mark medications as NOT ALLOWED for this carrier.
+            <p className="text-[9px] text-v2-ink-muted">
+              Toggle switches OFF to mark medications as NOT ALLOWED for this
+              carrier.
             </p>
 
-            {Object.entries(MEDICATION_CATEGORIES).map(([categoryKey, category]) => (
-              <Collapsible
-                key={categoryKey}
-                open={expandedCategories.has(categoryKey)}
-                onOpenChange={() => toggleCategory(categoryKey)}
-              >
-                <CollapsibleTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-between h-7 text-[10px] font-medium px-2 hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                  >
-                    <span>{category.label}</span>
-                    <div className="flex items-center gap-2">
-                      {category.meds.some((m) => isRestricted(m.key)) && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                          {category.meds.filter((m) => isRestricted(m.key)).length} restricted
-                        </span>
-                      )}
-                      {expandedCategories.has(categoryKey) ? (
-                        <ChevronDown className="h-3 w-3" />
-                      ) : (
-                        <ChevronRight className="h-3 w-3" />
-                      )}
-                    </div>
-                  </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="space-y-1.5 pl-2 pt-1">
-                  {category.meds.map((med) => (
-                    <div
-                      key={med.key}
-                      className={`p-2 rounded-md ${
-                        isRestricted(med.key)
-                          ? "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
-                          : "bg-zinc-50 dark:bg-zinc-800/50"
-                      }`}
+            {Object.entries(MEDICATION_CATEGORIES).map(
+              ([categoryKey, category]) => (
+                <Collapsible
+                  key={categoryKey}
+                  open={expandedCategories.has(categoryKey)}
+                  onOpenChange={() => toggleCategory(categoryKey)}
+                >
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-between h-7 text-[10px] font-medium px-2 hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted"
                     >
-                      {"isCount" in med && med.isCount ? (
-                        // Count-based restriction
-                        <div className="space-y-1">
-                          <Label className="text-[10px] font-medium">{med.label} Max Count</Label>
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="number"
-                              value={getCountValue(med.key)}
-                              onChange={(e) =>
-                                setCountRestriction(med.key, e.target.value ? parseInt(e.target.value) : "")
-                              }
-                              placeholder="No limit"
-                              className="h-7 text-[10px] w-20"
-                              min={0}
-                            />
-                            <span className="text-[9px] text-zinc-500">max allowed</span>
-                          </div>
-                        </div>
-                      ) : (
-                        // Boolean restriction
-                        <>
-                          <div className="flex items-center justify-between">
-                            <Label className="text-[10px] font-medium">{med.label} Allowed</Label>
-                            <Switch
-                              checked={!isRestricted(med.key)}
-                              onCheckedChange={() => toggleMedAllowed(med.key)}
-                            />
-                          </div>
-                          {"hasRatingImpact" in med && med.hasRatingImpact && isRestricted(med.key) && (
-                            <div className="mt-2 space-y-1">
-                              <Label className="text-[9px] text-zinc-500">Rating Impact</Label>
-                              <Input
-                                value={restrictions[med.key]?.ratingImpact || ""}
-                                onChange={(e) => updateRestriction(med.key, { ratingImpact: e.target.value })}
-                                placeholder="e.g., Table B or Decline"
-                                className="h-6 text-[10px]"
-                              />
-                            </div>
-                          )}
-                          {"hasTimeSinceUse" in med && med.hasTimeSinceUse && isRestricted(med.key) && (
-                            <div className="mt-2 space-y-1">
-                              <Label className="text-[9px] text-zinc-500">Months since last use required</Label>
+                      <span>{category.label}</span>
+                      <div className="flex items-center gap-2">
+                        {category.meds.some((m) => isRestricted(m.key)) && (
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                            {
+                              category.meds.filter((m) => isRestricted(m.key))
+                                .length
+                            }{" "}
+                            restricted
+                          </span>
+                        )}
+                        {expandedCategories.has(categoryKey) ? (
+                          <ChevronDown className="h-3 w-3" />
+                        ) : (
+                          <ChevronRight className="h-3 w-3" />
+                        )}
+                      </div>
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="space-y-1.5 pl-2 pt-1">
+                    {category.meds.map((med) => (
+                      <div
+                        key={med.key}
+                        className={`p-2 rounded-md ${
+                          isRestricted(med.key)
+                            ? "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
+                            : "bg-v2-canvas dark:bg-v2-card-tinted/50"
+                        }`}
+                      >
+                        {"isCount" in med && med.isCount ? (
+                          // Count-based restriction
+                          <div className="space-y-1">
+                            <Label className="text-[10px] font-medium">
+                              {med.label} Max Count
+                            </Label>
+                            <div className="flex items-center gap-2">
                               <Input
                                 type="number"
-                                value={restrictions[med.key]?.timeSinceUse || ""}
+                                value={getCountValue(med.key)}
                                 onChange={(e) =>
-                                  updateRestriction(med.key, {
-                                    timeSinceUse: e.target.value ? parseInt(e.target.value) : undefined,
-                                  })
+                                  setCountRestriction(
+                                    med.key,
+                                    e.target.value
+                                      ? parseInt(e.target.value)
+                                      : "",
+                                  )
                                 }
-                                placeholder="e.g., 24"
-                                className="h-6 text-[10px] w-20"
+                                placeholder="No limit"
+                                className="h-7 text-[10px] w-20"
                                 min={0}
                               />
+                              <span className="text-[9px] text-v2-ink-muted">
+                                max allowed
+                              </span>
                             </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </CollapsibleContent>
-              </Collapsible>
-            ))}
+                          </div>
+                        ) : (
+                          // Boolean restriction
+                          <>
+                            <div className="flex items-center justify-between">
+                              <Label className="text-[10px] font-medium">
+                                {med.label} Allowed
+                              </Label>
+                              <Switch
+                                checked={!isRestricted(med.key)}
+                                onCheckedChange={() =>
+                                  toggleMedAllowed(med.key)
+                                }
+                              />
+                            </div>
+                            {"hasRatingImpact" in med &&
+                              med.hasRatingImpact &&
+                              isRestricted(med.key) && (
+                                <div className="mt-2 space-y-1">
+                                  <Label className="text-[9px] text-v2-ink-muted">
+                                    Rating Impact
+                                  </Label>
+                                  <Input
+                                    value={
+                                      restrictions[med.key]?.ratingImpact || ""
+                                    }
+                                    onChange={(e) =>
+                                      updateRestriction(med.key, {
+                                        ratingImpact: e.target.value,
+                                      })
+                                    }
+                                    placeholder="e.g., Table B or Decline"
+                                    className="h-6 text-[10px]"
+                                  />
+                                </div>
+                              )}
+                            {"hasTimeSinceUse" in med &&
+                              med.hasTimeSinceUse &&
+                              isRestricted(med.key) && (
+                                <div className="mt-2 space-y-1">
+                                  <Label className="text-[9px] text-v2-ink-muted">
+                                    Months since last use required
+                                  </Label>
+                                  <Input
+                                    type="number"
+                                    value={
+                                      restrictions[med.key]?.timeSinceUse || ""
+                                    }
+                                    onChange={(e) =>
+                                      updateRestriction(med.key, {
+                                        timeSinceUse: e.target.value
+                                          ? parseInt(e.target.value)
+                                          : undefined,
+                                      })
+                                    }
+                                    placeholder="e.g., 24"
+                                    className="h-6 text-[10px] w-20"
+                                    min={0}
+                                  />
+                                </div>
+                              )}
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              ),
+            )}
           </div>
 
           {/* Notes */}
-          <div className="space-y-1.5 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+          <div className="space-y-1.5 pt-2 border-t border-v2-ring dark:border-v2-ring">
             <Label className="text-[10px]">Notes (optional)</Label>
             <Textarea
               value={notes}
@@ -483,13 +580,19 @@ export function CreateCriteriaDialog({
         {carrierId && !hasAnyRestriction && (
           <div className="p-2.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
             <p className="text-[10px] text-amber-800 dark:text-amber-300">
-              Please configure at least one medication restriction to create criteria.
+              Please configure at least one medication restriction to create
+              criteria.
             </p>
           </div>
         )}
 
         <DialogFooter className="gap-2 pt-2">
-          <Button variant="outline" size="sm" className="h-7 text-[11px]" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 text-[11px]"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
           <Button
@@ -516,15 +619,18 @@ export function CreateCriteriaDialog({
         {carrierId && (
           <div className="mt-2 p-2.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
             <p className="text-[10px] text-blue-800 dark:text-blue-300">
-              <strong>Summary:</strong> Creating criteria for <strong>{selectedCarrier?.name}</strong>
-              {productId !== CARRIER_WIDE_VALUE && products?.find((p) => p.id === productId) && (
-                <> - {products.find((p) => p.id === productId)?.name}</>
-              )}
+              <strong>Summary:</strong> Creating criteria for{" "}
+              <strong>{selectedCarrier?.name}</strong>
+              {productId !== CARRIER_WIDE_VALUE &&
+                products?.find((p) => p.id === productId) && (
+                  <> - {products.find((p) => p.id === productId)?.name}</>
+                )}
               {productId === CARRIER_WIDE_VALUE && " (all products)"}
             </p>
             {hasAnyRestriction && (
               <p className="text-[9px] text-blue-600 dark:text-blue-400 mt-1">
-                {Object.keys(restrictions).length} medication restriction(s) configured.
+                {Object.keys(restrictions).length} medication restriction(s)
+                configured.
               </p>
             )}
           </div>

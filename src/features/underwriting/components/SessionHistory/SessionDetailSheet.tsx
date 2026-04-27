@@ -87,7 +87,7 @@ export function SessionDetailSheet({
             Session Details
           </SheetTitle>
           {session && (
-            <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               {formatSessionDateLong(session.created_at)}
             </div>
           )}
@@ -95,7 +95,7 @@ export function SessionDetailSheet({
 
         <ScrollArea className="h-[calc(100vh-100px)]">
           {isLoading && (
-            <div className="px-6 py-8 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+            <div className="px-6 py-8 text-center text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Loading session details...
             </div>
           )}
@@ -159,7 +159,7 @@ export function SessionDetailSheet({
               >
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                    <span className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                       Health Tier:
                     </span>
                     <Badge
@@ -173,7 +173,7 @@ export function SessionDetailSheet({
 
                   {conditionsReported.length > 0 && (
                     <div>
-                      <div className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                      <div className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted mb-2">
                         Conditions Reported ({conditionsReported.length})
                       </div>
                       <div className="flex flex-wrap gap-1.5">
@@ -193,7 +193,7 @@ export function SessionDetailSheet({
 
                   {riskFactors.length > 0 && (
                     <div>
-                      <div className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-2 flex items-center gap-1.5">
+                      <div className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted mb-2 flex items-center gap-1.5">
                         <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
                         Risk Factors ({riskFactors.length})
                       </div>
@@ -201,7 +201,7 @@ export function SessionDetailSheet({
                         {riskFactors.map((factor, i) => (
                           <li
                             key={i}
-                            className="text-[11px] text-zinc-600 dark:text-zinc-400 flex items-start gap-2"
+                            className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle flex items-start gap-2"
                           >
                             <span className="text-amber-500 mt-0.5">•</span>
                             {factor}
@@ -251,14 +251,14 @@ export function SessionDetailSheet({
                           (rec, i) => (
                             <div
                               key={i}
-                              className="bg-zinc-50 dark:bg-zinc-800/50 rounded-lg p-3 border border-zinc-200 dark:border-zinc-700"
+                              className="bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-lg p-3 border border-v2-ring dark:border-v2-ring-strong"
                             >
                               <div className="flex items-start justify-between gap-3">
                                 <div className="flex-1">
-                                  <div className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100">
+                                  <div className="text-[12px] font-medium text-v2-ink dark:text-v2-ink">
                                     {rec.carrierName}
                                   </div>
-                                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                                  <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                                     {rec.productName}
                                     {rec.termYears
                                       ? ` (${rec.termYears} Year)`
@@ -277,21 +277,21 @@ export function SessionDetailSheet({
                                   rec.underwritingHealthClass !==
                                     (rec.quotedHealthClass ||
                                       rec.healthClass))) && (
-                                <div className="mt-1 text-[10px] text-zinc-400">
+                                <div className="mt-1 text-[10px] text-v2-ink-subtle">
                                   {rec.quoteClassNote ||
                                     `UW ${rec.underwritingHealthClass} -> Quote ${rec.quotedHealthClass || rec.healthClass}`}
                                 </div>
                               )}
                               <div className="mt-2 flex items-center justify-between text-[11px]">
-                                <span className="text-zinc-500 dark:text-zinc-400">
+                                <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                                   Face Amount
                                 </span>
-                                <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                                <span className="font-medium text-v2-ink dark:text-v2-ink">
                                   {formatCurrency(rec.faceAmount)}
                                 </span>
                               </div>
                               <div className="flex items-center justify-between text-[11px]">
-                                <span className="text-zinc-500 dark:text-zinc-400">
+                                <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                                   Monthly Premium
                                 </span>
                                 {rec.monthlyPremium !== null ? (
@@ -299,7 +299,7 @@ export function SessionDetailSheet({
                                     {formatCurrency(rec.monthlyPremium)}/mo
                                   </span>
                                 ) : (
-                                  <span className="font-medium text-zinc-500 dark:text-zinc-400">
+                                  <span className="font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                                     TBD
                                   </span>
                                 )}
@@ -322,14 +322,14 @@ export function SessionDetailSheet({
                           .map((rec, i) => (
                             <div
                               key={i}
-                              className="bg-zinc-50 dark:bg-zinc-800/50 rounded-lg p-3 border border-zinc-200 dark:border-zinc-700"
+                              className="bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-lg p-3 border border-v2-ring dark:border-v2-ring-strong"
                             >
                               <div className="flex items-start justify-between gap-3">
                                 <div>
-                                  <div className="text-[12px] font-medium text-zinc-900 dark:text-zinc-100">
+                                  <div className="text-[12px] font-medium text-v2-ink dark:text-v2-ink">
                                     {rec.carrierName}
                                   </div>
-                                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                                  <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                                     {rec.productName}
                                   </div>
                                 </div>
@@ -340,7 +340,7 @@ export function SessionDetailSheet({
                                   >
                                     {rec.expectedRating}
                                   </Badge>
-                                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                                  <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                                     {(rec.confidence * 100).toFixed(0)}%
                                   </span>
                                 </div>
@@ -370,7 +370,7 @@ export function SessionDetailSheet({
                                 </div>
                               )}
                               {rec.notes && (
-                                <div className="mt-2 text-[10px] text-zinc-500 dark:text-zinc-400 italic">
+                                <div className="mt-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle italic">
                                   {rec.notes}
                                 </div>
                               )}
@@ -389,7 +389,7 @@ export function SessionDetailSheet({
                     title="Notes"
                     icon={<FileText className="h-3.5 w-3.5" />}
                   >
-                    <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                    <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                       {session.notes}
                     </p>
                   </Section>
@@ -417,9 +417,11 @@ function Section({
     <div>
       <div className="flex items-center gap-2 mb-3">
         {icon && (
-          <span className="text-zinc-500 dark:text-zinc-400">{icon}</span>
+          <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+            {icon}
+          </span>
         )}
-        <h3 className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <h3 className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
           {title}
         </h3>
       </div>
@@ -439,11 +441,11 @@ function InfoRow({
 }) {
   return (
     <div className="flex justify-between items-baseline">
-      <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+      <span className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
         {label}
       </span>
       <span
-        className={`text-[12px] text-zinc-900 dark:text-zinc-100 ${valueClassName}`}
+        className={`text-[12px] text-v2-ink dark:text-v2-ink ${valueClassName}`}
       >
         {value}
       </span>

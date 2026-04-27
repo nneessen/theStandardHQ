@@ -176,23 +176,23 @@ export default function CoverageRequestStep({
 
   return (
     <div className="space-y-4 p-1">
-      <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-3">
+      <div className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle mb-3">
         Specify up to 3 face amounts for quote comparison and select the product
         types the client is interested in.
       </div>
 
       {/* Face Amounts */}
       <div className="space-y-3">
-        <Label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+        <Label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
           Face Amounts (Death Benefit) <span className="text-red-500">*</span>
         </Label>
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 -mt-1">
+        <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle -mt-1">
           Enter up to 3 coverage amounts to compare quotes
         </p>
 
         {/* Quick select buttons - dynamic based on product type */}
         <div className="space-y-1.5">
-          <span className="text-[10px] text-zinc-500">
+          <span className="text-[10px] text-v2-ink-muted">
             Quick-fill presets
             {isWholeLifeOnly() && " (whole life amounts)"}:
           </span>
@@ -206,7 +206,7 @@ export default function CoverageRequestStep({
                   "px-2 py-1 text-[10px] rounded border transition-colors",
                   faceAmounts[0] === amount
                     ? "bg-amber-600 text-white border-amber-600"
-                    : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-amber-300 dark:hover:border-amber-700",
+                    : "bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-subtle border-v2-ring dark:border-v2-ring-strong hover:border-amber-300 dark:hover:border-amber-700",
                 )}
               >
                 {formatCurrency(amount)}
@@ -219,12 +219,12 @@ export default function CoverageRequestStep({
         <div className="grid grid-cols-3 gap-3">
           {[0, 1, 2].map((index) => (
             <div key={index} className="space-y-1">
-              <label className="text-[10px] font-medium text-zinc-500">
+              <label className="text-[10px] font-medium text-v2-ink-muted">
                 Amount {index + 1}
                 {index === 0 && <span className="text-red-500 ml-0.5">*</span>}
               </label>
               <div className="relative">
-                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-zinc-400">
+                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-v2-ink-subtle">
                   $
                 </span>
                 <Input
@@ -250,7 +250,7 @@ export default function CoverageRequestStep({
                 />
               </div>
               {faceAmounts[index] > 0 && (
-                <p className="text-[9px] text-zinc-400">
+                <p className="text-[9px] text-v2-ink-subtle">
                   {formatCurrency(faceAmounts[index])}
                 </p>
               )}
@@ -264,11 +264,11 @@ export default function CoverageRequestStep({
       </div>
 
       {/* Product Types */}
-      <div className="space-y-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
-        <Label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+      <div className="space-y-2 pt-2 border-t border-v2-ring dark:border-v2-ring">
+        <Label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
           Product Types <span className="text-red-500">*</span>
         </Label>
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+        <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Select the product types to consider for recommendations
         </p>
 
@@ -283,7 +283,7 @@ export default function CoverageRequestStep({
                   "flex items-start gap-3 p-2 rounded-lg border cursor-pointer transition-colors",
                   isSelected
                     ? "bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700"
-                    : "bg-white dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600",
+                    : "bg-v2-card-tinted/50 border-v2-ring dark:border-v2-ring-strong hover:border-v2-ring-strong dark:hover:border-v2-ring-strong",
                 )}
               >
                 <Checkbox
@@ -297,12 +297,12 @@ export default function CoverageRequestStep({
                       "text-sm font-medium",
                       isSelected
                         ? "text-amber-700 dark:text-amber-300"
-                        : "text-zinc-700 dark:text-zinc-300",
+                        : "text-v2-ink dark:text-v2-ink-muted",
                     )}
                   >
                     {option.label}
                   </div>
-                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     {option.description}
                   </div>
                 </div>

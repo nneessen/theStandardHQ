@@ -133,17 +133,17 @@ export function ApprovalDialog({
 
         {/* Review Info */}
         {criteria.reviewed_at && (
-          <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-md p-2.5 text-[10px] space-y-1">
-            <div className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
+          <div className="bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-md p-2.5 text-[10px] space-y-1">
+            <div className="flex items-center gap-1.5 text-v2-ink-muted dark:text-v2-ink-subtle">
               <User className="h-3 w-3" />
               <span>
                 Last reviewed by:{" "}
-                <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                <span className="font-medium text-v2-ink dark:text-v2-ink">
                   {criteria.reviewer?.full_name || "Unknown"}
                 </span>
               </span>
             </div>
-            <div className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-400">
+            <div className="flex items-center gap-1.5 text-v2-ink-muted dark:text-v2-ink-subtle">
               <Calendar className="h-3 w-3" />
               <span>
                 {new Date(criteria.reviewed_at).toLocaleString(undefined, {
@@ -153,8 +153,8 @@ export function ApprovalDialog({
               </span>
             </div>
             {criteria.review_notes && (
-              <div className="mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-700">
-                <p className="text-zinc-500 dark:text-zinc-500 italic">
+              <div className="mt-2 pt-2 border-t border-v2-ring dark:border-v2-ring-strong">
+                <p className="text-v2-ink-muted dark:text-v2-ink-muted italic">
                   "{criteria.review_notes}"
                 </p>
               </div>
@@ -164,14 +164,16 @@ export function ApprovalDialog({
 
         {/* Current Status */}
         <div className="flex items-center gap-2">
-          <span className="text-[10px] text-zinc-500">Current status:</span>
+          <span className="text-[10px] text-v2-ink-muted">Current status:</span>
           <ReviewStatusBadge status={criteria.review_status as ReviewStatus} />
         </div>
 
         {/* Action Selection */}
         {!selectedAction ? (
           <div className="space-y-2">
-            <Label className="text-[10px] text-zinc-500">Choose action:</Label>
+            <Label className="text-[10px] text-v2-ink-muted">
+              Choose action:
+            </Label>
             <div className="grid grid-cols-3 gap-2">
               <Button
                 variant="outline"
@@ -202,11 +204,11 @@ export function ApprovalDialog({
         ) : (
           <div className="space-y-3">
             {/* Selected Action */}
-            <div className="flex items-center gap-2 p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-md">
+            <div className="flex items-center gap-2 p-2 bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-md">
               {config && <config.icon className="h-4 w-4" />}
               <div>
                 <p className="text-[11px] font-medium">{config?.title}</p>
-                <p className="text-[10px] text-zinc-500">
+                <p className="text-[10px] text-v2-ink-muted">
                   {config?.description}
                 </p>
               </div>

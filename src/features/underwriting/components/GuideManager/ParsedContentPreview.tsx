@@ -55,10 +55,10 @@ export function ParsedContentPreview({
 
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-900 dark:border-zinc-100" />
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-v2-ink dark:border-v2-ring" />
           </div>
         ) : !content ? (
-          <div className="flex flex-col items-center justify-center py-12 text-zinc-400">
+          <div className="flex flex-col items-center justify-center py-12 text-v2-ink-subtle">
             <FileText className="h-8 w-8 mb-2 opacity-30" />
             <p className="text-[11px]">No parsed content available</p>
             <p className="text-[10px] mt-1">
@@ -69,7 +69,7 @@ export function ParsedContentPreview({
           <>
             {/* Stats Bar */}
             {stats && (
-              <div className="flex flex-wrap items-center gap-3 text-[10px] text-zinc-500 dark:text-zinc-400 px-1">
+              <div className="flex flex-wrap items-center gap-3 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle px-1">
                 <div className="flex items-center gap-1">
                   <BarChart3 className="h-3 w-3" />
                   <span>{formatNumber(stats.totalWords)} words</span>
@@ -103,7 +103,7 @@ export function ParsedContentPreview({
                 <ChevronLeft className="h-3 w-3 mr-1" />
                 Prev
               </Button>
-              <span className="text-[10px] text-zinc-500">
+              <span className="text-[10px] text-v2-ink-muted">
                 Page {section?.pageNumber ?? currentPage + 1} of{" "}
                 {sections.length}
                 {stats?.lowDensityPages.includes(section?.pageNumber) && (
@@ -128,14 +128,14 @@ export function ParsedContentPreview({
             </div>
 
             {/* Page Content */}
-            <ScrollArea className="flex-1 min-h-0 border border-zinc-200 dark:border-zinc-700 rounded-md">
+            <ScrollArea className="flex-1 min-h-0 border border-v2-ring dark:border-v2-ring-strong rounded-md">
               <div className="p-4">
                 {section ? (
-                  <pre className="text-[11px] text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap font-mono leading-relaxed">
+                  <pre className="text-[11px] text-v2-ink dark:text-v2-ink-muted whitespace-pre-wrap font-mono leading-relaxed">
                     {section.content}
                   </pre>
                 ) : (
-                  <p className="text-[11px] text-zinc-400 text-center py-8">
+                  <p className="text-[11px] text-v2-ink-subtle text-center py-8">
                     No content for this page
                   </p>
                 )}
@@ -144,7 +144,7 @@ export function ParsedContentPreview({
 
             {/* Tables indicator */}
             {content.metadata?.tables && content.metadata.tables.length > 0 && (
-              <div className="text-[10px] text-zinc-500 dark:text-zinc-400 px-1">
+              <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle px-1">
                 <Badge variant="secondary" className="text-[9px] px-1.5 py-0">
                   {content.metadata.tables.length} tables detected (OCR)
                 </Badge>

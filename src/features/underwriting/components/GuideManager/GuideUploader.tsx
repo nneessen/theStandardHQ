@@ -157,7 +157,7 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
                 ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
                 : selectedFile
                   ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                  : "border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-600"
+                  : "border-v2-ring-strong dark:border-v2-ring-strong hover:border-v2-ring-strong dark:hover:border-v2-ring-strong"
             }`}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
@@ -167,10 +167,10 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
               <div className="flex items-center justify-center gap-3">
                 <FileText className="h-8 w-8 text-red-500" />
                 <div className="text-left">
-                  <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                  <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
                     {selectedFile.name}
                   </p>
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     {formatFileSize(selectedFile.size)}
                   </p>
                 </div>
@@ -185,8 +185,8 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
               </div>
             ) : (
               <>
-                <Upload className="h-8 w-8 mx-auto mb-2 text-zinc-400" />
-                <p className="text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
+                <Upload className="h-8 w-8 mx-auto mb-2 text-v2-ink-subtle" />
+                <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle mb-1">
                   Drag and drop a PDF file here, or
                 </p>
                 <Button
@@ -197,7 +197,7 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
                 >
                   Browse Files
                 </Button>
-                <p className="text-[9px] text-zinc-500 dark:text-zinc-500 mt-2">
+                <p className="text-[9px] text-v2-ink-muted dark:text-v2-ink-muted mt-2">
                   PDF only, max {MAX_FILE_SIZE / (1024 * 1024)}MB
                 </p>
               </>
@@ -268,7 +268,7 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
           {/* Optional Fields */}
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-[10px] text-zinc-500">Version</Label>
+              <Label className="text-[10px] text-v2-ink-muted">Version</Label>
               <Input
                 value={version}
                 onChange={(e) => setVersion(e.target.value)}
@@ -277,7 +277,7 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[10px] text-zinc-500">
+              <Label className="text-[10px] text-v2-ink-muted">
                 Effective Date
               </Label>
               <Input
@@ -288,7 +288,7 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[10px] text-zinc-500">
+              <Label className="text-[10px] text-v2-ink-muted">
                 Expiration Date
               </Label>
               <Input

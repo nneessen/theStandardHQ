@@ -569,7 +569,7 @@ export function RateImportDialog({
               onChange={(e) => setCsvContent(e.target.value)}
             />
             <div className="flex justify-between items-center">
-              <p className="text-[10px] text-zinc-500">
+              <p className="text-[10px] text-v2-ink-muted">
                 Expected columns: face_amount, company, plan_name, tier_name,
                 monthly, yearly, state, gender, age, term_years, tobacco
               </p>
@@ -602,7 +602,7 @@ export function RateImportDialog({
                   {mappingStats.mapped} mapped
                 </span>
                 {mappingStats.skipped > 0 && (
-                  <span className="text-zinc-500">
+                  <span className="text-v2-ink-muted">
                     {mappingStats.skipped} skipped
                   </span>
                 )}
@@ -621,8 +621,8 @@ export function RateImportDialog({
                     key={`${group.carrierName}-${group.productName}`}
                     className={`border rounded p-2 space-y-2 ${
                       group.skipped
-                        ? "bg-zinc-100 dark:bg-zinc-800 opacity-60"
-                        : "bg-zinc-50 dark:bg-zinc-900"
+                        ? "bg-v2-card-tinted dark:bg-v2-card-tinted opacity-60"
+                        : "bg-v2-canvas dark:bg-v2-card"
                     }`}
                   >
                     {/* Row 1: Carrier, Product, Badge, Skip button - always visible */}
@@ -634,7 +634,7 @@ export function RateImportDialog({
                           {group.carrierName}
                         </span>
                         <span
-                          className={`text-[10px] text-zinc-500 truncate ${group.skipped ? "line-through" : ""}`}
+                          className={`text-[10px] text-v2-ink-muted truncate ${group.skipped ? "line-through" : ""}`}
                         >
                           {group.productName}
                         </span>
@@ -758,7 +758,7 @@ export function RateImportDialog({
               </Button>
               <div className="flex items-center gap-3">
                 {(mappingStats.skipped > 0 || mappingStats.unmapped > 0) && (
-                  <span className="text-[10px] text-zinc-500">
+                  <span className="text-[10px] text-v2-ink-muted">
                     {mappingStats.skipped + mappingStats.unmapped} will be
                     skipped
                   </span>
@@ -782,7 +782,7 @@ export function RateImportDialog({
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-500" />
               <p className="text-sm mt-3">Importing rates...</p>
-              <p className="text-xs text-zinc-500 mt-1">
+              <p className="text-xs text-v2-ink-muted mt-1">
                 This may take a moment
               </p>
             </div>
@@ -799,21 +799,21 @@ export function RateImportDialog({
                 <AlertCircle className="h-12 w-12 mx-auto text-amber-500" />
               )}
               <p className="text-lg font-medium mt-3">Import Complete</p>
-              <p className="text-sm text-zinc-500">
+              <p className="text-sm text-v2-ink-muted">
                 {importResults.success} rate entries imported
               </p>
             </div>
 
             {/* Skipped items (not errors, just unmapped) */}
             {importResults.skipped.length > 0 && (
-              <div className="border rounded-md p-2 bg-zinc-50 dark:bg-zinc-900">
-                <p className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+              <div className="border rounded-md p-2 bg-v2-canvas dark:bg-v2-card">
+                <p className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-1">
                   Skipped ({importResults.skipped.length} unmapped):
                 </p>
                 <ScrollArea className="h-20">
                   <div className="space-y-0.5">
                     {importResults.skipped.map((item, i) => (
-                      <p key={i} className="text-[10px] text-zinc-500">
+                      <p key={i} className="text-[10px] text-v2-ink-muted">
                         {item}
                       </p>
                     ))}

@@ -189,7 +189,7 @@ export default function HealthConditionsStep({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8 text-sm text-zinc-500">
+      <div className="flex items-center justify-center p-8 text-sm text-v2-ink-muted">
         Loading health conditions...
       </div>
     );
@@ -213,7 +213,7 @@ export default function HealthConditionsStep({
     <div className="flex gap-4 p-1 h-full">
       {/* Left Panel - Conditions List */}
       <div className="flex-1 min-w-0 flex flex-col">
-        <div className="text-sm text-zinc-500 dark:text-zinc-400 mb-3">
+        <div className="text-sm text-v2-ink-muted dark:text-v2-ink-subtle mb-3">
           Select health conditions. Follow-up questions appear on the right.
         </div>
 
@@ -230,7 +230,7 @@ export default function HealthConditionsStep({
 
         {/* Search */}
         <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-v2-ink-subtle" />
           <Input
             placeholder="Search conditions (e.g., diabetes, cancer)..."
             value={searchTerm}
@@ -240,14 +240,14 @@ export default function HealthConditionsStep({
         </div>
 
         {/* Conditions List - Flex grow to fill available space */}
-        <div className="flex-1 min-h-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg divide-y divide-zinc-200 dark:divide-zinc-700 overflow-y-auto shadow-sm">
+        <div className="flex-1 min-h-0 bg-v2-card border border-v2-ring dark:border-v2-ring-strong rounded-lg divide-y divide-v2-ring dark:divide-v2-ring overflow-y-auto shadow-sm">
           {Object.entries(filteredGroups).map(([category, items]) => (
             <Collapsible key={category} open={isCategoryExpanded(category)}>
               <CollapsibleTrigger
                 onClick={() => toggleCategory(category)}
-                className="w-full flex items-center justify-between px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-2.5 bg-v2-canvas dark:bg-v2-card-tinted/50 hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted transition-colors"
               >
-                <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <span className="text-sm font-medium text-v2-ink dark:text-v2-ink-muted">
                   {CONDITION_CATEGORY_LABELS[category as ConditionCategory] ||
                     category}
                 </span>
@@ -265,14 +265,14 @@ export default function HealthConditionsStep({
                     </span>
                   )}
                   {isCategoryExpanded(category) ? (
-                    <ChevronDown className="h-4 w-4 text-zinc-400" />
+                    <ChevronDown className="h-4 w-4 text-v2-ink-subtle" />
                   ) : (
-                    <ChevronRight className="h-4 w-4 text-zinc-400" />
+                    <ChevronRight className="h-4 w-4 text-v2-ink-subtle" />
                   )}
                 </div>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="px-3 py-2 bg-white dark:bg-zinc-900 grid grid-cols-2 gap-2">
+                <div className="px-3 py-2 bg-v2-card grid grid-cols-2 gap-2">
                   {items.map((condition) => {
                     const isSelected = selectedConditionCodes.has(
                       condition.code,
@@ -299,7 +299,7 @@ export default function HealthConditionsStep({
                           "flex items-center gap-2 py-2 px-2.5 rounded-md cursor-pointer transition-all border",
                           isSelected
                             ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
-                            : "bg-zinc-50 dark:bg-zinc-800/50 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600",
+                            : "bg-v2-canvas dark:bg-v2-card-tinted/50 border-v2-ring dark:border-v2-ring-strong hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted hover:border-v2-ring-strong dark:hover:border-v2-ring-strong",
                           activeConditionCode === condition.code &&
                             "ring-2 ring-amber-400 ring-offset-1",
                         )}
@@ -316,7 +316,7 @@ export default function HealthConditionsStep({
                             "flex items-center justify-center w-4 h-4 rounded border-2 transition-colors flex-shrink-0",
                             isSelected
                               ? "bg-blue-600 border-blue-600"
-                              : "bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-600",
+                              : "bg-v2-card border-v2-ring-strong dark:border-v2-ring-strong",
                           )}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -331,8 +331,8 @@ export default function HealthConditionsStep({
                           className={cn(
                             "text-sm truncate",
                             isSelected
-                              ? "text-zinc-800 dark:text-zinc-200 font-medium"
-                              : "text-zinc-600 dark:text-zinc-400",
+                              ? "text-v2-ink dark:text-v2-ink font-medium"
+                              : "text-v2-ink-muted dark:text-v2-ink-subtle",
                           )}
                         >
                           {condition.name}
@@ -360,10 +360,10 @@ export default function HealthConditionsStep({
                 <span
                   key={c.conditionCode}
                   className={cn(
-                    "inline-flex items-center gap-1.5 px-2 py-1 bg-white dark:bg-zinc-800 border rounded-md text-xs cursor-pointer transition-colors",
+                    "inline-flex items-center gap-1.5 px-2 py-1 bg-v2-card-tinted border rounded-md text-xs cursor-pointer transition-colors",
                     activeConditionCode === c.conditionCode
                       ? "border-amber-400 text-amber-700 dark:text-amber-300 ring-1 ring-amber-400"
-                      : "border-blue-200 dark:border-blue-700 text-zinc-700 dark:text-zinc-300 hover:border-blue-300",
+                      : "border-blue-200 dark:border-blue-700 text-v2-ink dark:text-v2-ink-muted hover:border-blue-300",
                   )}
                   onClick={() => {
                     const cond = conditions.find(
@@ -390,7 +390,7 @@ export default function HealthConditionsStep({
                         setActiveConditionCode(null);
                       }
                     }}
-                    className="text-zinc-400 hover:text-red-500 transition-colors"
+                    className="text-v2-ink-subtle hover:text-red-500 transition-colors"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -401,8 +401,8 @@ export default function HealthConditionsStep({
         )}
 
         {/* Tobacco Section */}
-        <div className="pt-3 border-t border-zinc-200 dark:border-zinc-700">
-          <div className="flex items-center gap-3 p-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg">
+        <div className="pt-3 border-t border-v2-ring dark:border-v2-ring-strong">
+          <div className="flex items-center gap-3 p-3 bg-v2-card border border-v2-ring dark:border-v2-ring-strong rounded-lg">
             <Checkbox
               id="tobacco"
               checked={data.tobacco.currentUse}
@@ -412,7 +412,7 @@ export default function HealthConditionsStep({
             />
             <Label
               htmlFor="tobacco"
-              className="text-sm text-zinc-600 dark:text-zinc-400 cursor-pointer"
+              className="text-sm text-v2-ink-muted dark:text-v2-ink-subtle cursor-pointer"
             >
               Currently uses tobacco/nicotine
             </Label>
@@ -420,7 +420,7 @@ export default function HealthConditionsStep({
           {data.tobacco.currentUse && (
             <div className="mt-3 ml-0 grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-zinc-500">
+                <Label className="text-xs font-medium text-v2-ink-muted">
                   Type
                 </Label>
                 <Select
@@ -444,7 +444,7 @@ export default function HealthConditionsStep({
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-zinc-500">
+                <Label className="text-xs font-medium text-v2-ink-muted">
                   Frequency
                 </Label>
                 <Select
@@ -468,16 +468,16 @@ export default function HealthConditionsStep({
 
       {/* Right Panel - Follow-up Questions */}
       <div className="w-[320px] flex-shrink-0">
-        <div className="sticky top-0 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg p-4 min-h-[320px] shadow-sm">
+        <div className="sticky top-0 bg-v2-card border border-v2-ring dark:border-v2-ring-strong rounded-lg p-4 min-h-[320px] shadow-sm">
           {hasActiveFollowUps && activeCondition ? (
             <>
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-200 dark:border-zinc-700">
-                <div className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 truncate pr-2">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-v2-ring dark:border-v2-ring-strong">
+                <div className="text-sm font-semibold text-v2-ink dark:text-v2-ink-muted truncate pr-2">
                   {activeCondition.name}
                 </div>
                 <button
                   onClick={() => setActiveConditionCode(null)}
-                  className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  className="text-v2-ink-subtle hover:text-v2-ink-muted dark:hover:text-v2-ink-subtle p-1 rounded hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -509,11 +509,11 @@ export default function HealthConditionsStep({
             </>
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center py-10">
-              <AlertCircle className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-3" />
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 font-medium mb-1">
+              <AlertCircle className="h-8 w-8 text-v2-ink-subtle dark:text-v2-ink-muted mb-3" />
+              <p className="text-sm text-v2-ink-muted dark:text-v2-ink-subtle font-medium mb-1">
                 No Follow-up Questions
               </p>
-              <p className="text-xs text-zinc-400 dark:text-zinc-500">
+              <p className="text-xs text-v2-ink-subtle dark:text-v2-ink-muted">
                 {data.conditions.length === 0
                   ? "Select a condition from the list"
                   : "Click a selected condition to answer follow-up questions"}
@@ -579,7 +579,7 @@ function FollowUpQuestionField({
       case "multiselect": {
         const selectedValues = (value as string[]) || [];
         return (
-          <div className="space-y-2 max-h-[150px] overflow-y-auto p-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-md border border-zinc-200 dark:border-zinc-700">
+          <div className="space-y-2 max-h-[150px] overflow-y-auto p-2 bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-md border border-v2-ring dark:border-v2-ring-strong">
             {sortedOptions.map((option) => (
               <div key={option} className="flex items-center gap-2">
                 <Checkbox
@@ -595,7 +595,7 @@ function FollowUpQuestionField({
                 />
                 <Label
                   htmlFor={`${question.id}-${option}`}
-                  className="text-sm text-zinc-600 dark:text-zinc-400 cursor-pointer"
+                  className="text-sm text-v2-ink-muted dark:text-v2-ink-subtle cursor-pointer"
                 >
                   {option}
                 </Label>
@@ -652,7 +652,7 @@ function FollowUpQuestionField({
 
   return (
     <div className="space-y-1.5">
-      <Label className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+      <Label className="text-sm font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
         {question.label}
         {question.required && <span className="text-red-500 ml-1">*</span>}
       </Label>

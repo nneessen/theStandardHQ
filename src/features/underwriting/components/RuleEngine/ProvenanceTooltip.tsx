@@ -50,7 +50,7 @@ export function ProvenanceTooltip({
       {/* Source Type */}
       {source && (
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] text-zinc-400">Source:</span>
+          <span className="text-[10px] text-v2-ink-subtle">Source:</span>
           <Badge
             variant={source === "ai_extracted" ? "info" : "secondary"}
             className="text-[9px] h-4"
@@ -70,7 +70,7 @@ export function ProvenanceTooltip({
       {/* Confidence */}
       {confidence !== null && confidence !== undefined && (
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px] text-zinc-400">Confidence:</span>
+          <span className="text-[10px] text-v2-ink-subtle">Confidence:</span>
           <span
             className={`text-[10px] font-medium ${
               confidence >= 0.8
@@ -88,8 +88,8 @@ export function ProvenanceTooltip({
       {/* Source Pages */}
       {sourcePages && sourcePages.length > 0 && (
         <div className="flex items-center gap-1.5">
-          <FileText className="h-3 w-3 text-zinc-400" />
-          <span className="text-[10px] text-zinc-400">
+          <FileText className="h-3 w-3 text-v2-ink-subtle" />
+          <span className="text-[10px] text-v2-ink-subtle">
             Pages: {sourcePages.join(", ")}
           </span>
         </div>
@@ -98,8 +98,8 @@ export function ProvenanceTooltip({
       {/* Source Snippet */}
       {sourceSnippet && (
         <div className="space-y-0.5">
-          <span className="text-[10px] text-zinc-400">Source text:</span>
-          <p className="text-[10px] text-zinc-300 bg-zinc-800/50 p-1.5 rounded max-h-20 overflow-y-auto">
+          <span className="text-[10px] text-v2-ink-subtle">Source text:</span>
+          <p className="text-[10px] text-v2-ink-subtle bg-zinc-800/50 p-1.5 rounded max-h-20 overflow-y-auto">
             "{sourceSnippet}"
           </p>
         </div>
@@ -115,7 +115,7 @@ export function ProvenanceTooltip({
   // Inline display (for provenance tab)
   if (inline) {
     return (
-      <div className="rounded-lg bg-zinc-50 dark:bg-zinc-900/50 p-3">
+      <div className="rounded-lg bg-v2-canvas dark:bg-v2-card/50 p-3">
         {content}
       </div>
     );
@@ -128,7 +128,7 @@ export function ProvenanceTooltip({
         <TooltipTrigger asChild>
           <button
             type="button"
-            className="inline-flex items-center gap-0.5 text-[10px] text-zinc-400 hover:text-zinc-300"
+            className="inline-flex items-center gap-0.5 text-[10px] text-v2-ink-subtle hover:text-v2-ink-subtle"
           >
             <Info className="h-3 w-3" />
             {source === "ai_extracted" && confidence != null && (

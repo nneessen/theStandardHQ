@@ -56,7 +56,7 @@ export function ReviewStatusBadge({
     case "pending":
     default:
       return (
-        <Badge className="bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 text-[9px] px-1.5 py-0">
+        <Badge className="bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle text-[9px] px-1.5 py-0">
           {showIcon && <Clock className="h-2.5 w-2.5 mr-1" />}
           {showIcon ? "Pending" : "Pending Review"}
         </Badge>

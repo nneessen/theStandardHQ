@@ -258,10 +258,10 @@ export function CriteriaReviewDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+          <h3 className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
             Extracted Criteria Review
           </h3>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Review and approve AI-extracted underwriting criteria
           </p>
         </div>
@@ -287,7 +287,7 @@ export function CriteriaReviewDashboard() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px] max-w-[300px]">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400" />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
           <Input
             placeholder="Search carrier, guide, product..."
             value={searchQuery}
@@ -373,11 +373,11 @@ export function CriteriaReviewDashboard() {
       </div>
 
       {/* Table */}
-      <div className="border border-zinc-200 dark:border-zinc-800 rounded-md overflow-hidden">
+      <div className="border border-v2-ring dark:border-v2-ring rounded-md overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-zinc-50 dark:bg-zinc-800/50">
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">
+            <TableRow className="bg-v2-canvas dark:bg-v2-card-tinted/50">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -388,10 +388,10 @@ export function CriteriaReviewDashboard() {
                   <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />
                 </Button>
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
                 Guide / Product
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 text-center">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-center">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -402,10 +402,10 @@ export function CriteriaReviewDashboard() {
                   <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />
                 </Button>
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 text-center">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-center">
                 Extraction
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 text-center">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-center">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -416,7 +416,7 @@ export function CriteriaReviewDashboard() {
                   <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />
                 </Button>
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -427,7 +427,7 @@ export function CriteriaReviewDashboard() {
                   <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />
                 </Button>
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 w-[60px]">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle w-[60px]">
                 Actions
               </TableHead>
             </TableRow>
@@ -463,26 +463,26 @@ export function CriteriaReviewDashboard() {
               filteredAndSortedData.map((criteria) => (
                 <TableRow
                   key={criteria.id}
-                  className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30 cursor-pointer"
+                  className="hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/30 cursor-pointer"
                   onClick={() => setSelectedCriteria(criteria)}
                 >
                   <TableCell className="px-3 py-2">
                     <div className="flex items-center gap-1.5">
-                      <Building className="h-3.5 w-3.5 text-zinc-400 shrink-0" />
-                      <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                      <Building className="h-3.5 w-3.5 text-v2-ink-subtle shrink-0" />
+                      <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
                         {criteria.carrier?.name || "Unknown"}
                       </span>
                     </div>
                   </TableCell>
                   <TableCell className="px-3 py-2">
                     <div className="flex items-center gap-1.5">
-                      <FileText className="h-3 w-3 text-zinc-400 shrink-0" />
+                      <FileText className="h-3 w-3 text-v2-ink-subtle shrink-0" />
                       <div>
-                        <div className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                        <div className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                           {criteria.guide?.name || "—"}
                         </div>
                         {criteria.product?.name && (
-                          <div className="text-[9px] text-zinc-400">
+                          <div className="text-[9px] text-v2-ink-subtle">
                             {criteria.product.name}
                           </div>
                         )}
@@ -505,7 +505,7 @@ export function CriteriaReviewDashboard() {
                       isActive={criteria.is_active}
                     />
                   </TableCell>
-                  <TableCell className="px-3 py-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <TableCell className="px-3 py-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     {criteria.extracted_at
                       ? formatSessionDate(criteria.extracted_at)
                       : "—"}
@@ -532,7 +532,7 @@ export function CriteriaReviewDashboard() {
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                      <ChevronRight className="h-3.5 w-3.5 text-zinc-400" />
+                      <ChevronRight className="h-3.5 w-3.5 text-v2-ink-subtle" />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -541,7 +541,7 @@ export function CriteriaReviewDashboard() {
               <TableRow>
                 <TableCell
                   colSpan={7}
-                  className="px-3 py-8 text-center text-[11px] text-zinc-500 dark:text-zinc-400"
+                  className="px-3 py-8 text-center text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
                 >
                   <FileText className="h-8 w-8 mx-auto mb-2 opacity-30" />
                   {criteriaList?.length === 0
@@ -596,12 +596,12 @@ export function CriteriaReviewDashboard() {
 
 function ConfidenceBadge({ confidence }: { confidence: number | null }) {
   if (!confidence) {
-    return <span className="text-[10px] text-zinc-400">—</span>;
+    return <span className="text-[10px] text-v2-ink-subtle">—</span>;
   }
 
   const percent = Math.round(confidence * 100);
   let colorClass =
-    "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400";
+    "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle";
 
   if (percent >= 80) {
     colorClass =
@@ -647,7 +647,7 @@ function ExtractionStatusBadge({ status }: { status: ExtractionStatus }) {
     case "pending":
     default:
       return (
-        <Badge className="bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 text-[9px] px-1.5 py-0">
+        <Badge className="bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle text-[9px] px-1.5 py-0">
           <Clock className="h-2.5 w-2.5 mr-1" />
           Pending
         </Badge>
@@ -695,7 +695,7 @@ function ReviewStatusBadge({
       );
     default:
       return (
-        <Badge className="bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 text-[9px] px-1.5 py-0">
+        <Badge className="bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle text-[9px] px-1.5 py-0">
           <Clock className="h-2.5 w-2.5 mr-1" />
           Pending
         </Badge>
