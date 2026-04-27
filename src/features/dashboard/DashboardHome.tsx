@@ -30,7 +30,6 @@ import type { CreateExpenseData } from "../../types/expense.types";
 import type { NewPolicyForm } from "../../types/policy.types";
 import { transformFormToCreateData } from "../policies/utils/policyFormTransformer";
 import { formatCurrency } from "@/lib/format";
-import { cn } from "@/lib/utils";
 
 // New editorial components (kept for the lower sections)
 import { PaceLines, type PaceLine } from "./components/PaceLines";
@@ -415,9 +414,12 @@ export const DashboardHome: React.FC = () => {
     dashboardFeatures.isAgencyOwner;
 
   // V2 metric percentages
+  // Pace tracks what the agent has EARNED this period (not just paid out),
+  // so it stays meaningful before the carrier disburses the check.
+  const paceEarned = periodCommissions.earned ?? periodCommissions.paid;
   const pacePct =
     commissionTarget && commissionTarget > 0
-      ? Math.min(1, periodCommissions.paid / commissionTarget)
+      ? Math.min(1, paceEarned / commissionTarget)
       : expectedPct;
   const persistencyPct = Math.max(0, 1 - derivedMetrics.lapsedRate / 100);
   const pipelineFillPct =
@@ -454,7 +456,7 @@ export const DashboardHome: React.FC = () => {
             persistencyPct={persistencyPct}
             elapsedPct={expectedPct}
             pipelineFillPct={pipelineFillPct}
-            paceDisplay={formatCompactDollar(periodCommissions.paid)}
+            paceDisplay={formatCompactDollar(paceEarned)}
             pipelineDisplay={formatCompactDollar(currentState.pendingPipeline)}
             policiesCount={periodPolicies.newCount}
             premiumWritten={periodPolicies.premiumWritten}
@@ -487,42 +489,36 @@ export const DashboardHome: React.FC = () => {
             </SoftCard>
           </div>
 
-          {/* Org + Team side-by-side on desktop when org is visible,
-              otherwise Team alone full-width. */}
-          <div
-            className={cn(
-              "grid grid-cols-1 gap-4 mb-4",
-              showOrg && "lg:grid-cols-2",
-            )}
-          >
-            {showOrg && (
-              <SoftCard padding="lg">
-                <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-subtle mb-3">
-                  Organization
-                </h2>
-                <OrgMetricsSection
-                  isImoAdmin={
-                    dashboardFeatures.isAdmin || dashboardFeatures.isImoAdmin
-                  }
-                  isAgencyOwner={dashboardFeatures.isAgencyOwner}
-                  dateRange={dateRange}
-                />
-              </SoftCard>
-            )}
-
-            <SoftCard padding="lg">
+          {/* Org + Team — kept full-width because both sections have
+              internal 3-col grids with fixed-pixel column widths
+              (260/280/300px) that overflow if squeezed into half-columns. */}
+          {showOrg && (
+            <SoftCard padding="lg" className="mb-4">
               <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-subtle mb-3">
-                Team & Recruiting
+                Organization
               </h2>
-              <TeamRecruitingSection
-                hierarchyStats={hierarchyStats}
-                recruitingStats={recruitingStats}
-                unreadNotifications={unreadNotifications ?? 0}
-                unreadMessages={unreadMessages ?? 0}
-                hasAccess={hasTeamAccess || dashboardFeatures.isAdmin}
+              <OrgMetricsSection
+                isImoAdmin={
+                  dashboardFeatures.isAdmin || dashboardFeatures.isImoAdmin
+                }
+                isAgencyOwner={dashboardFeatures.isAgencyOwner}
+                dateRange={dateRange}
               />
             </SoftCard>
-          </div>
+          )}
+
+          <SoftCard padding="lg" className="mb-4">
+            <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-subtle mb-3">
+              Team & Recruiting
+            </h2>
+            <TeamRecruitingSection
+              hierarchyStats={hierarchyStats}
+              recruitingStats={recruitingStats}
+              unreadNotifications={unreadNotifications ?? 0}
+              unreadMessages={unreadMessages ?? 0}
+              hasAccess={hasTeamAccess || dashboardFeatures.isAdmin}
+            />
+          </SoftCard>
         </div>
       </SectionShell>
 
