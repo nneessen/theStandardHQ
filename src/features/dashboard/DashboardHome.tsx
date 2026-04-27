@@ -30,6 +30,7 @@ import type { CreateExpenseData } from "../../types/expense.types";
 import type { NewPolicyForm } from "../../types/policy.types";
 import { transformFormToCreateData } from "../policies/utils/policyFormTransformer";
 import { formatCurrency } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 // New editorial components (kept for the lower sections)
 import { PaceLines, type PaceLine } from "./components/PaceLines";
@@ -59,6 +60,19 @@ import {
 } from "../../utils/dashboardCalculations";
 import { useCreateOrFindClient } from "@/hooks/clients";
 import { ValidationError } from "@/errors/ServiceErrors";
+
+/** Compact $ format for hero MetricBar chips ($12.5k / $1.2M). */
+function formatCompactDollar(n: number): string {
+  if (Math.abs(n) >= 1_000_000) {
+    const v = n / 1_000_000;
+    return `$${v < 10 ? v.toFixed(1) : Math.round(v)}M`;
+  }
+  if (Math.abs(n) >= 1_000) {
+    const v = n / 1_000;
+    return `$${v < 10 ? v.toFixed(1) : Math.round(v)}k`;
+  }
+  return formatCurrency(n);
+}
 
 /**
  * Compute calendar-aware "where we are in the period." For MTD/monthly,
@@ -440,12 +454,15 @@ export const DashboardHome: React.FC = () => {
             persistencyPct={persistencyPct}
             elapsedPct={expectedPct}
             pipelineFillPct={pipelineFillPct}
+            paceDisplay={formatCompactDollar(periodCommissions.paid)}
+            pipelineDisplay={formatCompactDollar(currentState.pendingPipeline)}
             policiesCount={periodPolicies.newCount}
             premiumWritten={periodPolicies.premiumWritten}
             pendingPipeline={currentState.pendingPipeline}
           />
 
-          <SoftCard padding="lg" className="mb-6">
+          {/* Pace bars — full width (it's already a wide horizontal list) */}
+          <SoftCard padding="lg" className="mb-4">
             <PaceLines
               lines={paceLines}
               daysElapsed={showDaysSubtitle ? elapsed.daysElapsed : undefined}
@@ -454,46 +471,58 @@ export const DashboardHome: React.FC = () => {
             />
           </SoftCard>
 
-          <SoftCard padding="lg" className="mb-6">
-            <EditorialAlertsActions
-              alerts={augmentedAlerts}
-              actions={quickActions}
-              onActionClick={handleQuickAction}
-              isCreating={isCreating}
-            />
-          </SoftCard>
-
-          <SoftCard padding="lg" className="mb-6">
-            <DetailsSection sections={kpiConfig} />
-          </SoftCard>
-
-          {showOrg && (
-            <SoftCard padding="lg" className="mb-6">
-              <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-subtle mb-3">
-                Organization
-              </h2>
-              <OrgMetricsSection
-                isImoAdmin={
-                  dashboardFeatures.isAdmin || dashboardFeatures.isImoAdmin
-                }
-                isAgencyOwner={dashboardFeatures.isAgencyOwner}
-                dateRange={dateRange}
+          {/* Alerts + Details side-by-side on desktop */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            <SoftCard padding="lg">
+              <EditorialAlertsActions
+                alerts={augmentedAlerts}
+                actions={quickActions}
+                onActionClick={handleQuickAction}
+                isCreating={isCreating}
               />
             </SoftCard>
-          )}
 
-          <SoftCard padding="lg" className="mb-6">
-            <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-subtle mb-3">
-              Team & Recruiting
-            </h2>
-            <TeamRecruitingSection
-              hierarchyStats={hierarchyStats}
-              recruitingStats={recruitingStats}
-              unreadNotifications={unreadNotifications ?? 0}
-              unreadMessages={unreadMessages ?? 0}
-              hasAccess={hasTeamAccess || dashboardFeatures.isAdmin}
-            />
-          </SoftCard>
+            <SoftCard padding="lg">
+              <DetailsSection sections={kpiConfig} />
+            </SoftCard>
+          </div>
+
+          {/* Org + Team side-by-side on desktop when org is visible,
+              otherwise Team alone full-width. */}
+          <div
+            className={cn(
+              "grid grid-cols-1 gap-4 mb-4",
+              showOrg && "lg:grid-cols-2",
+            )}
+          >
+            {showOrg && (
+              <SoftCard padding="lg">
+                <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-subtle mb-3">
+                  Organization
+                </h2>
+                <OrgMetricsSection
+                  isImoAdmin={
+                    dashboardFeatures.isAdmin || dashboardFeatures.isImoAdmin
+                  }
+                  isAgencyOwner={dashboardFeatures.isAgencyOwner}
+                  dateRange={dateRange}
+                />
+              </SoftCard>
+            )}
+
+            <SoftCard padding="lg">
+              <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-subtle mb-3">
+                Team & Recruiting
+              </h2>
+              <TeamRecruitingSection
+                hierarchyStats={hierarchyStats}
+                recruitingStats={recruitingStats}
+                unreadNotifications={unreadNotifications ?? 0}
+                unreadMessages={unreadMessages ?? 0}
+                hasAccess={hasTeamAccess || dashboardFeatures.isAdmin}
+              />
+            </SoftCard>
+          </div>
         </div>
       </SectionShell>
 

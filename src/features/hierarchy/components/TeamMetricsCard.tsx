@@ -44,7 +44,7 @@ export function TeamMetricsCard({
   const periodSuffix = getPeriodSuffix(timePeriod);
   if (isError) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="bg-v2-card rounded-lg border border-v2-ring">
         <div className="p-3">
           <div className="flex items-center justify-center gap-2 text-[11px] text-red-500 dark:text-red-400 py-4">
             <AlertCircle className="h-4 w-4" />
@@ -65,9 +65,9 @@ export function TeamMetricsCard({
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="bg-v2-card rounded-lg border border-v2-ring">
         <div className="p-3">
-          <div className="text-[11px] text-zinc-500 dark:text-zinc-400 text-center py-4">
+          <div className="text-[11px] text-v2-ink-muted text-center py-4">
             Loading team metrics...
           </div>
         </div>
@@ -123,9 +123,9 @@ export function TeamMetricsCard({
   const teamYearlyProjected = stats?.team_yearly_projected || 0;
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="bg-v2-card rounded-lg border border-v2-ring">
       <div className="p-3">
-        <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
+        <div className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide mb-2">
           Team Metrics
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -133,49 +133,39 @@ export function TeamMetricsCard({
           <div>
             <div className="space-y-1">
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Total Agents
-                </span>
-                <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                <span className="text-v2-ink-muted">Total Agents</span>
+                <span className="font-mono font-bold text-v2-ink">
                   {agentCount + 1}
                 </span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Direct Reports
-                </span>
-                <span className="font-mono text-zinc-700 dark:text-zinc-300">
+                <span className="text-v2-ink-muted">Direct Reports</span>
+                <span className="font-mono text-v2-ink-muted">
                   {directAgents}
                 </span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Indirect Reports
-                </span>
-                <span className="font-mono text-zinc-700 dark:text-zinc-300">
+                <span className="text-v2-ink-muted">Indirect Reports</span>
+                <span className="font-mono text-v2-ink-muted">
                   {indirectAgents}
                 </span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Active {periodSuffix}
-                </span>
+                <span className="text-v2-ink-muted">Active {periodSuffix}</span>
                 <span
                   className={cn(
                     "font-mono",
                     agentCount > 0
                       ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-zinc-500 dark:text-zinc-400",
+                      : "text-v2-ink-muted",
                   )}
                 >
                   {agentCount}
                 </span>
               </div>
-              <div className="h-px bg-zinc-200 dark:bg-zinc-700 my-1" />
+              <div className="h-px bg-v2-ring my-1" />
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Growth {periodSuffix}
-                </span>
+                <span className="text-v2-ink-muted">Growth {periodSuffix}</span>
                 <span
                   className={cn(
                     "font-mono font-semibold",
@@ -183,7 +173,7 @@ export function TeamMetricsCard({
                       ? "text-emerald-600 dark:text-emerald-400"
                       : momGrowth < 0
                         ? "text-red-600 dark:text-red-400"
-                        : "text-zinc-500 dark:text-zinc-400",
+                        : "text-v2-ink-muted",
                   )}
                 >
                   {momGrowth > 0 ? "↑" : momGrowth < 0 ? "↓" : "→"}{" "}
@@ -194,10 +184,10 @@ export function TeamMetricsCard({
           </div>
 
           {/* Override Income Column */}
-          <div className="border-l border-zinc-200 dark:border-zinc-700 pl-4">
+          <div className="border-l border-v2-ring pl-4">
             <div className="space-y-1">
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
+                <span className="text-v2-ink-muted">
                   Override {periodSuffix}
                 </span>
                 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
@@ -205,34 +195,26 @@ export function TeamMetricsCard({
                 </span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  QTD Override
-                </span>
-                <span className="font-mono text-zinc-700 dark:text-zinc-300">
+                <span className="text-v2-ink-muted">QTD Override</span>
+                <span className="font-mono text-v2-ink-muted">
                   {formatCurrency(qtdOverride)}
                 </span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  YTD Override
-                </span>
-                <span className="font-mono text-zinc-700 dark:text-zinc-300">
+                <span className="text-v2-ink-muted">YTD Override</span>
+                <span className="font-mono text-v2-ink-muted">
                   {formatCurrency(ytdOverride)}
                 </span>
               </div>
-              <div className="h-px bg-zinc-200 dark:bg-zinc-700 my-1" />
+              <div className="h-px bg-v2-ring my-1" />
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Avg/Agent
-                </span>
-                <span className="font-mono text-zinc-700 dark:text-zinc-300">
+                <span className="text-v2-ink-muted">Avg/Agent</span>
+                <span className="font-mono text-v2-ink-muted">
                   {formatCurrency(avgOverridePerAgent)}
                 </span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  vs Last Month
-                </span>
+                <span className="text-v2-ink-muted">vs Last Month</span>
                 <span
                   className={cn(
                     "font-mono text-[10px]",
@@ -240,7 +222,7 @@ export function TeamMetricsCard({
                       ? "text-emerald-600 dark:text-emerald-400"
                       : momGrowth < 0
                         ? "text-red-600 dark:text-red-400"
-                        : "text-zinc-500 dark:text-zinc-400",
+                        : "text-v2-ink-muted",
                   )}
                 >
                   {momGrowth > 0 ? "+" : ""}
@@ -251,68 +233,56 @@ export function TeamMetricsCard({
           </div>
 
           {/* Team Performance Column */}
-          <div className="border-l border-zinc-200 dark:border-zinc-700 pl-4">
+          <div className="border-l border-v2-ring pl-4">
             <div className="space-y-1">
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Team Total AP
-                </span>
-                <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                <span className="text-v2-ink-muted">Team Total AP</span>
+                <span className="font-mono font-bold text-v2-ink">
                   {formatCurrency(teamAPTotal)}
                 </span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Team IP Total
-                </span>
+                <span className="text-v2-ink-muted">Team IP Total</span>
                 <span className="font-mono font-semibold text-blue-600 dark:text-blue-400">
                   {formatCurrency(teamIPTotal)}
                 </span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
+                <span className="text-v2-ink-muted">
                   Policies {periodSuffix}
                 </span>
-                <span className="font-mono text-zinc-700 dark:text-zinc-300">
+                <span className="font-mono text-v2-ink-muted">
                   {teamPoliciesMTD}
                 </span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Avg Premium/Agent
-                </span>
-                <span className="font-mono text-zinc-700 dark:text-zinc-300">
+                <span className="text-v2-ink-muted">Avg Premium/Agent</span>
+                <span className="font-mono text-v2-ink-muted">
                   {formatCurrency(avgPremiumPerAgent)}
                 </span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Pending AP
-                </span>
+                <span className="text-v2-ink-muted">Pending AP</span>
                 <span className="font-mono font-semibold text-amber-600 dark:text-amber-400">
                   {formatCurrency(teamPendingAP)}
                 </span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Pending Policies
-                </span>
+                <span className="text-v2-ink-muted">Pending Policies</span>
                 <span className="font-mono text-amber-600 dark:text-amber-400">
                   {teamPendingCount}
                 </span>
               </div>
-              <div className="h-px bg-zinc-200 dark:bg-zinc-700 my-1" />
+              <div className="h-px bg-v2-ring my-1" />
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Top Performer
-                </span>
+                <span className="text-v2-ink-muted">Top Performer</span>
                 <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400 truncate max-w-[100px]">
                   {topPerformerName}
                 </span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">Top AP</span>
-                <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                <span className="text-v2-ink-muted">Top AP</span>
+                <span className="font-mono font-semibold text-v2-ink">
                   {formatCurrency(topPerformerAmount)}
                 </span>
               </div>
@@ -320,12 +290,10 @@ export function TeamMetricsCard({
           </div>
 
           {/* Hierarchy Health Column */}
-          <div className="border-l border-zinc-200 dark:border-zinc-700 pl-4">
+          <div className="border-l border-v2-ring pl-4">
             <div className="space-y-1">
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Recruitment Rate
-                </span>
+                <span className="text-v2-ink-muted">Recruitment Rate</span>
                 <span
                   className={cn(
                     "font-mono font-semibold",
@@ -340,9 +308,7 @@ export function TeamMetricsCard({
                 </span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Retention Rate
-                </span>
+                <span className="text-v2-ink-muted">Retention Rate</span>
                 <span
                   className={cn(
                     "font-mono font-semibold",
@@ -357,30 +323,26 @@ export function TeamMetricsCard({
                 </span>
               </div>
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Avg Contract Lvl
-                </span>
-                <span className="font-mono text-zinc-700 dark:text-zinc-300">
+                <span className="text-v2-ink-muted">Avg Contract Lvl</span>
+                <span className="font-mono text-v2-ink-muted">
                   {avgContractLevel.toFixed(1)}
                 </span>
               </div>
-              <div className="h-px bg-zinc-200 dark:bg-zinc-700 my-1" />
+              <div className="h-px bg-v2-ring my-1" />
               <div className="flex justify-between text-[11px]">
-                <span className="text-zinc-500 dark:text-zinc-400">
-                  Pending Invites
-                </span>
+                <span className="text-v2-ink-muted">Pending Invites</span>
                 <span
                   className={cn(
                     "font-mono",
                     pendingInvitations > 0
                       ? "text-blue-600 dark:text-blue-400"
-                      : "text-zinc-500 dark:text-zinc-400",
+                      : "text-v2-ink-muted",
                   )}
                 >
                   {pendingInvitations}
                 </span>
               </div>
-              <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <div className="text-[10px] text-v2-ink-muted">
                 {retentionRate > 90
                   ? "✓ Healthy team"
                   : retentionRate > 80
@@ -393,36 +355,30 @@ export function TeamMetricsCard({
 
         {/* Team Pace Section - Monthly & Yearly */}
         {(teamMonthlyAPTarget > 0 || teamYearlyAPTarget > 0) && (
-          <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700 space-y-3">
+          <div className="mt-3 pt-3 border-t border-v2-ring space-y-3">
             {/* Monthly Pace */}
             {teamMonthlyAPTarget > 0 && (
               <div>
-                <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1">
+                <div className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1">
                   Monthly Pace
                 </div>
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-4 text-[11px]">
                     <div title="Sum of all team members' monthly AP targets (yearly target ÷ 12)">
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        Target:{" "}
-                      </span>
-                      <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                      <span className="text-v2-ink-muted">Target: </span>
+                      <span className="font-mono font-semibold text-v2-ink">
                         {formatCurrency(teamMonthlyAPTarget)}
                       </span>
                     </div>
                     <div title="All submissions this month with submit date up to today (any status)">
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        MTD:{" "}
-                      </span>
-                      <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                      <span className="text-v2-ink-muted">MTD: </span>
+                      <span className="font-mono font-semibold text-v2-ink">
                         {formatCurrency(teamFixedMonthlyAP)}
                       </span>
                     </div>
                     <div title="Total AP MTD ÷ day of month × days in month">
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        Projected:{" "}
-                      </span>
-                      <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                      <span className="text-v2-ink-muted">Projected: </span>
+                      <span className="font-mono font-semibold text-v2-ink">
                         {formatCurrency(teamMonthlyProjected)}
                       </span>
                     </div>
@@ -445,7 +401,7 @@ export function TeamMetricsCard({
                     ({teamMonthlyPacePercentage.toFixed(0)}%)
                   </div>
                 </div>
-                <div className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-1">
+                <div className="text-[9px] text-v2-ink-subtle mt-1">
                   Target = sum of each team member's (policies/yr × avg premium)
                   ÷ 12 • Projected = current submission rate extrapolated to
                   month-end
@@ -456,32 +412,26 @@ export function TeamMetricsCard({
             {/* Yearly Pace */}
             {teamYearlyAPTarget > 0 && (
               <div>
-                <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1">
+                <div className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1">
                   Yearly Pace
                 </div>
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-4 text-[11px]">
                     <div title="Sum of all team members' yearly AP targets (policies/yr × avg premium)">
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        Target:{" "}
-                      </span>
-                      <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                      <span className="text-v2-ink-muted">Target: </span>
+                      <span className="font-mono font-semibold text-v2-ink">
                         {formatCurrency(teamYearlyAPTarget)}
                       </span>
                     </div>
                     <div title="All submissions year-to-date (any status)">
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        YTD:{" "}
-                      </span>
-                      <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                      <span className="text-v2-ink-muted">YTD: </span>
+                      <span className="font-mono font-semibold text-v2-ink">
                         {formatCurrency(teamYTDAPTotal)}
                       </span>
                     </div>
                     <div title="Total AP YTD ÷ day of year × 365">
-                      <span className="text-zinc-500 dark:text-zinc-400">
-                        Projected:{" "}
-                      </span>
-                      <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                      <span className="text-v2-ink-muted">Projected: </span>
+                      <span className="font-mono font-semibold text-v2-ink">
                         {formatCurrency(teamYearlyProjected)}
                       </span>
                     </div>
@@ -504,7 +454,7 @@ export function TeamMetricsCard({
                     ({teamYearlyPacePercentage.toFixed(0)}%)
                   </div>
                 </div>
-                <div className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-1">
+                <div className="text-[9px] text-v2-ink-subtle mt-1">
                   Target = sum of each team member's (policies/yr × avg premium)
                   • Projected = current submission rate extrapolated to year-end
                 </div>

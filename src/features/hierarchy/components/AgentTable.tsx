@@ -299,9 +299,9 @@ function AgentRow({
   const statusDisplay = getStatusDisplay();
 
   return (
-    <tr className="h-9 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/50">
+    <tr className="h-9 transition-colors hover:bg-v2-canvas border-b border-v2-ring/60">
       {/* Agent Name with Hierarchy */}
-      <td className="px-2 py-1.5 text-[11px] text-zinc-900 dark:text-zinc-100">
+      <td className="px-2 py-1.5 text-[11px] text-v2-ink">
         <div
           className="flex items-center gap-1"
           style={{ paddingLeft: `${depth * 16}px` }}
@@ -311,7 +311,7 @@ function AgentRow({
               variant="ghost"
               size="sm"
               onClick={onToggle}
-              className="h-4 w-4 p-0 text-zinc-500 dark:text-zinc-400"
+              className="h-4 w-4 p-0 text-v2-ink-muted"
             >
               {isExpanded ? (
                 <ChevronDown className="h-3 w-3" />
@@ -321,9 +321,7 @@ function AgentRow({
             </Button>
           )}
           {!hasChildren && depth > 0 && (
-            <span className="text-zinc-300 dark:text-zinc-600 text-[10px] mr-1">
-              └─
-            </span>
+            <span className="text-v2-ink-subtle text-[10px] mr-1">└─</span>
           )}
           <span className="font-medium">
             {agent.first_name && agent.last_name
@@ -356,11 +354,11 @@ function AgentRow({
       {/* Total AP (All Submissions) */}
       <td className="px-2 py-1.5 text-right text-[11px] font-mono">
         {total_ap > 0 ? (
-          <span className="font-bold text-zinc-900 dark:text-zinc-100">
+          <span className="font-bold text-v2-ink">
             {formatCurrency(total_ap)}
           </span>
         ) : (
-          <span className="text-zinc-400 dark:text-zinc-500">$0</span>
+          <span className="text-v2-ink-subtle">$0</span>
         )}
       </td>
 
@@ -371,18 +369,16 @@ function AgentRow({
             {formatCurrency(pending_ap)}
           </span>
         ) : (
-          <span className="text-zinc-400 dark:text-zinc-500">$0</span>
+          <span className="text-v2-ink-subtle">$0</span>
         )}
       </td>
 
       {/* MTD Policies */}
       <td className="px-2 py-1.5 text-center text-[11px] font-mono">
         {mtd_policies > 0 ? (
-          <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-            {mtd_policies}
-          </span>
+          <span className="font-semibold text-v2-ink">{mtd_policies}</span>
         ) : (
-          <span className="text-zinc-400 dark:text-zinc-500">0</span>
+          <span className="text-v2-ink-subtle">0</span>
         )}
       </td>
 
@@ -393,7 +389,7 @@ function AgentRow({
             {overrideSpread}%
           </span>
         ) : (
-          <span className="text-zinc-400 dark:text-zinc-500">-</span>
+          <span className="text-v2-ink-subtle">-</span>
         )}
       </td>
 
@@ -404,7 +400,7 @@ function AgentRow({
             {formatCurrency(override_amount)}
           </span>
         ) : (
-          <span className="text-zinc-400 dark:text-zinc-500">$0</span>
+          <span className="text-v2-ink-subtle">$0</span>
         )}
       </td>
 
@@ -415,7 +411,7 @@ function AgentRow({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
             >
               <MoreVertical className="h-3 w-3" />
             </Button>
@@ -716,44 +712,44 @@ export function AgentTable({
 
   return (
     <>
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="bg-v2-card rounded-lg border border-v2-ring">
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
-            <thead className="bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800">
+            <thead className="bg-v2-canvas border-b border-v2-ring">
               <tr className="h-8">
-                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-v2-ink-muted">
                   Agent
                 </th>
-                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-v2-ink-muted">
                   Status
                 </th>
-                <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+                <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-v2-ink-muted">
                   Total AP
                 </th>
-                <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+                <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-v2-ink-muted">
                   <span className="text-amber-600 dark:text-amber-400">
                     Pending
                   </span>
                 </th>
-                <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+                <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-v2-ink-muted">
                   Policies
                 </th>
-                <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+                <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-v2-ink-muted">
                   Spread
                 </th>
-                <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+                <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-v2-ink-muted">
                   Override
                 </th>
-                <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+                <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-v2-ink-muted">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
+            <tbody className="divide-y divide-v2-ring/60">
               {isLoading ? (
                 <tr>
                   <td colSpan={8} className="text-center py-8">
-                    <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                    <div className="text-[11px] text-v2-ink-muted">
                       Loading team members...
                     </div>
                   </td>
@@ -762,11 +758,11 @@ export function AgentTable({
                 <tr>
                   <td colSpan={8} className="text-center py-8">
                     <div className="flex flex-col items-center gap-1">
-                      <UserX className="h-6 w-6 text-zinc-300 dark:text-zinc-600" />
-                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                      <UserX className="h-6 w-6 text-v2-ink-subtle" />
+                      <span className="text-[11px] text-v2-ink-muted">
                         No team members found
                       </span>
-                      <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                      <span className="text-[10px] text-v2-ink-subtle">
                         Start by inviting agents to join your team
                       </span>
                     </div>
@@ -802,21 +798,21 @@ export function AgentTable({
 
         {/* Pagination Controls */}
         {totalRootAgents > 0 && (
-          <div className="flex items-center justify-between px-3 py-2 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/30">
+          <div className="flex items-center justify-between px-3 py-2 border-t border-v2-ring bg-v2-canvas/30">
             <div className="flex items-center gap-4">
-              <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <span className="text-[10px] text-v2-ink-muted">
                 Total: {agents.length + (owner ? 1 : 0)} agent
                 {agents.length + (owner ? 1 : 0) !== 1 ? "s" : ""}
               </span>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <span className="text-[10px] text-v2-ink-muted">
                   Rows per page:
                 </span>
                 <Select
                   value={rowsPerPage.toString()}
                   onValueChange={handleRowsPerPageChange}
                 >
-                  <SelectTrigger className="h-6 w-14 text-[10px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
+                  <SelectTrigger className="h-6 w-14 text-[10px] bg-v2-card border-v2-ring">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -830,7 +826,7 @@ export function AgentTable({
             </div>
 
             <div className="flex items-center gap-1">
-              <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <span className="text-[10px] text-v2-ink-muted">
                 Page {currentPage} of {totalPages || 1}
               </span>
               <Button
@@ -838,7 +834,7 @@ export function AgentTable({
                 size="sm"
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="h-6 w-6 p-0 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
               >
                 <ChevronLeft className="h-3 w-3" />
               </Button>
@@ -849,7 +845,7 @@ export function AgentTable({
                   setCurrentPage(Math.min(totalPages || 1, currentPage + 1))
                 }
                 disabled={currentPage >= totalPages}
-                className="h-6 w-6 p-0 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
               >
                 <ChevronRight className="h-3 w-3" />
               </Button>

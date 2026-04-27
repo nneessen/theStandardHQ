@@ -790,7 +790,7 @@ export default function Sidebar({
                 ? "w-9 justify-center mx-auto"
                 : "w-full gap-2.5 px-3",
               isActive
-                ? "bg-v2-ink text-white font-semibold shadow-v2-soft"
+                ? "bg-v2-ink text-v2-canvas font-semibold shadow-v2-soft"
                 : "text-v2-ink-muted hover:text-v2-ink hover:bg-v2-accent-soft",
             )}
             data-active={isActive}

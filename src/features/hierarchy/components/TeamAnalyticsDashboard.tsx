@@ -69,7 +69,7 @@ export function TeamAnalyticsDashboard({
 
   if (isError) {
     return (
-      <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+      <div className="bg-v2-card rounded-lg border border-v2-ring p-3">
         <div className="text-center text-[11px] text-red-500 dark:text-red-400">
           Failed to load team analytics. Please try again.
         </div>
@@ -78,19 +78,19 @@ export function TeamAnalyticsDashboard({
   }
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="bg-v2-card rounded-lg border border-v2-ring">
       {/* Collapsible Header */}
       <div
-        className="flex items-center justify-between px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+        className="flex items-center justify-between px-3 py-2 border-b border-v2-ring cursor-pointer hover:bg-v2-canvas"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-2">
-          <BarChart3 className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
+          <BarChart3 className="h-4 w-4 text-v2-ink" />
           <div>
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-sm font-semibold text-v2-ink">
               Team Analytics
             </h2>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted">
               {teamUserIds.length} team members • Performance metrics
             </p>
           </div>
@@ -105,9 +105,9 @@ export function TeamAnalyticsDashboard({
           }}
         >
           {isExpanded ? (
-            <ChevronUp className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+            <ChevronUp className="h-4 w-4 text-v2-ink-muted" />
           ) : (
-            <ChevronDown className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+            <ChevronDown className="h-4 w-4 text-v2-ink-muted" />
           )}
         </Button>
       </div>
@@ -116,7 +116,7 @@ export function TeamAnalyticsDashboard({
       {isExpanded && (
         <div className="p-3">
           {isLoading ? (
-            <div className="p-4 text-center text-[11px] text-zinc-500 dark:text-zinc-400">
+            <div className="p-4 text-center text-[11px] text-v2-ink-muted">
               Loading team analytics...
             </div>
           ) : (
@@ -154,7 +154,7 @@ export function TeamAnalyticsDashboard({
           )}
 
           {/* Footer Note */}
-          <div className="mt-3 px-2 py-1 text-[10px] text-zinc-400 dark:text-zinc-500 text-center">
+          <div className="mt-3 px-2 py-1 text-[10px] text-v2-ink-subtle text-center">
             Team data aggregated from {teamUserIds.length} agents
           </div>
         </div>

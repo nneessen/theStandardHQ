@@ -210,7 +210,7 @@ function AuthenticatedApp() {
       <Toaster />
       <CookieConsentBanner />
       <ImoProvider>
-        <div className="flex min-h-screen flex-col">
+        <div className="theme-v2 v2-canvas font-display text-v2-ink flex min-h-screen flex-col">
           {shouldHideSidebar ? (
             <>
               <FreeUserHeader
@@ -227,7 +227,7 @@ function AuthenticatedApp() {
                 onLogout={handleLogout}
               />
               <div className="flex-1 min-w-0">
-                <div className="theme-v2 v2-canvas font-display p-6 w-full min-h-screen text-v2-ink">
+                <div className="p-6 w-full min-h-screen">
                   <ApprovalGuard>
                     <Outlet />
                   </ApprovalGuard>
@@ -252,7 +252,7 @@ function AuthenticatedApp() {
                 onLogout={handleLogout}
               />
               <div className="main-content flex-1 min-w-0">
-                <div className="theme-v2 v2-canvas font-display p-6 w-full min-h-screen text-v2-ink">
+                <div className="p-6 w-full min-h-screen">
                   <ApprovalGuard>
                     <Outlet />
                   </ApprovalGuard>

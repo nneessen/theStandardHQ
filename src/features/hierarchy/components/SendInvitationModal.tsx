@@ -76,12 +76,12 @@ export function SendInvitationModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[400px] p-0 gap-0">
         {/* Header */}
-        <DialogHeader className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-700/50 bg-zinc-50 dark:bg-zinc-800/50">
+        <DialogHeader className="px-4 py-3 border-b border-v2-ring bg-v2-canvas">
           <DialogTitle className="flex items-center gap-1.5 text-sm font-medium">
-            <Send className="h-3.5 w-3.5 text-zinc-500" />
+            <Send className="h-3.5 w-3.5 text-v2-ink-muted" />
             Invite Agent to Downline
           </DialogTitle>
-          <DialogDescription className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <DialogDescription className="text-[11px] text-v2-ink-muted">
             Send an email invitation to add someone to your team. Must already
             have an account.
           </DialogDescription>
@@ -89,7 +89,7 @@ export function SendInvitationModal({
 
         {/* Team size limit status */}
         {teamLimit && teamLimit.limit !== null && teamLimit.limit > 0 && (
-          <div className="flex items-center gap-1.5 px-4 py-2 text-[10px] text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-700/50 bg-zinc-50/50 dark:bg-zinc-800/30">
+          <div className="flex items-center gap-1.5 px-4 py-2 text-[10px] text-v2-ink-muted border-b border-v2-ring bg-v2-card-tinted">
             <Users className="h-3 w-3" />
             <span>
               Team: {teamLimit.current} / {teamLimit.limit}
@@ -163,11 +163,11 @@ export function SendInvitationModal({
             <form.Field name="invitee_email">
               {(field) => (
                 <div>
-                  <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  <Label className="text-[11px] text-v2-ink-muted">
                     Email Address <span className="text-red-500">*</span>
                   </Label>
                   <div className="relative mt-1">
-                    <Mail className="absolute left-2 top-1.5 h-3 w-3 text-zinc-400" />
+                    <Mail className="absolute left-2 top-1.5 h-3 w-3 text-v2-ink-subtle" />
                     <Input
                       id="invitee_email"
                       type="email"
@@ -176,7 +176,7 @@ export function SendInvitationModal({
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
                       autoFocus
-                      className="h-7 text-[11px] pl-7 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                      className="h-7 text-[11px] pl-7 bg-v2-card border-v2-ring"
                     />
                   </div>
                   {field.state.meta.errors &&
@@ -185,7 +185,7 @@ export function SendInvitationModal({
                         {field.state.meta.errors.join(", ")}
                       </p>
                     )}
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                  <p className="text-[10px] text-v2-ink-muted mt-0.5">
                     Invitation email will be sent automatically
                   </p>
                 </div>
@@ -196,11 +196,11 @@ export function SendInvitationModal({
             <form.Field name="message">
               {(field) => (
                 <div>
-                  <Label className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  <Label className="text-[11px] text-v2-ink-muted">
                     Message (optional)
                   </Label>
                   <div className="relative mt-1">
-                    <MessageSquare className="absolute left-2 top-2 h-3 w-3 text-zinc-400" />
+                    <MessageSquare className="absolute left-2 top-2 h-3 w-3 text-v2-ink-subtle" />
                     <Textarea
                       id="message"
                       placeholder="Add a personal message..."
@@ -208,7 +208,7 @@ export function SendInvitationModal({
                       onChange={(e) => field.handleChange(e.target.value)}
                       onBlur={field.handleBlur}
                       rows={2}
-                      className="text-[11px] pl-7 pt-1.5 min-h-[52px] resize-none bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+                      className="text-[11px] pl-7 pt-1.5 min-h-[52px] resize-none bg-v2-card border-v2-ring"
                     />
                   </div>
                 </div>
@@ -216,7 +216,7 @@ export function SendInvitationModal({
             </form.Field>
           </div>
 
-          <DialogFooter className="px-4 py-3 border-t border-zinc-200 dark:border-zinc-700/50 bg-zinc-50/50 dark:bg-zinc-800/30">
+          <DialogFooter className="px-4 py-3 border-t border-v2-ring bg-v2-card-tinted">
             <Button
               type="button"
               variant="ghost"

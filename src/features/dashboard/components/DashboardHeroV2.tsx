@@ -31,6 +31,10 @@ interface DashboardHeroV2Props {
   elapsedPct: number;
   pipelineFillPct: number;
 
+  /** Formatted display values for bars that should show $ instead of % */
+  paceDisplay?: string;
+  pipelineDisplay?: string;
+
   /** stat tiles (right column) */
   policiesCount: number;
   premiumWritten: number;
@@ -72,8 +76,10 @@ export const DashboardHeroV2: React.FC<DashboardHeroV2Props> = ({
   onOffsetChange,
   pacePct,
   persistencyPct,
-  elapsedPct,
+  elapsedPct: _elapsedPct,
   pipelineFillPct,
+  paceDisplay,
+  pipelineDisplay,
   policiesCount,
   premiumWritten,
   pendingPipeline,
@@ -148,15 +154,19 @@ export const DashboardHeroV2: React.FC<DashboardHeroV2Props> = ({
       {/* Metric strip: bars left, stat tiles right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
         <div className="lg:col-span-7 space-y-2.5">
-          <MetricBar label="Pace" value={pacePct} tone="ink" />
+          <MetricBar
+            label="Pace"
+            value={pacePct}
+            tone="ink"
+            display={paceDisplay}
+          />
           <MetricBar label="Persistency" value={persistencyPct} tone="yellow" />
           <MetricBar
-            label="Period elapsed"
-            value={elapsedPct}
-            tone="muted"
-            display={`${Math.round(elapsedPct * 100)}%`}
+            label="Pipeline fill"
+            value={pipelineFillPct}
+            tone="ink"
+            display={pipelineDisplay}
           />
-          <MetricBar label="Pipeline fill" value={pipelineFillPct} tone="ink" />
         </div>
         <div className="lg:col-span-5 grid grid-cols-3 gap-4 lg:justify-items-end">
           <StatTile

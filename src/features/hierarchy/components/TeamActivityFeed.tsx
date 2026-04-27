@@ -132,9 +132,7 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
           <AlertTriangle className="h-3 w-3 text-red-600 dark:text-red-400" />
         );
       default:
-        return (
-          <Activity className="h-3 w-3 text-zinc-500 dark:text-zinc-400" />
-        );
+        return <Activity className="h-3 w-3 text-v2-ink-muted" />;
     }
   };
 
@@ -149,17 +147,17 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
       case "promoted":
         return "text-blue-600 dark:text-blue-400";
       default:
-        return "text-zinc-500 dark:text-zinc-400";
+        return "text-v2-ink-muted";
     }
   };
 
   const displayedActivities = showAll ? activities : activities.slice(0, 5);
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="bg-v2-card rounded-lg border border-v2-ring">
       <div className="p-3">
         <div className="flex items-center justify-between mb-2">
-          <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+          <div className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
             Recent Activity
           </div>
           {activities.length > 5 && (
@@ -167,7 +165,7 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
               variant="ghost"
               size="sm"
               onClick={() => setShowAll(!showAll)}
-              className="h-5 px-2 text-[10px] text-zinc-600 dark:text-zinc-400"
+              className="h-5 px-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle"
             >
               {showAll ? (
                 <>
@@ -186,10 +184,8 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
 
         {activities.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-4">
-            <Activity className="h-6 w-6 text-zinc-300 dark:text-zinc-600 mb-1" />
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-              No recent activity
-            </p>
+            <Activity className="h-6 w-6 text-v2-ink-subtle mb-1" />
+            <p className="text-[11px] text-v2-ink-muted">No recent activity</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -198,7 +194,7 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
                 <div className="mt-0.5">{getActivityIcon(activity.type)}</div>
                 <div className="flex-1 min-w-0">
                   <div className="text-[11px] leading-tight">
-                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                    <span className="font-medium text-v2-ink">
                       {activity.agent}
                     </span>
                     <span className={`ml-1 ${getActivityColor(activity.type)}`}>
@@ -206,11 +202,11 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
                     </span>
                   </div>
                   {activity.details && (
-                    <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    <div className="text-[10px] text-v2-ink-muted">
                       {activity.details}
                     </div>
                   )}
-                  <div className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                  <div className="text-[9px] text-v2-ink-subtle mt-0.5">
                     {getRelativeTime(activity.timestamp)}
                   </div>
                 </div>
@@ -220,25 +216,25 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
         )}
 
         {/* Quick Stats */}
-        <div className="mt-3 pt-2 border-t border-zinc-200 dark:border-zinc-700">
+        <div className="mt-3 pt-2 border-t border-v2-ring">
           <div className="grid grid-cols-3 gap-2 text-[10px]">
             <div className="text-center">
               <div className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">
                 +{activities.filter((a) => a.type === "joined").length}
               </div>
-              <div className="text-zinc-500 dark:text-zinc-400">Joined</div>
+              <div className="text-v2-ink-muted">Joined</div>
             </div>
             <div className="text-center">
               <div className="font-mono font-semibold text-blue-600 dark:text-blue-400">
                 {activities.filter((a) => a.type === "promoted").length}
               </div>
-              <div className="text-zinc-500 dark:text-zinc-400">Promoted</div>
+              <div className="text-v2-ink-muted">Promoted</div>
             </div>
             <div className="text-center">
               <div className="font-mono font-semibold text-red-600 dark:text-red-400">
                 -{activities.filter((a) => a.type === "left").length}
               </div>
-              <div className="text-zinc-500 dark:text-zinc-400">Left</div>
+              <div className="text-v2-ink-muted">Left</div>
             </div>
           </div>
         </div>

@@ -1,8 +1,8 @@
 // src/features/hierarchy/HierarchyDashboardCompact.tsx
 
 import { useState, useMemo } from "react";
-import { Download, UserPlus, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Download, UserPlus, AlertCircle, Users } from "lucide-react";
+import { PillButton, SoftCard } from "@/components/v2";
 import { useMyDownlines, useMyHierarchyStats } from "@/hooks";
 import { useCurrentUserProfile } from "@/hooks/admin";
 import { useFeatureAccess } from "@/hooks";
@@ -125,63 +125,106 @@ export function HierarchyDashboardCompact() {
   const isLoading = downlinesLoading || statsLoading;
   const hasError = statsError;
 
+  // Compact $k formatter for inline header chips
+  const compactDollar = (n: number): string => {
+    const abs = Math.abs(n);
+    if (abs >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+    if (abs >= 1_000) return `$${Math.round(n / 1000)}k`;
+    return `$${Math.round(n)}`;
+  };
+
   return (
     <>
-      <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
-        {/* Compact Header */}
-        <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center gap-2">
-            <UserPlus className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-            <div>
-              <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                Team Hierarchy
+      <div className="flex flex-col gap-2">
+        {/* Compact header — title + inline metric chips + actions in ONE row */}
+        <header className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3 min-w-0 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <Users className="h-4 w-4 text-v2-ink" />
+              <h1 className="text-base font-semibold tracking-tight text-v2-ink">
+                Team
               </h1>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-                Manage agents, track overrides, and monitor team performance
-              </p>
             </div>
+            {stats && (
+              <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-v2-ink-muted flex-wrap leading-tight">
+                <span>
+                  <span className="text-v2-ink font-semibold">
+                    {(
+                      stats.total_downlines ?? downlines.length
+                    ).toLocaleString()}
+                  </span>{" "}
+                  agents
+                </span>
+                <span className="text-v2-ink-subtle">·</span>
+                <span>
+                  <span className="text-v2-ink font-semibold">
+                    {(stats.direct_downlines ?? 0).toLocaleString()}
+                  </span>{" "}
+                  direct
+                </span>
+                <span className="text-v2-ink-subtle">·</span>
+                <span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                    {compactDollar(stats.total_override_income_mtd ?? 0)}
+                  </span>{" "}
+                  override MTD
+                </span>
+                <span className="text-v2-ink-subtle">·</span>
+                <span>
+                  <span className="text-v2-ink font-semibold">
+                    {compactDollar(stats.total_override_income_ytd ?? 0)}
+                  </span>{" "}
+                  YTD
+                </span>
+                {stats.pending_invitations !== undefined &&
+                  stats.pending_invitations > 0 && (
+                    <>
+                      <span className="text-v2-ink-subtle">·</span>
+                      <span>
+                        <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                          {stats.pending_invitations}
+                        </span>{" "}
+                        pending
+                      </span>
+                    </>
+                  )}
+              </div>
+            )}
           </div>
-          <div className="flex items-center gap-1">
-            {/* BUTTON TO ORG CHART -> TODO: ORG CHART ITSELF IS BROKEN*/}
-            {/*<Button
-              onClick={() => navigate({ to: "/hierarchy/org-chart" })}
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2 text-[10px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-            >
-              <Building2 className="h-3 w-3 mr-1" />
-              Org Chart
-            </Button>
-            */}
-            <Button
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <PillButton
               onClick={handleExportCSV}
-              variant="ghost"
+              tone="ghost"
               size="sm"
-              className="h-6 px-2 text-[10px] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              className="h-7 px-2.5 text-[11px]"
             >
-              <Download className="h-3 w-3 mr-1" />
+              <Download className="h-3 w-3" />
               CSV
-            </Button>
-            <Button
+            </PillButton>
+            <PillButton
               onClick={() => setSendInvitationModalOpen(true)}
+              tone="black"
               size="sm"
-              className="h-6 px-2 text-[10px]"
+              className="h-7 px-2.5 text-[11px]"
             >
-              <UserPlus className="h-3 w-3 mr-1" />
+              <UserPlus className="h-3 w-3" />
               Invite
-            </Button>
+            </PillButton>
           </div>
-        </div>
+        </header>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-auto space-y-2">
+        <div className="flex flex-col gap-2">
           {/* Pending Invitation Banner (for invitees) */}
           <PendingInvitationBanner />
 
-          {/* Timeframe Selector */}
-          <div className="flex flex-wrap items-center justify-between gap-2 bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800 overflow-x-auto">
-            <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide shrink-0">
-              Team Metrics
+          {/* Timeframe Selector — compact row */}
+          <SoftCard
+            padding="none"
+            className="flex flex-wrap items-center justify-between gap-2 px-3 py-1.5 overflow-x-auto"
+          >
+            <div className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em] shrink-0">
+              Team metrics
             </div>
             <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap min-w-0">
               <TimePeriodSwitcher
@@ -196,7 +239,7 @@ export function HierarchyDashboardCompact() {
               />
               <DateRangeDisplay timePeriod={timePeriod} dateRange={dateRange} />
             </div>
-          </div>
+          </SoftCard>
 
           {/* Team Metrics Card */}
           <TeamMetricsCard
@@ -245,37 +288,37 @@ export function HierarchyDashboardCompact() {
 
           {/* Performance Insights */}
           {stats && stats.direct_downlines > 0 && (
-            <div className="bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+            <SoftCard padding="none" className="px-3 py-2">
               <div className="flex items-start gap-2">
-                <AlertCircle className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400 mt-0.5" />
+                <AlertCircle className="h-3.5 w-3.5 text-v2-ink-subtle mt-0.5" />
                 <div className="text-[11px]">
-                  <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                    Team Performance Insights
+                  <span className="font-semibold text-v2-ink">
+                    Team performance insights
                   </span>
-                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 space-y-0.5">
+                  <div className="text-[10px] text-v2-ink-muted mt-0.5 space-y-0.5">
                     {stats.total_downlines < 5 && (
                       <p>
-                        • Build your team: You have {stats.total_downlines}{" "}
+                        · Build your team: you have {stats.total_downlines}{" "}
                         agents. Consider recruiting more to increase override
                         income.
                       </p>
                     )}
                     {stats.total_override_income_mtd === 0 && (
                       <p>
-                        • No override income this month. Check agent activity
+                        · No override income this month. Check agent activity
                         and commission settings.
                       </p>
                     )}
                     {stats.direct_downlines > 10 && (
                       <p>
-                        • Great team size! Focus on helping underperforming
+                        · Great team size. Focus on helping underperforming
                         agents improve their results.
                       </p>
                     )}
                   </div>
                 </div>
               </div>
-            </div>
+            </SoftCard>
           )}
         </div>
       </div>

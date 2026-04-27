@@ -135,9 +135,9 @@ function IPRow({
   };
 
   return (
-    <tr className="h-9 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/50">
+    <tr className="h-9 transition-colors hover:bg-v2-canvas border-b border-v2-ring/60">
       {/* Agent Name with Hierarchy */}
-      <td className="px-2 py-1.5 text-[11px] text-zinc-900 dark:text-zinc-100">
+      <td className="px-2 py-1.5 text-[11px] text-v2-ink">
         <div
           className="flex items-center gap-1"
           style={{ paddingLeft: `${depth * 16}px` }}
@@ -147,7 +147,7 @@ function IPRow({
               variant="ghost"
               size="sm"
               onClick={onToggle}
-              className="h-4 w-4 p-0 text-zinc-500 dark:text-zinc-400"
+              className="h-4 w-4 p-0 text-v2-ink-muted"
             >
               {isExpanded ? (
                 <ChevronDown className="h-3 w-3" />
@@ -157,9 +157,7 @@ function IPRow({
             </Button>
           )}
           {!hasChildren && depth > 0 && (
-            <span className="text-zinc-300 dark:text-zinc-600 text-[10px] mr-1">
-              └─
-            </span>
+            <span className="text-v2-ink-subtle text-[10px] mr-1">└─</span>
           )}
           <span className="font-medium">
             {agent.first_name && agent.last_name
@@ -184,29 +182,27 @@ function IPRow({
             {formatCurrency(ip_total)}
           </span>
         ) : (
-          <span className="text-zinc-400 dark:text-zinc-500">$0</span>
+          <span className="text-v2-ink-subtle">$0</span>
         )}
       </td>
 
       {/* IP Policies Count */}
       <td className="px-2 py-1.5 text-center text-[11px] font-mono">
         {ip_policies > 0 ? (
-          <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-            {ip_policies}
-          </span>
+          <span className="font-semibold text-v2-ink">{ip_policies}</span>
         ) : (
-          <span className="text-zinc-400 dark:text-zinc-500">0</span>
+          <span className="text-v2-ink-subtle">0</span>
         )}
       </td>
 
       {/* Average Premium */}
       <td className="px-2 py-1.5 text-right text-[11px] font-mono">
         {avg_premium > 0 ? (
-          <span className="font-medium text-zinc-700 dark:text-zinc-300">
+          <span className="font-medium text-v2-ink-muted">
             {formatCurrency(avg_premium)}
           </span>
         ) : (
-          <span className="text-zinc-400 dark:text-zinc-500">$0</span>
+          <span className="text-v2-ink-subtle">$0</span>
         )}
       </td>
     </tr>
@@ -348,35 +344,35 @@ export function IssuedPremiumTable({
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-      <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/30">
-        <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+    <div className="bg-v2-card rounded-lg border border-v2-ring">
+      <div className="px-3 py-2 border-b border-v2-ring bg-v2-canvas/30">
+        <div className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
           Issued Premium (IP) — Active Policies Only
         </div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
-          <thead className="bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800">
+          <thead className="bg-v2-canvas border-b border-v2-ring">
             <tr className="h-8">
-              <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+              <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-v2-ink-muted">
                 Agent
               </th>
-              <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+              <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-v2-ink-muted">
                 <span className="text-blue-600 dark:text-blue-400">IP</span>
               </th>
-              <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+              <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-v2-ink-muted">
                 Policies
               </th>
-              <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-zinc-500 dark:text-zinc-400">
+              <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-v2-ink-muted">
                 Avg Premium
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/50">
+          <tbody className="divide-y divide-v2-ring/60">
             {isLoading ? (
               <tr>
                 <td colSpan={4} className="text-center py-8">
-                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  <div className="text-[11px] text-v2-ink-muted">
                     Loading issued premium data...
                   </div>
                 </td>
@@ -384,7 +380,7 @@ export function IssuedPremiumTable({
             ) : agentsToDisplay.length === 0 && !owner ? (
               <tr>
                 <td colSpan={4} className="text-center py-6">
-                  <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  <span className="text-[11px] text-v2-ink-muted">
                     No team members found
                   </span>
                 </td>
@@ -412,21 +408,21 @@ export function IssuedPremiumTable({
 
       {/* Pagination Controls */}
       {totalRootAgents > 0 && (
-        <div className="flex items-center justify-between px-3 py-2 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/30">
+        <div className="flex items-center justify-between px-3 py-2 border-t border-v2-ring bg-v2-canvas/30">
           <div className="flex items-center gap-4">
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <span className="text-[10px] text-v2-ink-muted">
               Total: {agents.length + (owner ? 1 : 0)} agent
               {agents.length + (owner ? 1 : 0) !== 1 ? "s" : ""}
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <span className="text-[10px] text-v2-ink-muted">
                 Rows per page:
               </span>
               <Select
                 value={rowsPerPage.toString()}
                 onValueChange={handleRowsPerPageChange}
               >
-                <SelectTrigger className="h-6 w-14 text-[10px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
+                <SelectTrigger className="h-6 w-14 text-[10px] bg-v2-card border-v2-ring">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -440,7 +436,7 @@ export function IssuedPremiumTable({
           </div>
 
           <div className="flex items-center gap-1">
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <span className="text-[10px] text-v2-ink-muted">
               Page {currentPage} of {totalPages || 1}
             </span>
             <Button
@@ -448,7 +444,7 @@ export function IssuedPremiumTable({
               size="sm"
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="h-6 w-6 p-0 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
             >
               <ChevronLeft className="h-3 w-3" />
             </Button>
@@ -459,7 +455,7 @@ export function IssuedPremiumTable({
                 setCurrentPage(Math.min(totalPages || 1, currentPage + 1))
               }
               disabled={currentPage >= totalPages}
-              className="h-6 w-6 p-0 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
             >
               <ChevronRight className="h-3 w-3" />
             </Button>
