@@ -25,14 +25,18 @@ interface DashboardHeroV2Props {
   periodOffset: number;
   onOffsetChange: (n: number) => void;
 
-  /** 0..1 metric bars (left column) */
-  pacePct: number;
+  /** 0..1 metric bars (left column).
+   * apPacePct = AP submitted / AP target.
+   * commissionPacePct = commissions earned / commission target. */
+  apPacePct: number;
+  commissionPacePct: number;
   persistencyPct: number;
   elapsedPct: number;
   pipelineFillPct: number;
 
   /** Formatted display values for bars that should show $ instead of % */
-  paceDisplay?: string;
+  apPaceDisplay?: string;
+  commissionPaceDisplay?: string;
   pipelineDisplay?: string;
 
   /** stat tiles (right column) */
@@ -74,11 +78,13 @@ export const DashboardHeroV2: React.FC<DashboardHeroV2Props> = ({
   onTimePeriodChange,
   periodOffset,
   onOffsetChange,
-  pacePct,
+  apPacePct,
+  commissionPacePct,
   persistencyPct,
   elapsedPct: _elapsedPct,
   pipelineFillPct,
-  paceDisplay,
+  apPaceDisplay,
+  commissionPaceDisplay,
   pipelineDisplay,
   policiesCount,
   premiumWritten,
@@ -155,12 +161,18 @@ export const DashboardHeroV2: React.FC<DashboardHeroV2Props> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
         <div className="lg:col-span-7 space-y-2.5">
           <MetricBar
-            label="Pace"
-            value={pacePct}
+            label="AP submit pace"
+            value={apPacePct}
             tone="ink"
-            display={paceDisplay}
+            display={apPaceDisplay}
           />
-          <MetricBar label="Persistency" value={persistencyPct} tone="yellow" />
+          <MetricBar
+            label="Commission pace"
+            value={commissionPacePct}
+            tone="yellow"
+            display={commissionPaceDisplay}
+          />
+          <MetricBar label="Persistency" value={persistencyPct} tone="muted" />
           <MetricBar
             label="Pipeline fill"
             value={pipelineFillPct}

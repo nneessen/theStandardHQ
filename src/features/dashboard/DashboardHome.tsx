@@ -414,12 +414,18 @@ export const DashboardHome: React.FC = () => {
     dashboardFeatures.isAgencyOwner;
 
   // V2 metric percentages
-  // Pace tracks what the agent has EARNED this period (not just paid out),
-  // so it stays meaningful before the carrier disburses the check.
-  const paceEarned = periodCommissions.earned ?? periodCommissions.paid;
-  const pacePct =
+  // AP submit pace = annual premium submitted vs. AP target for the period.
+  // This is the agent's LEADING indicator (what they've put on the books).
+  const apPacePct =
+    premiumTarget && premiumTarget > 0
+      ? Math.min(1, periodPolicies.premiumWritten / premiumTarget)
+      : expectedPct;
+  // Commission pace = $ earned (not just paid out) vs. commission target.
+  // Lagging indicator — what they'll actually be paid for this period.
+  const commissionEarned = periodCommissions.earned ?? periodCommissions.paid;
+  const commissionPacePct =
     commissionTarget && commissionTarget > 0
-      ? Math.min(1, paceEarned / commissionTarget)
+      ? Math.min(1, commissionEarned / commissionTarget)
       : expectedPct;
   const persistencyPct = Math.max(0, 1 - derivedMetrics.lapsedRate / 100);
   const pipelineFillPct =
@@ -427,7 +433,7 @@ export const DashboardHome: React.FC = () => {
       ? Math.min(1, currentState.pendingPipeline / commissionTarget)
       : Math.min(
           1,
-          currentState.pendingPipeline / Math.max(1, periodCommissions.paid),
+          currentState.pendingPipeline / Math.max(1, commissionEarned),
         );
 
   const greetingName =
@@ -452,11 +458,13 @@ export const DashboardHome: React.FC = () => {
             onTimePeriodChange={handleTimePeriodChange}
             periodOffset={periodOffset}
             onOffsetChange={setPeriodOffset}
-            pacePct={pacePct}
+            apPacePct={apPacePct}
+            commissionPacePct={commissionPacePct}
             persistencyPct={persistencyPct}
             elapsedPct={expectedPct}
             pipelineFillPct={pipelineFillPct}
-            paceDisplay={formatCompactDollar(paceEarned)}
+            apPaceDisplay={formatCompactDollar(periodPolicies.premiumWritten)}
+            commissionPaceDisplay={formatCompactDollar(commissionEarned)}
             pipelineDisplay={formatCompactDollar(currentState.pendingPipeline)}
             policiesCount={periodPolicies.newCount}
             premiumWritten={periodPolicies.premiumWritten}
