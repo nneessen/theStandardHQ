@@ -111,35 +111,35 @@ export function VoiceAgentUsageCard({
     (Boolean(effectiveEntitlement) && usedMinutes >= minuteLimit);
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <Activity className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-            <h2 className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+            <Activity className="h-3.5 w-3.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
+            <h2 className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
               Usage Snapshot
             </h2>
           </div>
-          <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Included minutes and current cycle activity
           </p>
         </div>
 
-        <Badge className="text-[9px] h-4 px-1.5 bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+        <Badge className="text-[9px] h-4 px-1.5 bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted">
           {minuteLimit.toLocaleString()} minute cap
         </Badge>
       </div>
 
       {isLoading ? (
         <div className="flex items-center justify-center py-10">
-          <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+          <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
         </div>
       ) : !hasUsageSnapshot ? (
-        <div className="mt-4 rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
-          <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+        <div className="mt-4 rounded-lg border border-v2-ring bg-v2-canvas px-4 py-4 dark:border-v2-ring dark:bg-v2-canvas/40">
+          <p className="text-lg font-semibold text-v2-ink dark:text-v2-ink">
             {launchIncludedMinutes.toLocaleString()} included minutes
           </p>
-          <p className="mt-2 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
+          <p className="mt-2 text-[11px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
             Usage reporting will appear here after voice access is active.
             Self-serve checkout is still disabled for voice.
           </p>
@@ -148,15 +148,15 @@ export function VoiceAgentUsageCard({
         <div className="mt-4 space-y-4">
           <div>
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+              <span className="text-2xl font-semibold tracking-tight text-v2-ink dark:text-v2-ink">
                 {usedMinutes.toLocaleString()}
               </span>
-              <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <span className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 of {minuteLimit.toLocaleString()} minutes used
               </span>
             </div>
 
-            <div className="mt-3 h-2 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800">
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted">
               <div
                 className={cn(
                   "h-full rounded-full transition-all",
@@ -166,18 +166,18 @@ export function VoiceAgentUsageCard({
               />
             </div>
 
-            <div className="mt-2 flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400">
+            <div className="mt-2 flex items-center justify-between text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               <span>{remainingMinutes.toLocaleString()} remaining</span>
               <span>{Math.round(percentUsed)}% used</span>
             </div>
           </div>
 
           {(cycleStart || cycleEnd) && (
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950/40">
-              <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            <div className="rounded-lg border border-v2-ring bg-v2-canvas px-3 py-2.5 dark:border-v2-ring dark:bg-v2-canvas/40">
+              <p className="text-[10px] uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                 Current Cycle
               </p>
-              <p className="mt-1 text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <p className="mt-1 text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                 {formatDate(cycleStart) || "Start pending"} to{" "}
                 {formatDate(cycleEnd) || "End pending"}
               </p>
@@ -185,45 +185,45 @@ export function VoiceAgentUsageCard({
           )}
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">
+            <div className="rounded-lg border border-v2-ring bg-v2-canvas px-3 py-3 dark:border-v2-ring dark:bg-v2-canvas/40">
               <div className="flex items-center gap-2">
-                <PhoneOutgoing className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-                <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <PhoneOutgoing className="h-3.5 w-3.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
+                <p className="text-[10px] uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                   Outbound
                 </p>
               </div>
-              <p className="mt-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              <p className="mt-2 text-lg font-semibold text-v2-ink dark:text-v2-ink">
                 {outboundCalls.toLocaleString()}
               </p>
             </div>
 
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">
+            <div className="rounded-lg border border-v2-ring bg-v2-canvas px-3 py-3 dark:border-v2-ring dark:bg-v2-canvas/40">
               <div className="flex items-center gap-2">
-                <PhoneIncoming className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-                <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <PhoneIncoming className="h-3.5 w-3.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
+                <p className="text-[10px] uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                   Inbound
                 </p>
               </div>
-              <p className="mt-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              <p className="mt-2 text-lg font-semibold text-v2-ink dark:text-v2-ink">
                 {inboundCalls.toLocaleString()}
               </p>
             </div>
 
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/40">
+            <div className="rounded-lg border border-v2-ring bg-v2-canvas px-3 py-3 dark:border-v2-ring dark:bg-v2-canvas/40">
               <div className="flex items-center gap-2">
-                <Phone className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-                <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <Phone className="h-3.5 w-3.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
+                <p className="text-[10px] uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                   Answered
                 </p>
               </div>
-              <p className="mt-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+              <p className="mt-2 text-lg font-semibold text-v2-ink dark:text-v2-ink">
                 {answeredCalls.toLocaleString()}
               </p>
             </div>
           </div>
 
           {(showServiceWarning || snapshot) && (
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-[11px] text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
+            <div className="rounded-lg border border-v2-ring bg-v2-canvas px-3 py-2 text-[11px] text-v2-ink-muted dark:border-v2-ring dark:bg-v2-canvas/40 dark:text-v2-ink-subtle">
               {showServiceWarning
                 ? "Live usage data is temporarily unavailable. Values may reflect the last successful sync."
                 : "Usage is shown from the current entitlement snapshot when available."}

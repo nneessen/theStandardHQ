@@ -789,14 +789,14 @@ export function VoiceAgentRetellStudioCard({
               <Collapsible
                 open={advancedOpen}
                 onOpenChange={setAdvancedOpen}
-                className="rounded-xl border border-zinc-200 dark:border-zinc-800"
+                className="rounded-xl border border-v2-ring dark:border-v2-ring"
               >
                 <div className="flex items-center justify-between gap-3 px-4 py-3">
                   <div>
-                    <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                    <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                       Advanced setup
                     </p>
-                    <p className="mt-1 text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
+                    <p className="mt-1 text-[10px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
                       Advanced tuning for model behavior, knowledge, tools, and
                       call handling.
                     </p>
@@ -814,7 +814,7 @@ export function VoiceAgentRetellStudioCard({
                   </CollapsibleTrigger>
                 </div>
 
-                <CollapsibleContent className="border-t border-zinc-200 px-4 py-4 dark:border-zinc-800">
+                <CollapsibleContent className="border-t border-v2-ring px-4 py-4 dark:border-v2-ring">
                   {advancedStructuredContent}
                 </CollapsibleContent>
               </Collapsible>
@@ -822,14 +822,14 @@ export function VoiceAgentRetellStudioCard({
               <Collapsible
                 open={jsonOpen}
                 onOpenChange={setJsonOpen}
-                className="rounded-lg border border-zinc-200 dark:border-zinc-800"
+                className="rounded-lg border border-v2-ring dark:border-v2-ring"
               >
                 <div className="flex items-center justify-between gap-3 px-3 py-3">
                   <div>
-                    <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                    <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                       Raw advanced data
                     </p>
-                    <p className="mt-1 text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
+                    <p className="mt-1 text-[10px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
                       Keep this for support and power-user cases only.
                     </p>
                   </div>
@@ -846,11 +846,11 @@ export function VoiceAgentRetellStudioCard({
                   </CollapsibleTrigger>
                 </div>
 
-                <CollapsibleContent className="border-t border-zinc-200 px-3 py-3 dark:border-zinc-800">
+                <CollapsibleContent className="border-t border-v2-ring px-3 py-3 dark:border-v2-ring">
                   <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                        <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                           Advanced agent data
                         </p>
                         <div className="flex gap-2">
@@ -889,7 +889,7 @@ export function VoiceAgentRetellStudioCard({
 
                     <div className="space-y-2">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                        <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                           Advanced prompt data
                         </p>
                         <div className="flex gap-2">

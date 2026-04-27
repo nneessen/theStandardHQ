@@ -90,7 +90,7 @@ function computeReminderTiers(
 const dotColors: Record<ReminderStatus, string> = {
   sent: "bg-emerald-500 dark:bg-emerald-400",
   upcoming: "bg-amber-500 dark:bg-amber-400",
-  pending: "bg-zinc-300 dark:bg-zinc-600",
+  pending: "bg-v2-ring-strong dark:bg-v2-ring-strong",
   skipped: "bg-red-500 dark:bg-red-400",
 };
 
@@ -150,7 +150,7 @@ function ReminderDots({ appt }: { appt: ChatBotAppointment }) {
                 <span>
                   {tier.label}: {statusLabels[tier.status]}
                   {tier.status === "sent" && tier.sentAt && (
-                    <span className="text-zinc-400 ml-1">
+                    <span className="text-v2-ink-subtle ml-1">
                       ({formatTimestamp(tier.sentAt)})
                     </span>
                   )}
@@ -255,7 +255,7 @@ export function AppointmentsTab() {
         badge = (
           <Badge
             variant="secondary"
-            className="text-[9px] h-3.5 px-1 bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+            className="text-[9px] h-3.5 px-1 bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-muted"
           >
             {s || "Unknown"}
           </Badge>
@@ -267,7 +267,7 @@ export function AppointmentsTab() {
       <div className="flex flex-col">
         {badge}
         {label && (
-          <span className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+          <span className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted mt-0.5">
             {label}
           </span>
         )}
@@ -278,29 +278,29 @@ export function AppointmentsTab() {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-[10px] text-zinc-400">
+        <span className="text-[10px] text-v2-ink-subtle">
           {total} appointment{total !== 1 ? "s" : ""}
         </span>
       </div>
 
-      <div className="overflow-hidden bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="overflow-hidden bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring">
         <div className="overflow-auto">
           <Table>
-            <TableHeader className="sticky top-0 bg-zinc-50 dark:bg-zinc-800/50 z-10">
-              <TableRow className="border-b border-zinc-200 dark:border-zinc-800 hover:bg-transparent">
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+            <TableHeader className="sticky top-0 bg-v2-canvas dark:bg-v2-card-tinted/50 z-10">
+              <TableRow className="border-b border-v2-ring dark:border-v2-ring hover:bg-transparent">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
                   Lead
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
                   Date/Time
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
                   Status
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
                   Reminders
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 text-right">
+                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted text-right">
                   Created
                 </TableHead>
               </TableRow>
@@ -309,17 +309,17 @@ export function AppointmentsTab() {
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={5} className="py-8 text-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-zinc-400 mx-auto" />
+                    <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle mx-auto" />
                   </TableCell>
                 </TableRow>
               ) : appointments.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="py-8 text-center">
-                    <Calendar className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-                    <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                    <Calendar className="h-8 w-8 text-v2-ink-subtle dark:text-v2-ink-muted mx-auto mb-2" />
+                    <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                       No appointments yet
                     </p>
-                    <p className="text-[10px] text-zinc-500 dark:text-zinc-500">
+                    <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-muted">
                       Appointments will appear when leads book via the bot
                     </p>
                   </TableCell>
@@ -328,15 +328,15 @@ export function AppointmentsTab() {
                 appointments.map((appt) => (
                   <TableRow
                     key={appt.id}
-                    className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/50"
+                    className="hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 border-b border-v2-ring dark:border-v2-ring/50"
                   >
                     <TableCell className="py-1.5">
-                      <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                      <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
                         {appt.leadName}
                       </span>
                     </TableCell>
                     <TableCell className="py-1.5">
-                      <span className="text-[11px] text-zinc-900 dark:text-zinc-100">
+                      <span className="text-[11px] text-v2-ink dark:text-v2-ink">
                         {formatDate(appt.scheduledAt)}
                       </span>
                     </TableCell>
@@ -360,7 +360,7 @@ export function AppointmentsTab() {
                       <ReminderDots appt={appt} />
                     </TableCell>
                     <TableCell className="py-1.5 text-right">
-                      <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                      <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                         {formatCreated(appt.createdAt)}
                       </span>
                     </TableCell>
@@ -385,7 +385,7 @@ export function AppointmentsTab() {
             <ChevronLeft className="h-3 w-3 mr-0.5" />
             Previous
           </Button>
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Page {page} of {totalPages}
           </span>
           <Button

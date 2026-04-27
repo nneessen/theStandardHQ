@@ -21,7 +21,7 @@ export function VoiceSessionDetail({ sessionId, onBack }: Props) {
   if (isLoading || !session) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -56,9 +56,9 @@ export function VoiceSessionDetail({ sessionId, onBack }: Props) {
       </div>
 
       {session.closeLeadId && (
-        <div className="text-[10px] text-zinc-500">
+        <div className="text-[10px] text-v2-ink-muted">
           Lead:{" "}
-          <span className="font-mono text-zinc-600 dark:text-zinc-400">
+          <span className="font-mono text-v2-ink-muted dark:text-v2-ink-subtle">
             {session.closeLeadId}
           </span>
         </div>
@@ -66,9 +66,11 @@ export function VoiceSessionDetail({ sessionId, onBack }: Props) {
 
       {/* Summary */}
       {session.summary && (
-        <div className="border border-zinc-200 dark:border-zinc-700 rounded p-2">
-          <p className="text-[10px] font-medium text-zinc-500 mb-1">Summary</p>
-          <p className="text-[11px] text-zinc-700 dark:text-zinc-300">
+        <div className="border border-v2-ring dark:border-v2-ring-strong rounded p-2">
+          <p className="text-[10px] font-medium text-v2-ink-muted mb-1">
+            Summary
+          </p>
+          <p className="text-[11px] text-v2-ink dark:text-v2-ink-muted">
             {session.summary}
           </p>
         </div>
@@ -76,8 +78,8 @@ export function VoiceSessionDetail({ sessionId, onBack }: Props) {
 
       {/* Transcript */}
       {session.transcript && session.transcript.length > 0 && (
-        <div className="border border-zinc-200 dark:border-zinc-700 rounded p-2">
-          <p className="text-[10px] font-medium text-zinc-500 mb-1.5">
+        <div className="border border-v2-ring dark:border-v2-ring-strong rounded p-2">
+          <p className="text-[10px] font-medium text-v2-ink-muted mb-1.5">
             Transcript
           </p>
           <div className="max-h-80 overflow-y-auto space-y-1">
@@ -94,10 +96,10 @@ export function VoiceSessionDetail({ sessionId, onBack }: Props) {
                     "max-w-[80%] px-2 py-1 rounded text-[10px]",
                     entry.role === "agent"
                       ? "bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-200"
-                      : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300",
+                      : "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink dark:text-v2-ink-muted",
                   )}
                 >
-                  <span className="text-[8px] font-medium text-zinc-400 block mb-0.5">
+                  <span className="text-[8px] font-medium text-v2-ink-subtle block mb-0.5">
                     {entry.role === "agent" ? "Agent" : "Lead"}
                   </span>
                   {entry.content}
@@ -148,9 +150,9 @@ function MetaCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border border-zinc-200 dark:border-zinc-700 rounded px-2 py-1.5">
-      <p className="text-[8px] text-zinc-400 font-medium">{label}</p>
-      <div className="text-[11px] text-zinc-700 dark:text-zinc-300 mt-0.5">
+    <div className="border border-v2-ring dark:border-v2-ring-strong rounded px-2 py-1.5">
+      <p className="text-[8px] text-v2-ink-subtle font-medium">{label}</p>
+      <div className="text-[11px] text-v2-ink dark:text-v2-ink-muted mt-0.5">
         {children}
       </div>
     </div>

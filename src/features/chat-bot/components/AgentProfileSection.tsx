@@ -149,14 +149,14 @@ export function AgentProfileSection() {
   };
 
   return (
-    <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+    <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
       <div className="flex items-center gap-1.5 mb-2">
-        <User className="h-3 w-3 text-zinc-400" />
-        <h2 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <User className="h-3 w-3 text-v2-ink-subtle" />
+        <h2 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
           Agent Profile
         </h2>
       </div>
-      <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-3">
+      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mb-3">
         Personalize your bot&apos;s identity and conversation style. These
         details help the bot introduce itself and tailor responses.
       </p>
@@ -164,7 +164,7 @@ export function AgentProfileSection() {
       <div className="space-y-2.5">
         {/* Agent Name (full-width) */}
         <div>
-          <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-0.5 block">
+          <label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted mb-0.5 block">
             Agent Name
           </label>
           <Input
@@ -174,7 +174,7 @@ export function AgentProfileSection() {
             className="h-7 text-[11px]"
             disabled={updateConfig.isPending}
           />
-          <p className="text-[9px] text-zinc-400 mt-0.5">
+          <p className="text-[9px] text-v2-ink-subtle mt-0.5">
             The name the bot introduces itself as when texting leads.
           </p>
         </div>
@@ -182,7 +182,7 @@ export function AgentProfileSection() {
         {/* Row 1: Company Name + Job Title */}
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-0.5 block">
+            <label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted mb-0.5 block">
               Company Name
             </label>
             <Input
@@ -194,7 +194,7 @@ export function AgentProfileSection() {
             />
           </div>
           <div>
-            <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-0.5 block">
+            <label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted mb-0.5 block">
               Job Title
             </label>
             <Input
@@ -210,10 +210,12 @@ export function AgentProfileSection() {
         {/* Bio (full-width) */}
         <div>
           <div className="flex items-center justify-between mb-0.5">
-            <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+            <label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
               Bio
             </label>
-            <span className="text-[9px] text-zinc-400">{bio.length}/1000</span>
+            <span className="text-[9px] text-v2-ink-subtle">
+              {bio.length}/1000
+            </span>
           </div>
           <Textarea
             value={bio}
@@ -228,7 +230,7 @@ export function AgentProfileSection() {
         {/* Row 2: Resident State + Years of Experience */}
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-0.5 block">
+            <label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted mb-0.5 block">
               Resident State
             </label>
             <Select
@@ -258,7 +260,7 @@ export function AgentProfileSection() {
             </Select>
           </div>
           <div>
-            <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-0.5 block">
+            <label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted mb-0.5 block">
               Years of Experience
             </label>
             <Input
@@ -284,7 +286,7 @@ export function AgentProfileSection() {
 
         {/* Non-Resident States (full-width) */}
         <div>
-          <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-0.5 block">
+          <label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted mb-0.5 block">
             Non-Resident States
           </label>
           {nonResidentStates.length > 0 && (
@@ -340,7 +342,7 @@ export function AgentProfileSection() {
 
         {/* Specialties (full-width) */}
         <div>
-          <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-0.5 block">
+          <label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted mb-0.5 block">
             Specialties
           </label>
           {specialties.length > 0 && (
@@ -393,7 +395,7 @@ export function AgentProfileSection() {
         {/* Row 3: Website + Location */}
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-0.5 block">
+            <label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted mb-0.5 block">
               Website
             </label>
             <Input
@@ -405,7 +407,7 @@ export function AgentProfileSection() {
             />
           </div>
           <div>
-            <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-0.5 block">
+            <label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted mb-0.5 block">
               Location
             </label>
             <Input
@@ -420,7 +422,7 @@ export function AgentProfileSection() {
 
         {/* Save button */}
         {isDirty && (
-          <div className="flex items-center gap-2 pt-2 mt-1 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center gap-2 pt-2 mt-1 border-t border-v2-ring dark:border-v2-ring">
             <Button
               size="sm"
               className="h-7 text-[10px]"

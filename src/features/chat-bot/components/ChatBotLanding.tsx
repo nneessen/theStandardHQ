@@ -144,7 +144,7 @@ export function ChatBotLanding({
   return (
     <div className="space-y-6">
       {/* ═══════════ HERO BANNER ═══════════ */}
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 border border-zinc-700/50">
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 border border-v2-ring-strong/50">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(59,130,246,0.15),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(139,92,246,0.1),transparent_50%)]" />
         <div className="relative px-6 py-5">
@@ -158,7 +158,7 @@ export function ChatBotLanding({
                 <h1 className="text-lg font-bold text-white tracking-tight">
                   AI-Powered SMS Appointment Setter
                 </h1>
-                <p className="text-[11px] text-zinc-400 mt-1 leading-relaxed max-w-lg">
+                <p className="text-[11px] text-v2-ink-subtle mt-1 leading-relaxed max-w-lg">
                   Responds to inbound leads instantly, has real conversations,
                   and books appointments on your calendar. Runs within compliant
                   hours so you never miss a lead.
@@ -169,28 +169,28 @@ export function ChatBotLanding({
             {/* Right column — integration logos */}
             <div className="flex items-center gap-5">
               <div className="flex flex-col items-center gap-1.5">
-                <div className="w-14 h-14 rounded-xl bg-zinc-800/80 border border-zinc-700/50 flex items-center justify-center shadow-md shadow-black/20">
+                <div className="w-14 h-14 rounded-xl bg-v2-ink/80 border border-v2-ring-strong/50 flex items-center justify-center shadow-md shadow-black/20">
                   <CloseLogo className="h-5 w-auto text-white" />
                 </div>
-                <span className="text-[9px] text-zinc-400 font-medium">
+                <span className="text-[9px] text-v2-ink-subtle font-medium">
                   Close CRM
                 </span>
               </div>
-              <span className="text-xs text-zinc-600 font-medium">+</span>
+              <span className="text-xs text-v2-ink-muted font-medium">+</span>
               <div className="flex flex-col items-center gap-1.5">
-                <div className="w-14 h-14 rounded-xl bg-zinc-800/80 border border-zinc-700/50 flex items-center justify-center shadow-md shadow-black/20">
+                <div className="w-14 h-14 rounded-xl bg-v2-ink/80 border border-v2-ring-strong/50 flex items-center justify-center shadow-md shadow-black/20">
                   <CalendlyLogo className="h-8 w-8" />
                 </div>
-                <span className="text-[9px] text-zinc-400 font-medium">
+                <span className="text-[9px] text-v2-ink-subtle font-medium">
                   Calendly
                 </span>
               </div>
-              <span className="text-xs text-zinc-600 font-medium">/</span>
+              <span className="text-xs text-v2-ink-muted font-medium">/</span>
               <div className="flex flex-col items-center gap-1.5">
-                <div className="w-14 h-14 rounded-xl bg-zinc-800/80 border border-zinc-700/50 flex items-center justify-center shadow-md shadow-black/20">
+                <div className="w-14 h-14 rounded-xl bg-v2-ink/80 border border-v2-ring-strong/50 flex items-center justify-center shadow-md shadow-black/20">
                   <GoogleCalendarLogo className="h-8 w-8" />
                 </div>
-                <span className="text-[9px] text-zinc-400 font-medium">
+                <span className="text-[9px] text-v2-ink-subtle font-medium">
                   Google Cal
                 </span>
               </div>
@@ -203,12 +203,12 @@ export function ChatBotLanding({
       {isTeamMember && (
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
               Team Access
             </h2>
-            <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
+            <div className="flex-1 h-px bg-v2-ring dark:bg-v2-card-tinted" />
           </div>
-          <div className="rounded-lg border border-indigo-200 dark:border-indigo-800 overflow-hidden bg-white dark:bg-zinc-900">
+          <div className="rounded-lg border border-indigo-200 dark:border-indigo-800 overflow-hidden bg-v2-card">
             <div className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -216,10 +216,10 @@ export function ChatBotLanding({
                     <Shield className="h-5 w-5 text-indigo-500" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                    <h3 className="text-sm font-bold text-v2-ink dark:text-v2-ink">
                       Team Access — Free
                     </h3>
-                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                    <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-0.5">
                       Unlimited leads, no billing. If you already have a bot,
                       this reconnects it instead of creating a duplicate.
                     </p>
@@ -257,17 +257,17 @@ export function ChatBotLanding({
       {!isTeamMember && (
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
               Choose Your Plan
             </h2>
-            <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
+            <div className="flex-1 h-px bg-v2-ring dark:bg-v2-card-tinted" />
           </div>
 
-          <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden bg-white dark:bg-zinc-900">
+          <div className="rounded-lg border border-v2-ring dark:border-v2-ring overflow-hidden bg-v2-card">
             <div className="p-4">
               {addonsLoading ? (
                 <div className="flex items-center justify-center py-6">
-                  <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+                  <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
                 </div>
               ) : tiers.length > 0 ? (
                 <>
@@ -293,8 +293,8 @@ export function ChatBotLanding({
                             isSelected
                               ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 ring-1 ring-emerald-500/30"
                               : isPopular
-                                ? "border-zinc-900 dark:border-zinc-100"
-                                : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600",
+                                ? "border-v2-ink dark:border-v2-ring"
+                                : "border-v2-ring dark:border-v2-ring-strong hover:border-v2-ring-strong dark:hover:border-v2-ring-strong",
                           )}
                         >
                           {/* Current plan badge — takes priority */}
@@ -310,7 +310,7 @@ export function ChatBotLanding({
                           {/* Popular badge */}
                           {isPopular && !isSelected && !isCurrent && (
                             <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                              <span className="inline-flex items-center gap-0.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center gap-0.5 bg-v2-ink dark:bg-v2-card-tinted text-white dark:text-v2-ink text-[9px] font-semibold px-2 py-0.5 rounded-full">
                                 <Zap className="h-2.5 w-2.5" />
                                 Popular
                               </span>
@@ -338,21 +338,21 @@ export function ChatBotLanding({
 
                           {/* Plan header */}
                           <div className="mt-1 mb-3">
-                            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                            <h3 className="text-sm font-bold text-v2-ink dark:text-v2-ink">
                               {tier.name}
                             </h3>
                             <div className="flex items-baseline gap-1 mt-1">
-                              <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                              <span className="text-xl font-bold text-v2-ink dark:text-v2-ink">
                                 {isFree
                                   ? "$0"
                                   : formatPrice(tier.price_monthly)}
                               </span>
-                              <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                              <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                                 /mo
                               </span>
                             </div>
                             {isFree && (
-                              <p className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                              <p className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted mt-0.5">
                                 Free forever
                               </p>
                             )}
@@ -362,45 +362,45 @@ export function ChatBotLanding({
                           <div className="flex-1 space-y-1.5 mb-3">
                             <div className="flex items-start gap-1.5">
                               <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                              <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                              <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                                 {tier.runs_per_month.toLocaleString()}{" "}
                                 leads/month
                               </span>
                             </div>
                             <div className="flex items-start gap-1.5">
                               <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                              <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                              <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                                 ~{(tier.runs_per_month * 8).toLocaleString()}{" "}
                                 SMS/month
                               </span>
                             </div>
                             <div className="flex items-start gap-1.5">
                               <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                              <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                              <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                                 AI responses (compliant hours)
                               </span>
                             </div>
                             <div className="flex items-start gap-1.5">
                               <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                              <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                              <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                                 Auto appointment booking
                               </span>
                             </div>
                             <div className="flex items-start gap-1.5">
                               <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                              <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                              <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                                 Proactive new-lead outreach
                               </span>
                             </div>
                             <div className="flex items-start gap-1.5">
                               <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                              <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                              <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                                 Objection handling &amp; rebuttals
                               </span>
                             </div>
                             <div className="flex items-start gap-1.5">
                               <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                              <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                              <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                                 Scheduled follow-ups
                               </span>
                             </div>
@@ -411,15 +411,15 @@ export function ChatBotLanding({
                   </div>
 
                   {/* Subscribe button — below cards */}
-                  <div className="mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                  <div className="mt-3 pt-3 border-t border-v2-ring dark:border-v2-ring">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-[10px] text-zinc-400">
+                        <p className="text-[10px] text-v2-ink-subtle">
                           {isFreeSelected
                             ? "Free — no credit card required"
                             : "Billed monthly with your subscription"}
                         </p>
-                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                        <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-0.5">
                           Each plan is a monthly lead limit — unique new leads
                           the bot will engage with.
                         </p>
@@ -434,7 +434,7 @@ export function ChatBotLanding({
                           size="sm"
                           className={cn(
                             "h-7 text-[10px] px-4 flex-shrink-0",
-                            "bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 text-white",
+                            "bg-zinc-900 hover:bg-v2-ink-muted dark:bg-v2-card-tinted dark:hover:bg-v2-ring dark:text-v2-ink text-white",
                           )}
                           disabled={purchaseLoading || !canPurchase}
                           onClick={handlePurchase}
@@ -490,27 +490,27 @@ export function ChatBotLanding({
                         className={cn(
                           "relative flex flex-col rounded-lg border p-3",
                           tier.popular
-                            ? "border-zinc-900 dark:border-zinc-100"
-                            : "border-zinc-200 dark:border-zinc-700",
+                            ? "border-v2-ink dark:border-v2-ring"
+                            : "border-v2-ring dark:border-v2-ring-strong",
                         )}
                       >
                         {tier.popular && (
                           <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                            <span className="inline-flex items-center gap-0.5 bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                            <span className="inline-flex items-center gap-0.5 bg-v2-ink dark:bg-v2-card-tinted text-white dark:text-v2-ink text-[9px] font-semibold px-2 py-0.5 rounded-full">
                               <Zap className="h-2.5 w-2.5" />
                               Popular
                             </span>
                           </div>
                         )}
                         <div className="mt-1 mb-3">
-                          <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                          <h3 className="text-sm font-bold text-v2-ink dark:text-v2-ink">
                             {tier.name}
                           </h3>
                           <div className="flex items-baseline gap-1 mt-1">
-                            <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+                            <span className="text-xl font-bold text-v2-ink dark:text-v2-ink">
                               {tier.price}
                             </span>
-                            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                            <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                               /mo
                             </span>
                           </div>
@@ -518,43 +518,43 @@ export function ChatBotLanding({
                         <div className="flex-1 space-y-1.5">
                           <div className="flex items-start gap-1.5">
                             <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                            <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                            <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                               {tier.leads} leads/month
                             </span>
                           </div>
                           <div className="flex items-start gap-1.5">
                             <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                            <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                            <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                               ~{parseInt(tier.leads) * 8} SMS/month
                             </span>
                           </div>
                           <div className="flex items-start gap-1.5">
                             <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                            <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                            <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                               AI responses (compliant hours)
                             </span>
                           </div>
                           <div className="flex items-start gap-1.5">
                             <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                            <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                            <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                               Auto appointment booking
                             </span>
                           </div>
                           <div className="flex items-start gap-1.5">
                             <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                            <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                            <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                               Proactive new-lead outreach
                             </span>
                           </div>
                           <div className="flex items-start gap-1.5">
                             <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                            <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                            <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                               Objection handling &amp; rebuttals
                             </span>
                           </div>
                           <div className="flex items-start gap-1.5">
                             <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                            <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                            <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                               Scheduled follow-ups
                             </span>
                           </div>
@@ -577,12 +577,12 @@ export function ChatBotLanding({
       {/* ═══════════ SEE IT IN ACTION ═══════════ */}
       <section>
         <div className="flex items-center gap-2 mb-3">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
             See It In Action
           </h2>
-          <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
+          <div className="flex-1 h-px bg-v2-ring dark:bg-v2-card-tinted" />
         </div>
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-3">
+        <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mb-3">
           Watch real conversation scenarios — from first contact to booked
           appointment.
         </p>
@@ -592,13 +592,13 @@ export function ChatBotLanding({
       {/* ═══════════ WHAT YOU GET (compact inline list) ═══════════ */}
       <section>
         <div className="flex items-center gap-2 mb-3">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
             What You Get
           </h2>
-          <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
+          <div className="flex-1 h-px bg-v2-ring dark:bg-v2-card-tinted" />
         </div>
 
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4">
+        <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-canvas dark:bg-v2-card p-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2.5">
             {[
               {
@@ -643,12 +643,12 @@ export function ChatBotLanding({
               },
             ].map((f) => (
               <div key={f.title} className="flex items-center gap-2.5 py-0.5">
-                <f.icon className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400 flex-shrink-0" />
+                <f.icon className="h-3.5 w-3.5 text-v2-ink-muted dark:text-v2-ink-subtle flex-shrink-0" />
                 <div className="flex items-baseline gap-1.5 min-w-0">
-                  <span className="text-[10px] font-semibold text-zinc-900 dark:text-zinc-100 whitespace-nowrap">
+                  <span className="text-[10px] font-semibold text-v2-ink dark:text-v2-ink whitespace-nowrap">
                     {f.title}
                   </span>
-                  <span className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+                  <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
                     — {f.desc}
                   </span>
                 </div>
@@ -662,32 +662,32 @@ export function ChatBotLanding({
       <section>
         <div className="flex items-center gap-2 mb-3">
           <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
             Before You Get Started
           </h2>
-          <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
+          <div className="flex-1 h-px bg-v2-ring dark:bg-v2-card-tinted" />
         </div>
 
         <div className="rounded-lg border border-amber-200 dark:border-amber-800/50 bg-amber-50/30 dark:bg-amber-950/10 p-4">
-          <p className="text-[10px] text-zinc-600 dark:text-zinc-400 mb-3">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mb-3">
             This bot currently works exclusively with{" "}
-            <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+            <span className="font-semibold text-v2-ink dark:text-v2-ink">
               Close CRM
             </span>{" "}
             and{" "}
-            <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+            <span className="font-semibold text-v2-ink dark:text-v2-ink">
               Calendly or Google Calendar
             </span>
             . Make sure you have the following ready:
           </p>
           <div className="space-y-2">
-            <div className="flex items-start gap-2 p-2.5 bg-white dark:bg-zinc-900 rounded-md border border-zinc-200/50 dark:border-zinc-800/50">
-              <KeyRound className="h-3.5 w-3.5 text-zinc-400 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-2 p-2.5 bg-v2-card rounded-md border border-v2-ring/50 dark:border-v2-ring/50">
+              <KeyRound className="h-3.5 w-3.5 text-v2-ink-subtle mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-[11px] font-medium text-zinc-800 dark:text-zinc-200">
+                <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
                   Close CRM Account
                 </p>
-                <ul className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 space-y-0.5">
+                <ul className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-0.5 space-y-0.5">
                   <li>
                     Must have a custom field called "Lead Source" on leads
                   </li>
@@ -696,25 +696,25 @@ export function ChatBotLanding({
                 </ul>
               </div>
             </div>
-            <div className="flex items-start gap-2 p-2.5 bg-white dark:bg-zinc-900 rounded-md border border-zinc-200/50 dark:border-zinc-800/50">
-              <Calendar className="h-3.5 w-3.5 text-zinc-400 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-2 p-2.5 bg-v2-card rounded-md border border-v2-ring/50 dark:border-v2-ring/50">
+              <Calendar className="h-3.5 w-3.5 text-v2-ink-subtle mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-[11px] font-medium text-zinc-800 dark:text-zinc-200">
+                <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
                   Calendar Account
                 </p>
-                <ul className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5 space-y-0.5">
+                <ul className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-0.5 space-y-0.5">
                   <li>Calendly (Standard+) or Google Calendar</li>
                   <li>At least one event type configured</li>
                 </ul>
               </div>
             </div>
-            <div className="flex items-start gap-2 p-2.5 bg-white dark:bg-zinc-900 rounded-md border border-zinc-200/50 dark:border-zinc-800/50">
-              <Tag className="h-3.5 w-3.5 text-zinc-400 mt-0.5 flex-shrink-0" />
+            <div className="flex items-start gap-2 p-2.5 bg-v2-card rounded-md border border-v2-ring/50 dark:border-v2-ring/50">
+              <Tag className="h-3.5 w-3.5 text-v2-ink-subtle mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-[11px] font-medium text-zinc-800 dark:text-zinc-200">
+                <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
                   Lead Source Names
                 </p>
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+                <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-0.5">
                   Know which lead sources your leads come from (e.g. "Sitka
                   Life", "GOAT Realtime Mortgage"). You'll configure these after
                   subscribing.
@@ -728,71 +728,71 @@ export function ChatBotLanding({
       {/* ═══════════ INTEGRATIONS ═══════════ */}
       <section>
         <div className="flex items-center gap-2 mb-3">
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
             Required Integrations
           </h2>
-          <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
+          <div className="flex-1 h-px bg-v2-ring dark:bg-v2-card-tinted" />
         </div>
 
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-3">
+        <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card p-4">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mb-3">
             This bot currently works{" "}
-            <span className="font-semibold text-zinc-700 dark:text-zinc-300">
+            <span className="font-semibold text-v2-ink dark:text-v2-ink-muted">
               exclusively with Close CRM and either Calendly or Google Calendar
             </span>
             . Close CRM plus one calendar provider are required.
           </p>
           <div className="flex items-center gap-4 mb-3">
-            <div className="flex items-center gap-2 px-3 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg flex-1 border border-zinc-100 dark:border-zinc-700/50">
-              <CloseLogo className="h-4 w-auto text-zinc-900 dark:text-zinc-100" />
+            <div className="flex items-center gap-2 px-3 py-2.5 bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-lg flex-1 border border-v2-ring dark:border-v2-ring-strong/50">
+              <CloseLogo className="h-4 w-auto text-v2-ink dark:text-v2-ink" />
               <div>
                 <div className="flex items-center gap-1">
-                  <p className="text-[10px] font-medium text-zinc-900 dark:text-zinc-100">
+                  <p className="text-[10px] font-medium text-v2-ink dark:text-v2-ink">
                     Close CRM
                   </p>
                   <Badge className="text-[7px] h-3 px-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
                     Required
                   </Badge>
                 </div>
-                <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+                <p className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   Receives SMS leads, sends replies
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 px-3 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg flex-1 border border-zinc-100 dark:border-zinc-700/50">
+            <div className="flex items-center gap-2 px-3 py-2.5 bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-lg flex-1 border border-v2-ring dark:border-v2-ring-strong/50">
               <CalendlyLogo className="h-5 w-5 flex-shrink-0" />
               <div>
                 <div className="flex items-center gap-1">
-                  <p className="text-[10px] font-medium text-zinc-900 dark:text-zinc-100">
+                  <p className="text-[10px] font-medium text-v2-ink dark:text-v2-ink">
                     Calendly
                   </p>
                   <Badge className="text-[7px] h-3 px-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
                     Option A
                   </Badge>
                 </div>
-                <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+                <p className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   Checks availability, books appointments
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 px-3 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg flex-1 border border-zinc-100 dark:border-zinc-700/50">
+            <div className="flex items-center gap-2 px-3 py-2.5 bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-lg flex-1 border border-v2-ring dark:border-v2-ring-strong/50">
               <GoogleCalendarLogo className="h-5 w-5 flex-shrink-0" />
               <div>
                 <div className="flex items-center gap-1">
-                  <p className="text-[10px] font-medium text-zinc-900 dark:text-zinc-100">
+                  <p className="text-[10px] font-medium text-v2-ink dark:text-v2-ink">
                     Google Calendar
                   </p>
                   <Badge className="text-[7px] h-3 px-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
                     Option B
                   </Badge>
                 </div>
-                <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+                <p className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   Checks availability, books appointments
                 </p>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-[10px] text-zinc-400 dark:text-zinc-500 border-t border-zinc-100 dark:border-zinc-800 pt-2.5">
+          <div className="flex items-center gap-2 text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted border-t border-v2-ring dark:border-v2-ring pt-2.5">
             <ListChecks className="h-3 w-3 flex-shrink-0" />
             <span>
               Connect either Calendly or Google Calendar — one required

@@ -59,7 +59,7 @@ function RelativeTime({ iso }: { iso: string }) {
     return new Date(iso).toLocaleDateString();
   }, [iso]);
   return (
-    <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+    <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
       {label}
     </span>
   );
@@ -105,11 +105,11 @@ function ResultPanel({ result, onReuseInbound }: ResultPanelProps) {
   return (
     <div className="space-y-2.5">
       {/* Final reply — the big obvious answer */}
-      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3">
+      <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card p-3">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
-            <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+            <span className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
               What the bot WOULD send
             </span>
             {result.wouldSend ? (
@@ -128,11 +128,11 @@ function ResultPanel({ result, onReuseInbound }: ResultPanelProps) {
           {result.finalReply && <CopyButton text={result.finalReply} />}
         </div>
         {result.finalReply ? (
-          <p className="text-[12px] text-zinc-800 dark:text-zinc-100 whitespace-pre-wrap leading-relaxed">
+          <p className="text-[12px] text-v2-ink dark:text-v2-ink whitespace-pre-wrap leading-relaxed">
             {result.finalReply}
           </p>
         ) : (
-          <p className="text-[11px] italic text-zinc-500 dark:text-zinc-400">
+          <p className="text-[11px] italic text-v2-ink-muted dark:text-v2-ink-subtle">
             Guardrails stripped the reply entirely — bot would skip sending.
           </p>
         )}
@@ -140,13 +140,13 @@ function ResultPanel({ result, onReuseInbound }: ResultPanelProps) {
 
       {/* Raw output + stripped — collapsible */}
       {result.rawReply !== result.finalReply && (
-        <details className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
-          <summary className="cursor-pointer px-3 py-2 text-[10px] font-medium text-zinc-600 dark:text-zinc-400 flex items-center gap-2">
+        <details className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-canvas dark:bg-v2-card/50">
+          <summary className="cursor-pointer px-3 py-2 text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle flex items-center gap-2">
             <ChevronRight className="h-3 w-3" />
             Raw AI output (before guardrails)
           </summary>
           <div className="px-3 pb-2.5">
-            <p className="text-[11px] text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">
+            <p className="text-[11px] text-v2-ink dark:text-v2-ink-muted whitespace-pre-wrap leading-relaxed">
               {result.rawReply}
             </p>
           </div>
@@ -173,43 +173,43 @@ function ResultPanel({ result, onReuseInbound }: ResultPanelProps) {
       )}
 
       {/* Metadata row — quick glance */}
-      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 px-3 py-2">
-        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-zinc-600 dark:text-zinc-400">
+      <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-canvas dark:bg-v2-card/50 px-3 py-2">
+        <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           <span>
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+            <span className="font-medium text-v2-ink dark:text-v2-ink-muted">
               Lead:
             </span>{" "}
             {metadata.leadName ?? "(unknown)"}
           </span>
           {metadata.leadStatusLabel && (
             <span>
-              <span className="font-medium text-zinc-700 dark:text-zinc-300">
+              <span className="font-medium text-v2-ink dark:text-v2-ink-muted">
                 Status:
               </span>{" "}
               {metadata.leadStatusLabel}
             </span>
           )}
           <span>
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+            <span className="font-medium text-v2-ink dark:text-v2-ink-muted">
               Convo:
             </span>{" "}
             {metadata.conversationStatus} · {metadata.messageCount} msgs (
             {metadata.inboundCount} inbound)
           </span>
           <span>
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+            <span className="font-medium text-v2-ink dark:text-v2-ink-muted">
               Inbound:
             </span>{" "}
             {metadata.usedInboundSource}
           </span>
           <span>
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+            <span className="font-medium text-v2-ink dark:text-v2-ink-muted">
               Time:
             </span>{" "}
             {metadata.generationMs}ms
           </span>
           <span>
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">
+            <span className="font-medium text-v2-ink dark:text-v2-ink-muted">
               Tokens:
             </span>{" "}
             {metadata.promptTokens ?? "?"} in /{" "}
@@ -220,15 +220,15 @@ function ResultPanel({ result, onReuseInbound }: ResultPanelProps) {
 
       {/* Expandable: full metadata JSON */}
       <details
-        className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+        className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card"
         open={showMetadata}
         onToggle={(e) => setShowMetadata((e.target as HTMLDetailsElement).open)}
       >
-        <summary className="cursor-pointer px-3 py-2 text-[10px] font-medium text-zinc-600 dark:text-zinc-400 flex items-center gap-2">
+        <summary className="cursor-pointer px-3 py-2 text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle flex items-center gap-2">
           <ChevronRight className="h-3 w-3" />
           Full metadata (JSON)
         </summary>
-        <pre className="px-3 pb-2.5 text-[10px] font-mono text-zinc-700 dark:text-zinc-300 overflow-x-auto">
+        <pre className="px-3 pb-2.5 text-[10px] font-mono text-v2-ink dark:text-v2-ink-muted overflow-x-auto">
           {JSON.stringify(metadata, null, 2)}
         </pre>
       </details>
@@ -236,19 +236,19 @@ function ResultPanel({ result, onReuseInbound }: ResultPanelProps) {
       {/* Expandable: full system prompt (power user) */}
       {result.systemPrompt && (
         <details
-          className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+          className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card"
           open={showSystemPrompt}
           onToggle={(e) =>
             setShowSystemPrompt((e.target as HTMLDetailsElement).open)
           }
         >
-          <summary className="cursor-pointer px-3 py-2 text-[10px] font-medium text-zinc-600 dark:text-zinc-400 flex items-center gap-2">
+          <summary className="cursor-pointer px-3 py-2 text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle flex items-center gap-2">
             <ChevronRight className="h-3 w-3" />
             Full system prompt sent to AI (
             {result.systemPrompt.length.toLocaleString()} chars)
             <CopyButton text={result.systemPrompt} className="ml-auto" />
           </summary>
-          <pre className="px-3 pb-2.5 text-[10px] font-mono text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
+          <pre className="px-3 pb-2.5 text-[10px] font-mono text-v2-ink dark:text-v2-ink-muted whitespace-pre-wrap">
             {result.systemPrompt}
           </pre>
         </details>
@@ -290,7 +290,7 @@ function HistoryItem({
   const preview = run.final_reply || "(bot would skip)";
 
   return (
-    <div className="group rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-2 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors">
+    <div className="group rounded-md border border-v2-ring dark:border-v2-ring bg-v2-card p-2 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors">
       <button
         type="button"
         onClick={() => onSelect(run)}
@@ -308,17 +308,17 @@ function HistoryItem({
             >
               {run.mode}
             </Badge>
-            <span className="text-[10px] font-medium text-zinc-900 dark:text-zinc-100 truncate">
+            <span className="text-[10px] font-medium text-v2-ink dark:text-v2-ink truncate">
               {leadName}
             </span>
           </div>
           <RelativeTime iso={run.created_at} />
         </div>
-        <p className="text-[10px] text-zinc-600 dark:text-zinc-400 line-clamp-2">
+        <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle line-clamp-2">
           {preview}
         </p>
         {run.inbound_override && (
-          <p className="mt-0.5 text-[9px] italic text-zinc-500 dark:text-zinc-500 truncate">
+          <p className="mt-0.5 text-[9px] italic text-v2-ink-muted dark:text-v2-ink-muted truncate">
             inbound: {run.inbound_override}
           </p>
         )}
@@ -331,7 +331,7 @@ function HistoryItem({
             onDelete(run.id);
           }}
           disabled={isDeleting}
-          className="opacity-0 group-hover:opacity-100 transition-opacity text-[9px] text-zinc-400 hover:text-red-500 disabled:opacity-50"
+          className="opacity-0 group-hover:opacity-100 transition-opacity text-[9px] text-v2-ink-subtle hover:text-red-500 disabled:opacity-50"
           aria-label="Delete run"
         >
           <Trash2 className="h-3 w-3" />
@@ -436,17 +436,17 @@ export function PlaygroundTab() {
         {/* Left column — form + result */}
         <div className="space-y-3 overflow-y-auto pr-1">
           {/* Header */}
-          <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3">
+          <div className="rounded-xl border border-v2-ring dark:border-v2-ring bg-v2-card p-3">
             <div className="flex items-center gap-2 mb-1">
               <FlaskConical className="h-4 w-4 text-indigo-500" />
-              <h2 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <h2 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink">
                 Bot Playground
               </h2>
               <Badge className="text-[9px] h-4 px-1.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
                 Safe · No SMS sent
               </Badge>
             </div>
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+            <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
               Test what the bot <strong>would reply</strong> for any lead
               without actually sending an SMS or touching the database. Perfect
               for prompt experimentation, debugging weird replies, and verifying
@@ -457,13 +457,13 @@ export function PlaygroundTab() {
           {/* Input form */}
           <form
             onSubmit={handleSubmit}
-            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3 space-y-3"
+            className="rounded-xl border border-v2-ring dark:border-v2-ring bg-v2-card p-3 space-y-3"
           >
             {/* Lead ID */}
             <div className="space-y-1">
               <Label
                 htmlFor="close-lead-id"
-                className="text-[10px] font-medium text-zinc-700 dark:text-zinc-300"
+                className="text-[10px] font-medium text-v2-ink dark:text-v2-ink-muted"
               >
                 Close Lead ID <span className="text-red-500">*</span>
               </Label>
@@ -475,7 +475,7 @@ export function PlaygroundTab() {
                 className="h-8 text-[11px] font-mono"
                 spellCheck={false}
               />
-              <p className="text-[9px] text-zinc-500 dark:text-zinc-500">
+              <p className="text-[9px] text-v2-ink-muted dark:text-v2-ink-muted">
                 Paste the Close lead ID from the URL. Must belong to your bot
                 agent.
               </p>
@@ -485,7 +485,7 @@ export function PlaygroundTab() {
             <div className="space-y-1">
               <Label
                 htmlFor="mode"
-                className="text-[10px] font-medium text-zinc-700 dark:text-zinc-300"
+                className="text-[10px] font-medium text-v2-ink dark:text-v2-ink-muted"
               >
                 Mode
               </Label>
@@ -505,7 +505,7 @@ export function PlaygroundTab() {
                   </SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-[9px] text-zinc-500 dark:text-zinc-500">
+              <p className="text-[9px] text-v2-ink-muted dark:text-v2-ink-muted">
                 {mode === "ai-reply"
                   ? "Simulates what the bot would say in response to an inbound SMS."
                   : "Simulates what the bot would send when a user drops a lead into the RE-ENGAGE BOT status."}
@@ -516,10 +516,12 @@ export function PlaygroundTab() {
             <div className="space-y-1">
               <Label
                 htmlFor="inbound-override"
-                className="text-[10px] font-medium text-zinc-700 dark:text-zinc-300"
+                className="text-[10px] font-medium text-v2-ink dark:text-v2-ink-muted"
               >
                 Simulated inbound message{" "}
-                <span className="text-zinc-400 font-normal">(optional)</span>
+                <span className="text-v2-ink-subtle font-normal">
+                  (optional)
+                </span>
               </Label>
               <Textarea
                 id="inbound-override"
@@ -536,7 +538,7 @@ export function PlaygroundTab() {
             <button
               type="button"
               onClick={() => setShowAdvanced((s) => !s)}
-              className="flex items-center gap-1 text-[10px] font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              className="flex items-center gap-1 text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-canvas"
             >
               {showAdvanced ? (
                 <ChevronDown className="h-3 w-3" />
@@ -551,7 +553,7 @@ export function PlaygroundTab() {
                 <div className="flex items-center gap-1.5">
                   <Label
                     htmlFor="system-prompt-override"
-                    className="text-[10px] font-medium text-zinc-700 dark:text-zinc-300"
+                    className="text-[10px] font-medium text-v2-ink dark:text-v2-ink-muted"
                   >
                     System prompt override
                   </Label>
@@ -601,7 +603,7 @@ export function PlaygroundTab() {
                   </>
                 )}
               </Button>
-              <span className="text-[9px] text-zinc-500 dark:text-zinc-500">
+              <span className="text-[9px] text-v2-ink-muted dark:text-v2-ink-muted">
                 Rate limit: 10/min per agent
               </span>
             </div>
@@ -625,9 +627,9 @@ export function PlaygroundTab() {
           )}
 
           {!currentResult && !dryRun.isPending && (
-            <div className="rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 p-6 text-center">
-              <MessageSquare className="h-6 w-6 text-zinc-400 mx-auto mb-2" />
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            <div className="rounded-xl border border-dashed border-v2-ring-strong dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card/50 p-6 text-center">
+              <MessageSquare className="h-6 w-6 text-v2-ink-subtle mx-auto mb-2" />
+              <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 Enter a Close lead ID and click <strong>Simulate reply</strong>{" "}
                 to see what the bot would say.
               </p>
@@ -637,22 +639,22 @@ export function PlaygroundTab() {
 
         {/* Right column — history */}
         <div className="space-y-2 overflow-y-auto">
-          <div className="sticky top-0 bg-zinc-50 dark:bg-zinc-950 pb-1 z-10">
+          <div className="sticky top-0 bg-v2-canvas dark:bg-v2-canvas pb-1 z-10">
             <div className="flex items-center gap-1.5">
-              <History className="h-3.5 w-3.5 text-zinc-500" />
-              <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 uppercase">
+              <History className="h-3.5 w-3.5 text-v2-ink-muted" />
+              <span className="text-[10px] font-semibold text-v2-ink dark:text-v2-ink-muted uppercase">
                 Recent runs
               </span>
             </div>
           </div>
           {historyLoading ? (
             <div className="flex justify-center py-6">
-              <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+              <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
             </div>
           ) : history.length === 0 ? (
-            <div className="rounded-md border border-dashed border-zinc-300 dark:border-zinc-700 p-3 text-center">
-              <Clock className="h-4 w-4 text-zinc-400 mx-auto mb-1" />
-              <p className="text-[9px] text-zinc-500 dark:text-zinc-400">
+            <div className="rounded-md border border-dashed border-v2-ring-strong dark:border-v2-ring-strong p-3 text-center">
+              <Clock className="h-4 w-4 text-v2-ink-subtle mx-auto mb-1" />
+              <p className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 No playground runs yet. Your test history will appear here.
               </p>
             </div>

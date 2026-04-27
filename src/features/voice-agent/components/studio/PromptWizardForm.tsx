@@ -178,33 +178,33 @@ export function PromptWizardForm({ onPromptChange }: PromptWizardFormProps) {
           return (
             <div
               key={section.key}
-              className="rounded-xl border border-zinc-200 dark:border-zinc-800"
+              className="rounded-xl border border-v2-ring dark:border-v2-ring"
             >
               <button
                 type="button"
                 className="flex w-full items-center gap-3 px-4 py-3 text-left"
                 onClick={() => toggleSection(section.key)}
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 flex-shrink-0">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-muted flex-shrink-0">
                   {section.icon}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                  <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                     {section.title}
                   </p>
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
                     {section.description}
                   </p>
                 </div>
                 <ChevronDown
                   className={cn(
-                    "h-4 w-4 text-zinc-400 transition-transform flex-shrink-0",
+                    "h-4 w-4 text-v2-ink-subtle transition-transform flex-shrink-0",
                     isOpen && "rotate-180",
                   )}
                 />
               </button>
               {isOpen && (
-                <div className="border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">
+                <div className="border-t border-v2-ring px-4 py-3 dark:border-v2-ring">
                   {renderSectionContent(section.key)}
                 </div>
               )}

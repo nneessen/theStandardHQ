@@ -394,13 +394,15 @@ function SetupStepButton({
       className={`rounded-xl border px-3 py-2.5 text-left transition-all shadow-sm ${
         active
           ? "border-foreground bg-foreground text-background shadow-md"
-          : "border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+          : "border-v2-ring bg-white hover:border-v2-ring-strong hover:shadow-md dark:border-v2-ring dark:bg-v2-card dark:hover:border-v2-ring-strong"
       }`}
     >
       <p className="text-[11px] font-bold">{label}</p>
       <p
         className={`mt-0.5 text-[9px] leading-4 ${
-          active ? "text-background/60" : "text-zinc-500 dark:text-zinc-400"
+          active
+            ? "text-background/60"
+            : "text-v2-ink-muted dark:text-v2-ink-subtle"
         }`}
       >
         {description}
@@ -433,13 +435,13 @@ function CreateVoiceAgentCard({
   isSuperAdmin?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div className="max-w-3xl">
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
             {title}
           </p>
-          <p className="mt-1 text-[12px] leading-6 text-zinc-600 dark:text-zinc-400">
+          <p className="mt-1 text-[12px] leading-6 text-v2-ink-muted dark:text-v2-ink-subtle">
             {description}
           </p>
         </div>
@@ -450,7 +452,7 @@ function CreateVoiceAgentCard({
               ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
               : statusTone === "creating"
                 ? "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
-                : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                : "bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted"
           }
         >
           {statusLabel}
@@ -964,27 +966,27 @@ export function VoiceAgentPage() {
       Draft
     </Badge>
   ) : !voiceAccessActive ? (
-    <Badge className="h-4 bg-zinc-100 px-1.5 text-[9px] text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+    <Badge className="h-4 bg-v2-card-tinted px-1.5 text-[9px] text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted">
       Not Activated
     </Badge>
   ) : (
-    <Badge className="h-4 bg-zinc-100 px-1.5 text-[9px] text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+    <Badge className="h-4 bg-v2-card-tinted px-1.5 text-[9px] text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted">
       Not Created
     </Badge>
   );
 
   if (isLoading) {
     return (
-      <div className="flex h-[calc(100vh-4rem)] flex-col bg-zinc-50 p-3 dark:bg-zinc-950">
+      <div className="flex h-[calc(100vh-4rem)] flex-col bg-v2-canvas p-3 dark:bg-v2-canvas">
         <div className="flex flex-1 items-center justify-center">
-          <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
+          <Loader2 className="h-6 w-6 animate-spin text-v2-ink-subtle" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col space-y-2.5 bg-zinc-50 p-3 dark:bg-zinc-950">
+    <div className="flex h-[calc(100vh-4rem)] flex-col space-y-2.5 bg-v2-canvas p-3 dark:bg-v2-canvas">
       {/* Hero Header — identical structure to ChatBotPage */}
       <div className="relative overflow-hidden rounded-xl bg-foreground">
         <div className="absolute inset-0 opacity-[0.03]">
@@ -1051,7 +1053,7 @@ export function VoiceAgentPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-0.5 rounded-md bg-zinc-200/50 p-0.5 dark:bg-zinc-800/50 overflow-x-auto">
+      <div className="flex items-center gap-0.5 rounded-md bg-v2-card-tinted p-0.5 dark:bg-v2-card-tinted/50 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -1061,10 +1063,10 @@ export function VoiceAgentPage() {
             className={cn(
               "flex items-center justify-center gap-1 rounded px-2.5 py-1.5 text-[10px] font-medium transition-all whitespace-nowrap flex-shrink-0",
               tab.locked
-                ? "cursor-not-allowed text-zinc-300 dark:text-zinc-600"
+                ? "cursor-not-allowed text-v2-ink-subtle dark:text-v2-ink-muted"
                 : activeTab === tab.id
-                  ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-zinc-100"
-                  : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300",
+                  ? "bg-white text-v2-ink shadow-sm dark:bg-v2-card dark:text-v2-ink"
+                  : "text-v2-ink-muted hover:text-v2-ink dark:text-v2-ink-subtle dark:hover:text-v2-ink-subtle",
             )}
             title={tab.locked ? "Create voice agent first" : undefined}
           >
@@ -1155,13 +1157,13 @@ export function VoiceAgentPage() {
             {/* Create flow — shown when voice active but agent not yet created */}
             {voiceAccessActive && !voiceAgentCreated && (
               <>
-                <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
                   <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                     <div className="max-w-3xl">
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
                         Connect Close CRM
                       </p>
-                      <p className="mt-1 text-[12px] leading-6 text-zinc-600 dark:text-zinc-400">
+                      <p className="mt-1 text-[12px] leading-6 text-v2-ink-muted dark:text-v2-ink-subtle">
                         The voice agent uses Close CRM to identify the lead,
                         decide whether AI is allowed to answer, and save call
                         results back to the lead record.
@@ -1172,7 +1174,7 @@ export function VoiceAgentPage() {
                       className={
                         closeConnected
                           ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-                          : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+                          : "bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted"
                       }
                     >
                       {closeConnected ? "Connected" : "Required"}
@@ -1183,7 +1185,7 @@ export function VoiceAgentPage() {
                     <ConnectionCard
                       title="Close CRM"
                       icon={
-                        <CloseCrmLogo className="h-4 w-auto text-zinc-900 dark:text-zinc-100" />
+                        <CloseCrmLogo className="h-4 w-auto text-v2-ink dark:text-v2-ink" />
                       }
                       connected={closeConnected}
                       statusLabel={
@@ -1206,11 +1208,11 @@ export function VoiceAgentPage() {
                       disconnectLoading={disconnectClose.isPending}
                     />
 
-                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-4 py-4 dark:border-zinc-800 dark:bg-zinc-950/40">
-                      <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                    <div className="rounded-lg border border-v2-ring bg-v2-canvas px-4 py-4 dark:border-v2-ring dark:bg-v2-canvas/40">
+                      <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                         What this step does
                       </p>
-                      <p className="mt-2 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
+                      <p className="mt-2 text-[11px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
                         If you already use AI Chat Bot, this connection may
                         already exist. If not, create or copy a Close API key
                         from <span className="font-medium">Close Settings</span>
@@ -1242,11 +1244,11 @@ export function VoiceAgentPage() {
         {activeTab === "setup" && (
           <div className="space-y-3">
             {!canOpenSetup ? (
-              <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+                <p className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
                   Create your voice agent first
                 </p>
-                <p className="mt-2 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
+                <p className="mt-2 text-[11px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
                   Go to the Plans tab to connect Close CRM and create the voice
                   agent, then come back here for voice, instructions, call flow,
                   advanced controls, and launch.
@@ -1268,20 +1270,20 @@ export function VoiceAgentPage() {
               </div>
             ) : (
               <>
-                <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
                   <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
                         Setup Steps
                       </p>
-                      <p className="mt-1 text-[12px] text-zinc-600 dark:text-zinc-400">
+                      <p className="mt-1 text-[12px] text-v2-ink-muted dark:text-v2-ink-subtle">
                         Move through these steps in order. Advanced settings
                         stay separate so the main setup flow stays clear.
                       </p>
                     </div>
-                    <div className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/40">
-                      <ShieldCheck className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
-                      <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                    <div className="flex items-center gap-2 rounded-lg border border-v2-ring bg-v2-canvas px-3 py-2 dark:border-v2-ring dark:bg-v2-canvas/40">
+                      <ShieldCheck className="h-4 w-4 text-v2-ink-muted dark:text-v2-ink-subtle" />
+                      <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                         {completedSteps} of {setupSteps.length} launch steps
                         ready
                       </p>
@@ -1396,14 +1398,14 @@ export function VoiceAgentPage() {
                     <VoiceAgentRuntimeCard agent={agent} />
 
                     {/* Blocked Lead Statuses — who the voice agent should NOT call */}
-                    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+                    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
                       <div className="flex items-start gap-3">
-                        <ShieldBan className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
+                        <ShieldBan className="mt-0.5 h-4 w-4 shrink-0 text-v2-ink-muted dark:text-v2-ink-subtle" />
                         <div className="flex-1 space-y-1">
-                          <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                          <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                             Blocked Lead Statuses
                           </p>
-                          <p className="text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
+                          <p className="text-[11px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
                             The voice agent will not place or answer calls for
                             leads with any of these statuses. This applies to
                             both inbound and outbound calls.
@@ -1424,7 +1426,7 @@ export function VoiceAgentPage() {
                           isLoadingStatuses={closeLeadStatusesLoading}
                         />
                         {blockedDirty && (
-                          <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                          <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
                             <Button
                               size="sm"
                               className="h-7 text-[10px]"
@@ -1472,11 +1474,11 @@ export function VoiceAgentPage() {
 
         {activeTab === "stats" && (
           <div className="space-y-3">
-            <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+            <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
                 Voice Stats
               </p>
-              <p className="mt-1 text-[12px] text-zinc-600 dark:text-zinc-400">
+              <p className="mt-1 text-[12px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 Your plan, sync status, and minute usage live here in one place.
               </p>
             </div>
@@ -1511,18 +1513,18 @@ export function VoiceAgentPage() {
         {activeTab === "admin" && isSuperAdmin && (
           <div className="space-y-3">
             {!agent ? (
-              <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+                <p className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
                   No workspace is available for admin voice controls yet
                 </p>
               </div>
             ) : (
               <>
-                <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+                <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
                     Super-Admin Controls
                   </p>
-                  <p className="mt-1 text-[12px] text-zinc-600 dark:text-zinc-400">
+                  <p className="mt-1 text-[12px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     Internal setup, advanced tuning, and raw payload editing
                     stay isolated here so the customer flow remains clean.
                   </p>

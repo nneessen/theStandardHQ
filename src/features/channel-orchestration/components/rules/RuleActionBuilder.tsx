@@ -48,8 +48,10 @@ export function RuleActionBuilder({ action, onChange }: Props) {
     <div className="space-y-2">
       {/* Allowed Channels */}
       <div>
-        <Label className="text-[10px] text-zinc-500">Allowed Channels</Label>
-        <p className="text-[9px] text-zinc-400 mb-0.5">
+        <Label className="text-[10px] text-v2-ink-muted">
+          Allowed Channels
+        </Label>
+        <p className="text-[9px] text-v2-ink-subtle mb-0.5">
           Which channels can be used when this rule matches. At least one
           required.
         </p>
@@ -63,7 +65,7 @@ export function RuleActionBuilder({ action, onChange }: Props) {
                 "px-2.5 py-1 text-[10px] font-medium rounded border transition-colors",
                 action.allowedChannels.includes(ch)
                   ? "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300"
-                  : "border-zinc-200 dark:border-zinc-700 text-zinc-400",
+                  : "border-v2-ring dark:border-v2-ring-strong text-v2-ink-subtle",
               )}
             >
               {ch === "sms" ? "SMS" : "Voice"}
@@ -75,8 +77,10 @@ export function RuleActionBuilder({ action, onChange }: Props) {
       {/* Preferred Channel */}
       {action.allowedChannels.length > 1 && (
         <div>
-          <Label className="text-[10px] text-zinc-500">Preferred Channel</Label>
-          <p className="text-[9px] text-zinc-400 mb-0.5">
+          <Label className="text-[10px] text-v2-ink-muted">
+            Preferred Channel
+          </Label>
+          <p className="text-[9px] text-v2-ink-subtle mb-0.5">
             When both channels are allowed, which one should be tried first.
           </p>
           <div className="flex gap-2 mt-0.5">
@@ -89,7 +93,7 @@ export function RuleActionBuilder({ action, onChange }: Props) {
                   "px-2.5 py-1 text-[10px] font-medium rounded border transition-colors",
                   action.preferredChannel === ch
                     ? "bg-emerald-50 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300"
-                    : "border-zinc-200 dark:border-zinc-700 text-zinc-400",
+                    : "border-v2-ring dark:border-v2-ring-strong text-v2-ink-subtle",
                 )}
               >
                 {ch === "sms" ? "SMS" : "Voice"}
@@ -102,10 +106,10 @@ export function RuleActionBuilder({ action, onChange }: Props) {
       {/* Cooldown */}
       <div>
         <div className="flex items-center gap-2">
-          <Label className="text-[10px] text-zinc-500 w-24 shrink-0">
+          <Label className="text-[10px] text-v2-ink-muted w-24 shrink-0">
             Cooldown (min)
           </Label>
-          <span className="text-[9px] text-zinc-400">
+          <span className="text-[9px] text-v2-ink-subtle">
             Minimum wait between outreach attempts. Leave empty for no cooldown.
           </span>
         </div>
@@ -122,14 +126,14 @@ export function RuleActionBuilder({ action, onChange }: Props) {
           className="h-7 text-[10px] w-20"
           placeholder="None"
         />
-        <span className="text-[9px] text-zinc-400">0–10080 (7 days)</span>
+        <span className="text-[9px] text-v2-ink-subtle">0–10080 (7 days)</span>
       </div>
 
       {/* Escalation — only when both channels are allowed */}
       {action.allowedChannels.length > 1 && (
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <Label className="text-[10px] text-zinc-500">Escalation</Label>
+            <Label className="text-[10px] text-v2-ink-muted">Escalation</Label>
             <Switch
               checked={!!action.escalateAfter}
               onCheckedChange={(checked) =>
@@ -147,7 +151,7 @@ export function RuleActionBuilder({ action, onChange }: Props) {
               className="h-4 w-7"
             />
           </div>
-          <p className="text-[9px] text-zinc-400 mb-1">
+          <p className="text-[9px] text-v2-ink-subtle mb-1">
             Automatically switch to another channel after repeated failures.
             E.g., after 2 failed SMS → try Voice.
           </p>
@@ -171,7 +175,7 @@ function EscalationEditor({
   onChange: (e: EscalationConfig) => void;
 }) {
   return (
-    <div className="flex items-center gap-1.5 text-[10px] text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 rounded p-1.5">
+    <div className="flex items-center gap-1.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle bg-v2-canvas dark:bg-v2-card-tinted/50 rounded p-1.5">
       <span>After</span>
       <Input
         type="number"

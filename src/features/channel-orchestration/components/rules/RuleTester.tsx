@@ -235,10 +235,10 @@ export function RuleTester({ rules, fallbackAction }: Props) {
     : null;
 
   return (
-    <div className="border border-zinc-200 dark:border-zinc-700 rounded-md">
+    <div className="border border-v2-ring dark:border-v2-ring-strong rounded-md">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 w-full px-2 py-1.5 text-[10px] font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded-t-md"
+        className="flex items-center gap-1.5 w-full px-2 py-1.5 text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 rounded-t-md"
       >
         {open ? (
           <ChevronDown className="h-3 w-3" />
@@ -251,7 +251,7 @@ export function RuleTester({ rules, fallbackAction }: Props) {
 
       {open && (
         <div className="px-2 pb-2 space-y-2">
-          <p className="text-[9px] text-zinc-400">
+          <p className="text-[9px] text-v2-ink-subtle">
             Simulate a lead to see which rule would fire. All conditions on a
             rule must pass for it to match. Rules are checked top-to-bottom —
             first match wins.
@@ -259,7 +259,7 @@ export function RuleTester({ rules, fallbackAction }: Props) {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
             <div>
-              <span className="text-[9px] text-zinc-500">Lead Status</span>
+              <span className="text-[9px] text-v2-ink-muted">Lead Status</span>
               <Select value={leadStatus} onValueChange={setLeadStatus}>
                 <SelectTrigger className="h-7 text-[10px]">
                   <SelectValue placeholder="Any" />
@@ -281,7 +281,7 @@ export function RuleTester({ rules, fallbackAction }: Props) {
               </Select>
             </div>
             <div>
-              <span className="text-[9px] text-zinc-500">Lead Source</span>
+              <span className="text-[9px] text-v2-ink-muted">Lead Source</span>
               <Select value={leadSource} onValueChange={setLeadSource}>
                 <SelectTrigger className="h-7 text-[10px]">
                   <SelectValue placeholder="Any" />
@@ -303,7 +303,7 @@ export function RuleTester({ rules, fallbackAction }: Props) {
               </Select>
             </div>
             <div>
-              <span className="text-[9px] text-zinc-500">Conv Status</span>
+              <span className="text-[9px] text-v2-ink-muted">Conv Status</span>
               <Select value={convStatus} onValueChange={setConvStatus}>
                 <SelectTrigger className="h-7 text-[10px]">
                   <SelectValue placeholder="open (default)" />
@@ -325,7 +325,7 @@ export function RuleTester({ rules, fallbackAction }: Props) {
               </Select>
             </div>
             <div>
-              <span className="text-[9px] text-zinc-500">Channel</span>
+              <span className="text-[9px] text-v2-ink-muted">Channel</span>
               <Select
                 value={channel}
                 onValueChange={(v) => setChannel(v as ChannelType)}
@@ -368,23 +368,23 @@ export function RuleTester({ rules, fallbackAction }: Props) {
                   "rounded p-2 text-[10px]",
                   result.matchedRuleId
                     ? "bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800"
-                    : "bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-700",
+                    : "bg-v2-canvas dark:bg-v2-card/50 border border-v2-ring dark:border-v2-ring-strong",
                 )}
               >
                 <div className="flex items-center gap-1.5">
                   {result.matchedRuleId ? (
                     <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />
                   ) : (
-                    <AlertCircle className="h-3.5 w-3.5 text-zinc-400" />
+                    <AlertCircle className="h-3.5 w-3.5 text-v2-ink-subtle" />
                   )}
-                  <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                  <span className="font-medium text-v2-ink dark:text-v2-ink">
                     {result.matchedRuleName
                       ? `Matched: ${result.matchedRuleName}`
                       : "No rules matched — using fallback"}
                   </span>
                 </div>
                 <div className="flex items-center gap-1 mt-1">
-                  <span className="text-zinc-500">Result:</span>
+                  <span className="text-v2-ink-muted">Result:</span>
                   {result.allowedChannels.map((ch) => (
                     <Badge
                       key={ch}
@@ -394,7 +394,7 @@ export function RuleTester({ rules, fallbackAction }: Props) {
                       {ch === "sms" ? "SMS" : "Voice"}
                     </Badge>
                   ))}
-                  <span className="text-zinc-400">
+                  <span className="text-v2-ink-subtle">
                     (prefer{" "}
                     {result.preferredChannel === "sms" ? "SMS" : "Voice"})
                   </span>
@@ -402,7 +402,7 @@ export function RuleTester({ rules, fallbackAction }: Props) {
               </div>
 
               {/* Per-Rule Breakdown */}
-              <div className="text-[9px] font-medium text-zinc-500 uppercase tracking-wider pt-1">
+              <div className="text-[9px] font-medium text-v2-ink-muted uppercase tracking-wider pt-1">
                 Condition Breakdown
               </div>
               <div className="space-y-1">
@@ -413,24 +413,24 @@ export function RuleTester({ rules, fallbackAction }: Props) {
                       "rounded border p-1.5 text-[10px]",
                       isMatched
                         ? "border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/10"
-                        : "border-zinc-200 dark:border-zinc-700",
+                        : "border-v2-ring dark:border-v2-ring-strong",
                     )}
                   >
                     <div className="flex items-center gap-1.5 mb-0.5">
-                      <span className="text-[9px] text-zinc-400 w-3 text-right shrink-0">
+                      <span className="text-[9px] text-v2-ink-subtle w-3 text-right shrink-0">
                         {idx + 1}.
                       </span>
                       {isMatched ? (
                         <CheckCircle2 className="h-3 w-3 text-blue-500 shrink-0" />
                       ) : (
-                        <XCircle className="h-3 w-3 text-zinc-300 dark:text-zinc-600 shrink-0" />
+                        <XCircle className="h-3 w-3 text-v2-ink-subtle dark:text-v2-ink-muted shrink-0" />
                       )}
                       <span
                         className={cn(
                           "font-medium truncate",
                           isMatched
                             ? "text-blue-700 dark:text-blue-300"
-                            : "text-zinc-500",
+                            : "text-v2-ink-muted",
                           !rule.enabled && "line-through",
                         )}
                       >
@@ -452,11 +452,11 @@ export function RuleTester({ rules, fallbackAction }: Props) {
                           {check.passed === true ? (
                             <CheckCircle2 className="h-2.5 w-2.5 text-emerald-500 shrink-0 mt-px" />
                           ) : check.passed === "skipped" ? (
-                            <CircleDot className="h-2.5 w-2.5 text-zinc-300 dark:text-zinc-600 shrink-0 mt-px" />
+                            <CircleDot className="h-2.5 w-2.5 text-v2-ink-subtle dark:text-v2-ink-muted shrink-0 mt-px" />
                           ) : (
                             <XCircle className="h-2.5 w-2.5 text-red-400 shrink-0 mt-px" />
                           )}
-                          <span className="text-zinc-500 w-16 shrink-0">
+                          <span className="text-v2-ink-muted w-16 shrink-0">
                             {check.label}
                           </span>
                           <span
@@ -464,7 +464,7 @@ export function RuleTester({ rules, fallbackAction }: Props) {
                               check.passed === true
                                 ? "text-emerald-600 dark:text-emerald-400"
                                 : check.passed === "skipped"
-                                  ? "text-zinc-400"
+                                  ? "text-v2-ink-subtle"
                                   : "text-red-500 dark:text-red-400",
                             )}
                           >
@@ -481,22 +481,22 @@ export function RuleTester({ rules, fallbackAction }: Props) {
                   className={cn(
                     "rounded border p-1.5 text-[10px]",
                     !result.matchedRuleId
-                      ? "border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-900/50"
-                      : "border-zinc-200 dark:border-zinc-700",
+                      ? "border-v2-ring-strong dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card/50"
+                      : "border-v2-ring dark:border-v2-ring-strong",
                   )}
                 >
                   <div className="flex items-center gap-1.5">
                     {!result.matchedRuleId ? (
-                      <AlertCircle className="h-3 w-3 text-zinc-400 shrink-0" />
+                      <AlertCircle className="h-3 w-3 text-v2-ink-subtle shrink-0" />
                     ) : (
-                      <CircleDot className="h-3 w-3 text-zinc-300 dark:text-zinc-600 shrink-0" />
+                      <CircleDot className="h-3 w-3 text-v2-ink-subtle dark:text-v2-ink-muted shrink-0" />
                     )}
                     <span
                       className={cn(
                         "font-medium",
                         !result.matchedRuleId
-                          ? "text-zinc-600 dark:text-zinc-400"
-                          : "text-zinc-400",
+                          ? "text-v2-ink-muted dark:text-v2-ink-subtle"
+                          : "text-v2-ink-subtle",
                       )}
                     >
                       Fallback →{" "}
@@ -510,7 +510,7 @@ export function RuleTester({ rules, fallbackAction }: Props) {
                       )
                     </span>
                     {!result.matchedRuleId && (
-                      <Badge className="h-3.5 px-1 text-[7px] bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 ml-auto shrink-0">
+                      <Badge className="h-3.5 px-1 text-[7px] bg-v2-ring dark:bg-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-muted ml-auto shrink-0">
                         ACTIVE
                       </Badge>
                     )}

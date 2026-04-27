@@ -210,7 +210,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
   return (
     <div className="space-y-3">
       {/* Stepper */}
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+      <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
         <div className="flex items-center gap-1">
           {STEPS.map((step, i) => {
             const isComplete = isStepComplete(step.id);
@@ -224,8 +224,8 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                     isCurrent
                       ? "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400"
                       : isComplete
-                        ? "text-emerald-600 dark:text-emerald-400 hover:bg-zinc-50 dark:hover:bg-zinc-800"
-                        : "text-zinc-400 dark:text-zinc-500 hover:bg-zinc-50 dark:hover:bg-zinc-800",
+                        ? "text-emerald-600 dark:text-emerald-400 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted"
+                        : "text-v2-ink-subtle dark:text-v2-ink-muted hover:bg-v2-canvas dark:hover:bg-v2-card-tinted",
                   )}
                 >
                   {isComplete ? (
@@ -238,7 +238,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                         "w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 text-[9px] font-bold",
                         isCurrent
                           ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400"
-                          : "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500",
+                          : "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink-subtle dark:text-v2-ink-muted",
                       )}
                     >
                       {step.id}
@@ -249,7 +249,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                   </span>
                 </button>
                 {i < STEPS.length - 1 && (
-                  <div className="w-4 h-px bg-zinc-200 dark:bg-zinc-700 flex-shrink-0" />
+                  <div className="w-4 h-px bg-v2-ring dark:bg-v2-ring-strong flex-shrink-0" />
                 )}
               </div>
             );
@@ -258,15 +258,15 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
       </div>
 
       {/* Step Content */}
-      <div className="p-4 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg min-h-[200px]">
+      <div className="p-4 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg min-h-[200px]">
         {/* Step 1: Connect Close */}
         {currentStep === 1 && (
           <div className="space-y-3">
             <div>
-              <h3 className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                 Connect your Close CRM
               </h3>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-1">
                 The bot needs access to your Close CRM to receive inbound SMS
                 messages and send replies. You'll need your Close API key
                 (Settings &gt; API Keys in Close).
@@ -275,8 +275,8 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
             <ConnectionCard
               title="Close CRM"
               icon={
-                <div className="w-6 h-6 rounded bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center">
-                  <span className="text-[8px] font-bold text-white dark:text-zinc-900">
+                <div className="w-6 h-6 rounded bg-v2-ink dark:bg-v2-card-tinted flex items-center justify-center">
+                  <span className="text-[8px] font-bold text-white dark:text-v2-ink">
                     CRM
                   </span>
                 </div>
@@ -303,10 +303,10 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
         {currentStep === 2 && (
           <div className="space-y-3">
             <div>
-              <h3 className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                 Connect your calendar
               </h3>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-1">
                 The bot checks your real calendar availability to offer
                 appointment times, and books events when leads confirm. Connect
                 either Calendly or Google Calendar.
@@ -406,10 +406,10 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
         {currentStep === 3 && (
           <div className="space-y-3">
             <div>
-              <h3 className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                 Configure Lead Sources
               </h3>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-1">
                 Select which lead sources the bot should respond to. These
                 should match the "Lead Source" custom field values on your Close
                 leads. The bot will also do proactive outreach for new leads
@@ -450,10 +450,10 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
         {currentStep === 4 && (
           <div className="space-y-3">
             <div>
-              <h3 className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                 Configure Outbound Statuses
               </h3>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-1">
                 Select which lead statuses trigger automated outbound outreach
                 (intro SMS, drip campaigns). This does not affect inbound — use
                 Blocked Lead Statuses in the Audience tab to prevent the bot
@@ -498,10 +498,10 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
               <Rocket className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             </div>
             <div>
-              <h3 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink">
                 Setup Complete
               </h3>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto">
+              <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-1 max-w-sm mx-auto">
                 Your bot is configured and ready to go. When you click the
                 button below, the bot will be enabled and will start responding
                 to inbound SMS leads and will send automated outreach to leads
@@ -513,7 +513,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
             <div className="text-left max-w-sm mx-auto space-y-1.5 pt-2">
               <div className="flex items-center gap-2 text-[10px]">
                 <Check className="h-3 w-3 text-emerald-500" />
-                <span className="text-zinc-600 dark:text-zinc-400">
+                <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                   Close CRM:{" "}
                   {getConnectionStateLabel(closeConnectionState, {
                     connected: closeStatus?.orgName || "Connected",
@@ -524,7 +524,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
               </div>
               <div className="flex items-center gap-2 text-[10px]">
                 <Check className="h-3 w-3 text-emerald-500" />
-                <span className="text-zinc-600 dark:text-zinc-400">
+                <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                   Calendar:{" "}
                   {calendarProvider === "calendly"
                     ? "Calendly connected"
@@ -538,14 +538,14 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
               </div>
               <div className="flex items-center gap-2 text-[10px]">
                 <Check className="h-3 w-3 text-emerald-500" />
-                <span className="text-zinc-600 dark:text-zinc-400">
+                <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                   Lead Sources:{" "}
                   {leadSources.length > 0 ? leadSources.join(", ") : "None"}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-[10px]">
                 <Check className="h-3 w-3 text-emerald-500" />
-                <span className="text-zinc-600 dark:text-zinc-400">
+                <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                   Outbound Statuses: {leadStatuses.length} selected
                 </span>
               </div>

@@ -91,7 +91,7 @@ export function TemplateSelector({
       <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-sm">Apply Template</DialogTitle>
-          <DialogDescription className="text-[10px] text-zinc-500">
+          <DialogDescription className="text-[10px] text-v2-ink-muted">
             Choose a pre-built rule template. Select one on the left, preview
             its rules on the right, then apply.
           </DialogDescription>
@@ -99,10 +99,10 @@ export function TemplateSelector({
 
         {templatesLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+            <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
           </div>
         ) : templates.length === 0 ? (
-          <p className="text-[11px] text-zinc-500 py-6 text-center">
+          <p className="text-[11px] text-v2-ink-muted py-6 text-center">
             No templates available.
           </p>
         ) : (
@@ -122,14 +122,14 @@ export function TemplateSelector({
                         ? "border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30"
                         : isDefault
                           ? "border-emerald-200 dark:border-emerald-800 hover:border-emerald-300"
-                          : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300",
+                          : "border-v2-ring dark:border-v2-ring-strong hover:border-v2-ring-strong",
                     )}
                   >
                     <div className="flex items-center gap-1">
                       {isSelected && (
                         <Check className="h-3 w-3 text-blue-500 shrink-0" />
                       )}
-                      <span className="text-[10px] font-medium text-zinc-800 dark:text-zinc-200 truncate">
+                      <span className="text-[10px] font-medium text-v2-ink dark:text-v2-ink truncate">
                         {t.name}
                       </span>
                     </div>
@@ -155,7 +155,7 @@ export function TemplateSelector({
             {/* Right: Preview + Apply */}
             <div className="flex-1 flex flex-col min-h-0 min-w-0">
               {!selectedKey ? (
-                <div className="flex-1 flex items-center justify-center text-[10px] text-zinc-400">
+                <div className="flex-1 flex items-center justify-center text-[10px] text-v2-ink-subtle">
                   Select a template to preview
                 </div>
               ) : (
@@ -163,20 +163,20 @@ export function TemplateSelector({
                   {/* Template Description */}
                   {selectedTemplate && (
                     <div className="mb-2">
-                      <p className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+                      <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
                         {selectedTemplate.name}
                       </p>
-                      <p className="text-[10px] text-zinc-500 mt-0.5">
+                      <p className="text-[10px] text-v2-ink-muted mt-0.5">
                         {getTemplateDescription(selectedTemplate)}
                       </p>
                     </div>
                   )}
 
                   {/* Rules Preview */}
-                  <div className="flex-1 overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded p-2 mb-2">
+                  <div className="flex-1 overflow-y-auto border border-v2-ring dark:border-v2-ring-strong rounded p-2 mb-2">
                     {previewLoading ? (
                       <div className="flex items-center justify-center py-4">
-                        <Loader2 className="h-3 w-3 animate-spin text-zinc-400" />
+                        <Loader2 className="h-3 w-3 animate-spin text-v2-ink-subtle" />
                       </div>
                     ) : preview ? (
                       <div className="space-y-1">
@@ -185,14 +185,14 @@ export function TemplateSelector({
                             key={r.id}
                             className="flex items-start gap-1.5 text-[10px]"
                           >
-                            <span className="text-zinc-400 shrink-0 w-3 text-right">
+                            <span className="text-v2-ink-subtle shrink-0 w-3 text-right">
                               {i + 1}.
                             </span>
                             <div className="min-w-0">
-                              <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                              <span className="font-medium text-v2-ink dark:text-v2-ink-muted">
                                 {r.name}
                               </span>
-                              <span className="text-zinc-400 ml-1">
+                              <span className="text-v2-ink-subtle ml-1">
                                 →{" "}
                                 {r.action.allowedChannels
                                   .map((c) => (c === "sms" ? "SMS" : "Voice"))
@@ -204,7 +204,7 @@ export function TemplateSelector({
                             </div>
                           </div>
                         ))}
-                        <div className="text-[9px] text-zinc-400 pt-1 border-t border-zinc-100 dark:border-zinc-800 mt-1">
+                        <div className="text-[9px] text-v2-ink-subtle pt-1 border-t border-v2-ring dark:border-v2-ring mt-1">
                           Fallback:{" "}
                           {preview.fallbackAction.allowedChannels
                             .map((c) => (c === "sms" ? "SMS" : "Voice"))
@@ -217,7 +217,7 @@ export function TemplateSelector({
                         </div>
                       </div>
                     ) : (
-                      <p className="text-[10px] text-zinc-400 text-center py-4">
+                      <p className="text-[10px] text-v2-ink-subtle text-center py-4">
                         Unable to load preview
                       </p>
                     )}
@@ -265,11 +265,11 @@ export function TemplateSelector({
                           "flex-1 px-2 py-1 rounded border text-[10px] text-left transition-colors",
                           mode === "replace"
                             ? "border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30"
-                            : "border-zinc-200 dark:border-zinc-700",
+                            : "border-v2-ring dark:border-v2-ring-strong",
                         )}
                       >
                         <span className="font-medium">Replace</span>
-                        <span className="text-zinc-500 ml-1">
+                        <span className="text-v2-ink-muted ml-1">
                           — wipe existing rules
                         </span>
                       </button>
@@ -279,11 +279,11 @@ export function TemplateSelector({
                           "flex-1 px-2 py-1 rounded border text-[10px] text-left transition-colors",
                           mode === "append"
                             ? "border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30"
-                            : "border-zinc-200 dark:border-zinc-700",
+                            : "border-v2-ring dark:border-v2-ring-strong",
                         )}
                       >
                         <span className="font-medium">Append</span>
-                        <span className="text-zinc-500 ml-1">
+                        <span className="text-v2-ink-muted ml-1">
                           — add after existing
                         </span>
                       </button>

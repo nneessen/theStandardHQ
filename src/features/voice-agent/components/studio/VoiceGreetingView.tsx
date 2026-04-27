@@ -101,7 +101,7 @@ function SliderField({
         value={[value]}
         onValueChange={([v]) => onChange(v.toFixed(2))}
       />
-      <div className="flex justify-between text-[9px] text-zinc-400 dark:text-zinc-500">
+      <div className="flex justify-between text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
         <span>{lowLabel}</span>
         <span>{midLabel}</span>
         <span>{highLabel}</span>
@@ -200,7 +200,7 @@ export function VoiceGreetingView({
                     className={cn(
                       "flex items-center gap-2",
                       group.pt &&
-                        "pt-3 border-t border-zinc-100 dark:border-zinc-800",
+                        "pt-3 border-t border-v2-ring dark:border-v2-ring",
                     )}
                   >
                     <div className="h-px flex-1 bg-border/60" />
@@ -259,7 +259,7 @@ export function VoiceGreetingView({
                 <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                   Current voice
                 </p>
-                <p className="mt-0.5 text-[12px] font-bold text-zinc-900 dark:text-zinc-100 truncate">
+                <p className="mt-0.5 text-[12px] font-bold text-v2-ink dark:text-v2-ink truncate">
                   {selectedVoice
                     ? `${selectedVoice.voice_name} · ${selectedVoice.provider}`
                     : selectedVoiceId || "No voice selected yet"}
@@ -334,10 +334,10 @@ export function VoiceGreetingView({
               </p>
               <div className="flex items-center justify-between rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
                 <div className="pr-4">
-                  <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+                  <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
                     Auto-adapt speaking speed
                   </p>
-                  <p className="text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] leading-4 text-v2-ink-muted dark:text-v2-ink-subtle">
                     {AGENT_FIELD_HINTS.enableDynamicVoiceSpeed}
                   </p>
                 </div>
@@ -351,10 +351,10 @@ export function VoiceGreetingView({
 
               <div className="flex items-center justify-between rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
                 <div className="pr-4">
-                  <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+                  <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
                     Auto-adapt response timing
                   </p>
-                  <p className="text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] leading-4 text-v2-ink-muted dark:text-v2-ink-subtle">
                     {AGENT_FIELD_HINTS.enableDynamicResponsiveness}
                   </p>
                 </div>
@@ -379,8 +379,8 @@ export function VoiceGreetingView({
         <div className="space-y-4 overflow-hidden">
           {/* ── Search & Import ── */}
           <div className="overflow-hidden rounded-lg border border-border/50 bg-card shadow-sm">
-            <div className="flex items-center gap-2 border-b border-zinc-100 px-3 py-2 dark:border-zinc-800">
-              <Search className="h-3 w-3 text-zinc-400" />
+            <div className="flex items-center gap-2 border-b border-v2-ring px-3 py-2 dark:border-v2-ring">
+              <Search className="h-3 w-3 text-v2-ink-subtle" />
               <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                 Search & import
               </span>
@@ -403,7 +403,7 @@ export function VoiceGreetingView({
                           .value as (typeof RETELL_VOICE_PROVIDERS)[number],
                       )
                     }
-                    className="flex h-8 w-full rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+                    className="flex h-8 w-full rounded-md border border-v2-ring bg-white px-2 py-1 text-xs dark:border-v2-ring-strong dark:bg-v2-card"
                   >
                     {RETELL_VOICE_PROVIDERS.map((provider) => (
                       <option key={provider} value={provider}>
@@ -451,7 +451,7 @@ export function VoiceGreetingView({
           {searchResults.length > 0 && (
             <div className="overflow-hidden rounded-lg border border-border/60">
               <div className="flex items-center gap-2 border-b border-border/60 bg-muted/30 px-3 py-2">
-                <Download className="h-3 w-3 text-zinc-400" />
+                <Download className="h-3 w-3 text-v2-ink-subtle" />
                 <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                   Results ({searchResults.length})
                 </span>
@@ -463,10 +463,10 @@ export function VoiceGreetingView({
                     className="flex items-center justify-between gap-2 px-3 py-2"
                   >
                     <div className="min-w-0 overflow-hidden">
-                      <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                      <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink truncate">
                         {result.name ?? "Unnamed voice"}
                       </p>
-                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+                      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
                         {result.description ?? "No description"}
                       </p>
                     </div>
@@ -494,22 +494,22 @@ export function VoiceGreetingView({
           {/* ── Your Voices ── */}
           <div className="overflow-hidden rounded-lg border border-border/60">
             <div className="flex items-center gap-2 border-b border-border/60 bg-muted/30 px-3 py-2">
-              <WandSparkles className="h-3 w-3 text-zinc-400" />
+              <WandSparkles className="h-3 w-3 text-v2-ink-subtle" />
               <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                 Your voices
               </span>
               {!voicesLoading && filteredVoices.length > 0 && (
-                <Badge className="bg-zinc-200 text-zinc-600 text-[8px] px-1.5 py-0 dark:bg-zinc-700 dark:text-zinc-300">
+                <Badge className="bg-v2-ring text-v2-ink-muted text-[8px] px-1.5 py-0 dark:bg-v2-ring-strong dark:text-v2-ink-muted">
                   {filteredVoices.length}
                 </Badge>
               )}
             </div>
             {voicesLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+                <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
               </div>
             ) : filteredVoices.length === 0 ? (
-              <div className="px-3 py-6 text-center text-[11px] text-zinc-400 dark:text-zinc-500">
+              <div className="px-3 py-6 text-center text-[11px] text-v2-ink-subtle dark:text-v2-ink-muted">
                 {voices.length === 0
                   ? "No imported voices yet. Search above to add one."
                   : `No voices from ${voiceProvider}. Try a different provider.`}
@@ -533,18 +533,18 @@ export function VoiceGreetingView({
                           ? "bg-foreground/5 dark:bg-foreground/5"
                           : isClone
                             ? "bg-emerald-50/50 dark:bg-emerald-950/10"
-                            : "hover:bg-zinc-50 dark:hover:bg-zinc-800/40",
+                            : "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/40",
                       )}
                     >
                       <div className="flex items-center gap-2 min-w-0 overflow-hidden">
                         {isClone ? (
                           <Mic className="h-3 w-3 text-emerald-500 flex-shrink-0" />
                         ) : (
-                          <WandSparkles className="h-3 w-3 text-zinc-400 flex-shrink-0" />
+                          <WandSparkles className="h-3 w-3 text-v2-ink-subtle flex-shrink-0" />
                         )}
                         <div className="min-w-0 overflow-hidden">
                           <div className="flex items-center gap-1.5">
-                            <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+                            <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink truncate">
                               {voice.voice_name}
                             </p>
                             {isClone && (
@@ -554,11 +554,11 @@ export function VoiceGreetingView({
                             )}
                           </div>
                           <div className="flex gap-1.5 mt-0.5">
-                            <span className="text-[9px] text-zinc-500 dark:text-zinc-400">
+                            <span className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
                               {voice.provider}
                             </span>
                             {voice.gender && (
-                              <span className="text-[9px] text-zinc-500 dark:text-zinc-400">
+                              <span className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
                                 · {voice.gender}
                               </span>
                             )}

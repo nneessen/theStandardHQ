@@ -94,7 +94,7 @@ export function VoiceAgentLanding({
             "relative rounded-lg border p-4 transition-all",
             voiceAccessActive
               ? "border-emerald-500 bg-emerald-50/50 ring-1 ring-emerald-500/30 dark:bg-emerald-950/20"
-              : "border-zinc-200 dark:border-zinc-700",
+              : "border-v2-ring dark:border-v2-ring-strong",
           )}
         >
           <div className="absolute -top-2 left-1/2 -translate-x-1/2">
@@ -112,20 +112,20 @@ export function VoiceAgentLanding({
 
           <div className="mt-1">
             <div className="flex items-center gap-2">
-              <PhoneCall className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-              <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <PhoneCall className="h-3.5 w-3.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
+              <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                 Voice Pro
               </p>
             </div>
             <div className="mt-2 flex items-baseline gap-1">
-              <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
+              <span className="text-xl font-bold text-v2-ink dark:text-v2-ink">
                 {voiceAccessActive
                   ? launchPriceLabel.replace("/mo", "")
                   : "Free"}
               </span>
-              <span className="text-[11px] text-zinc-500">/mo</span>
+              <span className="text-[11px] text-v2-ink-muted">/mo</span>
             </div>
-            <p className="mt-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="mt-0.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               {voiceAccessActive
                 ? `${includedMinutes.toLocaleString()} minutes / month`
                 : `${trialIncludedMinutes} minutes included, hard-capped`}
@@ -136,7 +136,7 @@ export function VoiceAgentLanding({
             {VOICE_FEATURES.map((feature) => (
               <div
                 key={feature}
-                className="flex items-center gap-1.5 text-[11px] text-zinc-600 dark:text-zinc-400"
+                className="flex items-center gap-1.5 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
               >
                 <Check className="h-3 w-3 shrink-0 text-emerald-500" />
                 <span>{feature}</span>
@@ -175,31 +175,31 @@ export function VoiceAgentLanding({
           </div>
 
           {!voiceAccessActive && !showServiceWarning && (
-            <p className="mt-2 text-center text-[10px] text-zinc-400 dark:text-zinc-500">
+            <p className="mt-2 text-center text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted">
               No overage charges — hard-capped at {trialIncludedMinutes} minutes
             </p>
           )}
         </div>
 
         {/* Setup progress + next step */}
-        <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+        <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-v2-ink-muted dark:text-v2-ink-subtle">
                 Setup Progress
               </p>
-              <p className="mt-1 text-[12px] text-zinc-600 dark:text-zinc-300">
+              <p className="mt-1 text-[12px] text-v2-ink-muted dark:text-v2-ink-muted">
                 {completedSteps} of {setupSteps.length} launch steps ready
               </p>
             </div>
-            <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            <p className="text-lg font-semibold text-v2-ink dark:text-v2-ink">
               {Math.round(progressPercent)}%
             </p>
           </div>
 
           <Progress
             value={progressPercent}
-            className="mt-3 h-2 bg-zinc-100 dark:bg-zinc-800 [&>div]:bg-emerald-500"
+            className="mt-3 h-2 bg-v2-card-tinted dark:bg-v2-card-tinted [&>div]:bg-emerald-500"
           />
 
           {setupComplete ? (
@@ -210,20 +210,20 @@ export function VoiceAgentLanding({
                   Setup complete
                 </p>
               </div>
-              <p className="mt-1 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
+              <p className="mt-1 text-[11px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
                 Your voice agent is live and taking calls.
               </p>
             </div>
           ) : (
             <>
-              <div className="mt-4 rounded-lg border border-zinc-100 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/40">
+              <div className="mt-4 rounded-lg border border-v2-ring bg-v2-canvas p-3 dark:border-v2-ring dark:bg-v2-canvas/40">
                 <div className="flex items-center gap-1.5">
                   <ArrowRight className="h-3 w-3 text-emerald-500" />
-                  <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+                  <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
                     {nextStepTitle}
                   </p>
                 </div>
-                <p className="mt-1 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
+                <p className="mt-1 text-[11px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
                   {nextStepDescription}
                 </p>
               </div>
@@ -261,7 +261,7 @@ export function VoiceAgentLanding({
         />
         <OverviewCard
           icon={
-            <CloseCrmLogo className="h-4 w-auto text-zinc-900 dark:text-zinc-100" />
+            <CloseCrmLogo className="h-4 w-auto text-v2-ink dark:text-v2-ink" />
           }
           title="Close CRM"
           value={closeConnected ? "Connected" : "Required"}
@@ -314,17 +314,17 @@ function OverviewCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="flex items-center gap-2">
         {icon ? <div className="shrink-0">{icon}</div> : null}
-        <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <p className="text-[10px] uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
           {title}
         </p>
       </div>
-      <p className="mt-2 text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">
+      <p className="mt-2 text-[15px] font-semibold text-v2-ink dark:text-v2-ink">
         {value}
       </p>
-      <p className="mt-2 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
+      <p className="mt-2 text-[11px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
         {detail}
       </p>
     </div>

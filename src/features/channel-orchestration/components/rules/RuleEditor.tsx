@@ -50,7 +50,7 @@ export function RuleEditor({ rule, onSave, onCancel, saving }: Props) {
     <div className="border border-blue-200 dark:border-blue-800 rounded-md bg-blue-50/30 dark:bg-blue-950/20 p-2.5 space-y-2.5">
       {/* Rule Name */}
       <div>
-        <Label className="text-[10px] text-zinc-500 font-medium">
+        <Label className="text-[10px] text-v2-ink-muted font-medium">
           Rule Name
         </Label>
         <Input
@@ -60,7 +60,7 @@ export function RuleEditor({ rule, onSave, onCancel, saving }: Props) {
           placeholder="e.g., SMS for new leads"
           autoFocus
         />
-        <p className="text-[9px] text-zinc-400 mt-0.5">
+        <p className="text-[9px] text-v2-ink-subtle mt-0.5">
           Give this rule a descriptive name, e.g. &quot;SMS only on
           weekends&quot; or &quot;Voice priority for veteran leads&quot;
         </p>
@@ -68,7 +68,7 @@ export function RuleEditor({ rule, onSave, onCancel, saving }: Props) {
 
       {/* Conditions */}
       <div>
-        <Label className="text-[10px] text-zinc-500 font-medium mb-1 block">
+        <Label className="text-[10px] text-v2-ink-muted font-medium mb-1 block">
           Conditions (all must match)
         </Label>
         <RuleConditionBuilder
@@ -79,14 +79,14 @@ export function RuleEditor({ rule, onSave, onCancel, saving }: Props) {
 
       {/* Action */}
       <div>
-        <Label className="text-[10px] text-zinc-500 font-medium mb-1 block">
+        <Label className="text-[10px] text-v2-ink-muted font-medium mb-1 block">
           Action
         </Label>
         <RuleActionBuilder action={action} onChange={setAction} />
       </div>
 
       {/* Buttons */}
-      <div className="flex items-center gap-1.5 pt-1 border-t border-zinc-200 dark:border-zinc-700">
+      <div className="flex items-center gap-1.5 pt-1 border-t border-v2-ring dark:border-v2-ring-strong">
         <Button
           size="sm"
           className="h-7 text-[10px] px-3"

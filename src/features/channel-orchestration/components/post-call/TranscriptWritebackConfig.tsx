@@ -44,7 +44,7 @@ export function TranscriptWritebackConfig({ config, onChange }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <Label className="text-[10px] font-medium">Auto Writeback</Label>
-          <p className="text-[9px] text-zinc-500">
+          <p className="text-[9px] text-v2-ink-muted">
             Automatically write transcript to Close after call ends
           </p>
         </div>
@@ -68,11 +68,11 @@ export function TranscriptWritebackConfig({ config, onChange }: Props) {
                 "w-full text-left px-2 py-1 rounded border text-[10px] transition-colors",
                 config.format === f.value
                   ? "border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30"
-                  : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-300",
+                  : "border-v2-ring dark:border-v2-ring-strong hover:border-v2-ring-strong",
               )}
             >
               <span className="font-medium">{f.label}</span>
-              <span className="text-zinc-500 ml-1">— {f.desc}</span>
+              <span className="text-v2-ink-muted ml-1">— {f.desc}</span>
             </button>
           ))}
         </div>
@@ -84,7 +84,7 @@ export function TranscriptWritebackConfig({ config, onChange }: Props) {
           <Label className="text-[10px] font-medium">
             Include Recording Link
           </Label>
-          <p className="text-[9px] text-zinc-500">
+          <p className="text-[9px] text-v2-ink-muted">
             Add a link to the call recording in the Close note
           </p>
         </div>

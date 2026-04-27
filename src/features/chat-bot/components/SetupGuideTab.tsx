@@ -92,7 +92,7 @@ function StepIndicator({
                     "w-4 sm:w-6 h-px",
                     visited.has(step.id) || isActive
                       ? "bg-blue-400 dark:bg-blue-500"
-                      : "bg-zinc-200 dark:bg-zinc-700",
+                      : "bg-v2-ring dark:bg-v2-ring-strong",
                   )}
                 />
               )}
@@ -113,7 +113,7 @@ function StepIndicator({
                     isCompleted && "bg-emerald-500 text-white",
                     !isActive &&
                       !isCompleted &&
-                      "bg-zinc-200 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400",
+                      "bg-v2-ring dark:bg-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-subtle",
                   )}
                 >
                   {isCompleted ? <Check className="h-3 w-3" /> : step.id}
@@ -123,7 +123,7 @@ function StepIndicator({
                     "text-[8px] sm:text-[9px] leading-tight whitespace-nowrap transition-colors",
                     isActive
                       ? "text-blue-600 dark:text-blue-400 font-semibold"
-                      : "text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-600 dark:group-hover:text-zinc-300",
+                      : "text-v2-ink-subtle dark:text-v2-ink-muted group-hover:text-v2-ink-muted dark:group-hover:text-v2-ink-subtle",
                   )}
                 >
                   {step.label}
@@ -142,7 +142,7 @@ function StepIndicator({
 function StepOverview() {
   return (
     <div className="space-y-3">
-      <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
         Your AI bot monitors Close CRM for incoming texts from leads that match
         your configured sources. It reads the conversation, responds naturally,
         and books appointments on your calendar.
@@ -150,14 +150,14 @@ function StepOverview() {
 
       {/* Visual flow */}
       <div className="flex items-center gap-2 justify-center py-2">
-        <div className="px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded text-[9px] font-medium text-zinc-700 dark:text-zinc-300">
+        <div className="px-2 py-1 bg-v2-card-tinted dark:bg-v2-card-tinted rounded text-[9px] font-medium text-v2-ink dark:text-v2-ink-muted">
           Lead Texts In
         </div>
-        <ArrowRight className="h-3 w-3 text-zinc-400" />
+        <ArrowRight className="h-3 w-3 text-v2-ink-subtle" />
         <div className="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 rounded text-[9px] font-medium text-blue-700 dark:text-blue-300">
           AI Responds
         </div>
-        <ArrowRight className="h-3 w-3 text-zinc-400" />
+        <ArrowRight className="h-3 w-3 text-v2-ink-subtle" />
         <div className="px-2 py-1 bg-emerald-50 dark:bg-emerald-900/30 rounded text-[9px] font-medium text-emerald-700 dark:text-emerald-300">
           Appointment Booked
         </div>
@@ -170,7 +170,7 @@ function StepOverview() {
       </Callout>
 
       <div className="pt-1 space-y-1.5">
-        <h4 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <h4 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
           Key Concepts
         </h4>
         <div className="grid grid-cols-2 gap-1.5">
@@ -187,12 +187,12 @@ function StepOverview() {
           ].map(([term, desc]) => (
             <div
               key={term}
-              className="p-1.5 border border-zinc-200 dark:border-zinc-800 rounded bg-white dark:bg-zinc-900"
+              className="p-1.5 border border-v2-ring dark:border-v2-ring rounded bg-v2-card"
             >
-              <span className="text-[10px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <span className="text-[10px] font-semibold text-v2-ink dark:text-v2-ink">
                 {term}
               </span>
-              <p className="text-[9px] text-zinc-500 dark:text-zinc-400 leading-snug mt-0.5">
+              <p className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle leading-snug mt-0.5">
                 {desc}
               </p>
             </div>
@@ -207,10 +207,10 @@ function StepPrerequisites() {
   return (
     <div className="space-y-3">
       <div className="space-y-1.5">
-        <h4 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <h4 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
           Close CRM
         </h4>
-        <ul className="space-y-1 text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+        <ul className="space-y-1 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
           <BulletCheck>
             Any paid Close plan (Startup, Professional, or Enterprise)
           </BulletCheck>
@@ -225,10 +225,10 @@ function StepPrerequisites() {
       </div>
 
       <div className="space-y-1.5">
-        <h4 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <h4 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
           Calendar (Calendly or Google Calendar)
         </h4>
-        <ul className="space-y-1 text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+        <ul className="space-y-1 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
           <BulletCheck>
             Calendly: Standard plan or above (required for API access)
           </BulletCheck>
@@ -239,10 +239,10 @@ function StepPrerequisites() {
       </div>
 
       <div className="space-y-1.5">
-        <h4 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <h4 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
           Lead Source Names
         </h4>
-        <ul className="space-y-1 text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+        <ul className="space-y-1 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
           <BulletCheck>
             Know the exact names of the Lead Source values you want the bot to
             handle (e.g., &quot;Facebook Ads&quot;, &quot;Google Ads&quot;)
@@ -270,10 +270,10 @@ function StepConnectCRM() {
           </span>
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 mb-0.5">
+          <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink mb-0.5">
             Choose a Plan
           </h4>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
             Visit the <strong>Subscription</strong> tab and select a plan tier.
             Each tier defines a monthly lead quota -- the number of unique leads
             the bot will engage, not total messages. Start free and upgrade
@@ -290,10 +290,10 @@ function StepConnectCRM() {
           </span>
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 mb-0.5">
+          <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink mb-0.5">
             Connect Close CRM
           </h4>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
             In <strong>Bot Configuration</strong>, paste your Close API key.
             Find it in Close under Settings &rarr; API Keys &rarr; Generate New
             API Key. The bot uses this to read messages, view lead details, and
@@ -308,27 +308,27 @@ function StepConnectCRM() {
 function StepCalendar() {
   return (
     <div className="space-y-3">
-      <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
         Choose either <strong>Calendly</strong> or{" "}
         <strong>Google Calendar</strong>. Click the connect button to authorize
         via OAuth. Only one provider can be active at a time.
       </p>
 
       <div className="grid grid-cols-2 gap-2">
-        <div className="p-2 border border-zinc-200 dark:border-zinc-800 rounded bg-white dark:bg-zinc-900">
-          <h4 className="text-[10px] font-semibold text-zinc-900 dark:text-zinc-100 mb-0.5">
+        <div className="p-2 border border-v2-ring dark:border-v2-ring rounded bg-v2-card">
+          <h4 className="text-[10px] font-semibold text-v2-ink dark:text-v2-ink mb-0.5">
             Calendly
           </h4>
-          <p className="text-[9px] text-zinc-500 dark:text-zinc-400 leading-snug">
+          <p className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle leading-snug">
             Requires Standard plan or above for API access. Supports event type
             mappings per lead source.
           </p>
         </div>
-        <div className="p-2 border border-zinc-200 dark:border-zinc-800 rounded bg-white dark:bg-zinc-900">
-          <h4 className="text-[10px] font-semibold text-zinc-900 dark:text-zinc-100 mb-0.5">
+        <div className="p-2 border border-v2-ring dark:border-v2-ring rounded bg-v2-card">
+          <h4 className="text-[10px] font-semibold text-v2-ink dark:text-v2-ink mb-0.5">
             Google Calendar
           </h4>
-          <p className="text-[9px] text-zinc-500 dark:text-zinc-400 leading-snug">
+          <p className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle leading-snug">
             Any Google account with Calendar access. Grant read/write
             permissions when prompted.
           </p>
@@ -355,10 +355,10 @@ function StepAudience() {
           </span>
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 mb-0.5">
+          <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink mb-0.5">
             Configure Lead Sources
           </h4>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
             Only leads whose &quot;Lead Source&quot; custom field in Close
             matches one of your configured sources will be contacted. Choose
             from predefined sources or type a custom name. Names are{" "}
@@ -375,10 +375,10 @@ function StepAudience() {
           </span>
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 mb-0.5">
+          <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink mb-0.5">
             Configure Lead Statuses
           </h4>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
             Choose which Close lead statuses the bot should include or exclude.
             For example, only contact leads with status &quot;Potential&quot;
             and skip &quot;Bad Fit&quot; or &quot;Qualified&quot;. This prevents
@@ -393,7 +393,7 @@ function StepAudience() {
 function StepAgentProfile() {
   return (
     <div className="space-y-3">
-      <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
         The Agent Profile defines the bot&apos;s persona and conversation style.
         The AI adapts its tone per conversation but always stays on-task:
         qualifying the lead and booking an appointment.
@@ -408,12 +408,12 @@ function StepAgentProfile() {
         ].map(([field, desc]) => (
           <div
             key={field}
-            className="p-1.5 border-l-2 border-blue-300 dark:border-blue-700 bg-white dark:bg-zinc-900 rounded-r"
+            className="p-1.5 border-l-2 border-blue-300 dark:border-blue-700 bg-v2-card rounded-r"
           >
-            <span className="text-[10px] font-semibold text-zinc-900 dark:text-zinc-100">
+            <span className="text-[10px] font-semibold text-v2-ink dark:text-v2-ink">
               {field}
             </span>
-            <p className="text-[9px] text-zinc-500 dark:text-zinc-400 leading-snug mt-0.5">
+            <p className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle leading-snug mt-0.5">
               {desc}
             </p>
           </div>
@@ -440,10 +440,10 @@ function StepFinalSetup() {
           </span>
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 mb-0.5">
+          <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink mb-0.5">
             Map Event Types (Optional)
           </h4>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
             Map specific Calendly event types to lead sources. E.g.,
             &quot;Facebook Ads&quot; leads get a 15-min intro call,
             &quot;Referral&quot; leads get a 30-min consultation. If skipped,
@@ -460,10 +460,10 @@ function StepFinalSetup() {
           </span>
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 mb-0.5">
+          <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink mb-0.5">
             Enable Your Bot
           </h4>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
             Toggle the bot on from the Configuration tab. The{" "}
             <strong>timezone setting</strong> controls when the bot is active --
             messages are only sent during business hours. Disabling pauses all
@@ -560,30 +560,30 @@ function StepReference() {
     <div className="space-y-3">
       {/* FAQ */}
       <div>
-        <h4 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-1.5">
+        <h4 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle mb-1.5">
           FAQ
         </h4>
-        <div className="border border-zinc-200 dark:border-zinc-800 rounded bg-white dark:bg-zinc-900 divide-y divide-zinc-100 dark:divide-zinc-800">
+        <div className="border border-v2-ring dark:border-v2-ring rounded bg-v2-card divide-y divide-v2-ring dark:divide-v2-ring">
           {faqs.map((faq, idx) => (
             <button
               key={idx}
               type="button"
               onClick={() => setExpandedFaq(expandedFaq === idx ? null : idx)}
-              className="w-full text-left p-1.5 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+              className="w-full text-left p-1.5 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 transition-colors"
             >
               <div className="flex items-start gap-1.5">
                 <ChevronRight
                   className={cn(
-                    "h-3 w-3 text-zinc-400 mt-0.5 shrink-0 transition-transform duration-150",
+                    "h-3 w-3 text-v2-ink-subtle mt-0.5 shrink-0 transition-transform duration-150",
                     expandedFaq === idx && "rotate-90",
                   )}
                 />
                 <div className="min-w-0">
-                  <span className="text-[10px] font-medium text-zinc-700 dark:text-zinc-300">
+                  <span className="text-[10px] font-medium text-v2-ink dark:text-v2-ink-muted">
                     {faq.q}
                   </span>
                   {expandedFaq === idx && (
-                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed mt-0.5">
+                    <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed mt-0.5">
                       {faq.a}
                     </p>
                   )}
@@ -596,19 +596,19 @@ function StepReference() {
 
       {/* Troubleshooting */}
       <div>
-        <h4 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-1.5">
+        <h4 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle mb-1.5">
           Troubleshooting
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
           {troubleshooting.map((item) => (
             <div
               key={item.title}
-              className="p-2 border border-zinc-200 dark:border-zinc-800 rounded bg-white dark:bg-zinc-900"
+              className="p-2 border border-v2-ring dark:border-v2-ring rounded bg-v2-card"
             >
-              <h5 className="text-[10px] font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+              <h5 className="text-[10px] font-semibold text-v2-ink dark:text-v2-ink mb-1">
                 {item.title}
               </h5>
-              <ol className="list-decimal pl-3 space-y-0.5 text-[9px] text-zinc-500 dark:text-zinc-400 leading-snug">
+              <ol className="list-decimal pl-3 space-y-0.5 text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle leading-snug">
                 {item.steps.map((step, i) => (
                   <li key={i}>{step}</li>
                 ))}
@@ -698,7 +698,7 @@ export function SetupGuideTab() {
   return (
     <div className="flex flex-col h-full">
       {/* Step indicator */}
-      <div className="pb-3 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="pb-3 border-b border-v2-ring dark:border-v2-ring">
         <StepIndicator
           current={currentStep}
           visited={visited}
@@ -713,10 +713,10 @@ export function SetupGuideTab() {
             Step {currentStep} of {STEPS.length}
           </span>
         </div>
-        <h3 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 leading-tight">
+        <h3 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink leading-tight">
           {title}
         </h3>
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+        <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-0.5">
           {description}
         </p>
       </div>
@@ -727,7 +727,7 @@ export function SetupGuideTab() {
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center justify-between pt-3 mt-2 border-t border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center justify-between pt-3 mt-2 border-t border-v2-ring dark:border-v2-ring">
         <button
           type="button"
           disabled={currentStep === 1}
@@ -735,15 +735,15 @@ export function SetupGuideTab() {
           className={cn(
             "flex items-center gap-1 px-2.5 py-1.5 rounded text-[10px] font-medium transition-colors",
             currentStep === 1
-              ? "text-zinc-300 dark:text-zinc-600 cursor-not-allowed"
-              : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+              ? "text-v2-ink-subtle dark:text-v2-ink-muted cursor-not-allowed"
+              : "text-v2-ink-muted dark:text-v2-ink-muted hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted",
           )}
         >
           <ChevronLeft className="h-3 w-3" />
           Previous
         </button>
 
-        <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
+        <span className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
           {currentStep} / {STEPS.length}
         </span>
 
@@ -754,7 +754,7 @@ export function SetupGuideTab() {
           className={cn(
             "flex items-center gap-1 px-2.5 py-1.5 rounded text-[10px] font-medium transition-colors",
             currentStep === 8
-              ? "text-zinc-300 dark:text-zinc-600 cursor-not-allowed"
+              ? "text-v2-ink-subtle dark:text-v2-ink-muted cursor-not-allowed"
               : "bg-blue-600 text-white hover:bg-blue-700",
           )}
         >

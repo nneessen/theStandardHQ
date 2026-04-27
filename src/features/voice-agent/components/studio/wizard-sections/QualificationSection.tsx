@@ -40,7 +40,7 @@ export function QualificationSection({
 
   return (
     <div className="space-y-3">
-      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
         These questions help qualify the caller before connecting them with you.
         The agent asks them naturally during the conversation.
       </p>
@@ -48,7 +48,7 @@ export function QualificationSection({
       <div className="space-y-2">
         {questions.map((q, i) => (
           <div key={i} className="flex items-center gap-1.5">
-            <span className="w-5 text-right text-[10px] font-medium text-zinc-400 flex-shrink-0">
+            <span className="w-5 text-right text-[10px] font-medium text-v2-ink-subtle flex-shrink-0">
               {i + 1}.
             </span>
             <Input
@@ -79,7 +79,7 @@ export function QualificationSection({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 w-7 p-0 text-zinc-400 hover:text-red-500"
+                className="h-7 w-7 p-0 text-v2-ink-subtle hover:text-red-500"
                 onClick={() => removeQuestion(i)}
               >
                 <X className="h-3 w-3" />

@@ -22,7 +22,7 @@ export function TransferRulesSection({
 
   return (
     <div className="space-y-3">
-      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
         When any of these happen, the agent will attempt to transfer the call to
         your transfer number (configured in the Voice & Greeting tab).
       </p>
@@ -40,7 +40,7 @@ export function TransferRulesSection({
               }
               className="mt-0.5"
             />
-            <span className="text-[11px] leading-5 text-zinc-700 dark:text-zinc-300">
+            <span className="text-[11px] leading-5 text-v2-ink dark:text-v2-ink-muted">
               {preset.label}
             </span>
           </label>

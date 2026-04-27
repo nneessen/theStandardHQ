@@ -17,7 +17,7 @@ function TypingIndicator() {
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className="w-1.5 h-1.5 bg-zinc-400 dark:bg-zinc-500 rounded-full animate-bounce"
+          className="w-1.5 h-1.5 bg-v2-ink-subtle rounded-full animate-bounce"
           style={{ animationDelay: `${i * 150}ms`, animationDuration: "0.8s" }}
         />
       ))}
@@ -47,7 +47,7 @@ function ChatBubble({
         className={cn(
           "max-w-[80%] px-3 py-2 rounded-2xl text-[11px] leading-relaxed",
           isBot
-            ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-bl-sm"
+            ? "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink dark:text-v2-ink rounded-bl-sm"
             : "bg-blue-600 text-white rounded-br-sm",
         )}
       >
@@ -155,9 +155,9 @@ export function ConversationDemo() {
       : "bot";
 
   return (
-    <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+    <div className="rounded-lg border border-v2-ring dark:border-v2-ring overflow-hidden">
       {/* Scenario tabs */}
-      <div className="flex border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 overflow-x-auto">
+      <div className="flex border-b border-v2-ring dark:border-v2-ring bg-v2-canvas dark:bg-v2-card/50 overflow-x-auto">
         {conversationScripts.map((script) => (
           <button
             key={script.id}
@@ -166,7 +166,7 @@ export function ConversationDemo() {
               "px-3 py-2 text-[10px] font-medium whitespace-nowrap transition-colors border-b-2 -mb-px",
               activeScriptId === script.id
                 ? "border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400"
-                : "border-transparent text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+                : "border-transparent text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-ink-subtle",
             )}
           >
             {script.title}
@@ -175,13 +175,13 @@ export function ConversationDemo() {
       </div>
 
       {/* Phone mockup */}
-      <div className="bg-white dark:bg-zinc-900 p-3">
+      <div className="bg-v2-card p-3">
         {/* Status bar */}
-        <div className="flex items-center justify-between px-3 py-1.5 bg-zinc-50 dark:bg-zinc-800/50 rounded-t-lg border border-b-0 border-zinc-200 dark:border-zinc-700">
-          <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
+        <div className="flex items-center justify-between px-3 py-1.5 bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-t-lg border border-b-0 border-v2-ring dark:border-v2-ring-strong">
+          <span className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
             Messages
           </span>
-          <span className="text-[9px] font-medium text-zinc-500 dark:text-zinc-400">
+          <span className="text-[9px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
             {activeScript.description}
           </span>
         </div>
@@ -189,7 +189,7 @@ export function ConversationDemo() {
         {/* Messages area */}
         <div
           ref={messagesContainerRef}
-          className="h-[260px] overflow-y-auto border border-zinc-200 dark:border-zinc-700 rounded-b-lg bg-white dark:bg-zinc-950 px-3 py-3 space-y-2"
+          className="h-[260px] overflow-y-auto border border-v2-ring dark:border-v2-ring-strong rounded-b-lg bg-white dark:bg-v2-canvas px-3 py-3 space-y-2"
         >
           {!hasPlayed && !isPlaying ? (
             <div className="h-full flex flex-col items-center justify-center gap-2">
@@ -200,7 +200,7 @@ export function ConversationDemo() {
                 <Play className="h-3 w-3" />
                 Watch Demo
               </button>
-              <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
+              <p className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted">
                 See how the bot handles this conversation
               </p>
             </div>
@@ -225,7 +225,7 @@ export function ConversationDemo() {
                     className={cn(
                       "rounded-2xl",
                       typingSide === "bot"
-                        ? "bg-zinc-100 dark:bg-zinc-800 rounded-bl-sm"
+                        ? "bg-v2-card-tinted dark:bg-v2-card-tinted rounded-bl-sm"
                         : "bg-blue-600/80 rounded-br-sm",
                     )}
                   >
@@ -245,7 +245,7 @@ export function ConversationDemo() {
             <div className="flex justify-center mt-2">
               <button
                 onClick={handleReplay}
-                className="flex items-center gap-1 text-[10px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                className="flex items-center gap-1 text-[10px] text-v2-ink-subtle hover:text-v2-ink-muted dark:hover:text-v2-ink-subtle transition-colors"
               >
                 <RotateCcw className="h-3 w-3" />
                 Replay

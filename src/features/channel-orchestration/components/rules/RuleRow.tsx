@@ -113,7 +113,7 @@ export function RuleRow({
           "flex items-center gap-1.5 px-1.5 py-1 rounded border transition-colors",
           isExpanded
             ? "border-blue-200 dark:border-blue-800 bg-blue-50/20 dark:bg-blue-950/10"
-            : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900",
+            : "border-v2-ring dark:border-v2-ring-strong bg-v2-card",
           !rule.enabled && "opacity-50",
         )}
       >
@@ -121,13 +121,13 @@ export function RuleRow({
         <button
           {...attributes}
           {...listeners}
-          className="cursor-grab active:cursor-grabbing p-0.5 text-zinc-300 dark:text-zinc-600 hover:text-zinc-500"
+          className="cursor-grab active:cursor-grabbing p-0.5 text-v2-ink-subtle dark:text-v2-ink-muted hover:text-v2-ink-muted"
         >
           <GripVertical className="h-3.5 w-3.5" />
         </button>
 
         {/* Index */}
-        <span className="text-[9px] text-zinc-400 w-4 text-center shrink-0">
+        <span className="text-[9px] text-v2-ink-subtle w-4 text-center shrink-0">
           {index + 1}
         </span>
 
@@ -144,11 +144,11 @@ export function RuleRow({
           className="flex items-center gap-1 flex-1 min-w-0 text-left"
         >
           {isExpanded ? (
-            <ChevronDown className="h-3 w-3 text-zinc-400 shrink-0" />
+            <ChevronDown className="h-3 w-3 text-v2-ink-subtle shrink-0" />
           ) : (
-            <ChevronRight className="h-3 w-3 text-zinc-400 shrink-0" />
+            <ChevronRight className="h-3 w-3 text-v2-ink-subtle shrink-0" />
           )}
-          <span className="text-[11px] font-medium text-zinc-800 dark:text-zinc-200 truncate">
+          <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink truncate">
             {rule.name}
           </span>
         </button>
@@ -159,7 +159,7 @@ export function RuleRow({
             <Badge
               key={tag}
               variant="secondary"
-              className="h-4 px-1 text-[8px] bg-zinc-100 dark:bg-zinc-800"
+              className="h-4 px-1 text-[8px] bg-v2-card-tinted dark:bg-v2-card-tinted"
             >
               {tag}
             </Badge>
@@ -167,7 +167,7 @@ export function RuleRow({
         </div>
 
         {/* Action Summary */}
-        <span className="text-[9px] text-zinc-500 shrink-0 hidden md:block">
+        <span className="text-[9px] text-v2-ink-muted shrink-0 hidden md:block">
           {actionSummary(rule)}
         </span>
 
@@ -178,7 +178,7 @@ export function RuleRow({
           className="h-6 w-6 p-0 shrink-0"
           onClick={() => onDelete(rule.id)}
         >
-          <Trash2 className="h-3 w-3 text-zinc-400 hover:text-red-500" />
+          <Trash2 className="h-3 w-3 text-v2-ink-subtle hover:text-red-500" />
         </Button>
       </div>
 

@@ -72,39 +72,39 @@ export function AnalyticsTab() {
     <div className="space-y-3">
       {/* Date Range Picker */}
       <div className="flex items-center gap-2">
-        <BarChart3 className="h-3.5 w-3.5 text-zinc-400" />
-        <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+        <BarChart3 className="h-3.5 w-3.5 text-v2-ink-subtle" />
+        <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
           Period:
         </span>
         <input
           type="date"
           value={range.from}
           onChange={(e) => setRange((r) => ({ ...r, from: e.target.value }))}
-          className="text-[10px] px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100"
+          className="text-[10px] px-1.5 py-0.5 rounded border border-v2-ring dark:border-v2-ring-strong bg-v2-card text-v2-ink dark:text-v2-ink"
         />
-        <span className="text-[10px] text-zinc-400">to</span>
+        <span className="text-[10px] text-v2-ink-subtle">to</span>
         <input
           type="date"
           value={range.to}
           onChange={(e) => setRange((r) => ({ ...r, to: e.target.value }))}
-          className="text-[10px] px-1.5 py-0.5 rounded border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100"
+          className="text-[10px] px-1.5 py-0.5 rounded border border-v2-ring dark:border-v2-ring-strong bg-v2-card text-v2-ink dark:text-v2-ink"
         />
       </div>
 
       {isLoading ? (
-        <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+        <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
           <div className="flex items-center justify-center py-10">
-            <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+            <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
           </div>
         </div>
       ) : analytics.error ? (
-        <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+        <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
           <div className="py-8 text-center">
-            <AlertTriangle className="h-6 w-6 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            <AlertTriangle className="h-6 w-6 text-v2-ink-subtle dark:text-v2-ink-muted mx-auto mb-2" />
+            <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Analytics temporarily unavailable
             </p>
-            <p className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-1">
+            <p className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted mt-1">
               The analytics API may not be deployed yet. Attribution data below
               is still available.
             </p>

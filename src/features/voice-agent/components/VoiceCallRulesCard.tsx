@@ -67,16 +67,16 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-zinc-200 p-4 dark:border-zinc-800">
+    <section className="rounded-xl border border-v2-ring p-4 dark:border-v2-ring">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink">
           {icon}
         </div>
         <div>
-          <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
             {title}
           </p>
-          <p className="mt-1 text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-[10px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
             {description}
           </p>
         </div>
@@ -99,7 +99,7 @@ function SaveButton({
 }) {
   if (!dirty) return null;
   return (
-    <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+    <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
       <Button
         size="sm"
         className="h-7 text-[10px]"
@@ -229,11 +229,11 @@ export function VoiceCallRulesCard({
   );
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
         Call Rules
       </p>
-      <p className="mt-1 text-[12px] text-zinc-600 dark:text-zinc-400">
+      <p className="mt-1 text-[12px] text-v2-ink-muted dark:text-v2-ink-subtle">
         Control which leads the voice agent can call and receive calls from.
         Empty status lists mean all leads are allowed.
       </p>
@@ -271,12 +271,12 @@ export function VoiceCallRulesCard({
         >
           <div className="space-y-3">
             {/* Outbound enabled toggle */}
-            <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800">
+            <div className="flex items-center justify-between rounded-lg border border-v2-ring px-3 py-2.5 dark:border-v2-ring">
               <div className="pr-4">
-                <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                   Outbound calling
                 </p>
-                <p className="text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
                   Allow the agent to place outbound calls.
                 </p>
               </div>
@@ -374,7 +374,7 @@ export function VoiceCallRulesCard({
                   <Label className="text-[11px]">
                     Outbound Dialer Smart Views
                   </Label>
-                  <p className="text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] leading-4 text-v2-ink-muted dark:text-v2-ink-subtle">
                     The automated dialer only calls leads from selected Smart
                     Views.
                   </p>
@@ -383,17 +383,17 @@ export function VoiceCallRulesCard({
                       Connect Close CRM to select Smart Views.
                     </p>
                   ) : smartViewsLoading ? (
-                    <div className="flex items-center gap-1.5 py-2 text-[10px] text-zinc-400">
+                    <div className="flex items-center gap-1.5 py-2 text-[10px] text-v2-ink-subtle">
                       <Loader2 className="h-3 w-3 animate-spin" />
                       Loading Smart Views…
                     </div>
                   ) : !smartViews || smartViews.length === 0 ? (
-                    <p className="text-[10px] text-zinc-400">
+                    <p className="text-[10px] text-v2-ink-subtle">
                       No Smart Views found in your Close account.
                     </p>
                   ) : (
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between border-b border-zinc-100 pb-1 dark:border-zinc-800">
+                      <div className="flex items-center justify-between border-b border-v2-ring pb-1 dark:border-v2-ring">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -416,7 +416,7 @@ export function VoiceCallRulesCard({
                             ? "Deselect All"
                             : "Select All"}
                         </Button>
-                        <span className="text-[10px] text-zinc-400">
+                        <span className="text-[10px] text-v2-ink-subtle">
                           {outbound.smartViewIds.length} / {smartViews.length}
                         </span>
                       </div>
@@ -440,7 +440,7 @@ export function VoiceCallRulesCard({
                               }}
                               disabled={updateOutbound.isPending}
                             />
-                            <span className="truncate text-[11px] text-zinc-700 dark:text-zinc-300">
+                            <span className="truncate text-[11px] text-v2-ink dark:text-v2-ink-muted">
                               {sv.label}
                             </span>
                           </label>

@@ -104,10 +104,10 @@ export function AdvancedView({
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-border/50 bg-card px-4 py-3 shadow-sm">
-        <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
           These settings are optional
         </p>
-        <p className="mt-1 text-[10px] leading-4 text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 text-[10px] leading-4 text-v2-ink-muted dark:text-v2-ink-subtle">
           Most agents work great with the defaults. Only adjust these if you
           need to fine-tune how your agent thinks, listens, or handles calls.
         </p>
@@ -121,7 +121,7 @@ export function AdvancedView({
           description="Choose how smart and creative your agent should be."
         >
           {!llmAvailable && !llmLoading ? (
-            <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 text-[11px] leading-5 text-zinc-600 dark:border-zinc-800 dark:bg-zinc-950/40 dark:text-zinc-400">
+            <div className="rounded-lg border border-v2-ring bg-v2-canvas px-3 py-3 text-[11px] leading-5 text-v2-ink-muted dark:border-v2-ring dark:bg-v2-canvas/40 dark:text-v2-ink-subtle">
               These controls become available when using the managed voice model
               setup.
             </div>
@@ -152,7 +152,7 @@ export function AdvancedView({
                         >
                           <div>
                             <span className="font-medium">{m.label}</span>
-                            <span className="ml-1.5 text-zinc-500">
+                            <span className="ml-1.5 text-v2-ink-muted">
                               — {m.description}
                             </span>
                           </div>
@@ -160,7 +160,7 @@ export function AdvancedView({
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     Standard is faster. Enhanced is better with complex
                     conversations.
                   </p>
@@ -195,7 +195,7 @@ export function AdvancedView({
                         >
                           <div>
                             <span className="font-medium">{t.label}</span>
-                            <span className="ml-1.5 text-zinc-500">
+                            <span className="ml-1.5 text-v2-ink-muted">
                               — {t.description}
                             </span>
                           </div>
@@ -203,7 +203,7 @@ export function AdvancedView({
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     "Natural" works best for most agents.
                   </p>
                 </div>
@@ -211,10 +211,10 @@ export function AdvancedView({
 
               <div className="flex items-center justify-between rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
                 <div className="pr-4">
-                  <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+                  <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
                     Strict connected actions
                   </p>
-                  <p className="text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] leading-4 text-v2-ink-muted dark:text-v2-ink-subtle">
                     {LLM_FIELD_HINTS.toolCallStrictMode}
                   </p>
                 </div>
@@ -227,28 +227,28 @@ export function AdvancedView({
               </div>
 
               {/* Developer options — collapsed by default */}
-              <div className="rounded-lg border border-zinc-200 dark:border-zinc-800">
+              <div className="rounded-lg border border-v2-ring dark:border-v2-ring">
                 <button
                   type="button"
                   className="flex w-full items-center justify-between px-3 py-2.5 text-left"
                   onClick={() => setDevMode(!devMode)}
                 >
                   <div className="flex items-center gap-2">
-                    <Code2 className="h-3.5 w-3.5 text-zinc-400" />
-                    <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+                    <Code2 className="h-3.5 w-3.5 text-v2-ink-subtle" />
+                    <span className="text-[11px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                       Developer options
                     </span>
                   </div>
                   <ChevronDown
                     className={cn(
-                      "h-3.5 w-3.5 text-zinc-400 transition-transform",
+                      "h-3.5 w-3.5 text-v2-ink-subtle transition-transform",
                       devMode && "rotate-180",
                     )}
                   />
                 </button>
                 {devMode && (
-                  <div className="space-y-3 border-t border-zinc-200 px-3 py-3 dark:border-zinc-800">
-                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <div className="space-y-3 border-t border-v2-ring px-3 py-3 dark:border-v2-ring">
+                    <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                       These are advanced integrations. Most users don't need to
                       touch them.
                     </p>
@@ -385,7 +385,7 @@ export function AdvancedView({
                   placeholder="15"
                   className="h-8 text-xs"
                 />
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   How long to ring before hanging up. 15 seconds is typical.
                 </p>
               </div>
@@ -426,7 +426,7 @@ export function AdvancedView({
                   placeholder="30"
                   className="h-8 text-xs"
                 />
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   The longest a single call can last. 30 minutes is typical.
                 </p>
               </div>
@@ -434,10 +434,10 @@ export function AdvancedView({
 
             <div className="flex items-center justify-between rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
               <div className="pr-4">
-                <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+                <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
                   Allow keypad input
                 </p>
-                <p className="text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] leading-4 text-v2-ink-muted dark:text-v2-ink-subtle">
                   {AGENT_FIELD_HINTS.allowUserDtmf}
                 </p>
               </div>
@@ -451,10 +451,10 @@ export function AdvancedView({
 
             <div className="flex items-center justify-between rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
               <div className="pr-4">
-                <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+                <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
                   Speak numbers naturally
                 </p>
-                <p className="text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] leading-4 text-v2-ink-muted dark:text-v2-ink-subtle">
                   Converts "$150" to "one hundred fifty dollars" and similar.
                 </p>
               </div>

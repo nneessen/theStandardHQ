@@ -94,9 +94,9 @@ export function ConversationThread({
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md p-0 max-h-[80vh] flex flex-col">
-        <DialogHeader className="px-3 pt-3 pb-2 border-b border-zinc-100 dark:border-zinc-800">
+        <DialogHeader className="px-3 pt-3 pb-2 border-b border-v2-ring dark:border-v2-ring">
           <DialogTitle className="text-sm font-semibold flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-zinc-400" />
+            <MessageSquare className="h-4 w-4 text-v2-ink-subtle" />
             {conversation?.leadName ??
               conversation?.leadPhone ??
               "Unknown Lead"}
@@ -104,12 +104,12 @@ export function ConversationThread({
           {conversation && (
             <div className="flex items-center gap-2 mt-1">
               {conversation.localPhone && (
-                <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   {conversation.localPhone}
                 </span>
               )}
               {conversation.channel && conversation.channel !== "email" && (
-                <span className="flex items-center gap-0.5 text-[10px] text-zinc-400">
+                <span className="flex items-center gap-0.5 text-[10px] text-v2-ink-subtle">
                   {conversation.channel === "sms" && (
                     <Phone className="h-2.5 w-2.5" />
                   )}
@@ -128,13 +128,13 @@ export function ConversationThread({
                     : conversation.status === "scheduling" ||
                         conversation.status === "scheduled"
                       ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                      : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300",
+                      : "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-muted",
                 )}
               >
                 {conversation.status}
               </Badge>
               {sync.isPending && (
-                <span className="text-[9px] text-zinc-400 flex items-center gap-0.5">
+                <span className="text-[9px] text-v2-ink-subtle flex items-center gap-0.5">
                   <RefreshCw className="h-2.5 w-2.5 animate-spin" />
                   Syncing to Close…
                 </span>
@@ -152,12 +152,12 @@ export function ConversationThread({
         <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2 min-h-[300px]">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+              <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
             </div>
           ) : messages.length === 0 ? (
             <div className="py-8 text-center">
-              <MessageSquare className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-              <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+              <MessageSquare className="h-8 w-8 text-v2-ink-subtle dark:text-v2-ink-muted mx-auto mb-2" />
+              <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 No messages yet
               </p>
             </div>
@@ -174,8 +174,8 @@ export function ConversationThread({
                   )}
                 >
                   {msg.direction === "inbound" && (
-                    <div className="w-5 h-5 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <User className="h-2.5 w-2.5 text-zinc-500 dark:text-zinc-400" />
+                    <div className="w-5 h-5 rounded-full bg-v2-ring dark:bg-v2-ring-strong flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <User className="h-2.5 w-2.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
                     </div>
                   )}
                   <div
@@ -183,7 +183,7 @@ export function ConversationThread({
                       "max-w-[75%] rounded-lg px-2.5 py-1.5",
                       msg.direction === "outbound"
                         ? "bg-blue-600 text-white"
-                        : "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100",
+                        : "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink dark:text-v2-ink",
                     )}
                   >
                     <p className="text-[11px] whitespace-pre-wrap">
@@ -194,7 +194,7 @@ export function ConversationThread({
                         "flex items-center gap-1 mt-0.5",
                         msg.direction === "outbound"
                           ? "text-blue-200"
-                          : "text-zinc-400 dark:text-zinc-500",
+                          : "text-v2-ink-subtle dark:text-v2-ink-muted",
                       )}
                     >
                       <span className="text-[9px]">
@@ -233,7 +233,7 @@ export function ConversationThread({
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-3 py-2 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center justify-between px-3 py-2 border-t border-v2-ring dark:border-v2-ring">
             <Button
               variant="ghost"
               size="sm"
@@ -244,7 +244,7 @@ export function ConversationThread({
               <ChevronLeft className="h-3 w-3 mr-0.5" />
               Prev
             </Button>
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               {page} / {totalPages}
             </span>
             <Button

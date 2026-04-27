@@ -67,7 +67,7 @@ function StatusBadge({ status }: { status: string }) {
     },
     not_provisioned: {
       className:
-        "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+        "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle",
       icon: Clock,
       label: "Has Addon",
     },
@@ -134,7 +134,7 @@ function AgentListView({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -152,19 +152,19 @@ function AgentListView({
       {/* Toolbar */}
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400" />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
           <input
             type="text"
             placeholder="Search by name, email, or ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-7 pr-2 py-1.5 text-[11px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded"
+            className="w-full pl-7 pr-2 py-1.5 text-[11px] bg-v2-card border border-v2-ring dark:border-v2-ring-strong rounded"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="text-[11px] px-2 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded"
+          className="text-[11px] px-2 py-1.5 bg-v2-card border border-v2-ring dark:border-v2-ring-strong rounded"
         >
           <option value="all">All Statuses</option>
           <option value="active">Active</option>
@@ -207,14 +207,14 @@ function AgentListView({
               placeholder="User ID (UUID)"
               value={grantUserId}
               onChange={(e) => setGrantUserId(e.target.value)}
-              className="flex-1 px-2 py-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-[11px]"
+              className="flex-1 px-2 py-1 bg-v2-card border border-v2-ring dark:border-v2-ring-strong rounded text-[11px]"
             />
             <input
               type="text"
               placeholder="Reason (optional)"
               value={grantReason}
               onChange={(e) => setGrantReason(e.target.value)}
-              className="flex-1 px-2 py-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded text-[11px]"
+              className="flex-1 px-2 py-1 bg-v2-card border border-v2-ring dark:border-v2-ring-strong rounded text-[11px]"
             />
             <Button
               size="sm"
@@ -247,32 +247,32 @@ function AgentListView({
       )}
 
       {/* Summary */}
-      <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+      <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
         {filtered.length} agent{filtered.length !== 1 ? "s" : ""} ·{" "}
         {overrides.length} team override{overrides.length !== 1 ? "s" : ""}
       </div>
 
       {/* Table */}
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded overflow-hidden">
+      <div className="border border-v2-ring dark:border-v2-ring-strong rounded overflow-hidden">
         <table className="w-full text-[11px]">
           <thead>
-            <tr className="bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-700">
-              <th className="text-left px-2 py-1.5 font-medium text-zinc-600 dark:text-zinc-400">
+            <tr className="bg-v2-canvas dark:bg-v2-card-tinted/50 border-b border-v2-ring dark:border-v2-ring-strong">
+              <th className="text-left px-2 py-1.5 font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                 User
               </th>
-              <th className="text-left px-2 py-1.5 font-medium text-zinc-600 dark:text-zinc-400">
+              <th className="text-left px-2 py-1.5 font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                 Status
               </th>
-              <th className="text-left px-2 py-1.5 font-medium text-zinc-600 dark:text-zinc-400">
+              <th className="text-left px-2 py-1.5 font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                 Tier
               </th>
-              <th className="text-center px-2 py-1.5 font-medium text-zinc-600 dark:text-zinc-400">
+              <th className="text-center px-2 py-1.5 font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                 Exempt
               </th>
-              <th className="text-center px-2 py-1.5 font-medium text-zinc-600 dark:text-zinc-400">
+              <th className="text-center px-2 py-1.5 font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                 Team Override
               </th>
-              <th className="text-right px-2 py-1.5 font-medium text-zinc-600 dark:text-zinc-400">
+              <th className="text-right px-2 py-1.5 font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                 Actions
               </th>
             </tr>
@@ -301,7 +301,7 @@ function AgentListView({
               <tr>
                 <td
                   colSpan={6}
-                  className="text-center py-6 text-zinc-400 dark:text-zinc-500"
+                  className="text-center py-6 text-v2-ink-subtle dark:text-v2-ink-muted"
                 >
                   No agents found
                 </td>
@@ -332,19 +332,19 @@ function AgentRow({
   isGranting: boolean;
 }) {
   return (
-    <tr className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors">
+    <tr className="border-b border-v2-ring dark:border-v2-ring hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/30 transition-colors">
       <td className="px-2 py-1.5">
-        <div className="font-medium text-zinc-900 dark:text-zinc-100">
+        <div className="font-medium text-v2-ink dark:text-v2-ink">
           {agent.userName || "\u2014"}
         </div>
-        <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate max-w-[200px]">
+        <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate max-w-[200px]">
           {agent.userEmail || agent.user_id}
         </div>
       </td>
       <td className="px-2 py-1.5">
         <StatusBadge status={agent.provisioning_status} />
       </td>
-      <td className="px-2 py-1.5 text-zinc-600 dark:text-zinc-400">
+      <td className="px-2 py-1.5 text-v2-ink-muted dark:text-v2-ink-subtle">
         {agent.tier_id || "\u2014"}
       </td>
       <td className="px-2 py-1.5 text-center">
@@ -353,7 +353,7 @@ function AgentRow({
             Yes
           </Badge>
         ) : (
-          <span className="text-zinc-400">{"\u2014"}</span>
+          <span className="text-v2-ink-subtle">{"\u2014"}</span>
         )}
       </td>
       <td className="px-2 py-1.5 text-center">
@@ -455,20 +455,20 @@ function AdminUserPanel({
         </Button>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <Bot className="h-3.5 w-3.5 text-zinc-500" />
-            <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+            <Bot className="h-3.5 w-3.5 text-v2-ink-muted" />
+            <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
               {agentListItem.userName || "Unknown User"}
             </span>
             <StatusBadge status={agentListItem.provisioning_status} />
           </div>
-          <div className="text-[10px] text-zinc-500 dark:text-zinc-400 ml-5">
+          <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle ml-5">
             {agentListItem.userEmail} · {userId}
           </div>
         </div>
       </div>
 
       {/* Sub-tabs */}
-      <div className="flex items-center gap-0.5 bg-zinc-200/50 dark:bg-zinc-800/50 rounded-md p-0.5">
+      <div className="flex items-center gap-0.5 bg-v2-card-tinted dark:bg-v2-card-tinted/50 rounded-md p-0.5">
         {detailTabs.map((tab) => (
           <button
             key={tab.id}
@@ -476,8 +476,8 @@ function AdminUserPanel({
             className={cn(
               "flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium rounded transition-all",
               activeTab === tab.id
-                ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+                ? "bg-v2-card shadow-sm text-v2-ink dark:text-v2-ink"
+                : "text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-ink-subtle",
             )}
           >
             <tab.icon className="h-3 w-3" />
@@ -487,10 +487,10 @@ function AdminUserPanel({
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg p-3">
+      <div className="bg-v2-card border border-v2-ring dark:border-v2-ring rounded-lg p-3">
         {agentLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+            <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
           </div>
         ) : activeTab === "sms-config" ? (
           <SmsConfigPanel agent={agent} updateConfig={updateConfig} />
@@ -523,7 +523,7 @@ function SmsConfigPanel({
 }) {
   if (!agent) {
     return (
-      <div className="text-center py-6 text-[11px] text-zinc-400">
+      <div className="text-center py-6 text-[11px] text-v2-ink-subtle">
         <AlertTriangle className="h-4 w-4 mx-auto mb-1" />
         No active agent found for this user
       </div>
@@ -533,8 +533,8 @@ function SmsConfigPanel({
   return (
     <div className="space-y-3 text-[11px]">
       {/* Bot Enabled Toggle */}
-      <div className="flex items-center justify-between py-1 border-b border-zinc-100 dark:border-zinc-800">
-        <span className="font-medium text-zinc-700 dark:text-zinc-300">
+      <div className="flex items-center justify-between py-1 border-b border-v2-ring dark:border-v2-ring">
+        <span className="font-medium text-v2-ink dark:text-v2-ink-muted">
           Bot Enabled
         </span>
         <button
@@ -544,7 +544,7 @@ function SmsConfigPanel({
             "px-3 py-1 rounded text-[10px] font-medium transition-colors",
             agent.botEnabled
               ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
-              : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400",
+              : "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle",
           )}
         >
           {updateConfig.isPending ? (
@@ -642,10 +642,10 @@ function SmsConfigPanel({
       {/* Response Schedule (read-only — complex structure) */}
       {agent.responseSchedule && (
         <div>
-          <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-0.5">
+          <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5">
             Response Schedule
           </div>
-          <div className="text-[10px] text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800 p-1.5 rounded">
+          <div className="text-[10px] text-v2-ink dark:text-v2-ink-muted bg-v2-canvas dark:bg-v2-card-tinted p-1.5 rounded">
             {agent.responseSchedule.days?.length ?? 0} days configured ·
             Reminders: {agent.remindersEnabled ? "Enabled" : "Disabled"}
           </div>
@@ -655,10 +655,10 @@ function SmsConfigPanel({
       {/* Business Hours (read-only — complex structure) */}
       {agent.businessHours && (
         <div>
-          <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-0.5">
+          <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5">
             Business Hours
           </div>
-          <div className="text-[10px] text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800 p-1.5 rounded">
+          <div className="text-[10px] text-v2-ink dark:text-v2-ink-muted bg-v2-canvas dark:bg-v2-card-tinted p-1.5 rounded">
             Days: {agent.businessHours.days?.join(", ")} ·{" "}
             {agent.businessHours.startTime} – {agent.businessHours.endTime}
           </div>
@@ -678,7 +678,7 @@ function SmsConfigPanel({
       </div>
 
       {/* Voice Config Toggles */}
-      <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mt-2">
+      <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mt-2">
         Voice Settings
       </div>
       <div className="grid grid-cols-2 gap-2">
@@ -737,7 +737,7 @@ function EditableField({
   if (editing) {
     return (
       <div>
-        <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+        <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
           {label}
         </div>
         <input
@@ -767,10 +767,10 @@ function EditableField({
         setEditing(true);
       }}
     >
-      <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+      <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
         {label}
       </div>
-      <div className="text-zinc-700 dark:text-zinc-300 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+      <div className="text-v2-ink dark:text-v2-ink-muted truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
         {value || "\u2014"}
         <span className="invisible group-hover:visible text-[9px] text-blue-400 ml-1">
           edit
@@ -804,7 +804,7 @@ function EditableTextArea({
   if (editing) {
     return (
       <div>
-        <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-0.5">
+        <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5">
           {label}
         </div>
         <textarea
@@ -838,11 +838,11 @@ function EditableTextArea({
         setEditing(true);
       }}
     >
-      <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-0.5">
+      <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5">
         {label}
       </div>
-      <div className="text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800 p-1.5 rounded text-[10px] whitespace-pre-wrap group-hover:border group-hover:border-blue-300 dark:group-hover:border-blue-700 transition-colors">
-        {value || <span className="text-zinc-400">Click to add...</span>}
+      <div className="text-v2-ink dark:text-v2-ink-muted bg-v2-canvas dark:bg-v2-card-tinted p-1.5 rounded text-[10px] whitespace-pre-wrap group-hover:border group-hover:border-blue-300 dark:group-hover:border-blue-700 transition-colors">
+        {value || <span className="text-v2-ink-subtle">Click to add...</span>}
         <span className="invisible group-hover:visible text-[9px] text-blue-400 ml-1">
           edit
         </span>
@@ -880,7 +880,7 @@ function EditableList({
   if (editing) {
     return (
       <div>
-        <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-0.5">
+        <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5">
           {label} (comma-separated)
         </div>
         <textarea
@@ -914,7 +914,7 @@ function EditableList({
         setEditing(true);
       }}
     >
-      <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 mb-0.5">
+      <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5">
         {label} ({values.length})
       </div>
       <div className="flex flex-wrap gap-1 group-hover:opacity-75 transition-opacity">
@@ -924,7 +924,7 @@ function EditableList({
           </Badge>
         ))}
         {values.length === 0 && (
-          <span className="text-zinc-400">Click to add...</span>
+          <span className="text-v2-ink-subtle">Click to add...</span>
         )}
         <span className="invisible group-hover:visible text-[9px] text-blue-400">
           edit
@@ -947,7 +947,7 @@ function ToggleField({
 }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-zinc-600 dark:text-zinc-400">{label}</span>
+      <span className="text-v2-ink-muted dark:text-v2-ink-subtle">{label}</span>
       <button
         onClick={() => updateConfig.mutate({ [fieldKey]: !value })}
         disabled={updateConfig.isPending}
@@ -955,7 +955,7 @@ function ToggleField({
           "px-2 py-0.5 rounded text-[9px] font-medium transition-colors",
           value
             ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
-            : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400",
+            : "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle",
         )}
       >
         {value ? "ON" : "OFF"}
@@ -973,10 +973,10 @@ function FieldDisplay({
 }) {
   return (
     <div>
-      <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+      <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
         {label}
       </div>
-      <div className="text-zinc-700 dark:text-zinc-300 truncate">
+      <div className="text-v2-ink dark:text-v2-ink-muted truncate">
         {value ?? "\u2014"}
       </div>
     </div>
@@ -998,7 +998,7 @@ function VoicePanel({ userId }: { userId: string }) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -1012,7 +1012,7 @@ function VoicePanel({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-3 text-[11px]">
-      <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+      <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider">
         Voice Setup State
       </div>
 
@@ -1044,10 +1044,10 @@ function VoicePanel({ userId }: { userId: string }) {
           />
         </div>
       ) : (
-        <div className="text-zinc-400">No voice setup state available</div>
+        <div className="text-v2-ink-subtle">No voice setup state available</div>
       )}
 
-      <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mt-3">
+      <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mt-3">
         Voice Entitlement
       </div>
 
@@ -1066,10 +1066,10 @@ function VoicePanel({ userId }: { userId: string }) {
           />
         </div>
       ) : (
-        <div className="text-zinc-400">No voice entitlement</div>
+        <div className="text-v2-ink-subtle">No voice entitlement</div>
       )}
 
-      <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mt-3">
+      <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mt-3">
         Voice Usage
       </div>
 
@@ -1085,7 +1085,7 @@ function VoicePanel({ userId }: { userId: string }) {
           />
         </div>
       ) : (
-        <div className="text-zinc-400">No voice usage data</div>
+        <div className="text-v2-ink-subtle">No voice usage data</div>
       )}
     </div>
   );
@@ -1112,14 +1112,14 @@ function ConnectionsPanel({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
 
   return (
     <div className="space-y-3 text-[11px]">
-      <div className="text-[10px] text-zinc-400 italic">
+      <div className="text-[10px] text-v2-ink-subtle italic">
         OAuth connections are read-only. Connect/disconnect flows require the
         user's own browser session.
       </div>
@@ -1198,14 +1198,14 @@ function ConnectionRow({
   details?: string;
 }) {
   return (
-    <div className="flex items-center gap-2 py-1.5 border-b border-zinc-100 dark:border-zinc-800 last:border-0">
-      <Icon className="h-3.5 w-3.5 text-zinc-400" />
+    <div className="flex items-center gap-2 py-1.5 border-b border-v2-ring dark:border-v2-ring last:border-0">
+      <Icon className="h-3.5 w-3.5 text-v2-ink-subtle" />
       <div className="flex-1">
-        <div className="font-medium text-zinc-700 dark:text-zinc-300">
+        <div className="font-medium text-v2-ink dark:text-v2-ink-muted">
           {name}
         </div>
         {details && (
-          <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             {details}
           </div>
         )}
@@ -1215,7 +1215,7 @@ function ConnectionRow({
           "text-[9px] h-4 px-1.5",
           connected
             ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
-            : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400",
+            : "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle",
         )}
       >
         {connected ? "Connected" : "Not Connected"}
@@ -1234,14 +1234,14 @@ function UsagePanel({ userId }: { userId: string }) {
   if (usageLoading || monitoringLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
 
   return (
     <div className="space-y-3 text-[11px]">
-      <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+      <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider">
         Lead Usage
       </div>
 
@@ -1254,19 +1254,19 @@ function UsagePanel({ userId }: { userId: string }) {
           <FieldDisplay label="Tier" value={usage.tierName} />
         </div>
       ) : (
-        <div className="text-zinc-400">No usage data available</div>
+        <div className="text-v2-ink-subtle">No usage data available</div>
       )}
 
-      <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mt-3">
+      <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mt-3">
         Monitoring
       </div>
 
       {monitoring ? (
-        <div className="bg-zinc-50 dark:bg-zinc-800 p-2 rounded text-[10px] font-mono whitespace-pre-wrap max-h-40 overflow-y-auto">
+        <div className="bg-v2-canvas dark:bg-v2-card-tinted p-2 rounded text-[10px] font-mono whitespace-pre-wrap max-h-40 overflow-y-auto">
           {JSON.stringify(monitoring, null, 2)}
         </div>
       ) : (
-        <div className="text-zinc-400">No monitoring data available</div>
+        <div className="text-v2-ink-subtle">No monitoring data available</div>
       )}
     </div>
   );
@@ -1302,7 +1302,7 @@ function TeamAccessPanel({
       </div>
 
       {/* Team Override Status */}
-      <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mt-3">
+      <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mt-3">
         Team Access Override
       </div>
 
@@ -1314,7 +1314,7 @@ function TeamAccessPanel({
               Override Active
             </span>
           </div>
-          <div className="text-[10px] text-zinc-600 dark:text-zinc-400 space-y-0.5">
+          <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle space-y-0.5">
             <div>Granted by: {override.granted_by || "System"}</div>
             <div>Reason: {override.reason || "No reason provided"}</div>
             <div>
@@ -1338,7 +1338,7 @@ function TeamAccessPanel({
         </div>
       ) : (
         <div className="space-y-1.5">
-          <div className="text-zinc-500 dark:text-zinc-400">
+          <div className="text-v2-ink-muted dark:text-v2-ink-subtle">
             No team access override is active for this user.
           </div>
           <div className="flex items-center gap-2">
@@ -1347,7 +1347,7 @@ function TeamAccessPanel({
               placeholder="Reason (optional)"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="flex-1 px-2 py-1 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded text-[11px]"
+              className="flex-1 px-2 py-1 bg-v2-canvas dark:bg-v2-card-tinted border border-v2-ring dark:border-v2-ring-strong rounded text-[11px]"
             />
             <Button
               size="sm"

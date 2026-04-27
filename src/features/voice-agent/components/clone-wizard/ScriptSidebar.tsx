@@ -57,32 +57,30 @@ export function ScriptSidebar({
       : 0;
 
   return (
-    <div className="flex h-full w-[264px] flex-shrink-0 flex-col border-r border-zinc-200 bg-zinc-50/50 dark:border-zinc-800 dark:bg-zinc-950/30">
+    <div className="flex h-full w-[264px] flex-shrink-0 flex-col border-r border-v2-ring bg-v2-canvas/50 dark:border-v2-ring dark:bg-v2-canvas/30">
       {/* Progress summary */}
-      <div className="border-b border-zinc-200 p-3 dark:border-zinc-800">
+      <div className="border-b border-v2-ring p-3 dark:border-v2-ring">
         <div className="flex items-baseline justify-between">
-          <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <span className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
             {completedSegments}/{totalSegments} recorded
           </span>
-          <span className="text-[10px] tabular-nums text-zinc-400 dark:text-zinc-500">
+          <span className="text-[10px] tabular-nums text-v2-ink-subtle dark:text-v2-ink-muted">
             {totalAudioMinutes.toFixed(1)} / {minimumAudioMinutes} min
           </span>
         </div>
         {/* Segment progress bar */}
-        <div className="mt-1.5 h-1.5 rounded-full bg-zinc-200 dark:bg-zinc-700">
+        <div className="mt-1.5 h-1.5 rounded-full bg-v2-ring dark:bg-v2-ring-strong">
           <div
             className="h-full rounded-full bg-amber-500 transition-all"
             style={{ width: `${progressPct}%` }}
           />
         </div>
         {/* Audio minutes progress bar */}
-        <div className="mt-1 h-1 rounded-full bg-zinc-200 dark:bg-zinc-700">
+        <div className="mt-1 h-1 rounded-full bg-v2-ring dark:bg-v2-ring-strong">
           <div
             className={cn(
               "h-full rounded-full transition-all",
-              audioPct >= 100
-                ? "bg-emerald-500"
-                : "bg-zinc-400 dark:bg-zinc-500",
+              audioPct >= 100 ? "bg-emerald-500" : "bg-v2-ink-subtle",
             )}
             style={{ width: `${audioPct}%` }}
           />
@@ -93,8 +91,8 @@ export function ScriptSidebar({
       <div className="flex-1 overflow-y-auto overscroll-contain">
         {groups.map((group) => (
           <div key={group.category}>
-            <div className="sticky top-0 z-10 bg-zinc-50/95 px-3 py-1.5 backdrop-blur-sm dark:bg-zinc-950/95">
-              <span className="text-[9px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+            <div className="sticky top-0 z-10 bg-v2-canvas/95 px-3 py-1.5 backdrop-blur-sm dark:bg-v2-canvas/95">
+              <span className="text-[9px] font-semibold uppercase tracking-wider text-v2-ink-subtle dark:text-v2-ink-muted">
                 {group.category}
               </span>
             </div>
@@ -110,7 +108,7 @@ export function ScriptSidebar({
                     "flex w-full items-center gap-2 px-3 py-1.5 text-left transition-colors",
                     isActive
                       ? "bg-indigo-50 dark:bg-indigo-950/30"
-                      : "hover:bg-zinc-100 dark:hover:bg-zinc-800/50",
+                      : "hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted/50",
                   )}
                 >
                   {/* Status indicator */}
@@ -122,7 +120,7 @@ export function ScriptSidebar({
                         "h-2 w-2 flex-shrink-0 rounded-full",
                         isActive
                           ? "bg-indigo-500"
-                          : "bg-zinc-300 dark:bg-zinc-600",
+                          : "bg-v2-ring-strong dark:bg-v2-ring-strong",
                       )}
                     />
                   )}
@@ -132,14 +130,14 @@ export function ScriptSidebar({
                       isActive
                         ? "font-medium text-indigo-700 dark:text-indigo-300"
                         : isCompleted
-                          ? "text-zinc-500 dark:text-zinc-400"
-                          : "text-zinc-700 dark:text-zinc-300",
+                          ? "text-v2-ink-muted dark:text-v2-ink-subtle"
+                          : "text-v2-ink dark:text-v2-ink-muted",
                     )}
                   >
                     {script.title}
                   </span>
                   {script.optional && !isCompleted && (
-                    <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
+                    <span className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
                       opt
                     </span>
                   )}

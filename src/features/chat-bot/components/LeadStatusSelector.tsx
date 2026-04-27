@@ -41,7 +41,7 @@ export function LeadStatusSelector({
   return (
     <div className="space-y-2">
       {/* Select All toggle */}
-      <div className="flex items-center justify-between pb-1 border-b border-zinc-100 dark:border-zinc-800">
+      <div className="flex items-center justify-between pb-1 border-b border-v2-ring dark:border-v2-ring">
         <Button
           variant="ghost"
           size="sm"
@@ -51,7 +51,7 @@ export function LeadStatusSelector({
         >
           {allSelected ? "Deselect All" : "Select All"}
         </Button>
-        <span className="text-[10px] text-zinc-400">
+        <span className="text-[10px] text-v2-ink-subtle">
           {selected.length} / {statusLabels.length}
         </span>
       </div>
@@ -68,7 +68,7 @@ export function LeadStatusSelector({
               onCheckedChange={() => toggle(status)}
               disabled={disabled}
             />
-            <span className="text-[11px] text-zinc-700 dark:text-zinc-300 truncate">
+            <span className="text-[11px] text-v2-ink dark:text-v2-ink-muted truncate">
               {status}
             </span>
           </label>

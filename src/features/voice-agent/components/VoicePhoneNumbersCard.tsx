@@ -105,14 +105,14 @@ export function VoicePhoneNumbersCard({
 
   if (!voiceAgentCreated || !voiceAccessActive) {
     return (
-      <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
         <div className="flex items-start gap-3">
-          <Phone className="mt-0.5 h-4 w-4 shrink-0 text-zinc-400" />
+          <Phone className="mt-0.5 h-4 w-4 shrink-0 text-v2-ink-subtle" />
           <div>
-            <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+            <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
               Phone Numbers
             </p>
-            <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+            <p className="mt-1 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
               {!voiceAgentCreated
                 ? "Create a voice agent first to manage phone numbers."
                 : "Voice addon required to purchase phone numbers."}
@@ -124,21 +124,21 @@ export function VoicePhoneNumbersCard({
   }
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-start gap-3">
-          <Phone className="mt-0.5 h-4 w-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
+          <Phone className="mt-0.5 h-4 w-4 shrink-0 text-v2-ink-muted dark:text-v2-ink-subtle" />
           <div>
-            <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+            <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
               Phone Numbers
             </p>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Purchase and manage dedicated numbers for voice calls.
             </p>
           </div>
         </div>
-        <span className="text-[10px] tabular-nums text-zinc-400">
+        <span className="text-[10px] tabular-nums text-v2-ink-subtle">
           {activeNumbers.length} / {VOICE_PHONE_MAX_PER_AGENT}
         </span>
       </div>
@@ -146,13 +146,13 @@ export function VoicePhoneNumbersCard({
       {/* Number Table */}
       {isLoading ? (
         <div className="mt-3 flex items-center justify-center py-4">
-          <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+          <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
         </div>
       ) : activeNumbers.length > 0 ? (
         <div className="mt-3 overflow-x-auto">
           <table className="w-full text-[11px]">
             <thead>
-              <tr className="border-b border-zinc-100 text-left text-[10px] font-medium text-zinc-400 dark:border-zinc-800">
+              <tr className="border-b border-v2-ring text-left text-[10px] font-medium text-v2-ink-subtle dark:border-v2-ring">
                 <th className="pb-1.5 pr-3">Number</th>
                 <th className="pb-1.5 pr-3">Type</th>
                 <th className="pb-1.5 pr-3">Nickname</th>
@@ -164,10 +164,10 @@ export function VoicePhoneNumbersCard({
               {activeNumbers.map((num) => (
                 <tr
                   key={num.id}
-                  className="border-b border-zinc-50 last:border-0 dark:border-zinc-800/50"
+                  className="border-b border-v2-ring last:border-0 dark:border-v2-ring/50"
                 >
                   {/* Number */}
-                  <td className="py-1.5 pr-3 font-mono text-zinc-900 dark:text-zinc-100">
+                  <td className="py-1.5 pr-3 font-mono text-v2-ink dark:text-v2-ink">
                     {formatE164(num.phoneNumber)}
                   </td>
 
@@ -177,7 +177,7 @@ export function VoicePhoneNumbersCard({
                       className={`inline-block rounded px-1.5 py-0.5 text-[9px] font-medium ${
                         num.tollFree
                           ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
-                          : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400"
+                          : "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle"
                       }`}
                     >
                       {num.tollFree ? "Toll-Free" : "Local"}
@@ -207,14 +207,14 @@ export function VoicePhoneNumbersCard({
                     ) : (
                       <button
                         type="button"
-                        className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+                        className="text-v2-ink-muted hover:text-v2-ink dark:text-v2-ink-subtle dark:hover:text-v2-canvas"
                         onClick={() => {
                           setEditingNicknameId(num.id);
                           setEditNicknameValue(num.nickname || "");
                         }}
                       >
                         {num.nickname || (
-                          <span className="italic text-zinc-300 dark:text-zinc-600">
+                          <span className="italic text-v2-ink-subtle dark:text-v2-ink-muted">
                             Add label
                           </span>
                         )}
@@ -229,7 +229,7 @@ export function VoicePhoneNumbersCard({
                     ) : (
                       <button
                         type="button"
-                        className="mx-auto block text-zinc-300 hover:text-amber-400 disabled:opacity-50 dark:text-zinc-600"
+                        className="mx-auto block text-v2-ink-subtle hover:text-amber-400 disabled:opacity-50 dark:text-v2-ink-muted"
                         onClick={() => handleSetPrimary(num.id)}
                         disabled={
                           update.isPending || num.status === "releasing"
@@ -286,7 +286,7 @@ export function VoicePhoneNumbersCard({
           </table>
         </div>
       ) : (
-        <p className="mt-3 text-[11px] text-zinc-400">
+        <p className="mt-3 text-[11px] text-v2-ink-subtle">
           No managed phone numbers yet. Purchase a dedicated number for your
           voice agent.
         </p>
@@ -294,9 +294,9 @@ export function VoicePhoneNumbersCard({
 
       {/* Purchase Form */}
       {showPurchaseForm ? (
-        <div className="mt-3 space-y-2.5 rounded-lg border border-zinc-100 bg-zinc-50/50 p-3 dark:border-zinc-800 dark:bg-zinc-800/30">
+        <div className="mt-3 space-y-2.5 rounded-lg border border-v2-ring bg-v2-canvas/50 p-3 dark:border-v2-ring dark:bg-v2-card-tinted/30">
           <div className="flex items-center gap-3">
-            <Label className="text-[11px] text-zinc-600 dark:text-zinc-400">
+            <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Toll-Free
             </Label>
             <Switch
@@ -308,7 +308,7 @@ export function VoicePhoneNumbersCard({
 
           {!tollFree && (
             <div>
-              <Label className="text-[10px] text-zinc-500">
+              <Label className="text-[10px] text-v2-ink-muted">
                 Area Code (optional)
               </Label>
               <Input
@@ -325,7 +325,7 @@ export function VoicePhoneNumbersCard({
           )}
 
           <div>
-            <Label className="text-[10px] text-zinc-500">
+            <Label className="text-[10px] text-v2-ink-muted">
               Nickname (optional)
             </Label>
             <Input
@@ -338,7 +338,7 @@ export function VoicePhoneNumbersCard({
             />
           </div>
 
-          <div className="flex items-center gap-2 border-t border-zinc-100 pt-2.5 dark:border-zinc-700">
+          <div className="flex items-center gap-2 border-t border-v2-ring pt-2.5 dark:border-v2-ring-strong">
             <Button
               size="sm"
               className="h-7 text-[10px]"
@@ -382,7 +382,7 @@ export function VoicePhoneNumbersCard({
             Buy Number
           </Button>
           {atLimit && (
-            <span className="ml-2 text-[10px] text-zinc-400">
+            <span className="ml-2 text-[10px] text-v2-ink-subtle">
               Maximum {VOICE_PHONE_MAX_PER_AGENT} numbers reached
             </span>
           )}

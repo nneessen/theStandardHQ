@@ -42,7 +42,7 @@ export function InstructionsView({
 
   if (!llmAvailable && !llmLoading) {
     return (
-      <div className="rounded-lg border border-dashed border-zinc-300 bg-zinc-50 px-3 py-4 text-center text-[11px] leading-5 text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/40 dark:text-zinc-400">
+      <div className="rounded-lg border border-dashed border-v2-ring-strong bg-v2-canvas px-3 py-4 text-center text-[11px] leading-5 text-v2-ink-muted dark:border-v2-ring-strong dark:bg-v2-card-tinted/40 dark:text-v2-ink-subtle">
         Prompt editing becomes available when this workspace is using the
         managed voice model setup.
       </div>
@@ -52,14 +52,14 @@ export function InstructionsView({
   return (
     <div className="space-y-4">
       {/* Mode toggle */}
-      <div className="flex items-center gap-0.5 rounded-lg border border-zinc-200 bg-zinc-100 p-0.5 dark:border-zinc-800 dark:bg-zinc-800/60 w-fit">
+      <div className="flex items-center gap-0.5 rounded-lg border border-v2-ring bg-v2-card-tinted p-0.5 dark:border-v2-ring dark:bg-v2-card-tinted/60 w-fit">
         <button
           type="button"
           onClick={() => setMode("guided")}
           className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] font-medium transition-all ${
             mode === "guided"
-              ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-zinc-100"
-              : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
+              ? "bg-white text-v2-ink shadow-sm dark:bg-v2-card dark:text-v2-ink"
+              : "text-v2-ink-muted hover:text-v2-ink dark:text-v2-ink-subtle dark:hover:text-v2-ink-subtle"
           }`}
         >
           <WandSparkles className="h-3.5 w-3.5" />
@@ -70,8 +70,8 @@ export function InstructionsView({
           onClick={() => setMode("advanced")}
           className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[11px] font-medium transition-all ${
             mode === "advanced"
-              ? "bg-white text-zinc-900 shadow-sm dark:bg-zinc-900 dark:text-zinc-100"
-              : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
+              ? "bg-white text-v2-ink shadow-sm dark:bg-v2-card dark:text-v2-ink"
+              : "text-v2-ink-muted hover:text-v2-ink dark:text-v2-ink-subtle dark:hover:text-v2-ink-subtle"
           }`}
         >
           <Sparkles className="h-3.5 w-3.5" />

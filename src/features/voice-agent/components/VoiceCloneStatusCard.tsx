@@ -102,15 +102,15 @@ export function VoiceCloneStatusCard({
   // Show a compact loading skeleton while first fetch is in-flight
   if (isLoading && !cloneStatus) {
     return (
-      <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
         <div className="flex items-center gap-2">
-          <Mic className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
-          <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <Mic className="h-4 w-4 text-v2-ink-subtle dark:text-v2-ink-muted" />
+          <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
             Voice Cloning
           </span>
-          <Loader2 className="ml-auto h-3.5 w-3.5 animate-spin text-zinc-400 dark:text-zinc-500" />
+          <Loader2 className="ml-auto h-3.5 w-3.5 animate-spin text-v2-ink-subtle dark:text-v2-ink-muted" />
         </div>
-        <p className="mt-1.5 text-[11px] text-zinc-400 dark:text-zinc-500">
+        <p className="mt-1.5 text-[11px] text-v2-ink-subtle dark:text-v2-ink-muted">
           Checking clone status...
         </p>
       </div>
@@ -132,10 +132,10 @@ export function VoiceCloneStatusCard({
     };
 
     return (
-      <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
         <div className="flex items-center gap-2">
           <Mic className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
             Voice Cloning
           </span>
           <Badge className="ml-auto bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 text-[10px] px-1.5 py-0">
@@ -143,7 +143,7 @@ export function VoiceCloneStatusCard({
           </Badge>
         </div>
         <div className="mt-1.5 flex items-center justify-between">
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Your cloned voice is active on all calls.
           </p>
           <button
@@ -184,7 +184,7 @@ export function VoiceCloneStatusCard({
       <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 dark:border-indigo-900/50 dark:bg-indigo-950/20">
         <div className="flex items-center gap-2">
           <Mic className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-          <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
             Voice Cloning
           </span>
           <Badge className="ml-auto bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 text-[10px] px-1.5 py-0">
@@ -209,7 +209,7 @@ export function VoiceCloneStatusCard({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 text-[10px] px-2 text-zinc-400 hover:text-zinc-600"
+              className="h-6 text-[10px] px-2 text-v2-ink-subtle hover:text-v2-ink-muted"
               onClick={() => navigate({ to: "/voice-agent/clone" })}
             >
               Details
@@ -263,7 +263,7 @@ export function VoiceCloneStatusCard({
       <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-900/50 dark:bg-amber-950/20">
         <div className="flex items-center gap-2">
           <Mic className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-          <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
             Voice Cloning
           </span>
           <Badge className="ml-auto bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 text-[10px] px-1.5 py-0">
@@ -271,13 +271,13 @@ export function VoiceCloneStatusCard({
           </Badge>
         </div>
         <div className="mt-2 flex items-center gap-3">
-          <div className="h-1.5 flex-1 rounded-full bg-zinc-200 dark:bg-zinc-700">
+          <div className="h-1.5 flex-1 rounded-full bg-v2-ring dark:bg-v2-ring-strong">
             <div
               className="h-full rounded-full bg-amber-500 transition-all"
               style={{ width: `${pct}%` }}
             />
           </div>
-          <span className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400 tabular-nums">
+          <span className="text-[11px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle tabular-nums">
             {cloneStatus.completedSegments}/{cloneStatus.totalSegments}
           </span>
         </div>
@@ -327,18 +327,18 @@ export function VoiceCloneStatusCard({
     };
 
     return (
-      <div className="rounded-xl border border-zinc-200 bg-zinc-50/50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
+      <div className="rounded-xl border border-v2-ring bg-v2-canvas/50 p-4 dark:border-v2-ring dark:bg-v2-card/50">
         <div className="flex items-center gap-2">
-          <Mic className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
-          <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <Mic className="h-4 w-4 text-v2-ink-muted dark:text-v2-ink-subtle" />
+          <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
             Voice Cloning
           </span>
-          <Badge className="ml-auto bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 text-[10px] px-1.5 py-0">
+          <Badge className="ml-auto bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle text-[10px] px-1.5 py-0">
             Session Found
           </Badge>
         </div>
         <div className="mt-1.5 flex items-center justify-between">
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             A previous clone session was found.
           </p>
           <div className="flex items-center gap-2">
@@ -369,17 +369,17 @@ export function VoiceCloneStatusCard({
   // No attempts remaining
   if (cloneStatus && cloneStatus.remainingAttempts === 0) {
     return (
-      <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
+      <div className="rounded-xl border border-v2-ring bg-v2-canvas p-4 dark:border-v2-ring dark:bg-v2-card/50">
         <div className="flex items-center gap-2">
-          <Mic className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
-          <span className="text-[12px] font-semibold text-zinc-600 dark:text-zinc-400">
+          <Mic className="h-4 w-4 text-v2-ink-subtle dark:text-v2-ink-muted" />
+          <span className="text-[12px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
             Voice Cloning
           </span>
-          <Badge className="ml-auto bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 text-[10px] px-1.5 py-0">
+          <Badge className="ml-auto bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle text-[10px] px-1.5 py-0">
             No Attempts Remaining
           </Badge>
         </div>
-        <p className="mt-1.5 text-[11px] text-zinc-400 dark:text-zinc-500">
+        <p className="mt-1.5 text-[11px] text-v2-ink-subtle dark:text-v2-ink-muted">
           All voice clone attempts have been used. Contact support for
           additional attempts.
         </p>
@@ -393,20 +393,20 @@ export function VoiceCloneStatusCard({
     : null;
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="flex items-center gap-2">
-        <Mic className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
-        <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <Mic className="h-4 w-4 text-v2-ink-muted dark:text-v2-ink-subtle" />
+        <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
           Voice Cloning
         </span>
       </div>
-      <p className="mt-1.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+      <p className="mt-1.5 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
         Record 25 guided audio segments to create a custom AI voice that sounds
         like you on all calls.
       </p>
       <div className="mt-2.5 flex items-center justify-between">
         {attemptsText && (
-          <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
+          <p className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted">
             {attemptsText}
           </p>
         )}

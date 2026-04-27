@@ -40,8 +40,8 @@ export function HowItWorksTab() {
   return (
     <div className="space-y-4">
       {/* ── 3-Step Horizontal Flow ────────────────────────────── */}
-      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
-        <h2 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 mb-3">
+      <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card p-4">
+        <h2 className="text-xs font-semibold text-v2-ink dark:text-v2-ink mb-3">
           Three Steps to Booked Appointments
         </h2>
         <div className="grid grid-cols-3 gap-4">
@@ -52,17 +52,17 @@ export function HowItWorksTab() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <item.icon className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-                  <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+                  <item.icon className="h-3.5 w-3.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
+                  <span className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
                     {item.title}
                   </span>
                 </div>
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
                   {item.desc}
                 </p>
               </div>
               {i < steps.length - 1 && (
-                <div className="hidden lg:flex items-center justify-center w-4 text-zinc-300 dark:text-zinc-600 mt-1 flex-shrink-0">
+                <div className="hidden lg:flex items-center justify-center w-4 text-v2-ink-subtle dark:text-v2-ink-muted mt-1 flex-shrink-0">
                   &rarr;
                 </div>
               )}
@@ -76,10 +76,10 @@ export function HowItWorksTab() {
         {/* Left: Conversation Demo */}
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <h2 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-xs font-semibold text-v2-ink dark:text-v2-ink">
               See It In Action
             </h2>
-            <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
+            <div className="flex-1 h-px bg-v2-ring dark:bg-v2-card-tinted" />
           </div>
           <ConversationDemo />
         </div>
@@ -87,17 +87,17 @@ export function HowItWorksTab() {
         {/* Right: Key Selling Points */}
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <h2 className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-xs font-semibold text-v2-ink dark:text-v2-ink">
               Why It Works
             </h2>
-            <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800" />
+            <div className="flex-1 h-px bg-v2-ring dark:bg-v2-card-tinted" />
           </div>
-          <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4">
+          <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-canvas dark:bg-v2-card p-4">
             <ul className="space-y-2.5">
               {sellingPoints.map((point) => (
                 <li key={point} className="flex items-start gap-2">
                   <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                  <span className="text-[10px] text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                  <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted leading-relaxed">
                     {point}
                   </span>
                 </li>

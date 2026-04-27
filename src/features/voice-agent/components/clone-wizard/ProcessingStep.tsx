@@ -35,15 +35,15 @@ export function ProcessingStep({ cloneId, onComplete }: ProcessingStepProps) {
   return (
     <div className="mx-auto flex max-w-md flex-col items-center justify-center py-16 text-center">
       <Loader2 className="mb-4 h-8 w-8 animate-spin text-indigo-500" />
-      <h3 className="text-[14px] font-semibold text-zinc-900 dark:text-zinc-100">
+      <h3 className="text-[14px] font-semibold text-v2-ink dark:text-v2-ink">
         Processing Your Voice Clone
       </h3>
-      <p className="mt-2 text-[12px] text-zinc-500 dark:text-zinc-400">
+      <p className="mt-2 text-[12px] text-v2-ink-muted dark:text-v2-ink-subtle">
         Your recordings are being analyzed and processed to create your custom
         AI voice. This typically takes 5-15 minutes.
       </p>
       {session && (
-        <p className="mt-3 text-[11px] tabular-nums text-zinc-400 dark:text-zinc-500">
+        <p className="mt-3 text-[11px] tabular-nums text-v2-ink-subtle dark:text-v2-ink-muted">
           {session.completedSegments} segments |{" "}
           {session.totalAudioMinutes.toFixed(1)} minutes of audio
         </p>

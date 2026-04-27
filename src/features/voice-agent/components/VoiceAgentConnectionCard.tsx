@@ -115,13 +115,13 @@ export function VoiceAgentConnectionCard({
   };
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-zinc-900 dark:text-zinc-100">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
             Launch Readiness
           </p>
-          <p className="mt-1 text-[11px] leading-5 text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-[11px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
             Confirm that your voice agent and caller ID are ready before you
             publish the AI Voice Agent live.
           </p>
@@ -131,14 +131,14 @@ export function VoiceAgentConnectionCard({
           className={
             connection?.connected
               ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-              : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+              : "bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted"
           }
         >
           {connection?.connected ? "Ready to Launch" : "Not Linked Yet"}
         </Badge>
       </div>
 
-      <div className="mt-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-950/40">
+      <div className="mt-4 rounded-xl border border-v2-ring bg-v2-canvas p-4 dark:border-v2-ring dark:bg-v2-canvas/40">
         {connection?.connected ? (
           <div className="space-y-4">
             <div className="flex items-start gap-3">
@@ -146,10 +146,10 @@ export function VoiceAgentConnectionCard({
                 <ShieldCheck className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100">
+                <p className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink">
                   Your voice agent is ready
                 </p>
-                <p className="mt-1 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
+                <p className="mt-1 text-[11px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
                   You can focus on setup. Inbound calls can route against this
                   agent, and the AI Voice Agent can work against the live lead
                   records coming from Close CRM.
@@ -158,42 +158,42 @@ export function VoiceAgentConnectionCard({
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-lg border border-zinc-200 bg-white px-3 py-3 dark:border-zinc-800 dark:bg-zinc-900">
-                <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <div className="rounded-lg border border-v2-ring bg-white px-3 py-3 dark:border-v2-ring dark:bg-v2-card">
+                <p className="text-[10px] uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                   Close CRM
                 </p>
-                <p className="mt-1 text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                <p className="mt-1 text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                   {closeConnected ? "Connected" : "Not connected"}
                 </p>
               </div>
 
-              <div className="rounded-lg border border-zinc-200 bg-white px-3 py-3 dark:border-zinc-800 dark:bg-zinc-900">
-                <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <div className="rounded-lg border border-v2-ring bg-white px-3 py-3 dark:border-v2-ring dark:bg-v2-card">
+                <p className="text-[10px] uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                   Outgoing number
                 </p>
-                <p className="mt-1 text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                <p className="mt-1 text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                   {connection.fromNumber ||
                     connection.closePhoneNumber ||
                     "Not set"}
                 </p>
               </div>
 
-              <div className="rounded-lg border border-zinc-200 bg-white px-3 py-3 dark:border-zinc-800 dark:bg-zinc-900">
-                <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <div className="rounded-lg border border-v2-ring bg-white px-3 py-3 dark:border-v2-ring dark:bg-v2-card">
+                <p className="text-[10px] uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                   Caller ID
                 </p>
-                <p className="mt-1 text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                <p className="mt-1 text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                   {connection.fromNumberSource === "close"
                     ? "Close / Twilio"
                     : "Managed by The Standard HQ"}
                 </p>
               </div>
 
-              <div className="rounded-lg border border-zinc-200 bg-white px-3 py-3 dark:border-zinc-800 dark:bg-zinc-900">
-                <p className="text-[10px] uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              <div className="rounded-lg border border-v2-ring bg-white px-3 py-3 dark:border-v2-ring dark:bg-v2-card">
+                <p className="text-[10px] uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                   {isSuperAdmin ? "Runtime Agent ID" : "Voice Agent"}
                 </p>
-                <p className="mt-1 truncate text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                <p className="mt-1 truncate text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                   {isSuperAdmin
                     ? connection.retellAgentId || "Ready"
                     : "Linked"}
@@ -204,14 +204,14 @@ export function VoiceAgentConnectionCard({
         ) : (
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 text-white dark:bg-v2-card-tinted dark:text-v2-ink">
                 <PhoneCall className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100">
+                <p className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink">
                   No voice agent is set up for this workspace yet
                 </p>
-                <p className="mt-1 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
+                <p className="mt-1 text-[11px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
                   Voice, greeting, prompt, and publish controls appear after you
                   create the voice agent. Standard users should never need to
                   enter technical credentials here.
@@ -219,7 +219,7 @@ export function VoiceAgentConnectionCard({
               </div>
             </div>
 
-            <div className="rounded-lg border border-dashed border-zinc-300 bg-white px-3 py-3 text-[11px] leading-5 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400">
+            <div className="rounded-lg border border-dashed border-v2-ring-strong bg-white px-3 py-3 text-[11px] leading-5 text-v2-ink-muted dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink-subtle">
               Inbound calls and lead records come from Close CRM. You can still
               review your plan, usage, and call settings now, but live voice
               drafting only becomes available after the voice agent is created
@@ -229,14 +229,14 @@ export function VoiceAgentConnectionCard({
         )}
       </div>
 
-      <div className="mt-4 rounded-lg border border-zinc-200 px-3 py-3 dark:border-zinc-800">
+      <div className="mt-4 rounded-lg border border-v2-ring px-3 py-3 dark:border-v2-ring">
         <div className="flex items-center gap-2">
-          <Link2 className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
-          <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <Link2 className="h-3.5 w-3.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
+          <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
             What to do in this step
           </p>
         </div>
-        <p className="mt-2 text-[11px] leading-5 text-zinc-600 dark:text-zinc-400">
+        <p className="mt-2 text-[11px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
           Review readiness here, then move to publish once the voice agent is
           ready. Voice choice, greeting, prompt, and call behavior belong in the
           setup tabs.
@@ -247,14 +247,14 @@ export function VoiceAgentConnectionCard({
         <Collapsible
           open={advancedOpen}
           onOpenChange={setAdvancedOpen}
-          className="mt-4 rounded-lg border border-zinc-200 dark:border-zinc-800"
+          className="mt-4 rounded-lg border border-v2-ring dark:border-v2-ring"
         >
           <div className="flex items-center justify-between gap-3 px-3 py-3">
             <div>
-              <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                 Admin: Manual workspace link
               </p>
-              <p className="mt-1 text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
+              <p className="mt-1 text-[10px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
                 Internal voice runtime setup for super-admin use only.
               </p>
             </div>
@@ -271,7 +271,7 @@ export function VoiceAgentConnectionCard({
             </CollapsibleTrigger>
           </div>
 
-          <CollapsibleContent className="border-t border-zinc-200 px-3 py-3 dark:border-zinc-800">
+          <CollapsibleContent className="border-t border-v2-ring px-3 py-3 dark:border-v2-ring">
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <div className="space-y-1.5">
@@ -279,7 +279,7 @@ export function VoiceAgentConnectionCard({
                     Voice runtime API key
                   </Label>
                   <div className="relative">
-                    <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-400" />
+                    <KeyRound className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-v2-ink-subtle" />
                     <Input
                       id="voice-retell-api-key"
                       type="password"
@@ -318,13 +318,13 @@ export function VoiceAgentConnectionCard({
                     className={`rounded-lg border px-3 py-3 text-left transition ${
                       fromNumberSource === "retell"
                         ? "border-sky-400 bg-sky-50 dark:border-sky-700 dark:bg-sky-950/20"
-                        : "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950/40"
+                        : "border-v2-ring bg-v2-canvas dark:border-v2-ring dark:bg-v2-canvas/40"
                     }`}
                   >
-                    <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                    <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                       Managed number
                     </p>
-                    <p className="mt-1 text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
+                    <p className="mt-1 text-[10px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
                       Use the platform-managed line as the caller ID.
                     </p>
                   </button>
@@ -336,13 +336,13 @@ export function VoiceAgentConnectionCard({
                     className={`rounded-lg border px-3 py-3 text-left transition ${
                       fromNumberSource === "close"
                         ? "border-sky-400 bg-sky-50 dark:border-sky-700 dark:bg-sky-950/20"
-                        : "border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950/40"
+                        : "border-v2-ring bg-v2-canvas dark:border-v2-ring dark:bg-v2-canvas/40"
                     } ${!closeConnected ? "cursor-not-allowed opacity-60" : ""}`}
                   >
-                    <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+                    <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                       Close / Twilio caller ID
                     </p>
-                    <p className="mt-1 text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
+                    <p className="mt-1 text-[10px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
                       Use a Close-backed number for caller ID.
                     </p>
                   </button>

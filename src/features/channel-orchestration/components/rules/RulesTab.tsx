@@ -99,7 +99,7 @@ export function RulesTab() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -109,11 +109,11 @@ export function RulesTab() {
     return (
       <div className="space-y-3">
         <div className="flex flex-col items-center justify-center py-10 text-center">
-          <Power className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-2" />
-          <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+          <Power className="h-8 w-8 text-v2-ink-subtle dark:text-v2-ink-muted mb-2" />
+          <p className="text-xs font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-1">
             No orchestration rules configured
           </p>
-          <p className="text-[10px] text-zinc-500 mb-3 max-w-xs">
+          <p className="text-[10px] text-v2-ink-muted mb-3 max-w-xs">
             Rules control which channel (SMS or Voice) is used for each lead.
             Start from a template or build your own.
           </p>
@@ -130,12 +130,12 @@ export function RulesTab() {
   return (
     <div className="space-y-2">
       {/* Ruleset Identity */}
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-md p-2 bg-white dark:bg-zinc-900">
+      <div className="border border-v2-ring dark:border-v2-ring-strong rounded-md p-2 bg-v2-card">
         <div className="flex items-center gap-2 flex-wrap">
-          <Network className="h-4 w-4 text-zinc-400 shrink-0" />
+          <Network className="h-4 w-4 text-v2-ink-subtle shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-semibold text-zinc-800 dark:text-zinc-200 truncate">
+              <span className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink truncate">
                 {ruleset.name}
               </span>
               <Badge
@@ -154,7 +154,7 @@ export function RulesTab() {
                 </Badge>
               )}
             </div>
-            <div className="text-[9px] text-zinc-400 mt-0.5">
+            <div className="text-[9px] text-v2-ink-subtle mt-0.5">
               v{ruleset.version} · Updated{" "}
               {new Date(ruleset.updatedAt).toLocaleDateString()}
             </div>
@@ -172,7 +172,7 @@ export function RulesTab() {
                 "text-[10px] font-medium",
                 ruleset.isActive
                   ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-zinc-400",
+                  : "text-v2-ink-subtle",
               )}
             >
               {ruleset.isActive ? "Active" : "Inactive"}
@@ -199,7 +199,7 @@ export function RulesTab() {
       </div>
 
       {/* Rules List */}
-      <p className="text-[9px] text-zinc-400">
+      <p className="text-[9px] text-v2-ink-subtle">
         Rules are evaluated top-to-bottom. The first rule that matches wins.
         Drag to reorder.
       </p>
@@ -235,7 +235,7 @@ export function RulesTab() {
           </SortableContext>
         </DndContext>
       ) : (
-        <div className="text-[10px] text-zinc-500 text-center py-4">
+        <div className="text-[10px] text-v2-ink-muted text-center py-4">
           No rules yet. Add one below or apply a template.
         </div>
       )}
@@ -302,14 +302,16 @@ function FallbackEditor({
   };
 
   return (
-    <div className="border border-zinc-200 dark:border-zinc-700 rounded-md p-2 bg-zinc-50 dark:bg-zinc-900/50">
+    <div className="border border-v2-ring dark:border-v2-ring-strong rounded-md p-2 bg-v2-canvas dark:bg-v2-card/50">
       <div className="flex items-center gap-2 mb-0.5">
-        <Label className="text-[10px] font-medium text-zinc-500">
+        <Label className="text-[10px] font-medium text-v2-ink-muted">
           Fallback Action
         </Label>
-        <span className="text-[9px] text-zinc-400">(when no rule matches)</span>
+        <span className="text-[9px] text-v2-ink-subtle">
+          (when no rule matches)
+        </span>
       </div>
-      <p className="text-[9px] text-zinc-400 mb-1.5">
+      <p className="text-[9px] text-v2-ink-subtle mb-1.5">
         When no rule matches (e.g., deep night hours), these defaults apply.
       </p>
       <div className="flex items-center gap-3">
@@ -324,7 +326,7 @@ function FallbackEditor({
                 "px-2 py-0.5 text-[10px] rounded border transition-colors",
                 fallback.allowedChannels.includes(ch)
                   ? "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300"
-                  : "border-zinc-200 dark:border-zinc-700 text-zinc-400",
+                  : "border-v2-ring dark:border-v2-ring-strong text-v2-ink-subtle",
               )}
             >
               {ch === "sms" ? "SMS" : "Voice"}
@@ -333,7 +335,7 @@ function FallbackEditor({
         </div>
         {fallback.allowedChannels.length > 1 && (
           <div className="flex items-center gap-1">
-            <span className="text-[9px] text-zinc-500">Prefer:</span>
+            <span className="text-[9px] text-v2-ink-muted">Prefer:</span>
             {fallback.allowedChannels.map((ch) => (
               <button
                 key={ch}
@@ -344,7 +346,7 @@ function FallbackEditor({
                   "px-1.5 py-0.5 text-[9px] rounded border transition-colors",
                   fallback.preferredChannel === ch
                     ? "bg-emerald-50 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300"
-                    : "border-zinc-200 dark:border-zinc-700 text-zinc-400",
+                    : "border-v2-ring dark:border-v2-ring-strong text-v2-ink-subtle",
                 )}
               >
                 {ch === "sms" ? "SMS" : "Voice"}

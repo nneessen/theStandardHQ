@@ -59,10 +59,10 @@ export function EngagementMetrics({
   ];
 
   return (
-    <div className="p-2.5 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+    <div className="p-2.5 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
       <div className="flex items-center gap-1.5 mb-2">
         <Zap className="h-3 w-3 text-amber-500" />
-        <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
           Engagement
         </h4>
       </div>
@@ -70,14 +70,14 @@ export function EngagementMetrics({
       <div className="space-y-1.5">
         {rows.map((r) => (
           <div key={r.label} className="flex items-center justify-between">
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               {r.label}
             </span>
             <span
               className={cn(
                 "text-[10px] font-medium",
                 r.good
-                  ? "text-zinc-900 dark:text-zinc-100"
+                  ? "text-v2-ink dark:text-v2-ink"
                   : "text-amber-600 dark:text-amber-400",
               )}
             >
@@ -88,12 +88,12 @@ export function EngagementMetrics({
       </div>
 
       {topReplyCategories.length > 0 ? (
-        <div className="mt-2 border-t border-zinc-200 dark:border-zinc-800 pt-2 space-y-1.5">
+        <div className="mt-2 border-t border-v2-ring dark:border-v2-ring pt-2 space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Top Reply Types
             </span>
-            <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
+            <span className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
               Pos / Neg
             </span>
           </div>
@@ -102,10 +102,10 @@ export function EngagementMetrics({
               key={row.category}
               className="flex items-center justify-between gap-2"
             >
-              <span className="text-[10px] text-zinc-700 dark:text-zinc-300 truncate">
+              <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted truncate">
                 {row.category.replace(/_/g, " ")}
               </span>
-              <span className="text-[9px] text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
+              <span className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle whitespace-nowrap">
                 {Math.round((row.positiveRate ?? 0) * 100)}% /{" "}
                 {Math.round((row.negativeRate ?? 0) * 100)}%
               </span>

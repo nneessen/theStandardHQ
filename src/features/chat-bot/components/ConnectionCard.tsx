@@ -52,13 +52,13 @@ export function ConnectionCard({
 
   if (isLoading) {
     return (
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+      <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
         <div className="flex items-center gap-2">
           {icon}
-          <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <span className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
             {title}
           </span>
-          <Loader2 className="h-3 w-3 animate-spin text-zinc-400 ml-auto" />
+          <Loader2 className="h-3 w-3 animate-spin text-v2-ink-subtle ml-auto" />
         </div>
       </div>
     );
@@ -72,13 +72,13 @@ export function ConnectionCard({
           ? "border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20"
           : visualState === "unavailable"
             ? "border-amber-200 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/20"
-            : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900",
+            : "border-v2-ring dark:border-v2-ring bg-v2-card",
       )}
     >
       {/* Header row */}
       <div className="flex items-center gap-2 mb-2">
         {icon}
-        <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <span className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
           {title}
         </span>
         {visualState === "connected" ? (
@@ -94,7 +94,7 @@ export function ConnectionCard({
         ) : (
           <Badge
             variant="secondary"
-            className="text-[9px] h-4 px-1.5 bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300 ml-auto"
+            className="text-[9px] h-4 px-1.5 bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-muted ml-auto"
           >
             <XCircle className="h-2 w-2 mr-0.5" />
             Not Connected
@@ -104,7 +104,7 @@ export function ConnectionCard({
 
       {/* Status label */}
       {visualState === "connected" && statusLabel && (
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mb-2">
+        <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mb-2">
           {statusLabel}
         </p>
       )}

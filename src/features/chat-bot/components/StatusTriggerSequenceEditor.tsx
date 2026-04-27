@@ -65,17 +65,17 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="mb-3 flex items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink">
           {icon}
         </div>
         <div>
-          <h2 className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
             {title}
           </h2>
           {description ? (
-            <p className="mt-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="mt-0.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               {description}
             </p>
           ) : null}
@@ -130,7 +130,7 @@ function DelayPicker({
           max={7}
           disabled={disabled}
         />
-        <span className="text-[9px] text-zinc-500 dark:text-zinc-400">
+        <span className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
           days
         </span>
       </div>
@@ -144,7 +144,7 @@ function DelayPicker({
           max={23}
           disabled={disabled}
         />
-        <span className="text-[9px] text-zinc-500 dark:text-zinc-400">
+        <span className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
           hours
         </span>
       </div>
@@ -158,7 +158,7 @@ function DelayPicker({
           max={59}
           disabled={disabled}
         />
-        <span className="text-[9px] text-zinc-500 dark:text-zinc-400">
+        <span className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
           mins
         </span>
       </div>
@@ -243,23 +243,25 @@ function StepSummaryRow({
         {formatDelay(step.delayMinutes)}
       </Badge>
 
-      <span className="text-[9px] text-zinc-400 dark:text-zinc-500">·</span>
+      <span className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
+        ·
+      </span>
 
-      <span className="min-w-0 flex-1 truncate text-[11px] text-zinc-700 dark:text-zinc-300">
+      <span className="min-w-0 flex-1 truncate text-[11px] text-v2-ink dark:text-v2-ink-muted">
         {instructions ? (
           <>
             &ldquo;{instructions.slice(0, 80)}
             {instructions.length > 80 ? "..." : ""}&rdquo;
           </>
         ) : (
-          <span className="italic text-zinc-400 dark:text-zinc-500">
+          <span className="italic text-v2-ink-subtle dark:text-v2-ink-muted">
             No instructions yet
           </span>
         )}
       </span>
 
       <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-        <Pencil className="h-3 w-3 text-zinc-400 dark:text-zinc-500" />
+        <Pencil className="h-3 w-3 text-v2-ink-subtle dark:text-v2-ink-muted" />
         {canRemove && (
           <button
             type="button"
@@ -268,7 +270,7 @@ function StepSummaryRow({
               onRemove();
             }}
             disabled={disabled}
-            className="text-zinc-400 hover:text-red-500 disabled:opacity-50 dark:text-zinc-500 dark:hover:text-red-400"
+            className="text-v2-ink-subtle hover:text-red-500 disabled:opacity-50 dark:text-v2-ink-muted dark:hover:text-red-400"
           >
             <X className="h-3 w-3" />
           </button>
@@ -302,7 +304,7 @@ function StepEditForm({
   return (
     <div
       className={cn(
-        "rounded-md border border-zinc-200 p-2.5 dark:border-zinc-700",
+        "rounded-md border border-v2-ring p-2.5 dark:border-v2-ring-strong",
         colors.bg,
       )}
     >
@@ -316,7 +318,7 @@ function StepEditForm({
           >
             {index + 1}
           </span>
-          <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
             Step {index + 1}
           </span>
         </div>
@@ -326,7 +328,7 @@ function StepEditForm({
               type="button"
               onClick={onRemove}
               disabled={disabled}
-              className="rounded p-0.5 text-zinc-400 hover:text-red-500 disabled:opacity-50 dark:text-zinc-500 dark:hover:text-red-400"
+              className="rounded p-0.5 text-v2-ink-subtle hover:text-red-500 disabled:opacity-50 dark:text-v2-ink-muted dark:hover:text-red-400"
             >
               <Trash2 className="h-3 w-3" />
             </button>
@@ -334,7 +336,7 @@ function StepEditForm({
           <button
             type="button"
             onClick={onClose}
-            className="rounded p-0.5 text-zinc-400 hover:text-zinc-700 dark:text-zinc-500 dark:hover:text-zinc-200"
+            className="rounded p-0.5 text-v2-ink-subtle hover:text-v2-ink dark:text-v2-ink-muted dark:hover:text-v2-canvas"
           >
             <Check className="h-3 w-3" />
           </button>
@@ -343,7 +345,7 @@ function StepEditForm({
 
       <div className="space-y-2">
         <div>
-          <label className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">
+          <label className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
             Delay
           </label>
           <DelayPicker
@@ -351,13 +353,13 @@ function StepEditForm({
             onChange={(delayMinutes) => onChange({ ...step, delayMinutes })}
             disabled={disabled}
           />
-          <p className="mt-0.5 text-[9px] text-zinc-400 dark:text-zinc-500">
+          <p className="mt-0.5 text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
             {formatDelay(step.delayMinutes)} after trigger
           </p>
         </div>
 
         <div>
-          <label className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">
+          <label className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
             AI Instructions
           </label>
           <Textarea
@@ -374,7 +376,7 @@ function StepEditForm({
               "mt-0.5 text-right text-[9px]",
               step.aiInstructions.length > MAX_AI_INSTRUCTIONS_LENGTH
                 ? "text-red-500"
-                : "text-zinc-400 dark:text-zinc-500",
+                : "text-v2-ink-subtle dark:text-v2-ink-muted",
             )}
           >
             {step.aiInstructions.length}/{MAX_AI_INSTRUCTIONS_LENGTH}
@@ -443,13 +445,13 @@ function SequenceRow({
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="rounded-lg border border-v2-ring bg-white dark:border-v2-ring dark:bg-v2-card">
         {/* Header row */}
         <div className="flex items-center gap-1.5 px-2 py-1.5">
           <CollapsibleTrigger asChild>
             <button
               type="button"
-              className="shrink-0 rounded p-0.5 text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+              className="shrink-0 rounded p-0.5 text-v2-ink-subtle hover:text-v2-ink-muted dark:text-v2-ink-muted dark:hover:text-v2-ink-subtle"
             >
               {open ? (
                 <ChevronDown className="h-3.5 w-3.5" />
@@ -521,7 +523,7 @@ function SequenceRow({
               type="button"
               onClick={onDelete}
               disabled={disabled}
-              className="text-zinc-400 hover:text-red-500 disabled:opacity-50 dark:text-zinc-500 dark:hover:text-red-400"
+              className="text-v2-ink-subtle hover:text-red-500 disabled:opacity-50 dark:text-v2-ink-muted dark:hover:text-red-400"
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
@@ -530,7 +532,7 @@ function SequenceRow({
 
         {/* Collapsible steps area */}
         <CollapsibleContent>
-          <div className="border-t border-zinc-100 bg-zinc-50/50 px-2 pb-2 pt-1.5 dark:border-zinc-800 dark:bg-zinc-800/30">
+          <div className="border-t border-v2-ring bg-v2-canvas/50 px-2 pb-2 pt-1.5 dark:border-v2-ring dark:bg-v2-card-tinted/30">
             <div className="space-y-0.5">
               {sequence.steps.map((step, stepIdx) =>
                 editingStepIndex === stepIdx ? (
@@ -562,7 +564,7 @@ function SequenceRow({
               <Button
                 variant="ghost"
                 size="sm"
-                className="mt-1 h-6 gap-1 text-[10px] text-zinc-500"
+                className="mt-1 h-6 gap-1 text-[10px] text-v2-ink-muted"
                 onClick={addStep}
                 disabled={disabled}
               >
@@ -571,7 +573,7 @@ function SequenceRow({
               </Button>
             )}
 
-            <p className="mt-0.5 text-[9px] text-zinc-400 dark:text-zinc-500">
+            <p className="mt-0.5 text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
               {sequence.steps.length}/{MAX_STEPS_PER_SEQUENCE} steps
             </p>
           </div>
@@ -661,7 +663,7 @@ export function StatusTriggerSequenceEditor() {
         title="Status-Triggered Sequences"
         description="Automatically send AI-generated SMS outreach when a lead's CRM status changes."
       >
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+        <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Connect Close CRM in the Integrations tab to configure
           status-triggered sequences.
         </p>
@@ -678,7 +680,7 @@ export function StatusTriggerSequenceEditor() {
       >
         {/* Add button */}
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             {displayedSequences.length}/{MAX_SEQUENCES} sequences
           </p>
           <Button
@@ -698,9 +700,9 @@ export function StatusTriggerSequenceEditor() {
 
         {/* Empty state */}
         {displayedSequences.length === 0 && (
-          <div className="rounded-lg border border-dashed border-zinc-200 px-4 py-6 text-center dark:border-zinc-700">
-            <MessageSquare className="mx-auto h-5 w-5 text-zinc-300 dark:text-zinc-600" />
-            <p className="mt-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+          <div className="rounded-lg border border-dashed border-v2-ring px-4 py-6 text-center dark:border-v2-ring-strong">
+            <MessageSquare className="mx-auto h-5 w-5 text-v2-ink-subtle dark:text-v2-ink-muted" />
+            <p className="mt-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
               No sequences configured. Add one to start automated outreach when
               a lead enters a specific status.
             </p>
@@ -735,7 +737,7 @@ export function StatusTriggerSequenceEditor() {
 
         {/* Save / Discard bar */}
         {dirty && (
-          <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+          <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
             <Button
               size="sm"
               className="h-7 text-[10px]"

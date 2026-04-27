@@ -14,14 +14,14 @@ interface TimelineEntry {
 export function TimelineChart({ data }: { data: TimelineEntry[] }) {
   if (!data || data.length === 0) {
     return (
-      <div className="p-2.5 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+      <div className="p-2.5 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
         <div className="flex items-center gap-1.5 mb-2">
-          <BarChart3 className="h-3 w-3 text-zinc-400" />
-          <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <BarChart3 className="h-3 w-3 text-v2-ink-subtle" />
+          <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
             Timeline
           </h4>
         </div>
-        <p className="text-[10px] text-zinc-400 text-center py-4">
+        <p className="text-[10px] text-v2-ink-subtle text-center py-4">
           No timeline data available
         </p>
       </div>
@@ -31,10 +31,10 @@ export function TimelineChart({ data }: { data: TimelineEntry[] }) {
   const maxConvo = Math.max(...data.map((d) => d.conversations), 1);
 
   return (
-    <div className="p-2.5 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+    <div className="p-2.5 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
       <div className="flex items-center gap-1.5 mb-2">
         <BarChart3 className="h-3 w-3 text-blue-500" />
-        <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
           Daily Trend
         </h4>
         <div className="ml-auto flex items-center gap-2">
@@ -76,7 +76,7 @@ export function TimelineChart({ data }: { data: TimelineEntry[] }) {
               </div>
               {/* Show date labels for every 7th bar or first/last */}
               {(i === 0 || i === data.length - 1 || i % 7 === 0) && (
-                <span className="text-[8px] text-zinc-400 mt-0.5">
+                <span className="text-[8px] text-v2-ink-subtle mt-0.5">
                   {dateLabel}
                 </span>
               )}
@@ -92,7 +92,7 @@ function Legend({ color, label }: { color: string; label: string }) {
   return (
     <div className="flex items-center gap-0.5">
       <div className={cn("w-1.5 h-1.5 rounded-sm", color)} />
-      <span className="text-[8px] text-zinc-400">{label}</span>
+      <span className="text-[8px] text-v2-ink-subtle">{label}</span>
     </div>
   );
 }

@@ -52,8 +52,8 @@ export function BlockedLeadStatusSelector({
 
   if (!closeConnected) {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950/40">
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+      <div className="rounded-lg border border-v2-ring bg-v2-canvas px-3 py-2.5 dark:border-v2-ring dark:bg-v2-canvas/40">
+        <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Connect Close CRM to configure status filtering.
         </p>
       </div>
@@ -62,9 +62,9 @@ export function BlockedLeadStatusSelector({
 
   if (isLoadingStatuses) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950/40">
-        <Loader2 className="h-3 w-3 animate-spin text-zinc-400" />
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+      <div className="flex items-center gap-2 rounded-lg border border-v2-ring bg-v2-canvas px-3 py-2.5 dark:border-v2-ring dark:bg-v2-canvas/40">
+        <Loader2 className="h-3 w-3 animate-spin text-v2-ink-subtle" />
+        <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Loading lead statuses from Close CRM...
         </p>
       </div>
@@ -137,7 +137,7 @@ export function BlockedLeadStatusSelector({
                 type="button"
                 onClick={() => remove(status)}
                 disabled={disabled}
-                className="ml-0.5 rounded-sm hover:bg-zinc-300 dark:hover:bg-zinc-600"
+                className="ml-0.5 rounded-sm hover:bg-v2-ring-strong"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -163,7 +163,7 @@ export function BlockedLeadStatusSelector({
           ))}
         </div>
       ) : (
-        <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
+        <p className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted">
           No statuses blocked — bot will respond to all leads.
         </p>
       )}
@@ -178,7 +178,7 @@ export function BlockedLeadStatusSelector({
           disabled={disabled || statusLabels.length === 0}
           onClick={() => setOpen(!open)}
         >
-          <span className="truncate text-zinc-500 dark:text-zinc-400">
+          <span className="truncate text-v2-ink-muted dark:text-v2-ink-subtle">
             {statusLabels.length === 0
               ? "No statuses available"
               : available.length > 0
@@ -189,12 +189,12 @@ export function BlockedLeadStatusSelector({
         </Button>
 
         {open && (
-          <div className="absolute z-50 mt-1 w-full rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
-            <div className="border-b border-zinc-100 p-1.5 dark:border-zinc-800">
+          <div className="absolute z-50 mt-1 w-full rounded-lg border border-v2-ring bg-white shadow-lg dark:border-v2-ring-strong dark:bg-v2-card">
+            <div className="border-b border-v2-ring p-1.5 dark:border-v2-ring">
               <input
                 ref={inputRef}
                 type="text"
-                className="w-full rounded-md border-0 bg-zinc-50 px-2 py-1.5 text-[11px] text-zinc-900 outline-none placeholder:text-zinc-400 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
+                className="w-full rounded-md border-0 bg-v2-canvas px-2 py-1.5 text-[11px] text-v2-ink outline-none placeholder:text-v2-ink-subtle dark:bg-v2-card-tinted dark:text-v2-ink dark:placeholder:text-v2-ink-muted"
                 placeholder="Search statuses..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -206,7 +206,7 @@ export function BlockedLeadStatusSelector({
               onWheel={(e) => e.stopPropagation()}
             >
               {filtered.length === 0 ? (
-                <p className="px-2 py-1.5 text-[10px] text-zinc-400">
+                <p className="px-2 py-1.5 text-[10px] text-v2-ink-subtle">
                   {search
                     ? "No matching statuses."
                     : "No more statuses available."}
@@ -218,7 +218,7 @@ export function BlockedLeadStatusSelector({
                     type="button"
                     className={cn(
                       "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[11px] transition-colors",
-                      "text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800",
+                      "text-v2-ink hover:bg-v2-card-tinted dark:text-v2-ink-muted dark:hover:bg-v2-card-tinted",
                     )}
                     onClick={() => add(status)}
                   >
@@ -232,7 +232,7 @@ export function BlockedLeadStatusSelector({
         )}
       </div>
 
-      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
         The bot will not respond to leads with any of these statuses. This
         applies to both inbound and outbound messages.
       </p>

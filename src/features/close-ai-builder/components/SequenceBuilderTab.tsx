@@ -357,7 +357,7 @@ export function SequenceBuilderTab() {
                   className="flex items-center gap-1.5 text-xs"
                 >
                   Run mode
-                  <span className="rounded bg-zinc-100 px-1 py-[1px] text-[9px] font-medium uppercase tracking-wide text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">
+                  <span className="rounded bg-v2-card-tinted px-1 py-[1px] text-[9px] font-medium uppercase tracking-wide text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle">
                     copy hint
                   </span>
                 </Label>
@@ -485,11 +485,11 @@ export function SequenceBuilderTab() {
                 </div>
 
                 {draft.rationale && (
-                  <div className="rounded-md border-l-2 border-emerald-500 bg-zinc-50 px-3 py-2 dark:border-emerald-400 dark:bg-zinc-900/60">
-                    <div className="mb-0.5 text-[9px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                  <div className="rounded-md border-l-2 border-emerald-500 bg-v2-canvas px-3 py-2 dark:border-emerald-400 dark:bg-v2-card/60">
+                    <div className="mb-0.5 text-[9px] font-semibold uppercase tracking-wider text-v2-ink-muted dark:text-v2-ink-subtle">
                       Strategy
                     </div>
-                    <div className="text-xs leading-relaxed text-zinc-700 dark:text-zinc-200">
+                    <div className="text-xs leading-relaxed text-v2-ink dark:text-v2-ink">
                       {draft.rationale}
                     </div>
                   </div>
@@ -497,7 +497,7 @@ export function SequenceBuilderTab() {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
+                    <Label className="text-xs font-semibold uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                       Timeline · {draft.steps.length} step
                       {draft.steps.length !== 1 ? "s" : ""}
                     </Label>
@@ -546,27 +546,27 @@ export function SequenceBuilderTab() {
                     Run mode + pause-on-meeting-booked both require manual steps
                     in Close's UI because the public API doesn't expose them. */}
                 <div className="space-y-2">
-                  <div className="rounded-md border border-zinc-200 bg-zinc-50 p-3 text-xs dark:border-zinc-800 dark:bg-zinc-900/60">
+                  <div className="rounded-md border border-v2-ring bg-v2-canvas p-3 text-xs dark:border-v2-ring dark:bg-v2-card/60">
                     <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                       <Check className="h-3 w-3" />
                       Auto-configured on save
                     </div>
-                    <ul className="space-y-1 text-zinc-700 dark:text-zinc-200">
+                    <ul className="space-y-1 text-v2-ink dark:text-v2-ink">
                       <li className="flex gap-2">
-                        <span className="text-zinc-400">→</span>
+                        <span className="text-v2-ink-subtle">→</span>
                         <span>
                           {stepCounts.emailCount} email template
                           {stepCounts.emailCount !== 1 ? "s" : ""} +{" "}
                           {stepCounts.smsCount} SMS template
                           {stepCounts.smsCount !== 1 ? "s" : ""}, all prefixed
                           with{" "}
-                          <code className="rounded bg-zinc-200 px-1 text-[10px] dark:bg-zinc-800">
+                          <code className="rounded bg-v2-ring px-1 text-[10px] dark:bg-v2-card-tinted">
                             [{draft.name || "workflow"}]
                           </code>
                         </span>
                       </li>
                       <li className="flex gap-2">
-                        <span className="text-zinc-400">→</span>
+                        <span className="text-v2-ink-subtle">→</span>
                         <span>1 workflow · {FIXED_SCHEDULE_LABEL}</span>
                       </li>
                     </ul>
@@ -695,7 +695,7 @@ function StepCard({
     : "text-sky-700 dark:text-sky-300";
 
   return (
-    <div className="relative overflow-hidden rounded-md border border-zinc-200 bg-card shadow-sm dark:border-zinc-800">
+    <div className="relative overflow-hidden rounded-md border border-v2-ring bg-card shadow-sm dark:border-v2-ring">
       {/* Channel accent bar */}
       <div
         className={cn("absolute left-0 top-0 h-full w-[3px]", accentBar)}
@@ -704,7 +704,7 @@ function StepCard({
 
       <div className="flex gap-3 p-3 pl-4">
         {/* Step number badge */}
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-xs font-semibold tabular-nums text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-v2-card-tinted text-xs font-semibold tabular-nums text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink">
           {index + 1}
         </div>
 
@@ -725,7 +725,7 @@ function StepCard({
               >
                 {isEmail ? "Email" : "SMS"}
               </span>
-              <span className="text-zinc-300 dark:text-zinc-700">·</span>
+              <span className="text-v2-ink-subtle dark:text-v2-ink">·</span>
               <div className="flex items-center gap-1">
                 <span className="text-[11px] text-muted-foreground">Day</span>
                 <Input
@@ -742,7 +742,7 @@ function StepCard({
                   title="Day from sequence start (Day 1 = immediate)"
                 />
               </div>
-              <span className="truncate text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+              <span className="truncate text-[11px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                 {gapLabel}
               </span>
             </div>
@@ -759,7 +759,7 @@ function StepCard({
 
           {/* Body */}
           {isEmail && step.generated_email && (
-            <div className="space-y-1.5 border-t border-zinc-100 pt-2 dark:border-zinc-800/80">
+            <div className="space-y-1.5 border-t border-v2-ring pt-2 dark:border-v2-ring/80">
               <div className="space-y-0.5">
                 <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Template name
@@ -818,7 +818,7 @@ function StepCard({
           )}
 
           {!isEmail && step.generated_sms && (
-            <div className="space-y-1.5 border-t border-zinc-100 pt-2 dark:border-zinc-800/80">
+            <div className="space-y-1.5 border-t border-v2-ring pt-2 dark:border-v2-ring/80">
               <div className="space-y-0.5">
                 <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Template name

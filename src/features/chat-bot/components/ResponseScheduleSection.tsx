@@ -80,24 +80,24 @@ export function ResponseScheduleSection() {
   };
 
   return (
-    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
-      <div className="flex flex-col gap-3 border-b border-zinc-100 dark:border-zinc-800 px-4 py-4 lg:flex-row lg:items-start lg:justify-between">
+    <div className="rounded-xl border border-v2-ring dark:border-v2-ring bg-v2-card">
+      <div className="flex flex-col gap-3 border-b border-v2-ring dark:border-v2-ring px-4 py-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
               <CalendarClock className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
                 Response Schedule
               </h3>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 Uses the lead&apos;s timezone when available, otherwise the
                 agent timezone.
               </p>
             </div>
           </div>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Control when the bot can reply and when same-day booking stops being
             offered or confirmed.
           </p>
@@ -138,7 +138,7 @@ export function ResponseScheduleSection() {
         </div>
       </div>
 
-      <div className="hidden border-b border-zinc-100 px-4 py-2 text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:border-zinc-800 dark:text-zinc-400 xl:grid xl:grid-cols-[100px_80px_1fr_100px_1fr] xl:gap-3">
+      <div className="hidden border-b border-v2-ring px-4 py-2 text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:border-v2-ring dark:text-v2-ink-subtle xl:grid xl:grid-cols-[100px_80px_1fr_100px_1fr] xl:gap-3">
         <span>Day</span>
         <span>Responses</span>
         <span>Reply Window</span>
@@ -154,21 +154,21 @@ export function ResponseScheduleSection() {
           return (
             <div
               key={day.day}
-              className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-3 dark:border-zinc-800 dark:bg-zinc-950/40"
+              className="rounded-xl border border-v2-ring bg-v2-canvas/70 p-3 dark:border-v2-ring dark:bg-v2-canvas/40"
             >
               <div className="grid gap-3 xl:grid-cols-[100px_80px_1fr_100px_1fr] xl:items-center">
                 <div className="flex items-center justify-between gap-3 xl:block">
                   <div>
-                    <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+                    <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
                       {RESPONSE_SCHEDULE_DAY_LABELS[day.day]}
                     </p>
-                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                       {day.responsesEnabled
                         ? `${day.responseStartTime} - ${day.responseEndTime}`
                         : "Replies deferred"}
                     </p>
                   </div>
-                  <div className="rounded-full border border-zinc-200 bg-white px-2 py-0.5 text-[9px] font-medium text-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 xl:hidden">
+                  <div className="rounded-full border border-v2-ring bg-white px-2 py-0.5 text-[9px] font-medium text-v2-ink-muted dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink-muted xl:hidden">
                     {day.sameDayBookingEnabled
                       ? `Same-day ${usesResponseEndForCutoff ? "until end" : `until ${day.sameDayBookingCutoffTime}`}`
                       : "No same-day"}
@@ -176,7 +176,7 @@ export function ResponseScheduleSection() {
                 </div>
 
                 <div className="flex items-center justify-between gap-3 xl:justify-start">
-                  <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 xl:hidden">
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle xl:hidden">
                     Responses
                   </span>
                   <Switch
@@ -195,7 +195,7 @@ export function ResponseScheduleSection() {
 
                 <div className="grid grid-cols-2 gap-2">
                   <label className="space-y-1">
-                    <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 xl:hidden">
+                    <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle xl:hidden">
                       Start
                     </span>
                     <input
@@ -209,14 +209,14 @@ export function ResponseScheduleSection() {
                       }
                       disabled={!day.responsesEnabled || updateConfig.isPending}
                       className={cn(
-                        "h-8 w-full rounded-md border border-zinc-300 bg-white px-2 text-[11px] text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100",
+                        "h-8 w-full rounded-md border border-v2-ring-strong bg-white px-2 text-[11px] text-v2-ink dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink",
                         !day.responsesEnabled &&
-                          "cursor-not-allowed bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500",
+                          "cursor-not-allowed bg-v2-card-tinted text-v2-ink-subtle dark:bg-v2-card-tinted dark:text-v2-ink-muted",
                       )}
                     />
                   </label>
                   <label className="space-y-1">
-                    <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 xl:hidden">
+                    <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle xl:hidden">
                       End
                     </span>
                     <input
@@ -234,16 +234,16 @@ export function ResponseScheduleSection() {
                       }
                       disabled={!day.responsesEnabled || updateConfig.isPending}
                       className={cn(
-                        "h-8 w-full rounded-md border border-zinc-300 bg-white px-2 text-[11px] text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100",
+                        "h-8 w-full rounded-md border border-v2-ring-strong bg-white px-2 text-[11px] text-v2-ink dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink",
                         !day.responsesEnabled &&
-                          "cursor-not-allowed bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500",
+                          "cursor-not-allowed bg-v2-card-tinted text-v2-ink-subtle dark:bg-v2-card-tinted dark:text-v2-ink-muted",
                       )}
                     />
                   </label>
                 </div>
 
                 <div className="flex items-center justify-between gap-3 xl:justify-start">
-                  <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 xl:hidden">
+                  <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle xl:hidden">
                     Same-Day Booking
                   </span>
                   <Switch
@@ -281,10 +281,10 @@ export function ResponseScheduleSection() {
                         updateConfig.isPending
                       }
                       className={cn(
-                        "h-8 min-w-0 flex-1 rounded-md border border-zinc-300 bg-white px-2 text-[11px] text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100",
+                        "h-8 min-w-0 flex-1 rounded-md border border-v2-ring-strong bg-white px-2 text-[11px] text-v2-ink dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink",
                         (!day.sameDayBookingEnabled ||
                           usesResponseEndForCutoff) &&
-                          "cursor-not-allowed bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500",
+                          "cursor-not-allowed bg-v2-card-tinted text-v2-ink-subtle dark:bg-v2-card-tinted dark:text-v2-ink-muted",
                       )}
                     />
                     <Button
@@ -308,7 +308,7 @@ export function ResponseScheduleSection() {
                       {usesResponseEndForCutoff ? "Custom" : "End"}
                     </Button>
                   </div>
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     {day.sameDayBookingEnabled
                       ? usesResponseEndForCutoff
                         ? "Same-day booking follows the response end time."
@@ -326,7 +326,7 @@ export function ResponseScheduleSection() {
         )}
 
         {isDirty && (
-          <div className="flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+          <div className="flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
             <Button
               size="sm"
               className="h-8 text-[10px]"
@@ -340,7 +340,7 @@ export function ResponseScheduleSection() {
               )}
               Save Schedule
             </Button>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Saving writes explicit day rules to the existing agent config API.
             </p>
           </div>

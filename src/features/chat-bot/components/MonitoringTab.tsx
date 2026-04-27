@@ -79,9 +79,9 @@ export function MonitoringTab() {
 
   if (isLoading) {
     return (
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+      <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+          <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
         </div>
       </div>
     );
@@ -89,13 +89,13 @@ export function MonitoringTab() {
 
   if (error || !monitoring) {
     return (
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+      <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
         <div className="py-8 text-center">
-          <Activity className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-          <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+          <Activity className="h-8 w-8 text-v2-ink-subtle dark:text-v2-ink-muted mx-auto mb-2" />
+          <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Monitoring data unavailable
           </p>
-          <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">
+          <p className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted mt-1">
             The monitoring API may not be deployed yet. Data will appear
             automatically once available.
           </p>
@@ -118,8 +118,8 @@ export function MonitoringTab() {
   return (
     <div className="space-y-2">
       {/* ── Bot Status ────────────────────────────────── */}
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-        <h2 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">
+      <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
+        <h2 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle mb-2">
           Bot Status
         </h2>
         <div
@@ -165,19 +165,19 @@ export function MonitoringTab() {
       </div>
 
       {/* ── Activity ──────────────────────────────────── */}
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+      <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+          <h2 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
             Activity
           </h2>
-          <div className="flex items-center gap-0.5 bg-zinc-100 dark:bg-zinc-800 rounded p-0.5">
+          <div className="flex items-center gap-0.5 bg-v2-card-tinted dark:bg-v2-card-tinted rounded p-0.5">
             <button
               onClick={() => setActivityPeriod("24h")}
               className={cn(
                 "px-2 py-0.5 text-[10px] font-medium rounded transition-colors",
                 activityPeriod === "24h"
-                  ? "bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-zinc-100"
-                  : "text-zinc-500 dark:text-zinc-400",
+                  ? "bg-white dark:bg-v2-ring-strong shadow-sm text-v2-ink dark:text-v2-ink"
+                  : "text-v2-ink-muted dark:text-v2-ink-subtle",
               )}
             >
               24h
@@ -187,8 +187,8 @@ export function MonitoringTab() {
               className={cn(
                 "px-2 py-0.5 text-[10px] font-medium rounded transition-colors",
                 activityPeriod === "7d"
-                  ? "bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-zinc-100"
-                  : "text-zinc-500 dark:text-zinc-400",
+                  ? "bg-white dark:bg-v2-ring-strong shadow-sm text-v2-ink dark:text-v2-ink"
+                  : "text-v2-ink-muted dark:text-v2-ink-subtle",
               )}
             >
               7d
@@ -222,29 +222,29 @@ export function MonitoringTab() {
       </div>
 
       {/* ── Conversion Funnel ─────────────────────────── */}
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-        <h2 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">
+      <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
+        <h2 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle mb-2">
           Conversion (7d)
         </h2>
         <div className="flex items-center gap-3">
           <div className="flex-1 text-center">
-            <div className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            <div className="text-lg font-semibold text-v2-ink dark:text-v2-ink">
               {pct(monitoring.conversion.bookingRate7d)}
             </div>
-            <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Booking Rate
             </div>
           </div>
-          <div className="flex items-center gap-2 text-[11px] text-zinc-600 dark:text-zinc-400">
+          <div className="flex items-center gap-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             <div className="text-center">
-              <div className="font-medium text-zinc-900 dark:text-zinc-100">
+              <div className="font-medium text-v2-ink dark:text-v2-ink">
                 {monitoring.conversion.totalConversations7d}
               </div>
               <div className="text-[9px]">Conversations</div>
             </div>
-            <TrendingUp className="h-3 w-3 text-zinc-400" />
+            <TrendingUp className="h-3 w-3 text-v2-ink-subtle" />
             <div className="text-center">
-              <div className="font-medium text-zinc-900 dark:text-zinc-100">
+              <div className="font-medium text-v2-ink dark:text-v2-ink">
                 {monitoring.conversion.totalAppointments7d}
               </div>
               <div className="text-[9px]">Appointments</div>
@@ -254,8 +254,8 @@ export function MonitoringTab() {
       </div>
 
       {/* ── Error Indicators ──────────────────────────── */}
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-        <h2 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">
+      <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
+        <h2 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle mb-2">
           Error Indicators
         </h2>
         {!hasErrors ? (
@@ -294,16 +294,16 @@ export function MonitoringTab() {
       </div>
 
       {/* ── Follow-Up Effectiveness ───────────────────── */}
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-        <h2 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">
+      <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
+        <h2 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle mb-2">
           Follow-Up (7d)
         </h2>
         <div className="flex items-center gap-4">
           <div className="text-center">
-            <div className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            <div className="text-lg font-semibold text-v2-ink dark:text-v2-ink">
               {pct(monitoring.followUp.followUpEffectiveness7d)}
             </div>
-            <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Effectiveness
             </div>
           </div>
@@ -325,24 +325,24 @@ export function MonitoringTab() {
       </div>
 
       {/* ── Job Health ────────────────────────────────── */}
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-        <h2 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">
+      <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
+        <h2 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle mb-2">
           Job Health
         </h2>
         <div className="grid grid-cols-3 gap-2">
           <div className="text-center">
-            <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            <div className="text-sm font-medium text-v2-ink dark:text-v2-ink">
               {monitoring.jobHealth.pendingJobs}
             </div>
-            <div className="text-[9px] text-zinc-500 dark:text-zinc-400">
+            <div className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Pending
             </div>
           </div>
           <div className="text-center">
-            <div className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            <div className="text-sm font-medium text-v2-ink dark:text-v2-ink">
               {monitoring.jobHealth.activeJobs}
             </div>
-            <div className="text-[9px] text-zinc-500 dark:text-zinc-400">
+            <div className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Active
             </div>
           </div>
@@ -352,12 +352,12 @@ export function MonitoringTab() {
                 "text-sm font-medium",
                 monitoring.jobHealth.failedJobs24h > 0
                   ? "text-red-600 dark:text-red-400"
-                  : "text-zinc-900 dark:text-zinc-100",
+                  : "text-v2-ink dark:text-v2-ink",
               )}
             >
               {monitoring.jobHealth.failedJobs24h}
             </div>
-            <div className="text-[9px] text-zinc-500 dark:text-zinc-400">
+            <div className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Failed (24h)
             </div>
           </div>
@@ -376,7 +376,7 @@ function StatusPill({ label, active }: { label: string; active: boolean }) {
         "text-center px-1.5 py-1 rounded text-[10px] font-medium",
         active
           ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300"
-          : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400",
+          : "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle",
       )}
     >
       {label}
@@ -404,18 +404,18 @@ function MetricCard({
         ? "text-amber-600 dark:text-amber-400"
         : accent === "red"
           ? "text-red-600 dark:text-red-400"
-          : "text-zinc-900 dark:text-zinc-100";
+          : "text-v2-ink dark:text-v2-ink";
 
   return (
     <div
       className={cn(
-        "bg-zinc-50 dark:bg-zinc-800/50 rounded px-2 py-1.5",
+        "bg-v2-canvas dark:bg-v2-card-tinted/50 rounded px-2 py-1.5",
         compact && "px-1.5 py-1",
       )}
     >
       <div className="flex items-center gap-1 mb-0.5">
-        <Icon className="h-3 w-3 text-zinc-400" />
-        <span className="text-[9px] text-zinc-500 dark:text-zinc-400">
+        <Icon className="h-3 w-3 text-v2-ink-subtle" />
+        <span className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
           {label}
         </span>
       </div>

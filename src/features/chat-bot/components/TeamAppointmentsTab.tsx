@@ -88,7 +88,7 @@ function AgentRow({ agent }: { agent: TeamAgentAppointments }) {
             className={`text-[12px] font-bold tabular-nums ${
               agent.today > 0
                 ? "text-foreground"
-                : "text-zinc-300 dark:text-zinc-600"
+                : "text-v2-ink-subtle dark:text-v2-ink-muted"
             }`}
           >
             {agent.today}
@@ -105,7 +105,7 @@ function AgentRow({ agent }: { agent: TeamAgentAppointments }) {
             className={`text-[11px] font-semibold tabular-nums ${
               agent.thisWeek > 0
                 ? "text-foreground"
-                : "text-zinc-300 dark:text-zinc-600"
+                : "text-v2-ink-subtle dark:text-v2-ink-muted"
             }`}
           >
             {agent.thisWeek}
@@ -136,7 +136,7 @@ function AgentRow({ agent }: { agent: TeamAgentAppointments }) {
             All done for today
           </span>
         ) : (
-          <span className="text-[10px] text-zinc-300 dark:text-zinc-600">
+          <span className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted">
             —
           </span>
         )}
@@ -161,7 +161,7 @@ function AgentRow({ agent }: { agent: TeamAgentAppointments }) {
               </span>
             )}
             {agent.byStatus.cancelled > 0 && (
-              <span className="text-zinc-400">
+              <span className="text-v2-ink-subtle">
                 {agent.byStatus.cancelled}
                 <span className="text-[8px] ml-px">canc</span>
               </span>
@@ -174,7 +174,7 @@ function AgentRow({ agent }: { agent: TeamAgentAppointments }) {
             )}
           </div>
         ) : (
-          <span className="text-[10px] text-zinc-300 dark:text-zinc-600">
+          <span className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted">
             —
           </span>
         )}
@@ -230,7 +230,7 @@ export function TeamAppointmentsTab() {
           </Button>
         </div>
         {error && (
-          <pre className="mt-2 text-[9px] text-red-500 bg-zinc-100 dark:bg-zinc-900 rounded p-2 overflow-auto max-h-40">
+          <pre className="mt-2 text-[9px] text-red-500 bg-v2-card-tinted dark:bg-v2-card rounded p-2 overflow-auto max-h-40">
             {String(error)}
           </pre>
         )}

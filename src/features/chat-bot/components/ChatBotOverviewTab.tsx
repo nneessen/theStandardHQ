@@ -272,15 +272,15 @@ export function ChatBotOverviewTab({
       </div>
 
       {/* ══════ Feature Highlights Grid ══════ */}
-      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
-        <h3 className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-3">
+      <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card p-4">
+        <h3 className="text-[10px] font-semibold text-v2-ink-subtle dark:text-v2-ink-muted uppercase tracking-wider mb-3">
           What&apos;s Included
         </h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {HIGHLIGHTS.map((h) => (
             <div
               key={h.title}
-              className="flex items-start gap-2.5 p-2.5 rounded-lg border border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30"
+              className="flex items-start gap-2.5 p-2.5 rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-canvas/50 dark:bg-v2-card-tinted/30"
             >
               <div
                 className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
@@ -289,10 +289,10 @@ export function ChatBotOverviewTab({
                 <h.icon className="h-4 w-4" style={{ color: ACCENT }} />
               </div>
               <div className="min-w-0">
-                <div className="text-[10px] font-semibold text-zinc-900 dark:text-zinc-100">
+                <div className="text-[10px] font-semibold text-v2-ink dark:text-v2-ink">
                   {h.title}
                 </div>
-                <div className="text-[9px] text-zinc-500 dark:text-zinc-400 leading-relaxed mt-0.5">
+                <div className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed mt-0.5">
                   {h.desc}
                 </div>
               </div>
@@ -302,9 +302,9 @@ export function ChatBotOverviewTab({
       </div>
 
       {/* ══════ Platform Metrics Strip ══════ */}
-      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3">
+      <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card p-3">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[9px] text-zinc-400 dark:text-zinc-500 uppercase tracking-wider font-medium">
+          <span className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted uppercase tracking-wider font-medium">
             Platform Performance · 30 days
           </span>
           <span className="relative flex h-1.5 w-1.5">
@@ -314,26 +314,26 @@ export function ChatBotOverviewTab({
         </div>
 
         {collectiveLoading ? (
-          <div className="flex items-center divide-x divide-zinc-200 dark:divide-zinc-800">
+          <div className="flex items-center divide-x divide-v2-ring dark:divide-v2-ring">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="flex-1 px-3 first:pl-0 last:pr-0">
-                <div className="h-2.5 w-12 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse mb-1" />
-                <div className="h-4 w-8 bg-zinc-100 dark:bg-zinc-800 rounded animate-pulse" />
+                <div className="h-2.5 w-12 bg-v2-card-tinted dark:bg-v2-card-tinted rounded animate-pulse mb-1" />
+                <div className="h-4 w-8 bg-v2-card-tinted dark:bg-v2-card-tinted rounded animate-pulse" />
               </div>
             ))}
           </div>
         ) : collectiveError ? (
-          <p className="text-[10px] text-zinc-400">
+          <p className="text-[10px] text-v2-ink-subtle">
             Analytics temporarily unavailable
           </p>
         ) : (
-          <div className="flex items-center divide-x divide-zinc-200 dark:divide-zinc-800">
+          <div className="flex items-center divide-x divide-v2-ring dark:divide-v2-ring">
             {platformMetrics.map((m) => (
               <div key={m.label} className="flex-1 px-3 first:pl-0 last:pr-0">
-                <div className="text-[9px] text-zinc-400 dark:text-zinc-500">
+                <div className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
                   {m.label}
                 </div>
-                <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                <div className="text-sm font-bold text-v2-ink dark:text-v2-ink">
                   {m.value}
                 </div>
               </div>
@@ -344,9 +344,9 @@ export function ChatBotOverviewTab({
 
       {/* ══════ Your Bot (subscribers with setup done) ══════ */}
       {hasAccess && isSetupDone && (
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3">
+        <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card p-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-wider font-medium">
+            <span className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted uppercase tracking-wider font-medium">
               Your Bot · 30 days
             </span>
             <span className="text-[9px] font-medium">
@@ -362,43 +362,43 @@ export function ChatBotOverviewTab({
             </span>
           </div>
 
-          <div className="flex items-center divide-x divide-zinc-200 dark:divide-zinc-800 mb-2">
+          <div className="flex items-center divide-x divide-v2-ring dark:divide-v2-ring mb-2">
             <div className="flex-1 pr-3">
-              <div className="text-[9px] text-zinc-400 dark:text-zinc-500">
+              <div className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
                 Conversations
               </div>
-              <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <div className="text-sm font-bold text-v2-ink dark:text-v2-ink">
                 {analytics?.conversations?.total ?? 0}
               </div>
             </div>
             <div className="flex-1 px-3">
-              <div className="text-[9px] text-zinc-400 dark:text-zinc-500">
+              <div className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
                 Appointments
               </div>
-              <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <div className="text-sm font-bold text-v2-ink dark:text-v2-ink">
                 {analytics?.appointments?.total ?? 0}
               </div>
             </div>
             <div className="flex-1 px-3">
-              <div className="text-[9px] text-zinc-400 dark:text-zinc-500">
+              <div className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
                 Booking Rate
               </div>
-              <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <div className="text-sm font-bold text-v2-ink dark:text-v2-ink">
                 {((analytics?.appointments?.bookingRate ?? 0) * 100).toFixed(1)}
                 %
               </div>
             </div>
             <div className="flex-1 pl-3">
-              <div className="text-[9px] text-zinc-400 dark:text-zinc-500">
+              <div className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
                 Usage
               </div>
-              <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <div className="text-sm font-bold text-v2-ink dark:text-v2-ink">
                 {usage?.leadsUsed ?? 0}{" "}
-                <span className="text-[9px] font-normal text-zinc-400 dark:text-zinc-500">
+                <span className="text-[9px] font-normal text-v2-ink-subtle dark:text-v2-ink-muted">
                   / {usage?.leadLimit ?? 0}
                 </span>
               </div>
-              <div className="mt-0.5 h-1 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+              <div className="mt-0.5 h-1 rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all"
                   style={{
@@ -421,7 +421,7 @@ export function ChatBotOverviewTab({
               <button
                 key={tabId}
                 onClick={() => onNavigateToTab(tabId)}
-                className="px-2 py-0.5 text-[9px] font-medium rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition"
+                className="px-2 py-0.5 text-[9px] font-medium rounded border border-v2-ring dark:border-v2-ring-strong hover:bg-v2-canvas dark:hover:bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-subtle transition"
               >
                 {label}
               </button>
@@ -431,16 +431,16 @@ export function ChatBotOverviewTab({
       )}
 
       {/* ══════ CTA ══════ */}
-      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4 flex items-center justify-between">
+      <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-canvas dark:bg-v2-card p-4 flex items-center justify-between">
         <div>
-          <div className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <div className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
             {!hasAccess
               ? "Ready to automate your lead engagement?"
               : !isSetupDone
                 ? "Your bot is waiting to be configured"
                 : "Your AI bot is working for you"}
           </div>
-          <div className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+          <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-0.5">
             {!hasAccess
               ? "Start converting more leads into booked appointments — free plan available."
               : !isSetupDone

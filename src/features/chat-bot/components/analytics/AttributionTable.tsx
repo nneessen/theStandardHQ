@@ -26,12 +26,12 @@ export function AttributionTable({
 
   if (attributions.length === 0) {
     return (
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg text-center">
-        <Link2 className="h-5 w-5 text-zinc-300 dark:text-zinc-600 mx-auto mb-1" />
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+      <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg text-center">
+        <Link2 className="h-5 w-5 text-v2-ink-subtle dark:text-v2-ink-muted mx-auto mb-1" />
+        <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
           No attributed policies yet
         </p>
-        <p className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+        <p className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted mt-0.5">
           Policies are automatically linked when a bot conversation matches a
           sale
         </p>
@@ -40,13 +40,13 @@ export function AttributionTable({
   }
 
   return (
-    <div className="border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg overflow-hidden">
-      <div className="px-2.5 py-1.5 border-b border-zinc-100 dark:border-zinc-800 flex items-center gap-1.5">
-        <Link2 className="h-3 w-3 text-zinc-400" />
-        <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+    <div className="border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg overflow-hidden">
+      <div className="px-2.5 py-1.5 border-b border-v2-ring dark:border-v2-ring flex items-center gap-1.5">
+        <Link2 className="h-3 w-3 text-v2-ink-subtle" />
+        <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
           Attributed Policies
         </h4>
-        <span className="text-[10px] text-zinc-400 ml-auto">
+        <span className="text-[10px] text-v2-ink-subtle ml-auto">
           {attributions.length} total
         </span>
       </div>
@@ -54,7 +54,7 @@ export function AttributionTable({
       <div className="overflow-x-auto">
         <table className="w-full text-[10px]">
           <thead>
-            <tr className="border-b border-zinc-100 dark:border-zinc-800 text-zinc-500 dark:text-zinc-400">
+            <tr className="border-b border-v2-ring dark:border-v2-ring text-v2-ink-muted dark:text-v2-ink-subtle">
               <th className="text-left px-2 py-1 font-medium">Client</th>
               <th className="text-left px-2 py-1 font-medium">Policy</th>
               <th className="text-right px-2 py-1 font-medium">Premium</th>
@@ -74,17 +74,17 @@ export function AttributionTable({
               return (
                 <tr
                   key={a.id}
-                  className="border-b border-zinc-50 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/30"
+                  className="border-b border-v2-ring dark:border-v2-ring/50 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/30"
                 >
-                  <td className="px-2 py-1.5 text-zinc-900 dark:text-zinc-100 font-medium">
+                  <td className="px-2 py-1.5 text-v2-ink dark:text-v2-ink font-medium">
                     {clientName}
                   </td>
                   <td className="px-2 py-1.5">
-                    <span className="text-zinc-600 dark:text-zinc-400">
+                    <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                       {a.policies?.policy_number || "—"}
                     </span>
                   </td>
-                  <td className="px-2 py-1.5 text-right font-medium text-zinc-900 dark:text-zinc-100">
+                  <td className="px-2 py-1.5 text-right font-medium text-v2-ink dark:text-v2-ink">
                     {new Intl.NumberFormat("en-US", {
                       style: "currency",
                       currency: "USD",
@@ -107,7 +107,7 @@ export function AttributionTable({
                     </Badge>
                   </td>
                   <td className="px-2 py-1.5 text-center">
-                    <span className="text-zinc-500 dark:text-zinc-400 capitalize">
+                    <span className="text-v2-ink-muted dark:text-v2-ink-subtle capitalize">
                       {a.match_method.replace("auto_", "")}
                     </span>
                   </td>

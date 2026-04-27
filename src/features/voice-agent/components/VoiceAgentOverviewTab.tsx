@@ -385,15 +385,15 @@ export function VoiceAgentOverviewTab({
         ))}
 
       {/* ══════ Feature Highlights Grid ══════ */}
-      <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4">
-        <h3 className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-3">
+      <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card p-4">
+        <h3 className="text-[10px] font-semibold text-v2-ink-subtle dark:text-v2-ink-muted uppercase tracking-wider mb-3">
           What&apos;s Included
         </h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {HIGHLIGHTS.map((h) => (
             <div
               key={h.title}
-              className="flex items-start gap-2.5 p-2.5 rounded-lg border border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30"
+              className="flex items-start gap-2.5 p-2.5 rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-canvas/50 dark:bg-v2-card-tinted/30"
             >
               <div
                 className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
@@ -402,10 +402,10 @@ export function VoiceAgentOverviewTab({
                 <h.icon className="h-4 w-4" style={{ color: ACCENT }} />
               </div>
               <div className="min-w-0">
-                <div className="text-[10px] font-semibold text-zinc-900 dark:text-zinc-100">
+                <div className="text-[10px] font-semibold text-v2-ink dark:text-v2-ink">
                   {h.title}
                 </div>
-                <div className="text-[9px] text-zinc-500 dark:text-zinc-400 leading-relaxed mt-0.5">
+                <div className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed mt-0.5">
                   {h.desc}
                 </div>
               </div>
@@ -416,9 +416,9 @@ export function VoiceAgentOverviewTab({
 
       {/* ══════ Voice Metrics Strip (subscribers) ══════ */}
       {voiceAccessActive && (
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3">
+        <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card p-3">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-[9px] text-zinc-400 dark:text-zinc-500 uppercase tracking-wider font-medium">
+            <span className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted uppercase tracking-wider font-medium">
               Voice Metrics · This Cycle
             </span>
             <span className="relative flex h-1.5 w-1.5">
@@ -427,7 +427,7 @@ export function VoiceAgentOverviewTab({
             </span>
           </div>
 
-          <div className="flex items-center divide-x divide-zinc-200 dark:divide-zinc-800">
+          <div className="flex items-center divide-x divide-v2-ring dark:divide-v2-ring">
             {[
               { label: "Outbound", value: String(outboundCalls) },
               { label: "Inbound", value: String(inboundCalls) },
@@ -439,10 +439,10 @@ export function VoiceAgentOverviewTab({
               { label: "Answer Rate", value: answerRate },
             ].map((m) => (
               <div key={m.label} className="flex-1 px-3 first:pl-0 last:pr-0">
-                <div className="text-[9px] text-zinc-400 dark:text-zinc-500">
+                <div className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
                   {m.label}
                 </div>
-                <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                <div className="text-sm font-bold text-v2-ink dark:text-v2-ink">
                   {m.value}
                 </div>
               </div>
@@ -462,9 +462,9 @@ export function VoiceAgentOverviewTab({
 
       {/* ══════ Your Agent (subscribers with setup done) ══════ */}
       {voiceAccessActive && isSetupDone && (
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3">
+        <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card p-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 uppercase tracking-wider font-medium">
+            <span className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted uppercase tracking-wider font-medium">
               Your Voice Agent
             </span>
             <span className="text-[9px] font-medium">
@@ -480,42 +480,42 @@ export function VoiceAgentOverviewTab({
             </span>
           </div>
 
-          <div className="flex items-center divide-x divide-zinc-200 dark:divide-zinc-800 mb-2">
+          <div className="flex items-center divide-x divide-v2-ring dark:divide-v2-ring mb-2">
             <div className="flex-1 pr-3">
-              <div className="text-[9px] text-zinc-400 dark:text-zinc-500">
+              <div className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
                 Outbound
               </div>
-              <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <div className="text-sm font-bold text-v2-ink dark:text-v2-ink">
                 {outboundCalls}
               </div>
             </div>
             <div className="flex-1 px-3">
-              <div className="text-[9px] text-zinc-400 dark:text-zinc-500">
+              <div className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
                 Inbound
               </div>
-              <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <div className="text-sm font-bold text-v2-ink dark:text-v2-ink">
                 {inboundCalls}
               </div>
             </div>
             <div className="flex-1 px-3">
-              <div className="text-[9px] text-zinc-400 dark:text-zinc-500">
+              <div className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
                 Answer Rate
               </div>
-              <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <div className="text-sm font-bold text-v2-ink dark:text-v2-ink">
                 {answerRate}
               </div>
             </div>
             <div className="flex-1 pl-3">
-              <div className="text-[9px] text-zinc-400 dark:text-zinc-500">
+              <div className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
                 Minutes
               </div>
-              <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <div className="text-sm font-bold text-v2-ink dark:text-v2-ink">
                 {minutesUsed}{" "}
-                <span className="text-[9px] font-normal text-zinc-400 dark:text-zinc-500">
+                <span className="text-[9px] font-normal text-v2-ink-subtle dark:text-v2-ink-muted">
                   / {effectiveIncludedMinutes}
                 </span>
               </div>
-              <div className="mt-0.5 h-1 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden">
+              <div className="mt-0.5 h-1 rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all"
                   style={{
@@ -537,7 +537,7 @@ export function VoiceAgentOverviewTab({
               <button
                 key={label}
                 onClick={action}
-                className="px-2 py-0.5 text-[9px] font-medium rounded border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition"
+                className="px-2 py-0.5 text-[9px] font-medium rounded border border-v2-ring dark:border-v2-ring-strong hover:bg-v2-canvas dark:hover:bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-subtle transition"
               >
                 {label}
               </button>
@@ -548,12 +548,12 @@ export function VoiceAgentOverviewTab({
 
       {/* ══════ Setup Progress (subscribers, setup incomplete) ══════ */}
       {voiceAccessActive && !setupComplete && (
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-3">
+        <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card p-3">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-v2-ink-subtle dark:text-v2-ink-muted uppercase tracking-wider">
               Setup Progress
             </span>
-            <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
+            <span className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
               {completedSteps}/{setupSteps.length} complete
             </span>
           </div>
@@ -561,13 +561,13 @@ export function VoiceAgentOverviewTab({
             {setupSteps.map((_, i) => (
               <div
                 key={i}
-                className={`h-1 flex-1 rounded-full ${i < completedSteps ? "bg-emerald-500" : "bg-zinc-100 dark:bg-zinc-800"}`}
+                className={`h-1 flex-1 rounded-full ${i < completedSteps ? "bg-emerald-500" : "bg-v2-card-tinted dark:bg-v2-card-tinted"}`}
               />
             ))}
           </div>
-          <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Next:{" "}
-            <span className="font-medium text-zinc-900 dark:text-zinc-100">
+            <span className="font-medium text-v2-ink dark:text-v2-ink">
               {nextStepTitle}
             </span>
           </div>

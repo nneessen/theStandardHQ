@@ -50,7 +50,7 @@ export function CloseAiBuilderPage() {
         <NotConnectedPrompt />
       ) : (
         <Tabs defaultValue="email" className="space-y-4">
-          <TabsList className="grid h-auto w-full grid-cols-4 gap-1 rounded-xl bg-zinc-200/70 p-1 dark:bg-zinc-800/70">
+          <TabsList className="grid h-auto w-full grid-cols-4 gap-1 rounded-xl bg-v2-card-tinted p-1 dark:bg-v2-card-tinted/70">
             <TabsTrigger value="email" className="gap-2">
               <Mail className="h-3.5 w-3.5" />
               <span className="text-xs">Email</span>

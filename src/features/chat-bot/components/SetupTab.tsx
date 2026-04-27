@@ -90,17 +90,17 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="mb-3 flex items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink">
           {icon}
         </div>
         <div>
-          <h2 className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
             {title}
           </h2>
           {description ? (
-            <p className="mt-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="mt-0.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               {description}
             </p>
           ) : null}
@@ -113,11 +113,11 @@ function SectionCard({
 
 function SummaryTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-[9px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+    <div className="rounded-lg border border-v2-ring bg-white px-3 py-2 dark:border-v2-ring dark:bg-v2-card">
+      <p className="text-[9px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
         {label}
       </p>
-      <p className="mt-1 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+      <p className="mt-1 text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
         {value}
       </p>
     </div>
@@ -453,18 +453,18 @@ export function SetupTab() {
         </div>
       ) : null}
 
-      <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-4 dark:border-zinc-800 dark:bg-zinc-900/60">
+      <div className="rounded-xl border border-v2-ring bg-v2-canvas/70 p-4 dark:border-v2-ring dark:bg-v2-card/60">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-zinc-700 shadow-sm dark:bg-zinc-900 dark:text-zinc-200">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-v2-ink shadow-sm dark:bg-v2-card dark:text-v2-ink">
                 <Settings2 className="h-4 w-4" />
               </div>
               <div>
-                <h2 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100">
+                <h2 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink">
                   Configuration Workspace
                 </h2>
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   Split by section so you can adjust behavior without a long
                   single-column form.
                 </p>
@@ -500,7 +500,7 @@ export function SetupTab() {
       <Tabs defaultValue="automation" className="space-y-3">
         <TabsList
           variant="segment"
-          className="grid h-auto w-full grid-cols-2 gap-1 rounded-xl bg-zinc-200/70 p-1 lg:grid-cols-5 dark:bg-zinc-800/70"
+          className="grid h-auto w-full grid-cols-2 gap-1 rounded-xl bg-v2-card-tinted p-1 lg:grid-cols-5 dark:bg-v2-card-tinted/70"
         >
           <TabsTrigger
             value="automation"
@@ -588,7 +588,7 @@ export function SetupTab() {
                   description="Default outbound number for new leads. Used when no state mapping matches."
                 >
                   {phoneNumbersLoading ? (
-                    <div className="flex items-center gap-2 text-[10px] text-zinc-500">
+                    <div className="flex items-center gap-2 text-[10px] text-v2-ink-muted">
                       <Loader2 className="h-3 w-3 animate-spin" />
                       Loading phone numbers...
                     </div>
@@ -622,12 +622,12 @@ export function SetupTab() {
                     </Select>
                   ) : (
                     <div className="space-y-2">
-                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                         No phone numbers found in your Close account.
                       </p>
                       {agent?.primaryPhone ? (
                         <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+                          <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
                             Current: {agent.primaryPhone}
                           </span>
                           <Button
@@ -654,11 +654,11 @@ export function SetupTab() {
                   title="Appointment Reminders"
                   description="Send automated SMS reminders before each scheduled appointment."
                 >
-                  <div className="space-y-0 divide-y divide-zinc-200 rounded-lg border border-zinc-200 bg-zinc-50 dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-950/40">
+                  <div className="space-y-0 divide-y divide-v2-ring rounded-lg border border-v2-ring bg-v2-canvas dark:divide-v2-ring dark:border-v2-ring dark:bg-v2-canvas/40">
                     <div className="flex items-center justify-between gap-3 px-3 py-2.5">
                       <div className="flex items-center gap-2">
-                        <Clock className="h-3.5 w-3.5 text-zinc-400" />
-                        <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                        <Clock className="h-3.5 w-3.5 text-v2-ink-subtle" />
+                        <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
                           24-hour reminder
                         </p>
                       </div>
@@ -673,8 +673,8 @@ export function SetupTab() {
                     </div>
                     <div className="flex items-center justify-between gap-3 px-3 py-2.5">
                       <div className="flex items-center gap-2">
-                        <Clock className="h-3.5 w-3.5 text-zinc-400" />
-                        <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                        <Clock className="h-3.5 w-3.5 text-v2-ink-subtle" />
+                        <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
                           1-hour reminder
                         </p>
                       </div>
@@ -683,7 +683,7 @@ export function SetupTab() {
                           "text-[10px] font-medium",
                           agent.remindersEnabled
                             ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-zinc-400 dark:text-zinc-500",
+                            : "text-v2-ink-subtle dark:text-v2-ink-muted",
                         )}
                       >
                         {agent.remindersEnabled ? "Enabled" : "Off"}
@@ -691,8 +691,8 @@ export function SetupTab() {
                     </div>
                     <div className="flex items-center justify-between gap-3 px-3 py-2.5">
                       <div className="flex items-center gap-2">
-                        <Clock className="h-3.5 w-3.5 text-zinc-400" />
-                        <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                        <Clock className="h-3.5 w-3.5 text-v2-ink-subtle" />
+                        <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
                           15-minute reminder
                         </p>
                       </div>
@@ -701,14 +701,14 @@ export function SetupTab() {
                           "text-[10px] font-medium",
                           agent.remindersEnabled
                             ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-zinc-400 dark:text-zinc-500",
+                            : "text-v2-ink-subtle dark:text-v2-ink-muted",
                         )}
                       >
                         {agent.remindersEnabled ? "Enabled" : "Off"}
                       </span>
                     </div>
                   </div>
-                  <p className="mt-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <p className="mt-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     The toggle controls all three reminders. Each is sent
                     automatically at the specified interval before the
                     appointment.
@@ -786,7 +786,7 @@ export function SetupTab() {
                       </p>
                     )}
                     {!agent.notificationPhone && !notifPhoneDirty && (
-                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                         No phone set. You won&apos;t receive SMS notifications
                         for booked appointments.
                       </p>
@@ -802,12 +802,12 @@ export function SetupTab() {
                   description="Automatically re-engage leads that stop responding after initial outreach."
                 >
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-800 dark:bg-zinc-950/40">
+                    <div className="flex items-center justify-between gap-3 rounded-lg border border-v2-ring bg-v2-canvas px-3 py-2.5 dark:border-v2-ring dark:bg-v2-canvas/40">
                       <div>
-                        <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                        <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
                           Enable re-engagement
                         </p>
-                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                        <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                           Send follow-up messages to stale leads automatically.
                           Hard declines are always excluded.
                         </p>
@@ -824,12 +824,12 @@ export function SetupTab() {
 
                     <div
                       className={cn(
-                        "space-y-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-3 dark:border-zinc-800 dark:bg-zinc-950/40",
+                        "space-y-3 rounded-lg border border-v2-ring bg-v2-canvas px-3 py-3 dark:border-v2-ring dark:bg-v2-canvas/40",
                         !(agent.reEngagementEnabled ?? false) && "opacity-50",
                       )}
                     >
                       <label className="space-y-1">
-                        <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                           Delay before re-engagement (hours)
                         </span>
                         <Input
@@ -847,7 +847,7 @@ export function SetupTab() {
                       </label>
 
                       <label className="space-y-1">
-                        <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                           Max attempts per lead
                         </span>
                         <Input
@@ -865,7 +865,7 @@ export function SetupTab() {
                       </label>
 
                       {reEngageDirty ? (
-                        <div className="flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                        <div className="flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
                           <Button
                             size="sm"
                             className="h-7 text-[10px]"
@@ -905,12 +905,12 @@ export function SetupTab() {
                 title="Schedule Behavior"
                 description="Defaults are 08:00-20:30 every day unless you save a custom schedule."
               >
-                <div className="space-y-2 text-[10px] text-zinc-500 dark:text-zinc-400">
-                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/40">
+                <div className="space-y-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <div className="rounded-lg border border-v2-ring bg-v2-canvas px-3 py-2 dark:border-v2-ring dark:bg-v2-canvas/40">
                     Automated replies follow the lead&apos;s timezone when it is
                     available.
                   </div>
-                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-950/40">
+                  <div className="rounded-lg border border-v2-ring bg-v2-canvas px-3 py-2 dark:border-v2-ring dark:bg-v2-canvas/40">
                     Same-day booking can end earlier than replies by using a
                     custom cutoff per day.
                   </div>
@@ -932,8 +932,8 @@ export function SetupTab() {
               <ConnectionCard
                 title="Close CRM"
                 icon={
-                  <div className="flex h-6 w-6 items-center justify-center rounded bg-zinc-900 dark:bg-zinc-100">
-                    <span className="text-[8px] font-bold text-white dark:text-zinc-900">
+                  <div className="flex h-6 w-6 items-center justify-center rounded bg-v2-ink dark:bg-v2-card-tinted">
+                    <span className="text-[8px] font-bold text-white dark:text-v2-ink">
                       CRM
                     </span>
                   </div>
@@ -1064,7 +1064,7 @@ export function SetupTab() {
                           "h-7 rounded-full border px-2.5 text-[10px] font-medium transition-colors",
                           bhDays.includes(index)
                             ? "border-blue-600 bg-blue-600 text-white"
-                            : "border-zinc-300 bg-white text-zinc-500 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-400",
+                            : "border-v2-ring-strong bg-white text-v2-ink-muted hover:border-v2-ring-strong dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink-subtle",
                         )}
                       >
                         {label}
@@ -1074,7 +1074,7 @@ export function SetupTab() {
 
                   <div className="grid gap-2 sm:grid-cols-2">
                     <label className="space-y-1">
-                      <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                         Start
                       </span>
                       <input
@@ -1084,11 +1084,11 @@ export function SetupTab() {
                           setBhStart(event.target.value);
                           setBhDirty(true);
                         }}
-                        className="h-8 w-full rounded-md border border-zinc-300 bg-white px-2 text-[11px] text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                        className="h-8 w-full rounded-md border border-v2-ring-strong bg-white px-2 text-[11px] text-v2-ink dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink"
                       />
                     </label>
                     <label className="space-y-1">
-                      <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
                         End
                       </span>
                       <input
@@ -1098,7 +1098,7 @@ export function SetupTab() {
                           setBhEnd(event.target.value);
                           setBhDirty(true);
                         }}
-                        className="h-8 w-full rounded-md border border-zinc-300 bg-white px-2 text-[11px] text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                        className="h-8 w-full rounded-md border border-v2-ring-strong bg-white px-2 text-[11px] text-v2-ink dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink"
                       />
                     </label>
                   </div>
@@ -1110,7 +1110,7 @@ export function SetupTab() {
                   ) : null}
 
                   {bhDirty ? (
-                    <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                    <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
                       <Button
                         size="sm"
                         className="h-7 text-[10px]"
@@ -1140,7 +1140,7 @@ export function SetupTab() {
                   description="Map lead sources to specific Calendly event types."
                 >
                   {eventTypesLoading ? (
-                    <div className="h-8 rounded bg-zinc-100 dark:bg-zinc-800" />
+                    <div className="h-8 rounded bg-v2-card-tinted dark:bg-v2-card-tinted" />
                   ) : eventTypesError ? (
                     <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 p-2 dark:border-amber-800 dark:bg-amber-950/30">
                       <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
@@ -1182,7 +1182,7 @@ export function SetupTab() {
                             }}
                             placeholder="e.g. Sitka Life"
                             disabled={updateConfig.isPending}
-                            className="h-8 rounded-md border border-zinc-300 bg-white px-2 text-[11px] dark:border-zinc-700 dark:bg-zinc-900"
+                            className="h-8 rounded-md border border-v2-ring-strong bg-white px-2 text-[11px] dark:border-v2-ring-strong dark:bg-v2-card"
                           />
                           <Select
                             value={mapping.eventTypeSlug || "__none__"}
@@ -1255,7 +1255,7 @@ export function SetupTab() {
                       </Button>
                     </div>
                   ) : (
-                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                    <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                       No event types found. Create an event type in Calendly
                       first.
                     </p>
@@ -1280,7 +1280,7 @@ export function SetupTab() {
                   ) : null}
 
                   {eventTypeDirty ? (
-                    <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                    <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
                       <Button
                         size="sm"
                         className="h-7 text-[10px]"
@@ -1305,7 +1305,7 @@ export function SetupTab() {
                   title="Calendar Rules"
                   description="Connect a calendar provider to unlock scheduling-specific settings."
                 >
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     Google Calendar enables business hours. Calendly enables
                     lead-source-to-event-type mapping.
                   </p>
@@ -1331,7 +1331,7 @@ export function SetupTab() {
                 disabled={updateConfig.isPending}
               />
               {sourcesDirty ? (
-                <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
                   <Button
                     size="sm"
                     className="h-7 text-[10px]"
@@ -1364,7 +1364,7 @@ export function SetupTab() {
                 disabled={updateConfig.isPending}
               />
               {statusesDirty ? (
-                <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
                   <Button
                     size="sm"
                     className="h-7 text-[10px]"
@@ -1399,7 +1399,7 @@ export function SetupTab() {
                 isLoadingStatuses={closeLeadStatusesLoading}
               />
               {blockedDirty ? (
-                <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
                   <Button
                     size="sm"
                     className="h-7 text-[10px]"

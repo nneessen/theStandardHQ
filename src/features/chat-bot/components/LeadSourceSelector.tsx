@@ -61,7 +61,7 @@ export function LeadSourceSelector({
             onCheckedChange={() => toggle(source)}
             disabled={disabled}
           />
-          <span className="text-[11px] text-zinc-700 dark:text-zinc-300">
+          <span className="text-[11px] text-v2-ink dark:text-v2-ink-muted">
             {source}
           </span>
         </label>

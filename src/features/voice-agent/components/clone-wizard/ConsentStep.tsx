@@ -34,15 +34,15 @@ export function ConsentStep({
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="rounded-xl border border-v2-ring bg-white p-6 dark:border-v2-ring dark:bg-v2-card">
         <div className="flex items-center gap-2 mb-4">
-          <Mic className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
-          <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <Mic className="h-5 w-5 text-v2-ink-muted dark:text-v2-ink-subtle" />
+          <h2 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
             Clone Your Voice
           </h2>
         </div>
 
-        <p className="text-[12px] text-zinc-500 dark:text-zinc-400 mb-5">
+        <p className="text-[12px] text-v2-ink-muted dark:text-v2-ink-subtle mb-5">
           Record 25 guided audio segments to create a custom AI voice that
           sounds like you on all calls. This takes about 60-90 minutes total and
           can be completed across multiple sessions.
@@ -52,7 +52,7 @@ export function ConsentStep({
           <div>
             <Label
               htmlFor="voice-name"
-              className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300"
+              className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted"
             >
               Voice Name
             </Label>
@@ -75,7 +75,7 @@ export function ConsentStep({
             />
             <Label
               htmlFor="consent"
-              className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-tight cursor-pointer"
+              className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle leading-tight cursor-pointer"
             >
               I consent to having my voice recorded and used to generate a
               custom AI voice for phone calls made through this platform. I
@@ -93,7 +93,7 @@ export function ConsentStep({
         )}
 
         <div className="mt-5 flex items-center justify-between">
-          <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+          <span className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted">
             {remainingAttempts} attempt{remainingAttempts !== 1 ? "s" : ""}{" "}
             remaining
           </span>

@@ -23,7 +23,7 @@ function StepChecklistItem({
       )}
     >
       <div className="flex items-center justify-between gap-3">
-        <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
           {label}
         </p>
         <Badge
@@ -31,13 +31,13 @@ function StepChecklistItem({
             "text-[9px] flex-shrink-0",
             complete
               ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-              : "bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300",
+              : "bg-v2-ring text-v2-ink-muted dark:bg-v2-ring-strong dark:text-v2-ink-muted",
           )}
         >
           {complete ? "Ready" : "Needs attention"}
         </Badge>
       </div>
-      <p className="mt-1.5 text-[10px] leading-4 text-zinc-600 dark:text-zinc-400">
+      <p className="mt-1.5 text-[10px] leading-4 text-v2-ink-muted dark:text-v2-ink-subtle">
         {detail}
       </p>
     </div>
@@ -139,7 +139,7 @@ export function LaunchView({
               <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                 Voice
               </p>
-              <p className="mt-1 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <p className="mt-1 text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
                 {selectedVoice
                   ? `${selectedVoice.voice_name} · ${selectedVoice.provider}`
                   : selectedVoiceId || "No voice selected"}
@@ -150,7 +150,7 @@ export function LaunchView({
               <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                 Opening line
               </p>
-              <p className="mt-1 text-[11px] text-zinc-900 dark:text-zinc-100">
+              <p className="mt-1 text-[11px] text-v2-ink dark:text-v2-ink">
                 {openingLineReady
                   ? `${Object.values(workflowGreetings).filter((g) => g.trim()).length}/5 workflow greetings configured`
                   : "No greetings saved yet."}
@@ -161,7 +161,7 @@ export function LaunchView({
               <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground">
                 Prompt status
               </p>
-              <p className="mt-1 text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+              <p className="mt-1 text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
                 {instructionsReady
                   ? "Instructions are saved in the draft."
                   : "Instructions still need to be added."}

@@ -32,7 +32,7 @@ export function StyleSection({ data, onChange }: StyleSectionProps) {
               }
               className="mt-0.5"
             />
-            <span className="text-[11px] leading-5 text-zinc-700 dark:text-zinc-300">
+            <span className="text-[11px] leading-5 text-v2-ink dark:text-v2-ink-muted">
               {preset.label}
             </span>
           </label>

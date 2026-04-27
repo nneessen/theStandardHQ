@@ -54,7 +54,7 @@ export function CalendarHealthBanner({
           <Button
             variant="ghost"
             size="sm"
-            className="h-5 px-1.5 text-[9px] text-zinc-500"
+            className="h-5 px-1.5 text-[9px] text-v2-ink-muted"
             onClick={() => refetch()}
             disabled={isFetching}
           >
@@ -129,7 +129,7 @@ export function CalendarHealthBanner({
         <Button
           variant="ghost"
           size="sm"
-          className="h-5 px-1.5 text-[9px] text-zinc-500"
+          className="h-5 px-1.5 text-[9px] text-v2-ink-muted"
           onClick={() => refetch()}
           disabled={isFetching}
         >

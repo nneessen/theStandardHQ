@@ -75,11 +75,11 @@ function CollapsibleSection({
 }) {
   const [open, setOpen] = useState(active);
   return (
-    <div className="border border-zinc-200 dark:border-zinc-700 rounded-md">
+    <div className="border border-v2-ring dark:border-v2-ring-strong rounded-md">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 w-full px-2 py-1.5 text-[10px] font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 rounded-t-md"
+        className="flex items-center gap-1.5 w-full px-2 py-1.5 text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 rounded-t-md"
       >
         {open ? (
           <ChevronDown className="h-3 w-3" />
@@ -99,7 +99,7 @@ function CollapsibleSection({
       {open && (
         <div className="px-2 pb-2 space-y-1.5">
           {description && (
-            <p className="text-[9px] text-zinc-400">{description}</p>
+            <p className="text-[9px] text-v2-ink-subtle">{description}</p>
           )}
           {children}
         </div>
@@ -131,10 +131,10 @@ function MultiSelect({
 
   return (
     <div>
-      <Label className="text-[10px] text-zinc-500">{label}</Label>
+      <Label className="text-[10px] text-v2-ink-muted">{label}</Label>
       <div className="flex flex-wrap gap-1 mt-0.5">
         {loading ? (
-          <span className="text-[10px] text-zinc-400">Loading...</span>
+          <span className="text-[10px] text-v2-ink-subtle">Loading...</span>
         ) : (
           options.map((opt) => (
             <button
@@ -145,7 +145,7 @@ function MultiSelect({
                 "px-1.5 py-0.5 text-[10px] rounded border transition-colors",
                 selected.includes(opt.value)
                   ? "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300"
-                  : "border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:border-zinc-300",
+                  : "border-v2-ring dark:border-v2-ring-strong text-v2-ink-muted hover:border-v2-ring-strong",
               )}
             >
               {opt.label}
@@ -312,7 +312,7 @@ function TimeWindowEditor({
     <div className="space-y-1.5">
       <div className="flex gap-2">
         <div>
-          <Label className="text-[10px] text-zinc-500">Start</Label>
+          <Label className="text-[10px] text-v2-ink-muted">Start</Label>
           <Input
             type="time"
             value={timeWindow.startTime}
@@ -321,7 +321,7 @@ function TimeWindowEditor({
           />
         </div>
         <div>
-          <Label className="text-[10px] text-zinc-500">End</Label>
+          <Label className="text-[10px] text-v2-ink-muted">End</Label>
           <Input
             type="time"
             value={timeWindow.endTime}
@@ -330,7 +330,7 @@ function TimeWindowEditor({
           />
         </div>
         <div>
-          <Label className="text-[10px] text-zinc-500">Timezone</Label>
+          <Label className="text-[10px] text-v2-ink-muted">Timezone</Label>
           <Input
             value={timeWindow.timezone}
             onChange={(e) => update({ timezone: e.target.value })}
@@ -340,7 +340,7 @@ function TimeWindowEditor({
         </div>
       </div>
       <div>
-        <Label className="text-[10px] text-zinc-500">Days</Label>
+        <Label className="text-[10px] text-v2-ink-muted">Days</Label>
         <div className="flex gap-1 mt-0.5">
           {DAYS.map((d) => (
             <button
@@ -351,7 +351,7 @@ function TimeWindowEditor({
                 "w-7 h-6 text-[9px] rounded border transition-colors",
                 timeWindow.days.includes(d.value)
                   ? "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300"
-                  : "border-zinc-200 dark:border-zinc-700 text-zinc-500",
+                  : "border-v2-ring dark:border-v2-ring-strong text-v2-ink-muted",
               )}
             >
               {d.label}
@@ -449,7 +449,7 @@ function CustomFieldConditionsEditor({
             className="h-7 w-7 p-0"
             onClick={() => removeRow(idx)}
           >
-            <X className="h-3 w-3 text-zinc-400" />
+            <X className="h-3 w-3 text-v2-ink-subtle" />
           </Button>
         </div>
       ))}
@@ -502,7 +502,9 @@ function ChannelHistoryEditor({
     }
     return (
       <div className="flex items-center gap-1">
-        <span className="text-[10px] text-zinc-500 w-28 shrink-0">{label}</span>
+        <span className="text-[10px] text-v2-ink-muted w-28 shrink-0">
+          {label}
+        </span>
         <Select
           value={current.operator}
           onValueChange={(op) =>
@@ -545,7 +547,7 @@ function ChannelHistoryEditor({
             onChange(next);
           }}
         >
-          <X className="h-3 w-3 text-zinc-400" />
+          <X className="h-3 w-3 text-v2-ink-subtle" />
         </Button>
       </div>
     );

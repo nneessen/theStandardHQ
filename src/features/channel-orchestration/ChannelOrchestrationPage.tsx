@@ -49,8 +49,8 @@ export function ChannelOrchestrationPage() {
   // Loading state
   if (addonsLoading || agentLoading) {
     return (
-      <div className="h-[calc(100vh-4rem)] flex items-center justify-center bg-zinc-50 dark:bg-zinc-950">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+      <div className="h-[calc(100vh-4rem)] flex items-center justify-center bg-v2-canvas dark:bg-v2-canvas">
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -58,12 +58,12 @@ export function ChannelOrchestrationPage() {
   // No access — direct to chat bot or voice agent setup
   if (!hasAccess) {
     return (
-      <div className="h-[calc(100vh-4rem)] flex flex-col items-center justify-center p-6 bg-zinc-50 dark:bg-zinc-950">
-        <Network className="h-10 w-10 text-zinc-300 dark:text-zinc-600 mb-3" />
-        <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+      <div className="h-[calc(100vh-4rem)] flex flex-col items-center justify-center p-6 bg-v2-canvas dark:bg-v2-canvas">
+        <Network className="h-10 w-10 text-v2-ink-subtle dark:text-v2-ink-muted mb-3" />
+        <h2 className="text-sm font-semibold text-v2-ink dark:text-v2-ink-muted mb-1">
           Channel Orchestration
         </h2>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center max-w-sm">
+        <p className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle text-center max-w-sm">
           Configure SMS + Voice routing rules for your leads. Requires an AI
           Chat Bot or Premium Voice subscription.
         </p>
@@ -74,12 +74,12 @@ export function ChannelOrchestrationPage() {
   // Agent not provisioned
   if (!agent) {
     return (
-      <div className="h-[calc(100vh-4rem)] flex flex-col items-center justify-center p-6 bg-zinc-50 dark:bg-zinc-950">
-        <Network className="h-10 w-10 text-zinc-300 dark:text-zinc-600 mb-3" />
-        <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+      <div className="h-[calc(100vh-4rem)] flex flex-col items-center justify-center p-6 bg-v2-canvas dark:bg-v2-canvas">
+        <Network className="h-10 w-10 text-v2-ink-subtle dark:text-v2-ink-muted mb-3" />
+        <h2 className="text-sm font-semibold text-v2-ink dark:text-v2-ink-muted mb-1">
           Set Up Your Bot First
         </h2>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400 text-center max-w-sm">
+        <p className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle text-center max-w-sm">
           {agentError
             ? "Unable to reach the bot service. Please try again later."
             : "Visit the Chat Bot or Voice Agent page to provision your agent before configuring channel rules."}
@@ -89,7 +89,7 @@ export function ChannelOrchestrationPage() {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5 bg-zinc-50 dark:bg-zinc-950">
+    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5 bg-v2-canvas dark:bg-v2-canvas">
       {/* Hero Header */}
       <div className="relative overflow-hidden rounded-xl bg-foreground">
         <div className="absolute inset-0 opacity-[0.03]">
@@ -184,7 +184,7 @@ export function ChannelOrchestrationPage() {
       )}
 
       {/* Tabs */}
-      <div className="flex items-center gap-0.5 bg-zinc-200/50 dark:bg-zinc-800/50 rounded-md p-0.5 overflow-x-auto">
+      <div className="flex items-center gap-0.5 bg-v2-card-tinted dark:bg-v2-card-tinted/50 rounded-md p-0.5 overflow-x-auto">
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -192,8 +192,8 @@ export function ChannelOrchestrationPage() {
             className={cn(
               "flex items-center justify-center gap-1 px-2.5 py-1.5 text-[10px] font-medium rounded transition-all whitespace-nowrap flex-shrink-0",
               activeTab === tab.id
-                ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+                ? "bg-v2-card shadow-sm text-v2-ink dark:text-v2-ink"
+                : "text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-ink-subtle",
             )}
           >
             <tab.icon className="h-3 w-3" />

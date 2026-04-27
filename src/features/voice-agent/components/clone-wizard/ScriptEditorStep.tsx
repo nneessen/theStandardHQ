@@ -152,7 +152,7 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -160,13 +160,13 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
   return (
     <div className="flex h-full flex-col">
       {/* Header */}
-      <div className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-800 dark:bg-zinc-900/40">
+      <div className="border-b border-v2-ring bg-v2-canvas px-4 py-3 dark:border-v2-ring dark:bg-v2-card/40">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100">
+            <h2 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink">
               Recording Scripts
             </h2>
-            <p className="mt-0.5 text-[11px] text-zinc-500 dark:text-zinc-400">
+            <p className="mt-0.5 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Review and customize the scripts you'll read aloud during
               recording.
               {isCustom && (
@@ -191,7 +191,9 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
             )}
             {confirmReset && (
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] text-zinc-500">Are you sure?</span>
+                <span className="text-[10px] text-v2-ink-muted">
+                  Are you sure?
+                </span>
                 <Button
                   variant="destructive"
                   size="sm"
@@ -258,7 +260,7 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
                 "rounded-lg border",
                 hasError
                   ? "border-red-200 dark:border-red-900/50"
-                  : "border-zinc-200 dark:border-zinc-800",
+                  : "border-v2-ring dark:border-v2-ring",
               )}
             >
               {/* Collapsed row */}
@@ -267,14 +269,14 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
                 className="flex w-full items-center gap-2 px-3 py-2 text-left"
                 onClick={() => setExpandedIndex(isExpanded ? null : i)}
               >
-                <span className="text-[10px] font-medium text-zinc-400 w-5 text-right flex-shrink-0">
+                <span className="text-[10px] font-medium text-v2-ink-subtle w-5 text-right flex-shrink-0">
                   {i + 1}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                  <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink truncate">
                     {script.title || "(untitled)"}
                   </p>
-                  <p className="text-[9px] text-zinc-500 dark:text-zinc-400 truncate">
+                  <p className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
                     {script.category || "(no category)"} ·{" "}
                     {Math.round(script.targetDurationSeconds / 60)}m target
                     {script.optional && " · optional"}
@@ -282,7 +284,7 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
                 </div>
                 <ChevronDown
                   className={cn(
-                    "h-3.5 w-3.5 text-zinc-400 transition-transform flex-shrink-0",
+                    "h-3.5 w-3.5 text-v2-ink-subtle transition-transform flex-shrink-0",
                     isExpanded && "rotate-180",
                   )}
                 />
@@ -290,7 +292,7 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
 
               {/* Expanded editor */}
               {isExpanded && (
-                <div className="border-t border-zinc-200 px-3 py-3 space-y-3 dark:border-zinc-800">
+                <div className="border-t border-v2-ring px-3 py-3 space-y-3 dark:border-v2-ring">
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">
                       <Label className="text-[10px]">Category</Label>
@@ -319,7 +321,7 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
                       <Label className="text-[10px]">Script text</Label>
-                      <span className="text-[9px] text-zinc-400">
+                      <span className="text-[9px] text-v2-ink-subtle">
                         {script.scriptText.length}/10000
                       </span>
                     </div>
@@ -372,7 +374,7 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
                           updateScript(i, { optional: checked })
                         }
                       />
-                      <span className="text-[10px] text-zinc-500">
+                      <span className="text-[10px] text-v2-ink-muted">
                         Optional
                       </span>
                     </div>
@@ -403,7 +405,7 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 text-[10px] text-zinc-400 hover:text-red-500 gap-1"
+                      className="h-6 text-[10px] text-v2-ink-subtle hover:text-red-500 gap-1"
                       onClick={() => removeScript(i)}
                       disabled={scripts.length <= 15}
                     >
@@ -432,9 +434,9 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-zinc-200 bg-white px-4 py-2.5 dark:border-zinc-800 dark:bg-zinc-900">
+      <div className="border-t border-v2-ring bg-white px-4 py-2.5 dark:border-v2-ring dark:bg-v2-card">
         <div className="flex items-center justify-between">
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             {scripts.length} scripts ·{" "}
             {hasLocalEdits ? (
               <span className="text-amber-600 dark:text-amber-400">

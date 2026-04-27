@@ -19,7 +19,7 @@ export function ProductsSection({ data, onChange }: ProductsSectionProps) {
 
   return (
     <div className="space-y-3">
-      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
         Your agent will discuss these in general, educational terms — it won't
         quote prices or give specific advice.
       </p>
@@ -38,10 +38,10 @@ export function ProductsSection({ data, onChange }: ProductsSectionProps) {
               className="mt-0.5"
             />
             <div>
-              <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+              <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
                 {preset.label}
               </span>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 {preset.description}
               </p>
             </div>

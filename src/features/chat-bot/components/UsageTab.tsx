@@ -27,9 +27,9 @@ function getVoiceStatusClasses(status: string) {
     case "suspended":
       return "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300";
     case "canceled":
-      return "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
+      return "bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted";
     default:
-      return "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300";
+      return "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-muted";
   }
 }
 
@@ -81,9 +81,9 @@ export function UsageTab() {
 
   if (isLoading) {
     return (
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+      <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+          <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
         </div>
       </div>
     );
@@ -91,10 +91,10 @@ export function UsageTab() {
 
   if (!usage) {
     return (
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+      <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
         <div className="py-8 text-center">
-          <Activity className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mx-auto mb-2" />
-          <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+          <Activity className="h-8 w-8 text-v2-ink-subtle dark:text-v2-ink-muted mx-auto mb-2" />
+          <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Usage data unavailable
           </p>
         </div>
@@ -106,11 +106,11 @@ export function UsageTab() {
   if (hasUnlimitedAccess) {
     return (
       <div className="space-y-3">
-        <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+        <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5">
-              <Activity className="h-3.5 w-3.5 text-zinc-400" />
-              <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+              <Activity className="h-3.5 w-3.5 text-v2-ink-subtle" />
+              <span className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink uppercase tracking-wide">
                 Lead Usage
               </span>
             </div>
@@ -121,10 +121,10 @@ export function UsageTab() {
           </div>
 
           <div className="flex items-baseline gap-1 mb-3">
-            <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+            <span className="text-lg font-bold text-v2-ink dark:text-v2-ink">
               {usage.leadsUsed.toLocaleString()}
             </span>
-            <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            <span className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
               leads engaged
             </span>
           </div>
@@ -136,11 +136,11 @@ export function UsageTab() {
         </div>
 
         {voiceProvisioned && (
-          <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+          <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-1.5">
-                <PhoneCall className="h-3.5 w-3.5 text-zinc-400" />
-                <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+                <PhoneCall className="h-3.5 w-3.5 text-v2-ink-subtle" />
+                <span className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink uppercase tracking-wide">
                   Voice Usage
                 </span>
               </div>
@@ -155,15 +155,15 @@ export function UsageTab() {
             </div>
 
             <div className="flex items-baseline gap-1 mb-2">
-              <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+              <span className="text-lg font-bold text-v2-ink dark:text-v2-ink">
                 {voiceUsedMinutes.toLocaleString()}
               </span>
-              <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <span className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 / {voiceLimit.toLocaleString()} minutes
               </span>
             </div>
 
-            <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden mb-2">
+            <div className="h-2 bg-v2-card-tinted dark:bg-v2-card-tinted rounded-full overflow-hidden mb-2">
               <div
                 className={cn(
                   "h-full rounded-full transition-all",
@@ -173,14 +173,14 @@ export function UsageTab() {
               />
             </div>
 
-            <div className="flex items-center justify-between text-[10px] text-zinc-500 dark:text-zinc-400">
+            <div className="flex items-center justify-between text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               <span>{voiceRemainingMinutes.toLocaleString()} remaining</span>
               <span>{Math.round(voicePercentUsed)}% used</span>
             </div>
 
             {(voiceEntitlement?.cycleStartAt || voiceUsage?.cycleStartAt) &&
               (voiceEntitlement?.cycleEndAt || voiceUsage?.cycleEndAt) && (
-                <div className="mt-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+                <div className="mt-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   Cycle{" "}
                   {formatDate(
                     voiceEntitlement?.cycleStartAt ||
@@ -225,24 +225,24 @@ export function UsageTab() {
   const tierColor = (tier: string) => {
     switch (tier.toLowerCase()) {
       case "starter":
-        return "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300";
+        return "bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted";
       case "growth":
         return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300";
       case "scale":
         return "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300";
       default:
-        return "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300";
+        return "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-muted";
     }
   };
 
   return (
     <div className="space-y-3">
       {/* Usage Card */}
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+      <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-1.5">
-            <Activity className="h-3.5 w-3.5 text-zinc-400" />
-            <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+            <Activity className="h-3.5 w-3.5 text-v2-ink-subtle" />
+            <span className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink uppercase tracking-wide">
               Lead Usage
             </span>
           </div>
@@ -260,18 +260,18 @@ export function UsageTab() {
               "text-lg font-bold",
               isOverLimit
                 ? "text-red-600 dark:text-red-400"
-                : "text-zinc-900 dark:text-zinc-100",
+                : "text-v2-ink dark:text-v2-ink",
             )}
           >
             {usage.leadsUsed.toLocaleString()}
           </span>
-          <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <span className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             / {usage.leadLimit.toLocaleString()} leads
           </span>
         </div>
 
         {/* Progress bar */}
-        <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden mb-2">
+        <div className="h-2 bg-v2-card-tinted dark:bg-v2-card-tinted rounded-full overflow-hidden mb-2">
           <div
             className={cn(
               "h-full rounded-full transition-all",
@@ -287,7 +287,7 @@ export function UsageTab() {
 
         {/* Stats row */}
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             {remaining.toLocaleString()} remaining
           </span>
           <span
@@ -297,7 +297,7 @@ export function UsageTab() {
                 ? "text-red-600 dark:text-red-400"
                 : isWarning
                   ? "text-amber-600 dark:text-amber-400"
-                  : "text-zinc-500 dark:text-zinc-400",
+                  : "text-v2-ink-muted dark:text-v2-ink-subtle",
             )}
           >
             {Math.round(percentUsed)}% used
@@ -324,23 +324,23 @@ export function UsageTab() {
       </div>
 
       {/* Billing Period Card */}
-      <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
-        <h2 className="text-[10px] font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400 mb-2">
+      <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
+        <h2 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle mb-2">
           Billing Period
         </h2>
-        <div className="flex items-center gap-2 text-[11px] text-zinc-700 dark:text-zinc-300">
+        <div className="flex items-center gap-2 text-[11px] text-v2-ink dark:text-v2-ink-muted">
           <span>{formatDate(usage.periodStart)}</span>
-          <span className="text-zinc-400">&rarr;</span>
+          <span className="text-v2-ink-subtle">&rarr;</span>
           <span>{formatDate(usage.periodEnd)}</span>
         </div>
       </div>
 
       {(voiceEntitlementLoading || voiceProvisioned) && (
-        <div className="p-3 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+        <div className="p-3 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5">
-              <PhoneCall className="h-3.5 w-3.5 text-zinc-400" />
-              <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide">
+              <PhoneCall className="h-3.5 w-3.5 text-v2-ink-subtle" />
+              <span className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink uppercase tracking-wide">
                 Voice Add-on
               </span>
             </div>
@@ -358,20 +358,20 @@ export function UsageTab() {
 
           {voiceEntitlementLoading ? (
             <div className="flex items-center justify-center py-6">
-              <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+              <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
             </div>
           ) : (
             <>
               <div className="flex items-baseline gap-1 mb-2">
-                <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                <span className="text-lg font-bold text-v2-ink dark:text-v2-ink">
                   {voiceUsedMinutes.toLocaleString()}
                 </span>
-                <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                <span className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   / {voiceLimit.toLocaleString()} minutes
                 </span>
               </div>
 
-              <div className="h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden mb-2">
+              <div className="h-2 bg-v2-card-tinted dark:bg-v2-card-tinted rounded-full overflow-hidden mb-2">
                 <div
                   className={cn(
                     "h-full rounded-full transition-all",
@@ -382,17 +382,17 @@ export function UsageTab() {
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   {voiceRemainingMinutes.toLocaleString()} remaining
                 </span>
-                <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   {voiceEntitlement?.planCode || "voice_pro_v1"}
                 </span>
               </div>
 
               {(voiceEntitlement?.cycleStartAt || voiceUsage?.cycleStartAt) &&
                 (voiceEntitlement?.cycleEndAt || voiceUsage?.cycleEndAt) && (
-                  <div className="mt-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <div className="mt-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     Cycle{" "}
                     {formatDate(
                       voiceEntitlement?.cycleStartAt ||
@@ -409,7 +409,7 @@ export function UsageTab() {
                 )}
 
               {voiceEntitlement && (
-                <div className="mt-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+                <div className="mt-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   Features:{" "}
                   {[
                     voiceEntitlement.features.missedAppointment &&

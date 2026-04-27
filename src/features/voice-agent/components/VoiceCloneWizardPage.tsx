@@ -174,24 +174,24 @@ export function VoiceCloneWizardPage() {
   if (statusLoading) {
     return (
       <div className="flex h-[calc(100vh-4rem)] items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col bg-white dark:bg-zinc-950">
+    <div className="flex h-[calc(100vh-4rem)] flex-col bg-white dark:bg-v2-canvas">
       {/* Header */}
-      <div className="flex items-center gap-3 border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-800">
+      <div className="flex items-center gap-3 border-b border-v2-ring px-4 py-2.5 dark:border-v2-ring">
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 w-7 p-0 text-zinc-500"
+          className="h-7 w-7 p-0 text-v2-ink-muted"
           onClick={() => navigate({ to: "/voice-agent" })}
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <h1 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <h1 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink">
           Voice Clone Recording
         </h1>
 
@@ -201,7 +201,7 @@ export function VoiceCloneWizardPage() {
             type="button"
             onClick={handleCancelClone}
             disabled={cancelMutation.isPending}
-            className="ml-2 text-[10px] text-zinc-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 transition-colors"
+            className="ml-2 text-[10px] text-v2-ink-subtle hover:text-red-500 dark:text-v2-ink-muted dark:hover:text-red-400 transition-colors"
           >
             {cancelMutation.isPending ? (
               "Canceling..."
@@ -225,7 +225,7 @@ export function VoiceCloneWizardPage() {
                     ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
                     : i === currentStepIndex
                       ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300"
-                      : "bg-zinc-100 text-zinc-400 dark:bg-zinc-800 dark:text-zinc-500",
+                      : "bg-v2-card-tinted text-v2-ink-subtle dark:bg-v2-card-tinted dark:text-v2-ink-muted",
                 )}
               >
                 {i + 1}
@@ -234,14 +234,14 @@ export function VoiceCloneWizardPage() {
                 className={cn(
                   "hidden text-[10px] sm:inline",
                   i === currentStepIndex
-                    ? "font-medium text-zinc-900 dark:text-zinc-100"
-                    : "text-zinc-400 dark:text-zinc-500",
+                    ? "font-medium text-v2-ink dark:text-v2-ink"
+                    : "text-v2-ink-subtle dark:text-v2-ink-muted",
                 )}
               >
                 {s.label}
               </span>
               {i < STEP_LABELS.length - 1 && (
-                <div className="mx-0.5 h-px w-4 bg-zinc-200 dark:bg-zinc-700" />
+                <div className="mx-0.5 h-px w-4 bg-v2-ring dark:bg-v2-ring-strong" />
               )}
             </div>
           ))}

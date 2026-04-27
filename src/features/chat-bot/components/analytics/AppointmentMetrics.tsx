@@ -16,13 +16,13 @@ export function AppointmentMetrics({
   const avgDays = data.avgDaysToAppointment ?? 0;
 
   return (
-    <div className="p-2.5 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+    <div className="p-2.5 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
       <div className="flex items-center gap-1.5 mb-2">
         <Calendar className="h-3 w-3 text-violet-500" />
-        <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
           Appointments
         </h4>
-        <span className="ml-auto text-sm font-bold text-zinc-900 dark:text-zinc-100">
+        <span className="ml-auto text-sm font-bold text-v2-ink dark:text-v2-ink">
           {total.toLocaleString()}
         </span>
       </div>
@@ -48,12 +48,12 @@ export function AppointmentMetrics({
         />
       </div>
 
-      <div className="mt-2 pt-1.5 border-t border-zinc-100 dark:border-zinc-800">
+      <div className="mt-2 pt-1.5 border-t border-v2-ring dark:border-v2-ring">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Avg days to appointment
           </span>
-          <span className="text-[10px] font-medium text-zinc-900 dark:text-zinc-100">
+          <span className="text-[10px] font-medium text-v2-ink dark:text-v2-ink">
             {avgDays.toFixed(1)}
           </span>
         </div>
@@ -76,14 +76,14 @@ function FunnelRow({
   return (
     <div>
       <div className="flex items-center justify-between mb-0.5">
-        <span className="text-[10px] text-zinc-600 dark:text-zinc-400">
+        <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           {label}
         </span>
-        <span className="text-[10px] font-medium text-zinc-900 dark:text-zinc-100">
+        <span className="text-[10px] font-medium text-v2-ink dark:text-v2-ink">
           {value}
         </span>
       </div>
-      <div className="h-1 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+      <div className="h-1 bg-v2-card-tinted dark:bg-v2-card-tinted rounded-full overflow-hidden">
         <div
           className={cn("h-full rounded-full transition-all", color)}
           style={{ width: `${Math.min(barPercent, 100)}%` }}

@@ -94,30 +94,30 @@ export function SegmentRecorder({
       {/* Script header */}
       <div className="mb-4">
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-[10px] font-medium text-zinc-400 dark:text-zinc-500 tabular-nums">
+          <span className="text-[10px] font-medium text-v2-ink-subtle dark:text-v2-ink-muted tabular-nums">
             #{script.segmentIndex + 1}
           </span>
-          <h3 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <h3 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink">
             {script.title}
           </h3>
           {script.optional && (
             <Badge
               variant="outline"
-              className="text-[9px] px-1 py-0 text-zinc-400"
+              className="text-[9px] px-1 py-0 text-v2-ink-subtle"
             >
               Optional
             </Badge>
           )}
         </div>
-        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+        <span className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted">
           Target: {formatDuration(script.targetDurationSeconds)} | Min:{" "}
           {formatDuration(script.minDurationSeconds)}
         </span>
       </div>
 
       {/* Script text */}
-      <div className="mb-5 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
-        <p className="text-[12px] leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
+      <div className="mb-5 rounded-lg border border-v2-ring bg-v2-canvas p-4 dark:border-v2-ring dark:bg-v2-card/50">
+        <p className="text-[12px] leading-relaxed text-v2-ink dark:text-v2-ink-muted whitespace-pre-wrap">
           {script.scriptText}
         </p>
       </div>
@@ -132,7 +132,7 @@ export function SegmentRecorder({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 text-[10px] text-zinc-500 hover:text-red-600"
+              className="h-6 text-[10px] text-v2-ink-muted hover:text-red-600"
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
             >
@@ -270,7 +270,7 @@ function RecordingControls({
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-500" />
-          <span className="text-[13px] font-mono font-medium tabular-nums text-zinc-900 dark:text-zinc-100">
+          <span className="text-[13px] font-mono font-medium tabular-nums text-v2-ink dark:text-v2-ink">
             {formatTime(elapsed)}
           </span>
         </div>
@@ -294,18 +294,18 @@ function RecordingControls({
         <audio
           src={recordedUrl}
           controls
-          className="h-8 w-full [&::-webkit-media-controls-panel]:bg-zinc-100 dark:[&::-webkit-media-controls-panel]:bg-zinc-800"
+          className="h-8 w-full [&::-webkit-media-controls-panel]:bg-v2-card-tinted dark:[&::-webkit-media-controls-panel]:bg-zinc-800"
         />
       )}
       <div className="flex items-center gap-2">
-        <span className="text-[11px] tabular-nums text-zinc-500 dark:text-zinc-400">
+        <span className="text-[11px] tabular-nums text-v2-ink-muted dark:text-v2-ink-subtle">
           {formatTime(elapsed)} recorded
         </span>
         <div className="ml-auto flex items-center gap-1.5">
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 text-[10px] text-zinc-500"
+            className="h-7 text-[10px] text-v2-ink-muted"
             onClick={onReset}
             disabled={isUploading}
           >

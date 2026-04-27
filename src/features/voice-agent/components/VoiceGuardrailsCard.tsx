@@ -117,7 +117,7 @@ function FieldRow({
   return (
     <div className="space-y-1">
       <Label className="text-[11px]">{label}</Label>
-      <p className="text-[10px] leading-4 text-zinc-500 dark:text-zinc-400">
+      <p className="text-[10px] leading-4 text-v2-ink-muted dark:text-v2-ink-subtle">
         {description}
       </p>
       <Input
@@ -181,16 +181,16 @@ export function VoiceGuardrailsCard({
   };
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink">
           <ShieldCheck className="h-4 w-4" />
         </div>
         <div>
-          <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
             Outbound Guardrails
           </p>
-          <p className="mt-1 text-[10px] leading-5 text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-[10px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
             Limits on outbound calling to protect lead relationships and manage
             costs.
           </p>
@@ -212,7 +212,7 @@ export function VoiceGuardrailsCard({
       </div>
 
       {isDirty && (
-        <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+        <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
           <Button
             size="sm"
             className="h-7 text-[10px]"

@@ -275,7 +275,7 @@ export function ChatBotPage() {
     ) : (
       <Badge
         variant="secondary"
-        className="text-[9px] h-4 px-1.5 bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+        className="text-[9px] h-4 px-1.5 bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-muted"
       >
         Inactive
       </Badge>
@@ -289,16 +289,16 @@ export function ChatBotPage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5 bg-zinc-50 dark:bg-zinc-950">
+      <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5 bg-v2-canvas dark:bg-v2-canvas">
         <div className="flex items-center justify-center flex-1">
-          <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
+          <Loader2 className="h-6 w-6 animate-spin text-v2-ink-subtle" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5 bg-zinc-50 dark:bg-zinc-950">
+    <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5 bg-v2-canvas dark:bg-v2-canvas">
       {/* Hero Header */}
       <div className="relative overflow-hidden rounded-xl bg-foreground">
         <div className="absolute inset-0 opacity-[0.03]">
@@ -371,7 +371,7 @@ export function ChatBotPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-0.5 bg-zinc-200/50 dark:bg-zinc-800/50 rounded-md p-0.5 overflow-x-auto">
+      <div className="flex items-center gap-0.5 bg-v2-card-tinted dark:bg-v2-card-tinted/50 rounded-md p-0.5 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -381,10 +381,10 @@ export function ChatBotPage() {
             className={cn(
               "flex items-center justify-center gap-1 px-2.5 py-1.5 text-[10px] font-medium rounded transition-all whitespace-nowrap flex-shrink-0",
               tab.locked
-                ? "text-zinc-300 dark:text-zinc-600 cursor-not-allowed"
+                ? "text-v2-ink-subtle dark:text-v2-ink-muted cursor-not-allowed"
                 : activeTab === tab.id
-                  ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+                  ? "bg-v2-card shadow-sm text-v2-ink dark:text-v2-ink"
+                  : "text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-ink-subtle",
             )}
             title={tab.locked ? "Choose a plan first" : undefined}
           >
@@ -428,13 +428,13 @@ export function ChatBotPage() {
           (!hasAccess ? (
             /* No addon and not a team member — prompt to choose a plan */
             <div className="flex flex-col items-center justify-center py-16 px-4">
-              <div className="w-12 h-12 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3">
-                <Lock className="h-5 w-5 text-zinc-400" />
+              <div className="w-12 h-12 rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted flex items-center justify-center mb-3">
+                <Lock className="h-5 w-5 text-v2-ink-subtle" />
               </div>
-              <h3 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+              <h3 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink mb-1">
                 Choose a Plan First
               </h3>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 text-center max-w-xs mb-4">
+              <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle text-center max-w-xs mb-4">
                 Select a plan on the &quot;Plans&quot; tab to unlock bot
                 configuration. You can start with the free plan — no credit card
                 required.
@@ -453,10 +453,10 @@ export function ChatBotPage() {
                 <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center mb-3">
                   <Bot className="h-5 w-5 text-indigo-500" />
                 </div>
-                <h3 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+                <h3 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink mb-1">
                   Load Your Team Bot
                 </h3>
-                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 text-center max-w-xs mb-4">
+                <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle text-center max-w-xs mb-4">
                   Free team access is available for your account. If you already
                   have a configured bot, this reconnects it instead of creating
                   a duplicate.
@@ -489,10 +489,10 @@ export function ChatBotPage() {
                 <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center mb-3">
                   <WifiOff className="h-5 w-5 text-red-500" />
                 </div>
-                <h3 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+                <h3 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink mb-1">
                   Service Temporarily Unavailable
                 </h3>
-                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 text-center max-w-xs mb-4">
+                <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle text-center max-w-xs mb-4">
                   The bot service is experiencing issues. Your configuration is
                   safe — please try again in a few minutes.
                 </p>
@@ -515,10 +515,10 @@ export function ChatBotPage() {
                 <div className="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center mb-3">
                   <AlertTriangle className="h-5 w-5 text-amber-500" />
                 </div>
-                <h3 className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+                <h3 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink mb-1">
                   Bot Setup Incomplete
                 </h3>
-                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 text-center max-w-xs mb-4">
+                <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle text-center max-w-xs mb-4">
                   Your plan is active but the bot couldn&apos;t be provisioned.
                   Click below to retry.
                 </p>

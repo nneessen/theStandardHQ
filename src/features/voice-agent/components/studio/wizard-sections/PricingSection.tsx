@@ -35,7 +35,7 @@ const STRATEGY_OPTIONS: {
 export function PricingSection({ data, onChange }: PricingSectionProps) {
   return (
     <div className="space-y-3">
-      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
         When a caller asks about prices, how should the agent respond?
       </p>
 
@@ -51,14 +51,14 @@ export function PricingSection({ data, onChange }: PricingSectionProps) {
         {STRATEGY_OPTIONS.map((opt) => (
           <label
             key={opt.value}
-            className="flex items-start gap-2 cursor-pointer rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800 has-[:checked]:border-zinc-400 has-[:checked]:bg-zinc-50 dark:has-[:checked]:border-zinc-600 dark:has-[:checked]:bg-zinc-900/40"
+            className="flex items-start gap-2 cursor-pointer rounded-lg border border-v2-ring px-3 py-2.5 dark:border-v2-ring has-[:checked]:border-v2-ink has-[:checked]:bg-v2-canvas dark:has-[:checked]:border-v2-ring-strong dark:has-[:checked]:bg-v2-card-tinted"
           >
             <RadioGroupItem
               value={opt.value}
               className="mt-0.5 flex-shrink-0"
             />
             <div>
-              <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+              <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
                 {opt.label}
                 {opt.value === "bridge_to_appointment" && (
                   <span className="ml-1.5 text-[10px] font-normal text-emerald-600 dark:text-emerald-400">
@@ -66,7 +66,7 @@ export function PricingSection({ data, onChange }: PricingSectionProps) {
                   </span>
                 )}
               </span>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 {opt.description}
               </p>
             </div>

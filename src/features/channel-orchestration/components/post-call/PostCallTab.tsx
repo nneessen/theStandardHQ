@@ -53,14 +53,14 @@ export function PostCallTab() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
-      <p className="text-[10px] text-zinc-500">
+      <p className="text-[10px] text-v2-ink-muted">
         Configure what happens after voice calls — update lead statuses, custom
         fields, and write transcripts back to Close CRM.
       </p>
@@ -159,11 +159,11 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border border-zinc-200 dark:border-zinc-700 rounded-md p-2.5 space-y-2">
+    <div className="border border-v2-ring dark:border-v2-ring-strong rounded-md p-2.5 space-y-2">
       <div className="flex items-center justify-between">
         <div>
           <Label className="text-[11px] font-medium">{label}</Label>
-          <p className="text-[9px] text-zinc-500">{description}</p>
+          <p className="text-[9px] text-v2-ink-muted">{description}</p>
         </div>
         <Switch
           checked={enabled}

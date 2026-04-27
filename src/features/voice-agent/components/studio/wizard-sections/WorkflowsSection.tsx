@@ -52,7 +52,7 @@ export function WorkflowsSection({ data, onChange }: WorkflowsSectionProps) {
 
   return (
     <div className="space-y-3">
-      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
         These control how your agent opens the call depending on the situation.
         The system automatically tells the agent which scenario applies.
       </p>
@@ -63,7 +63,7 @@ export function WorkflowsSection({ data, onChange }: WorkflowsSectionProps) {
           return (
             <div
               key={preset.key}
-              className="rounded-lg border border-zinc-200 px-3 py-2.5 dark:border-zinc-800"
+              className="rounded-lg border border-v2-ring px-3 py-2.5 dark:border-v2-ring"
             >
               <div className="flex items-center justify-between">
                 <Label
@@ -83,7 +83,7 @@ export function WorkflowsSection({ data, onChange }: WorkflowsSectionProps) {
               {enabled && (
                 <div className="mt-2 space-y-2">
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-zinc-500">
+                    <Label className="text-[10px] text-v2-ink-muted">
                       Opening greeting
                     </Label>
                     <Textarea
@@ -96,7 +96,7 @@ export function WorkflowsSection({ data, onChange }: WorkflowsSectionProps) {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-zinc-500">
+                    <Label className="text-[10px] text-v2-ink-muted">
                       Guidance
                     </Label>
                     <Textarea

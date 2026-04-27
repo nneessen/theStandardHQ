@@ -29,10 +29,10 @@ export function ResultStep({
     return (
       <div className="mx-auto flex max-w-md flex-col items-center py-16 text-center">
         <CheckCircle2 className="mb-4 h-10 w-10 text-emerald-500" />
-        <h3 className="text-[14px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <h3 className="text-[14px] font-semibold text-v2-ink dark:text-v2-ink">
           Your Voice Clone is Ready
         </h3>
-        <p className="mt-2 text-[12px] text-zinc-500 dark:text-zinc-400">
+        <p className="mt-2 text-[12px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Your custom AI voice has been generated successfully. Activate it to
           use on all future voice calls.
         </p>
@@ -56,10 +56,10 @@ export function ResultStep({
   return (
     <div className="mx-auto flex max-w-md flex-col items-center py-16 text-center">
       <XCircle className="mb-4 h-10 w-10 text-red-500" />
-      <h3 className="text-[14px] font-semibold text-zinc-900 dark:text-zinc-100">
+      <h3 className="text-[14px] font-semibold text-v2-ink dark:text-v2-ink">
         Voice Clone Processing Failed
       </h3>
-      <p className="mt-2 text-[12px] text-zinc-500 dark:text-zinc-400">
+      <p className="mt-2 text-[12px] text-v2-ink-muted dark:text-v2-ink-subtle">
         The voice clone could not be generated from your recordings. This can
         happen if the audio quality is insufficient or recordings are too
         similar.
@@ -73,13 +73,13 @@ export function ResultStep({
           >
             Start New Attempt
           </Button>
-          <p className="mt-2 text-[10px] text-zinc-400 dark:text-zinc-500">
+          <p className="mt-2 text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted">
             {remainingAttempts} attempt{remainingAttempts !== 1 ? "s" : ""}{" "}
             remaining
           </p>
         </>
       ) : (
-        <p className="mt-4 text-[11px] text-zinc-400 dark:text-zinc-500">
+        <p className="mt-4 text-[11px] text-v2-ink-subtle dark:text-v2-ink-muted">
           No attempts remaining. Contact support for assistance.
         </p>
       )}

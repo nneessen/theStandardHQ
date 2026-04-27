@@ -46,17 +46,17 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="mb-3 flex items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink">
           {icon}
         </div>
         <div>
-          <h2 className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
             {title}
           </h2>
           {description ? (
-            <p className="mt-0.5 text-[10px] text-zinc-500 dark:text-zinc-400">
+            <p className="mt-0.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               {description}
             </p>
           ) : null}
@@ -99,10 +99,10 @@ function VariantRow({
     <Collapsible open={isExpanded} onOpenChange={onToggle}>
       <div
         className={cn(
-          "rounded-lg border bg-white dark:bg-zinc-900",
+          "rounded-lg border bg-v2-card",
           errors.length > 0
             ? "border-red-300 dark:border-red-900"
-            : "border-zinc-200 dark:border-zinc-800",
+            : "border-v2-ring dark:border-v2-ring",
         )}
       >
         {/* Summary row */}
@@ -112,7 +112,7 @@ function VariantRow({
             className="flex w-full items-center gap-2 px-2 py-1.5 text-left"
             disabled={disabled}
           >
-            <span className="shrink-0 text-zinc-400 dark:text-zinc-500">
+            <span className="shrink-0 text-v2-ink-subtle dark:text-v2-ink-muted">
               {isExpanded ? (
                 <ChevronDown className="h-3.5 w-3.5" />
               ) : (
@@ -120,7 +120,7 @@ function VariantRow({
               )}
             </span>
 
-            <span className="min-w-0 flex-1 truncate text-[11px] font-medium text-zinc-800 dark:text-zinc-200">
+            <span className="min-w-0 flex-1 truncate text-[11px] font-medium text-v2-ink dark:text-v2-ink">
               {labelDisplay}
             </span>
 
@@ -136,7 +136,7 @@ function VariantRow({
               <Badge
                 variant="ghost"
                 size="sm"
-                className="shrink-0 bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
+                className="shrink-0 bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle"
               >
                 Inactive
               </Badge>
@@ -157,10 +157,10 @@ function VariantRow({
 
         {/* Expanded edit form */}
         <CollapsibleContent>
-          <div className="space-y-2.5 border-t border-zinc-100 bg-zinc-50/50 px-3 pb-3 pt-2.5 dark:border-zinc-800 dark:bg-zinc-800/30">
+          <div className="space-y-2.5 border-t border-v2-ring bg-v2-canvas/50 px-3 pb-3 pt-2.5 dark:border-v2-ring dark:bg-v2-card-tinted/30">
             {/* Label */}
             <div>
-              <label className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">
+              <label className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                 Label
               </label>
               <Input
@@ -182,7 +182,7 @@ function VariantRow({
 
             {/* Template */}
             <div>
-              <label className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">
+              <label className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                 Template
               </label>
               <Textarea
@@ -195,7 +195,7 @@ function VariantRow({
                 disabled={disabled}
               />
               <div className="mt-0.5 flex items-start justify-between gap-2">
-                <p className="text-[9px] text-zinc-400 dark:text-zinc-500">
+                <p className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
                   Placeholders:{" "}
                   {INTRO_VARIANT_PLACEHOLDERS.map((p) => p.key).join(" · ")}
                 </p>
@@ -204,7 +204,7 @@ function VariantRow({
                     "shrink-0 text-[9px]",
                     variant.template.length > INTRO_VARIANT_LIMITS.TEMPLATE_MAX
                       ? "text-red-500"
-                      : "text-zinc-400 dark:text-zinc-500",
+                      : "text-v2-ink-subtle dark:text-v2-ink-muted",
                   )}
                 >
                   {variant.template.length}/{INTRO_VARIANT_LIMITS.TEMPLATE_MAX}
@@ -218,7 +218,7 @@ function VariantRow({
             </div>
 
             {/* Active + Winner toggles */}
-            <div className="flex items-center justify-between gap-4 rounded-md border border-zinc-200 bg-white px-2.5 py-1.5 dark:border-zinc-700 dark:bg-zinc-900">
+            <div className="flex items-center justify-between gap-4 rounded-md border border-v2-ring bg-white px-2.5 py-1.5 dark:border-v2-ring-strong dark:bg-v2-card">
               <div className="flex items-center gap-2">
                 <Switch
                   variant="success"
@@ -227,12 +227,12 @@ function VariantRow({
                   onCheckedChange={(active) => onChange({ ...variant, active })}
                   disabled={disabled || variant.isWinner}
                 />
-                <span className="text-[10px] text-zinc-700 dark:text-zinc-300">
+                <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                   Active {variant.isWinner ? "(locked by winner)" : ""}
                 </span>
               </div>
 
-              <label className="flex items-center gap-1.5 text-[10px] text-zinc-700 dark:text-zinc-300">
+              <label className="flex items-center gap-1.5 text-[10px] text-v2-ink dark:text-v2-ink-muted">
                 <input
                   type="checkbox"
                   checked={variant.isWinner}
@@ -245,7 +245,7 @@ function VariantRow({
                     "h-3 w-3",
                     variant.isWinner
                       ? "fill-amber-500 text-amber-500"
-                      : "text-zinc-400",
+                      : "text-v2-ink-subtle",
                   )}
                 />
                 Mark as winner
@@ -263,7 +263,7 @@ function VariantRow({
             ))}
 
             {/* Delete */}
-            <div className="flex justify-end border-t border-zinc-100 pt-2 dark:border-zinc-800">
+            <div className="flex justify-end border-t border-v2-ring pt-2 dark:border-v2-ring">
               <Button
                 variant="ghost"
                 size="sm"
@@ -386,7 +386,7 @@ export function IntroMessageVariantsEditor() {
       description="The first SMS the bot sends a new lead. Configure one or more variants to A/B test different openers. When multiple variants are active the bot picks one at random per lead; mark one as the winner to lock it in. Leave empty to use the default per-product template."
     >
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+        <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           {displayedVariants.length}{" "}
           {displayedVariants.length === 1 ? "variant" : "variants"}
         </p>
@@ -404,9 +404,9 @@ export function IntroMessageVariantsEditor() {
 
       {/* Empty state */}
       {displayedVariants.length === 0 && (
-        <div className="rounded-lg border border-dashed border-zinc-200 px-4 py-6 text-center dark:border-zinc-700">
-          <MessageCircle className="mx-auto h-5 w-5 text-zinc-300 dark:text-zinc-600" />
-          <p className="mt-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+        <div className="rounded-lg border border-dashed border-v2-ring px-4 py-6 text-center dark:border-v2-ring-strong">
+          <MessageCircle className="mx-auto h-5 w-5 text-v2-ink-subtle dark:text-v2-ink-muted" />
+          <p className="mt-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             No intro variants configured. The bot will use a default template
             based on lead source. Add a variant to customize the first message.
           </p>
@@ -432,7 +432,7 @@ export function IntroMessageVariantsEditor() {
 
       {/* Save / Discard bar */}
       {dirty && (
-        <div className="mt-3 flex items-center gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+        <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
           <Button
             size="sm"
             className="h-7 text-[10px]"

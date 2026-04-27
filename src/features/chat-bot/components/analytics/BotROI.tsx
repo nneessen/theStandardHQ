@@ -38,17 +38,17 @@ export function BotROI({
     }).format(n);
 
   return (
-    <div className="p-2.5 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-lg">
+    <div className="p-2.5 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
       <div className="flex items-center gap-1.5 mb-2">
         <DollarSign className="h-3 w-3 text-emerald-500" />
-        <h4 className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
           ROI
         </h4>
       </div>
 
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Bot ROI
           </span>
           <span
@@ -64,26 +64,26 @@ export function BotROI({
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Est. Revenue
           </span>
-          <span className="text-[10px] font-medium text-zinc-900 dark:text-zinc-100">
+          <span className="text-[10px] font-medium text-v2-ink dark:text-v2-ink">
             {fmt(estimatedRevenue)}
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Revenue / Convo
           </span>
-          <span className="text-[10px] font-medium text-zinc-900 dark:text-zinc-100">
+          <span className="text-[10px] font-medium text-v2-ink dark:text-v2-ink">
             {fmt(revenuePerConvo)}
           </span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Cost / Conversion
           </span>
-          <span className="text-[10px] font-medium text-zinc-900 dark:text-zinc-100">
+          <span className="text-[10px] font-medium text-v2-ink dark:text-v2-ink">
             {costPerConversion > 0 ? fmt(costPerConversion) : "—"}
           </span>
         </div>

@@ -66,7 +66,7 @@ export function RecordingStep({
   if (scriptsLoading || sessionLoading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -74,7 +74,7 @@ export function RecordingStep({
   if (!scripts.length) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-[12px] text-zinc-500">
+        <p className="text-[12px] text-v2-ink-muted">
           No recording scripts available.
         </p>
       </div>
@@ -109,7 +109,7 @@ export function RecordingStep({
           />
         ) : (
           <div className="flex flex-1 items-center justify-center">
-            <p className="text-[12px] text-zinc-500">
+            <p className="text-[12px] text-v2-ink-muted">
               Select a script from the sidebar.
             </p>
           </div>
@@ -117,9 +117,9 @@ export function RecordingStep({
 
         {/* Submit bar */}
         {session && (
-          <div className="border-t border-zinc-200 bg-white px-4 py-2.5 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="border-t border-v2-ring bg-white px-4 py-2.5 dark:border-v2-ring dark:bg-v2-card">
             <div className="flex items-center justify-between">
-              <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+              <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 {session.canSubmit ? (
                   <span className="text-emerald-600 dark:text-emerald-400 font-medium">
                     Ready to submit
