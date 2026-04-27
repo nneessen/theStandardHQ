@@ -215,7 +215,7 @@ export function ManageLeadPurchaseDialog({
                 </div>
 
                 {/* Animated glow orbs */}
-                <div className="absolute top-1/4 -left-16 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl animate-pulse" />
+                <div className="absolute top-1/4 -left-16 w-64 h-64 bg-v2-accent-soft rounded-full blur-3xl animate-pulse" />
                 <div
                   className="absolute bottom-1/4 -right-16 w-56 h-56 bg-amber-400/5 rounded-full blur-3xl animate-pulse"
                   style={{ animationDelay: "1s" }}
@@ -347,10 +347,10 @@ export function ManageLeadPurchaseDialog({
               >
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   {/* Purchase Details Section */}
-                  <div className="p-3 bg-zinc-50/50 dark:bg-zinc-800/30 rounded-lg border border-zinc-200/50 dark:border-zinc-700/50">
+                  <div className="p-3 bg-v2-canvas rounded-lg border border-v2-ring/60">
                     <div className="flex items-center gap-2 mb-3">
                       <Target className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.18em]">
                         Purchase Details
                       </span>
                     </div>
@@ -385,7 +385,7 @@ export function ManageLeadPurchaseDialog({
                                 purchaseName: e.target.value,
                               })
                             }
-                            className="h-8 text-xs bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                            className="h-8 text-xs bg-v2-canvas border-v2-ring"
                             placeholder="e.g., March 2024 Pack"
                           />
                         </div>
@@ -400,7 +400,7 @@ export function ManageLeadPurchaseDialog({
                               setFormData({ ...formData, leadFreshness: value })
                             }
                           >
-                            <SelectTrigger className="h-8 text-xs bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700">
+                            <SelectTrigger className="h-8 text-xs bg-v2-canvas border-v2-ring">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -431,7 +431,7 @@ export function ManageLeadPurchaseDialog({
                               })
                             }
                             required
-                            className="h-8 text-xs bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                            className="h-8 text-xs bg-v2-canvas border-v2-ring"
                             placeholder="50"
                           />
                         </div>
@@ -454,7 +454,7 @@ export function ManageLeadPurchaseDialog({
                                 })
                               }
                               required
-                              className="h-8 text-xs pl-6 bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                              className="h-8 text-xs pl-6 bg-v2-canvas border-v2-ring"
                               placeholder="500.00"
                             />
                           </div>
@@ -463,7 +463,7 @@ export function ManageLeadPurchaseDialog({
                           <Label className="text-[10px] text-muted-foreground">
                             Cost/Lead
                           </Label>
-                          <div className="h-8 flex items-center px-2 bg-zinc-100 dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 rounded-md text-xs font-mono text-muted-foreground">
+                          <div className="h-8 flex items-center px-2 bg-v2-ring border border-v2-ring rounded-md text-xs font-mono text-muted-foreground">
                             ${costPerLead.toFixed(2)}
                           </div>
                         </div>
@@ -486,7 +486,7 @@ export function ManageLeadPurchaseDialog({
                               })
                             }
                             required
-                            className="h-8 text-xs bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                            className="h-8 text-xs bg-v2-canvas border-v2-ring"
                           />
                         </div>
                         <div className="space-y-1">
@@ -501,7 +501,7 @@ export function ManageLeadPurchaseDialog({
                                 notes: e.target.value,
                               })
                             }
-                            className="h-8 text-xs bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                            className="h-8 text-xs bg-v2-canvas border-v2-ring"
                             placeholder="Optional notes..."
                           />
                         </div>
@@ -513,15 +513,15 @@ export function ManageLeadPurchaseDialog({
                   {isEditing && (
                     <div className="grid grid-cols-2 gap-4">
                       {/* Linked Policies */}
-                      <div className="p-3 bg-zinc-50/50 dark:bg-zinc-800/30 rounded-lg border border-zinc-200/50 dark:border-zinc-700/50">
+                      <div className="p-3 bg-v2-canvas rounded-lg border border-v2-ring/60">
                         <div className="flex items-center gap-2 mb-3">
                           <User className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.18em]">
                             Linked Policies ({linkedPolicies.length})
                           </span>
                         </div>
 
-                        <div className="border border-zinc-200 dark:border-zinc-700 rounded-md overflow-hidden bg-white dark:bg-zinc-900">
+                        <div className="border border-v2-ring rounded-md overflow-hidden bg-v2-card">
                           {isLoadingPolicies ? (
                             <div className="p-3 space-y-2">
                               {[1, 2].map((i) => (
@@ -530,7 +530,7 @@ export function ManageLeadPurchaseDialog({
                             </div>
                           ) : linkedPolicies.length > 0 ? (
                             <ScrollArea className="h-[180px]">
-                              <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                              <div className="divide-y divide-v2-ring/60">
                                 {linkedPolicies.map((policy) => {
                                   const purchaseDate = new Date(
                                     purchase.purchaseDate,
@@ -550,7 +550,7 @@ export function ManageLeadPurchaseDialog({
                                   return (
                                     <div
                                       key={policy.id}
-                                      className="flex items-center justify-between gap-2 px-3 py-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                                      className="flex items-center justify-between gap-2 px-3 py-2 hover:bg-v2-canvas transition-colors"
                                     >
                                       <div className="min-w-0 flex-1">
                                         <div className="font-medium text-xs truncate">
@@ -593,10 +593,10 @@ export function ManageLeadPurchaseDialog({
                       </div>
 
                       {/* Link Policy */}
-                      <div className="p-3 bg-zinc-50/50 dark:bg-zinc-800/30 rounded-lg border border-zinc-200/50 dark:border-zinc-700/50">
+                      <div className="p-3 bg-v2-canvas rounded-lg border border-v2-ring/60">
                         <div className="flex items-center gap-2 mb-3">
                           <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.18em]">
                             Link Policy
                           </span>
                         </div>
@@ -610,7 +610,7 @@ export function ManageLeadPurchaseDialog({
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-border/50 bg-zinc-50/50 dark:bg-zinc-800/30">
+                <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-border/50 bg-v2-canvas">
                   <Button
                     type="button"
                     variant="ghost"

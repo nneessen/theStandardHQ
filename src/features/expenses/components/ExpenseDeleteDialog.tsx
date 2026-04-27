@@ -46,48 +46,48 @@ export function ExpenseDeleteDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-sm p-3 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+      <AlertDialogContent className="max-w-sm p-3 bg-v2-card border-v2-ring">
         <AlertDialogHeader className="space-y-1">
           <AlertDialogTitle className="flex items-center gap-2 text-sm font-semibold text-destructive">
             <AlertTriangle className="h-4 w-4" />
             Delete Expense?
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-[11px] text-zinc-600 dark:text-zinc-400">
+          <AlertDialogDescription className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             {isRecurring
               ? "This is a recurring expense. Choose how you want to delete it:"
               : "Are you sure you want to delete this expense? This action cannot be undone."}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <div className="my-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 p-2 space-y-1">
-          <div className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+        <div className="my-2 rounded-lg border border-v2-ring bg-v2-canvas p-2 space-y-1">
+          <div className="text-[11px] font-semibold text-v2-ink">
             {expense.name}
           </div>
-          <div className="text-[10px] text-zinc-600 dark:text-zinc-400">
+          <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
             {expense.description}
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-zinc-600 dark:text-zinc-400">
+            <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Amount:
             </span>
-            <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+            <span className="text-[11px] font-semibold text-v2-ink">
               {formatCurrency(expense.amount)}
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-zinc-600 dark:text-zinc-400">
+            <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
               Type:
             </span>
-            <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 capitalize">
+            <span className="text-[11px] font-semibold text-v2-ink capitalize">
               {expense.expense_type}
             </span>
           </div>
           {isRecurring && (
             <div className="flex items-center justify-between">
-              <span className="text-[10px] text-zinc-600 dark:text-zinc-400">
+              <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 Recurring:
               </span>
-              <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 capitalize">
+              <span className="text-[11px] font-semibold text-v2-ink capitalize">
                 {expense.recurring_frequency}
               </span>
             </div>
@@ -96,62 +96,62 @@ export function ExpenseDeleteDialog({
 
         {isRecurring && (
           <div className="space-y-1">
-            <label className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+            <label className="text-[11px] font-semibold text-v2-ink">
               Delete options:
             </label>
             <div className="space-y-1.5">
-              <label className="flex items-center space-x-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded px-1 py-0.5 transition-colors">
+              <label className="flex items-center space-x-2 cursor-pointer hover:bg-v2-canvas rounded px-1 py-0.5 transition-colors">
                 <input
                   type="radio"
                   name="deleteOption"
                   value="single"
                   checked={deleteOption === "single"}
                   onChange={(e) => setDeleteOption(e.target.value as "single")}
-                  className="h-3 w-3 text-destructive focus:ring-destructive focus:ring-offset-0 border-zinc-300 dark:border-zinc-600"
+                  className="h-3 w-3 text-destructive focus:ring-destructive focus:ring-offset-0 border-v2-ring"
                 />
                 <div>
-                  <div className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+                  <div className="text-[11px] font-semibold text-v2-ink">
                     Just this one
                   </div>
-                  <div className="text-[10px] text-zinc-600 dark:text-zinc-400">
+                  <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     Delete only this occurrence
                   </div>
                 </div>
               </label>
 
-              <label className="flex items-center space-x-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded px-1 py-0.5 transition-colors">
+              <label className="flex items-center space-x-2 cursor-pointer hover:bg-v2-canvas rounded px-1 py-0.5 transition-colors">
                 <input
                   type="radio"
                   name="deleteOption"
                   value="future"
                   checked={deleteOption === "future"}
                   onChange={(e) => setDeleteOption(e.target.value as "future")}
-                  className="h-3 w-3 text-destructive focus:ring-destructive focus:ring-offset-0 border-zinc-300 dark:border-zinc-600"
+                  className="h-3 w-3 text-destructive focus:ring-destructive focus:ring-offset-0 border-v2-ring"
                 />
                 <div>
-                  <div className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+                  <div className="text-[11px] font-semibold text-v2-ink">
                     This and all future
                   </div>
-                  <div className="text-[10px] text-zinc-600 dark:text-zinc-400">
+                  <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     Stop recurring from this date forward
                   </div>
                 </div>
               </label>
 
-              <label className="flex items-center space-x-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 rounded px-1 py-0.5 transition-colors">
+              <label className="flex items-center space-x-2 cursor-pointer hover:bg-v2-canvas rounded px-1 py-0.5 transition-colors">
                 <input
                   type="radio"
                   name="deleteOption"
                   value="all"
                   checked={deleteOption === "all"}
                   onChange={(e) => setDeleteOption(e.target.value as "all")}
-                  className="h-3 w-3 text-destructive focus:ring-destructive focus:ring-offset-0 border-zinc-300 dark:border-zinc-600"
+                  className="h-3 w-3 text-destructive focus:ring-destructive focus:ring-offset-0 border-v2-ring"
                 />
                 <div>
-                  <div className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+                  <div className="text-[11px] font-semibold text-v2-ink">
                     All occurrences
                   </div>
-                  <div className="text-[10px] text-zinc-600 dark:text-zinc-400">
+                  <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     Delete entire recurring series
                   </div>
                 </div>
@@ -163,7 +163,7 @@ export function ExpenseDeleteDialog({
         <AlertDialogFooter className="gap-1 pt-3">
           <AlertDialogCancel
             disabled={isDeleting}
-            className="h-7 px-2 text-[10px] border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800"
+            className="h-7 px-2 text-[10px] border-v2-ring bg-v2-card hover:bg-v2-canvas"
           >
             Cancel
           </AlertDialogCancel>

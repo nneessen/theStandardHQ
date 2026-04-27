@@ -394,7 +394,7 @@ export function ExpenseDashboardCompact() {
     <>
       <div className="flex flex-col p-3 space-y-2.5">
         {/* Compact Header */}
-        <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
+        <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
               <Button
@@ -409,7 +409,7 @@ export function ExpenseDashboardCompact() {
               >
                 <ChevronLeft className="h-3 w-3" />
               </Button>
-              <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 min-w-[100px] text-center">
+              <span className="text-xs font-semibold text-v2-ink min-w-[100px] text-center">
                 {selectedMonth.toLocaleDateString("en-US", {
                   month: "long",
                   year: "numeric",
@@ -436,7 +436,7 @@ export function ExpenseDashboardCompact() {
                 Today
               </Button>
             </div>
-            <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            <span className="text-[11px] text-v2-ink-muted">
               {monthlyExpenses.length} expenses
             </span>
           </div>
@@ -467,8 +467,8 @@ export function ExpenseDashboardCompact() {
         {/* Main Content */}
         <div className="space-y-2">
           {/* Expense Summary Card */}
-          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-            <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+          <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+            <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em] mb-2">
               Expense Summary
             </div>
             <div className="grid grid-cols-4 gap-4">
@@ -476,34 +476,26 @@ export function ExpenseDashboardCompact() {
               <div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Monthly Total
-                    </span>
-                    <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">Monthly Total</span>
+                    <span className="font-mono font-bold text-v2-ink">
                       {formatCurrency(totalAmount)}
                     </span>
                   </div>
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      YTD Total
-                    </span>
-                    <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">YTD Total</span>
+                    <span className="font-mono text-v2-ink">
                       {formatCurrency(ytdTotal)}
                     </span>
                   </div>
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Avg Monthly
-                    </span>
-                    <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">Avg Monthly</span>
+                    <span className="font-mono text-v2-ink">
                       {formatCurrency(avgMonthlyExpense)}
                     </span>
                   </div>
-                  <div className="h-px bg-zinc-200 dark:bg-zinc-700 my-1" />
+                  <div className="h-px bg-v2-ring my-1" />
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      MoM Change
-                    </span>
+                    <span className="text-v2-ink-muted">MoM Change</span>
                     <span
                       className={cn(
                         "font-mono font-semibold",
@@ -520,30 +512,24 @@ export function ExpenseDashboardCompact() {
               </div>
 
               {/* Business vs Personal */}
-              <div className="border-l border-zinc-200 dark:border-zinc-700 pl-4">
+              <div className="border-l border-v2-ring pl-4">
                 <div className="space-y-1">
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Business
-                    </span>
+                    <span className="text-v2-ink-muted">Business</span>
                     <span className="font-mono font-semibold text-blue-600 dark:text-blue-400">
                       {formatCurrency(businessAmount)}
                     </span>
                   </div>
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Personal
-                    </span>
+                    <span className="text-v2-ink-muted">Personal</span>
                     <span className="font-mono font-semibold text-purple-600 dark:text-purple-400">
                       {formatCurrency(personalAmount)}
                     </span>
                   </div>
-                  <div className="h-px bg-zinc-200 dark:bg-zinc-700 my-1" />
+                  <div className="h-px bg-v2-ring my-1" />
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Business %
-                    </span>
-                    <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">Business %</span>
+                    <span className="font-mono font-bold text-v2-ink">
                       {totalAmount > 0
                         ? formatPercent((businessAmount / totalAmount) * 100)
                         : "0%"}
@@ -553,40 +539,32 @@ export function ExpenseDashboardCompact() {
               </div>
 
               {/* Tax Deductible & Recurring */}
-              <div className="border-l border-zinc-200 dark:border-zinc-700 pl-4">
+              <div className="border-l border-v2-ring pl-4">
                 <div className="space-y-1">
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Tax Deductible
-                    </span>
+                    <span className="text-v2-ink-muted">Tax Deductible</span>
                     <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">
                       {formatCurrency(deductibleAmount)}
                     </span>
                   </div>
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Deductible %
-                    </span>
-                    <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">Deductible %</span>
+                    <span className="font-mono text-v2-ink">
                       {totalAmount > 0
                         ? formatPercent((deductibleAmount / totalAmount) * 100)
                         : "0%"}
                     </span>
                   </div>
-                  <div className="h-px bg-zinc-200 dark:bg-zinc-700 my-1" />
+                  <div className="h-px bg-v2-ring my-1" />
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Recurring
-                    </span>
-                    <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">Recurring</span>
+                    <span className="font-mono text-v2-ink">
                       {formatCurrency(recurringAmount)}
                     </span>
                   </div>
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      One-Time
-                    </span>
-                    <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">One-Time</span>
+                    <span className="font-mono text-v2-ink">
                       {formatCurrency(oneTimeAmount)}
                     </span>
                   </div>
@@ -594,27 +572,23 @@ export function ExpenseDashboardCompact() {
               </div>
 
               {/* Expense Ratio */}
-              <div className="border-l border-zinc-200 dark:border-zinc-700 pl-4">
+              <div className="border-l border-v2-ring pl-4">
                 <div className="space-y-1">
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Gross Commission
-                    </span>
-                    <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">Gross Commission</span>
+                    <span className="font-mono text-v2-ink">
                       {formatCurrency(grossCommission)}
                     </span>
                   </div>
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400">
-                      Total Expenses
-                    </span>
-                    <span className="font-mono text-zinc-900 dark:text-zinc-100">
+                    <span className="text-v2-ink-muted">Total Expenses</span>
+                    <span className="font-mono text-v2-ink">
                       {formatCurrency(totalAmount)}
                     </span>
                   </div>
-                  <div className="h-px bg-zinc-200 dark:bg-zinc-700 my-1" />
+                  <div className="h-px bg-v2-ring my-1" />
                   <div className="flex justify-between text-[11px]">
-                    <span className="text-zinc-500 dark:text-zinc-400 font-semibold">
+                    <span className="text-v2-ink-muted font-semibold">
                       Expense Ratio
                     </span>
                     <span
@@ -630,7 +604,7 @@ export function ExpenseDashboardCompact() {
                       {formatPercent(expenseRatio)}
                     </span>
                   </div>
-                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <div className="text-[10px] text-v2-ink-muted">
                     {expenseRatio > 30
                       ? "⚠️ High ratio"
                       : expenseRatio > 20
@@ -645,13 +619,13 @@ export function ExpenseDashboardCompact() {
           {/* Top Categories & Recent Expenses */}
           <div className="grid grid-cols-2 gap-2">
             {/* Top Categories */}
-            <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-              <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+            <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+              <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em] mb-2">
                 Top Categories
               </div>
               <div className="space-y-1">
                 {categoryBreakdown.length === 0 ? (
-                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  <div className="text-[11px] text-v2-ink-muted">
                     No expenses this month
                   </div>
                 ) : (
@@ -662,18 +636,16 @@ export function ExpenseDashboardCompact() {
                     >
                       <div className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400" />
-                        <span className="text-zinc-500 dark:text-zinc-400">
-                          {cat.name}
-                        </span>
-                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                        <span className="text-v2-ink-muted">{cat.name}</span>
+                        <span className="text-[10px] text-v2-ink-subtle">
                           ({cat.count})
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                        <span className="font-mono font-semibold text-v2-ink">
                           {formatCurrency(cat.amount)}
                         </span>
-                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500">
+                        <span className="text-[10px] text-v2-ink-subtle">
                           {formatPercent(cat.percentage)}
                         </span>
                       </div>
@@ -684,8 +656,8 @@ export function ExpenseDashboardCompact() {
             </div>
 
             {/* Recent Large Expenses */}
-            <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
-              <div className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-2">
+            <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+              <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-[0.18em] mb-2">
                 Recent Large Expenses
               </div>
               <div className="space-y-1">
@@ -698,7 +670,7 @@ export function ExpenseDashboardCompact() {
                       className="flex items-center justify-between text-[11px]"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-zinc-500 dark:text-zinc-400 truncate max-w-[150px]">
+                        <span className="text-v2-ink-muted truncate max-w-[150px]">
                           {expense.name}
                         </span>
                         <span
@@ -712,13 +684,13 @@ export function ExpenseDashboardCompact() {
                           {expense.expense_type[0].toUpperCase()}
                         </span>
                       </div>
-                      <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                      <span className="font-mono font-semibold text-v2-ink">
                         {formatCurrency(expense.amount)}
                       </span>
                     </div>
                   ))}
                 {monthlyExpenses.length === 0 && (
-                  <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                  <div className="text-[11px] text-v2-ink-muted">
                     No expenses this month
                   </div>
                 )}
@@ -731,7 +703,7 @@ export function ExpenseDashboardCompact() {
             <div className="flex-1 relative flex items-center">
               <Search
                 size={14}
-                className="absolute left-2 text-zinc-400 dark:text-zinc-500"
+                className="absolute left-2 text-v2-ink-subtle"
               />
               <Input
                 type="text"
@@ -806,27 +778,27 @@ export function ExpenseDashboardCompact() {
           )}
 
           {/* Expenses Table - Compact */}
-          <div className="bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+          <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-zinc-200 dark:border-zinc-800">
-                    <th className="text-left p-2 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                  <tr className="border-b border-v2-ring">
+                    <th className="text-left p-2 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                       Date
                     </th>
-                    <th className="text-left p-2 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                    <th className="text-left p-2 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                       Name
                     </th>
-                    <th className="text-left p-2 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                    <th className="text-left p-2 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                       Category
                     </th>
-                    <th className="text-center p-2 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                    <th className="text-center p-2 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                       Type
                     </th>
-                    <th className="text-right p-2 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                    <th className="text-right p-2 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                       Amount
                     </th>
-                    <th className="text-center p-2 text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50">
+                    <th className="text-center p-2 text-[10px] font-semibold text-v2-ink-muted bg-v2-canvas">
                       Actions
                     </th>
                   </tr>
@@ -835,7 +807,7 @@ export function ExpenseDashboardCompact() {
                   {isLoading ? (
                     <tr>
                       <td colSpan={6} className="text-center py-8">
-                        <div className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                        <div className="text-[11px] text-v2-ink-muted">
                           Loading expenses...
                         </div>
                       </td>
@@ -844,8 +816,8 @@ export function ExpenseDashboardCompact() {
                     <tr>
                       <td colSpan={6} className="text-center py-8">
                         <div className="flex flex-col items-center gap-1">
-                          <FileText className="h-6 w-6 text-zinc-300 dark:text-zinc-600" />
-                          <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                          <FileText className="h-6 w-6 text-v2-ink-subtle" />
+                          <span className="text-[11px] text-v2-ink-muted">
                             {filterCount > 0
                               ? "No expenses match your filters"
                               : "No expenses found"}
@@ -863,23 +835,23 @@ export function ExpenseDashboardCompact() {
                       .map((expense) => (
                         <tr
                           key={expense.id}
-                          className="border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                          className="border-b border-v2-ring/60 hover:bg-v2-canvas"
                         >
-                          <td className="p-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+                          <td className="p-2 text-[11px] text-v2-ink-muted">
                             {formatDateForDisplay(expense.date, {
                               month: "short",
                               day: "numeric",
                             })}
                           </td>
-                          <td className="p-2 text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                          <td className="p-2 text-[11px] font-medium text-v2-ink">
                             {expense.name}
                             {expense.is_recurring && (
-                              <span className="ml-1 text-[9px] text-zinc-400 dark:text-zinc-500">
+                              <span className="ml-1 text-[9px] text-v2-ink-subtle">
                                 🔁
                               </span>
                             )}
                           </td>
-                          <td className="p-2 text-[11px] text-zinc-500 dark:text-zinc-400">
+                          <td className="p-2 text-[11px] text-v2-ink-muted">
                             {expense.category}
                           </td>
                           <td className="p-2 text-center">
@@ -894,7 +866,7 @@ export function ExpenseDashboardCompact() {
                               {expense.expense_type}
                             </span>
                           </td>
-                          <td className="p-2 text-right text-[11px] font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                          <td className="p-2 text-right text-[11px] font-mono font-semibold text-v2-ink">
                             {formatCurrency(expense.amount)}
                           </td>
                           <td className="p-2 text-center">
@@ -943,7 +915,7 @@ export function ExpenseDashboardCompact() {
 
           {/* Expense Insights */}
           {expenseRatio > 30 && (
-            <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-start gap-2">
+            <div className="p-2 bg-v2-accent-soft border border-amber-500/20 rounded-lg flex items-start gap-2">
               <DollarSign className="h-3 w-3 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
               <div className="text-[11px]">
                 <strong className="text-amber-700 dark:text-amber-300">

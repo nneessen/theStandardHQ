@@ -109,7 +109,7 @@ export function VendorMergeDialog({
               {vendors.map((vendor) => (
                 <div
                   key={vendor.id}
-                  className="flex items-center justify-between py-1.5 px-2 rounded bg-zinc-50 dark:bg-zinc-800/50 text-xs"
+                  className="flex items-center justify-between py-1.5 px-2 rounded bg-v2-canvas text-xs"
                 >
                   <span className="font-medium">{vendor.name}</span>
                   <span className="text-muted-foreground">

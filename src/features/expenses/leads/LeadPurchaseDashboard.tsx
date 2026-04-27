@@ -291,12 +291,12 @@ export function LeadPurchaseDashboard() {
 
   return (
     <>
-      <div className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="flex-1 flex flex-col overflow-hidden bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
         {/* Header with Title */}
-        <div className="flex items-center justify-between px-3 py-2 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring">
           <div className="flex items-center gap-2">
-            <ShoppingCart className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-            <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <ShoppingCart className="h-4 w-4 text-v2-ink" />
+            <h1 className="text-sm font-semibold text-v2-ink">
               Lead Purchases
             </h1>
           </div>
@@ -350,47 +350,47 @@ export function LeadPurchaseDashboard() {
         </div>
 
         {/* Metrics Bar */}
-        <div className="flex items-center gap-3 px-3 py-1.5 border-b border-zinc-200 dark:border-zinc-800 text-[11px]">
+        <div className="flex items-center gap-3 px-3 py-1.5 border-b border-v2-ring text-[11px]">
           {stats ? (
             <>
               {/* Lead metrics */}
               <div className="flex items-center gap-1">
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                <span className="font-medium text-v2-ink">
                   {stats.totalLeads.toLocaleString()}
                 </span>
-                <span className="text-zinc-500 dark:text-zinc-400">leads</span>
+                <span className="text-v2-ink-muted">leads</span>
               </div>
-              <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+              <div className="h-3 w-px bg-v2-ring" />
 
               {/* Spend metrics */}
               <div className="flex items-center gap-1">
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                <span className="font-medium text-v2-ink">
                   {formatCurrency(stats.totalSpent)}
                 </span>
-                <span className="text-zinc-500 dark:text-zinc-400">spent</span>
+                <span className="text-v2-ink-muted">spent</span>
               </div>
-              <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+              <div className="h-3 w-px bg-v2-ring" />
 
               {/* Cost per lead */}
               <div className="flex items-center gap-1">
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                <span className="font-medium text-v2-ink">
                   ${stats.avgCostPerLead.toFixed(2)}
                 </span>
-                <span className="text-zinc-500 dark:text-zinc-400">/lead</span>
+                <span className="text-v2-ink-muted">/lead</span>
               </div>
-              <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+              <div className="h-3 w-px bg-v2-ring" />
 
               {/* Conversion */}
               <div className="flex items-center gap-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                <span className="font-medium text-v2-ink">
                   {stats.totalPolicies}
                 </span>
-                <span className="text-zinc-500 dark:text-zinc-400">
+                <span className="text-v2-ink-muted">
                   sold ({formatPercent(stats.conversionRate)})
                 </span>
               </div>
-              <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+              <div className="h-3 w-px bg-v2-ring" />
 
               {/* ROI */}
               <div className="flex items-center gap-1">
@@ -410,21 +410,21 @@ export function LeadPurchaseDashboard() {
                   {stats.avgRoi >= 0 ? "+" : ""}
                   {stats.avgRoi.toFixed(1)}%
                 </span>
-                <span className="text-zinc-500 dark:text-zinc-400">ROI</span>
+                <span className="text-v2-ink-muted">ROI</span>
               </div>
-              <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+              <div className="h-3 w-px bg-v2-ring" />
 
               {/* Commission earned */}
               <div className="flex items-center gap-1">
                 <span className="font-medium text-emerald-600 dark:text-emerald-400">
                   {formatCurrency(stats.totalCommission)}
                 </span>
-                <span className="text-zinc-500 dark:text-zinc-400">earned</span>
+                <span className="text-v2-ink-muted">earned</span>
               </div>
 
               {filterCount > 0 && (
                 <>
-                  <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
+                  <div className="h-3 w-px bg-v2-ring" />
                   <span className="text-[9px] px-1.5 py-0.5 bg-blue-500/10 text-blue-600 dark:text-blue-400 rounded">
                     {filterCount} filter{filterCount > 1 ? "s" : ""}
                   </span>
@@ -432,18 +432,16 @@ export function LeadPurchaseDashboard() {
               )}
             </>
           ) : (
-            <div className="text-zinc-500 dark:text-zinc-400">
-              Loading metrics...
-            </div>
+            <div className="text-v2-ink-muted">Loading metrics...</div>
           )}
         </div>
 
         {/* Team Vendor Performance Bar */}
         {topVendors.length > 0 && (
-          <div className="flex items-center gap-3 px-3 py-1.5 border-b border-zinc-200 dark:border-zinc-800 text-[10px] bg-amber-50/50 dark:bg-amber-900/10">
+          <div className="flex items-center gap-3 px-3 py-1.5 border-b border-v2-ring text-[10px] bg-amber-50/50 dark:bg-amber-900/10">
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-              <span className="text-amber-700 dark:text-amber-400 font-semibold uppercase tracking-wider">
+              <span className="text-amber-700 dark:text-amber-400 font-semibold uppercase tracking-[0.18em]">
                 Team Insights
               </span>
               <span className="text-amber-600/70 dark:text-amber-500/70 ml-1">
@@ -456,7 +454,7 @@ export function LeadPurchaseDashboard() {
                 {idx > 0 && (
                   <div className="h-2.5 w-px bg-amber-200 dark:bg-amber-800" />
                 )}
-                <span className="font-semibold text-zinc-800 dark:text-zinc-200 ml-1">
+                <span className="font-semibold text-v2-ink ml-1">
                   {vendor.vendorName}
                 </span>
                 <span
@@ -470,7 +468,7 @@ export function LeadPurchaseDashboard() {
                   {vendor.avgRoi >= 0 ? "+" : ""}
                   {vendor.avgRoi.toFixed(0)}%
                 </span>
-                <span className="text-zinc-500 dark:text-zinc-400">
+                <span className="text-v2-ink-muted">
                   ({vendor.uniqueUsers} user
                   {vendor.uniqueUsers !== 1 ? "s" : ""}, {vendor.totalLeads}{" "}
                   leads)
@@ -481,18 +479,15 @@ export function LeadPurchaseDashboard() {
         )}
 
         {/* Search and Filter Bar */}
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-v2-canvas border-b border-v2-ring">
           <div className="flex-1 relative flex items-center">
-            <Search
-              size={14}
-              className="absolute left-2 text-zinc-400 dark:text-zinc-500"
-            />
+            <Search size={14} className="absolute left-2 text-v2-ink-subtle" />
             <Input
               type="text"
               placeholder="Search by vendor or notes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-6 pl-7 text-[10px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+              className="h-6 pl-7 text-[10px] bg-v2-card border-v2-ring"
             />
           </div>
           <Button
@@ -509,7 +504,7 @@ export function LeadPurchaseDashboard() {
               onClick={clearFilters}
               variant="ghost"
               size="sm"
-              className="h-6 text-[10px] px-2 text-zinc-500 dark:text-zinc-400"
+              className="h-6 text-[10px] px-2 text-v2-ink-muted"
             >
               Clear
             </Button>
@@ -518,7 +513,7 @@ export function LeadPurchaseDashboard() {
 
         {/* Collapsible Filter Panel */}
         {showFilters && (
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-v2-canvas border-b border-v2-ring">
             <Select
               value={filters.vendorId || "all"}
               onValueChange={(value) =>
@@ -528,7 +523,7 @@ export function LeadPurchaseDashboard() {
                 })
               }
             >
-              <SelectTrigger className="h-6 w-[140px] text-[10px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
+              <SelectTrigger className="h-6 w-[140px] text-[10px] bg-v2-card border-v2-ring">
                 <SelectValue placeholder="Vendor" />
               </SelectTrigger>
               <SelectContent>
@@ -551,7 +546,7 @@ export function LeadPurchaseDashboard() {
                 })
               }
             >
-              <SelectTrigger className="h-6 w-[100px] text-[10px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
+              <SelectTrigger className="h-6 w-[100px] text-[10px] bg-v2-card border-v2-ring">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
@@ -566,10 +561,10 @@ export function LeadPurchaseDashboard() {
         {/* Table Container - Scrollable */}
         <div className="flex-1 overflow-auto">
           <Table>
-            <TableHeader className="sticky top-0 bg-white dark:bg-zinc-900 z-10">
-              <TableRow className="h-8 border-b border-zinc-200 dark:border-zinc-800 hover:bg-transparent">
+            <TableHeader className="sticky top-0 bg-v2-card z-10">
+              <TableRow className="h-8 border-b border-v2-ring hover:bg-transparent">
                 <TableHead
-                  className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 px-2 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                  className="text-[10px] font-semibold text-v2-ink-muted px-2 cursor-pointer hover:text-v2-ink transition-colors"
                   onClick={() => toggleSort("purchaseDate")}
                 >
                   <div className="flex items-center gap-1">
@@ -583,7 +578,7 @@ export function LeadPurchaseDashboard() {
                   </div>
                 </TableHead>
                 <TableHead
-                  className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 px-2 cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                  className="text-[10px] font-semibold text-v2-ink-muted px-2 cursor-pointer hover:text-v2-ink transition-colors"
                   onClick={() => toggleSort("vendor")}
                 >
                   <div className="flex items-center gap-1">
@@ -596,11 +591,11 @@ export function LeadPurchaseDashboard() {
                       ))}
                   </div>
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 px-2">
+                <TableHead className="text-[10px] font-semibold text-v2-ink-muted px-2">
                   Type
                 </TableHead>
                 <TableHead
-                  className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 px-2 text-right cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                  className="text-[10px] font-semibold text-v2-ink-muted px-2 text-right cursor-pointer hover:text-v2-ink transition-colors"
                   onClick={() => toggleSort("leadCount")}
                 >
                   <div className="flex items-center justify-end gap-1">
@@ -614,7 +609,7 @@ export function LeadPurchaseDashboard() {
                   </div>
                 </TableHead>
                 <TableHead
-                  className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 px-2 text-right cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                  className="text-[10px] font-semibold text-v2-ink-muted px-2 text-right cursor-pointer hover:text-v2-ink transition-colors"
                   onClick={() => toggleSort("totalCost")}
                 >
                   <div className="flex items-center justify-end gap-1">
@@ -627,14 +622,14 @@ export function LeadPurchaseDashboard() {
                       ))}
                   </div>
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 px-2 text-right">
+                <TableHead className="text-[10px] font-semibold text-v2-ink-muted px-2 text-right">
                   $/Lead
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 px-2 text-right">
+                <TableHead className="text-[10px] font-semibold text-v2-ink-muted px-2 text-right">
                   Sold
                 </TableHead>
                 <TableHead
-                  className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 px-2 text-right cursor-pointer hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+                  className="text-[10px] font-semibold text-v2-ink-muted px-2 text-right cursor-pointer hover:text-v2-ink transition-colors"
                   onClick={() => toggleSort("roiPercentage")}
                 >
                   <div className="flex items-center justify-end gap-1">
@@ -647,7 +642,7 @@ export function LeadPurchaseDashboard() {
                       ))}
                   </div>
                 </TableHead>
-                <TableHead className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 px-2 text-right">
+                <TableHead className="text-[10px] font-semibold text-v2-ink-muted px-2 text-right">
                   Actions
                 </TableHead>
               </TableRow>
@@ -664,7 +659,7 @@ export function LeadPurchaseDashboard() {
                 <TableRow>
                   <TableCell colSpan={9} className="text-center py-12">
                     <div className="flex flex-col items-center gap-2">
-                      <AlertCircle className="h-8 w-8 text-zinc-300 dark:text-zinc-600" />
+                      <AlertCircle className="h-8 w-8 text-v2-ink-subtle" />
                       <span className="text-[11px] text-red-600 dark:text-red-400">
                         Error:{" "}
                         {error instanceof Error ? error.message : String(error)}
@@ -684,13 +679,13 @@ export function LeadPurchaseDashboard() {
                 <TableRow>
                   <TableCell colSpan={9} className="text-center py-12">
                     <div className="flex flex-col items-center justify-center p-4">
-                      <ShoppingCart className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-2" />
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                      <ShoppingCart className="h-8 w-8 text-v2-ink-subtle mb-2" />
+                      <p className="text-[11px] text-v2-ink-muted">
                         {filterCount > 0 || searchTerm
                           ? "No purchases match your filters"
                           : "No lead purchases yet"}
                       </p>
-                      <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">
+                      <p className="text-[10px] text-v2-ink-subtle mt-1">
                         Click "Add Purchase" to get started
                       </p>
                     </div>
@@ -700,9 +695,9 @@ export function LeadPurchaseDashboard() {
                 paginatedPurchases.map((purchase) => (
                   <TableRow
                     key={purchase.id}
-                    className="h-9 border-b border-zinc-100 dark:border-zinc-800/50 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors"
+                    className="h-9 border-b border-v2-ring/60 hover:bg-v2-canvas transition-colors"
                   >
-                    <TableCell className="text-[11px] text-zinc-500 dark:text-zinc-400 py-1.5 px-2 font-mono">
+                    <TableCell className="text-[11px] text-v2-ink-muted py-1.5 px-2 font-mono">
                       {formatDateForDisplay(purchase.purchaseDate, {
                         month: "short",
                         day: "numeric",
@@ -710,7 +705,7 @@ export function LeadPurchaseDashboard() {
                       })}
                     </TableCell>
                     <TableCell className="text-[11px] py-1.5 px-2">
-                      <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                      <span className="font-medium text-v2-ink">
                         {purchase.vendor?.name || "Unknown"}
                       </span>
                     </TableCell>
@@ -720,24 +715,24 @@ export function LeadPurchaseDashboard() {
                           "text-[9px] px-1.5 py-0.5 rounded font-medium",
                           purchase.leadFreshness === "fresh"
                             ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                            : "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+                            : "bg-v2-accent-soft text-amber-600 dark:text-amber-400",
                         )}
                       >
                         {purchase.leadFreshness === "fresh" ? "Fresh" : "Aged"}
                       </span>
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 px-2 text-right tabular-nums font-mono text-zinc-900 dark:text-zinc-100">
+                    <TableCell className="text-[11px] py-1.5 px-2 text-right tabular-nums font-mono text-v2-ink">
                       {purchase.leadCount}
                     </TableCell>
                     <TableCell className="text-[11px] py-1.5 px-2 text-right tabular-nums">
-                      <span className="text-zinc-900 dark:text-zinc-100">
+                      <span className="text-v2-ink">
                         {formatCurrency(purchase.totalCost)}
                       </span>
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 px-2 text-right tabular-nums font-mono text-zinc-500 dark:text-zinc-400">
+                    <TableCell className="text-[11px] py-1.5 px-2 text-right tabular-nums font-mono text-v2-ink-muted">
                       ${purchase.costPerLead.toFixed(2)}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 px-2 text-right tabular-nums font-mono text-zinc-900 dark:text-zinc-100">
+                    <TableCell className="text-[11px] py-1.5 px-2 text-right tabular-nums font-mono text-v2-ink">
                       {purchase.policiesSold}
                     </TableCell>
                     <TableCell className="text-[11px] py-1.5 px-2 text-right tabular-nums">
@@ -759,7 +754,7 @@ export function LeadPurchaseDashboard() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 w-6 p-0 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+                            className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
                           >
                             <MoreVertical className="h-3.5 w-3.5" />
                           </Button>
@@ -804,20 +799,17 @@ export function LeadPurchaseDashboard() {
         </div>
 
         {/* Pagination Controls */}
-        <div className="flex items-center justify-between px-3 py-1.5 border-t border-zinc-200 dark:border-zinc-800 flex-shrink-0">
+        <div className="flex items-center justify-between px-3 py-1.5 border-t border-v2-ring flex-shrink-0">
           <div className="flex items-center gap-3 text-[10px]">
-            <span className="text-zinc-500 dark:text-zinc-400">
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+            <span className="text-v2-ink-muted">
+              <span className="font-medium text-v2-ink">
                 {totalItems > 0 ? (currentPage - 1) * pageSize + 1 : 0}
               </span>
               -
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+              <span className="font-medium text-v2-ink">
                 {Math.min(currentPage * pageSize, totalItems)}
               </span>{" "}
-              of{" "}
-              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                {totalItems}
-              </span>
+              of <span className="font-medium text-v2-ink">{totalItems}</span>
             </span>
             <Select
               value={pageSize.toString()}
@@ -826,7 +818,7 @@ export function LeadPurchaseDashboard() {
                 setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="h-6 w-[80px] text-[10px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
+              <SelectTrigger className="h-6 w-[80px] text-[10px] bg-v2-card border-v2-ring">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -844,7 +836,7 @@ export function LeadPurchaseDashboard() {
               disabled={currentPage === 1}
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
             >
               <ChevronsLeft className="h-3.5 w-3.5" />
             </Button>
@@ -854,7 +846,7 @@ export function LeadPurchaseDashboard() {
               disabled={currentPage === 1}
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
             >
               <ChevronLeft className="h-3.5 w-3.5" />
             </Button>
@@ -880,7 +872,7 @@ export function LeadPurchaseDashboard() {
                       onClick={() => goToPage(1)}
                       variant="ghost"
                       size="sm"
-                      className="h-6 min-w-6 px-1.5 text-[10px] text-zinc-500 dark:text-zinc-400"
+                      className="h-6 min-w-6 px-1.5 text-[10px] text-v2-ink-muted"
                     >
                       1
                     </Button>,
@@ -889,7 +881,7 @@ export function LeadPurchaseDashboard() {
                     pages.push(
                       <span
                         key="dots1"
-                        className="px-0.5 text-zinc-400 dark:text-zinc-500 text-[10px]"
+                        className="px-0.5 text-v2-ink-subtle text-[10px]"
                       >
                         ...
                       </span>,
@@ -906,7 +898,7 @@ export function LeadPurchaseDashboard() {
                       size="sm"
                       className={cn(
                         "h-6 min-w-6 px-1.5 text-[10px]",
-                        currentPage !== i && "text-zinc-500 dark:text-zinc-400",
+                        currentPage !== i && "text-v2-ink-muted",
                       )}
                     >
                       {i}
@@ -919,7 +911,7 @@ export function LeadPurchaseDashboard() {
                     pages.push(
                       <span
                         key="dots2"
-                        className="px-0.5 text-zinc-400 dark:text-zinc-500 text-[10px]"
+                        className="px-0.5 text-v2-ink-subtle text-[10px]"
                       >
                         ...
                       </span>,
@@ -931,7 +923,7 @@ export function LeadPurchaseDashboard() {
                       onClick={() => goToPage(totalPages)}
                       variant="ghost"
                       size="sm"
-                      className="h-6 min-w-6 px-1.5 text-[10px] text-zinc-500 dark:text-zinc-400"
+                      className="h-6 min-w-6 px-1.5 text-[10px] text-v2-ink-muted"
                     >
                       {totalPages}
                     </Button>,
@@ -947,7 +939,7 @@ export function LeadPurchaseDashboard() {
               disabled={currentPage === totalPages}
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
             >
               <ChevronRight className="h-3.5 w-3.5" />
             </Button>
@@ -957,7 +949,7 @@ export function LeadPurchaseDashboard() {
               disabled={currentPage === totalPages}
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
+              className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
             >
               <ChevronsRight className="h-3.5 w-3.5" />
             </Button>

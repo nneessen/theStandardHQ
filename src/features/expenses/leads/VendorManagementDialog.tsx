@@ -173,7 +173,7 @@ export function VendorManagementDialog({
           </DialogHeader>
 
           {/* Toolbar */}
-          <div className="flex items-center justify-between gap-2 py-2 border-b border-zinc-200 dark:border-zinc-800">
+          <div className="flex items-center justify-between gap-2 py-2 border-b border-v2-ring">
             <div className="flex items-center gap-2">
               {/* Search */}
               <div className="relative">
@@ -216,7 +216,7 @@ export function VendorManagementDialog({
               </div>
             ) : filteredVendors.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8">
-                <Building2 className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-2" />
+                <Building2 className="h-8 w-8 text-v2-ink-subtle mb-2" />
                 <p className="text-[11px] text-muted-foreground">
                   {searchTerm
                     ? "No vendors match your search"
@@ -225,8 +225,8 @@ export function VendorManagementDialog({
               </div>
             ) : (
               <table className="w-full text-xs">
-                <thead className="bg-zinc-50 dark:bg-zinc-800/50 sticky top-0">
-                  <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                <thead className="bg-v2-canvas sticky top-0">
+                  <tr className="border-b border-v2-ring">
                     <th className="w-8 px-2 py-1.5">
                       <Checkbox
                         checked={
@@ -261,12 +261,9 @@ export function VendorManagementDialog({
                     <th className="w-10 px-2 py-1.5"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                <tbody className="divide-y divide-v2-ring/60">
                   {filteredVendors.map((vendor) => (
-                    <tr
-                      key={vendor.id}
-                      className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30"
-                    >
+                    <tr key={vendor.id} className="hover:bg-v2-canvas/30">
                       <td className="px-2 py-2">
                         <Checkbox
                           checked={selectedVendors.includes(vendor.id)}
@@ -290,7 +287,7 @@ export function VendorManagementDialog({
                             autoFocus
                           />
                         ) : (
-                          <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                          <span className="font-medium text-v2-ink">
                             {vendor.name}
                           </span>
                         )}
@@ -353,7 +350,7 @@ export function VendorManagementDialog({
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-6 w-6 p-0 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                              className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
                               onClick={() => handleStartEdit(vendor)}
                               title="Edit vendor"
                             >
@@ -379,7 +376,7 @@ export function VendorManagementDialog({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between pt-2 border-t border-zinc-200 dark:border-zinc-800">
+          <div className="flex items-center justify-between pt-2 border-t border-v2-ring">
             <span className="text-[10px] text-muted-foreground">
               {filteredVendors.length} vendor
               {filteredVendors.length !== 1 ? "s" : ""}

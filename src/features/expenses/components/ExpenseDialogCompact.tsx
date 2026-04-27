@@ -473,7 +473,7 @@ export function ExpenseDialogCompact({
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2.5 space-y-2">
                   <div className="flex items-center gap-1.5 mb-1">
                     <Users className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                    <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
+                    <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-[0.18em]">
                       Lead Purchase Details
                     </span>
                   </div>

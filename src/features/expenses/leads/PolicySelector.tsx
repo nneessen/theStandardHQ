@@ -70,7 +70,7 @@ export function PolicySelector({
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Search client or policy #..."
-          className="h-9 pl-9 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700"
+          className="h-9 pl-9 bg-v2-card border-v2-ring"
         />
       </div>
 
