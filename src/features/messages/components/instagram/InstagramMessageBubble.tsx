@@ -34,11 +34,11 @@ export function InstagramMessageBubble({
   const getStatusIcon = () => {
     switch (message.status) {
       case "pending":
-        return <Clock className="h-2.5 w-2.5 text-zinc-400" />;
+        return <Clock className="h-2.5 w-2.5 text-v2-ink-subtle" />;
       case "sent":
-        return <Check className="h-2.5 w-2.5 text-zinc-400" />;
+        return <Check className="h-2.5 w-2.5 text-v2-ink-subtle" />;
       case "delivered":
-        return <CheckCheck className="h-2.5 w-2.5 text-zinc-400" />;
+        return <CheckCheck className="h-2.5 w-2.5 text-v2-ink-subtle" />;
       case "read":
         return <CheckCheck className="h-2.5 w-2.5 text-blue-500" />;
       case "failed":
@@ -70,7 +70,7 @@ export function InstagramMessageBubble({
   const storyIndicator =
     message.message_type === "story_reply" ||
     message.message_type === "story_mention" ? (
-      <div className="flex items-center gap-1 text-[9px] text-zinc-400 dark:text-zinc-500 mb-1">
+      <div className="flex items-center gap-1 text-[9px] text-v2-ink-subtle mb-1">
         <FileText className="h-2.5 w-2.5" />
         <span>
           {message.message_type === "story_reply"
@@ -99,13 +99,13 @@ export function InstagramMessageBubble({
         <video
           src={mediaUrl}
           controls
-          className="w-full max-h-[200px] object-contain bg-zinc-100 dark:bg-zinc-800"
+          className="w-full max-h-[200px] object-contain bg-v2-ring"
         />
       ) : (
         <img
           src={mediaUrl}
           alt="Shared media"
-          className="w-full max-h-[200px] object-contain bg-zinc-100 dark:bg-zinc-800"
+          className="w-full max-h-[200px] object-contain bg-v2-ring"
           loading="lazy"
           onError={(e) => {
             e.currentTarget.style.display = "none";
@@ -131,7 +131,7 @@ export function InstagramMessageBubble({
       >
         {/* Sender username for inbound messages (non-grouped) */}
         {!isOutbound && !isGrouped && message.sender_username && (
-          <p className="text-[9px] text-zinc-500 dark:text-zinc-400 mb-0.5 px-1">
+          <p className="text-[9px] text-v2-ink-muted mb-0.5 px-1">
             @{message.sender_username}
           </p>
         )}
@@ -142,7 +142,7 @@ export function InstagramMessageBubble({
             "px-2.5 py-1.5 rounded-2xl",
             isOutbound
               ? "bg-blue-500 text-white rounded-br-md"
-              : "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 rounded-bl-md",
+              : "bg-v2-ring text-v2-ink rounded-bl-md",
           )}
         >
           {storyIndicator}
@@ -176,7 +176,7 @@ export function InstagramMessageBubble({
           )}
         >
           {timestamp && (
-            <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
+            <span className="text-[9px] text-v2-ink-subtle">
               {format(timestamp, "h:mm a")}
             </span>
           )}

@@ -32,8 +32,8 @@ export function SlackTabContent({
 
   if (isLoading) {
     return (
-      <div className="h-full flex items-center justify-center bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+      <div className="h-full flex items-center justify-center bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -41,15 +41,15 @@ export function SlackTabContent({
   // Not connected
   if (!isConnected) {
     return (
-      <div className="h-full flex items-center justify-center bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="h-full flex items-center justify-center bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
         <div className="text-center max-w-sm px-4">
           <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
             <MessageSquare className="h-6 w-6 text-purple-600 dark:text-purple-400" />
           </div>
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+          <h3 className="text-sm font-semibold text-v2-ink mb-1">
             Connect Slack
           </h3>
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mb-4">
+          <p className="text-[11px] text-v2-ink-muted mb-4">
             Connect your Slack workspace to view and send messages directly from
             here.
           </p>
@@ -65,7 +65,7 @@ export function SlackTabContent({
             )}
             Connect Slack Workspace
           </Button>
-          <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-3">
+          <p className="text-[10px] text-v2-ink-subtle mt-3">
             Or configure in{" "}
             <Link
               to="/settings"
@@ -83,10 +83,10 @@ export function SlackTabContent({
   // Connected but no channel selected
   if (!selectedChannel) {
     return (
-      <div className="h-full flex items-center justify-center bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="h-full flex items-center justify-center bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
         <div className="text-center">
-          <MessageSquare className="h-8 w-8 mx-auto mb-2 text-zinc-300 dark:text-zinc-600" />
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <MessageSquare className="h-8 w-8 mx-auto mb-2 text-v2-ink-subtle" />
+          <p className="text-[11px] text-v2-ink-muted">
             Select a channel to view messages
           </p>
           <div className="flex items-center justify-center gap-2 mt-3">

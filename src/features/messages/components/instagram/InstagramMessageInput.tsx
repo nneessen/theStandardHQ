@@ -93,13 +93,13 @@ export function InstagramMessageInput({
   // Window closed state
   if (isWindowClosed) {
     return (
-      <div className="flex items-center gap-2 p-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700">
-        <AlertCircle className="h-4 w-4 text-zinc-400 flex-shrink-0" />
+      <div className="flex items-center gap-2 p-2 bg-v2-ring rounded-lg border border-v2-ring">
+        <AlertCircle className="h-4 w-4 text-v2-ink-subtle flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+          <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             Messaging window closed
           </p>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-500">
+          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-muted">
             You can only reply within 24 hours of their last message. Wait for
             them to message you.
           </p>
@@ -112,10 +112,8 @@ export function InstagramMessageInput({
     <div className="space-y-1">
       <div
         className={cn(
-          "flex items-end gap-2 p-1.5 bg-zinc-50 dark:bg-zinc-800 rounded-lg border transition-colors",
-          isOverLimit
-            ? "border-red-300 dark:border-red-700"
-            : "border-zinc-200 dark:border-zinc-700",
+          "flex items-end gap-2 p-1.5 bg-v2-canvas rounded-lg border transition-colors",
+          isOverLimit ? "border-red-300 dark:border-red-700" : "border-v2-ring",
         )}
       >
         <Textarea
@@ -132,7 +130,7 @@ export function InstagramMessageInput({
           placeholder={placeholder}
           disabled={isDisabled}
           className={cn(
-            "flex-1 min-h-[36px] max-h-[120px] resize-none border-0 bg-transparent p-1.5 text-[11px] placeholder:text-zinc-400",
+            "flex-1 min-h-[36px] max-h-[120px] resize-none border-0 bg-transparent p-1.5 text-[11px] placeholder:text-v2-ink-subtle",
             "focus-visible:ring-0 focus-visible:ring-offset-0",
           )}
           rows={1}
@@ -180,7 +178,7 @@ export function InstagramMessageInput({
 
       {/* Character counter */}
       <div className="flex items-center justify-between px-1">
-        <p className="text-[9px] text-zinc-400 dark:text-zinc-500">
+        <p className="text-[9px] text-v2-ink-subtle">
           Press Enter to send, Shift+Enter for new line
         </p>
         <p
@@ -190,7 +188,7 @@ export function InstagramMessageInput({
               ? "text-red-500 font-medium"
               : charCount > MAX_CHARS * 0.9
                 ? "text-amber-500"
-                : "text-zinc-400 dark:text-zinc-500",
+                : "text-v2-ink-subtle",
           )}
         >
           {charCount}/{MAX_CHARS}

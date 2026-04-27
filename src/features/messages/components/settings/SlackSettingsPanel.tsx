@@ -46,7 +46,7 @@ export function SlackSettingsPanel() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-40">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -81,10 +81,10 @@ export function SlackSettingsPanel() {
   return (
     <div className="space-y-4 max-w-2xl">
       {/* Connection Status */}
-      <Card className="border-zinc-200 dark:border-zinc-800">
+      <Card className="border-v2-ring">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-zinc-500" />
+            <MessageSquare className="h-4 w-4 text-v2-ink-muted" />
             Connected Workspaces
           </CardTitle>
         </CardHeader>
@@ -96,17 +96,17 @@ export function SlackSettingsPanel() {
               {connectedIntegrations.map((integration) => (
                 <div
                   key={integration.id}
-                  className="flex items-center justify-between p-3 rounded-lg border border-zinc-200 dark:border-zinc-800"
+                  className="flex items-center justify-between p-3 rounded-lg border border-v2-ring"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
-                      <MessageSquare className="h-4 w-4 text-zinc-500" />
+                    <div className="h-8 w-8 rounded bg-v2-ring flex items-center justify-center">
+                      <MessageSquare className="h-4 w-4 text-v2-ink-muted" />
                     </div>
                     <div>
-                      <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                      <p className="text-[11px] font-medium text-v2-ink">
                         {integration.team_name || "Slack Workspace"}
                       </p>
-                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                      <p className="text-[10px] text-v2-ink-muted">
                         {integration.team_id}
                       </p>
                     </div>
@@ -127,21 +127,21 @@ export function SlackSettingsPanel() {
 
       {/* Auto-Post Settings */}
       {hasConnectedWorkspaces && (
-        <Card className="border-zinc-200 dark:border-zinc-800">
+        <Card className="border-v2-ring">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Zap className="h-4 w-4 text-zinc-500" />
+              <Zap className="h-4 w-4 text-v2-ink-muted" />
               Auto-Post Settings
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Auto-post toggle */}
-            <div className="flex items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+            <div className="flex items-center justify-between rounded-lg border border-v2-ring p-3">
               <div>
                 <Label className="text-[11px] font-medium">
                   Auto-post Policy Sales
                 </Label>
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] text-v2-ink-muted">
                   Automatically post new policies to Slack
                 </p>
               </div>
@@ -180,7 +180,7 @@ export function SlackSettingsPanel() {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <p className="text-[10px] text-v2-ink-muted">
                 The channel shown by default in the Messages → Slack tab
               </p>
             </div>

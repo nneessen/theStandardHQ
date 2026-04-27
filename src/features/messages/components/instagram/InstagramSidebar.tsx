@@ -118,10 +118,10 @@ export function InstagramSidebar({
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-2 py-2 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="px-2 py-2 border-b border-v2-ring">
         <div className="flex items-center justify-between gap-1 mb-2">
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+            <span className="text-[11px] font-semibold text-v2-ink truncate">
               @{integration.instagram_username}
             </span>
             {unreadCount > 0 && (
@@ -143,13 +143,13 @@ export function InstagramSidebar({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400" />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
           <Input
             type="text"
             placeholder="Search conversations..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="h-6 pl-7 pr-7 text-[10px] bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+            className="h-6 pl-7 pr-7 text-[10px] bg-v2-canvas border-v2-ring"
           />
           {searchQuery && (
             <Button
@@ -165,14 +165,14 @@ export function InstagramSidebar({
       </div>
 
       {/* Filter tabs */}
-      <div className="flex items-center gap-0.5 px-1.5 py-1 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center gap-0.5 px-1.5 py-1 border-b border-v2-ring">
         <button
           onClick={() => setFilterPriority(false)}
           className={cn(
             "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-colors",
             !filterPriority
-              ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100"
-              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+              ? "bg-v2-ring text-v2-ink"
+              : "text-v2-ink-muted hover:text-v2-ink",
           )}
         >
           <MessageSquare className="h-3 w-3" />
@@ -187,7 +187,7 @@ export function InstagramSidebar({
             "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-colors",
             filterPriority
               ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
-              : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+              : "text-v2-ink-muted hover:text-v2-ink",
           )}
         >
           <Star className="h-3 w-3" />
@@ -210,8 +210,8 @@ export function InstagramSidebar({
           </div>
         ) : filteredConversations.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-32 text-center px-4">
-            <MessageSquare className="h-6 w-6 text-zinc-300 dark:text-zinc-600 mb-2" />
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+            <MessageSquare className="h-6 w-6 text-v2-ink-subtle mb-2" />
+            <p className="text-[10px] text-v2-ink-muted">
               {searchQuery
                 ? "No conversations match your search"
                 : filterPriority
@@ -219,7 +219,7 @@ export function InstagramSidebar({
                   : "No conversations yet"}
             </p>
             {!searchQuery && !filterPriority && (
-              <p className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-1">
+              <p className="text-[9px] text-v2-ink-subtle mt-1">
                 Conversations will appear when users message your Instagram
                 account
               </p>

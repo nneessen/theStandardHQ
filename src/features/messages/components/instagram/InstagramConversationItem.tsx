@@ -41,9 +41,7 @@ export function InstagramConversationItem({
       onClick={onClick}
       className={cn(
         "w-full flex items-start gap-2 p-2 rounded-md text-left transition-colors",
-        isSelected
-          ? "bg-blue-100 dark:bg-blue-900/30"
-          : "hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+        isSelected ? "bg-blue-100 dark:bg-blue-900/30" : "hover:bg-v2-canvas",
       )}
     >
       {/* Avatar */}
@@ -81,8 +79,8 @@ export function InstagramConversationItem({
             className={cn(
               "text-[11px] truncate flex-1",
               hasUnread
-                ? "font-semibold text-zinc-900 dark:text-zinc-100"
-                : "font-medium text-zinc-700 dark:text-zinc-300",
+                ? "font-semibold text-v2-ink"
+                : "font-medium text-v2-ink-muted",
             )}
           >
             {conversation.participant_username
@@ -108,9 +106,7 @@ export function InstagramConversationItem({
           <p
             className={cn(
               "text-[10px] truncate flex-1",
-              hasUnread
-                ? "text-zinc-700 dark:text-zinc-300"
-                : "text-zinc-500 dark:text-zinc-400",
+              hasUnread ? "text-v2-ink-muted" : "text-v2-ink-muted",
             )}
           >
             {isInbound ? "" : "You: "}
@@ -121,7 +117,7 @@ export function InstagramConversationItem({
         {/* Time and unread badge row */}
         <div className="flex items-center justify-between mt-0.5">
           {lastMessageTime && (
-            <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
+            <span className="text-[9px] text-v2-ink-subtle">
               {lastMessageTime}
             </span>
           )}

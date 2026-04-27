@@ -38,11 +38,9 @@ export function ThreadList({
 
   if (error) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-4 text-zinc-500 dark:text-zinc-400">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 text-v2-ink-muted">
         <p className="text-[11px]">Failed to load messages</p>
-        <p className="text-[10px] mt-1 text-zinc-400 dark:text-zinc-500">
-          {error.message}
-        </p>
+        <p className="text-[10px] mt-1 text-v2-ink-subtle">{error.message}</p>
       </div>
     );
   }
@@ -74,12 +72,12 @@ function ThreadListSkeleton() {
       {Array.from({ length: 8 }).map((_, i) => (
         <div key={i} className="p-2 space-y-1.5">
           <div className="flex items-center gap-2">
-            <Skeleton className="h-7 w-7 rounded-full bg-zinc-200 dark:bg-zinc-700" />
-            <Skeleton className="h-3 w-28 bg-zinc-200 dark:bg-zinc-700" />
-            <Skeleton className="h-3 w-12 ml-auto bg-zinc-200 dark:bg-zinc-700" />
+            <Skeleton className="h-7 w-7 rounded-full bg-v2-ring" />
+            <Skeleton className="h-3 w-28 bg-v2-ring" />
+            <Skeleton className="h-3 w-12 ml-auto bg-v2-ring" />
           </div>
-          <Skeleton className="h-3 w-full bg-zinc-200 dark:bg-zinc-700" />
-          <Skeleton className="h-3 w-3/4 bg-zinc-200 dark:bg-zinc-700" />
+          <Skeleton className="h-3 w-full bg-v2-ring" />
+          <Skeleton className="h-3 w-3/4 bg-v2-ring" />
         </div>
       ))}
     </div>
@@ -95,11 +93,9 @@ function EmptyState({ filter, hasSearch }: EmptyStateProps) {
   if (hasSearch) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-4">
-        <Search className="h-8 w-8 mb-3 text-zinc-300 dark:text-zinc-600" />
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-          No messages found
-        </p>
-        <p className="text-[10px] mt-1 text-zinc-400 dark:text-zinc-500">
+        <Search className="h-8 w-8 mb-3 text-v2-ink-subtle" />
+        <p className="text-[11px] text-v2-ink-muted">No messages found</p>
+        <p className="text-[10px] mt-1 text-v2-ink-subtle">
           Try a different search term
         </p>
       </div>
@@ -141,11 +137,9 @@ function EmptyState({ filter, hasSearch }: EmptyStateProps) {
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-4">
-      <Inbox className="h-8 w-8 mb-3 text-zinc-300 dark:text-zinc-600" />
-      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">{title}</p>
-      <p className="text-[10px] mt-1 text-zinc-400 dark:text-zinc-500">
-        {subtitle}
-      </p>
+      <Inbox className="h-8 w-8 mb-3 text-v2-ink-subtle" />
+      <p className="text-[11px] text-v2-ink-muted">{title}</p>
+      <p className="text-[10px] mt-1 text-v2-ink-subtle">{subtitle}</p>
     </div>
   );
 }

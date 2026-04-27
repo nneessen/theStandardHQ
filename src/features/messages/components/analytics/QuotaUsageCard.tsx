@@ -20,7 +20,7 @@ export function QuotaUsageCard({
   const isCritical = percentUsed >= 95;
 
   return (
-    <Card className="border-zinc-200 dark:border-zinc-800">
+    <Card className="border-v2-ring">
       <CardContent className="p-3">
         {/* Header */}
         <div className="flex items-center justify-between mb-2">
@@ -28,7 +28,7 @@ export function QuotaUsageCard({
             <div className="h-6 w-6 rounded bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center">
               <Gauge className="h-3 w-3 text-amber-500" />
             </div>
-            <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+            <span className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
               Quota
             </span>
           </div>
@@ -36,17 +36,15 @@ export function QuotaUsageCard({
 
         {/* Main Metric */}
         <div className="mb-2">
-          <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <p className="text-lg font-semibold text-v2-ink">
             {dailyUsed}/{dailyLimit}
           </p>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-            daily emails
-          </p>
+          <p className="text-[10px] text-v2-ink-muted">daily emails</p>
         </div>
 
         {/* Progress Bar */}
-        <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800">
-          <div className="h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+        <div className="pt-2 border-t border-v2-ring/60">
+          <div className="h-1.5 bg-v2-ring rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
                 isCritical
@@ -64,7 +62,7 @@ export function QuotaUsageCard({
                 ? "text-red-500"
                 : isWarning
                   ? "text-amber-500"
-                  : "text-zinc-500 dark:text-zinc-400"
+                  : "text-v2-ink-muted"
             }`}
           >
             {remaining} remaining today

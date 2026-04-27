@@ -69,9 +69,9 @@ function MessageSkeleton({
  */
 function ConversationViewSkeleton(): ReactNode {
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+    <div className="h-full flex flex-col bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft overflow-hidden">
       {/* Header skeleton */}
-      <div className="flex items-center gap-3 px-3 py-2 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center gap-3 px-3 py-2 border-b border-v2-ring">
         <Skeleton className="h-8 w-8 rounded-full" />
         <div className="flex-1 space-y-1">
           <Skeleton className="h-3 w-24" />
@@ -90,7 +90,7 @@ function ConversationViewSkeleton(): ReactNode {
       </div>
 
       {/* Input skeleton */}
-      <div className="p-2 border-t border-zinc-200 dark:border-zinc-800">
+      <div className="p-2 border-t border-v2-ring">
         <Skeleton className="h-10 w-full rounded-lg" />
       </div>
     </div>
@@ -210,13 +210,13 @@ export function InstagramConversationView({
   if (messagesError) {
     const error = messagesError;
     return (
-      <div className="h-full flex items-center justify-center bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="h-full flex items-center justify-center bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
         <div className="text-center max-w-sm px-4">
           <AlertCircle className="h-8 w-8 mx-auto mb-2 text-red-400" />
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mb-2">
+          <p className="text-[11px] text-v2-ink-muted mb-2">
             Failed to load conversation
           </p>
-          <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mb-4">
+          <p className="text-[10px] text-v2-ink-subtle mb-4">
             {error instanceof Error ? error.message : "Unknown error"}
           </p>
           <Button
@@ -271,9 +271,9 @@ export function InstagramConversationView({
   }
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+    <div className="h-full flex flex-col bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft overflow-hidden">
       {/* Conversation header */}
-      <div className="flex items-center gap-3 px-3 py-2 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center gap-3 px-3 py-2 border-b border-v2-ring">
         {/* Avatar */}
         <Avatar className="h-8 w-8">
           <AvatarImage
@@ -288,7 +288,7 @@ export function InstagramConversationView({
         {/* Name and username */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+            <span className="text-[12px] font-semibold text-v2-ink truncate">
               {conversation.participant_username
                 ? `@${conversation.participant_username}`
                 : displayName}
@@ -302,7 +302,7 @@ export function InstagramConversationView({
           </div>
           {conversation.participant_name &&
             conversation.participant_username && (
-              <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+              <p className="text-[10px] text-v2-ink-muted truncate">
                 {conversation.participant_name}
               </p>
             )}
@@ -354,11 +354,9 @@ export function InstagramConversationView({
       <div className="flex-1 overflow-auto p-3">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <Instagram className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-2" />
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-              No messages yet
-            </p>
-            <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">
+            <Instagram className="h-8 w-8 text-v2-ink-subtle mb-2" />
+            <p className="text-[11px] text-v2-ink-muted">No messages yet</p>
+            <p className="text-[10px] text-v2-ink-subtle mt-1">
               Start the conversation by sending a message
             </p>
           </div>
@@ -368,11 +366,11 @@ export function InstagramConversationView({
               <div key={date.toISOString()}>
                 {/* Date separator */}
                 <div className="flex items-center justify-center my-3">
-                  <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-700" />
-                  <span className="px-2 text-[9px] text-zinc-400 dark:text-zinc-500">
+                  <div className="flex-1 h-px bg-v2-ring" />
+                  <span className="px-2 text-[9px] text-v2-ink-subtle">
                     {format(date, "MMMM d, yyyy")}
                   </span>
-                  <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-700" />
+                  <div className="flex-1 h-px bg-v2-ring" />
                 </div>
 
                 {/* Messages for this date */}
@@ -394,7 +392,7 @@ export function InstagramConversationView({
       </div>
 
       {/* Message composer */}
-      <div className="p-2 border-t border-zinc-200 dark:border-zinc-800">
+      <div className="p-2 border-t border-v2-ring">
         <InstagramMessageInput
           canReplyUntil={conversation.can_reply_until}
           onSend={handleSendMessage}

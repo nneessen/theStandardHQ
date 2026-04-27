@@ -17,11 +17,11 @@ export function NotConnectedState({
 }: NotConnectedStateProps) {
   return (
     <div className="text-center py-6">
-      <Icon className="h-8 w-8 mx-auto mb-2 text-zinc-300 dark:text-zinc-600" />
-      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+      <Icon className="h-8 w-8 mx-auto mb-2 text-v2-ink-subtle" />
+      <p className="text-[11px] text-v2-ink-muted">
         No {platform} account connected
       </p>
-      <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">
+      <p className="text-[10px] text-v2-ink-subtle mt-1">
         Connect {platform} in Settings → Integrations
       </p>
       {onConnect && (

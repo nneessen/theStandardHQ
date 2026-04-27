@@ -32,7 +32,7 @@ export function InstagramConnectCard({
 
   return (
     <>
-      <div className="h-full flex items-center justify-center bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="h-full flex items-center justify-center bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
         <div className="max-w-sm w-full p-6 text-center">
           {/* Instagram Icon with gradient background */}
           <div className="mx-auto w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 via-pink-500 to-orange-400 flex items-center justify-center mb-4 shadow-lg">
@@ -40,35 +40,35 @@ export function InstagramConnectCard({
           </div>
 
           {/* Title and description */}
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
+          <h3 className="text-sm font-semibold text-v2-ink mb-1">
             Connect Instagram
           </h3>
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mb-4">
+          <p className="text-[11px] text-v2-ink-muted mb-4">
             Connect your Instagram Business or Creator account to send and
             receive DMs directly from this dashboard.
           </p>
 
           {/* Requirements box */}
-          <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-md p-3 mb-4 text-left">
-            <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">
+          <div className="bg-v2-canvas rounded-md p-3 mb-4 text-left">
+            <p className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide mb-2">
               Requirements
             </p>
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-3 w-3 text-emerald-500 flex-shrink-0" />
-                <span className="text-[11px] text-zinc-600 dark:text-zinc-300">
+                <span className="text-[11px] text-v2-ink-muted">
                   Instagram Business or Creator account
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-3 w-3 text-emerald-500 flex-shrink-0" />
-                <span className="text-[11px] text-zinc-600 dark:text-zinc-300">
+                <span className="text-[11px] text-v2-ink-muted">
                   Connected to a Facebook Page
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="h-3 w-3 text-emerald-500 flex-shrink-0" />
-                <span className="text-[11px] text-zinc-600 dark:text-zinc-300">
+                <span className="text-[11px] text-v2-ink-muted">
                   Facebook Page admin access
                 </span>
               </div>
@@ -130,7 +130,7 @@ export function InstagramConnectCard({
           </div>
 
           {/* Help text */}
-          <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-4">
+          <p className="text-[10px] text-v2-ink-subtle mt-4">
             Need help?{" "}
             <button
               onClick={() => setShowGuide(true)}

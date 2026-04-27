@@ -308,21 +308,21 @@ export function ComposeDialog({
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className="flex flex-col p-0 gap-0 max-w-2xl bg-zinc-50 dark:bg-zinc-950 transition-all duration-200"
+          className="flex flex-col p-0 gap-0 max-w-2xl bg-v2-canvas  transition-all duration-200"
           style={{
             maxHeight: "85vh",
             left: showContactBrowser ? "calc(50% - 200px)" : "50%",
           }}
         >
-          <DialogHeader className="px-3 py-2 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
-            <DialogTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+          <DialogHeader className="px-3 py-2 bg-v2-card border-b border-v2-ring">
+            <DialogTitle className="text-sm font-semibold text-v2-ink">
               {replyTo ? "Reply" : forward ? "Forward" : "New Message"}
             </DialogTitle>
           </DialogHeader>
 
           {/* Compose Form */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-3 space-y-2.5 bg-white dark:bg-zinc-900">
+            <div className="flex-1 overflow-y-auto p-3 space-y-2.5 bg-v2-card">
               {/* Contacts & Template Buttons */}
               <div className="flex justify-end gap-2">
                 {isSuperAdmin && (
@@ -348,7 +348,7 @@ export function ComposeDialog({
                       </button>
                       <button
                         onClick={() => setAddAllPending(false)}
-                        className="flex items-center px-1.5 py-0.5 rounded text-[10px] bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 text-zinc-600 dark:text-zinc-400 transition-colors"
+                        className="flex items-center px-1.5 py-0.5 rounded text-[10px] bg-v2-ring hover:bg-v2-ring-strong  text-v2-ink-muted dark:text-v2-ink-subtle transition-colors"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -360,7 +360,7 @@ export function ComposeDialog({
                       className={cn(
                         "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium border transition-colors",
                         isAddingAll
-                          ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-400 cursor-not-allowed border-zinc-200 dark:border-zinc-700"
+                          ? "bg-v2-ring text-v2-ink-subtle cursor-not-allowed border-v2-ring"
                           : "bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50 border-amber-300 dark:border-amber-700",
                       )}
                     >
@@ -418,7 +418,7 @@ export function ComposeDialog({
               <div className="flex justify-end">
                 <Button
                   size="sm"
-                  className="h-5 px-2 text-[10px] bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 border-0 shadow-none"
+                  className="h-5 px-2 text-[10px] bg-transparent hover:bg-v2-ring dark:hover:bg-v2-ring text-v2-ink-muted hover:text-v2-ink border-0 shadow-none"
                   onClick={() => setShowCcBcc(!showCcBcc)}
                 >
                   {showCcBcc ? (
@@ -456,14 +456,14 @@ export function ComposeDialog({
 
               {/* Subject */}
               <div className="flex items-center gap-2">
-                <Label className="text-[11px] text-zinc-500 dark:text-zinc-400 w-8">
+                <Label className="text-[11px] text-v2-ink-muted w-8">
                   Subj
                 </Label>
                 <Input
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Subject"
-                  className="flex-1 h-7 text-[11px] bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                  className="flex-1 h-7 text-[11px] bg-v2-canvas border-v2-ring"
                   disabled={isSending}
                 />
               </div>
@@ -476,21 +476,21 @@ export function ComposeDialog({
                 showMenuBar={isSuperAdmin}
                 minHeight="180px"
                 editable={!isSending}
-                className="bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-sm"
+                className="bg-v2-canvas border border-v2-ring rounded-sm"
               />
 
               {/* Schedule */}
               {showSchedule && (
-                <div className="flex items-center gap-2 p-2 bg-zinc-100 dark:bg-zinc-800 rounded-sm border border-zinc-200 dark:border-zinc-700">
-                  <Clock className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-400" />
-                  <span className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                <div className="flex items-center gap-2 p-2 bg-v2-ring rounded-sm border border-v2-ring">
+                  <Clock className="h-3.5 w-3.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
+                  <span className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     Scheduled for:
                   </span>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         size="sm"
-                        className="h-6 text-[10px] bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 text-zinc-700 dark:text-zinc-300 border-0 shadow-none"
+                        className="h-6 text-[10px] bg-v2-ring hover:bg-v2-ring-strong  text-v2-ink-muted border-0 shadow-none"
                       >
                         {scheduledDate
                           ? format(scheduledDate, "PPp")
@@ -511,7 +511,7 @@ export function ComposeDialog({
                   </Popover>
                   <Button
                     size="sm"
-                    className="h-6 px-1 bg-transparent hover:bg-red-100 dark:hover:bg-red-900/30 text-zinc-500 hover:text-red-600 dark:hover:text-red-400 border-0 shadow-none"
+                    className="h-6 px-1 bg-transparent hover:bg-red-100 dark:hover:bg-red-900/30 text-v2-ink-muted hover:text-red-600 dark:hover:text-red-400 border-0 shadow-none"
                     onClick={() => {
                       setShowSchedule(false);
                       setScheduledDate(undefined);
@@ -525,7 +525,7 @@ export function ComposeDialog({
               {/* Attachments Display */}
               {attachments.length > 0 && (
                 <div className="space-y-1.5">
-                  <Label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+                  <Label className="text-[11px] font-medium text-v2-ink-muted">
                     Attachments ({attachments.length})
                   </Label>
                   <div className="flex flex-wrap gap-1.5">
@@ -568,13 +568,13 @@ export function ComposeDialog({
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between px-3 py-2 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
+            <div className="flex items-center justify-between px-3 py-2 border-t border-v2-ring bg-v2-canvas dark:bg-v2-card-dark">
               <div className="flex items-center gap-2">
                 <Button
                   onClick={handleSend}
                   disabled={isSending || to.length === 0}
                   size="sm"
-                  className="h-6 text-[10px] gap-1.5 bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 border-0 shadow-none"
+                  className="h-6 text-[10px] gap-1.5 bg-v2-card-dark dark:bg-v2-ring hover:bg-v2-ring dark:hover:bg-v2-ring text-white dark:text-v2-ink border-0 shadow-none"
                 >
                   <Send className="h-3 w-3" />
                   {scheduledDate ? "Schedule" : "Send"}
@@ -582,7 +582,7 @@ export function ComposeDialog({
 
                 <Button
                   size="sm"
-                  className="h-6 px-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 border-0 shadow-none"
+                  className="h-6 px-2 bg-v2-ring hover:bg-v2-ring dark:hover:bg-v2-card-dark text-v2-ink-muted dark:text-v2-ink-subtle border-0 shadow-none"
                   onClick={() => setShowSchedule(!showSchedule)}
                 >
                   <Clock className="h-3 w-3" />
@@ -594,7 +594,7 @@ export function ComposeDialog({
                     "h-6 px-2 border-0 shadow-none",
                     attachments.length > 0
                       ? "bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400"
-                      : "bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400",
+                      : "bg-v2-ring hover:bg-v2-ring dark:hover:bg-v2-card-dark text-v2-ink-muted dark:text-v2-ink-subtle",
                   )}
                   onClick={() => setShowDocumentBrowser(true)}
                 >
@@ -608,13 +608,13 @@ export function ComposeDialog({
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <span className="text-[10px] text-v2-ink-muted">
                   {remainingDaily} remaining
                 </span>
 
                 <Button
                   size="sm"
-                  className="h-6 px-2 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 border-0 shadow-none"
+                  className="h-6 px-2 bg-transparent hover:bg-v2-ring dark:hover:bg-v2-ring text-v2-ink-muted hover:text-v2-ink border-0 shadow-none"
                   onClick={handleSaveDraft}
                   disabled={isSavingDraft}
                 >
@@ -679,23 +679,23 @@ function RecipientField({
 }: RecipientFieldProps) {
   return (
     <div className="flex items-start gap-2">
-      <Label className="text-[11px] text-zinc-500 dark:text-zinc-400 w-8 pt-1.5">
+      <Label className="text-[11px] text-v2-ink-muted w-8 pt-1.5">
         {label}
       </Label>
       <div
         onClick={onActivate}
         className={cn(
-          "flex-1 flex flex-wrap items-center gap-1 min-h-[32px] px-2 py-1 border rounded-sm bg-zinc-50 dark:bg-zinc-800 cursor-text",
+          "flex-1 flex flex-wrap items-center gap-1 min-h-[32px] px-2 py-1 border rounded-sm bg-v2-canvas cursor-text",
           isActive
-            ? "border-zinc-400 dark:border-zinc-500 ring-1 ring-zinc-300 dark:ring-zinc-600"
-            : "border-zinc-200 dark:border-zinc-700",
+            ? "border-v2-ring-strong  ring-1 ring-v2-ring "
+            : "border-v2-ring",
           disabled && "opacity-50 cursor-not-allowed",
         )}
       >
         {values.map((email) => (
           <Badge
             key={email}
-            className="h-5 text-[10px] gap-1 pr-1 shrink-0 bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 border-0"
+            className="h-5 text-[10px] gap-1 pr-1 shrink-0 bg-v2-ring text-v2-ink-muted border-0"
           >
             <span className="max-w-[150px] truncate">{email}</span>
             {!disabled && (
@@ -705,7 +705,7 @@ function RecipientField({
                   e.stopPropagation();
                   onRemove(email);
                 }}
-                className="hover:bg-zinc-300 dark:hover:bg-zinc-600 rounded-full p-0.5"
+                className="hover:bg-v2-ring-strong  rounded-full p-0.5"
               >
                 <X className="h-2.5 w-2.5" />
               </button>
@@ -719,7 +719,7 @@ function RecipientField({
               e.stopPropagation();
               onOpenContacts();
             }}
-            className="text-[11px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
+            className="text-[11px] text-v2-ink-muted hover:text-v2-ink"
           >
             Click to add from contacts →
           </button>

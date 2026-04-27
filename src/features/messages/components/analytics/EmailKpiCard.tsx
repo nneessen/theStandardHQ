@@ -11,7 +11,7 @@ interface EmailKpiCardProps {
 
 export function EmailKpiCard({ data }: EmailKpiCardProps) {
   return (
-    <Card className="border-zinc-200 dark:border-zinc-800">
+    <Card className="border-v2-ring">
       <CardContent className="p-3">
         {/* Header */}
         <div className="flex items-center justify-between mb-2">
@@ -19,7 +19,7 @@ export function EmailKpiCard({ data }: EmailKpiCardProps) {
             <div className="h-6 w-6 rounded bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center">
               <Mail className="h-3 w-3 text-blue-500" />
             </div>
-            <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+            <span className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
               Email
             </span>
           </div>
@@ -27,31 +27,29 @@ export function EmailKpiCard({ data }: EmailKpiCardProps) {
 
         {/* Main Metric */}
         <div className="mb-2">
-          <p className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <p className="text-lg font-semibold text-v2-ink">
             {data?.totalSent ?? 0}
           </p>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
-            emails sent
-          </p>
+          <p className="text-[10px] text-v2-ink-muted">emails sent</p>
         </div>
 
         {/* Sub Metrics */}
-        <div className="space-y-1 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+        <div className="space-y-1 pt-2 border-t border-v2-ring/60">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+            <span className="text-[10px] text-v2-ink-muted flex items-center gap-1">
               <TrendingUp className="h-2.5 w-2.5" />
               Open rate
             </span>
-            <span className="text-[10px] font-medium text-zinc-700 dark:text-zinc-300">
+            <span className="text-[10px] font-medium text-v2-ink-muted">
               {data?.openRate ?? 0}%
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+            <span className="text-[10px] text-v2-ink-muted flex items-center gap-1">
               <MousePointer className="h-2.5 w-2.5" />
               Click rate
             </span>
-            <span className="text-[10px] font-medium text-zinc-700 dark:text-zinc-300">
+            <span className="text-[10px] font-medium text-v2-ink-muted">
               {data?.clickRate ?? 0}%
             </span>
           </div>

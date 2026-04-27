@@ -57,7 +57,7 @@ export function SlackSidebar({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-32">
-        <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -65,7 +65,7 @@ export function SlackSidebar({
   return (
     <div className="flex flex-col h-full">
       {/* Workspace selector / name */}
-      <div className="px-2 py-2 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="px-2 py-2 border-b border-v2-ring">
         <div className="flex items-center justify-between gap-1">
           {integrations.length > 1 ? (
             <Select
@@ -88,7 +88,7 @@ export function SlackSidebar({
               </SelectContent>
             </Select>
           ) : (
-            <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+            <span className="text-[11px] font-semibold text-v2-ink truncate">
               {selectedWorkspace?.team_name || "Slack"}
             </span>
           )}
@@ -108,7 +108,7 @@ export function SlackSidebar({
         <div>
           <button
             onClick={() => setChannelsExpanded(!channelsExpanded)}
-            className="w-full flex items-center gap-1 px-1.5 py-1 text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide hover:text-zinc-700 dark:hover:text-zinc-300"
+            className="w-full flex items-center gap-1 px-1.5 py-1 text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide hover:text-v2-ink"
           >
             {channelsExpanded ? (
               <ChevronDown className="h-3 w-3" />
@@ -146,7 +146,7 @@ export function SlackSidebar({
 
               {publicChannels.length === 0 && privateChannels.length === 0 && (
                 <div className="px-2 py-3 text-center">
-                  <p className="text-[10px] text-zinc-400">
+                  <p className="text-[10px] text-v2-ink-subtle">
                     No channels joined
                   </p>
                 </div>
@@ -158,7 +158,7 @@ export function SlackSidebar({
         {/* Other channels (not joined) */}
         {otherChannels.length > 0 && (
           <div>
-            <div className="px-1.5 py-1 text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+            <div className="px-1.5 py-1 text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
               Browse Channels
             </div>
             <div className="space-y-0.5 mt-0.5 max-h-32 overflow-auto">
@@ -172,7 +172,7 @@ export function SlackSidebar({
                 />
               ))}
               {otherChannels.length > 10 && (
-                <p className="px-2 py-1 text-[9px] text-zinc-400">
+                <p className="px-2 py-1 text-[9px] text-v2-ink-subtle">
                   +{otherChannels.length - 10} more
                 </p>
               )}
@@ -207,8 +207,8 @@ function ChannelItem({
         isSelected
           ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium"
           : dimmed
-            ? "text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-            : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+            ? "text-v2-ink-subtle hover:text-v2-ink-muted dark:hover:text-v2-ink-subtle hover:bg-v2-canvas"
+            : "text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink hover:bg-v2-canvas",
       )}
     >
       {isPrivate ? (

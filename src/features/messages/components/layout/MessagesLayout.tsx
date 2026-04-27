@@ -26,7 +26,7 @@ export function MessagesLayout({ list, detail }: MessagesLayoutProps) {
         width={emailSidebar.width}
         isResizing={emailSidebar.isResizing}
         onMouseDown={emailSidebar.handleMouseDown}
-        className="overflow-hidden bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800"
+        className="overflow-hidden bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft"
       >
         <div className="h-full overflow-auto">{list}</div>
       </ResizablePanel>

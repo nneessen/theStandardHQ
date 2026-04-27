@@ -103,7 +103,7 @@ export function EmailSettingsPanel() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-40">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -112,10 +112,10 @@ export function EmailSettingsPanel() {
 
   return (
     <div className="space-y-4 max-w-2xl">
-      <Card className="border-zinc-200 dark:border-zinc-800">
+      <Card className="border-v2-ring">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Mail className="h-4 w-4 text-zinc-500" />
+            <Mail className="h-4 w-4 text-v2-ink-muted" />
             Email Digest Settings
           </CardTitle>
         </CardHeader>
@@ -127,7 +127,7 @@ export function EmailSettingsPanel() {
                 control={form.control}
                 name="email_digest_enabled"
                 render={({ field }) => (
-                  <FormItem className="flex items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 p-3">
+                  <FormItem className="flex items-center justify-between rounded-lg border border-v2-ring p-3">
                     <div>
                       <FormLabel className="text-[11px] font-medium">
                         Email Digest

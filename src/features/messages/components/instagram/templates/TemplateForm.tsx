@@ -222,7 +222,7 @@ export function TemplateForm({
                           ? "text-red-500"
                           : contentLength > MAX_CONTENT_LENGTH * 0.9
                             ? "text-yellow-500"
-                            : "text-zinc-400"
+                            : "text-v2-ink-subtle"
                       }`}
                     >
                       {contentLength}/{MAX_CONTENT_LENGTH}
@@ -273,7 +273,7 @@ export function TemplateForm({
                       {/* Custom categories */}
                       {customCategories.length > 0 && (
                         <>
-                          <div className="px-2 py-1 text-[10px] font-medium text-zinc-400 uppercase tracking-wide">
+                          <div className="px-2 py-1 text-[10px] font-medium text-v2-ink-subtle uppercase tracking-wide">
                             Custom
                           </div>
                           {customCategories.map((cat) => (

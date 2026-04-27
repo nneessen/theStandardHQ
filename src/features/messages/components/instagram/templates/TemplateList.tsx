@@ -66,7 +66,7 @@ export function TemplateList({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-40">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -74,11 +74,9 @@ export function TemplateList({
   if (templates.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-40 text-center">
-        <MessageSquare className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-2" />
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-          No templates found
-        </p>
-        <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
+        <MessageSquare className="h-8 w-8 text-v2-ink-subtle mb-2" />
+        <p className="text-[11px] text-v2-ink-muted">No templates found</p>
+        <p className="text-[10px] text-v2-ink-subtle">
           {canEdit
             ? "Create a template to get started"
             : "No templates match your filter criteria"}
@@ -92,23 +90,23 @@ export function TemplateList({
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400 h-8">
+            <TableHead className="text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted h-8">
               Name
             </TableHead>
-            <TableHead className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400 h-8">
+            <TableHead className="text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted h-8">
               Content
             </TableHead>
-            <TableHead className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400 h-8 w-24">
+            <TableHead className="text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted h-8 w-24">
               Type
             </TableHead>
-            <TableHead className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400 h-8 w-20">
+            <TableHead className="text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted h-8 w-20">
               Stage
             </TableHead>
-            <TableHead className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400 h-8 w-16 text-right">
+            <TableHead className="text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted h-8 w-16 text-right">
               Uses
             </TableHead>
             {canEdit && (
-              <TableHead className="text-[10px] font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400 h-8 w-20">
+              <TableHead className="text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted h-8 w-20">
                 Actions
               </TableHead>
             )}
@@ -116,17 +114,14 @@ export function TemplateList({
         </TableHeader>
         <TableBody>
           {templates.map((template) => (
-            <TableRow
-              key={template.id}
-              className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-            >
-              <TableCell className="py-2 text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+            <TableRow key={template.id} className="hover:bg-v2-canvas">
+              <TableCell className="py-2 text-[11px] font-medium text-v2-ink-muted">
                 {template.name}
               </TableCell>
-              <TableCell className="py-2 text-[11px] text-zinc-500 dark:text-zinc-400 max-w-xs">
+              <TableCell className="py-2 text-[11px] text-v2-ink-muted max-w-xs">
                 {truncate(template.content)}
               </TableCell>
-              <TableCell className="py-2 text-[11px] text-zinc-600 dark:text-zinc-400">
+              <TableCell className="py-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 {template.category
                   ? getCategoryLabel(template.category, customCategories)
                   : "-"}
@@ -142,10 +137,10 @@ export function TemplateList({
                     ] || template.message_stage}
                   </Badge>
                 ) : (
-                  <span className="text-[11px] text-zinc-400">-</span>
+                  <span className="text-[11px] text-v2-ink-subtle">-</span>
                 )}
               </TableCell>
-              <TableCell className="py-2 text-[11px] text-zinc-500 dark:text-zinc-400 text-right tabular-nums">
+              <TableCell className="py-2 text-[11px] text-v2-ink-muted text-right tabular-nums">
                 {template.use_count || 0}
               </TableCell>
               {canEdit && (

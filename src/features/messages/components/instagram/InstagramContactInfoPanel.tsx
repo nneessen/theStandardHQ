@@ -95,9 +95,9 @@ export function InstagramContactInfoPanel({
     return (
       <button
         onClick={() => setIsExpanded(true)}
-        className="w-full flex items-center justify-between px-3 py-1.5 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+        className="w-full flex items-center justify-between px-3 py-1.5 bg-v2-canvas border-b border-v2-ring hover:bg-v2-ring dark:hover:bg-v2-ring transition-colors"
       >
-        <div className="flex items-center gap-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+        <div className="flex items-center gap-2 text-[10px] text-v2-ink-muted">
           {hasContactInfo ? (
             <>
               {conversation.participant_email && (
@@ -125,31 +125,31 @@ export function InstagramContactInfoPanel({
             <span className="italic">Add contact info</span>
           )}
         </div>
-        <ChevronDown className="h-3 w-3 text-zinc-400" />
+        <ChevronDown className="h-3 w-3 text-v2-ink-subtle" />
       </button>
     );
   }
 
   // Expanded state - show form
   return (
-    <div className="px-3 py-2 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-700 space-y-2">
+    <div className="px-3 py-2 bg-v2-canvas border-b border-v2-ring space-y-2">
       {/* Header with collapse button */}
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-medium text-zinc-600 dark:text-zinc-400">
+        <span className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
           Contact Info
         </span>
         <button
           onClick={() => setIsExpanded(false)}
-          className="p-0.5 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded"
+          className="p-0.5 hover:bg-v2-ring dark:hover:bg-v2-card-dark rounded"
         >
-          <ChevronUp className="h-3 w-3 text-zinc-400" />
+          <ChevronUp className="h-3 w-3 text-v2-ink-subtle" />
         </button>
       </div>
 
       {/* Email and Phone row */}
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-0.5">
-          <label className="text-[9px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+          <label className="text-[9px] text-v2-ink-muted flex items-center gap-1">
             <Mail className="h-2.5 w-2.5" />
             Email
           </label>
@@ -162,7 +162,7 @@ export function InstagramContactInfoPanel({
           />
         </div>
         <div className="space-y-0.5">
-          <label className="text-[9px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+          <label className="text-[9px] text-v2-ink-muted flex items-center gap-1">
             <Phone className="h-2.5 w-2.5" />
             Phone
           </label>
@@ -178,7 +178,7 @@ export function InstagramContactInfoPanel({
 
       {/* Notes row */}
       <div className="space-y-0.5">
-        <label className="text-[9px] text-zinc-500 dark:text-zinc-400 flex items-center gap-1">
+        <label className="text-[9px] text-v2-ink-muted flex items-center gap-1">
           <FileText className="h-2.5 w-2.5" />
           Notes
         </label>
@@ -203,7 +203,7 @@ export function InstagramContactInfoPanel({
             variant={hasChanges ? "default" : "ghost"}
             className={cn(
               "h-5 text-[9px] px-2",
-              !hasChanges && "text-zinc-400",
+              !hasChanges && "text-v2-ink-subtle",
             )}
             onClick={handleSave}
             disabled={!hasChanges || updateContactInfo.isPending}

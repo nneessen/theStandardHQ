@@ -169,37 +169,37 @@ export function ContactBrowser({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-[320px] sm:w-[380px] p-0 flex flex-col bg-zinc-50 dark:bg-zinc-950"
+        className="w-[320px] sm:w-[380px] p-0 flex flex-col bg-v2-canvas "
       >
         {/* Header - Zinc styled */}
-        <SheetHeader className="px-3 py-2 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+        <SheetHeader className="px-3 py-2 bg-v2-card border-b border-v2-ring">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-            <SheetTitle className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <Users className="h-4 w-4 text-v2-ink" />
+            <SheetTitle className="text-sm font-semibold text-v2-ink">
               Team Contacts
             </SheetTitle>
           </div>
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+          <p className="text-[10px] text-v2-ink-muted">
             {total} contact{total !== 1 ? "s" : ""} available
           </p>
         </SheetHeader>
 
         {/* Search - Compact */}
-        <div className="px-3 py-2 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="px-3 py-2 bg-v2-card border-b border-v2-ring">
           <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400" />
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
             <Input
               ref={searchInputRef}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name or email..."
-              className="pl-7 h-7 text-[11px] bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+              className="pl-7 h-7 text-[11px] bg-v2-canvas border-v2-ring"
             />
           </div>
         </div>
 
         {/* Tabs - Compact zinc style */}
-        <div className="flex gap-0.5 p-1.5 bg-zinc-100/50 dark:bg-zinc-800/50 mx-2 mt-2 rounded-md">
+        <div className="flex gap-0.5 p-1.5 bg-v2-ring/50 dark:bg-v2-ring/50 mx-2 mt-2 rounded-md">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -210,8 +210,8 @@ export function ContactBrowser({
                 className={cn(
                   "flex-1 flex items-center justify-center gap-1 py-1.5 px-2 text-[10px] font-medium rounded transition-all",
                   isActive
-                    ? "bg-white dark:bg-zinc-900 shadow-sm text-zinc-900 dark:text-zinc-100"
-                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300",
+                    ? "bg-v2-card shadow-sm text-v2-ink"
+                    : "text-v2-ink-muted hover:text-v2-ink",
                 )}
               >
                 <Icon className="h-3 w-3" />
@@ -223,12 +223,12 @@ export function ContactBrowser({
 
         {/* Filters - Only when relevant */}
         {(activeTab === "all" || activeTab === "team") && roles.length > 0 && (
-          <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800">
+          <div className="px-3 py-2 border-b border-v2-ring">
             <Select
               value={roleFilter || "all"}
               onValueChange={(v) => setRoleFilter(v === "all" ? undefined : v)}
             >
-              <SelectTrigger className="h-6 text-[10px] bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-700">
+              <SelectTrigger className="h-6 text-[10px] bg-v2-card border-v2-ring">
                 <SelectValue placeholder="Filter by role" />
               </SelectTrigger>
               <SelectContent>
@@ -251,15 +251,15 @@ export function ContactBrowser({
 
         {/* Add Entire Team button - only on My Team tab */}
         {activeTab === "team" && total > 0 && (
-          <div className="px-3 py-1.5 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+          <div className="px-3 py-1.5 border-b border-v2-ring bg-v2-card">
             <button
               onClick={handleAddAll}
               disabled={isAddingAll}
               className={cn(
                 "flex items-center gap-1.5 px-2 py-1 text-[10px] font-medium rounded transition-colors w-full justify-center",
                 isAddingAll
-                  ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-400 cursor-not-allowed"
-                  : "bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300",
+                  ? "bg-v2-ring text-v2-ink-subtle cursor-not-allowed"
+                  : "bg-v2-ring hover:bg-v2-ring dark:hover:bg-v2-card-dark text-v2-ink-muted",
               )}
             >
               {isAddingAll ? (
@@ -279,14 +279,14 @@ export function ContactBrowser({
 
         {/* Add All Users button - only on All Users tab (super-admin only) */}
         {activeTab === "all_users" && total > 0 && (
-          <div className="px-3 py-1.5 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+          <div className="px-3 py-1.5 border-b border-v2-ring bg-v2-card">
             <button
               onClick={handleAddAllUsersClick}
               disabled={isAddingAll}
               className={cn(
                 "flex items-center gap-1.5 px-2 py-1 text-[10px] font-medium rounded transition-colors w-full justify-center",
                 isAddingAll
-                  ? "bg-zinc-200 dark:bg-zinc-700 text-zinc-400 cursor-not-allowed"
+                  ? "bg-v2-ring text-v2-ink-subtle cursor-not-allowed"
                   : "bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700",
               )}
             >
@@ -327,7 +327,7 @@ export function ContactBrowser({
         </ScrollArea>
 
         {/* Pagination - ALWAYS visible */}
-        <div className="px-3 py-2 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800">
+        <div className="px-3 py-2 bg-v2-card border-t border-v2-ring">
           <div className="flex items-center justify-between text-[10px]">
             <button
               onClick={prevPage}
@@ -335,14 +335,14 @@ export function ContactBrowser({
               className={cn(
                 "flex items-center gap-1 px-2 py-1 rounded transition-colors",
                 page === 1
-                  ? "text-zinc-300 dark:text-zinc-600 cursor-not-allowed"
-                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                  ? "text-v2-ink-subtle cursor-not-allowed"
+                  : "text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-ring dark:hover:bg-v2-ring",
               )}
             >
               <ChevronLeft className="h-3 w-3" />
               Prev
             </button>
-            <span className="text-zinc-500 dark:text-zinc-400">
+            <span className="text-v2-ink-muted">
               {total > 0 ? (
                 <>
                   {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, total)}{" "}
@@ -358,8 +358,8 @@ export function ContactBrowser({
               className={cn(
                 "flex items-center gap-1 px-2 py-1 rounded transition-colors",
                 !hasMore
-                  ? "text-zinc-300 dark:text-zinc-600 cursor-not-allowed"
-                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800",
+                  ? "text-v2-ink-subtle cursor-not-allowed"
+                  : "text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-ring dark:hover:bg-v2-ring",
               )}
             >
               Next
@@ -370,14 +370,17 @@ export function ContactBrowser({
 
         {/* Loading overlay for fetching */}
         {isFetching && !isLoading && (
-          <div className="absolute inset-0 bg-zinc-50/50 dark:bg-zinc-950/50 flex items-center justify-center pointer-events-none">
-            <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
+          <div className="absolute inset-0 bg-v2-canvas/50 /50 flex items-center justify-center pointer-events-none">
+            <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
           </div>
         )}
       </SheetContent>
 
       {/* Confirmation dialog for Add All Users */}
-      <AlertDialog open={showAllUsersConfirm} onOpenChange={setShowAllUsersConfirm}>
+      <AlertDialog
+        open={showAllUsersConfirm}
+        onOpenChange={setShowAllUsersConfirm}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Add All Users?</AlertDialogTitle>
@@ -385,7 +388,7 @@ export function ContactBrowser({
               <div>
                 <p>
                   You are about to add{" "}
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                  <span className="font-semibold text-v2-ink">
                     {total} users
                   </span>{" "}
                   as recipients.
@@ -421,14 +424,14 @@ function LoadingSkeleton() {
       {[...Array(5)].map((_, i) => (
         <div
           key={i}
-          className="flex items-center gap-2 px-2 py-1.5 rounded bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800"
+          className="flex items-center gap-2 px-2 py-1.5 rounded bg-v2-card border border-v2-ring/60"
         >
-          <div className="h-5 w-5 rounded bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+          <div className="h-5 w-5 rounded bg-v2-ring animate-pulse" />
           <div className="flex-1 space-y-1">
-            <div className="h-3 w-24 rounded bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
-            <div className="h-2.5 w-32 rounded bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+            <div className="h-3 w-24 rounded bg-v2-ring animate-pulse" />
+            <div className="h-2.5 w-32 rounded bg-v2-ring animate-pulse" />
           </div>
-          <div className="h-4 w-12 rounded bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+          <div className="h-4 w-12 rounded bg-v2-ring animate-pulse" />
         </div>
       ))}
     </div>
@@ -460,7 +463,7 @@ function EmptyState({
   const getIcon = () => {
     switch (activeTab) {
       case "all_users":
-        return <Globe className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-2 mx-auto" />;
+        return <Globe className="h-8 w-8 text-v2-ink-subtle mb-2 mx-auto" />;
       default:
         return null;
     }
@@ -469,16 +472,14 @@ function EmptyState({
   return (
     <div className="text-center py-8">
       {getIcon()}
-      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
-        {getMessage()}
-      </p>
+      <p className="text-[11px] text-v2-ink-muted">{getMessage()}</p>
       {activeTab === "favorites" && search.length < 2 && (
-        <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">
+        <p className="text-[10px] text-v2-ink-subtle mt-1">
           Click the star icon on any contact to add favorites
         </p>
       )}
       {activeTab === "team" && search.length < 2 && (
-        <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1">
+        <p className="text-[10px] text-v2-ink-subtle mt-1">
           Your downlines will appear here
         </p>
       )}
@@ -505,8 +506,8 @@ function ContactRow({
       onClick={onClick}
       className={cn(
         "flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer group",
-        "bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800",
-        "border border-zinc-100 dark:border-zinc-800 hover:border-zinc-200 dark:hover:border-zinc-700",
+        "bg-v2-card hover:bg-v2-canvas",
+        "border border-v2-ring/60 hover:border-v2-ring ",
         "transition-all",
       )}
     >
@@ -516,24 +517,24 @@ function ContactRow({
           e.stopPropagation();
           onClick();
         }}
-        className="p-1 rounded bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 shrink-0 transition-colors"
+        className="p-1 rounded bg-v2-ring hover:bg-v2-ring dark:hover:bg-v2-card-dark text-v2-ink-muted dark:text-v2-ink-subtle shrink-0 transition-colors"
       >
         <Plus className="h-3 w-3" />
       </button>
 
       {/* Name and email */}
       <div className="flex-1 min-w-0">
-        <span className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100 truncate block">
+        <span className="text-[11px] font-medium text-v2-ink truncate block">
           {contact.name}
         </span>
-        <span className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate block">
+        <span className="text-[10px] text-v2-ink-muted truncate block">
           {contact.email}
         </span>
       </div>
 
       {/* Role badge */}
       {contact.role && (
-        <Badge className="h-4 text-[9px] px-1 shrink-0 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-0">
+        <Badge className="h-4 text-[9px] px-1 shrink-0 bg-v2-ring text-v2-ink-muted dark:text-v2-ink-subtle border-0">
           {contact.role.slice(0, 8)}
         </Badge>
       )}
@@ -546,7 +547,7 @@ function ContactRow({
           "p-1 rounded shrink-0 transition-all",
           contact.isFavorite
             ? "text-amber-500 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50"
-            : "text-zinc-300 dark:text-zinc-600 hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30",
+            : "text-v2-ink-subtle hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30",
         )}
         title={
           contact.isFavorite ? "Remove from favorites" : "Add to favorites"

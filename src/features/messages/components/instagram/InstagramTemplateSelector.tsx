@@ -23,10 +23,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
-import {
-  useInstagramTemplates,
-  useInstagramTemplateCategories,
-} from "@/hooks";
+import { useInstagramTemplates, useInstagramTemplateCategories } from "@/hooks";
 import {
   MESSAGE_STAGE_LABELS,
   PROSPECT_TYPE_LABELS,
@@ -179,7 +176,7 @@ export function InstagramTemplateSelector({
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-[900px] h-[600px] p-0 gap-0 overflow-hidden">
           {/* Header */}
-          <DialogHeader className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+          <DialogHeader className="px-4 py-3 border-b border-v2-ring">
             <DialogTitle className="text-sm font-semibold">
               Select Message Template
             </DialogTitle>
@@ -194,12 +191,12 @@ export function InstagramTemplateSelector({
             />
 
             {/* Right panel - Template browser */}
-            <div className="flex-1 flex flex-col min-w-0 border-l border-zinc-200 dark:border-zinc-800">
+            <div className="flex-1 flex flex-col min-w-0 border-l border-v2-ring">
               {/* Filters row */}
-              <div className="px-3 py-2 border-b border-zinc-200 dark:border-zinc-800 space-y-2">
+              <div className="px-3 py-2 border-b border-v2-ring space-y-2">
                 {/* Search */}
                 <div className="relative">
-                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-v2-ink-subtle" />
                   <Input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -276,8 +273,8 @@ export function InstagramTemplateSelector({
                       recentlyUsed.length > 0 && (
                         <div className="mb-4">
                           <div className="flex items-center gap-1.5 px-2 py-1 mb-1">
-                            <Clock className="h-3 w-3 text-zinc-400" />
-                            <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+                            <Clock className="h-3 w-3 text-v2-ink-subtle" />
+                            <span className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
                               Recently Used
                             </span>
                           </div>
@@ -311,8 +308,8 @@ export function InstagramTemplateSelector({
               </ScrollArea>
 
               {/* Footer with count */}
-              <div className="px-3 py-2 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+              <div className="px-3 py-2 border-t border-v2-ring bg-v2-canvas dark:bg-v2-card-dark/50">
+                <p className="text-[10px] text-v2-ink-muted">
                   {filteredTemplates.length} of {templates.length} templates
                   {search && ` matching "${search}"`}
                 </p>
@@ -340,10 +337,10 @@ function ConversationContextPanel({
 }: ConversationContextPanelProps): ReactNode {
   if (!conversation) {
     return (
-      <div className="w-[280px] bg-zinc-50 dark:bg-zinc-900/50 p-4 flex items-center justify-center">
+      <div className="w-[280px] bg-v2-canvas dark:bg-v2-card-dark/50 p-4 flex items-center justify-center">
         <div className="text-center">
-          <User className="h-8 w-8 mx-auto text-zinc-300 dark:text-zinc-600 mb-2" />
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+          <User className="h-8 w-8 mx-auto text-v2-ink-subtle mb-2" />
+          <p className="text-[11px] text-v2-ink-muted">
             No conversation selected
           </p>
         </div>
@@ -361,9 +358,9 @@ function ConversationContextPanel({
   const contextMessages = recentMessages.slice(0, 5);
 
   return (
-    <div className="w-[280px] bg-zinc-50 dark:bg-zinc-900/50 flex flex-col">
+    <div className="w-[280px] bg-v2-canvas dark:bg-v2-card-dark/50 flex flex-col">
       {/* Contact header */}
-      <div className="p-3 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="p-3 border-b border-v2-ring">
         <div className="flex items-center gap-2">
           <Avatar className="h-10 w-10">
             <AvatarImage
@@ -375,14 +372,14 @@ function ConversationContextPanel({
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+            <p className="text-[12px] font-semibold text-v2-ink truncate">
               {conversation.participant_username
                 ? `@${conversation.participant_username}`
                 : displayName}
             </p>
             {conversation.participant_name &&
               conversation.participant_username && (
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+                <p className="text-[10px] text-v2-ink-muted truncate">
                   {conversation.participant_name}
                 </p>
               )}
@@ -392,16 +389,14 @@ function ConversationContextPanel({
 
       {/* Recent messages */}
       <div className="flex-1 overflow-auto p-2">
-        <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide px-1 mb-2">
+        <p className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide px-1 mb-2">
           Recent Messages
         </p>
 
         {contextMessages.length === 0 ? (
           <div className="text-center py-4">
-            <MessageSquare className="h-6 w-6 mx-auto text-zinc-300 dark:text-zinc-600 mb-1" />
-            <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
-              No messages yet
-            </p>
+            <MessageSquare className="h-6 w-6 mx-auto text-v2-ink-subtle mb-1" />
+            <p className="text-[10px] text-v2-ink-subtle">No messages yet</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -411,14 +406,14 @@ function ConversationContextPanel({
                 className={cn(
                   "p-2 rounded-lg text-[11px]",
                   message.isOutbound
-                    ? "bg-zinc-200 dark:bg-zinc-700 ml-4"
-                    : "bg-white dark:bg-zinc-800 mr-4 border border-zinc-200 dark:border-zinc-700",
+                    ? "bg-v2-ring ml-4"
+                    : "bg-v2-card mr-4 border border-v2-ring",
                 )}
               >
-                <p className="text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words">
+                <p className="text-v2-ink-muted whitespace-pre-wrap break-words">
                   {message.message_text || "[Media]"}
                 </p>
-                <p className="text-[9px] text-zinc-400 dark:text-zinc-500 mt-1">
+                <p className="text-[9px] text-v2-ink-subtle mt-1">
                   {message.sent_at
                     ? formatDistanceToNow(new Date(message.sent_at), {
                         addSuffix: true,
@@ -432,8 +427,8 @@ function ConversationContextPanel({
       </div>
 
       {/* Context hint */}
-      <div className="p-2 border-t border-zinc-200 dark:border-zinc-800">
-        <p className="text-[9px] text-zinc-400 dark:text-zinc-500 text-center">
+      <div className="p-2 border-t border-v2-ring">
+        <p className="text-[9px] text-v2-ink-subtle text-center">
           Choose a template that matches the conversation
         </p>
       </div>
@@ -466,8 +461,8 @@ function FilterChip({
       className={cn(
         "px-2 py-0.5 rounded text-[10px] font-medium transition-colors",
         active
-          ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-          : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700",
+          ? "bg-v2-card-dark text-white dark:bg-v2-ring dark:text-v2-ink"
+          : "bg-v2-ring text-v2-ink-muted hover:bg-v2-ring dark:text-v2-ink-subtle dark:hover:bg-v2-card-dark",
       )}
     >
       {children}
@@ -511,8 +506,8 @@ function StageChip({
         active
           ? stage
             ? stageColors[stage]
-            : "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-          : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-500 dark:hover:bg-zinc-700",
+            : "bg-v2-card-dark text-white dark:bg-v2-ring dark:text-v2-ink"
+          : "bg-v2-ring text-v2-ink-muted hover:bg-v2-ring dark:text-v2-ink-muted dark:hover:bg-v2-card-dark",
       )}
     >
       {children}
@@ -558,17 +553,17 @@ function TemplateCard({
       onClick={() => onSelect(template)}
       className={cn(
         "w-full text-left p-3 rounded-lg border transition-all",
-        "border-zinc-200 dark:border-zinc-700",
-        "bg-white dark:bg-zinc-800",
-        "hover:border-zinc-400 dark:hover:border-zinc-500",
+        "border-v2-ring",
+        "bg-v2-card",
+        "hover:border-v2-ring-strong ",
         "hover:shadow-sm",
-        "focus:outline-none focus:ring-2 focus:ring-zinc-400/50",
+        "focus:outline-none focus:ring-2 focus:ring-v2-accent/50",
       )}
     >
       {/* Header row */}
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100 truncate">
+          <p className="text-[11px] font-semibold text-v2-ink truncate">
             {template.name}
           </p>
         </div>
@@ -586,7 +581,7 @@ function TemplateCard({
             </span>
           )}
           {categoryLabel && (
-            <span className="text-[9px] px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-700 text-zinc-500 dark:text-zinc-400 rounded">
+            <span className="text-[9px] px-1.5 py-0.5 bg-v2-ring dark:bg-v2-card-dark text-v2-ink-muted rounded">
               {categoryLabel}
             </span>
           )}
@@ -596,7 +591,7 @@ function TemplateCard({
       {/* Content preview - show full content */}
       <p
         className={cn(
-          "text-[11px] text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap break-words",
+          "text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle whitespace-pre-wrap break-words",
           variant === "compact" ? "line-clamp-2" : "line-clamp-4",
         )}
       >
@@ -605,17 +600,15 @@ function TemplateCard({
 
       {/* Footer - use stats */}
       {(template.use_count ?? 0) > 0 && (
-        <div className="flex items-center gap-1 mt-2 pt-1.5 border-t border-zinc-100 dark:border-zinc-700/50">
-          <TrendingUp className="h-3 w-3 text-zinc-400" />
-          <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
+        <div className="flex items-center gap-1 mt-2 pt-1.5 border-t border-v2-ring/60 /50">
+          <TrendingUp className="h-3 w-3 text-v2-ink-subtle" />
+          <span className="text-[9px] text-v2-ink-subtle">
             Used {template.use_count} time{template.use_count !== 1 ? "s" : ""}
           </span>
           {template.last_used_at && (
             <>
-              <span className="text-[9px] text-zinc-300 dark:text-zinc-600">
-                •
-              </span>
-              <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
+              <span className="text-[9px] text-v2-ink-subtle">•</span>
+              <span className="text-[9px] text-v2-ink-subtle">
                 Last{" "}
                 {formatDistanceToNow(new Date(template.last_used_at), {
                   addSuffix: true,
@@ -642,11 +635,11 @@ function EmptyState({ type, search }: EmptyStateProps): ReactNode {
   if (type === "no-templates") {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-        <MessageSquare className="h-10 w-10 text-zinc-300 dark:text-zinc-600 mb-3" />
-        <p className="text-[12px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+        <MessageSquare className="h-10 w-10 text-v2-ink-subtle mb-3" />
+        <p className="text-[12px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-1">
           No templates yet
         </p>
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-500">
+        <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-muted">
           Create templates in Settings → Instagram Templates
         </p>
       </div>
@@ -655,11 +648,11 @@ function EmptyState({ type, search }: EmptyStateProps): ReactNode {
 
   return (
     <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-      <Search className="h-10 w-10 text-zinc-300 dark:text-zinc-600 mb-3" />
-      <p className="text-[12px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+      <Search className="h-10 w-10 text-v2-ink-subtle mb-3" />
+      <p className="text-[12px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-1">
         No templates found
       </p>
-      <p className="text-[11px] text-zinc-500 dark:text-zinc-500">
+      <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-muted">
         {search
           ? `No templates match "${search}"`
           : "Try adjusting your filters"}

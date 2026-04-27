@@ -58,10 +58,10 @@ export function InstagramWindowIndicator({
       case "closed":
         return {
           icon: XCircle,
-          color: "text-zinc-500 dark:text-zinc-400",
-          bgColor: "bg-zinc-100 dark:bg-zinc-800",
-          borderColor: "border-zinc-200 dark:border-zinc-700",
-          dotColor: "bg-zinc-400",
+          color: "text-v2-ink-muted",
+          bgColor: "bg-v2-ring",
+          borderColor: "border-v2-ring",
+          dotColor: "bg-v2-ring-strong",
           label: "Window closed",
           shortLabel: "Closed",
         };
@@ -74,13 +74,13 @@ export function InstagramWindowIndicator({
   const tooltipContent = (
     <div className="max-w-xs space-y-1">
       <p className="font-medium text-[11px]">Instagram 24-Hour Window</p>
-      <p className="text-[10px] text-zinc-400">
+      <p className="text-[10px] text-v2-ink-subtle">
         {status === "closed"
           ? "You can only send messages within 24 hours of the user's last message. Wait for them to message you first."
           : "You can reply to this conversation until the window closes. After that, wait for the user to message you."}
       </p>
       {canReplyUntil && status !== "closed" && (
-        <p className="text-[10px] text-zinc-400">
+        <p className="text-[10px] text-v2-ink-subtle">
           Expires:{" "}
           {new Date(canReplyUntil).toLocaleString(undefined, {
             month: "short",

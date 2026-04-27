@@ -29,10 +29,7 @@ import {
   selectWindowTimeRemaining,
   formatTimeRemaining,
 } from "@/lib/instagram";
-import {
-  useScheduleInstagramMessage,
-  useInstagramTemplates,
-} from "@/hooks";
+import { useScheduleInstagramMessage, useInstagramTemplates } from "@/hooks";
 import type {
   InstagramConversation,
   InstagramScheduledMessage,
@@ -239,7 +236,7 @@ export function InstagramScheduleDialog({
                     ? "text-red-500 font-medium"
                     : charCount > MAX_CHARS * 0.9
                       ? "text-amber-500"
-                      : "text-zinc-400",
+                      : "text-v2-ink-subtle",
                 )}
               >
                 {charCount}/{MAX_CHARS}
@@ -264,7 +261,7 @@ export function InstagramScheduleDialog({
                 Date
               </Label>
               <div className="relative">
-                <Calendar className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+                <Calendar className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-v2-ink-subtle" />
                 <Input
                   id="date"
                   type="date"
@@ -285,7 +282,7 @@ export function InstagramScheduleDialog({
                 Time
               </Label>
               <div className="relative">
-                <Clock className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400" />
+                <Clock className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-v2-ink-subtle" />
                 <Input
                   id="time"
                   type="time"
@@ -320,7 +317,7 @@ export function InstagramScheduleDialog({
 
           {/* Window info */}
           {windowExpiryFormatted && !isWindowClosingSoon && (
-            <p className="text-[10px] text-zinc-500">
+            <p className="text-[10px] text-v2-ink-muted">
               Messaging window closes: {windowExpiryFormatted}
             </p>
           )}

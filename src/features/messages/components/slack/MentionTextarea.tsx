@@ -257,8 +257,8 @@ export function MentionTextarea({
             <CommandList className="max-h-64">
               {isLoading ? (
                 <div className="flex items-center justify-center py-6">
-                  <Loader2 className="h-4 w-4 animate-spin text-zinc-400" />
-                  <span className="ml-2 text-xs text-zinc-500">
+                  <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
+                  <span className="ml-2 text-xs text-v2-ink-muted">
                     Loading users...
                   </span>
                 </div>
@@ -288,15 +288,15 @@ export function MentionTextarea({
                       >
                         <Avatar className="h-6 w-6 flex-shrink-0">
                           <AvatarImage src={user.profile?.image_48} />
-                          <AvatarFallback className="text-[9px] bg-zinc-200 dark:bg-zinc-700">
+                          <AvatarFallback className="text-[9px] bg-v2-ring">
                             {displayName.slice(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <div className="text-xs font-medium text-zinc-900 dark:text-zinc-100 truncate">
+                          <div className="text-xs font-medium text-v2-ink truncate">
                             {displayName}
                           </div>
-                          <div className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate">
+                          <div className="text-[10px] text-v2-ink-muted truncate">
                             @{username}
                           </div>
                         </div>
@@ -305,7 +305,7 @@ export function MentionTextarea({
                   })}
                 </CommandGroup>
               ) : (
-                <CommandEmpty className="py-6 text-center text-xs text-zinc-500">
+                <CommandEmpty className="py-6 text-center text-xs text-v2-ink-muted">
                   {searchQuery
                     ? `No users found matching "${searchQuery}"`
                     : "No users in this channel"}

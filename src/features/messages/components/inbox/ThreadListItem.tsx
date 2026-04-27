@@ -39,9 +39,8 @@ export function ThreadListItem({
   return (
     <button
       className={cn(
-        "w-full text-left p-2 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors border-b border-zinc-100 dark:border-zinc-800/50",
-        isSelected &&
-          "bg-zinc-100 dark:bg-zinc-800 border-l-2 border-l-blue-500",
+        "w-full text-left p-2 hover:bg-v2-canvas transition-colors border-b border-v2-ring/60",
+        isSelected && "bg-v2-ring border-l-2 border-l-blue-500",
         isUnread && "bg-blue-50/30 dark:bg-blue-900/10",
       )}
       onClick={onClick}
@@ -49,7 +48,7 @@ export function ThreadListItem({
       <div className="flex items-start gap-2">
         {/* Avatar */}
         <Avatar className="h-7 w-7 flex-shrink-0">
-          <AvatarFallback className="text-[10px] bg-zinc-200 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300">
+          <AvatarFallback className="text-[10px] bg-v2-ring text-v2-ink-muted">
             {initials}
           </AvatarFallback>
         </Avatar>
@@ -63,8 +62,8 @@ export function ThreadListItem({
               className={cn(
                 "text-[11px] truncate flex-1",
                 isUnread
-                  ? "font-semibold text-zinc-900 dark:text-zinc-100"
-                  : "font-medium text-zinc-600 dark:text-zinc-400",
+                  ? "font-semibold text-v2-ink"
+                  : "font-medium text-v2-ink-muted dark:text-v2-ink-subtle",
               )}
             >
               {displayName}
@@ -75,14 +74,14 @@ export function ThreadListItem({
               <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 flex-shrink-0" />
             )}
             {hasAttachments && (
-              <Paperclip className="h-3 w-3 text-zinc-400 flex-shrink-0" />
+              <Paperclip className="h-3 w-3 text-v2-ink-subtle flex-shrink-0" />
             )}
             {isAutomated && (
-              <Bot className="h-3 w-3 text-zinc-400 flex-shrink-0" />
+              <Bot className="h-3 w-3 text-v2-ink-subtle flex-shrink-0" />
             )}
 
             {/* Time */}
-            <span className="text-[10px] text-zinc-500 dark:text-zinc-400 flex-shrink-0">
+            <span className="text-[10px] text-v2-ink-muted flex-shrink-0">
               {formatTimeAgo(timeAgo)}
             </span>
           </div>
@@ -92,15 +91,15 @@ export function ThreadListItem({
             className={cn(
               "text-[11px] truncate",
               isUnread
-                ? "font-medium text-zinc-800 dark:text-zinc-200"
-                : "text-zinc-600 dark:text-zinc-400",
+                ? "font-medium text-v2-ink dark:text-v2-ink-subtle"
+                : "text-v2-ink-muted dark:text-v2-ink-subtle",
             )}
           >
             {thread.subject}
           </div>
 
           {/* Preview */}
-          <div className="text-[10px] text-zinc-500 dark:text-zinc-500 truncate mt-0.5">
+          <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-muted truncate mt-0.5">
             {thread.snippet}
           </div>
 
@@ -111,7 +110,7 @@ export function ThreadListItem({
                 <Badge
                   key={label.id}
                   variant="outline"
-                  className="h-4 px-1 text-[9px] border-zinc-300 dark:border-zinc-600"
+                  className="h-4 px-1 text-[9px] border-v2-ring "
                   style={{
                     borderColor: label.color,
                     color: label.color,
@@ -121,7 +120,7 @@ export function ThreadListItem({
                 </Badge>
               ))}
               {thread.labels.length > 3 && (
-                <span className="text-[9px] text-zinc-400 dark:text-zinc-500">
+                <span className="text-[9px] text-v2-ink-subtle">
                   +{thread.labels.length - 3}
                 </span>
               )}
@@ -133,7 +132,7 @@ export function ThreadListItem({
         {thread.messageCount > 1 && (
           <Badge
             variant="secondary"
-            className="h-4 min-w-[16px] px-1 text-[9px] bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 flex-shrink-0"
+            className="h-4 min-w-[16px] px-1 text-[9px] bg-v2-ring text-v2-ink-muted dark:text-v2-ink-subtle flex-shrink-0"
           >
             {thread.messageCount}
           </Badge>

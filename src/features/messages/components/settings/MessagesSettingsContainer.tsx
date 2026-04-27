@@ -22,13 +22,13 @@ export function MessagesSettingsContainer({
   const [activeTab, setActiveTab] = useState<SettingsTab>("email");
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+    <div className="h-full flex flex-col bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+      <div className="px-4 py-3 border-b border-v2-ring">
+        <h2 className="text-sm font-semibold text-v2-ink">
           Messaging Settings
         </h2>
-        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+        <p className="text-[10px] text-v2-ink-muted mt-0.5">
           Configure preferences for each messaging platform
         </p>
       </div>
@@ -39,10 +39,10 @@ export function MessagesSettingsContainer({
         onValueChange={(v) => setActiveTab(v as SettingsTab)}
         className="flex-1 flex flex-col min-h-0"
       >
-        <TabsList className="h-9 px-4 pt-2 bg-transparent border-b border-zinc-200 dark:border-zinc-800 rounded-none justify-start gap-1">
+        <TabsList className="h-9 px-4 pt-2 bg-transparent border-b border-v2-ring rounded-none justify-start gap-1">
           <TabsTrigger
             value="email"
-            className="h-7 px-3 text-[11px] data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none rounded-md"
+            className="h-7 px-3 text-[11px] data-[state=active]:bg-v2-ring dark:data-[state=active]:bg-v2-ring data-[state=active]:shadow-none rounded-md"
           >
             <Mail className="h-3 w-3 mr-1.5" />
             Email
@@ -50,7 +50,7 @@ export function MessagesSettingsContainer({
           {showSlack && (
             <TabsTrigger
               value="slack"
-              className="h-7 px-3 text-[11px] data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none rounded-md"
+              className="h-7 px-3 text-[11px] data-[state=active]:bg-v2-ring dark:data-[state=active]:bg-v2-ring data-[state=active]:shadow-none rounded-md"
             >
               <MessageSquare className="h-3 w-3 mr-1.5" />
               Slack
@@ -59,7 +59,7 @@ export function MessagesSettingsContainer({
           {showInstagram && (
             <TabsTrigger
               value="instagram"
-              className="h-7 px-3 text-[11px] data-[state=active]:bg-zinc-100 dark:data-[state=active]:bg-zinc-800 data-[state=active]:shadow-none rounded-md"
+              className="h-7 px-3 text-[11px] data-[state=active]:bg-v2-ring dark:data-[state=active]:bg-v2-ring data-[state=active]:shadow-none rounded-md"
             >
               <Instagram className="h-3 w-3 mr-1.5" />
               Instagram

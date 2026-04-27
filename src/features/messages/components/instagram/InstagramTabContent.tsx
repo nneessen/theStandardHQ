@@ -142,7 +142,7 @@ function TokenExpiredBanner({
  */
 function TabContentSkeleton(): ReactNode {
   return (
-    <div className="h-full flex items-center justify-center bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="h-full flex items-center justify-center bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
       <div className="text-center">
         <Skeleton className="h-12 w-12 rounded-full mx-auto mb-3" />
         <Skeleton className="h-4 w-32 mx-auto mb-2" />
@@ -238,17 +238,15 @@ function InstagramTabContentInner({
   // Error state
   if (error) {
     return (
-      <div className="h-full flex items-center justify-center bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="h-full flex items-center justify-center bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
         <div className="text-center max-w-sm px-4">
           <div className="mx-auto w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-3">
             <Instagram className="h-5 w-5 text-red-600 dark:text-red-400" />
           </div>
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mb-2">
+          <p className="text-[11px] text-v2-ink-muted mb-2">
             Failed to load Instagram integration
           </p>
-          <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mb-4">
-            {error.message}
-          </p>
+          <p className="text-[10px] text-v2-ink-subtle mb-4">{error.message}</p>
           <Button
             onClick={() => refetch()}
             variant="outline"
@@ -281,7 +279,7 @@ function InstagramTabContentInner({
       <div className="h-full flex flex-col">
         {/* Mobile back button */}
         {onBack && (
-          <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-zinc-900 rounded-t-lg border border-b-0 border-zinc-200 dark:border-zinc-800">
+          <div className="flex items-center gap-2 px-3 py-2 bg-v2-card rounded-t-lg border border-b-0 border-v2-ring">
             <Button
               variant="ghost"
               size="sm"
@@ -295,7 +293,7 @@ function InstagramTabContentInner({
         )}
         {/* Token expired banner above conversation view */}
         {isTokenExpired && (
-          <div className="p-3 bg-white dark:bg-zinc-900 border-x border-zinc-200 dark:border-zinc-800">
+          <div className="p-3 bg-v2-card border-x border-v2-ring">
             <TokenExpiredBanner
               onReconnect={handleConnect}
               isReconnecting={connectInstagram.isPending}
@@ -304,7 +302,7 @@ function InstagramTabContentInner({
         )}
         {/* Token expiring soon warning banner */}
         {isTokenExpiringSoon && daysUntilExpiry !== null && (
-          <div className="p-3 bg-white dark:bg-zinc-900 border-x border-zinc-200 dark:border-zinc-800">
+          <div className="p-3 bg-v2-card border-x border-v2-ring">
             <TokenExpiringSoonBanner
               daysRemaining={daysUntilExpiry}
               onReconnect={handleConnect}
@@ -331,10 +329,10 @@ function InstagramTabContentInner({
 
   // No conversation selected - show empty state
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="h-full flex flex-col bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
       {/* Token expired banner */}
       {isTokenExpired && (
-        <div className="p-3 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="p-3 border-b border-v2-ring">
           <TokenExpiredBanner
             onReconnect={handleConnect}
             isReconnecting={connectInstagram.isPending}
@@ -343,7 +341,7 @@ function InstagramTabContentInner({
       )}
       {/* Token expiring soon warning banner */}
       {isTokenExpiringSoon && daysUntilExpiry !== null && (
-        <div className="p-3 border-b border-zinc-200 dark:border-zinc-800">
+        <div className="p-3 border-b border-v2-ring">
           <TokenExpiringSoonBanner
             daysRemaining={daysUntilExpiry}
             onReconnect={handleConnect}
@@ -367,11 +365,11 @@ function InstagramTabContentInner({
             )}
           </div>
 
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-0.5">
+          <h3 className="text-sm font-semibold text-v2-ink mb-0.5">
             @{integration.instagram_username}
           </h3>
           {integration.instagram_name && (
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mb-3">
+            <p className="text-[11px] text-v2-ink-muted mb-3">
               {integration.instagram_name}
             </p>
           )}
@@ -394,27 +392,27 @@ function InstagramTabContentInner({
           )}
 
           <div className="flex items-center justify-center gap-1 mb-2">
-            <MessageSquare className="h-4 w-4 text-zinc-400" />
+            <MessageSquare className="h-4 w-4 text-v2-ink-subtle" />
           </div>
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mb-4">
+          <p className="text-[11px] text-v2-ink-muted mb-4">
             {isTokenExpired
               ? "Reconnect your Instagram account to continue messaging"
               : "Select a conversation from the sidebar to view messages"}
           </p>
 
           {!isTokenExpired && (
-            <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
+            <p className="text-[10px] text-v2-ink-subtle">
               Conversations will appear once you receive messages from Instagram
               users, or you can sync your recent conversations.
             </p>
           )}
 
           {/* Settings link */}
-          <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+          <div className="mt-4 pt-4 border-t border-v2-ring">
             <Link
               to="/settings"
               search={{ tab: "integrations" }}
-              className="inline-flex items-center gap-1 text-[10px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+              className="inline-flex items-center gap-1 text-[10px] text-v2-ink-muted hover:text-v2-ink"
             >
               <Settings className="h-3 w-3" />
               Manage Instagram Integration

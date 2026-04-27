@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PillNav, PillButton } from "@/components/v2";
 import { MessagesLayout } from "./components/layout/MessagesLayout";
 import { ThreadList } from "./components/inbox/ThreadList";
 import { ThreadView } from "./components/thread/ThreadView";
@@ -314,57 +315,51 @@ export function MessagesPage() {
 
   return (
     <>
-      <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
-        {/* Compact Header with inline stats */}
-        <div className="flex items-center justify-between bg-white dark:bg-zinc-900 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center gap-5">
-            <div className="flex items-center gap-2">
-              <Mail className="h-4 w-4 text-zinc-900 dark:text-zinc-100" />
-              <h1 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+      <div className="h-[calc(100vh-3rem)] flex flex-col gap-2">
+        {/* Compact header — title + inline metric chips + search + compose, all in one row */}
+        <header className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3 min-w-0 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <Mail className="h-4 w-4 text-v2-ink" />
+              <h1 className="text-base font-semibold tracking-tight text-v2-ink">
                 Messages
               </h1>
             </div>
 
-            {/* Inline compact stats */}
-            <div className="flex items-center gap-3 text-[11px]">
-              <div className="flex items-center gap-1">
+            <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-v2-ink-muted flex-wrap leading-tight">
+              <span className="inline-flex items-center gap-1">
                 <Inbox className="h-3 w-3 text-blue-500" />
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                  {totalUnread}
-                </span>
-                <span className="text-zinc-500 dark:text-zinc-400">unread</span>
-              </div>
-              <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
-              <div className="flex items-center gap-1">
-                <Mail className="h-3 w-3 text-zinc-400" />
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                  {counts.all}
-                </span>
-                <span className="text-zinc-500 dark:text-zinc-400">total</span>
-              </div>
-              <div className="h-3 w-px bg-zinc-200 dark:bg-zinc-700" />
-              <div className="flex items-center gap-1">
-                <span className="text-zinc-500 dark:text-zinc-400">Quota:</span>
-                <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                <span className="text-v2-ink font-semibold">{totalUnread}</span>
+                unread
+              </span>
+              <span className="text-v2-ink-subtle">·</span>
+              <span>
+                <span className="text-v2-ink font-semibold">{counts.all}</span>{" "}
+                total
+              </span>
+              <span className="text-v2-ink-subtle">·</span>
+              <span>
+                <span className="text-v2-ink font-semibold">
                   {quota ? `${quota.dailyUsed}/${quota.dailyLimit}` : "0/50"}
-                </span>
-                <span className="text-zinc-500 dark:text-zinc-400">
+                </span>{" "}
+                quota
+                <span className="text-v2-ink-subtle">
+                  {" "}
                   ({remainingDaily} left)
                 </span>
-              </div>
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Search Input */}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
             <div className="relative w-56">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-zinc-400" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
               <Input
                 type="text"
-                placeholder="Search..."
+                placeholder="Search…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-7 pl-7 pr-7 text-xs bg-zinc-50 dark:bg-zinc-800 border-zinc-200 dark:border-zinc-700"
+                className="h-7 pl-7 pr-7 text-[11px] bg-v2-card border-v2-ring rounded-v2-pill focus-visible:ring-v2-accent"
               />
               {searchQuery && (
                 <Button
@@ -378,39 +373,26 @@ export function MessagesPage() {
               )}
             </div>
 
-            <Button
+            <PillButton
               onClick={handleComposeNew}
+              tone="black"
               size="sm"
-              className="h-6 text-[10px] px-2"
+              className="h-7 px-2.5 text-[11px]"
             >
-              <PenSquare className="h-3 w-3 mr-1" />
+              <PenSquare className="h-3 w-3" />
               Compose
-            </Button>
+            </PillButton>
           </div>
-        </div>
+        </header>
 
-        {/* Compact tabs */}
-        <div className="flex items-center gap-0.5 bg-zinc-200/50 dark:bg-zinc-900/50 rounded-md p-0.5">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
-                  isActive
-                    ? "bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-zinc-100"
-                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50",
-                )}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
+        {/* Tab nav — pill style, matches Leaderboard / Expenses pattern */}
+        <PillNav
+          size="sm"
+          activeValue={activeTab}
+          onChange={(v) => setActiveTab(v as typeof activeTab)}
+          items={tabs.map((t) => ({ label: t.label, value: t.id }))}
+          className="self-start"
+        />
 
         {/* Content area */}
         <div className="flex-1 flex gap-2 overflow-hidden">
@@ -421,7 +403,7 @@ export function MessagesPage() {
               width={slackSidebar.width}
               isResizing={slackSidebar.isResizing}
               onMouseDown={slackSidebar.handleMouseDown}
-              className="flex flex-col overflow-hidden bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800"
+              className="flex flex-col overflow-hidden bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft"
             >
               <SlackSidebar
                 selectedChannelId={selectedSlackChannel?.id || null}
@@ -440,7 +422,7 @@ export function MessagesPage() {
                 onMouseDown={
                   isMobile ? () => {} : instagramSidebar.handleMouseDown
                 }
-                className="flex flex-col overflow-hidden bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800"
+                className="flex flex-col overflow-hidden bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft"
               >
                 <InstagramSidebar
                   integration={instagramIntegration}
@@ -455,9 +437,9 @@ export function MessagesPage() {
             !instagramIntegration /* No sidebar when Instagram not connected */ ? null : activeTab ===
             "email" ? (
             /* Email folders sidebar - only shown on email tab */
-            <div className="w-36 flex-shrink-0 flex flex-col overflow-hidden bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+            <div className="w-36 flex-shrink-0 flex flex-col overflow-hidden bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
               <div className="p-2 flex-1 flex flex-col min-h-0 overflow-auto">
-                <div className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide px-2 mb-1.5">
+                <div className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide px-2 mb-1.5">
                   Folders
                 </div>
                 <div className="space-y-0.5">
@@ -471,14 +453,14 @@ export function MessagesPage() {
                         className={cn(
                           "w-full flex items-center gap-1.5 px-2 py-1.5 rounded text-[11px] transition-colors",
                           isActive
-                            ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium"
-                            : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-50 dark:hover:bg-zinc-800/50",
+                            ? "bg-v2-ring text-v2-ink font-medium"
+                            : "text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink hover:bg-v2-canvas",
                         )}
                       >
                         <Icon className="h-3.5 w-3.5" />
                         <span className="flex-1 text-left">{folder.label}</span>
                         {folder.count !== undefined && folder.count > 0 && (
-                          <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+                          <span className="text-[10px] font-medium text-v2-ink-muted">
                             {folder.count}
                           </span>
                         )}
@@ -489,23 +471,23 @@ export function MessagesPage() {
 
                 <div className="flex-1" />
 
-                <div className="border-t border-zinc-200 dark:border-zinc-800 pt-2 mt-2">
-                  <div className="text-[10px] text-zinc-500 dark:text-zinc-400 space-y-1 px-1">
+                <div className="border-t border-v2-ring pt-2 mt-2">
+                  <div className="text-[10px] text-v2-ink-muted space-y-1 px-1">
                     <div className="flex justify-between">
                       <span>Daily quota</span>
-                      <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                      <span className="font-medium text-v2-ink-muted">
                         {quota
                           ? `${quota.dailyUsed}/${quota.dailyLimit}`
                           : "0/50"}
                       </span>
                     </div>
-                    <div className="h-1.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden">
+                    <div className="h-1.5 bg-v2-ring rounded-full overflow-hidden">
                       <div
                         className="h-full bg-blue-500 rounded-full transition-all"
                         style={{ width: `${percentUsed}%` }}
                       />
                     </div>
-                    <p className="text-[9px] text-zinc-400 dark:text-zinc-500">
+                    <p className="text-[9px] text-v2-ink-subtle">
                       {remainingDaily} remaining
                     </p>
                   </div>
@@ -592,10 +574,10 @@ export function MessagesPage() {
 // Empty state when no thread is selected
 function EmptyThreadView() {
   return (
-    <div className="h-full flex items-center justify-center bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800">
+    <div className="h-full flex items-center justify-center bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
       <div className="text-center">
-        <Inbox className="h-8 w-8 mx-auto mb-2 text-zinc-300 dark:text-zinc-600" />
-        <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+        <Inbox className="h-8 w-8 mx-auto mb-2 text-v2-ink-subtle" />
+        <p className="text-[11px] text-v2-ink-muted">
           Select a conversation to view
         </p>
       </div>

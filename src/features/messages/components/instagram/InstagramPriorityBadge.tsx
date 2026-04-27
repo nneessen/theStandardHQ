@@ -52,12 +52,12 @@ export function InstagramPriorityBadge({
           <TooltipContent className="text-[10px] max-w-xs">
             <div>Priority conversation</div>
             {prioritySetAt && (
-              <div className="text-zinc-400">
+              <div className="text-v2-ink-subtle">
                 Since {format(new Date(prioritySetAt), "MMM d, yyyy")}
               </div>
             )}
             {priorityNotes && (
-              <div className="text-zinc-400 mt-1">{priorityNotes}</div>
+              <div className="text-v2-ink-subtle mt-1">{priorityNotes}</div>
             )}
           </TooltipContent>
         </Tooltip>

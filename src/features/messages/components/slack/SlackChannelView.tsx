@@ -336,19 +336,19 @@ export function SlackChannelView({
   }, [messages, channelMembers]);
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+    <div className="h-full flex flex-col bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft overflow-hidden">
       {/* Channel header */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-v2-ring">
         {channel.is_private ? (
-          <Lock className="h-4 w-4 text-zinc-500" />
+          <Lock className="h-4 w-4 text-v2-ink-muted" />
         ) : (
-          <Hash className="h-4 w-4 text-zinc-500" />
+          <Hash className="h-4 w-4 text-v2-ink-muted" />
         )}
-        <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+        <span className="text-sm font-semibold text-v2-ink">
           {channel.name}
         </span>
         {channel.purpose?.value && (
-          <span className="text-[10px] text-zinc-500 dark:text-zinc-400 truncate ml-2">
+          <span className="text-[10px] text-v2-ink-muted truncate ml-2">
             {channel.purpose.value}
           </span>
         )}
@@ -366,27 +366,27 @@ export function SlackChannelView({
       <div className="flex-1 overflow-auto p-3 space-y-3">
         {isJoining ? (
           <div className="flex flex-col items-center justify-center h-full">
-            <Loader2 className="h-5 w-5 animate-spin text-zinc-400 mb-2" />
-            <p className="text-[11px] text-zinc-500">Joining channel...</p>
+            <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle mb-2" />
+            <p className="text-[11px] text-v2-ink-muted">Joining channel...</p>
           </div>
         ) : needsJoin && channel.is_private ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
-            <Lock className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-2" />
-            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium mb-1">
+            <Lock className="h-8 w-8 text-v2-ink-subtle mb-2" />
+            <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle font-medium mb-1">
               Private Channel
             </p>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-500 max-w-xs">
+            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-muted max-w-xs">
               The bot needs to be invited to this private channel by a Slack
               admin. Ask someone in Slack to invite the app to #{channel.name}.
             </p>
           </div>
         ) : needsJoin ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
-            <UserPlus className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-2" />
-            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium mb-1">
+            <UserPlus className="h-8 w-8 text-v2-ink-subtle mb-2" />
+            <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle font-medium mb-1">
               Unable to join channel
             </p>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-500 max-w-xs mb-3">
+            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-muted max-w-xs mb-3">
               The bot couldn't automatically join this channel.
             </p>
             <Button
@@ -406,7 +406,7 @@ export function SlackChannelView({
           </div>
         ) : isLoading ? (
           <div className="flex items-center justify-center h-full">
-            <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+            <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
@@ -427,9 +427,9 @@ export function SlackChannelView({
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <Hash className="h-8 w-8 text-zinc-300 dark:text-zinc-600 mb-2" />
-            <p className="text-[11px] text-zinc-500">No messages yet</p>
-            <p className="text-[10px] text-zinc-400 mt-1">
+            <Hash className="h-8 w-8 text-v2-ink-subtle mb-2" />
+            <p className="text-[11px] text-v2-ink-muted">No messages yet</p>
+            <p className="text-[10px] text-v2-ink-subtle mt-1">
               Be the first to send a message!
             </p>
           </div>
@@ -450,7 +450,7 @@ export function SlackChannelView({
       </div>
 
       {/* Message composer */}
-      <div className="p-2 border-t border-zinc-200 dark:border-zinc-800">
+      <div className="p-2 border-t border-v2-ring">
         <div className="flex items-end gap-2">
           <MentionTextarea
             value={messageText}
@@ -577,7 +577,7 @@ function MessageItem({
   if (isSystemMessage) {
     return (
       <div className="flex items-center justify-center py-1">
-        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 italic">
+        <span className="text-[10px] text-v2-ink-subtle italic">
           {formattedText}
         </span>
       </div>
@@ -585,26 +585,26 @@ function MessageItem({
   }
 
   return (
-    <div className="flex gap-2 group hover:bg-zinc-50 dark:hover:bg-zinc-800/50 -mx-2 px-2 py-1 rounded relative">
+    <div className="flex gap-2 group hover:bg-v2-canvas -mx-2 px-2 py-1 rounded relative">
       <Avatar className="h-8 w-8 flex-shrink-0">
         <AvatarImage src={message.user?.profile?.image_48} />
-        <AvatarFallback className="text-[10px] bg-zinc-200 dark:bg-zinc-700">
+        <AvatarFallback className="text-[10px] bg-v2-ring">
           {userName.slice(0, 2).toUpperCase()}
         </AvatarFallback>
       </Avatar>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2">
-          <span className="text-[11px] font-semibold text-zinc-900 dark:text-zinc-100">
+          <span className="text-[11px] font-semibold text-v2-ink">
             {userName}
           </span>
           {timestamp && (
-            <span className="text-[9px] text-zinc-400">
+            <span className="text-[9px] text-v2-ink-subtle">
               {formatDistanceToNow(timestamp, { addSuffix: true })}
             </span>
           )}
         </div>
-        <p className="text-[11px] text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words">
+        <p className="text-[11px] text-v2-ink-muted whitespace-pre-wrap break-words">
           {formattedText}
         </p>
 
@@ -616,7 +616,7 @@ function MessageItem({
               <button
                 key={r.name}
                 onClick={() => handleReaction(r.name)}
-                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded text-[9px] transition-colors cursor-pointer"
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-v2-ring hover:bg-v2-ring dark:hover:bg-v2-card-dark rounded text-[9px] transition-colors cursor-pointer"
                 title={`React with :${r.name}:`}
               >
                 {getEmojiFromName(r.name)} {r.count}
@@ -630,7 +630,7 @@ function MessageItem({
           >
             <PopoverTrigger asChild>
               <button
-                className="opacity-0 group-hover:opacity-100 inline-flex items-center justify-center h-5 w-5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                className="opacity-0 group-hover:opacity-100 inline-flex items-center justify-center h-5 w-5 rounded hover:bg-v2-ring dark:hover:bg-v2-card-dark transition-all text-v2-ink-subtle hover:text-v2-ink-muted dark:hover:text-v2-ink-subtle"
                 title="Add reaction"
               >
                 <SmilePlus className="h-3.5 w-3.5" />

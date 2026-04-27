@@ -67,7 +67,7 @@ export function InstagramSettingsPanel() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-40">
-        <Loader2 className="h-5 w-5 animate-spin text-zinc-400" />
+        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
       </div>
     );
   }
@@ -79,10 +79,10 @@ export function InstagramSettingsPanel() {
   return (
     <div className="space-y-4 max-w-2xl">
       {/* Connection Status */}
-      <Card className="border-zinc-200 dark:border-zinc-800">
+      <Card className="border-v2-ring">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Instagram className="h-4 w-4 text-zinc-500" />
+            <Instagram className="h-4 w-4 text-v2-ink-muted" />
             Instagram Connection
           </CardTitle>
         </CardHeader>
@@ -98,7 +98,7 @@ export function InstagramSettingsPanel() {
           ) : (
             <div className="space-y-4">
               {/* Account Info */}
-              <div className="flex items-center gap-3 p-3 rounded-lg border border-zinc-200 dark:border-zinc-800">
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-v2-ring">
                 <Avatar className="h-10 w-10">
                   <AvatarImage
                     src={integration.instagram_profile_picture_url || undefined}
@@ -110,11 +110,11 @@ export function InstagramSettingsPanel() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                  <p className="text-[11px] font-medium text-v2-ink">
                     {integration.instagram_name ||
                       integration.instagram_username}
                   </p>
-                  <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                  <p className="text-[10px] text-v2-ink-muted">
                     @{integration.instagram_username}
                   </p>
                 </div>
@@ -184,7 +184,7 @@ export function InstagramSettingsPanel() {
 
               {/* Info Note */}
               {isConnected && (
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] text-v2-ink-muted">
                   Manage templates in the Templates tab.
                 </p>
               )}
@@ -210,7 +210,7 @@ export function InstagramSettingsPanel() {
           </DialogHeader>
 
           <div className="py-3">
-            <div className="flex items-center gap-3 p-3 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg">
+            <div className="flex items-center gap-3 p-3 bg-v2-canvas rounded-lg">
               <Avatar className="h-8 w-8">
                 <AvatarImage
                   src={integration?.instagram_profile_picture_url || undefined}
@@ -222,10 +222,10 @@ export function InstagramSettingsPanel() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-[11px] font-medium text-zinc-900 dark:text-zinc-100">
+                <p className="text-[11px] font-medium text-v2-ink">
                   @{integration?.instagram_username}
                 </p>
-                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                <p className="text-[10px] text-v2-ink-muted">
                   {integration?.instagram_name}
                 </p>
               </div>
