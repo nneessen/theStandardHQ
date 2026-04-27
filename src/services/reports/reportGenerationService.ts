@@ -42,14 +42,41 @@ export class ReportDataFetchError extends Error {
     public readonly dataSource: string,
     public readonly originalError: unknown,
   ) {
-    const message = `Failed to fetch ${dataSource}: ${
-      originalError instanceof Error
-        ? originalError.message
-        : String(originalError)
-    }`;
-    super(message);
+    super(`Failed to fetch ${dataSource}: ${formatFetchError(originalError)}`);
     this.name = "ReportDataFetchError";
   }
+}
+
+/**
+ * Normalize the many shapes a fetch error can take (Error, Supabase
+ * PostgrestError-like { message, details, hint, code }, plain string,
+ * or arbitrary object) into a human-readable string. Avoids the
+ * `[object Object]` trap when callers pass a plain Supabase error object.
+ */
+function formatFetchError(err: unknown): string {
+  if (err == null) return "Unknown error";
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  if (typeof err === "object") {
+    const e = err as {
+      message?: unknown;
+      details?: unknown;
+      hint?: unknown;
+      code?: unknown;
+    };
+    const parts: string[] = [];
+    if (typeof e.message === "string" && e.message) parts.push(e.message);
+    if (typeof e.details === "string" && e.details) parts.push(e.details);
+    if (typeof e.hint === "string" && e.hint) parts.push(`hint: ${e.hint}`);
+    if (typeof e.code === "string" && e.code) parts.push(`code ${e.code}`);
+    if (parts.length > 0) return parts.join(" · ");
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return String(err);
+    }
+  }
+  return String(err);
 }
 
 /**
@@ -110,7 +137,9 @@ export class ReportGenerationService {
     const netIncome = totalCommissionPaid - totalExpenses;
 
     // Use lifecycle_status for active policy counting (issued, in-force policies)
-    const activePolicies = policies.filter((p) => p.lifecycle_status === "active").length;
+    const activePolicies = policies.filter(
+      (p) => p.lifecycle_status === "active",
+    ).length;
     const totalPolicies = policies.length;
     const totalPremium = policies.reduce(
       (sum, p) => sum + (p.annual_premium || 0),
