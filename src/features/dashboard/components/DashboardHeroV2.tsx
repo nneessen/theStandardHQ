@@ -51,6 +51,14 @@ const PERIODS: PillNavItem[] = [
   { label: "Year", value: "yearly" },
 ];
 
+const CURRENT_PERIOD_LABELS: Record<TimePeriod, string> = {
+  daily: "Today",
+  weekly: "This Week",
+  MTD: "MTD",
+  monthly: "This Month",
+  yearly: "This Year",
+};
+
 function formatCompact(n: number): string {
   if (Math.abs(n) >= 1_000_000) {
     const v = n / 1_000_000;
@@ -89,6 +97,7 @@ export const DashboardHeroV2: React.FC<DashboardHeroV2Props> = ({
   pendingPipeline,
 }) => {
   const isCurrent = periodOffset === 0;
+  const currentPeriodLabel = CURRENT_PERIOD_LABELS[timePeriod];
 
   return (
     <section className="pt-2 pb-8">
@@ -129,13 +138,13 @@ export const DashboardHeroV2: React.FC<DashboardHeroV2Props> = ({
               onClick={() => onOffsetChange(0)}
               disabled={isCurrent}
               className={cn(
-                "h-7 px-3 text-[11px] font-semibold uppercase tracking-wider rounded-v2-pill transition-colors",
+                "h-7 px-3 text-[11px] font-semibold uppercase tracking-wider rounded-v2-pill transition-colors whitespace-nowrap",
                 isCurrent
                   ? "text-v2-ink-subtle"
                   : "text-v2-ink-muted hover:bg-v2-accent-soft hover:text-v2-ink",
               )}
             >
-              Today
+              {currentPeriodLabel}
             </button>
             <button
               type="button"
