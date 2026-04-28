@@ -97,10 +97,16 @@ export function ExpenseDashboardCompact() {
     refetch: refetchSelectedExpenseLeadPurchase,
   } = useLeadPurchaseByExpense(selectedExpense?.id ?? null);
 
-  // Get commission metrics for expense ratio calculation
+  // Get commission metrics for expense ratio calculation.
+  // periodOffset is months from the current month so the gross commission
+  // matches the month the user is viewing (selectedMonth), not "today".
+  const now = new Date();
+  const monthOffset =
+    (selectedMonth.getFullYear() - now.getFullYear()) * 12 +
+    (selectedMonth.getMonth() - now.getMonth());
   const metricsData = useMetricsWithDateRange({
     timePeriod: "monthly",
-    periodOffset: 0,
+    periodOffset: monthOffset,
   });
 
   // Filter expenses for selected month
