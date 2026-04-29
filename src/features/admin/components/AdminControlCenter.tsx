@@ -221,7 +221,6 @@ export default function AdminControlCenter() {
             isLoading={usersLoading}
             canGraduateRecruits={canGraduateRecruits || false}
             graduationEligiblePhases={graduationEligiblePhases}
-            onEditRecruit={handleEditUser}
           />
         )}
 

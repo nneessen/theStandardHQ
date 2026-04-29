@@ -1,8 +1,9 @@
 // src/features/admin/components/RecruitingPipelineTab.tsx
 
 import { useState } from "react";
-import { UserPlus, Edit, GraduationCap } from "lucide-react";
+import { UserPlus, ExternalLink, GraduationCap } from "lucide-react";
 import type { UserProfile } from "@/types/user.types";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,7 +15,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { GraduateToAgentDialog } from "./GraduateToAgentDialog";
+import { RecruitDetailPanel } from "@/features/recruiting";
 
 interface RecruitingPipelineTabProps {
   recruits: UserProfile[];
@@ -22,7 +30,6 @@ interface RecruitingPipelineTabProps {
   isLoading: boolean;
   canGraduateRecruits: boolean;
   graduationEligiblePhases: string[];
-  onEditRecruit: (recruit: UserProfile) => void;
 }
 
 export function RecruitingPipelineTab({
@@ -31,13 +38,27 @@ export function RecruitingPipelineTab({
   isLoading,
   canGraduateRecruits,
   graduationEligiblePhases,
-  onEditRecruit,
 }: RecruitingPipelineTabProps) {
+  const { user } = useAuth();
   const [graduatingRecruit, setGraduatingRecruit] =
     useState<UserProfile | null>(null);
   const [isGraduateDialogOpen, setIsGraduateDialogOpen] = useState(false);
+  const [selectedRecruit, setSelectedRecruit] = useState<UserProfile | null>(
+    null,
+  );
+  const [detailSheetOpen, setDetailSheetOpen] = useState(false);
 
   const pendingCount = recruits.length;
+
+  const openRecruitDetail = (recruit: UserProfile) => {
+    setSelectedRecruit(recruit);
+    setDetailSheetOpen(true);
+  };
+
+  const handleRecruitDeleted = () => {
+    setSelectedRecruit(null);
+    setDetailSheetOpen(false);
+  };
 
   return (
     <div className="flex flex-col h-full space-y-2">
@@ -109,7 +130,8 @@ export function RecruitingPipelineTab({
                 return (
                   <TableRow
                     key={recruit.id}
-                    className="hover:bg-v2-canvas border-b border-v2-ring/60"
+                    className="hover:bg-v2-canvas border-b border-v2-ring/60 cursor-pointer"
+                    onClick={() => openRecruitDetail(recruit)}
                   >
                     <TableCell className="py-1.5">
                       <div className="flex items-center gap-1.5">
@@ -157,17 +179,20 @@ export function RecruitingPipelineTab({
                         {currentPhase.replace(/_/g, " ")}
                       </Badge>
                     </TableCell>
-                    <TableCell className="py-1.5 text-right">
+                    <TableCell
+                      className="py-1.5 text-right"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex items-center justify-end gap-1">
                         <Button
                           size="sm"
                           variant="ghost"
                           className="h-5 px-1.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
-                          onClick={() => onEditRecruit(recruit)}
-                          title="View/Edit full profile"
+                          onClick={() => openRecruitDetail(recruit)}
+                          title="Open pipeline detail"
                         >
-                          <Edit className="h-2.5 w-2.5 mr-0.5" />
-                          Edit
+                          <ExternalLink className="h-2.5 w-2.5 mr-0.5" />
+                          Open
                         </Button>
                         {canGraduateRecruits &&
                           graduationEligiblePhases.includes(
@@ -206,6 +231,29 @@ export function RecruitingPipelineTab({
           </Table>
         )}
       </div>
+
+      {/* Recruit pipeline detail sheet — same panel used by /recruiting */}
+      <Sheet open={detailSheetOpen} onOpenChange={setDetailSheetOpen}>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-[480px] md:max-w-[560px] lg:max-w-[640px] p-0 overflow-hidden"
+        >
+          <SheetTitle className="sr-only">Recruit Details</SheetTitle>
+          <SheetDescription className="sr-only">
+            View and manage recruit pipeline progress, documents, and Slack
+            notifications
+          </SheetDescription>
+          {selectedRecruit && (
+            <RecruitDetailPanel
+              key={selectedRecruit.id}
+              recruit={selectedRecruit}
+              currentUserId={user?.id}
+              isUpline={true}
+              onRecruitDeleted={handleRecruitDeleted}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
 
       {/* Graduate to Agent Dialog */}
       {graduatingRecruit && (
