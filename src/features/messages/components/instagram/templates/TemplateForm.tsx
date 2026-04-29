@@ -160,9 +160,13 @@ export function TemplateForm({
         toast.success("Template created");
       }
       onOpenChange(false);
-    } catch (_error) {
+    } catch (error) {
+      console.error("[IG template] save failed:", error);
+      const message = error instanceof Error ? error.message : "Unknown error";
       toast.error(
-        isEditing ? "Failed to update template" : "Failed to create template",
+        isEditing
+          ? `Couldn't update template: ${message}`
+          : `Couldn't create template: ${message}`,
       );
     }
   };

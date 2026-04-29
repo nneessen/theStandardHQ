@@ -2,7 +2,7 @@
 // Table component for displaying Instagram message templates
 
 import { useState, type ReactNode } from "react";
-import { Edit2, Trash2, MessageSquare, Loader2 } from "lucide-react";
+import { Edit2, Eye, Trash2, MessageSquare, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -26,6 +26,7 @@ interface TemplateListProps {
   templates: InstagramMessageTemplate[];
   isLoading: boolean;
   onEdit: (template: InstagramMessageTemplate) => void;
+  onPreview: (template: InstagramMessageTemplate) => void;
   canEdit: boolean;
 }
 
@@ -33,6 +34,7 @@ export function TemplateList({
   templates,
   isLoading,
   onEdit,
+  onPreview,
   canEdit,
 }: TemplateListProps): ReactNode {
   const [deleteTemplate, setDeleteTemplate] =
@@ -105,11 +107,9 @@ export function TemplateList({
             <TableHead className="text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted h-8 w-16 text-right">
               Uses
             </TableHead>
-            {canEdit && (
-              <TableHead className="text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted h-8 w-20">
-                Actions
-              </TableHead>
-            )}
+            <TableHead className="text-[10px] font-semibold uppercase tracking-wide text-v2-ink-muted h-8 w-24">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -119,7 +119,14 @@ export function TemplateList({
                 {template.name}
               </TableCell>
               <TableCell className="py-2 text-[11px] text-v2-ink-muted max-w-xs">
-                {truncate(template.content)}
+                <button
+                  type="button"
+                  onClick={() => onPreview(template)}
+                  className="text-left hover:text-v2-ink hover:underline focus:outline-none focus-visible:ring-1 focus-visible:ring-v2-accent rounded-sm"
+                  title="Preview full content"
+                >
+                  {truncate(template.content)}
+                </button>
               </TableCell>
               <TableCell className="py-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 {template.category
@@ -143,30 +150,41 @@ export function TemplateList({
               <TableCell className="py-2 text-[11px] text-v2-ink-muted text-right tabular-nums">
                 {template.use_count || 0}
               </TableCell>
-              {canEdit && (
-                <TableCell className="py-2">
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => onEdit(template)}
-                      title="Edit template"
-                    >
-                      <Edit2 className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
-                      onClick={() => setDeleteTemplate(template)}
-                      title="Delete template"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </TableCell>
-              )}
+              <TableCell className="py-2">
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={() => onPreview(template)}
+                    title="Preview template"
+                  >
+                    <Eye className="h-3 w-3" />
+                  </Button>
+                  {canEdit && (
+                    <>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => onEdit(template)}
+                        title="Edit template"
+                      >
+                        <Edit2 className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                        onClick={() => setDeleteTemplate(template)}
+                        title="Delete template"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

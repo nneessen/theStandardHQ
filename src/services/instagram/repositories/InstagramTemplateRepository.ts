@@ -28,6 +28,25 @@ export class InstagramTemplateRepository extends BaseRepository<
     return { ...data };
   }
 
+  async update(
+    id: string,
+    updates: InstagramMessageTemplateUpdate,
+  ): Promise<InstagramMessageTemplate> {
+    const { data, error } = await this.client
+      .from(this.tableName)
+      .update(this.transformToDB(updates))
+      .eq("id", id)
+      .select();
+
+    if (error) throw this.handleError(error, "update");
+    if (!data || data.length === 0) {
+      throw new Error(
+        "You don't have permission to edit this template, or it no longer exists.",
+      );
+    }
+    return this.transformFromDB(data[0]);
+  }
+
   /**
    * Find active templates for an IMO (legacy)
    */

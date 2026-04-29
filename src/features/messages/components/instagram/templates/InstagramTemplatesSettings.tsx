@@ -23,6 +23,7 @@ import {
 } from "@/types/instagram.types";
 import { TemplateList } from "./TemplateList";
 import { TemplateForm } from "./TemplateForm";
+import { TemplatePreviewSheet } from "./TemplatePreviewSheet";
 import { CategoryManager } from "./CategoryManager";
 
 export function InstagramTemplatesSettings(): ReactNode {
@@ -32,6 +33,8 @@ export function InstagramTemplatesSettings(): ReactNode {
   const [messageStageFilter, setMessageStageFilter] = useState<string>("all");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] =
+    useState<InstagramMessageTemplate | null>(null);
+  const [previewTemplate, setPreviewTemplate] =
     useState<InstagramMessageTemplate | null>(null);
 
   const { data: templates = [], isLoading } = useInstagramTemplates();
@@ -114,6 +117,11 @@ export function InstagramTemplatesSettings(): ReactNode {
   const handleCloseForm = () => {
     setIsFormOpen(false);
     setEditingTemplate(null);
+  };
+
+  const handlePreviewToEdit = (template: InstagramMessageTemplate) => {
+    setPreviewTemplate(null);
+    handleEditTemplate(template);
   };
 
   return (
@@ -222,6 +230,7 @@ export function InstagramTemplatesSettings(): ReactNode {
             templates={filteredTemplates}
             isLoading={isLoading}
             onEdit={handleEditTemplate}
+            onPreview={setPreviewTemplate}
             canEdit={canEdit}
           />
         </div>
@@ -232,6 +241,14 @@ export function InstagramTemplatesSettings(): ReactNode {
         open={isFormOpen}
         onOpenChange={handleCloseForm}
         template={editingTemplate}
+      />
+
+      {/* Template Preview Sheet */}
+      <TemplatePreviewSheet
+        template={previewTemplate}
+        onOpenChange={(open) => !open && setPreviewTemplate(null)}
+        canEdit={canEdit}
+        onEdit={handlePreviewToEdit}
       />
     </div>
   );
