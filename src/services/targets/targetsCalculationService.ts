@@ -25,6 +25,29 @@ export interface AnnualExpenseBreakdown {
   total: number;
 }
 
+export interface AvgPolicyPremiumPolicy {
+  id: string;
+  clientName: string;
+  productName: string;
+  annualPremium: number;
+  effectiveDate: string;
+}
+
+export interface AvgPolicyPremiumBreakdown {
+  source:
+    | "current-year"
+    | "active-policies-fallback"
+    | "all-policies-fallback"
+    | "no-data";
+  policyCount: number;
+  totalPremium: number;
+  mean: number;
+  median: number;
+  min: number;
+  max: number;
+  policies: AvgPolicyPremiumPolicy[]; // sorted desc by premium
+}
+
 export interface HistoricalAverages {
   avgCommissionRate: number; // As decimal (e.g., 0.50 for 50%)
   avgPolicyPremium: number; // Average annual premium per policy
@@ -32,6 +55,7 @@ export interface HistoricalAverages {
   avgExpensesPerMonth: number; // Historical average monthly expenses (for monthly display)
   projectedAnnualExpenses: number; // Sum of actual expenses for the year (NOT avgExpensesPerMonth * 12)
   annualExpenseBreakdown: AnnualExpenseBreakdown;
+  avgPolicyPremiumBreakdown: AvgPolicyPremiumBreakdown;
   persistency13Month: number; // As decimal
   persistency25Month: number; // As decimal
   hasData: boolean; // Whether we have enough historical data

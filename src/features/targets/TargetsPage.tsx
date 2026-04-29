@@ -423,8 +423,124 @@ export function TargetsPage() {
                       </span>
                     </div>
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-v2-ink-muted">
+                      <span className="text-v2-ink-muted flex items-center gap-1">
                         ÷ Commission Rate
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              className="text-v2-ink-subtle hover:text-v2-ink transition-colors"
+                              aria-label="Show commission rate breakdown"
+                            >
+                              <Info className="h-3 w-3" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            align="start"
+                            className="w-[380px] p-3"
+                          >
+                            <div className="text-[11px]">
+                              <div className="font-semibold text-v2-ink mb-1.5">
+                                Commission Rate Breakdown
+                              </div>
+                              <div className="space-y-0.5 mb-2">
+                                <div className="flex justify-between">
+                                  <span className="text-v2-ink-muted">
+                                    Contract Level
+                                  </span>
+                                  <span className="font-mono text-v2-ink font-semibold">
+                                    {commissionProfile?.contractLevel ?? "—"}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-v2-ink-muted">
+                                    Premium-Weighted Avg
+                                  </span>
+                                  <span className="font-mono text-v2-ink">
+                                    {commissionProfile
+                                      ? `${(commissionProfile.weightedAverageRate * 100).toFixed(1)}%`
+                                      : "—"}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-v2-ink-muted">
+                                    Simple Avg (across products)
+                                  </span>
+                                  <span className="font-mono text-v2-ink">
+                                    {commissionProfile
+                                      ? `${(commissionProfile.simpleAverageRate * 100).toFixed(1)}%`
+                                      : "—"}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-v2-ink-muted">
+                                    Data Quality
+                                  </span>
+                                  <span className="font-mono text-v2-ink uppercase">
+                                    {commissionProfile?.dataQuality ?? "—"}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between border-t border-v2-ring pt-1 mt-1">
+                                  <span className="text-v2-ink font-semibold">
+                                    Used for Targets
+                                  </span>
+                                  <span className="font-mono font-bold text-v2-ink">
+                                    {(
+                                      calculatedTargets.avgCommissionRate * 100
+                                    ).toFixed(1)}
+                                    %
+                                  </span>
+                                </div>
+                              </div>
+
+                              {commissionProfile?.productBreakdown &&
+                              commissionProfile.productBreakdown.length > 0 ? (
+                                <>
+                                  <div className="text-[10px] font-semibold uppercase tracking-wider text-v2-ink-muted mb-1 mt-2">
+                                    Per Product (last{" "}
+                                    {commissionProfile.lookbackMonths} mo)
+                                  </div>
+                                  <div className="space-y-0.5 max-h-[200px] overflow-y-auto">
+                                    {commissionProfile.productBreakdown.map(
+                                      (p) => (
+                                        <div
+                                          key={p.productId}
+                                          className="flex justify-between gap-2"
+                                        >
+                                          <span
+                                            className="text-v2-ink truncate"
+                                            title={`${p.productName} • ${p.carrierName}`}
+                                          >
+                                            {p.productName}
+                                          </span>
+                                          <span className="font-mono text-v2-ink-subtle whitespace-nowrap">
+                                            {(p.commissionRate * 100).toFixed(
+                                              1,
+                                            )}
+                                            %
+                                            <span className="text-v2-ink-subtle">
+                                              {" "}
+                                              ·{" "}
+                                              {(p.premiumWeight * 100).toFixed(
+                                                0,
+                                              )}
+                                              % wt · {p.policyCount}p
+                                            </span>
+                                          </span>
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="text-v2-ink-subtle text-[10px] mt-1">
+                                  No per-product mix data — rate is the carrier
+                                  base for your contract level.
+                                </div>
+                              )}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </span>
                       <span className="font-mono font-semibold text-v2-ink">
                         {(calculatedTargets.avgCommissionRate * 100).toFixed(1)}
@@ -452,7 +568,140 @@ export function TargetsPage() {
                       </span>
                     </div>
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-v2-ink-muted">÷ Avg Premium</span>
+                      <span className="text-v2-ink-muted flex items-center gap-1">
+                        ÷ Avg Premium
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              className="text-v2-ink-subtle hover:text-v2-ink transition-colors"
+                              aria-label="Show avg premium breakdown"
+                            >
+                              <Info className="h-3 w-3" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            align="start"
+                            className="w-[400px] p-3"
+                          >
+                            <div className="text-[11px]">
+                              <div className="font-semibold text-v2-ink mb-1.5">
+                                Avg Premium Breakdown
+                              </div>
+                              <div className="text-v2-ink-subtle mb-2">
+                                {(() => {
+                                  const b = averages.avgPolicyPremiumBreakdown;
+                                  switch (b.source) {
+                                    case "current-year":
+                                      return `Mean of ${b.policyCount} ${b.policyCount === 1 ? "policy" : "policies"} written this year`;
+                                    case "active-policies-fallback":
+                                      return `No policies yet this year — using ${b.policyCount} active ${b.policyCount === 1 ? "policy" : "policies"} (fallback)`;
+                                    case "all-policies-fallback":
+                                      return `Using ${b.policyCount} total ${b.policyCount === 1 ? "policy" : "policies"} (fallback — no current-year or active data)`;
+                                    case "no-data":
+                                      return "No policy data yet.";
+                                  }
+                                })()}
+                              </div>
+
+                              {averages.avgPolicyPremiumBreakdown.policyCount >
+                                0 && (
+                                <>
+                                  <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 mb-2">
+                                    <div className="flex justify-between">
+                                      <span className="text-v2-ink-muted">
+                                        Mean
+                                      </span>
+                                      <span className="font-mono text-v2-ink font-semibold">
+                                        {formatCurrency(
+                                          averages.avgPolicyPremiumBreakdown
+                                            .mean,
+                                        )}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-v2-ink-muted">
+                                        Median
+                                      </span>
+                                      <span className="font-mono text-v2-ink">
+                                        {formatCurrency(
+                                          averages.avgPolicyPremiumBreakdown
+                                            .median,
+                                        )}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-v2-ink-muted">
+                                        Min
+                                      </span>
+                                      <span className="font-mono text-v2-ink">
+                                        {formatCurrency(
+                                          averages.avgPolicyPremiumBreakdown
+                                            .min,
+                                        )}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-v2-ink-muted">
+                                        Max
+                                      </span>
+                                      <span className="font-mono text-v2-ink">
+                                        {formatCurrency(
+                                          averages.avgPolicyPremiumBreakdown
+                                            .max,
+                                        )}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  {Math.abs(
+                                    averages.avgPolicyPremiumBreakdown.mean -
+                                      averages.avgPolicyPremiumBreakdown.median,
+                                  ) /
+                                    Math.max(
+                                      averages.avgPolicyPremiumBreakdown.median,
+                                      1,
+                                    ) >
+                                    0.25 && (
+                                    <div className="text-amber-600 dark:text-amber-400 text-[10px] mb-2">
+                                      ⚠ Mean is {">"}25% above median — your
+                                      target is being driven by a few large
+                                      outliers. Consider using median for
+                                      planning.
+                                    </div>
+                                  )}
+
+                                  <div className="text-[10px] font-semibold uppercase tracking-wider text-v2-ink-muted mb-1">
+                                    Policies (largest first)
+                                  </div>
+                                  <div className="space-y-0.5 max-h-[220px] overflow-y-auto">
+                                    {averages.avgPolicyPremiumBreakdown.policies.map(
+                                      (p) => (
+                                        <div
+                                          key={p.id}
+                                          className="flex justify-between gap-2"
+                                        >
+                                          <span
+                                            className="text-v2-ink truncate"
+                                            title={`${p.clientName} • ${p.productName} • ${p.effectiveDate}`}
+                                          >
+                                            {p.clientName}{" "}
+                                            <span className="text-v2-ink-subtle">
+                                              ({p.productName})
+                                            </span>
+                                          </span>
+                                          <span className="font-mono text-v2-ink font-semibold whitespace-nowrap">
+                                            {formatCurrency(p.annualPremium)}
+                                          </span>
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </span>
                       <span className="font-mono font-semibold text-v2-ink">
                         {formatCurrency(calculatedTargets.avgPolicyPremium)}
                       </span>

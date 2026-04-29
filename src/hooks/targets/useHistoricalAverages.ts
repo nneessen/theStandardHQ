@@ -8,9 +8,10 @@ import {
   AnnualExpenseBreakdown,
   AnnualExpenseOneTimeContribution,
   AnnualExpenseRecurringContribution,
+  AvgPolicyPremiumBreakdown,
+  AvgPolicyPremiumPolicy,
   HistoricalAverages,
 } from "../../services/targets/targetsCalculationService";
-import { currentMonthMetricsService } from "../../services/targets/currentMonthMetricsService";
 import { parseLocalDate } from "../../lib/date";
 
 /**
@@ -62,6 +63,16 @@ export function useHistoricalAverages(): {
           oneTimeTotal: 0,
           total: 0,
         },
+        avgPolicyPremiumBreakdown: {
+          source: "no-data",
+          policyCount: 0,
+          totalPremium: 0,
+          mean: 0,
+          median: 0,
+          min: 0,
+          max: 0,
+          policies: [],
+        },
         persistency13Month: 0,
         persistency25Month: 0,
         hasData: false,
@@ -75,29 +86,75 @@ export function useHistoricalAverages(): {
     // CRITICAL: Calculate average premium from CURRENT YEAR's policies (year-to-date)
     // This provides stable, meaningful target calculations throughout the year
     // Falls back to all active/all policies if current year has no data
-    const currentYearMetrics =
-      currentMonthMetricsService.calculateCurrentYearAvgPremium(policies);
+    const currentYearStart = new Date(new Date().getFullYear(), 0, 1);
+    const currentYearPolicies = policies.filter(
+      (p) => new Date(p.createdAt) >= currentYearStart,
+    );
+
+    let avgPremiumSource: AvgPolicyPremiumBreakdown["source"];
+    let premiumCohort: typeof policies;
+    if (currentYearPolicies.length > 0) {
+      avgPremiumSource = "current-year";
+      premiumCohort = currentYearPolicies;
+    } else {
+      const activePolicies = policies.filter(
+        (p) => p.lifecycleStatus === "active",
+      );
+      if (activePolicies.length > 0) {
+        avgPremiumSource = "active-policies-fallback";
+        premiumCohort = activePolicies;
+      } else if (policies.length > 0) {
+        avgPremiumSource = "all-policies-fallback";
+        premiumCohort = policies;
+      } else {
+        avgPremiumSource = "no-data";
+        premiumCohort = [];
+      }
+    }
+
+    const premiumValues = premiumCohort
+      .map((p) => p.annualPremium || 0)
+      .filter((v) => v > 0);
+    const totalPremium = premiumValues.reduce((sum, v) => sum + v, 0);
     const avgPolicyPremium =
-      currentYearMetrics.avgPolicyPremium ||
-      // Fallback: calculate from all active policies if current year has no data
-      (() => {
-        const activePolicies = policies.filter(
-          (p) => p.lifecycleStatus === "active",
-        );
-        if (activePolicies.length > 0) {
-          return (
-            activePolicies.reduce((sum, p) => sum + (p.annualPremium || 0), 0) /
-            activePolicies.length
-          );
-        }
-        if (policies.length > 0) {
-          return (
-            policies.reduce((sum, p) => sum + (p.annualPremium || 0), 0) /
-            policies.length
-          );
-        }
-        return 0; // NO defaults - show zero if no policies
-      })();
+      premiumValues.length > 0 ? totalPremium / premiumValues.length : 0;
+
+    const sortedPremiums = [...premiumValues].sort((a, b) => a - b);
+    const median =
+      sortedPremiums.length === 0
+        ? 0
+        : sortedPremiums.length % 2 === 1
+          ? sortedPremiums[Math.floor(sortedPremiums.length / 2)]
+          : (sortedPremiums[sortedPremiums.length / 2 - 1] +
+              sortedPremiums[sortedPremiums.length / 2]) /
+            2;
+
+    const avgPolicyPremiumBreakdown: AvgPolicyPremiumBreakdown = {
+      source: avgPremiumSource,
+      policyCount: premiumValues.length,
+      totalPremium,
+      mean: avgPolicyPremium,
+      median,
+      min: sortedPremiums[0] ?? 0,
+      max: sortedPremiums[sortedPremiums.length - 1] ?? 0,
+      policies: premiumCohort
+        .filter((p) => (p.annualPremium || 0) > 0)
+        .map<AvgPolicyPremiumPolicy>((p) => {
+          const clientName =
+            "firstName" in p.client && "lastName" in p.client
+              ? `${p.client.firstName} ${p.client.lastName}`.trim()
+              : (p.client.name ?? "Unknown");
+          return {
+            id: p.id,
+            clientName: clientName || "Unknown",
+            productName:
+              p.productDetails?.name ?? p.product ?? "Unknown product",
+            annualPremium: p.annualPremium || 0,
+            effectiveDate: p.effectiveDate,
+          };
+        })
+        .sort((a, b) => b.annualPremium - a.annualPremium),
+    };
 
     // Calculate average policies per month
     // Look at the last 12 months of data
@@ -370,6 +427,7 @@ export function useHistoricalAverages(): {
       avgExpensesPerMonth,
       projectedAnnualExpenses,
       annualExpenseBreakdown,
+      avgPolicyPremiumBreakdown,
       persistency13Month,
       persistency25Month,
       hasData: true,
