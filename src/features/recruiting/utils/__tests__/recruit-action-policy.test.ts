@@ -198,11 +198,11 @@ describe("canCancelInvitation", () => {
 // ─── Slack visibility ─────────────────────────────────────────────────────────
 
 describe("showNewRecruitSlack", () => {
-  it("is false when recruitIntegration is null", () => {
+  it("is true even when recruitIntegration is null (resolved at click time)", () => {
     const result = getRecruitActionPolicy(
       buildInput({ slack: { ...baseSlack, recruitIntegration: null } }),
     );
-    expect(result.showNewRecruitSlack).toBe(false);
+    expect(result.showNewRecruitSlack).toBe(true);
   });
 
   it("is true even when recruitChannel is null (resolved at click time)", () => {
@@ -254,11 +254,11 @@ describe("showNpnSlack", () => {
     expect(result.showNpnSlack).toBe(true);
   });
 
-  it("is false when recruitIntegration is null", () => {
+  it("is true even when recruitIntegration is null (resolved at click time)", () => {
     const result = getRecruitActionPolicy(
       buildInput({ slack: { ...baseSlack, recruitIntegration: null } }),
     );
-    expect(result.showNpnSlack).toBe(false);
+    expect(result.showNpnSlack).toBe(true);
   });
 
   it("is false for invitation entities", () => {

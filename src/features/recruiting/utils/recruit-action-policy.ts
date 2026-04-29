@@ -34,14 +34,10 @@ export function getRecruitActionPolicy(
   } = input;
   const isBlocked = currentPhase?.status === "blocked";
   const hasPhase = !!currentPhase;
-  // Visibility intentionally permissive: show the buttons whenever we have a
-  // connected Slack integration for the IMO, even if the recruit channel
-  // can't be resolved here. The click handler resolves the channel (explicit
-  // setting → name fallback) and surfaces a toast pointing to Settings if
-  // nothing is configured. Hiding the buttons on missing config is what
-  // caused them to silently disappear after the per-IMO refactor.
-  const slackVisible =
-    entity.kind === "registered" && !!slack.recruitIntegration && !!slack.imoId;
+  // Visibility: buttons show for any registered recruit. Integration/channel
+  // resolution is deferred to the click handler, which surfaces a toast if
+  // the workspace isn't connected or the channel can't be resolved.
+  const slackVisible = entity.kind === "registered";
 
   return {
     canAdvance: hasPhase && !isBlocked && !loading.isAdvancing,

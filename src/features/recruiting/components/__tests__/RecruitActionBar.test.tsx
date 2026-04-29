@@ -354,10 +354,10 @@ describe("registered entity — pipeline", () => {
 // ─── Slack buttons ────────────────────────────────────────────────────────────
 
 describe("Slack buttons", () => {
-  it("are hidden when no slack integration", () => {
+  it("still render with no slack integration (resolved on click)", () => {
     renderBar({ slack: noSlack });
-    expect(screen.queryByText(/Slack: New Recruit/i)).toBeNull();
-    expect(screen.queryByText(/Slack: NPN/i)).toBeNull();
+    expect(screen.getByText(/Slack: New Recruit/i)).toBeInTheDocument();
+    expect(screen.getByText(/Slack: NPN/i)).toBeInTheDocument();
   });
 
   it("shows New Recruit button when agent_status is unlicensed", () => {

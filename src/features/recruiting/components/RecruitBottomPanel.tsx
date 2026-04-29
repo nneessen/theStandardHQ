@@ -205,13 +205,9 @@ export function RecruitBottomPanel({
   const { data: notificationStatus } = useRecruitNotificationStatus(recruit.id);
   const sendSlackNotification = useSendRecruitSlackNotification();
 
-  // See policy comment in recruit-action-policy.ts: visibility no longer
-  // requires the channel to be resolved upfront — click handler shows a
-  // toast pointing to Settings if it can't find one.
-  const slackVisible =
-    !!recruitIntegration &&
-    !!currentUserProfile?.imo_id &&
-    !recruit.id.startsWith("invitation-");
+  // Visibility: render for any registered recruit. Click handler toasts if
+  // the workspace isn't connected or no channel can be resolved.
+  const slackVisible = !recruit.id.startsWith("invitation-");
   const showNewRecruitSlack =
     slackVisible && recruit.agent_status === "unlicensed";
   const showNpnSlack = slackVisible;
