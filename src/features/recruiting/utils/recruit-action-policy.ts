@@ -50,7 +50,7 @@ export function getRecruitActionPolicy(
       entity.kind === "invitation" &&
       !!entity.invitationId &&
       !loading.isCancellingInvitation,
-    showNewRecruitSlack: slackVisible && recruit.agent_status === "unlicensed",
+    showNewRecruitSlack: slackVisible,
     showNpnSlack: slackVisible,
     newRecruitSlackDisabled:
       !!slack.notificationStatus?.newRecruitSent || loading.isSendingSlack,

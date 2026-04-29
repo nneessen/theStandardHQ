@@ -208,8 +208,7 @@ export function RecruitBottomPanel({
   // Visibility: render for any registered recruit. Click handler toasts if
   // the workspace isn't connected or no channel can be resolved.
   const slackVisible = !recruit.id.startsWith("invitation-");
-  const showNewRecruitSlack =
-    slackVisible && recruit.agent_status === "unlicensed";
+  const showNewRecruitSlack = slackVisible;
   const showNpnSlack = slackVisible;
   const newRecruitSlackDisabled =
     !!notificationStatus?.newRecruitSent || sendSlackNotification.isPending;

@@ -365,7 +365,7 @@ describe("Slack buttons", () => {
     expect(screen.getByText(/Slack: New Recruit/i)).toBeInTheDocument();
   });
 
-  it("hides New Recruit button when agent_status is licensed", () => {
+  it("still shows New Recruit button when agent_status is licensed", () => {
     const licensedRecruit = {
       ...baseRecruit,
       agent_status: "licensed",
@@ -383,7 +383,7 @@ describe("Slack buttons", () => {
         loading={noLoadingStates}
       />,
     );
-    expect(screen.queryByText(/Slack: New Recruit/i)).toBeNull();
+    expect(screen.getByText(/Slack: New Recruit/i)).toBeInTheDocument();
   });
 
   it("shows NPN button even when recruit has no npn (guard on click)", () => {

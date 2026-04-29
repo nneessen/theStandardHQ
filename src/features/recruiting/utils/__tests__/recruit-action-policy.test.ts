@@ -212,13 +212,13 @@ describe("showNewRecruitSlack", () => {
     expect(result.showNewRecruitSlack).toBe(true);
   });
 
-  it("is false when agent_status is not unlicensed", () => {
+  it("is true even when agent_status is licensed (button always visible)", () => {
     const result = getRecruitActionPolicy(
       buildInput({
         recruit: { ...baseRecruit, agent_status: "licensed" } as UserProfile,
       }),
     );
-    expect(result.showNewRecruitSlack).toBe(false);
+    expect(result.showNewRecruitSlack).toBe(true);
   });
 
   it("is true when all conditions are met", () => {
