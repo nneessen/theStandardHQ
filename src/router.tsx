@@ -61,7 +61,7 @@ import PresentationRecordPage from "./features/training-modules/components/prese
 import PresentationDetailPage from "./features/training-modules/components/presentations/PresentationDetailPage";
 import { ContractingPage } from "./features/contracting/ContractingPage";
 import { MessagesPage } from "./features/messages";
-import { LeaderboardNamingPage } from "./features/messages/components/slack/LeaderboardNamingPage";
+import { LeaderboardNamingPage } from "./features/messages/components/LeaderboardNamingPage";
 import { TermsPage, PrivacyPage } from "./features/legal";
 import { WorkflowAdminPage } from "./features/workflows";
 import { LeaderboardPage } from "./features/leaderboard";
