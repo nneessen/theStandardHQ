@@ -136,14 +136,17 @@ class TargetsCalculationService {
         ? Math.ceil(totalPremiumNeeded / avgPolicyPremium)
         : 0;
 
-    // Break down policies by time period
-    const quarterlyPoliciesTarget = Math.ceil(annualPoliciesTarget / 4);
-    const monthlyPoliciesTarget = Math.ceil(annualPoliciesTarget / 12);
-    const weeklyPoliciesTarget = Math.ceil(annualPoliciesTarget / 52);
-    const dailyPoliciesTarget = Math.max(
-      1,
-      Math.ceil(annualPoliciesTarget / 365),
-    );
+    // Break down policies by time period.
+    // Use Math.round (not Math.ceil) so 12 × monthlyTarget ≈ annualTarget
+    // instead of overshooting by up to 11 policies. Daily floor keeps the
+    // "at least 1/day" guard so the dashboard doesn't show 0.
+    const quarterlyPoliciesTarget = Math.round(annualPoliciesTarget / 4);
+    const monthlyPoliciesTarget = Math.round(annualPoliciesTarget / 12);
+    const weeklyPoliciesTarget = Math.round(annualPoliciesTarget / 52);
+    const dailyPoliciesTarget =
+      annualPoliciesTarget > 0
+        ? Math.max(1, Math.round(annualPoliciesTarget / 365))
+        : 0;
 
     // Calculate expense ratio (expenses as % of GROSS commission income)
     const expenseRatio =

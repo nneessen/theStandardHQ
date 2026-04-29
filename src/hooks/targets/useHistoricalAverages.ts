@@ -28,7 +28,14 @@ export function useHistoricalAverages(): {
   error: Error | null;
 } {
   const { data: policies = [], isLoading: policiesLoading } = usePolicies();
-  const { data: expenses = [], isLoading: expensesLoading } = useExpenses();
+  const { data: allExpenses = [], isLoading: expensesLoading } = useExpenses();
+  // CRITICAL: Targets calculate GROSS commission needed = NET income + business
+  // expenses. Personal expenses (mortgage, groceries, etc.) must NOT inflate
+  // the commission target. Always filter to business-only here.
+  const expenses = useMemo(
+    () => allExpenses.filter((e) => e.expense_type === "business"),
+    [allExpenses],
+  );
   const {
     data: commissionProfile,
     isLoading: profileLoading,
