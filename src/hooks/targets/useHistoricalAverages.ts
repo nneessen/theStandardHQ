@@ -62,7 +62,9 @@ export function useHistoricalAverages(): {
       currentYearMetrics.avgPolicyPremium ||
       // Fallback: calculate from all active policies if current year has no data
       (() => {
-        const activePolicies = policies.filter((p) => p.lifecycleStatus === "active");
+        const activePolicies = policies.filter(
+          (p) => p.lifecycleStatus === "active",
+        );
         if (activePolicies.length > 0) {
           return (
             activePolicies.reduce((sum, p) => sum + (p.annualPremium || 0), 0) /
@@ -131,51 +133,28 @@ export function useHistoricalAverages(): {
           monthlyExpenseTotals.length
         : 0; // NO defaults - show zero if no expense data
 
-    // CRITICAL: Calculate projected annual expenses based on EXPENSE DEFINITIONS, not generated records
-    // The system auto-generates future records for recurring expenses, so we need to:
-    // 1. For recurring expenses: Calculate annual impact based on frequency (not sum generated records)
-    // 2. For one-time expenses: Just their face value
+    // Projected annual expenses = sum of every expense row (one-time AND
+    // recurring children) whose date falls in the current calendar year.
+    //
+    // This works because RecurringExpenseService already materializes each
+    // occurrence as its own row (e.g. a monthly recurring becomes 12 rows
+    // sharing a recurring_group_id). A date-bounded sum therefore naturally:
+    //   - Counts only this year's one-time expenses (not all-time history)
+    //   - Counts the right number of occurrences for partial-year recurrences
+    //   - Respects recurring_end_date (no records exist past the end date)
+    //   - Honors per-occurrence amount edits
+    const yearStart = new Date(now.getFullYear(), 0, 1);
+    const nextYearStart = new Date(now.getFullYear() + 1, 0, 1);
 
-    // Helper to calculate annual multiplier based on frequency
-    const getAnnualMultiplier = (frequency: string | null): number => {
-      switch (frequency) {
-        case "daily":
-          return 365;
-        case "weekly":
-          return 52;
-        case "biweekly":
-          return 26;
-        case "monthly":
-          return 12;
-        case "quarterly":
-          return 4;
-        case "semiannually":
-          return 2;
-        case "annually":
-          return 1;
-        default:
-          return 1; // One-time or unknown
+    const projectedAnnualExpenses = expenses.reduce((sum, e) => {
+      const occurrenceDate = e.date
+        ? parseLocalDate(e.date)
+        : new Date(e.created_at);
+      if (occurrenceDate >= yearStart && occurrenceDate < nextYearStart) {
+        return sum + (e.amount || 0);
       }
-    };
-
-    // Group recurring expenses by their recurring_group_id to avoid counting generated records multiple times
-    const processedRecurringGroups = new Set<string>();
-    let projectedAnnualExpenses = 0;
-
-    for (const expense of expenses) {
-      if (expense.is_recurring && expense.recurring_group_id) {
-        // For recurring expenses, only count each group once
-        if (!processedRecurringGroups.has(expense.recurring_group_id)) {
-          processedRecurringGroups.add(expense.recurring_group_id);
-          const multiplier = getAnnualMultiplier(expense.recurring_frequency);
-          projectedAnnualExpenses += (expense.amount || 0) * multiplier;
-        }
-        // Skip duplicate records from the same recurring group
-      } else {
-        // One-time expense: just add its value (no multiplication)
-        projectedAnnualExpenses += expense.amount || 0;
-      }
-    }
+      return sum;
+    }, 0);
 
     // Calculate persistency rates
     // 13-month persistency: policies still active after 13 months
