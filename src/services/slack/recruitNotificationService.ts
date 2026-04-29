@@ -1,5 +1,10 @@
 // src/services/slack/recruitNotificationService.ts
-// Service for sending recruit-related Slack notifications to the #new-agent-testing-odette channel
+// Service for sending recruit-related Slack notifications.
+//
+// The recruit notifications channel is configured per-integration via
+// `slack_integrations.recruit_channel_id` (set in Settings → Integrations →
+// Slack). This replaced an older hard-coded `#new-agent-testing-odette`
+// lookup that only worked for the Self Made workspace.
 
 import { supabase } from "@/services/base/supabase";
 import { slackService } from "./slackService";
@@ -10,34 +15,34 @@ import type {
   SlackNotificationType,
 } from "@/types/slack.types";
 
-const SELF_MADE_WORKSPACE_PATTERN = /self made/i;
-const RECRUIT_CHANNEL_NAME = "new-agent-testing-odette";
-
 /**
- * Find the "Self Made" workspace integration from a list of integrations
+ * Pick the integration that should receive recruit notifications.
+ * Returns the first connected integration with a configured
+ * `recruit_channel_id`. Caller is expected to scope `integrations` to the
+ * current user's IMO (e.g. via `useSlackIntegrations()`).
  */
-export function findSelfMadeIntegration(
+export function findRecruitIntegration(
   integrations: SlackIntegration[],
 ): SlackIntegration | null {
   return (
-    integrations.find(
-      (i) =>
-        i.isConnected &&
-        i.team_name &&
-        SELF_MADE_WORKSPACE_PATTERN.test(i.team_name),
-    ) ?? null
+    integrations.find((i) => i.isConnected && !!i.recruit_channel_id) ?? null
   );
 }
 
 /**
- * Find the recruit notification channel from a list of channels
+ * Resolve the configured recruit notifications channel from the workspace's
+ * channel list. Looks up the channel by the integration's stored
+ * `recruit_channel_id`.
  */
 export function findRecruitChannel(
+  integration: Pick<SlackIntegration, "recruit_channel_id"> | null | undefined,
   channels: SlackChannel[],
 ): SlackChannel | null {
+  if (!integration?.recruit_channel_id) return null;
   return (
-    channels.find((c) => c.name === RECRUIT_CHANNEL_NAME && !c.is_archived) ??
-    null
+    channels.find(
+      (c) => c.id === integration.recruit_channel_id && !c.is_archived,
+    ) ?? null
   );
 }
 
@@ -190,8 +195,9 @@ export async function sendRecruitNotification(params: {
 }
 
 /**
- * Full auto-post flow: find integration, find channel, join channel, check duplicates, send.
- * Fails silently (logs errors, never throws).
+ * Full auto-post flow: find integration, resolve channel from configured
+ * `recruit_channel_id`, check duplicates, send. Fails silently (logs errors,
+ * never throws). Skips if the IMO has not configured a recruit channel.
  */
 export async function autoPostRecruitNotification(
   recruit: {
@@ -208,17 +214,15 @@ export async function autoPostRecruitNotification(
   imoId: string,
 ): Promise<void> {
   try {
-    // Get all integrations for the IMO
     const integrations = await slackService.getIntegrations(imoId);
-    const selfMade = findSelfMadeIntegration(integrations);
-    if (!selfMade) {
+    const integration = findRecruitIntegration(integrations);
+    if (!integration || !integration.recruit_channel_id) {
       console.log(
-        "[recruitNotificationService] No Self Made integration found, skipping auto-post",
+        "[recruitNotificationService] No recruit channel configured for IMO, skipping auto-post",
       );
       return;
     }
 
-    // Check duplicate
     const alreadySent = await checkNotificationSent(
       recruit.id,
       notificationType,
@@ -230,18 +234,14 @@ export async function autoPostRecruitNotification(
       return;
     }
 
-    // Build message
-    // Pass channel name directly to Slack API (it accepts names, not just IDs)
-    // This avoids calling slack-list-channels edge function which has CORS restrictions
     const message =
       notificationType === "new_recruit"
         ? buildNewRecruitMessage(recruit)
         : buildNpnReceivedMessage(recruit);
 
-    // Send using channel name directly (Slack API resolves names)
     const result = await sendRecruitNotification({
-      integrationId: selfMade.id,
-      channelId: RECRUIT_CHANNEL_NAME,
+      integrationId: integration.id,
+      channelId: integration.recruit_channel_id,
       text: message.text,
       blocks: message.blocks,
       notificationType,

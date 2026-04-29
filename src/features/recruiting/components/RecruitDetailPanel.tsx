@@ -76,7 +76,7 @@ import {
   useSendRecruitSlackNotification,
 } from "@/hooks/slack";
 import {
-  findSelfMadeIntegration,
+  findRecruitIntegration,
   findRecruitChannel,
   buildNewRecruitMessage,
   buildNpnReceivedMessage,
@@ -200,11 +200,11 @@ export function RecruitDetailPanel({
 
   // ─── Slack ────────────────────────────────────────────────────────
   const { data: slackIntegrations = [] } = useSlackIntegrations();
-  const selfMadeIntegration = findSelfMadeIntegration(slackIntegrations);
+  const recruitIntegration = findRecruitIntegration(slackIntegrations);
   const { data: slackChannels = [] } = useSlackChannelsById(
-    selfMadeIntegration?.id,
+    recruitIntegration?.id,
   );
-  const recruitChannel = findRecruitChannel(slackChannels);
+  const recruitChannel = findRecruitChannel(recruitIntegration, slackChannels);
   const { data: notificationStatus } =
     useRecruitNotificationStatus(recruitIdForQueries);
   const sendSlackNotification = useSendRecruitSlackNotification();
@@ -317,7 +317,7 @@ export function RecruitDetailPanel({
     notificationType: "new_recruit" | "npn_received",
   ): Promise<void> => {
     // Guard: missing integration context — silent no-op (policy already hides the button)
-    if (!selfMadeIntegration || !recruitChannel || !currentUserProfile?.imo_id)
+    if (!recruitIntegration || !recruitChannel || !currentUserProfile?.imo_id)
       return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- upline joined by RecruitRepository
     const upline = (recruit as any).upline as
@@ -334,7 +334,7 @@ export function RecruitDetailPanel({
         : buildNpnReceivedMessage(recruitWithUpline);
     // mutateAsync rejects on error; hook's onError fires the toast
     await sendSlackNotification.mutateAsync({
-      integrationId: selfMadeIntegration.id,
+      integrationId: recruitIntegration.id,
       channelId: recruitChannel.id,
       text: msg.text,
       blocks: msg.blocks,
@@ -440,7 +440,7 @@ export function RecruitDetailPanel({
           currentPhase={currentPhase}
           canRevert={canRevert}
           slack={{
-            selfMadeIntegration,
+            recruitIntegration,
             recruitChannel,
             imoId: currentUserProfile?.imo_id ?? null,
             notificationStatus,

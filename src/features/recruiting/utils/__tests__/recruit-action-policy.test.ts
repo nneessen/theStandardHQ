@@ -19,7 +19,7 @@ const baseRecruit: Partial<UserProfile> = {
 };
 
 const baseSlack: RecruitSlackContext = {
-  selfMadeIntegration: { id: "int-1" },
+  recruitIntegration: { id: "int-1" },
   recruitChannel: { id: "ch-1", name: "new-agents" },
   imoId: "imo-1",
   notificationStatus: { newRecruitSent: false, npnReceivedSent: false },
@@ -198,9 +198,9 @@ describe("canCancelInvitation", () => {
 // ─── Slack visibility ─────────────────────────────────────────────────────────
 
 describe("showNewRecruitSlack", () => {
-  it("is false when selfMadeIntegration is null", () => {
+  it("is false when recruitIntegration is null", () => {
     const result = getRecruitActionPolicy(
-      buildInput({ slack: { ...baseSlack, selfMadeIntegration: null } }),
+      buildInput({ slack: { ...baseSlack, recruitIntegration: null } }),
     );
     expect(result.showNewRecruitSlack).toBe(false);
   });
@@ -254,9 +254,9 @@ describe("showNpnSlack", () => {
     expect(result.showNpnSlack).toBe(true);
   });
 
-  it("is false when selfMadeIntegration is null", () => {
+  it("is false when recruitIntegration is null", () => {
     const result = getRecruitActionPolicy(
-      buildInput({ slack: { ...baseSlack, selfMadeIntegration: null } }),
+      buildInput({ slack: { ...baseSlack, recruitIntegration: null } }),
     );
     expect(result.showNpnSlack).toBe(false);
   });

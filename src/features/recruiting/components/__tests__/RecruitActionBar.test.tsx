@@ -66,14 +66,14 @@ const noLoadingStates: RecruitActionLoading = {
 };
 
 const noSlack: RecruitSlackContext = {
-  selfMadeIntegration: null,
+  recruitIntegration: null,
   recruitChannel: null,
   imoId: null,
   notificationStatus: undefined,
 };
 
 const activeSlack: RecruitSlackContext = {
-  selfMadeIntegration: { id: "int-1" },
+  recruitIntegration: { id: "int-1" },
   recruitChannel: { id: "ch-1", name: "new-agents" },
   imoId: "imo-1",
   notificationStatus: { newRecruitSent: false, npnReceivedSent: false },

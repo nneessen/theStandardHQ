@@ -9236,6 +9236,8 @@ export type Database = {
           leaderboard_channel_name: string | null;
           policy_channel_id: string | null;
           policy_channel_name: string | null;
+          recruit_channel_id: string | null;
+          recruit_channel_name: string | null;
           refresh_token_encrypted: string | null;
           scope: string;
           team_id: string;
@@ -9269,6 +9271,8 @@ export type Database = {
           leaderboard_channel_name?: string | null;
           policy_channel_id?: string | null;
           policy_channel_name?: string | null;
+          recruit_channel_id?: string | null;
+          recruit_channel_name?: string | null;
           refresh_token_encrypted?: string | null;
           scope: string;
           team_id: string;
@@ -9302,6 +9306,8 @@ export type Database = {
           leaderboard_channel_name?: string | null;
           policy_channel_id?: string | null;
           policy_channel_name?: string | null;
+          recruit_channel_id?: string | null;
+          recruit_channel_name?: string | null;
           refresh_token_encrypted?: string | null;
           scope?: string;
           team_id?: string;
@@ -17896,6 +17902,7 @@ export type Database = {
         Args: never;
         Returns: undefined;
       };
+      invoke_slack_ip_leaderboard: { Args: never; Returns: undefined };
       is_admin: { Args: never; Returns: boolean };
       is_admin_user:
         | { Args: never; Returns: boolean }

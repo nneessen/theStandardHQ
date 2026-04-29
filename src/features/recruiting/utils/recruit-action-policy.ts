@@ -36,7 +36,7 @@ export function getRecruitActionPolicy(
   const hasPhase = !!currentPhase;
   const slackVisible =
     entity.kind === "registered" &&
-    !!slack.selfMadeIntegration &&
+    !!slack.recruitIntegration &&
     !!slack.recruitChannel &&
     !!slack.imoId;
 

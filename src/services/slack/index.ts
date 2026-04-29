@@ -3,7 +3,7 @@ export { slackService, default } from "./slackService";
 export { userSlackPreferencesService } from "./userSlackPreferencesService";
 export { webhookService } from "./webhookService";
 export {
-  findSelfMadeIntegration,
+  findRecruitIntegration,
   findRecruitChannel,
   buildNewRecruitMessage,
   buildNpnReceivedMessage,

@@ -62,7 +62,7 @@ export {
 
 export {
   // Recruit notification utilities (pure helpers)
-  findSelfMadeIntegration,
+  findRecruitIntegration,
   findRecruitChannel,
   buildNewRecruitMessage,
   buildNpnReceivedMessage,

@@ -204,7 +204,7 @@ function WorkspaceCard({
   };
 
   const handleChannelSelect = async (
-    type: "policy" | "leaderboard",
+    type: "policy" | "leaderboard" | "recruit",
     channelId: string,
   ) => {
     const channel = channels.find((c: SlackChannel) => c.id === channelId);
@@ -237,7 +237,7 @@ function WorkspaceCard({
           },
         });
         toast.success(`Policy notifications will go to #${channel.name}`);
-      } else {
+      } else if (type === "leaderboard") {
         await updateSettings.mutateAsync({
           integrationId: integration.id,
           settings: {
@@ -246,6 +246,15 @@ function WorkspaceCard({
           },
         });
         toast.success(`Leaderboard will go to #${channel.name}`);
+      } else {
+        await updateSettings.mutateAsync({
+          integrationId: integration.id,
+          settings: {
+            recruit_channel_id: channelId,
+            recruit_channel_name: channel.name,
+          },
+        });
+        toast.success(`Recruit notifications will go to #${channel.name}`);
       }
     } catch {
       toast.error("Failed to update channel setting");
@@ -504,7 +513,7 @@ function WorkspaceCard({
               </div>
             ) : !isAdmin ? (
               /* Read-only view for non-admins */
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
                   <Label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
                     Policy Sales
@@ -535,13 +544,28 @@ function WorkspaceCard({
                     )}
                   </div>
                 </div>
+                <div className="space-y-1">
+                  <Label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                    Recruit Notifications
+                  </Label>
+                  <div className="h-7 px-2 flex items-center text-[10px] bg-v2-ring rounded border border-v2-ring">
+                    {integration.recruit_channel_name ? (
+                      <span className="flex items-center gap-1">
+                        <Hash className="h-2.5 w-2.5" />
+                        {integration.recruit_channel_name}
+                      </span>
+                    ) : (
+                      <span className="text-v2-ink-subtle">Not configured</span>
+                    )}
+                  </div>
+                </div>
               </div>
             ) : availableChannels.length === 0 ? (
               <div className="text-[10px] text-v2-ink-muted py-2">
                 No channels available. Invite the bot to channels first.
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 {/* Policy Sales Channel */}
                 <div className="space-y-1">
                   <Label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
@@ -599,6 +623,46 @@ function WorkspaceCard({
                           <span className="flex items-center gap-1">
                             <Hash className="h-2.5 w-2.5" />
                             {integration.leaderboard_channel_name}
+                          </span>
+                        ) : (
+                          "Select..."
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableChannels.map((channel: SlackChannel) => (
+                        <SelectItem
+                          key={channel.id}
+                          value={channel.id}
+                          className="text-[10px]"
+                        >
+                          <span className="flex items-center gap-1">
+                            <Hash className="h-2.5 w-2.5" />
+                            {channel.name}
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Recruit Notifications Channel */}
+                <div className="space-y-1">
+                  <Label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                    Recruit Notifications
+                  </Label>
+                  <Select
+                    value={integration.recruit_channel_id || ""}
+                    onValueChange={(value) =>
+                      handleChannelSelect("recruit", value)
+                    }
+                  >
+                    <SelectTrigger className="h-7 text-[10px]">
+                      <SelectValue placeholder="Select...">
+                        {integration.recruit_channel_name ? (
+                          <span className="flex items-center gap-1">
+                            <Hash className="h-2.5 w-2.5" />
+                            {integration.recruit_channel_name}
                           </span>
                         ) : (
                           "Select..."

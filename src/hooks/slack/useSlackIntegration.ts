@@ -327,6 +327,8 @@ export function useUpdateSlackIntegrationSettings() {
         policy_channel_name?: string | null;
         leaderboard_channel_id?: string | null;
         leaderboard_channel_name?: string | null;
+        recruit_channel_id?: string | null;
+        recruit_channel_name?: string | null;
         include_client_info?: boolean;
         include_leaderboard_with_policy?: boolean;
       };

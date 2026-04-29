@@ -72,7 +72,7 @@ export interface RecruitActionLoading {
 }
 
 export interface RecruitSlackContext {
-  selfMadeIntegration: { id: string } | null;
+  recruitIntegration: { id: string } | null;
   recruitChannel: { id: string; name?: string } | null;
   imoId: string | null;
   notificationStatus: RecruitNotificationStatus | undefined;
