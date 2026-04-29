@@ -4,7 +4,12 @@ import { useMemo } from "react";
 import { usePolicies } from "../policies";
 import { useExpenses } from "../expenses/useExpenses";
 import { useUserCommissionProfile } from "../commissions/useUserCommissionProfile";
-import { HistoricalAverages } from "../../services/targets/targetsCalculationService";
+import {
+  AnnualExpenseBreakdown,
+  AnnualExpenseOneTimeContribution,
+  AnnualExpenseRecurringContribution,
+  HistoricalAverages,
+} from "../../services/targets/targetsCalculationService";
 import { currentMonthMetricsService } from "../../services/targets/currentMonthMetricsService";
 import { parseLocalDate } from "../../lib/date";
 
@@ -43,6 +48,13 @@ export function useHistoricalAverages(): {
         avgPoliciesPerMonth: 0,
         avgExpensesPerMonth: 0,
         projectedAnnualExpenses: 0,
+        annualExpenseBreakdown: {
+          recurring: [],
+          oneTime: [],
+          recurringTotal: 0,
+          oneTimeTotal: 0,
+          total: 0,
+        },
         persistency13Month: 0,
         persistency25Month: 0,
         hasData: false,
@@ -154,11 +166,13 @@ export function useHistoricalAverages(): {
       startDate: Date;
       latestDate: Date;
       latestAmount: number;
+      latestName: string;
       frequency: NonNullable<(typeof expenses)[number]["recurring_frequency"]>;
       endDate: Date | null;
     };
     const recurringGroups = new Map<string, RecurringGroup>();
     let oneTimeYearTotal = 0;
+    const oneTimeContributions: AnnualExpenseOneTimeContribution[] = [];
 
     for (const e of expenses) {
       const eDate = e.date ? parseLocalDate(e.date) : new Date(e.created_at);
@@ -170,6 +184,7 @@ export function useHistoricalAverages(): {
             startDate: eDate,
             latestDate: eDate,
             latestAmount: e.amount || 0,
+            latestName: e.name || "Recurring expense",
             frequency: e.recurring_frequency,
             endDate: e.recurring_end_date
               ? parseLocalDate(e.recurring_end_date)
@@ -180,6 +195,13 @@ export function useHistoricalAverages(): {
           if (eDate >= existing.latestDate) {
             existing.latestDate = eDate;
             existing.latestAmount = e.amount || 0;
+            existing.latestName = e.name || existing.latestName;
+            // Take endDate from the latest-dated row so updates to the
+            // recurring's end date take effect even if older rows still hold
+            // a stale value.
+            existing.endDate = e.recurring_end_date
+              ? parseLocalDate(e.recurring_end_date)
+              : null;
           }
         }
         continue;
@@ -187,6 +209,12 @@ export function useHistoricalAverages(): {
 
       if (eDate >= yearStart && eDate < nextYearStart) {
         oneTimeYearTotal += e.amount || 0;
+        oneTimeContributions.push({
+          id: e.id,
+          name: e.name || "Untitled expense",
+          amount: e.amount || 0,
+          date: e.date,
+        });
       }
     }
 
@@ -244,8 +272,9 @@ export function useHistoricalAverages(): {
     };
 
     let recurringYearTotal = 0;
+    const recurringContributions: AnnualExpenseRecurringContribution[] = [];
     const MAX_ITER = 4000;
-    for (const group of recurringGroups.values()) {
+    for (const [groupId, group] of recurringGroups.entries()) {
       const upperBound =
         group.endDate && group.endDate < nextYearStart
           ? group.endDate
@@ -261,10 +290,32 @@ export function useHistoricalAverages(): {
         iter++;
       }
 
-      recurringYearTotal += group.latestAmount * occurrences;
+      const groupTotal = group.latestAmount * occurrences;
+      recurringYearTotal += groupTotal;
+      recurringContributions.push({
+        groupId,
+        name: group.latestName,
+        frequency: group.frequency,
+        latestAmount: group.latestAmount,
+        occurrences,
+        total: groupTotal,
+        endDate: group.endDate
+          ? group.endDate.toISOString().slice(0, 10)
+          : null,
+      });
     }
 
+    recurringContributions.sort((a, b) => b.total - a.total);
+    oneTimeContributions.sort((a, b) => b.amount - a.amount);
+
     const projectedAnnualExpenses = oneTimeYearTotal + recurringYearTotal;
+    const annualExpenseBreakdown: AnnualExpenseBreakdown = {
+      recurring: recurringContributions,
+      oneTime: oneTimeContributions,
+      recurringTotal: recurringYearTotal,
+      oneTimeTotal: oneTimeYearTotal,
+      total: projectedAnnualExpenses,
+    };
 
     // Calculate persistency rates
     // 13-month persistency: policies still active after 13 months
@@ -311,6 +362,7 @@ export function useHistoricalAverages(): {
       avgPoliciesPerMonth,
       avgExpensesPerMonth,
       projectedAnnualExpenses,
+      annualExpenseBreakdown,
       persistency13Month,
       persistency25Month,
       hasData: true,

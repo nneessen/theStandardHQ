@@ -10,7 +10,12 @@ import { useHistoricalAverages } from "../../hooks/targets/useHistoricalAverages
 import { useUserCommissionProfile } from "../../hooks/commissions/useUserCommissionProfile";
 import { Input } from "@/components/ui/input";
 import { PillButton } from "@/components/v2";
-import { Edit2, Target, AlertCircle } from "lucide-react";
+import { Edit2, Target, AlertCircle, Info } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { formatCurrency, formatPercent } from "../../lib/format";
 import { toast } from "sonner";
@@ -260,8 +265,130 @@ export function TargetsPage() {
                       </span>
                     </div>
                     <div className="flex justify-between text-[11px]">
-                      <span className="text-v2-ink-muted">
+                      <span className="text-v2-ink-muted flex items-center gap-1">
                         + Annual Expenses
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              className="text-v2-ink-subtle hover:text-v2-ink transition-colors"
+                              aria-label="Show annual expense breakdown"
+                            >
+                              <Info className="h-3 w-3" />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            align="start"
+                            className="w-[360px] p-3"
+                          >
+                            <div className="text-[11px]">
+                              <div className="font-semibold text-v2-ink mb-1.5">
+                                Annual Expenses Breakdown
+                              </div>
+                              <div className="text-v2-ink-subtle mb-2">
+                                Year {new Date().getFullYear()} • projected from
+                                recurring definitions + one-time rows
+                              </div>
+
+                              {averages.annualExpenseBreakdown.recurring
+                                .length > 0 && (
+                                <div className="mb-2">
+                                  <div className="text-[10px] font-semibold uppercase tracking-wider text-v2-ink-muted mb-1">
+                                    Recurring (
+                                    {formatCurrency(
+                                      averages.annualExpenseBreakdown
+                                        .recurringTotal,
+                                    )}
+                                    )
+                                  </div>
+                                  <div className="space-y-0.5 max-h-[200px] overflow-y-auto">
+                                    {averages.annualExpenseBreakdown.recurring.map(
+                                      (g) => (
+                                        <div
+                                          key={g.groupId}
+                                          className="flex justify-between gap-2"
+                                        >
+                                          <span
+                                            className="text-v2-ink truncate"
+                                            title={g.name}
+                                          >
+                                            {g.name}
+                                          </span>
+                                          <span className="font-mono text-v2-ink-subtle whitespace-nowrap">
+                                            {formatCurrency(g.latestAmount)} ×{" "}
+                                            {g.occurrences} {g.frequency}
+                                            {g.endDate
+                                              ? ` (ends ${g.endDate})`
+                                              : ""}{" "}
+                                            ={" "}
+                                            <span className="text-v2-ink font-semibold">
+                                              {formatCurrency(g.total)}
+                                            </span>
+                                          </span>
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              {averages.annualExpenseBreakdown.oneTime.length >
+                                0 && (
+                                <div className="mb-2">
+                                  <div className="text-[10px] font-semibold uppercase tracking-wider text-v2-ink-muted mb-1">
+                                    One-time (
+                                    {formatCurrency(
+                                      averages.annualExpenseBreakdown
+                                        .oneTimeTotal,
+                                    )}
+                                    )
+                                  </div>
+                                  <div className="space-y-0.5 max-h-[160px] overflow-y-auto">
+                                    {averages.annualExpenseBreakdown.oneTime.map(
+                                      (e) => (
+                                        <div
+                                          key={e.id}
+                                          className="flex justify-between gap-2"
+                                        >
+                                          <span
+                                            className="text-v2-ink truncate"
+                                            title={e.name}
+                                          >
+                                            {e.name}{" "}
+                                            <span className="text-v2-ink-subtle">
+                                              ({e.date})
+                                            </span>
+                                          </span>
+                                          <span className="font-mono text-v2-ink font-semibold whitespace-nowrap">
+                                            {formatCurrency(e.amount)}
+                                          </span>
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="border-t border-v2-ring pt-1.5 flex justify-between font-semibold">
+                                <span className="text-v2-ink">Total</span>
+                                <span className="font-mono text-v2-ink">
+                                  {formatCurrency(
+                                    averages.annualExpenseBreakdown.total,
+                                  )}
+                                </span>
+                              </div>
+
+                              {averages.annualExpenseBreakdown.recurring
+                                .length === 0 &&
+                                averages.annualExpenseBreakdown.oneTime
+                                  .length === 0 && (
+                                  <div className="text-v2-ink-subtle">
+                                    No expenses recorded for this year.
+                                  </div>
+                                )}
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </span>
                       <span className="font-mono text-v2-ink">
                         {formatCurrency(calculatedTargets.annualExpenses)}

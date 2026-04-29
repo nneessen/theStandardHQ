@@ -1,11 +1,37 @@
 // src/services/targets/targetsCalculationService.ts
 
+export interface AnnualExpenseRecurringContribution {
+  groupId: string;
+  name: string;
+  frequency: string;
+  latestAmount: number;
+  occurrences: number;
+  total: number;
+  endDate: string | null;
+}
+
+export interface AnnualExpenseOneTimeContribution {
+  id: string;
+  name: string;
+  amount: number;
+  date: string;
+}
+
+export interface AnnualExpenseBreakdown {
+  recurring: AnnualExpenseRecurringContribution[];
+  oneTime: AnnualExpenseOneTimeContribution[];
+  recurringTotal: number;
+  oneTimeTotal: number;
+  total: number;
+}
+
 export interface HistoricalAverages {
   avgCommissionRate: number; // As decimal (e.g., 0.50 for 50%)
   avgPolicyPremium: number; // Average annual premium per policy
   avgPoliciesPerMonth: number; // Historical average policies written per month
   avgExpensesPerMonth: number; // Historical average monthly expenses (for monthly display)
   projectedAnnualExpenses: number; // Sum of actual expenses for the year (NOT avgExpensesPerMonth * 12)
+  annualExpenseBreakdown: AnnualExpenseBreakdown;
   persistency13Month: number; // As decimal
   persistency25Month: number; // As decimal
   hasData: boolean; // Whether we have enough historical data
