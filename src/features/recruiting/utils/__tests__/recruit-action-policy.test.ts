@@ -205,11 +205,11 @@ describe("showNewRecruitSlack", () => {
     expect(result.showNewRecruitSlack).toBe(false);
   });
 
-  it("is false when recruitChannel is null", () => {
+  it("is true even when recruitChannel is null (resolved at click time)", () => {
     const result = getRecruitActionPolicy(
       buildInput({ slack: { ...baseSlack, recruitChannel: null } }),
     );
-    expect(result.showNewRecruitSlack).toBe(false);
+    expect(result.showNewRecruitSlack).toBe(true);
   });
 
   it("is false when agent_status is not unlicensed", () => {

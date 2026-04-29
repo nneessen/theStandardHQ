@@ -205,9 +205,11 @@ export function RecruitBottomPanel({
   const { data: notificationStatus } = useRecruitNotificationStatus(recruit.id);
   const sendSlackNotification = useSendRecruitSlackNotification();
 
+  // See policy comment in recruit-action-policy.ts: visibility no longer
+  // requires the channel to be resolved upfront — click handler shows a
+  // toast pointing to Settings if it can't find one.
   const slackVisible =
     !!recruitIntegration &&
-    !!recruitChannel &&
     !!currentUserProfile?.imo_id &&
     !recruit.id.startsWith("invitation-");
   const showNewRecruitSlack =
@@ -221,8 +223,16 @@ export function RecruitBottomPanel({
   const handleSendSlackNotification = async (
     notificationType: "new_recruit" | "npn_received",
   ): Promise<void> => {
-    if (!recruitIntegration || !recruitChannel || !currentUserProfile?.imo_id)
+    if (!recruitIntegration || !currentUserProfile?.imo_id) {
+      toast.error("No connected Slack workspace for your IMO.");
       return;
+    }
+    if (!recruitChannel) {
+      toast.error(
+        "No recruit channel found. Open Settings → Integrations → Slack to pick one.",
+      );
+      return;
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- upline joined by RecruitRepository
     const upline = (recruit as any).upline as
       | { first_name?: string; last_name?: string; email?: string }
@@ -456,7 +466,7 @@ export function RecruitBottomPanel({
         <div className="flex items-center gap-2 px-4 py-2 border-b border-v2-ring bg-v2-canvas/40 shrink-0">
           <Hash className="h-3 w-3 text-v2-ink-subtle shrink-0" />
           <span className="text-[10px] text-v2-ink-muted shrink-0">
-            #{recruitChannel?.name}
+            {recruitChannel?.name ? `#${recruitChannel.name}` : "Slack"}
           </span>
           <div className="flex items-center gap-1.5 ml-auto">
             {showNewRecruitSlack && (

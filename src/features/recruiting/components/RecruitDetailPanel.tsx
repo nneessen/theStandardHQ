@@ -316,9 +316,16 @@ export function RecruitDetailPanel({
   const handleSendSlackNotification = async (
     notificationType: "new_recruit" | "npn_received",
   ): Promise<void> => {
-    // Guard: missing integration context — silent no-op (policy already hides the button)
-    if (!recruitIntegration || !recruitChannel || !currentUserProfile?.imo_id)
+    if (!recruitIntegration || !currentUserProfile?.imo_id) {
+      toast.error("No connected Slack workspace for your IMO.");
       return;
+    }
+    if (!recruitChannel) {
+      toast.error(
+        "No recruit channel found. Open Settings → Integrations → Slack to pick one.",
+      );
+      return;
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any -- upline joined by RecruitRepository
     const upline = (recruit as any).upline as
       | { first_name?: string; last_name?: string; email?: string }
