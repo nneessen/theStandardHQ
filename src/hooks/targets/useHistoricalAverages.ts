@@ -133,28 +133,138 @@ export function useHistoricalAverages(): {
           monthlyExpenseTotals.length
         : 0; // NO defaults - show zero if no expense data
 
-    // Projected annual expenses = sum of every expense row (one-time AND
-    // recurring children) whose date falls in the current calendar year.
+    // Projected annual expenses for the current calendar year.
     //
-    // This works because RecurringExpenseService already materializes each
-    // occurrence as its own row (e.g. a monthly recurring becomes 12 rows
-    // sharing a recurring_group_id). A date-bounded sum therefore naturally:
-    //   - Counts only this year's one-time expenses (not all-time history)
-    //   - Counts the right number of occurrences for partial-year recurrences
-    //   - Respects recurring_end_date (no records exist past the end date)
-    //   - Honors per-occurrence amount edits
+    // Why we project from the recurring DEFINITION instead of summing
+    // materialized rows: RecurringExpenseService only generates 12 future
+    // occurrences at creation, and only extends when the user navigates an
+    // expense list past those dates — the Targets page never triggers
+    // extension. Summing rows therefore severely undercounts when a recurring
+    // is older than its materialization window (e.g. a monthly recurring set
+    // up 2 years ago has only Jan of this year materialized).
+    //
+    // Algorithm:
+    //   - One-time expenses dated in current year → face value
+    //   - Recurring groups → representative amount (latest in group) ×
+    //     occurrence count in current year, respecting recurring_end_date
     const yearStart = new Date(now.getFullYear(), 0, 1);
     const nextYearStart = new Date(now.getFullYear() + 1, 0, 1);
 
-    const projectedAnnualExpenses = expenses.reduce((sum, e) => {
-      const occurrenceDate = e.date
-        ? parseLocalDate(e.date)
-        : new Date(e.created_at);
-      if (occurrenceDate >= yearStart && occurrenceDate < nextYearStart) {
-        return sum + (e.amount || 0);
+    type RecurringGroup = {
+      startDate: Date;
+      latestDate: Date;
+      latestAmount: number;
+      frequency: NonNullable<(typeof expenses)[number]["recurring_frequency"]>;
+      endDate: Date | null;
+    };
+    const recurringGroups = new Map<string, RecurringGroup>();
+    let oneTimeYearTotal = 0;
+
+    for (const e of expenses) {
+      const eDate = e.date ? parseLocalDate(e.date) : new Date(e.created_at);
+
+      if (e.is_recurring && e.recurring_group_id && e.recurring_frequency) {
+        const existing = recurringGroups.get(e.recurring_group_id);
+        if (!existing) {
+          recurringGroups.set(e.recurring_group_id, {
+            startDate: eDate,
+            latestDate: eDate,
+            latestAmount: e.amount || 0,
+            frequency: e.recurring_frequency,
+            endDate: e.recurring_end_date
+              ? parseLocalDate(e.recurring_end_date)
+              : null,
+          });
+        } else {
+          if (eDate < existing.startDate) existing.startDate = eDate;
+          if (eDate >= existing.latestDate) {
+            existing.latestDate = eDate;
+            existing.latestAmount = e.amount || 0;
+          }
+        }
+        continue;
       }
-      return sum;
-    }, 0);
+
+      if (eDate >= yearStart && eDate < nextYearStart) {
+        oneTimeYearTotal += e.amount || 0;
+      }
+    }
+
+    const advanceByFrequency = (
+      cursor: Date,
+      frequency: RecurringGroup["frequency"],
+      anchorDay: number,
+    ): Date => {
+      const next = new Date(cursor);
+      switch (frequency) {
+        case "daily":
+          next.setDate(next.getDate() + 1);
+          break;
+        case "weekly":
+          next.setDate(next.getDate() + 7);
+          break;
+        case "biweekly":
+          next.setDate(next.getDate() + 14);
+          break;
+        case "monthly": {
+          next.setMonth(next.getMonth() + 1);
+          const lastDay = new Date(
+            next.getFullYear(),
+            next.getMonth() + 1,
+            0,
+          ).getDate();
+          next.setDate(Math.min(anchorDay, lastDay));
+          break;
+        }
+        case "quarterly": {
+          next.setMonth(next.getMonth() + 3);
+          const lastDay = new Date(
+            next.getFullYear(),
+            next.getMonth() + 1,
+            0,
+          ).getDate();
+          next.setDate(Math.min(anchorDay, lastDay));
+          break;
+        }
+        case "semiannually": {
+          next.setMonth(next.getMonth() + 6);
+          const lastDay = new Date(
+            next.getFullYear(),
+            next.getMonth() + 1,
+            0,
+          ).getDate();
+          next.setDate(Math.min(anchorDay, lastDay));
+          break;
+        }
+        case "annually":
+          next.setFullYear(next.getFullYear() + 1);
+          break;
+      }
+      return next;
+    };
+
+    let recurringYearTotal = 0;
+    const MAX_ITER = 4000;
+    for (const group of recurringGroups.values()) {
+      const upperBound =
+        group.endDate && group.endDate < nextYearStart
+          ? group.endDate
+          : nextYearStart;
+      const anchorDay = group.startDate.getDate();
+
+      let cursor = new Date(group.startDate);
+      let occurrences = 0;
+      let iter = 0;
+      while (cursor < upperBound && iter < MAX_ITER) {
+        if (cursor >= yearStart) occurrences++;
+        cursor = advanceByFrequency(cursor, group.frequency, anchorDay);
+        iter++;
+      }
+
+      recurringYearTotal += group.latestAmount * occurrences;
+    }
+
+    const projectedAnnualExpenses = oneTimeYearTotal + recurringYearTotal;
 
     // Calculate persistency rates
     // 13-month persistency: policies still active after 13 months
