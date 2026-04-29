@@ -16,34 +16,70 @@ import type {
 } from "@/types/slack.types";
 
 /**
- * Pick the integration that should receive recruit notifications.
- * Returns the first connected integration with a configured
- * `recruit_channel_id`. Caller is expected to scope `integrations` to the
- * current user's IMO (e.g. via `useSlackIntegrations()`).
+ * Channel name patterns we'll auto-pick as the recruit channel when
+ * `slack_integrations.recruit_channel_id` is not yet configured. Includes
+ * the legacy hard-coded Self Made channel so existing users continue to
+ * work without re-configuring, plus a few common conventions any IMO is
+ * likely to have. Once a user sets the channel via Settings, the explicit
+ * choice always wins.
  */
-export function findRecruitIntegration(
-  integrations: SlackIntegration[],
-): SlackIntegration | null {
+const RECRUIT_CHANNEL_NAME_FALLBACKS = [
+  "new-agent-testing-odette",
+  "new-agents",
+  "new-recruits",
+  "recruiting",
+  "recruits",
+  "recruit-notifications",
+];
+
+function autoPickRecruitChannel(channels: SlackChannel[]): SlackChannel | null {
+  for (const name of RECRUIT_CHANNEL_NAME_FALLBACKS) {
+    const match = channels.find((c) => c.name === name && !c.is_archived);
+    if (match) return match;
+  }
+  // Last-ditch: any non-archived channel whose name contains "recruit"
   return (
-    integrations.find((i) => i.isConnected && !!i.recruit_channel_id) ?? null
+    channels.find((c) => !c.is_archived && /recruit/i.test(c.name)) ?? null
   );
 }
 
 /**
- * Resolve the configured recruit notifications channel from the workspace's
- * channel list. Looks up the channel by the integration's stored
- * `recruit_channel_id`.
+ * Pick the integration that should receive recruit notifications. Caller is
+ * expected to scope `integrations` to the current user's IMO (e.g. via
+ * `useSlackIntegrations()`). Returns the first connected integration with a
+ * configured `recruit_channel_id`, or — if none configured — falls back to
+ * the first connected integration so the channel-name fallback can attempt
+ * to auto-pick a channel.
+ */
+export function findRecruitIntegration(
+  integrations: SlackIntegration[],
+): SlackIntegration | null {
+  const configured = integrations.find(
+    (i) => i.isConnected && !!i.recruit_channel_id,
+  );
+  if (configured) return configured;
+  return integrations.find((i) => i.isConnected) ?? null;
+}
+
+/**
+ * Resolve the recruit notifications channel from the workspace's channel
+ * list. Prefers the integration's stored `recruit_channel_id` (set via the
+ * Settings picker). If that isn't configured yet, auto-picks a channel by
+ * common naming convention (legacy `#new-agent-testing-odette`, plus
+ * `#recruiting`, `#new-agents`, etc.) so the buttons keep working for IMOs
+ * that haven't configured the channel explicitly.
  */
 export function findRecruitChannel(
   integration: Pick<SlackIntegration, "recruit_channel_id"> | null | undefined,
   channels: SlackChannel[],
 ): SlackChannel | null {
-  if (!integration?.recruit_channel_id) return null;
-  return (
-    channels.find(
+  if (integration?.recruit_channel_id) {
+    const explicit = channels.find(
       (c) => c.id === integration.recruit_channel_id && !c.is_archived,
-    ) ?? null
-  );
+    );
+    if (explicit) return explicit;
+  }
+  return autoPickRecruitChannel(channels);
 }
 
 /**
@@ -216,9 +252,23 @@ export async function autoPostRecruitNotification(
   try {
     const integrations = await slackService.getIntegrations(imoId);
     const integration = findRecruitIntegration(integrations);
-    if (!integration || !integration.recruit_channel_id) {
+    if (!integration) {
       console.log(
-        "[recruitNotificationService] No recruit channel configured for IMO, skipping auto-post",
+        "[recruitNotificationService] No connected Slack integration for IMO, skipping auto-post",
+      );
+      return;
+    }
+
+    // Resolve channel id: explicit config wins, else fall back by name lookup.
+    let channelId = integration.recruit_channel_id ?? null;
+    if (!channelId) {
+      const channels = await slackService.listChannelsById(integration.id);
+      const fallback = findRecruitChannel(integration, channels);
+      channelId = fallback?.id ?? null;
+    }
+    if (!channelId) {
+      console.log(
+        "[recruitNotificationService] No recruit channel configured or discoverable for IMO, skipping auto-post",
       );
       return;
     }
@@ -241,7 +291,7 @@ export async function autoPostRecruitNotification(
 
     const result = await sendRecruitNotification({
       integrationId: integration.id,
-      channelId: integration.recruit_channel_id,
+      channelId,
       text: message.text,
       blocks: message.blocks,
       notificationType,
