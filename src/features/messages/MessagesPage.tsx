@@ -1,9 +1,9 @@
 // src/features/messages/MessagesPage.tsx
-// Communications hub. Thin orchestrator: header + tabs + active workspace.
+// Communications hub. Hero stat band + icon-rich tab nav + active workspace.
 // Per-tab layout is owned by the corresponding workspace component so the
-// page no longer "jumps" shape when switching tabs.
+// page outline does not shape-shift between tabs.
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -14,16 +14,18 @@ import {
   Mail,
   PenSquare,
   Search,
+  Send,
   Settings,
   X,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PillButton, PillNav } from "@/components/v2";
 import { useFeatureAccess } from "@/hooks/subscription";
 import { useUserRoles } from "@/hooks/permissions";
 import { useImo } from "@/contexts/ImoContext";
 import type { RoleName } from "@/types/permissions.types";
+import { cn } from "@/lib/utils";
 import { ComposeDialog } from "./components/compose/ComposeDialog";
 import { useFolderCounts } from "./hooks/useFolderCounts";
 import { useEmailQuota } from "./hooks/useSendEmail";
@@ -63,9 +65,9 @@ export function MessagesPage() {
   );
   const hasBuiltInEmailAccess = hasEmailAccess || isStaffOnlyUser;
 
-  // Email metadata (used in header chips when on email tab)
+  // Stats for hero band
   const { counts, totalUnread } = useFolderCounts();
-  const { remainingDaily, quota } = useEmailQuota();
+  const { remainingDaily, percentUsed, quota } = useEmailQuota();
 
   // Handle Instagram OAuth redirect
   useEffect(() => {
@@ -99,49 +101,69 @@ export function MessagesPage() {
     }
   }, [queryClient]);
 
-  // Tab definitions, gated by feature access + role.
-  const allTabs: {
-    id: TabType;
-    label: string;
-    icon: typeof Mail;
-    hasAccess: boolean;
-    badge?: number;
-  }[] = [
-    {
-      id: "email",
-      label: "Email",
-      icon: Mail,
-      hasAccess: hasBuiltInEmailAccess,
-      badge: totalUnread,
-    },
-    {
-      id: "instagram",
-      label: "Instagram",
-      icon: Instagram,
-      hasAccess: hasInstagramAccess,
-    },
-    {
-      id: "templates",
-      label: "Templates",
-      icon: FileText,
-      hasAccess: hasTemplatesAccess,
-    },
-    {
-      id: "analytics",
-      label: "Analytics",
-      icon: BarChart3,
-      hasAccess: true,
-    },
-    { id: "settings", label: "Settings", icon: Settings, hasAccess: true },
-  ];
-
-  const tabs = allTabs.filter((tab) => {
-    if (!tab.hasAccess) return false;
-    if (isStaffOnlyUser && (tab.id === "templates" || tab.id === "analytics")) {
-      return false;
-    }
-    return true;
-  });
+  const tabs = useMemo(() => {
+    const all: {
+      id: TabType;
+      label: string;
+      description: string;
+      icon: typeof Mail;
+      hasAccess: boolean;
+      badge?: number;
+    }[] = [
+      {
+        id: "email",
+        label: "Email",
+        description: "Inbox, sent, threads, compose",
+        icon: Mail,
+        hasAccess: hasBuiltInEmailAccess,
+        badge: totalUnread,
+      },
+      {
+        id: "instagram",
+        label: "Instagram",
+        description: "DMs from your IG business account",
+        icon: Instagram,
+        hasAccess: hasInstagramAccess,
+      },
+      {
+        id: "templates",
+        label: "Templates",
+        description: "Reusable message templates",
+        icon: FileText,
+        hasAccess: hasTemplatesAccess,
+      },
+      {
+        id: "analytics",
+        label: "Analytics",
+        description: "Engagement and reply rates",
+        icon: BarChart3,
+        hasAccess: true,
+      },
+      {
+        id: "settings",
+        label: "Settings",
+        description: "Channel integrations + preferences",
+        icon: Settings,
+        hasAccess: true,
+      },
+    ];
+    return all.filter((tab) => {
+      if (!tab.hasAccess) return false;
+      if (
+        isStaffOnlyUser &&
+        (tab.id === "templates" || tab.id === "analytics")
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [
+    hasBuiltInEmailAccess,
+    hasInstagramAccess,
+    hasTemplatesAccess,
+    isStaffOnlyUser,
+    totalUnread,
+  ]);
 
   // Auto-redirect if active tab disappears (e.g. subscription downgrade).
   useEffect(() => {
@@ -150,62 +172,111 @@ export function MessagesPage() {
     }
   }, [tabs, activeTab]);
 
-  // Search and compose are only meaningful on email + instagram. Hide
-  // them on the static tabs to reduce visual noise.
+  const activeTabMeta = tabs.find((t) => t.id === activeTab);
   const showSearch = activeTab === "email" || activeTab === "instagram";
   const showCompose = activeTab === "email";
 
   return (
     <>
-      <div className="h-[calc(100vh-3rem)] flex flex-col gap-2">
-        {/* Single-row top chrome: title + tabs + (search + compose) */}
-        <header className="flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center gap-3 min-w-0 flex-wrap">
-            <div className="flex items-center gap-1.5 flex-shrink-0">
-              <Mail className="h-4 w-4 text-v2-ink" />
-              <h1 className="text-base font-semibold tracking-tight text-v2-ink">
-                Messages
-              </h1>
+      <div className="h-[calc(100vh-3rem)] flex flex-col gap-3 min-h-0">
+        {/* Hero band: title + big stat tiles + primary actions.
+            This replaces the dense one-line stats cluster the page used
+            to lead with — same data, way more presence. */}
+        <section className="relative bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft overflow-hidden flex-shrink-0">
+          <div className="px-4 py-3 flex items-start justify-between gap-4 flex-wrap">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <Mail className="h-4 w-4 text-v2-ink" />
+                <h1 className="text-[15px] font-semibold tracking-tight text-v2-ink">
+                  Messages
+                </h1>
+              </div>
+              <p className="text-[11px] text-v2-ink-muted">
+                {activeTabMeta?.description ??
+                  "All your conversations in one place"}
+              </p>
             </div>
 
-            <PillNav
-              size="sm"
-              activeValue={activeTab}
-              onChange={(v) => setActiveTab(v as TabType)}
-              items={tabs.map((t) => ({
-                label:
-                  t.badge && t.badge > 0 ? `${t.label} (${t.badge})` : t.label,
-                value: t.id,
-              }))}
-            />
+            <div className="flex items-center gap-3 flex-wrap">
+              <HeroStat
+                icon={<Inbox className="h-3 w-3" />}
+                value={totalUnread}
+                label="Unread"
+                tone={totalUnread > 0 ? "accent" : "neutral"}
+              />
+              <Divider />
+              <HeroStat value={counts.all} label="Total" />
+              <Divider />
+              <HeroStat
+                icon={<Send className="h-3 w-3" />}
+                value={
+                  quota ? `${quota.dailyUsed}/${quota.dailyLimit}` : "0/50"
+                }
+                label="Sent today"
+              />
+              <Divider />
+              <HeroStat
+                icon={<Zap className="h-3 w-3" />}
+                value={remainingDaily}
+                label="Quota left"
+                tone={
+                  percentUsed > 90
+                    ? "danger"
+                    : percentUsed > 70
+                      ? "warn"
+                      : "neutral"
+                }
+              />
+            </div>
           </div>
 
-          <div className="flex items-center gap-1.5 flex-shrink-0">
-            {/* Tab-aware metadata chips, only when relevant */}
-            {activeTab === "email" && (
-              <span className="text-[11px] text-v2-ink-muted hidden md:inline-flex items-center gap-1.5">
-                <span>
-                  <span className="text-v2-ink font-semibold">
-                    {counts.all}
-                  </span>{" "}
-                  total
-                </span>
-                <span className="text-v2-ink-subtle">·</span>
-                <span>
-                  <span className="text-v2-ink font-semibold">
-                    {quota ? `${quota.dailyUsed}/${quota.dailyLimit}` : "0/50"}
-                  </span>{" "}
-                  sent
-                  <span className="text-v2-ink-subtle">
-                    {" "}
-                    ({remainingDaily} left)
-                  </span>
-                </span>
-              </span>
-            )}
+          {/* Tab nav lives inside the hero card so the visual unit is
+              "this is the messages workspace" not "header + a strip of tabs". */}
+          <nav className="flex items-stretch gap-0.5 px-2 border-t border-v2-ring overflow-x-auto">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = tab.id === activeTab;
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "relative flex items-center gap-1.5 px-3 py-2 text-[12px] whitespace-nowrap transition-colors -mb-px",
+                    isActive
+                      ? "text-v2-ink font-semibold"
+                      : "text-v2-ink-muted hover:text-v2-ink",
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  <span>{tab.label}</span>
+                  {tab.badge !== undefined && tab.badge > 0 && (
+                    <span
+                      className={cn(
+                        "ml-0.5 inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 rounded-full text-[9.5px] font-semibold tabular-nums",
+                        isActive
+                          ? "bg-v2-ink text-v2-canvas"
+                          : "bg-blue-500 text-white",
+                      )}
+                    >
+                      {tab.badge}
+                    </span>
+                  )}
+                  {isActive && (
+                    <span className="absolute left-0 right-0 -bottom-px h-0.5 bg-v2-ink rounded-full" />
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+        </section>
 
+        {/* Action bar (search + compose) lives between hero and content,
+            tab-aware so it's only present when meaningful. */}
+        {(showSearch || showCompose) && (
+          <div className="flex items-center justify-end gap-1.5 flex-shrink-0">
             {showSearch && (
-              <div className="relative w-56">
+              <div className="relative w-72">
                 <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
                 <Input
                   type="text"
@@ -216,13 +287,13 @@ export function MessagesPage() {
                   }
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="h-7 pl-7 pr-7 text-[11px] bg-v2-card border-v2-ring rounded-v2-pill focus-visible:ring-v2-accent"
+                  className="h-8 pl-7 pr-7 text-[12px] bg-v2-card border-v2-ring rounded-v2-pill focus-visible:ring-v2-accent"
                 />
                 {searchQuery && (
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute right-0.5 top-1/2 -translate-y-1/2 h-6 w-6"
+                    className="absolute right-0.5 top-1/2 -translate-y-1/2 h-7 w-7"
                     onClick={() => setSearchQuery("")}
                   >
                     <X className="h-3 w-3" />
@@ -232,24 +303,25 @@ export function MessagesPage() {
             )}
 
             {showCompose && (
-              <PillButton
+              <button
+                type="button"
                 onClick={() => setIsComposeOpen(true)}
-                tone="black"
-                size="sm"
-                className="h-7 px-2.5 text-[11px]"
+                className="inline-flex items-center gap-1.5 h-8 px-3 rounded-v2-pill bg-v2-ink text-v2-canvas text-[12px] font-medium hover:bg-v2-ink/90 transition-colors"
               >
-                <PenSquare className="h-3 w-3" />
+                <PenSquare className="h-3.5 w-3.5" />
                 Compose
-              </PillButton>
+              </button>
             )}
           </div>
-        </header>
+        )}
 
-        {/* Active workspace owns its own internal layout. Page does not
-            shape-shift between tabs — only the workspace inside changes. */}
+        {/* Active workspace owns its own internal layout. */}
         <main className="flex-1 min-h-0 overflow-hidden">
           {activeTab === "email" && (
-            <EmailWorkspace searchQuery={searchQuery} />
+            <EmailWorkspace
+              searchQuery={searchQuery}
+              onCompose={() => setIsComposeOpen(true)}
+            />
           )}
 
           {activeTab === "instagram" && (
@@ -277,27 +349,78 @@ export function MessagesPage() {
             </div>
           )}
 
-          {tabs.length === 0 && (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center max-w-sm px-6">
-                <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-v2-canvas border border-v2-ring mb-3">
-                  <Inbox className="h-6 w-6 text-v2-ink-subtle" />
-                </div>
-                <p className="text-[12px] font-medium text-v2-ink mb-1">
-                  No messaging channels available
-                </p>
-                <p className="text-[11px] text-v2-ink-muted">
-                  Your current plan doesn't include messaging features. Upgrade
-                  to access Email, Instagram, and Templates.
-                </p>
-              </div>
-            </div>
-          )}
+          {tabs.length === 0 && <NoChannelsState />}
         </main>
       </div>
 
       <ComposeDialog open={isComposeOpen} onOpenChange={setIsComposeOpen} />
     </>
+  );
+}
+
+interface HeroStatProps {
+  icon?: React.ReactNode;
+  value: string | number;
+  label: string;
+  tone?: "neutral" | "accent" | "warn" | "danger";
+}
+
+function HeroStat({ icon, value, label, tone = "neutral" }: HeroStatProps) {
+  return (
+    <div className="flex flex-col gap-0.5 min-w-[60px]">
+      <div className="flex items-baseline gap-1.5">
+        {icon && (
+          <span
+            className={cn(
+              "inline-flex items-center justify-center w-5 h-5 rounded-full self-center",
+              tone === "accent" && "bg-blue-500 text-white",
+              tone === "warn" && "bg-amber-500 text-white",
+              tone === "danger" && "bg-red-500 text-white",
+              tone === "neutral" &&
+                "bg-v2-canvas text-v2-ink-muted border border-v2-ring",
+            )}
+          >
+            {icon}
+          </span>
+        )}
+        <span
+          className={cn(
+            "text-[22px] font-semibold tracking-tight leading-none tabular-nums",
+            tone === "danger"
+              ? "text-red-600 dark:text-red-400"
+              : "text-v2-ink",
+          )}
+        >
+          {value}
+        </span>
+      </div>
+      <span className="text-[10px] uppercase tracking-wider text-v2-ink-muted font-medium">
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function Divider() {
+  return <span className="w-px h-8 bg-v2-ring self-center" />;
+}
+
+function NoChannelsState() {
+  return (
+    <div className="h-full flex items-center justify-center">
+      <div className="text-center max-w-sm px-6">
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-v2-canvas border border-v2-ring mb-3">
+          <Inbox className="h-6 w-6 text-v2-ink-subtle" />
+        </div>
+        <p className="text-[12px] font-medium text-v2-ink mb-1">
+          No messaging channels available
+        </p>
+        <p className="text-[11px] text-v2-ink-muted">
+          Your current plan doesn't include messaging features. Upgrade to
+          access Email, Instagram, and Templates.
+        </p>
+      </div>
+    </div>
   );
 }
 
