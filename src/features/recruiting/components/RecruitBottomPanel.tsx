@@ -18,6 +18,8 @@ import {
   ListChecks,
   LogOut,
   FileText,
+  Send,
+  Hash,
 } from "lucide-react";
 import {
   useTemplates,
@@ -33,6 +35,17 @@ import {
   useUnenrollFromPipeline,
 } from "../hooks/useRecruitProgress";
 import { useRecruitDocuments } from "../hooks/useRecruitDocuments";
+import {
+  useSlackIntegrations,
+  useSlackChannelsById,
+  useRecruitNotificationStatus,
+  useSendRecruitSlackNotification,
+  findRecruitIntegration,
+  findRecruitChannel,
+  buildNewRecruitMessage,
+  buildNpnReceivedMessage,
+} from "@/hooks/slack";
+import { useCurrentUserProfile } from "@/hooks/admin";
 import { cn } from "@/lib/utils";
 import { TERMINAL_STATUS_COLORS } from "@/types/recruiting.types";
 import { toast } from "sonner";
@@ -180,6 +193,59 @@ export function RecruitBottomPanel({
   const advancePhase = useAdvancePhase();
   const revertPhase = useRevertPhase();
   const unenrollFromPipeline = useUnenrollFromPipeline();
+
+  // ─── Slack notifications (recruit channel posts) ──────────────────
+  const { data: currentUserProfile } = useCurrentUserProfile();
+  const { data: slackIntegrations = [] } = useSlackIntegrations();
+  const recruitIntegration = findRecruitIntegration(slackIntegrations);
+  const { data: slackChannels = [] } = useSlackChannelsById(
+    recruitIntegration?.id,
+  );
+  const recruitChannel = findRecruitChannel(recruitIntegration, slackChannels);
+  const { data: notificationStatus } = useRecruitNotificationStatus(recruit.id);
+  const sendSlackNotification = useSendRecruitSlackNotification();
+
+  const slackVisible =
+    !!recruitIntegration &&
+    !!recruitChannel &&
+    !!currentUserProfile?.imo_id &&
+    !recruit.id.startsWith("invitation-");
+  const showNewRecruitSlack =
+    slackVisible && recruit.agent_status === "unlicensed";
+  const showNpnSlack = slackVisible;
+  const newRecruitSlackDisabled =
+    !!notificationStatus?.newRecruitSent || sendSlackNotification.isPending;
+  const npnSlackDisabled =
+    !!notificationStatus?.npnReceivedSent || sendSlackNotification.isPending;
+
+  const handleSendSlackNotification = async (
+    notificationType: "new_recruit" | "npn_received",
+  ): Promise<void> => {
+    if (!recruitIntegration || !recruitChannel || !currentUserProfile?.imo_id)
+      return;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- upline joined by RecruitRepository
+    const upline = (recruit as any).upline as
+      | { first_name?: string; last_name?: string; email?: string }
+      | undefined;
+    const uplineName =
+      upline?.first_name && upline?.last_name
+        ? `${upline.first_name} ${upline.last_name}`
+        : upline?.email || null;
+    const recruitWithUpline = { ...recruit, upline_name: uplineName };
+    const msg =
+      notificationType === "new_recruit"
+        ? buildNewRecruitMessage(recruitWithUpline)
+        : buildNpnReceivedMessage(recruitWithUpline);
+    await sendSlackNotification.mutateAsync({
+      integrationId: recruitIntegration.id,
+      channelId: recruitChannel.id,
+      text: msg.text,
+      blocks: msg.blocks,
+      notificationType,
+      recruitId: recruit.id,
+      imoId: currentUserProfile.imo_id!,
+    });
+  };
 
   const activeTemplates = templates.filter((t) => t.is_active);
   // hasPipeline is true when:
@@ -384,6 +450,72 @@ export function RecruitBottomPanel({
           </Button>
         </div>
       </div>
+
+      {/* Slack notification quick actions */}
+      {(showNewRecruitSlack || showNpnSlack) && (
+        <div className="flex items-center gap-2 px-4 py-2 border-b border-v2-ring bg-v2-canvas/40 shrink-0">
+          <Hash className="h-3 w-3 text-v2-ink-subtle shrink-0" />
+          <span className="text-[10px] text-v2-ink-muted shrink-0">
+            #{recruitChannel?.name}
+          </span>
+          <div className="flex items-center gap-1.5 ml-auto">
+            {showNewRecruitSlack && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-[10px] gap-1"
+                disabled={newRecruitSlackDisabled}
+                onClick={() => {
+                  handleSendSlackNotification("new_recruit").catch(() => {
+                    // hook fires error toast
+                  });
+                }}
+                title={
+                  notificationStatus?.newRecruitSent
+                    ? "New recruit notification already sent"
+                    : "Post new recruit notification to Slack"
+                }
+              >
+                {sendSlackNotification.isPending ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Send className="h-3 w-3" />
+                )}
+                {notificationStatus?.newRecruitSent
+                  ? "New recruit sent"
+                  : "Post new recruit"}
+              </Button>
+            )}
+            {showNpnSlack && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-[10px] gap-1"
+                disabled={npnSlackDisabled}
+                onClick={() => {
+                  handleSendSlackNotification("npn_received").catch(() => {
+                    // hook fires error toast
+                  });
+                }}
+                title={
+                  notificationStatus?.npnReceivedSent
+                    ? "NPN received notification already sent"
+                    : "Post NPN received notification to Slack"
+                }
+              >
+                {sendSlackNotification.isPending ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Send className="h-3 w-3" />
+                )}
+                {notificationStatus?.npnReceivedSent
+                  ? "NPN sent"
+                  : "Post NPN received"}
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Body */}
       <div className="flex-1 overflow-y-auto px-4 py-3">
