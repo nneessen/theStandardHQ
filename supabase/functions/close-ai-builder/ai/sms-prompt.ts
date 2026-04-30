@@ -72,6 +72,13 @@ function buildUserMessage(
 
   if (options.includeStop !== false) {
     parts.push('Include a "Reply STOP to opt out" footer for TCPA compliance.');
+  } else {
+    // Strong negative instruction so the AI doesn't default-include an
+    // opt-out anyway. The client also strips footers post-generation, but
+    // aligning the prompt reduces unnecessary regeneration friction.
+    parts.push(
+      "DO NOT include any opt-out footer (no 'Reply STOP', 'Text STOP', 'unsubscribe', etc.). The user has explicitly opted out of including a compliance footer in this template.",
+    );
   }
 
   if (options.constraints) {

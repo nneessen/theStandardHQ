@@ -29,6 +29,8 @@ export interface SequencePromptOptions {
   threading?: "new_thread" | "old_thread";
   /** User-declared intent: run once per lead or allow re-enrollment. Annotation only — not a Close API field. */
   runMode?: "once" | "multiple";
+  /** Whether SMS steps should carry a "Reply STOP to opt out" footer. Default true. */
+  includeStop?: boolean;
   /** Extra constraints from the user */
   constraints?: string;
 }
@@ -114,8 +116,8 @@ STEP RULES:
 6. Step order must be sorted by ascending "day".
 7. A good sequence has varied content — don't repeat the same opening line across steps.
 8. Email bodies should be genuinely human. No salesy language, no ALL CAPS, no "ACT NOW" urgency. Insurance leads are skeptical; write like a real person.
-9. SMS text must stay under 320 characters including the opt-out footer.
-10. Always end SMS messages with "Reply STOP to opt out" (TCPA compliance).
+9. SMS text must stay under 320 characters including any opt-out footer when present.
+10. SMS opt-out footer behavior is controlled per-request — see the user message's "SMS opt-out" instruction. Always honor that instruction exactly.
 11. Follow-up messages should reference earlier touches naturally ("following up on my email" etc.) without being robotic.
 
 OUTPUT: Return ONLY the JSON object. No prose, no markdown fences, no commentary.`;
@@ -160,6 +162,18 @@ function buildUserMessage(
         ? 'Run mode: ONCE per lead. Copy should assume the recipient will only ever go through this sequence one time — no references to "last time you heard from us" or "as we mentioned before" implying a previous run.'
         : "Run mode: MULTIPLE enrollments allowed. The same lead may go through this sequence more than once, so avoid language that would feel weird on a second pass (e.g. don't say 'welcome, new lead!').";
     parts.push(runModeHint);
+  }
+  // SMS opt-out footer instruction. The client deterministically enforces
+  // this on save (enforceStopFooter()), but aligning the AI's first output
+  // saves a regeneration round-trip when the user has the toggle off.
+  if (options.includeStop === false) {
+    parts.push(
+      "SMS opt-out: DO NOT include any opt-out footer in SMS steps (no 'Reply STOP', 'Text STOP', 'unsubscribe', etc.). The user has explicitly opted out of compliance footers for this workflow.",
+    );
+  } else {
+    parts.push(
+      'SMS opt-out: every SMS step body must end with "Reply STOP to opt out" for TCPA compliance.',
+    );
   }
   if (options.constraints) {
     parts.push(

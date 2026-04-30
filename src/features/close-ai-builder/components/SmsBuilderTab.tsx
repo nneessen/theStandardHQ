@@ -1,6 +1,6 @@
 // SMS Template Builder tab.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -9,6 +9,7 @@ import {
   RotateCw,
   Check,
   MessageSquare,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +29,7 @@ import {
   useGenerateSmsTemplate,
   useSaveSmsTemplate,
 } from "../hooks/useCloseAiBuilder";
+import { enforceStopFooter } from "../lib/stop-footer";
 import type {
   GeneratedSmsTemplate,
   SmsPromptOptions,
@@ -48,6 +50,16 @@ export function SmsBuilderTab() {
   const generate = useGenerateSmsTemplate();
   const save = useSaveSmsTemplate();
 
+  // Mirror includeStop into a ref so async handlers (handleGenerate)
+  // post-process the AI result against the LATEST toggle state — not the
+  // closure-captured value at submit time. Without this, toggling between
+  // submit and AI response causes the visible toggle to disagree with the
+  // body content the user sees.
+  const includeStopRef = useRef(includeStop);
+  useEffect(() => {
+    includeStopRef.current = includeStop;
+  }, [includeStop]);
+
   const handleGenerate = async () => {
     if (!prompt.trim()) {
       toast.error("Describe the SMS you want to generate");
@@ -62,7 +74,12 @@ export function SmsBuilderTab() {
     };
     try {
       const result = await generate.mutateAsync({ prompt, options });
-      setDraft(result.template);
+      setDraft({
+        ...result.template,
+        // Read CURRENT toggle state; the user may have flipped while the AI
+        // request was in flight.
+        text: enforceStopFooter(result.template.text, includeStopRef.current),
+      });
       setGenerationId(result.generation_id);
       setSavedCloseId(null);
       toast.success("SMS template generated — review and save");
@@ -75,9 +92,27 @@ export function SmsBuilderTab() {
 
   const handleSave = async () => {
     if (!draft) return;
+    const finalText = enforceStopFooter(draft.text, includeStop);
+    if (finalText.length > maxChars) {
+      // Defense in depth: the disabled-button gate already uses the
+      // post-enforcement length, but a save can still race with a setDraft
+      // that hasn't flushed. Refuse rather than ship an over-budget SMS that
+      // splits across extra carrier segments.
+      toast.error(
+        `SMS exceeds ${maxChars}-char budget after STOP footer enforcement (${finalText.length} chars). Trim the body or raise the limit.`,
+      );
+      return;
+    }
+    const templateToSave =
+      finalText === draft.text ? draft : { ...draft, text: finalText };
+    if (templateToSave !== draft) {
+      // Reflect the enforcement in the visible draft so the user sees what's
+      // actually being saved (no surprise diff between preview and Close).
+      setDraft(templateToSave);
+    }
     try {
       const result = await save.mutateAsync({
-        template: draft,
+        template: templateToSave,
         generationId: generationId ?? undefined,
       });
       setSavedCloseId(result.template.id);
@@ -87,14 +122,31 @@ export function SmsBuilderTab() {
     }
   };
 
+  // Toggle handler: when the user flips the Reply STOP switch with a draft on
+  // screen, immediately reconcile the visible text so the toggle is observably
+  // doing what it says. Idempotent — safe even if the body already matches.
+  const handleIncludeStopChange = (next: boolean) => {
+    setIncludeStop(next);
+    if (draft && !savedCloseId) {
+      setDraft({ ...draft, text: enforceStopFooter(draft.text, next) });
+    }
+  };
+
   const handleReset = () => {
     setDraft(null);
     setGenerationId(null);
     setSavedCloseId(null);
   };
 
-  const charCount = draft?.text?.length ?? 0;
+  // Use the POST-ENFORCEMENT length for the visible counter and the save-
+  // button gate. The user-visible textarea may not yet reflect the appended
+  // footer (e.g., they edited it out), but enforcement runs at save — so
+  // this is what will actually ship to Close.
+  const liveText = draft?.text ?? "";
+  const finalText = enforceStopFooter(liveText, includeStop);
+  const charCount = finalText.length;
   const overBudget = charCount > maxChars;
+  const willAppendFooter = finalText !== liveText;
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
@@ -174,13 +226,28 @@ export function SmsBuilderTab() {
               <Switch
                 id="sms-stop"
                 checked={includeStop}
-                onCheckedChange={setIncludeStop}
+                onCheckedChange={handleIncludeStopChange}
               />
               <Label htmlFor="sms-stop" className="cursor-pointer text-xs">
                 Include "Reply STOP" footer
               </Label>
             </div>
           </div>
+
+          {!includeStop && (
+            <div className="flex items-start gap-2 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-[11px] dark:border-red-900/60 dark:bg-red-950/30">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-600 dark:text-red-400" />
+              <p className="text-red-800 dark:text-red-200">
+                <span className="font-semibold">
+                  TCPA / CTIA compliance warning.
+                </span>{" "}
+                Marketing SMS without an opt-out footer may violate U.S. carrier
+                guidelines and TCPA. You are responsible for ensuring this
+                template is only used in contexts that don't require an opt-out
+                (e.g. confirmed transactional messages).
+              </p>
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <Label htmlFor="sms-constraints" className="text-xs">
@@ -277,8 +344,14 @@ export function SmsBuilderTab() {
                           ? "text-amber-500"
                           : "text-muted-foreground"
                     }`}
+                    title={
+                      willAppendFooter
+                        ? `Includes +${finalText.length - liveText.length} chars from STOP footer that will be appended at save`
+                        : undefined
+                    }
                   >
                     {charCount} / {maxChars}
+                    {willAppendFooter ? "*" : ""}
                   </span>
                 </div>
                 <Textarea

@@ -5,7 +5,7 @@
 //   4. Edit each step inline (name/subject/body/day)
 //   5. Save — the backend creates N templates then the sequence
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   useGenerateSequence,
   useSaveSequence,
@@ -47,6 +48,26 @@ import type {
   SequencePromptOptions,
 } from "../types/close-ai-builder.types";
 import { countStepsByChannel, gapFromPrevious } from "../lib/sequence-utils";
+import { enforceStopFooter } from "../lib/stop-footer";
+
+// Apply STOP footer enforcement to every SMS step in a sequence. Used after
+// AI generation, on toggle changes, and immediately before save so the
+// includeStop intent is honored regardless of what the AI produced or what
+// the user typed in the inline editor.
+function applyStopToSteps(
+  steps: GeneratedSequenceStep[],
+  include: boolean,
+): GeneratedSequenceStep[] {
+  return steps.map((step) => {
+    if (step.step_type !== "sms" || !step.generated_sms) return step;
+    const next = enforceStopFooter(step.generated_sms.text, include);
+    if (next === step.generated_sms.text) return step;
+    return {
+      ...step,
+      generated_sms: { ...step.generated_sms, text: next },
+    };
+  });
+}
 
 // Fixed operating window — mirrors FIXED_SEQUENCE_SCHEDULE / FIXED_SEQUENCE_TIMEZONE
 // in supabase/functions/close-ai-builder/close/endpoints.ts. Every generated
@@ -68,6 +89,7 @@ export function SequenceBuilderTab() {
     "old_thread",
   );
   const [runMode, setRunMode] = useState<"once" | "multiple">("once");
+  const [includeStop, setIncludeStop] = useState(true);
   const [constraints, setConstraints] = useState("");
 
   const [draft, setDraft] = useState<GeneratedSequence | null>(null);
@@ -76,6 +98,22 @@ export function SequenceBuilderTab() {
 
   const generate = useGenerateSequence();
   const save = useSaveSequence();
+
+  // Mirror includeStop into a ref so handleGenerate post-processes the AI
+  // result against the LATEST toggle state, not the value captured at submit
+  // time. Workflows generate with claude-sonnet-4-6 + 8192 tokens, so the
+  // race window is multi-second — long enough that users do flip the toggle
+  // mid-flight in practice.
+  const includeStopRef = useRef(includeStop);
+  useEffect(() => {
+    includeStopRef.current = includeStop;
+  }, [includeStop]);
+
+  // Hard cap for SMS step length. Mirrors the AI-prompt limit and Close's
+  // practical 320-char ceiling (any longer fragments into 3+ carrier
+  // segments, tripling per-send cost). Used as a save-time guard so STOP-
+  // footer enforcement can't push a step over budget without warning.
+  const SMS_STEP_HARD_CAP = 320;
 
   const channelToggle = (ch: "email" | "sms") => {
     setChannels((prev) => {
@@ -103,11 +141,17 @@ export function SequenceBuilderTab() {
       timezone: "America/New_York",
       threading,
       runMode,
+      includeStop,
       constraints: constraints || undefined,
     };
     try {
       const result = await generate.mutateAsync({ prompt, options });
-      setDraft(result.sequence);
+      setDraft({
+        ...result.sequence,
+        // Read CURRENT toggle state — user may have flipped during the
+        // multi-second AI request.
+        steps: applyStopToSteps(result.sequence.steps, includeStopRef.current),
+      });
       setGenerationId(result.generation_id);
       setSavedSeqId(null);
       toast.success(
@@ -122,9 +166,41 @@ export function SequenceBuilderTab() {
 
   const handleSave = async () => {
     if (!draft) return;
+    // Re-run STOP enforcement at save time. User edits to inline SMS bodies
+    // could have introduced or removed footers since the last toggle change.
+    const enforcedSteps = applyStopToSteps(draft.steps, includeStop);
+
+    // Per-step budget guard: appending the STOP footer can push a borderline
+    // SMS step past 320 chars, which doubles or triples carrier segments at
+    // delivery. Refuse the save and tell the user which step is the problem.
+    const overBudgetSteps = enforcedSteps
+      .map((s, i) => ({ s, i }))
+      .filter(
+        ({ s }) =>
+          s.step_type === "sms" &&
+          (s.generated_sms?.text.length ?? 0) > SMS_STEP_HARD_CAP,
+      );
+    if (overBudgetSteps.length > 0) {
+      const indices = overBudgetSteps.map(({ i }) => `#${i + 1}`).join(", ");
+      toast.error(
+        `SMS step${overBudgetSteps.length > 1 ? "s" : ""} ${indices} exceed${overBudgetSteps.length > 1 ? "" : "s"} ${SMS_STEP_HARD_CAP} chars after STOP footer enforcement. Trim before saving.`,
+      );
+      // Reflect the enforcement in the visible draft so the user can see the
+      // problem in the StepCard's red character counter.
+      setDraft({ ...draft, steps: enforcedSteps });
+      return;
+    }
+
+    const sequenceToSave =
+      enforcedSteps === draft.steps
+        ? draft
+        : { ...draft, steps: enforcedSteps };
+    if (sequenceToSave !== draft) {
+      setDraft(sequenceToSave);
+    }
     try {
       const result = await save.mutateAsync({
-        sequence: draft,
+        sequence: sequenceToSave,
         generationId: generationId ?? undefined,
       });
       setSavedSeqId(result.sequence.id);
@@ -166,6 +242,16 @@ export function SequenceBuilderTab() {
     setDraft(null);
     setGenerationId(null);
     setSavedSeqId(null);
+  };
+
+  // Toggle handler: reconcile every SMS step's body the moment the user
+  // flips the Reply STOP switch. Mirrors the same UX pattern used in the
+  // standalone SmsBuilderTab.
+  const handleIncludeStopChange = (next: boolean) => {
+    setIncludeStop(next);
+    if (draft && !savedSeqId) {
+      setDraft({ ...draft, steps: applyStopToSteps(draft.steps, next) });
+    }
   };
 
   const updateStep = (index: number, patch: Partial<GeneratedSequenceStep>) => {
@@ -398,6 +484,50 @@ export function SequenceBuilderTab() {
                 </Select>
               </div>
             </div>
+
+            {/* SMS compliance — Reply STOP footer enforcement */}
+            <div
+              className="flex items-center gap-2 rounded-md border bg-muted/30 px-3 py-2"
+              title={
+                !channels.includes("sms")
+                  ? "Enable the SMS channel above to control opt-out footer behavior"
+                  : undefined
+              }
+            >
+              <Switch
+                id="seq-stop"
+                checked={includeStop}
+                onCheckedChange={handleIncludeStopChange}
+                disabled={!channels.includes("sms")}
+              />
+              <div className="flex-1">
+                <Label
+                  htmlFor="seq-stop"
+                  className="cursor-pointer text-xs font-medium"
+                >
+                  Include "Reply STOP" footer on SMS steps
+                </Label>
+                <p className="text-[10px] leading-tight text-muted-foreground">
+                  TCPA opt-out, enforced on save regardless of AI output.
+                </p>
+              </div>
+            </div>
+
+            {!includeStop && channels.includes("sms") && (
+              <div className="flex items-start gap-2 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-[11px] dark:border-red-900/60 dark:bg-red-950/30">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-600 dark:text-red-400" />
+                <p className="text-red-800 dark:text-red-200">
+                  <span className="font-semibold">
+                    TCPA / CTIA compliance warning.
+                  </span>{" "}
+                  Marketing SMS without an opt-out footer may violate U.S.
+                  carrier guidelines and TCPA. You are responsible for ensuring
+                  every SMS step in this workflow is only used in contexts that
+                  don't require an opt-out (e.g. confirmed transactional
+                  messages).
+                </p>
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <Label htmlFor="seq-constraints" className="text-xs">

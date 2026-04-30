@@ -70,6 +70,13 @@ export interface SequencePromptOptions {
    * instruction banner for how Nick's team should enforce this in Close UI.
    */
   runMode?: "once" | "multiple";
+  /**
+   * Whether SMS steps in the workflow should carry a "Reply STOP to opt out"
+   * footer. Defaults to true (TCPA compliance). Enforced deterministically
+   * on the client via enforceStopFooter() at generate + save time — the AI
+   * prompt is only the first hint.
+   */
+  includeStop?: boolean;
   constraints?: string;
 }
 
