@@ -52,22 +52,16 @@ export function getDateRange(
       endDate.setHours(23, 59, 59, 999);
       break;
 
-    case "monthly":
-      // Adjust reference date by offset months
-      referenceDate.setMonth(referenceDate.getMonth() + offset);
-      // Entire month from 1st at 00:00:00 to last day at 23:59:59
-      startDate = new Date(
-        referenceDate.getFullYear(),
-        referenceDate.getMonth(),
-        1,
-        0,
-        0,
-        0,
-        0,
-      );
+    case "monthly": {
+      // Build the boundary directly from year + (month + offset). Do NOT use
+      // setMonth on `now`: today may be the 30th/31st, and stepping into a
+      // shorter month (e.g. Feb) overflows day-of-month and silently skips
+      // the target month — e.g. April 30 + setMonth(1) → "Feb 30" → March 2.
+      const targetMonth = now.getMonth() + offset;
+      startDate = new Date(now.getFullYear(), targetMonth, 1, 0, 0, 0, 0);
       endDate = new Date(
-        referenceDate.getFullYear(),
-        referenceDate.getMonth() + 1,
+        now.getFullYear(),
+        targetMonth + 1,
         0,
         23,
         59,
@@ -75,20 +69,12 @@ export function getDateRange(
         999,
       );
       break;
+    }
 
-    case "MTD":
-      // Month-to-date: 1st of month at 00:00:00 to end of today at 23:59:59
-      // For past months (offset < 0), returns full month like "monthly"
-      referenceDate.setMonth(referenceDate.getMonth() + offset);
-      startDate = new Date(
-        referenceDate.getFullYear(),
-        referenceDate.getMonth(),
-        1,
-        0,
-        0,
-        0,
-        0,
-      );
+    case "MTD": {
+      // Same setMonth-overflow trap as "monthly" — construct directly.
+      const targetMonth = now.getMonth() + offset;
+      startDate = new Date(now.getFullYear(), targetMonth, 1, 0, 0, 0, 0);
       if (offset === 0) {
         // Current month: end at today
         endDate = new Date(
@@ -103,8 +89,8 @@ export function getDateRange(
       } else {
         // Past/future months: return full month
         endDate = new Date(
-          referenceDate.getFullYear(),
-          referenceDate.getMonth() + 1,
+          now.getFullYear(),
+          targetMonth + 1,
           0,
           23,
           59,
@@ -113,14 +99,15 @@ export function getDateRange(
         );
       }
       break;
+    }
 
-    case "yearly":
-      // Adjust reference date by offset years
-      referenceDate.setFullYear(referenceDate.getFullYear() + offset);
-      // Year-to-date from Jan 1 at 00:00:00 to end of year at 23:59:59
-      startDate = new Date(referenceDate.getFullYear(), 0, 1, 0, 0, 0, 0);
-      endDate = new Date(referenceDate.getFullYear(), 11, 31, 23, 59, 59, 999);
+    case "yearly": {
+      // Construct directly to avoid Feb-29 setFullYear rollover in leap years.
+      const targetYear = now.getFullYear() + offset;
+      startDate = new Date(targetYear, 0, 1, 0, 0, 0, 0);
+      endDate = new Date(targetYear, 11, 31, 23, 59, 59, 999);
       break;
+    }
 
     default:
       startDate = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
