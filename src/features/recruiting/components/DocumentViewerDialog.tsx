@@ -1,6 +1,6 @@
 // src/features/recruiting/components/DocumentViewerDialog.tsx
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Download, Loader2, FileText } from "lucide-react";
+import { Download, ExternalLink, FileText, Loader2 } from "lucide-react";
 import { UserDocument } from "@/types/recruiting.types";
 // eslint-disable-next-line no-restricted-imports
 import { recruitingService } from "@/services/recruiting";
@@ -70,65 +70,77 @@ export function DocumentViewerDialog({
     globalThis.document.body.removeChild(a);
   };
 
+  const handleOpenInNewTab = () => {
+    if (!documentUrl) return;
+    window.open(documentUrl, "_blank", "noopener,noreferrer");
+  };
+
   const isImage = userDocument.file_type?.startsWith("image/");
   const isPdf = userDocument.file_type === "application/pdf";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh]">
-        <DialogHeader>
-          <DialogTitle>{userDocument.document_name}</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="flex flex-col gap-0 p-0 w-[95vw] sm:max-w-6xl h-[90vh] max-h-[90vh] overflow-hidden">
+        <DialogHeader className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 shrink-0 space-y-1">
+          <DialogTitle className="pr-8 truncate">
+            {userDocument.document_name}
+          </DialogTitle>
+          <DialogDescription className="truncate">
             {userDocument.document_type.replace(/_/g, " ")} •{" "}
             {userDocument.file_name}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 min-h-0 overflow-auto bg-zinc-50 dark:bg-zinc-950">
           {isLoading ? (
-            <div className="flex items-center justify-center py-12">
+            <div className="flex items-center justify-center h-full py-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : documentUrl ? (
-            <div className="space-y-4">
+            <>
               {isImage && (
-                <img
-                  src={documentUrl}
-                  alt={userDocument.document_name}
-                  className="w-full h-auto rounded-lg border"
-                />
+                <div className="flex items-center justify-center min-h-full p-4">
+                  <img
+                    src={documentUrl}
+                    alt={userDocument.document_name}
+                    className="max-w-full max-h-full object-contain rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+                  />
+                </div>
               )}
 
               {isPdf && (
-                <embed
+                <iframe
                   src={documentUrl}
-                  type="application/pdf"
-                  width="100%"
-                  height="600px"
-                  className="rounded-lg border"
+                  title={userDocument.document_name}
+                  className="block w-full h-full border-0"
                 />
               )}
 
               {!isImage && !isPdf && (
-                <div className="text-center py-12 text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <div className="flex flex-col items-center justify-center h-full text-center py-12 text-muted-foreground">
+                  <FileText className="h-12 w-12 mb-4 opacity-50" />
                   <p>Preview not available for this file type</p>
                   <p className="text-sm mt-1">
                     Click "Download" to view the file
                   </p>
                 </div>
               )}
-            </div>
+            </>
           ) : (
-            <div className="text-center py-12 text-muted-foreground">
+            <div className="flex items-center justify-center h-full text-center py-12 text-muted-foreground">
               <p>Failed to load document</p>
             </div>
           )}
         </div>
 
-        <div className="flex justify-end gap-2 pt-4 border-t">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
+        <div className="flex justify-end gap-2 px-6 py-3 border-t border-zinc-200 dark:border-zinc-800 shrink-0">
+          <Button
+            variant="outline"
+            onClick={handleOpenInNewTab}
+            disabled={!documentUrl}
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Open in new tab
           </Button>
           <Button onClick={handleDownload} disabled={!documentUrl}>
             <Download className="h-4 w-4 mr-2" />
