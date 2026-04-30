@@ -35,6 +35,7 @@ export type ScheduledMessageStatus =
 // Prospect types for template categorization
 export type ProspectType =
   | "licensed_agent"
+  | "captive_agent"
   | "has_team"
   | "solar"
   | "door_to_door"
@@ -54,6 +55,7 @@ export type MessageStage =
 // Display labels for built-in prospect types
 export const PROSPECT_TYPE_LABELS: Record<string, string> = {
   licensed_agent: "Licensed Agent",
+  captive_agent: "Captive Agent",
   has_team: "Has Team",
   solar: "Solar",
   door_to_door: "Door-to-Door",
@@ -74,6 +76,7 @@ export const MESSAGE_STAGE_LABELS: Record<MessageStage, string> = {
 // Built-in prospect types (cannot be deleted by user)
 export const BUILT_IN_PROSPECT_TYPES: ProspectType[] = [
   "licensed_agent",
+  "captive_agent",
   "has_team",
   "solar",
   "door_to_door",
