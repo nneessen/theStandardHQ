@@ -13,7 +13,7 @@ import {
   type PillNavItem,
 } from "@/components/v2";
 import { TimePeriod } from "../../../utils/dateRange";
-import { formatCurrency } from "@/lib/format";
+import { formatCompactCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 interface DashboardHeroV2Props {
@@ -58,18 +58,6 @@ const CURRENT_PERIOD_LABELS: Record<TimePeriod, string> = {
   monthly: "This Month",
   yearly: "This Year",
 };
-
-function formatCompact(n: number): string {
-  if (Math.abs(n) >= 1_000_000) {
-    const v = n / 1_000_000;
-    return `$${(v < 10 ? v.toFixed(1) : Math.round(v)).toString()}M`;
-  }
-  if (Math.abs(n) >= 1_000) {
-    const v = n / 1_000;
-    return `$${(v < 10 ? v.toFixed(1) : Math.round(v)).toString()}k`;
-  }
-  return formatCurrency(n);
-}
 
 /**
  * Crextio-inspired dashboard hero: large welcome heading, period nav,
@@ -200,12 +188,12 @@ export const DashboardHeroV2: React.FC<DashboardHeroV2Props> = ({
           />
           <StatTile
             icon={<DollarSign className="h-4 w-4" />}
-            value={formatCompact(premiumWritten)}
+            value={formatCompactCurrency(premiumWritten)}
             caption="Premium"
           />
           <StatTile
             icon={<Users className="h-4 w-4" />}
-            value={formatCompact(pendingPipeline)}
+            value={formatCompactCurrency(pendingPipeline)}
             caption="Pipeline"
           />
         </div>

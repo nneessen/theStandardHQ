@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { formatCurrency } from "@/lib/format";
+import { formatCompactCurrency } from "@/lib/format";
 
 export interface PaceLine {
   label: string;
@@ -23,11 +23,7 @@ interface PaceLinesProps {
 
 function formatRaw(value: number, unit?: "$" | "%" | "#"): string {
   if (unit === "%") return `${value.toFixed(1)}%`;
-  if (unit === "$") {
-    if (Math.abs(value) >= 100_000) return `$${(value / 1000).toFixed(0)}k`;
-    if (Math.abs(value) >= 10_000) return `$${(value / 1000).toFixed(1)}k`;
-    return formatCurrency(value);
-  }
+  if (unit === "$") return formatCompactCurrency(value);
   return Math.round(value).toLocaleString();
 }
 
@@ -123,18 +119,13 @@ export const PaceLines: React.FC<PaceLinesProps> = ({
                 )}
               </div>
               <div className="flex items-baseline gap-2 justify-end font-mono tabular-nums whitespace-nowrap">
-                {hasTarget ? (
-                  <>
-                    <span className={cn("text-[12px]", valueClass)}>
-                      {(pct * 100).toFixed(0)}%
-                    </span>
-                    <span className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted italic">
-                      of {formatRaw(line.target as number, line.unit)}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-[12px] text-v2-ink dark:text-v2-ink-muted">
-                    {formatRaw(line.current, line.unit)}
+                <span className={cn("text-[12px]", valueClass)}>
+                  {formatRaw(line.current, line.unit)}
+                </span>
+                {hasTarget && (
+                  <span className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted italic">
+                    {(pct * 100).toFixed(0)}% of{" "}
+                    {formatRaw(line.target as number, line.unit)}
                   </span>
                 )}
               </div>

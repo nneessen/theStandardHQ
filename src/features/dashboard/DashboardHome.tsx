@@ -29,7 +29,7 @@ import { toast } from "sonner";
 import type { CreateExpenseData } from "../../types/expense.types";
 import type { NewPolicyForm } from "../../types/policy.types";
 import { transformFormToCreateData } from "../policies/utils/policyFormTransformer";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatCompactCurrency } from "@/lib/format";
 
 // New editorial components (kept for the lower sections)
 import { PaceLines, type PaceLine } from "./components/PaceLines";
@@ -59,19 +59,6 @@ import {
 } from "../../utils/dashboardCalculations";
 import { useCreateOrFindClient } from "@/hooks/clients";
 import { ValidationError } from "@/errors/ServiceErrors";
-
-/** Compact $ format for hero MetricBar chips ($12.5k / $1.2M). */
-function formatCompactDollar(n: number): string {
-  if (Math.abs(n) >= 1_000_000) {
-    const v = n / 1_000_000;
-    return `$${v < 10 ? v.toFixed(1) : Math.round(v)}M`;
-  }
-  if (Math.abs(n) >= 1_000) {
-    const v = n / 1_000;
-    return `$${v < 10 ? v.toFixed(1) : Math.round(v)}k`;
-  }
-  return formatCurrency(n);
-}
 
 /**
  * Compute calendar-aware "where we are in the period." For MTD/monthly,
@@ -474,13 +461,13 @@ export const DashboardHome: React.FC = () => {
             periodOffset={periodOffset}
             onOffsetChange={setPeriodOffset}
             apMtdPct={apMtdPct}
-            apMtdDisplay={formatCompactDollar(mtdAPTotal)}
+            apMtdDisplay={formatCompactCurrency(mtdAPTotal)}
             apYtdPct={apYtdPct}
-            apYtdDisplay={formatCompactDollar(ytdAPTotal)}
+            apYtdDisplay={formatCompactCurrency(ytdAPTotal)}
             commMtdPct={commMtdPct}
-            commMtdDisplay={formatCompactDollar(mtdCommissionTotal)}
+            commMtdDisplay={formatCompactCurrency(mtdCommissionTotal)}
             commYtdPct={commYtdPct}
-            commYtdDisplay={formatCompactDollar(ytdCommissionTotal)}
+            commYtdDisplay={formatCompactCurrency(ytdCommissionTotal)}
             policiesCount={periodPolicies.newCount}
             premiumWritten={periodPolicies.premiumWritten}
             pendingPipeline={currentState.pendingPipeline}
