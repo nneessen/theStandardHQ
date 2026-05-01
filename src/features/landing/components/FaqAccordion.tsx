@@ -1,209 +1,109 @@
-// src/features/landing/components/FaqAccordion.tsx
-// Brutalist FAQ - massive expand/collapse, harsh typography
+import { useState } from "react";
+import { Plus, Minus } from "lucide-react";
+import type { LandingPageTheme, FaqItem } from "../types";
+import { useReveal } from "../hooks/useReveal";
 
-import { useState } from 'react';
-import { useScrollAnimation } from '../hooks';
-import type { LandingPageTheme, FaqItem } from '../types';
-
-interface FaqAccordionProps {
+interface Props {
   theme: LandingPageTheme;
 }
 
-interface FaqItemRowProps {
-  item: FaqItem;
-  index: number;
-  isOpen: boolean;
-  onToggle: () => void;
-  primaryColor: string;
-  isVisible: boolean;
-  _isLast: boolean;
-}
+const PLATFORM_FAQ_FALLBACKS: FaqItem[] = [
+  {
+    question:
+      "Does The Standard provide all this software, or do I have to buy it?",
+    answer:
+      "Everything is included. The platform was built by The Standard for The Standard. You don't pay separately for the AI lead scoring, the Close AI Builder, the underwriting wizard, the training modules, or any of it. It's the operating system you log into when you join — period.",
+  },
+  {
+    question: "What does the AI actually do for me, day to day?",
+    answer:
+      "Three things. (1) AI Lead Heat ranks every lead in your Close pipeline 0–100 so you spend your dialing time on the warm ones. (2) Close AI Builder writes your follow-up emails, SMS messages, and full Close sequences in seconds — you tell Claude what you want, it writes it. (3) The Underwriting Wizard walks a client through their health intake and recommends the right carrier in under three minutes.",
+  },
+  {
+    question: "Is my Close CRM data safe?",
+    answer:
+      "Your Close API key is encrypted and scoped to you — we never share keys between agents. The platform reads your leads to score them and writes back custom fields you authorize, but it does not touch leads belonging to other agents on the team. Audit trail tracks every read and write for 90 days.",
+  },
+  {
+    question: "What does it cost me to use the platform as an agent?",
+    answer:
+      "Nothing additional. The platform is included in your contract with The Standard. You bring the work ethic; we bring the software, the training, the leads when applicable, and the team to plug into.",
+  },
+  {
+    question: "Do I need prior insurance experience?",
+    answer:
+      "No. Our Training Modules walk new agents through everything from licensing prep to advanced sales process. You earn XP, unlock badges, and build streaks as you go — most new agents are writing business within the first 30 days post-licensing.",
+  },
+  {
+    question: "Is this 100% remote?",
+    answer:
+      "Yes. The team is fully remote. The platform was built for remote work — Slack-integrated daily leaderboards, two-way messaging, AI-powered async coaching via the Game Plan dashboard.",
+  },
+];
 
-function FaqItemRow({
-  item,
-  index,
-  isOpen,
-  onToggle,
-  primaryColor,
-  isVisible,
-  _isLast,
-}: FaqItemRowProps) {
-  return (
-    <div
-      className="transition-all duration-500"
-      style={{
-        opacity: isVisible ? 1 : 0,
-        transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-        transitionDelay: `${index * 100}ms`,
-      }}
-    >
-      <div
-        className="border-t-2"
-        style={{ borderColor: `${primaryColor}20` }}
-      >
-        {/* Question */}
-        <button
-          onClick={onToggle}
-          className="w-full flex items-start gap-8 md:gap-12 py-10 md:py-14 text-left group"
-        >
-          {/* Index */}
-          <span
-            className="text-4xl md:text-5xl font-black shrink-0 tracking-tighter"
-            style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              color: isOpen ? primaryColor : `${primaryColor}30`,
-              transition: 'color 0.3s',
-            }}
-          >
-            {String(index + 1).padStart(2, '0')}
-          </span>
+export function FaqAccordion({ theme }: Props) {
+  const ref = useReveal<HTMLDivElement>();
+  const [openIdx, setOpenIdx] = useState<number | null>(0);
 
-          {/* Question text */}
-          <span
-            className="flex-1 text-xl md:text-2xl lg:text-3xl font-black transition-colors leading-tight uppercase tracking-tight pt-2"
-            style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              color: isOpen ? 'white' : 'rgba(255,255,255,0.6)',
-            }}
-          >
-            {item.question}
-          </span>
-
-          {/* Toggle indicator */}
-          <span
-            className="text-4xl md:text-5xl shrink-0 font-black transition-all duration-300"
-            style={{
-              color: isOpen ? primaryColor : 'rgba(255,255,255,0.2)',
-              transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)',
-            }}
-          >
-            +
-          </span>
-        </button>
-
-        {/* Answer */}
-        <div
-          className="overflow-hidden transition-all duration-500 ease-out"
-          style={{
-            maxHeight: isOpen ? '500px' : '0px',
-            opacity: isOpen ? 1 : 0,
-          }}
-        >
-          <div className="pl-16 md:pl-24 pb-12 pr-16">
-            <p className="text-white/50 text-lg md:text-xl lg:text-2xl leading-relaxed max-w-3xl">
-              {item.answer}
-            </p>
-            {/* Accent bar */}
-            <div
-              className="w-16 h-[2px] mt-8"
-              style={{ background: primaryColor }}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function FaqAccordion({ theme }: FaqAccordionProps) {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-  const { ref, isVisible } = useScrollAnimation<HTMLDivElement>({
-    threshold: 0.1,
-    triggerOnce: true,
-  });
-
-  if (!theme.faq_items || theme.faq_items.length === 0) {
-    return null;
-  }
-
-  const handleToggle = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
+  const items =
+    theme.faq_items &&
+    theme.faq_items.length > 0 &&
+    theme.faq_items[0].question !== "Do I need prior insurance experience?"
+      ? theme.faq_items
+      : PLATFORM_FAQ_FALLBACKS;
 
   return (
-    <section ref={ref} className="relative py-32 md:py-48 lg:py-64 overflow-hidden bg-[#050505]">
-      {/* Harsh grid background */}
-      <div
-        className="absolute inset-0 opacity-[0.015]"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, white 1px, transparent 1px),
-            linear-gradient(to bottom, white 1px, transparent 1px)
-          `,
-          backgroundSize: '80px 80px',
-        }}
-      />
-
-      {/* Top gold line */}
-      <div
-        className="absolute top-0 left-0 right-0 h-[2px]"
-        style={{ background: theme.primary_color }}
-      />
-
-      {/* Vertical accent line */}
-      <div
-        className="absolute top-0 bottom-0 left-6 md:left-12 w-[1px]"
-        style={{ background: `${theme.primary_color}20` }}
-      />
-
-      {/* Diagonal */}
-      <div
-        className="absolute top-0 right-[25%] w-[1px] h-[200%] origin-top rotate-[-25deg] hidden lg:block"
-        style={{ background: `${theme.primary_color}10` }}
-      />
-
-      <div className="relative z-10 max-w-5xl mx-auto px-6 md:px-12">
-        {/* Header */}
-        <div
-          className="mb-20 md:mb-28 transition-all duration-700"
-          style={{
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? 'translateY(0)' : 'translateY(40px)',
-          }}
-        >
-          {/* Index marker */}
-          <span className="font-mono text-[10px] text-white/30 tracking-[0.3em] uppercase block mb-8">
-            [08] FAQ
-          </span>
-
-          <h2
-            className="text-[12vw] md:text-[10vw] lg:text-[7vw] font-black leading-[0.85] tracking-tighter text-white uppercase"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-          >
-            {theme.faq_headline.split(' ').map((word, i) => (
-              <span key={i} className="block">
-                {i === 0 ? (
-                  <span style={{ color: theme.primary_color }}>{word}</span>
-                ) : (
-                  word
-                )}
-              </span>
-            ))}
+    <section id="faq" className="section-warm-white py-24 lg:py-32">
+      <div ref={ref} className="reveal max-w-3xl mx-auto px-6 lg:px-8">
+        <div className="text-center mb-14">
+          <p className="eyebrow mb-4">Common Questions</p>
+          <h2 className="font-display text-3xl lg:text-5xl text-[var(--landing-navy)] leading-[1.1]">
+            {theme.faq_headline || "What recruits want to know."}
           </h2>
         </div>
 
-        {/* FAQ List */}
-        <div>
-          {theme.faq_items.map((item, index) => (
-            <FaqItemRow
-              key={item.question}
-              item={item}
-              index={index}
-              isOpen={openIndex === index}
-              onToggle={() => handleToggle(index)}
-              primaryColor={theme.primary_color}
-              isVisible={isVisible}
-              _isLast={index === theme.faq_items.length - 1}
-            />
-          ))}
+        <div className="space-y-3">
+          {items.map((item, idx) => {
+            const isOpen = openIdx === idx;
+            return (
+              <div
+                key={`${item.question}-${idx}`}
+                className={`bg-[var(--landing-warm-white)] border rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.04)] transition-all ${
+                  isOpen
+                    ? "border-[var(--landing-gold)] border-2"
+                    : "border-[var(--landing-border)]"
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setOpenIdx(isOpen ? null : idx)}
+                  className="w-full p-6 flex items-start justify-between gap-4 text-left"
+                  aria-expanded={isOpen}
+                >
+                  <span className="font-display text-xl lg:text-2xl text-[var(--landing-navy)] leading-tight">
+                    {item.question}
+                  </span>
+                  <span className="shrink-0 mt-1">
+                    {isOpen ? (
+                      <Minus
+                        size={20}
+                        className="text-[var(--landing-gold-deep)]"
+                      />
+                    ) : (
+                      <Plus size={20} className="text-[var(--landing-slate)]" />
+                    )}
+                  </span>
+                </button>
+                {isOpen && (
+                  <div className="px-6 pb-6 text-base text-[var(--landing-slate)] leading-relaxed">
+                    {item.answer}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
-
-      {/* Bottom line */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-[1px]"
-        style={{ background: `${theme.primary_color}30` }}
-      />
     </section>
   );
 }

@@ -1,157 +1,152 @@
-// src/features/landing/components/HeroSection.tsx
-// Brutalist hero - raw, bold, gold accent throughout
-
+import { ArrowRight, Sparkles, Cpu, Phone } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import type { LandingPageTheme } from "../types";
 
-interface HeroSectionProps {
+interface Props {
   theme: LandingPageTheme;
 }
 
-export function HeroSection({ theme }: HeroSectionProps) {
-  // Video is now rendered globally in PublicLandingPage, only show image here if no video
-  const hasImageOnly = !theme.hero_video_url && theme.hero_image_url;
+const HEADLINE_FALLBACK_LINE_1 = "The Operating System";
+const HEADLINE_FALLBACK_LINE_2 = "For Modern Insurance Agents";
+
+const SUBHEAD_FALLBACK =
+  "AI scores every lead in your pipeline. AI writes your Close emails, SMS, and full sequences. The underwriting wizard recommends the right carrier in three minutes. Commissions, advances, chargebacks, and downline overrides calculate themselves. Built in-house, not bought.";
+
+function FloatingShapes() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div
+        className="floating-shape floating-shape-1"
+        style={{ top: "8%", right: "5%" }}
+      />
+      <div
+        className="floating-shape floating-shape-2"
+        style={{ bottom: "18%", left: "8%" }}
+      />
+      <div
+        className="floating-shape floating-shape-3"
+        style={{ top: "22%", left: "14%" }}
+      />
+      <div
+        className="floating-shape floating-shape-ring"
+        style={{ bottom: "28%", right: "12%" }}
+      />
+    </div>
+  );
+}
+
+export function HeroSection({ theme }: Props) {
+  // Use theme overrides if non-default, otherwise fallback copy
+  const headline =
+    theme.hero_headline && theme.hero_headline !== "Build Your Future"
+      ? theme.hero_headline
+      : null;
+  const subhead =
+    theme.hero_subheadline &&
+    theme.hero_subheadline !== "Remote sales careers for the ambitious"
+      ? theme.hero_subheadline
+      : SUBHEAD_FALLBACK;
+  const ctaText = theme.hero_cta_text || "Apply to Join";
+  const ctaLink = theme.hero_cta_link || "/join-the-standard";
 
   return (
-    <section className="min-h-screen bg-transparent relative overflow-hidden">
-      {/* Background image only (video is handled globally) */}
-      {hasImageOnly && (
-        <div className="absolute inset-0 z-0">
-          <img
-            src={theme.hero_image_url!}
-            alt="Hero background"
-            className="w-full h-full object-cover"
-          />
-          {/* Dark overlay for text readability */}
-          <div className="absolute inset-0 bg-black/60" />
-        </div>
-      )}
+    <section className="relative min-h-[90vh] flex items-center surface-base overflow-hidden">
+      <FloatingShapes />
 
-      {/* Harsh grid lines */}
-      <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, white 1px, transparent 1px),
-            linear-gradient(to bottom, white 1px, transparent 1px)
-          `,
-          backgroundSize: "80px 80px",
-        }}
-      />
-
-      {/* Single diagonal accent line - gold */}
-      <div
-        className="absolute top-0 right-0 w-[2px] h-[200vh] origin-top-right rotate-[-35deg]"
-        style={{ background: theme.primary_color }}
-      />
-
-      {/* Header */}
-      <header className="relative z-20 flex items-center justify-between px-6 md:px-12 py-6 border-b border-white/10">
-        {/* Logo */}
-        {theme.logo_light_url ? (
-          <img
-            src={theme.logo_light_url}
-            alt="Logo"
-            className="h-8 md:h-10 w-auto"
-          />
-        ) : (
-          <span
-            className="text-xl font-black tracking-tighter uppercase"
-            style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              color: theme.primary_color,
-            }}
-          >
-            THE STANDARD
-          </span>
-        )}
-
-        {/* Login - raw, no frills */}
-        <Link
-          to="/login"
-          className="text-white/60 text-sm font-mono uppercase tracking-widest hover:text-white transition-colors"
-          style={{ borderBottom: `1px solid transparent` }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.borderBottomColor = theme.primary_color)
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.borderBottomColor = "transparent")
-          }
-        >
-          Agent Login →
-        </Link>
-      </header>
-
-      {/* Main content */}
-      <div className="relative z-10 px-6 md:px-12 pt-24 md:pt-32 lg:pt-40">
-        {/* Oversized headline */}
-        <h1
-          className="text-[12vw] md:text-[10vw] lg:text-[8vw] font-black leading-[0.85] tracking-tighter text-white uppercase"
-          style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-        >
-          {theme.hero_headline.split(" ").map((word, i) => (
-            <span key={i} className="block">
-              {i === 1 ? (
-                <span style={{ color: theme.primary_color }}>{word}</span>
-              ) : (
-                word
-              )}
+      <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 w-full pt-24 lg:pt-32 pb-20">
+        <div className="max-w-4xl">
+          {/* Pulse-glow badge + eyebrow row */}
+          <div className="inline-flex items-center gap-3 mb-12">
+            <span className="relative inline-flex items-center px-3 py-1 text-[10px] font-bold tracking-[0.12em] text-[var(--landing-icy-blue)] uppercase bg-[var(--landing-deep-green)] rounded-[2px] pulse-glow font-mono">
+              Recruiting Now
             </span>
-          ))}
-        </h1>
+            <span className="w-12 h-px bg-[var(--landing-border)]" />
+            <span className="text-eyebrow-lg">Exclusive Agent Opportunity</span>
+          </div>
 
-        {/* Subheadline - stark contrast */}
-        <p className="mt-12 text-white/50 text-lg md:text-xl max-w-xl font-light leading-relaxed">
-          {theme.hero_subheadline}
-        </p>
+          {/* Stacked headlines — light weight Big Shoulders, two lines */}
+          <div className="mb-8">
+            {headline ? (
+              <h1
+                className="text-display-hero text-[var(--landing-deep-green)]"
+                style={{ fontWeight: 300 }}
+              >
+                {headline}
+              </h1>
+            ) : (
+              <>
+                <h1
+                  className="text-display-hero text-[var(--landing-deep-green)]"
+                  style={{ fontWeight: 300 }}
+                >
+                  {HEADLINE_FALLBACK_LINE_1}
+                </h1>
+                <h1
+                  className="text-display-hero text-[var(--landing-deep-green)]"
+                  style={{ fontWeight: 300 }}
+                >
+                  {HEADLINE_FALLBACK_LINE_2}
+                </h1>
+              </>
+            )}
+          </div>
 
-        {/* CTA - brutalist button with gold accent */}
-        <div className="mt-16 flex items-center gap-8">
-          <Link
-            to={theme.hero_cta_link}
-            className="group relative px-8 py-4 font-black text-sm uppercase tracking-widest transition-all duration-150 border-2"
-            style={{
-              background: theme.primary_color,
-              color: "#0a0a0a",
-              borderColor: theme.primary_color,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "transparent";
-              e.currentTarget.style.color = theme.primary_color;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = theme.primary_color;
-              e.currentTarget.style.color = "#0a0a0a";
-            }}
-          >
-            {theme.hero_cta_text}
-          </Link>
+          {/* Long subhead in muted */}
+          <p className="text-fluid-lg text-muted mb-12 max-w-2xl font-normal">
+            {subhead}
+          </p>
 
-          {/* Raw stat */}
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-16">
+            <Link to={ctaLink} className="btn btn-primary btn-lg">
+              {ctaText}
+              <ArrowRight size={16} strokeWidth={1.75} />
+            </Link>
+            <a href="#platform" className="btn btn-secondary btn-lg">
+              Tour the platform
+            </a>
+          </div>
 
-          {/*     className="text-4xl font-black" */}
-          {/*     style={{ */}
-          {/*       fontFamily: "'Plus Jakarta Sans', sans-serif", */}
-          {/*       color: theme.primary_color, */}
-          {/*     }} */}
-          {/*   > */}
-          {/*     100+ */}
-          {/*   </span> */}
-          {/*   <br /> */}
-          {/*   <span className="text-white/30">AGENTS NATIONWIDE</span> */}
-          {/* </div> */}
+          {/* Trust indicators with icon-container squares */}
+          <div className="flex flex-wrap items-center gap-8">
+            <div className="flex items-center gap-3">
+              <div className="icon-container">
+                <Sparkles
+                  size={18}
+                  strokeWidth={1.5}
+                  className="text-[var(--landing-deep-green)]"
+                />
+              </div>
+              <span className="text-eyebrow-lg !text-[var(--landing-deep-green)]">
+                Production AI Toolkit
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="icon-container">
+                <Cpu
+                  size={18}
+                  strokeWidth={1.5}
+                  className="text-[var(--landing-deep-green)]"
+                />
+              </div>
+              <span className="text-eyebrow-lg !text-[var(--landing-deep-green)]">
+                Built In-House
+              </span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="icon-container">
+                <Phone
+                  size={18}
+                  strokeWidth={1.5}
+                  className="text-[var(--landing-deep-green)]"
+                />
+              </div>
+              <span className="text-eyebrow-lg !text-[var(--landing-deep-green)]">
+                100% Remote
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
-
-      {/* Bottom brutal accent - gold */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-[2px]"
-        style={{ background: theme.primary_color }}
-      />
-
-      {/* Scroll indicator - raw text */}
-      <div className="absolute bottom-12 left-6 md:left-12 text-white/20 font-mono text-xs uppercase tracking-widest">
-        <span className="inline-block animate-pulse">↓</span> Scroll
       </div>
     </section>
   );

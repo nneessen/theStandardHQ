@@ -1,221 +1,121 @@
-// src/features/landing/components/CultureGallery.tsx
-// Brutalist gallery - raw grid, no frames, harsh overlays
+import { ImageIcon } from "lucide-react";
+import type { LandingPageTheme } from "../types";
+import { useReveal } from "../hooks/useReveal";
 
-import { useScrollAnimation } from '../hooks';
-import type { LandingPageTheme } from '../types';
-
-interface CultureGalleryProps {
+interface Props {
   theme: LandingPageTheme;
 }
 
-export function CultureGallery({ theme }: CultureGalleryProps) {
-  const { ref, isVisible } = useScrollAnimation<HTMLDivElement>({
-    threshold: 0.1,
-    triggerOnce: true,
-  });
+const PLACEHOLDER_COUNT = 6;
 
-  // Filter out images with empty URLs
-  const validGalleryImages = theme.gallery_images?.filter(img => img.url && img.url.trim() !== '') || [];
+export function CultureGallery({ theme }: Props) {
+  const ref = useReveal<HTMLDivElement>();
 
-  const hasImages =
-    theme.gallery_featured_url ||
-    validGalleryImages.length > 0;
+  const images = theme.gallery_images || [];
+  const featured = theme.gallery_featured_url || images[0]?.url;
+  const rest = theme.gallery_featured_url ? images : images.slice(1);
 
-  const gridImages = validGalleryImages.slice(0, 6);
-
+  // Always render — show placeholders if no images so user knows where to upload
+  const hasContent = images.length > 0 || !!featured;
 
   return (
-    <section ref={ref} className="relative py-32 md:py-48 overflow-hidden bg-[#050505]">
-      {/* Harsh grid background */}
-      <div
-        className="absolute inset-0 opacity-[0.015]"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, white 1px, transparent 1px),
-            linear-gradient(to bottom, white 1px, transparent 1px)
-          `,
-          backgroundSize: '80px 80px',
-        }}
-      />
-
-      {/* Top gold line */}
-      <div
-        className="absolute top-0 left-0 right-0 h-[2px]"
-        style={{ background: theme.primary_color }}
-      />
-
-      {/* Vertical accent line */}
-      <div
-        className="absolute top-0 bottom-0 right-6 md:right-12 w-[1px]"
-        style={{ background: `${theme.primary_color}20` }}
-      />
-
-      {/* Diagonal */}
-      <div
-        className="absolute top-0 left-[40%] w-[1px] h-[200%] origin-top rotate-[15deg] hidden lg:block"
-        style={{ background: `${theme.primary_color}10` }}
-      />
-
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
-        {/* Header */}
-        <div
-          className="mb-20 transition-all duration-700"
-          style={{
-            opacity: isVisible ? 1 : 0,
-            transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-          }}
-        >
-          {/* Index marker */}
-          <span className="font-mono text-[10px] text-white/30 tracking-[0.3em] uppercase block mb-8">
-            [03] Culture
-          </span>
-
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
-            <h2
-              className="text-[12vw] md:text-[10vw] lg:text-[7vw] font-black leading-[0.85] tracking-tighter text-white uppercase"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
-              {theme.gallery_headline.split(' ').map((word, i) => (
-                <span key={i} className="block">
-                  {i === 1 ? (
-                    <span style={{ color: theme.primary_color }}>{word}</span>
-                  ) : (
-                    word
-                  )}
-                </span>
-              ))}
-            </h2>
-            <p className="text-white/40 text-lg md:text-xl lg:text-2xl max-w-md font-light lg:text-right">
+    <section id="culture" className="surface-paper py-20 lg:py-28">
+      <div ref={ref} className="reveal max-w-7xl mx-auto px-6 lg:px-12">
+        <div className="max-w-3xl mb-14">
+          <div className="section-eyebrow-row">
+            <span className="section-eyebrow-num">07</span>
+            <span className="section-eyebrow-line" />
+            <span className="section-eyebrow-label">Culture</span>
+          </div>
+          <h2
+            className="text-display-2xl text-[var(--landing-deep-green)] mb-4"
+            style={{ fontWeight: 300 }}
+          >
+            {theme.gallery_headline || "The team behind the platform."}
+          </h2>
+          {theme.gallery_subheadline && (
+            <p className="text-fluid-lg text-muted max-w-2xl">
               {theme.gallery_subheadline}
             </p>
-          </div>
+          )}
         </div>
 
-        {/* Gallery grid */}
-        {hasImages ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {/* Featured image - spans two columns */}
-            {theme.gallery_featured_url && (
-              <div
-                className="col-span-2 row-span-2 transition-all duration-700"
-                style={{
-                  opacity: isVisible ? 1 : 0,
-                  transform: isVisible ? 'scale(1)' : 'scale(0.95)',
-                  transitionDelay: '100ms',
-                }}
-              >
-                <div className="relative h-full min-h-[400px] md:min-h-[600px] overflow-hidden group">
-                  <img
-                    src={theme.gallery_featured_url}
-                    alt="Team culture"
-                    className="w-full h-full object-cover grayscale-[50%] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105"
-                  />
-                  {/* Gold overlay */}
-                  <div
-                    className="absolute inset-0 opacity-30 group-hover:opacity-0 transition-opacity duration-500 mix-blend-multiply"
-                    style={{ background: theme.primary_color }}
-                  />
-                  {/* Index */}
-                  <span className="absolute bottom-4 left-4 font-mono text-[10px] text-white/70 tracking-[0.2em]">
-                    [01]
-                  </span>
-                  {/* Corner accent */}
-                  <div
-                    className="absolute top-0 right-0 w-20 h-20"
-                    style={{
-                      background: `linear-gradient(135deg, ${theme.primary_color} 0%, transparent 50%)`,
-                    }}
-                  />
-                </div>
+        {hasContent ? (
+          <div
+            className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4"
+            style={{ gap: "1px", background: "var(--landing-border)" }}
+          >
+            {/* Featured image — spans 2x2 on desktop */}
+            {featured && (
+              <div className="md:col-span-2 lg:col-span-2 lg:row-span-2 relative aspect-square lg:aspect-auto bg-[var(--landing-icy-blue)] overflow-hidden">
+                <img
+                  src={featured}
+                  alt=""
+                  className="w-full h-full object-cover"
+                />
+                <div
+                  className="absolute bottom-0 right-0 pointer-events-none"
+                  style={{
+                    width: "20%",
+                    height: "30%",
+                    background: "var(--landing-adventure-yellow)",
+                    mixBlendMode: "multiply",
+                    opacity: 0.7,
+                  }}
+                />
               </div>
             )}
 
-            {/* Grid images */}
-            {gridImages.map((image, index) => (
+            {rest.slice(0, 6).map((img, idx) => (
               <div
-                key={`gallery-${index}-${image.url.slice(-20)}`}
-                className="transition-all duration-500"
-                style={{
-                  opacity: isVisible ? 1 : 0,
-                  transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-                  transitionDelay: `${(index + 2) * 100}ms`,
-                }}
+                key={`${img.url}-${idx}`}
+                className="group relative bg-[var(--landing-icy-blue)] aspect-square overflow-hidden"
               >
-                <div className="relative aspect-square overflow-hidden group">
-                  <img
-                    src={image.url}
-                    alt={image.alt || image.caption || 'Team photo'}
-                    className="w-full h-full object-cover grayscale-[50%] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-110"
-                  />
-                  {/* Gold overlay */}
-                  <div
-                    className="absolute inset-0 opacity-30 group-hover:opacity-0 transition-opacity duration-500 mix-blend-multiply"
-                    style={{ background: theme.primary_color }}
-                  />
-                  {/* Index */}
-                  <span className="absolute bottom-2 left-2 font-mono text-[10px] text-white/50 tracking-[0.2em]">
-                    [{String(index + 2).padStart(2, '0')}]
-                  </span>
-                </div>
+                <img
+                  src={img.url}
+                  alt={img.alt || img.caption || ""}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                {img.caption && (
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[var(--landing-deep-green)]/90 via-[var(--landing-deep-green)]/40 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="text-eyebrow !text-[var(--landing-icy-blue)]">
+                      {img.caption}
+                    </p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
         ) : (
-          // Placeholder grid when no images
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {[...Array(6)].map((_, index) => (
-              <div
-                key={index}
-                className="transition-all duration-500"
-                style={{
-                  opacity: isVisible ? 1 : 0,
-                  transform: isVisible ? 'translateY(0)' : 'translateY(20px)',
-                  transitionDelay: `${index * 80}ms`,
-                }}
-              >
-                <div
-                  className="relative aspect-square overflow-hidden"
-                  style={{ background: `${theme.primary_color}08` }}
-                >
-                  {/* Grid pattern placeholder */}
-                  <div
-                    className="absolute inset-0 opacity-30"
-                    style={{
-                      backgroundImage: `
-                        linear-gradient(to right, ${theme.primary_color}20 1px, transparent 1px),
-                        linear-gradient(to bottom, ${theme.primary_color}20 1px, transparent 1px)
-                      `,
-                      backgroundSize: '20px 20px',
-                    }}
-                  />
-                  {/* Center text */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span
-                      className="text-[20vw] md:text-[10vw] font-black opacity-10"
-                      style={{
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        color: theme.primary_color,
-                      }}
-                    >
-                      {index + 1}
-                    </span>
-                  </div>
-                  {/* Index */}
-                  <span className="absolute bottom-2 left-2 font-mono text-[10px] text-white/20 tracking-[0.2em]">
-                    [{String(index + 1).padStart(2, '0')}]
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <PlaceholderGrid />
         )}
       </div>
-
-      {/* Bottom line */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-[1px]"
-        style={{ background: `${theme.primary_color}30` }}
-      />
     </section>
+  );
+}
+
+function PlaceholderGrid() {
+  return (
+    <div
+      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+      style={{ gap: "1px", background: "var(--landing-border)" }}
+    >
+      {Array.from({ length: PLACEHOLDER_COUNT }).map((_, i) => (
+        <div
+          key={i}
+          className="aspect-square surface-base flex flex-col items-center justify-center text-center px-4"
+        >
+          <ImageIcon
+            size={28}
+            strokeWidth={1.25}
+            className="text-[var(--landing-terrain-grey)] mb-3"
+          />
+          <p className="text-eyebrow">{`Photo ${i + 1}`}</p>
+          <p className="text-[10px] text-muted mt-2 leading-snug max-w-[18ch]">
+            Upload via admin → Landing Page Settings → Gallery
+          </p>
+        </div>
+      ))}
+    </div>
   );
 }

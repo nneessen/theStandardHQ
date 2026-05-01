@@ -1,67 +1,51 @@
-// src/features/landing/components/LandingFooter.tsx
-// Brutalist footer - minimal, raw text, no decorative elements
+import { Link } from "@tanstack/react-router";
+import type { LandingPageTheme } from "../types";
 
-import { Link } from '@tanstack/react-router';
-import type { LandingPageTheme } from '../types';
-
-interface LandingFooterProps {
+interface Props {
   theme: LandingPageTheme;
 }
 
-export function LandingFooter({ theme }: LandingFooterProps) {
-  const hasSocialLinks =
-    theme.social_links &&
-    Object.values(theme.social_links).some((link) => link);
-
-  const hasContactInfo =
+export function LandingFooter({ theme }: Props) {
+  const hasSocial =
+    theme.social_links && Object.values(theme.social_links).some(Boolean);
+  const hasContact =
     theme.contact_email || theme.contact_phone || theme.contact_address;
 
   return (
-    <footer className="relative py-16 md:py-24 bg-[#030303]">
-      {/* Top harsh line */}
-      <div
-        className="absolute top-0 left-0 right-0 h-[1px]"
-        style={{ background: `${theme.primary_color}40` }}
-      />
-
-      <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12">
-        <div className="grid md:grid-cols-4 gap-12 md:gap-8 mb-16">
-          {/* Brand */}
+    <footer className="section-navy py-16 border-t border-[var(--landing-cream)]/10">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
           <div className="md:col-span-2">
             {theme.logo_light_url ? (
               <img
                 src={theme.logo_light_url}
                 alt="The Standard"
-                className="h-8 w-auto object-contain mb-6"
+                className="h-9 w-auto object-contain mb-5"
               />
             ) : (
-              <span
-                className="text-2xl font-black tracking-tighter uppercase block mb-6"
-                style={{
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  color: theme.primary_color,
-                }}
-              >
-                THE STANDARD
-              </span>
+              <div className="font-display text-2xl text-[var(--landing-cream)] mb-5">
+                The Standard
+              </div>
             )}
-            <p className="text-white/40 text-sm max-w-xs leading-relaxed">
-              Building the next generation of insurance professionals through
-              world-class training and support.
+            <p className="text-sm text-[var(--landing-cream)]/60 max-w-sm leading-relaxed">
+              The agency built like a tech company. Recruiting agents who want
+              better software, real downline overrides, and a team that ships.
             </p>
           </div>
 
-          {/* Contact */}
-          {hasContactInfo && (
+          {hasContact && (
             <div>
-              <h4 className="text-xs font-mono text-white/30 uppercase tracking-widest mb-6">
+              <h4
+                className="eyebrow mb-4"
+                style={{ color: "var(--landing-gold)" }}
+              >
                 Contact
               </h4>
-              <div className="space-y-3">
+              <div className="space-y-2 text-sm text-[var(--landing-cream)]/70">
                 {theme.contact_email && (
                   <a
                     href={`mailto:${theme.contact_email}`}
-                    className="block text-white/50 hover:text-white transition-colors text-sm"
+                    className="block hover:text-[var(--landing-gold)] transition-colors"
                   >
                     {theme.contact_email}
                   </a>
@@ -69,37 +53,36 @@ export function LandingFooter({ theme }: LandingFooterProps) {
                 {theme.contact_phone && (
                   <a
                     href={`tel:${theme.contact_phone}`}
-                    className="block text-white/50 hover:text-white transition-colors text-sm"
+                    className="block hover:text-[var(--landing-gold)] transition-colors"
                   >
                     {theme.contact_phone}
                   </a>
                 )}
                 {theme.contact_address && (
-                  <span className="block text-white/50 text-sm">
-                    {theme.contact_address}
-                  </span>
+                  <span className="block">{theme.contact_address}</span>
                 )}
               </div>
             </div>
           )}
 
-          {/* Links */}
           <div>
-            <h4 className="text-xs font-mono text-white/30 uppercase tracking-widest mb-6">
+            <h4
+              className="eyebrow mb-4"
+              style={{ color: "var(--landing-gold)" }}
+            >
               Links
             </h4>
-            <div className="space-y-3">
-              {/* Social links as text */}
-              {hasSocialLinks && (
+            <div className="space-y-2 text-sm text-[var(--landing-cream)]/70">
+              {hasSocial && (
                 <>
                   {theme.social_links.instagram && (
                     <a
                       href={theme.social_links.instagram}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block text-white/50 hover:text-white transition-colors text-sm"
+                      className="block hover:text-[var(--landing-gold)] transition-colors"
                     >
-                      Instagram →
+                      Instagram
                     </a>
                   )}
                   {theme.social_links.tiktok && (
@@ -107,9 +90,9 @@ export function LandingFooter({ theme }: LandingFooterProps) {
                       href={theme.social_links.tiktok}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block text-white/50 hover:text-white transition-colors text-sm"
+                      className="block hover:text-[var(--landing-gold)] transition-colors"
                     >
-                      TikTok →
+                      TikTok
                     </a>
                   )}
                   {theme.social_links.youtube && (
@@ -117,46 +100,63 @@ export function LandingFooter({ theme }: LandingFooterProps) {
                       href={theme.social_links.youtube}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block text-white/50 hover:text-white transition-colors text-sm"
+                      className="block hover:text-[var(--landing-gold)] transition-colors"
                     >
-                      YouTube →
+                      YouTube
+                    </a>
+                  )}
+                  {theme.social_links.facebook && (
+                    <a
+                      href={theme.social_links.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block hover:text-[var(--landing-gold)] transition-colors"
+                    >
+                      Facebook
+                    </a>
+                  )}
+                  {theme.social_links.twitter && (
+                    <a
+                      href={theme.social_links.twitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block hover:text-[var(--landing-gold)] transition-colors"
+                    >
+                      Twitter
                     </a>
                   )}
                 </>
               )}
               <Link
                 to="/terms"
-                className="block text-white/30 hover:text-white/60 transition-colors text-sm"
+                className="block hover:text-[var(--landing-gold)] transition-colors"
               >
                 Terms
               </Link>
               <Link
                 to="/privacy"
-                className="block text-white/30 hover:text-white/60 transition-colors text-sm"
+                className="block hover:text-[var(--landing-gold)] transition-colors"
               >
                 Privacy
+              </Link>
+              <Link
+                to="/login"
+                className="block hover:text-[var(--landing-gold)] transition-colors"
+              >
+                Agent Login
               </Link>
             </div>
           </div>
         </div>
 
-        {/* Bottom bar */}
-        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          {/* Copyright */}
-          <p className="text-white/20 text-xs font-mono">
-            © {new Date().getFullYear()} THE STANDARD. ALL RIGHTS RESERVED.
+        <div className="pt-6 border-t border-[var(--landing-cream)]/10 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+          <p className="text-xs text-[var(--landing-cream)]/40">
+            © {new Date().getFullYear()} The Standard. All rights reserved.
           </p>
-
-          {/* Secondary login link */}
-          {(theme.login_access_type === 'footer_link' ||
-            theme.login_access_type === 'both') && (
-            <Link
-              to="/login"
-              className="text-white/30 hover:text-white transition-colors text-xs font-mono uppercase tracking-widest"
-            >
-              Agent Portal →
-            </Link>
-          )}
+          <p className="text-xs text-[var(--landing-cream)]/30">
+            Built in-house. Powered by Claude, Retell, Close, Stripe, and
+            Supabase.
+          </p>
         </div>
       </div>
     </footer>

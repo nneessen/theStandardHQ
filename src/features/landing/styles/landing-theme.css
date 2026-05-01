@@ -1,0 +1,899 @@
+/*
+ * Landing page theme — scoped to .theme-landing wrapper.
+ * Inherits design DNA from /Users/nickneessen/projects/standard-digital/apps/standard-leads/.
+ * San Rita-inspired editorial palette: deep-green + electric lime + icy-blue.
+ * JetBrains Mono body + Big Shoulders Display headlines. Sharp 2px corners.
+ * Tokens scoped under .theme-landing so they don't leak into the in-app aesthetic.
+ */
+
+.theme-landing {
+  /* Core palette — extracted from sanrita.ca via standard-leads */
+  --landing-deep-green: #161b13;
+  --landing-forest-green: #2d3329;
+  --landing-terrain-grey: #84907f;
+  --landing-terrain-grey-dark: #5d6759;
+  --landing-icy-blue: #dde2e4;
+  --landing-icy-blue-light: #ecf0f1;
+  --landing-icy-blue-dark: #c4ccd0;
+  --landing-adventure-yellow: #e2ffcc;
+  --landing-adventure-yellow-dim: #c8e8b0;
+  --landing-white: #ffffff;
+  --landing-off-white: #f5f6f7;
+
+  --landing-border: rgba(132, 144, 127, 0.35);
+  --landing-border-strong: rgba(45, 51, 41, 0.18);
+  --landing-border-on-dark: rgba(132, 144, 127, 0.18);
+
+  /* Sharp radii — near square */
+  --landing-radius-sm: 1px;
+  --landing-radius: 2px;
+  --landing-radius-lg: 4px;
+  --landing-radius-pill: 9999px;
+
+  /* Near-flat shadows — sanrita has barely any */
+  --landing-shadow-card:
+    0 1px 0 rgba(22, 27, 19, 0.04),
+    0 4px 16px -2px rgba(22, 27, 19, 0.06);
+  --landing-shadow-card-hover:
+    0 1px 0 rgba(22, 27, 19, 0.08),
+    0 8px 24px -4px rgba(22, 27, 19, 0.12);
+
+  /* Fluid spacing */
+  --landing-section: clamp(80px, 10vw, 140px);
+  --landing-block: clamp(40px, 6vw, 80px);
+
+  /* Fluid typography */
+  --landing-fs-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --landing-fs-sm: clamp(0.875rem, 0.825rem + 0.25vw, 1rem);
+  --landing-fs-base: clamp(0.9375rem, 0.9rem + 0.2vw, 1.0625rem);
+  --landing-fs-lg: clamp(1.125rem, 1.05rem + 0.375vw, 1.375rem);
+  --landing-fs-xl: clamp(1.5rem, 1.25rem + 1vw, 2.25rem);
+  --landing-fs-2xl: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+  --landing-fs-3xl: clamp(2.75rem, 2rem + 3vw, 5rem);
+  --landing-fs-hero: clamp(3.5rem, 2.5rem + 5vw, 8rem);
+
+  /* Typography */
+  --landing-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --landing-font-display: "Big Shoulders Display", "Arial Black", system-ui, sans-serif;
+
+  font-family: var(--landing-font-mono);
+  background: var(--landing-icy-blue);
+  color: var(--landing-deep-green);
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* All headings default to display font, 900 weight, uppercase */
+.theme-landing h1,
+.theme-landing h2,
+.theme-landing h3,
+.theme-landing h4,
+.theme-landing h5,
+.theme-landing h6 {
+  font-family: var(--landing-font-display);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+  text-transform: uppercase;
+  color: var(--landing-deep-green);
+}
+
+.theme-landing h1 {
+  font-size: clamp(2.25rem, 5vw, 3.5rem);
+  line-height: 0.92;
+}
+
+.theme-landing h2 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.theme-landing h3 {
+  font-size: clamp(1.375rem, 3vw, 1.75rem);
+}
+
+.theme-landing ::selection {
+  background: var(--landing-adventure-yellow);
+  color: var(--landing-deep-green);
+}
+
+/* ============================================
+   TYPOGRAPHY UTILITIES
+   ============================================ */
+
+.theme-landing .text-display-hero {
+  font-family: var(--landing-font-display);
+  font-weight: 900;
+  font-size: var(--landing-fs-hero);
+  line-height: 0.88;
+  letter-spacing: -0.025em;
+  text-transform: uppercase;
+  color: var(--landing-deep-green);
+}
+
+.theme-landing .text-display-3xl {
+  font-family: var(--landing-font-display);
+  font-weight: 900;
+  font-size: var(--landing-fs-3xl);
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.theme-landing .text-display-2xl {
+  font-family: var(--landing-font-display);
+  font-weight: 900;
+  font-size: var(--landing-fs-2xl);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.theme-landing .text-display-xl {
+  font-family: var(--landing-font-display);
+  font-weight: 800;
+  font-size: var(--landing-fs-xl);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.theme-landing .text-fluid-lg {
+  font-size: var(--landing-fs-lg);
+  line-height: 1.4;
+}
+
+.theme-landing .text-fluid-base {
+  font-size: var(--landing-fs-base);
+  line-height: 1.6;
+}
+
+/* Eyebrow — small mono uppercase */
+.theme-landing .text-eyebrow {
+  font-family: var(--landing-font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--landing-terrain-grey-dark);
+  line-height: 1.2;
+}
+
+.theme-landing .text-eyebrow-lg {
+  font-family: var(--landing-font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--landing-terrain-grey-dark);
+}
+
+/* Editorial section eyebrow row: "01 — line — LABEL" */
+.theme-landing .section-eyebrow-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.theme-landing .section-eyebrow-num {
+  font-family: var(--landing-font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--landing-terrain-grey-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+.theme-landing .section-eyebrow-line {
+  width: 2rem;
+  height: 1px;
+  background: var(--landing-border);
+}
+
+.theme-landing .section-eyebrow-label {
+  font-family: var(--landing-font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--landing-terrain-grey-dark);
+}
+
+/* Mono body utility */
+.theme-landing .mono {
+  font-family: var(--landing-font-mono);
+  font-size: 0.875em;
+}
+
+.theme-landing .tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Muted text */
+.theme-landing .text-muted {
+  color: var(--landing-terrain-grey-dark);
+}
+
+/* ============================================
+   SURFACES
+   ============================================ */
+
+.theme-landing .surface-base {
+  background: var(--landing-icy-blue);
+  color: var(--landing-deep-green);
+}
+
+.theme-landing .surface-paper {
+  background: var(--landing-white);
+  color: var(--landing-deep-green);
+}
+
+.theme-landing .surface-dark {
+  background: var(--landing-deep-green);
+  color: var(--landing-icy-blue);
+}
+
+.theme-landing .surface-dark h1,
+.theme-landing .surface-dark h2,
+.theme-landing .surface-dark h3,
+.theme-landing .surface-dark h4 {
+  color: var(--landing-icy-blue);
+}
+
+.theme-landing .surface-forest {
+  background: var(--landing-forest-green);
+  color: var(--landing-icy-blue);
+}
+
+/* ============================================
+   CARDS
+   ============================================ */
+
+.theme-landing .card {
+  background: var(--landing-white);
+  border-radius: var(--landing-radius);
+  border: 1px solid var(--landing-border-strong);
+  box-shadow: var(--landing-shadow-card);
+  position: relative;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.theme-landing .card-hover:hover {
+  border-color: rgba(22, 27, 19, 0.45);
+  box-shadow: var(--landing-shadow-card-hover);
+  transform: translateY(-1px);
+}
+
+.theme-landing .card-accent-top {
+  border-top: 3px solid var(--landing-adventure-yellow);
+}
+
+.theme-landing .card-accent-side {
+  border-left: 3px solid var(--landing-deep-green);
+}
+
+/* gap-px lattice grid: cells separated by 1px terrain-grey lines */
+.theme-landing .lattice-grid {
+  display: grid;
+  gap: 1px;
+  background: var(--landing-border);
+}
+
+.theme-landing .lattice-cell {
+  background: var(--landing-icy-blue);
+  padding: 2rem;
+  transition: background 0.2s ease;
+}
+
+.theme-landing .lattice-cell:hover {
+  background: var(--landing-white);
+}
+
+/* ============================================
+   BUTTONS — mono uppercase, sharp
+   ============================================ */
+
+.theme-landing .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  font-family: var(--landing-font-mono);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: var(--landing-radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  line-height: 1;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  text-decoration: none;
+}
+
+.theme-landing .btn:hover {
+  transform: translateY(-1px);
+}
+
+.theme-landing .btn-cta {
+  background: var(--landing-adventure-yellow);
+  color: var(--landing-deep-green);
+  border-color: var(--landing-adventure-yellow);
+}
+
+.theme-landing .btn-cta:hover {
+  background: var(--landing-adventure-yellow-dim);
+  border-color: var(--landing-adventure-yellow-dim);
+}
+
+.theme-landing .btn-primary {
+  background: var(--landing-deep-green);
+  color: var(--landing-icy-blue);
+  border-color: var(--landing-deep-green);
+}
+
+.theme-landing .btn-primary:hover {
+  background: var(--landing-forest-green);
+  border-color: var(--landing-forest-green);
+}
+
+.theme-landing .btn-secondary {
+  background: transparent;
+  color: var(--landing-deep-green);
+  border-color: var(--landing-deep-green);
+}
+
+.theme-landing .btn-secondary:hover {
+  background: var(--landing-deep-green);
+  color: var(--landing-icy-blue);
+}
+
+.theme-landing .surface-dark .btn-secondary {
+  color: var(--landing-icy-blue);
+  border-color: var(--landing-icy-blue);
+}
+
+.theme-landing .surface-dark .btn-secondary:hover {
+  background: var(--landing-icy-blue);
+  color: var(--landing-deep-green);
+}
+
+.theme-landing .btn-lg {
+  padding: 1.125rem 2rem;
+  font-size: 0.8125rem;
+}
+
+/* ============================================
+   ICON CONTAINER — sharp 44x44 square
+   ============================================ */
+
+.theme-landing .icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--landing-radius);
+  background: var(--landing-icy-blue-light);
+  color: var(--landing-deep-green);
+  border: 1px solid rgba(132, 144, 127, 0.3);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.theme-landing .icon-container-lg {
+  width: 60px;
+  height: 60px;
+}
+
+.theme-landing .icon-container-accent {
+  background: var(--landing-adventure-yellow);
+  color: var(--landing-deep-green);
+  border-color: var(--landing-adventure-yellow);
+}
+
+.theme-landing .group:hover .icon-container {
+  background: var(--landing-adventure-yellow);
+  border-color: var(--landing-adventure-yellow);
+}
+
+/* ============================================
+   BADGES
+   ============================================ */
+
+.theme-landing .badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.1875rem 0.5rem;
+  font-family: var(--landing-font-mono);
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-radius: var(--landing-radius);
+  border: 1px solid transparent;
+  line-height: 1.2;
+}
+
+.theme-landing .badge-accent {
+  background: var(--landing-adventure-yellow);
+  color: var(--landing-deep-green);
+  border-color: var(--landing-adventure-yellow);
+}
+
+.theme-landing .badge-neutral {
+  background: var(--landing-icy-blue);
+  color: var(--landing-deep-green);
+  border-color: rgba(132, 144, 127, 0.4);
+}
+
+.theme-landing .badge-dark {
+  background: var(--landing-deep-green);
+  color: var(--landing-adventure-yellow);
+  border-color: var(--landing-deep-green);
+}
+
+.theme-landing .badge-warning {
+  background: rgba(184, 132, 29, 0.12);
+  color: #b8841d;
+  border-color: rgba(184, 132, 29, 0.4);
+}
+
+/* Trust badge — pill with mono caps */
+.theme-landing .trust-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  background: var(--landing-white);
+  border: 1px solid var(--landing-border);
+  border-radius: var(--landing-radius);
+  font-family: var(--landing-font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--landing-deep-green);
+  font-weight: 500;
+}
+
+/* ============================================
+   METRICS
+   ============================================ */
+
+.theme-landing .metric-value {
+  font-family: var(--landing-font-display);
+  font-size: 3rem;
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--landing-deep-green);
+  font-variant-numeric: tabular-nums;
+}
+
+.theme-landing .metric-label {
+  font-family: var(--landing-font-mono);
+  font-size: 0.625rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--landing-terrain-grey-dark);
+}
+
+/* ============================================
+   DECORATIVE / FLOATING SHAPES
+   ============================================ */
+
+.theme-landing .floating-shape {
+  position: absolute;
+  pointer-events: none;
+}
+
+.theme-landing .floating-shape-1 {
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, var(--landing-adventure-yellow) 0%, transparent 65%);
+  opacity: 0.45;
+  border-radius: 50%;
+  animation: landing-float 7s ease-in-out infinite;
+}
+
+.theme-landing .floating-shape-2 {
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, var(--landing-terrain-grey) 0%, transparent 70%);
+  opacity: 0.18;
+  border-radius: 50%;
+  animation: landing-float-rotate 9s ease-in-out infinite;
+}
+
+.theme-landing .floating-shape-3 {
+  width: 160px;
+  height: 160px;
+  border: 1px solid var(--landing-terrain-grey);
+  background: transparent;
+  opacity: 0.35;
+  border-radius: var(--landing-radius);
+  animation: landing-float 8s ease-in-out infinite;
+}
+
+.theme-landing .floating-shape-ring {
+  width: 96px;
+  height: 96px;
+  border: 1px solid var(--landing-deep-green);
+  background: transparent;
+  opacity: 0.2;
+  border-radius: 9999px;
+  animation: landing-float-rotate 10s ease-in-out infinite;
+}
+
+@keyframes landing-float {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(0, -16px);
+  }
+}
+
+@keyframes landing-float-rotate {
+  0%, 100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(8px, -12px) rotate(15deg);
+  }
+}
+
+/* Topographic grid overlay */
+.theme-landing .topo-grid {
+  background-image:
+    linear-gradient(rgba(132, 144, 127, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(132, 144, 127, 0.07) 1px, transparent 1px);
+  background-size: 64px 64px;
+  background-position: -1px -1px;
+}
+
+/* Dividers */
+.theme-landing .hairline {
+  height: 1px;
+  background: var(--landing-terrain-grey);
+  opacity: 0.35;
+  width: 100%;
+}
+
+.theme-landing .hairline-dark {
+  height: 1px;
+  background: var(--landing-icy-blue);
+  opacity: 0.18;
+  width: 100%;
+}
+
+/* Pulse glow — adventure yellow ring */
+.theme-landing .pulse-glow {
+  animation: landing-pulse-glow 2.4s ease-in-out infinite;
+}
+
+@keyframes landing-pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(226, 255, 204, 0.65);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(226, 255, 204, 0);
+  }
+}
+
+/* Step indicator — square sharp */
+.theme-landing .step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--landing-radius);
+  background: var(--landing-white);
+  border: 1px solid var(--landing-terrain-grey);
+  font-family: var(--landing-font-mono);
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: var(--landing-terrain-grey-dark);
+}
+
+.theme-landing .step-indicator-active {
+  background: var(--landing-adventure-yellow);
+  border-color: var(--landing-deep-green);
+  color: var(--landing-deep-green);
+}
+
+/* Quote mark — display font, big yellow */
+.theme-landing .quote-mark {
+  font-family: var(--landing-font-display);
+  font-weight: 900;
+  font-size: 6rem;
+  line-height: 0.8;
+  color: var(--landing-adventure-yellow);
+  user-select: none;
+}
+
+/* Sticky nav */
+.theme-landing-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: rgba(221, 226, 228, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease;
+}
+
+.theme-landing-nav.scrolled {
+  border-bottom-color: var(--landing-border);
+}
+
+/* Reveal animation */
+.theme-landing .reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.theme-landing .reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================
+   LEGACY VARIABLE ALIASES — keep older sections
+   from rendering broken while they get rewritten.
+   These map the previous cream/navy/gold tokens
+   onto the new icy-blue/deep-green/lime palette.
+   ============================================ */
+.theme-landing {
+  --landing-navy: var(--landing-deep-green);
+  --landing-navy-soft: var(--landing-forest-green);
+  --landing-cream: var(--landing-icy-blue);
+  --landing-cream-dark: var(--landing-icy-blue-dark);
+  --landing-warm-white: var(--landing-white);
+  --landing-gold: var(--landing-adventure-yellow);
+  --landing-gold-soft: var(--landing-adventure-yellow-dim);
+  --landing-gold-deep: var(--landing-forest-green);
+  --landing-slate: var(--landing-terrain-grey-dark);
+  --landing-slate-soft: var(--landing-terrain-grey);
+}
+
+.theme-landing .eyebrow {
+  font-family: var(--landing-font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--landing-terrain-grey-dark);
+}
+
+.theme-landing .eyebrow-light {
+  color: var(--landing-adventure-yellow);
+}
+
+.theme-landing .font-display {
+  font-family: var(--landing-font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
+
+.theme-landing .section-cream {
+  background: var(--landing-icy-blue);
+  color: var(--landing-deep-green);
+}
+
+.theme-landing .section-cream-dark {
+  background: var(--landing-icy-blue-dark);
+  color: var(--landing-deep-green);
+}
+
+.theme-landing .section-warm-white {
+  background: var(--landing-white);
+  color: var(--landing-deep-green);
+}
+
+.theme-landing .section-navy {
+  background: var(--landing-deep-green);
+  color: var(--landing-icy-blue);
+}
+
+.theme-landing .section-navy h1,
+.theme-landing .section-navy h2,
+.theme-landing .section-navy h3 {
+  color: var(--landing-icy-blue);
+}
+
+.theme-landing .section-gold {
+  background: var(--landing-adventure-yellow);
+  color: var(--landing-deep-green);
+}
+
+.theme-landing .landing-card {
+  background: var(--landing-white);
+  border: 1px solid var(--landing-border-strong);
+  border-radius: var(--landing-radius);
+  box-shadow: var(--landing-shadow-card);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.theme-landing .landing-card:hover {
+  border-color: rgba(22, 27, 19, 0.45);
+  box-shadow: var(--landing-shadow-card-hover);
+}
+
+.theme-landing .landing-card-bar {
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-landing .landing-card-bar::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--landing-adventure-yellow);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.theme-landing .landing-card-bar:hover::before {
+  transform: translateX(0);
+}
+
+.theme-landing .landing-icon-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--landing-radius);
+  background: var(--landing-icy-blue-light);
+  color: var(--landing-deep-green);
+  border: 1px solid rgba(132, 144, 127, 0.3);
+}
+
+.theme-landing .landing-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  font-family: var(--landing-font-mono);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: var(--landing-deep-green);
+  color: var(--landing-icy-blue);
+  border: 1px solid var(--landing-deep-green);
+  border-radius: var(--landing-radius);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.theme-landing .landing-btn-primary:hover {
+  background: var(--landing-forest-green);
+  transform: translateY(-1px);
+}
+
+.theme-landing .landing-btn-primary.btn-lg {
+  padding: 1.125rem 2rem;
+  font-size: 0.8125rem;
+}
+
+.theme-landing .landing-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  font-family: var(--landing-font-mono);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: transparent;
+  color: var(--landing-deep-green);
+  border: 1px solid var(--landing-deep-green);
+  border-radius: var(--landing-radius);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.theme-landing .landing-btn-ghost:hover {
+  background: var(--landing-deep-green);
+  color: var(--landing-icy-blue);
+}
+
+.theme-landing .landing-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4rem 0.75rem;
+  font-family: var(--landing-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--landing-white);
+  color: var(--landing-deep-green);
+  border: 1px solid var(--landing-border);
+  border-radius: var(--landing-radius);
+}
+
+/* Hero radial cream gradient — replaced with icy-blue base + topo grid feel */
+.theme-landing .hero-bg {
+  background:
+    radial-gradient(ellipse 60% 40% at top right, rgba(226, 255, 204, 0.18), transparent 70%),
+    radial-gradient(ellipse 50% 40% at bottom left, rgba(132, 144, 127, 0.06), transparent 70%),
+    var(--landing-icy-blue);
+}
+
+.theme-landing .hero-dots-overlay {
+  background-image:
+    linear-gradient(rgba(132, 144, 127, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(132, 144, 127, 0.08) 1px, transparent 1px);
+  background-size: 64px 64px;
+  background-position: -1px -1px;
+}
+
+.theme-landing .step-connector {
+  position: absolute;
+  top: 22px;
+  left: 100%;
+  width: 100%;
+  height: 1px;
+  background: var(--landing-border);
+  transform: translateX(-1rem);
+}
+
+.theme-landing .img-decor::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 33%;
+  height: 25%;
+  background: var(--landing-adventure-yellow);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.theme-landing .gold-orb {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(circle at center, rgba(226, 255, 204, 0.5) 0%, transparent 70%);
+  pointer-events: none;
+  filter: blur(20px);
+}
+
+.theme-landing .gold-ring {
+  position: absolute;
+  border-radius: 9999px;
+  border: 1px solid rgba(132, 144, 127, 0.35);
+  pointer-events: none;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .theme-landing *,
+  .theme-landing *::before,
+  .theme-landing *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .theme-landing .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
