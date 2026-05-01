@@ -2,15 +2,7 @@
 // Main leaderboard page - data-dense, v2 chrome
 
 import { useState } from "react";
-import {
-  Trophy,
-  Users,
-  Building2,
-  Calendar,
-  TrendingUp,
-  FileText,
-} from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Trophy, Users, Building2, TrendingUp, FileText } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -27,6 +19,7 @@ import {
   useSubmitLeaderboard,
 } from "@/hooks/leaderboard";
 import { LeaderboardTable } from "./components/LeaderboardTable";
+import { LeaderboardCustomRange } from "./components/LeaderboardCustomRange";
 import { MetricsHelpPopover } from "./components/MetricsHelpPopover";
 import { cn } from "@/lib/utils";
 import { formatCompactCurrency } from "@/lib/format";
@@ -242,22 +235,17 @@ export function LeaderboardPage() {
           />
 
           {filters.timePeriod === "custom" && (
-            <div className="flex items-center gap-1.5">
-              <Calendar className="h-3 w-3 text-v2-ink-subtle" />
-              <Input
-                type="date"
-                value={filters.startDate || ""}
-                onChange={(e) => updateFilter("startDate", e.target.value)}
-                className="h-7 w-28 text-[11px] px-2 bg-v2-card border-v2-ring"
-              />
-              <span className="text-[11px] text-v2-ink-subtle">–</span>
-              <Input
-                type="date"
-                value={filters.endDate || ""}
-                onChange={(e) => updateFilter("endDate", e.target.value)}
-                className="h-7 w-28 text-[11px] px-2 bg-v2-card border-v2-ring"
-              />
-            </div>
+            <LeaderboardCustomRange
+              startDate={filters.startDate}
+              endDate={filters.endDate}
+              onChange={(start, end) => {
+                setFilters((prev) => ({
+                  ...prev,
+                  startDate: start,
+                  endDate: end,
+                }));
+              }}
+            />
           )}
         </div>
       </header>
