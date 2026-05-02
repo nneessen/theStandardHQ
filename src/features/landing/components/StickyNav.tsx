@@ -55,9 +55,10 @@ export function StickyNav({ theme }: Props) {
         <div className="flex items-center gap-3">
           <Link
             to="/login"
-            className="hidden sm:inline-flex text-sm font-medium text-[var(--landing-slate)] hover:text-[var(--landing-navy)] transition-colors"
+            className="inline-flex text-xs sm:text-sm font-medium text-[var(--landing-slate)] hover:text-[var(--landing-navy)] transition-colors whitespace-nowrap"
           >
-            Agent Login
+            <span className="hidden sm:inline">Agent Login</span>
+            <span className="sm:hidden">Login</span>
           </Link>
           <GoldCTAButton
             to="/join-the-standard"
