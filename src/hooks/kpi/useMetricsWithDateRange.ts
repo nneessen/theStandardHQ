@@ -20,6 +20,12 @@ interface UseMetricsWithDateRangeOptions {
   periodOffset?: number; // Offset from current period (0 = current, -1 = previous, etc.)
   enabled?: boolean;
   targetAvgPremium?: number; // User's target average premium from settings
+  /**
+   * When provided, overrides the derived range from (timePeriod, periodOffset).
+   * Used by callers that need to anchor MTD/YTD to a specific window
+   * (e.g. dashboard hero cards driven by a period picker).
+   */
+  customRange?: DateRange;
 }
 
 interface PeriodCommissionMetrics {
@@ -97,7 +103,12 @@ export interface DateFilteredMetrics {
 export function useMetricsWithDateRange(
   options: UseMetricsWithDateRangeOptions,
 ): DateFilteredMetrics {
-  const { timePeriod, periodOffset = 0, targetAvgPremium = 1500 } = options;
+  const {
+    timePeriod,
+    periodOffset = 0,
+    targetAvgPremium = 1500,
+    customRange,
+  } = options;
 
   // Get base data
   const { data: policies = [], isLoading: policiesLoading } = usePolicies();
@@ -109,9 +120,9 @@ export function useMetricsWithDateRange(
   const isLoading =
     policiesLoading || commissionsLoading || expensesLoading || carriersLoading;
 
-  // Calculate date range with offset
+  // Calculate date range with offset (or use caller-supplied override)
   // React 19.1 optimizes automatically
-  const dateRange = getDateRange(timePeriod, periodOffset);
+  const dateRange = customRange ?? getDateRange(timePeriod, periodOffset);
   // Create a string-based version for internal filtering (using local timezone to avoid UTC shift)
   const dateRangeForFiltering = {
     start: formatDateForDB(dateRange.startDate),

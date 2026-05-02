@@ -184,16 +184,48 @@ export const DashboardHome: React.FC = () => {
     targetAvgPremium: constants?.avgAP || 1500,
   });
 
-  // Always-on MTD and YTD metrics for the hero pace bars (independent of
-  // the selected period switcher). Sum of paid + pending so the value is
-  // never artificially $0 just because the carrier hasn't disbursed yet.
+  // Hero MTD/YTD bars track the picker. Anchor end-date is "today" when
+  // viewing the current period, otherwise the end of the selected period —
+  // so navigating back to April shows April MTD (full month) and YTD as
+  // Jan 1 → April 30. Commission totals sum paid + pending so the value
+  // isn't artificially $0 while a carrier hasn't disbursed yet.
+  const heroAnchorEnd =
+    periodOffset === 0
+      ? new Date()
+      : new Date(
+          dateRange.endDate.getFullYear(),
+          dateRange.endDate.getMonth(),
+          dateRange.endDate.getDate(),
+          23,
+          59,
+          59,
+          999,
+        );
+  const heroMtdRange: DateRange = {
+    startDate: new Date(
+      heroAnchorEnd.getFullYear(),
+      heroAnchorEnd.getMonth(),
+      1,
+      0,
+      0,
+      0,
+      0,
+    ),
+    endDate: heroAnchorEnd,
+  };
+  const heroYtdRange: DateRange = {
+    startDate: new Date(heroAnchorEnd.getFullYear(), 0, 1, 0, 0, 0, 0),
+    endDate: heroAnchorEnd,
+  };
   const mtdMetrics = useMetricsWithDateRange({
     timePeriod: "monthly",
     periodOffset: 0,
+    customRange: heroMtdRange,
   });
   const ytdMetrics = useMetricsWithDateRange({
     timePeriod: "yearly",
     periodOffset: 0,
+    customRange: heroYtdRange,
   });
   const mtdCommissionTotal =
     (mtdMetrics.periodCommissions.paid ?? 0) +
