@@ -1,10 +1,34 @@
 // src/features/recruiting/layouts/NickCustomLayout.tsx
-// Custom layout for Nick Neessen's recruiting page - The Standard
+// Custom layout for /join-the-standard — mirrors the public landing page's
+// editorial design DNA (Big Shoulders + JetBrains Mono, deep-green / icy-blue /
+// adventure-yellow palette) but compressed into a single viewport with a
+// drawer-based form so the page itself never scrolls on desktop or mobile.
 
-import { useState, useEffect } from "react";
-import { Instagram, Phone, Calendar, ArrowRight, Sparkles } from "lucide-react";
+import { useState } from "react";
+import {
+  Instagram,
+  Phone,
+  ArrowRight,
+  Sparkles,
+  Cpu,
+  Network,
+  Shield,
+} from "lucide-react";
 import { LeadInterestForm } from "../components/public/LeadInterestForm";
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+// eslint-disable-next-line no-restricted-imports -- CSS side-effect import: scoped .theme-landing tokens shared with the public landing page
+import "@/features/landing/styles/landing-theme.css";
 import type { LayoutProps } from "./types";
+
+const FALLBACK_HEADLINE_LINE_1 = "Join The";
+const FALLBACK_HEADLINE_LINE_2 = "Standard";
+const FALLBACK_SUBHEAD =
+  "An agent-first operating system. AI-scored leads, an underwriting wizard for 30+ carriers, and commissions that calculate themselves.";
 
 export function NickCustomLayout({
   theme,
@@ -12,538 +36,368 @@ export function NickCustomLayout({
   onFormSuccess,
 }: LayoutProps) {
   const [formSubmitted, setFormSubmitted] = useState(false);
-  const [particles, setParticles] = useState<
-    Array<{
-      id: number;
-      x: number;
-      y: number;
-      size: number;
-      duration: number;
-      delay: number;
-    }>
-  >([]);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const handleSuccess = (leadId: string) => {
     setFormSubmitted(true);
     onFormSuccess(leadId);
   };
 
-  const accentColor = theme.accent_color || "#f59e0b";
+  // Split a single-line theme.headline across two display lines if no <br>.
+  const headlineRaw = theme.headline?.trim();
+  const [hLine1, hLine2] = (() => {
+    if (!headlineRaw)
+      return [FALLBACK_HEADLINE_LINE_1, FALLBACK_HEADLINE_LINE_2];
+    const parts = headlineRaw.split(/\s*\n\s*|\s+\|\s+/);
+    if (parts.length >= 2) return [parts[0], parts.slice(1).join(" ")];
+    const words = headlineRaw.split(/\s+/);
+    if (words.length >= 4) {
+      const mid = Math.ceil(words.length / 2);
+      return [words.slice(0, mid).join(" "), words.slice(mid).join(" ")];
+    }
+    return [headlineRaw, ""];
+  })();
 
-  // Generate particles on mount
-  useEffect(() => {
-    const newParticles = Array.from({ length: 50 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 3 + 1,
-      duration: Math.random() * 20 + 15,
-      delay: Math.random() * 10,
-    }));
-    setParticles(newParticles);
-  }, []);
+  const subhead = theme.subheadline?.trim() || FALLBACK_SUBHEAD;
 
   return (
-    <div
-      className="min-h-screen lg:h-screen lg:overflow-hidden bg-[#030303] text-white flex flex-col lg:flex-row relative"
-      style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-    >
-      {/* ===== ANIMATED BACKGROUND ===== */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Base gradient */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `
-              radial-gradient(ellipse 100% 100% at 0% 0%, ${accentColor}15 0%, transparent 50%),
-              radial-gradient(ellipse 80% 80% at 100% 100%, #6366f115 0%, transparent 50%),
-              #030303
-            `,
-          }}
-        />
+    <div className="theme-landing surface-base relative h-svh w-full overflow-hidden">
+      {/* Topographic grid + floating shapes for editorial atmosphere */}
+      <div className="topo-grid absolute inset-0 pointer-events-none" />
+      <div
+        className="floating-shape floating-shape-1 hidden md:block"
+        style={{ top: "-6%", right: "-4%" }}
+      />
+      <div
+        className="floating-shape floating-shape-2 hidden md:block"
+        style={{ bottom: "8%", left: "-3%" }}
+      />
+      <div
+        className="floating-shape floating-shape-ring hidden lg:block"
+        style={{ top: "12%", left: "48%" }}
+      />
 
-        {/* Animated morphing blobs */}
-        <svg
-          className="absolute inset-0 w-full h-full"
-          preserveAspectRatio="xMidYMid slice"
-        >
-          <defs>
-            {/* Gradient definitions */}
-            <linearGradient
-              id="blob1Gradient"
-              x1="0%"
-              y1="0%"
-              x2="100%"
-              y2="100%"
-            >
-              <stop offset="0%" stopColor={accentColor} stopOpacity="0.4" />
-              <stop offset="100%" stopColor="#6366f1" stopOpacity="0.1" />
-            </linearGradient>
-            <linearGradient
-              id="blob2Gradient"
-              x1="100%"
-              y1="0%"
-              x2="0%"
-              y2="100%"
-            >
-              <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.3" />
-              <stop offset="100%" stopColor={accentColor} stopOpacity="0.1" />
-            </linearGradient>
-            <linearGradient
-              id="blob3Gradient"
-              x1="50%"
-              y1="0%"
-              x2="50%"
-              y2="100%"
-            >
-              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#ec4899" stopOpacity="0.1" />
-            </linearGradient>
-
-            {/* Blur filter */}
-            <filter id="blobBlur">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="40" />
-            </filter>
-            <filter id="blobBlur2">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="60" />
-            </filter>
-          </defs>
-
-          {/* Morphing blob 1 - large, top left */}
-          <g filter="url(#blobBlur2)">
-            <path
-              fill="url(#blob1Gradient)"
-              style={{ animation: "morphBlob1 25s ease-in-out infinite" }}
-            >
-              <animate
-                attributeName="d"
-                dur="25s"
-                repeatCount="indefinite"
-                values="
-                  M-100,-50 C50,-150 200,-100 250,50 C300,200 200,350 50,300 C-100,250 -200,150 -100,-50 Z;
-                  M-50,-100 C100,-200 300,-50 280,100 C260,250 100,400 -50,300 C-200,200 -150,0 -50,-100 Z;
-                  M-150,0 C0,-200 250,-150 300,0 C350,150 250,350 50,350 C-150,350 -300,200 -150,0 Z;
-                  M-100,-50 C50,-150 200,-100 250,50 C300,200 200,350 50,300 C-100,250 -200,150 -100,-50 Z
-                "
-              />
-            </path>
-          </g>
-
-          {/* Morphing blob 2 - medium, right side */}
-          <g
-            filter="url(#blobBlur)"
-            style={{ transform: "translate(60%, 30%)" }}
-          >
-            <path
-              fill="url(#blob2Gradient)"
-              style={{ animation: "morphBlob2 20s ease-in-out infinite" }}
-            >
-              <animate
-                attributeName="d"
-                dur="20s"
-                repeatCount="indefinite"
-                values="
-                  M0,100 C80,0 200,20 250,120 C300,220 220,320 120,300 C20,280 -80,200 0,100 Z;
-                  M20,80 C120,-20 240,40 280,140 C320,240 200,340 80,320 C-40,300 -60,180 20,80 Z;
-                  M-20,120 C60,20 180,0 240,100 C300,200 240,320 140,340 C40,360 -100,260 -20,120 Z;
-                  M0,100 C80,0 200,20 250,120 C300,220 220,320 120,300 C20,280 -80,200 0,100 Z
-                "
-              />
-            </path>
-          </g>
-
-          {/* Morphing blob 3 - bottom */}
-          <g
-            filter="url(#blobBlur2)"
-            style={{ transform: "translate(20%, 70%)" }}
-          >
-            <path
-              fill="url(#blob3Gradient)"
-              style={{ animation: "morphBlob3 30s ease-in-out infinite" }}
-            >
-              <animate
-                attributeName="d"
-                dur="30s"
-                repeatCount="indefinite"
-                values="
-                  M50,50 C150,-50 300,0 350,100 C400,200 300,300 150,280 C0,260 -50,150 50,50 Z;
-                  M30,80 C130,-40 320,30 380,130 C440,230 320,350 130,310 C-60,270 -70,200 30,80 Z;
-                  M70,30 C170,-70 280,-20 340,80 C400,180 340,290 190,300 C40,310 -30,130 70,30 Z;
-                  M50,50 C150,-50 300,0 350,100 C400,200 300,300 150,280 C0,260 -50,150 50,50 Z
-                "
-              />
-            </path>
-          </g>
-        </svg>
-
-        {/* Animated wave layers */}
-        <div className="absolute inset-0 opacity-30">
-          <svg
-            className="absolute bottom-0 w-full h-[60%]"
-            viewBox="0 0 1440 600"
-            preserveAspectRatio="none"
-          >
-            <defs>
-              <linearGradient id="waveGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor={accentColor} stopOpacity="0.3" />
-                <stop offset="100%" stopColor={accentColor} stopOpacity="0" />
-              </linearGradient>
-              <linearGradient id="waveGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#6366f1" stopOpacity="0.2" />
-                <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            {/* Wave 1 */}
-            <path
-              fill="url(#waveGrad1)"
-              style={{ animation: "wave1 12s ease-in-out infinite" }}
-            >
-              <animate
-                attributeName="d"
-                dur="12s"
-                repeatCount="indefinite"
-                values="
-                  M0,300 C240,200 480,400 720,300 C960,200 1200,350 1440,280 L1440,600 L0,600 Z;
-                  M0,350 C240,250 480,350 720,250 C960,150 1200,300 1440,350 L1440,600 L0,600 Z;
-                  M0,280 C240,380 480,280 720,380 C960,280 1200,200 1440,300 L1440,600 L0,600 Z;
-                  M0,300 C240,200 480,400 720,300 C960,200 1200,350 1440,280 L1440,600 L0,600 Z
-                "
-              />
-            </path>
-            {/* Wave 2 */}
-            <path
-              fill="url(#waveGrad2)"
-              style={{ animation: "wave2 15s ease-in-out infinite" }}
-            >
-              <animate
-                attributeName="d"
-                dur="15s"
-                repeatCount="indefinite"
-                values="
-                  M0,400 C320,300 640,450 960,350 C1280,250 1360,400 1440,380 L1440,600 L0,600 Z;
-                  M0,350 C320,450 640,300 960,400 C1280,350 1360,300 1440,400 L1440,600 L0,600 Z;
-                  M0,380 C320,280 640,400 960,300 C1280,400 1360,350 1440,350 L1440,600 L0,600 Z;
-                  M0,400 C320,300 640,450 960,350 C1280,250 1360,400 1440,380 L1440,600 L0,600 Z
-                "
-              />
-            </path>
-          </svg>
-        </div>
-
-        {/* Floating particles */}
-        <div className="absolute inset-0">
-          {particles.map((particle) => (
-            <div
-              key={particle.id}
-              className="absolute rounded-full"
-              style={{
-                left: `${particle.x}%`,
-                top: `${particle.y}%`,
-                width: `${particle.size}px`,
-                height: `${particle.size}px`,
-                background:
-                  particle.id % 3 === 0
-                    ? accentColor
-                    : particle.id % 3 === 1
-                      ? "#6366f1"
-                      : "#8b5cf6",
-                boxShadow: `0 0 ${particle.size * 4}px ${particle.id % 3 === 0 ? accentColor : particle.id % 3 === 1 ? "#6366f1" : "#8b5cf6"}`,
-                animation: `floatParticle ${particle.duration}s ease-in-out infinite`,
-                animationDelay: `${particle.delay}s`,
-                opacity: 0.6,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Animated grid lines */}
-        <svg className="absolute inset-0 w-full h-full opacity-[0.04]">
-          <defs>
-            <pattern
-              id="grid"
-              width="80"
-              height="80"
-              patternUnits="userSpaceOnUse"
-            >
-              <path
-                d="M 80 0 L 0 0 0 80"
-                fill="none"
-                stroke="white"
-                strokeWidth="0.5"
-              />
-            </pattern>
-          </defs>
-          <rect
-            width="100%"
-            height="100%"
-            fill="url(#grid)"
-            style={{ animation: "gridShift 30s linear infinite" }}
-          />
-        </svg>
-
-        {/* Noise texture */}
-        <div
-          className="absolute inset-0 opacity-[0.025] pointer-events-none mix-blend-overlay"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-          }}
-        />
-
-        {/* Radial spotlight effect */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `radial-gradient(ellipse 50% 50% at 30% 50%, transparent 0%, #030303 100%)`,
-          }}
-        />
-      </div>
-
-      {/* ===== LEFT PANEL - Hero with content ===== */}
-      <div className="w-full lg:w-[55%] xl:w-[58%] relative min-h-[50vh] md:min-h-[55vh] lg:h-screen z-10">
-        {/* Hero image */}
-        {theme.hero_image_url && (
-          <div className="absolute inset-0">
-            <div
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat lg:bg-left"
-              style={{ backgroundImage: `url(${theme.hero_image_url})` }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#030303]/70 via-[#030303]/30 to-[#030303] lg:hidden" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#030303]/50 via-transparent to-[#030303] hidden lg:block" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#030303] via-[#030303]/30 to-transparent" />
-          </div>
-        )}
-
-        {/* Content */}
-        <div className="relative z-10 h-full flex flex-col p-5 pt-6 md:p-8 lg:p-10 xl:p-14">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            {theme.logo_light_url ? (
+      {/* Two-column on desktop; single column with sticky CTA on mobile */}
+      <div className="relative z-10 h-full grid grid-cols-1 lg:grid-cols-[1.15fr_1fr]">
+        {/* ============ LEFT / HERO ============ */}
+        <section className="flex h-full min-h-0 flex-col px-5 pt-5 pb-24 sm:px-8 lg:px-12 lg:py-10 xl:px-16">
+          {/* Top bar: logo + agent login */}
+          <header className="flex items-center justify-between flex-shrink-0">
+            {theme.logo_dark_url || theme.logo_light_url ? (
               <img
-                src={theme.logo_light_url}
+                src={theme.logo_dark_url || theme.logo_light_url || undefined}
                 alt="The Standard"
-                className="h-14 md:h-24 lg:h-44 xl:h-52 w-auto object-contain"
-                style={{ filter: "drop-shadow(0 4px 30px rgba(0,0,0,0.5))" }}
+                className="h-8 w-auto object-contain sm:h-10 lg:h-11"
               />
-            ) : theme.logo_dark_url ? (
-              <img
-                src={theme.logo_dark_url}
-                alt="The Standard"
-                className="h-14 md:h-24 lg:h-44 xl:h-52 w-auto object-contain brightness-0 invert"
-                style={{ filter: "drop-shadow(0 4px 30px rgba(0,0,0,0.5))" }}
-              />
-            ) : null}
-          </div>
+            ) : (
+              <span
+                className="font-display font-black uppercase tracking-tight"
+                style={{
+                  fontSize: "1.25rem",
+                  color: "var(--landing-deep-green)",
+                }}
+              >
+                The Standard
+              </span>
+            )}
 
-          <div className="flex-1 min-h-[20px] md:min-h-[40px]" />
-
-          {/* Main content */}
-          <div className="flex-shrink-0 space-y-3 md:space-y-5 lg:space-y-7">
-            {/* Badge */}
-            <div
-              className="inline-flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-[10px] md:text-xs font-semibold tracking-wide uppercase border backdrop-blur-md"
-              style={{
-                background: `linear-gradient(135deg, ${accentColor}25 0%, rgba(99, 102, 241, 0.2) 100%)`,
-                borderColor: `${accentColor}50`,
-                color: accentColor,
-                boxShadow: `0 0 30px ${accentColor}30, inset 0 1px 0 rgba(255,255,255,0.1)`,
-              }}
+            <a
+              href="/login"
+              className="hidden sm:inline-flex landing-badge-pill hover:bg-[var(--landing-icy-blue-light)] transition-colors"
             >
-              <Sparkles className="w-3 h-3 md:w-3.5 md:h-3.5" />
-              Now Recruiting
+              Agent Login
+              <ArrowRight className="h-3 w-3" />
+            </a>
+          </header>
+
+          {/* Center stack — flex-1 so it fills available space */}
+          <div className="flex flex-1 min-h-0 flex-col justify-center py-4 sm:py-6 lg:py-2">
+            {/* Pulse-glow recruiting badge + eyebrow row (matches public hero) */}
+            <div className="inline-flex items-center gap-3 mb-5 lg:mb-7">
+              <span
+                className="pulse-glow inline-flex items-center px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] rounded-[2px] font-mono"
+                style={{
+                  background: "var(--landing-deep-green)",
+                  color: "var(--landing-icy-blue)",
+                }}
+              >
+                Recruiting Now
+              </span>
+              <span className="hidden sm:block w-10 h-px bg-[var(--landing-border)]" />
+              <span className="hidden sm:inline text-eyebrow-lg">
+                Exclusive Agent Opportunity
+              </span>
             </div>
 
-            {/* Headline */}
-            <div className="space-y-2 md:space-y-4">
-              <h1 className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-[1.1] tracking-tight">
-                {theme.headline || "Join My Agency"}
-              </h1>
-              <p className="text-sm md:text-lg lg:text-xl xl:text-2xl text-white/80 leading-relaxed max-w-xl font-medium">
-                {theme.subheadline ||
-                  "Build a career with unlimited earning potential in the insurance industry."}
-              </p>
-            </div>
+            {/* Display headline — two-line stack, light weight like public hero */}
+            <h1 className="text-display-2xl" style={{ fontWeight: 300 }}>
+              {hLine1}
+              {hLine2 && (
+                <>
+                  <br />
+                  <span style={{ fontWeight: 900 }}>{hLine2}</span>
+                </>
+              )}
+            </h1>
 
-            {/* About */}
-            <p className="text-white/50 leading-[1.75] text-sm lg:text-[15px] max-w-lg hidden md:block">
-              {theme.about_text ||
-                "I'm Nick Neessen, founder of The Standard. I've built a team of top-performing agents who are redefining what's possible in insurance sales. We provide world-class training, proven systems, and the support you need to succeed — whether you're new to the industry or a seasoned professional looking for the right opportunity."}
+            <p className="text-fluid-base text-muted mt-4 lg:mt-5 max-w-[40ch]">
+              {subhead}
             </p>
 
-            {/* CTA */}
-            {theme.calendly_url && (
-              <div className="pt-1 md:pt-2">
+            {/* Stat lattice — three pillars, hidden on smallest screens */}
+            <div className="mt-6 lg:mt-8 hidden sm:grid lattice-grid grid-cols-3 max-w-md">
+              <StatTile
+                icon={<Cpu className="h-3.5 w-3.5" />}
+                value="AI"
+                label="Lead Scoring"
+              />
+              <StatTile
+                icon={<Network className="h-3.5 w-3.5" />}
+                value="30+"
+                label="Carriers"
+              />
+              <StatTile
+                icon={<Shield className="h-3.5 w-3.5" />}
+                value="100%"
+                label="In-House"
+              />
+            </div>
+
+            {/* Desktop CTA row — opens form drawer */}
+            <div className="mt-7 hidden lg:flex items-center gap-3">
+              <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+                <SheetTrigger asChild>
+                  <button type="button" className="btn btn-cta btn-lg">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    Apply to Join
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                </SheetTrigger>
+                <FormDrawer
+                  open={sheetOpen}
+                  recruiterId={recruiterId}
+                  onSuccess={handleSuccess}
+                  formSubmitted={formSubmitted}
+                  ctaText={theme.cta_text || "Submit Application"}
+                />
+              </Sheet>
+
+              {theme.calendly_url && (
                 <a
                   href={theme.calendly_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative inline-flex items-center gap-2 md:gap-3 px-5 py-3 md:px-7 md:py-4 rounded-xl font-bold text-sm md:text-base overflow-hidden transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
-                  style={{
-                    background: `linear-gradient(135deg, ${accentColor} 0%, ${accentColor}cc 100%)`,
-                    color: "#0a0a0a",
-                    boxShadow: `0 0 40px ${accentColor}50, 0 8px 32px ${accentColor}30`,
-                  }}
+                  className="btn btn-secondary btn-lg"
                 >
-                  <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{
-                      background: `linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.2) 100%)`,
-                    }}
-                  />
-                  <Calendar className="w-4 h-4 md:w-5 md:h-5 relative z-10" />
-                  <span className="relative z-10">
-                    {theme.cta_text || "Schedule a Call"}
-                  </span>
-                  <ArrowRight className="w-3.5 h-3.5 md:w-4 md:h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
-                </a>
-              </div>
-            )}
-
-            {/* Contact */}
-            <div className="flex flex-wrap items-center gap-3 md:gap-5 pt-1">
-              {theme.support_phone && (
-                <a
-                  href={`tel:${theme.support_phone}`}
-                  className="group flex items-center gap-2 md:gap-3 text-white/40 hover:text-white transition-all duration-300"
-                >
-                  <div
-                    className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center backdrop-blur-sm transition-all group-hover:scale-110"
-                    style={{
-                      background: "rgba(255,255,255,0.08)",
-                      border: "1px solid rgba(255,255,255,0.15)",
-                    }}
-                  >
-                    <Phone className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                  </div>
-                  <span className="text-xs md:text-sm font-medium">
-                    {theme.support_phone}
-                  </span>
-                </a>
-              )}
-              {theme.social_links?.instagram && (
-                <a
-                  href={theme.social_links.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group flex items-center gap-2 md:gap-3 text-white/40 hover:text-white transition-all duration-300"
-                >
-                  <div
-                    className="w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center backdrop-blur-sm transition-all group-hover:scale-110"
-                    style={{
-                      background: "rgba(255,255,255,0.08)",
-                      border: "1px solid rgba(255,255,255,0.15)",
-                    }}
-                  >
-                    <Instagram className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                  </div>
-                  <span className="text-xs md:text-sm font-medium">
-                    @thestandard.hq
-                  </span>
+                  Schedule a Call
                 </a>
               )}
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* ===== RIGHT PANEL - Form ===== */}
-      <div className="w-full lg:w-[45%] xl:w-[42%] min-h-[50vh] lg:h-screen relative z-10 pb-8 lg:pb-0">
-        <div className="relative z-10 h-full flex items-start lg:items-center justify-center p-5 md:p-8 lg:p-10 pt-4 lg:pt-10">
-          <div className="w-full max-w-md">
-            {formSubmitted ? (
-              <div
-                className="rounded-2xl md:rounded-3xl p-8 md:p-10 text-center backdrop-blur-xl"
-                style={{
-                  background:
-                    "linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%)",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  boxShadow:
-                    "0 30px 100px -20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15)",
-                }}
+          {/* Bottom contact row */}
+          <div className="flex-shrink-0 flex flex-wrap items-center gap-4 sm:gap-5 pt-4 mt-auto border-t border-[var(--landing-border)]">
+            {theme.support_phone && (
+              <a
+                href={`tel:${theme.support_phone}`}
+                className="group inline-flex items-center gap-2 text-eyebrow hover:text-[var(--landing-deep-green)] transition-colors"
               >
-                <div
-                  className="w-16 h-16 md:w-20 md:h-20 mx-auto rounded-xl md:rounded-2xl flex items-center justify-center mb-5 md:mb-6"
-                  style={{
-                    background: `linear-gradient(135deg, ${accentColor}40 0%, rgba(99, 102, 241, 0.3) 100%)`,
-                    boxShadow: `0 0 60px ${accentColor}40`,
-                  }}
-                >
-                  <svg
-                    className="w-8 h-8 md:w-10 md:h-10"
-                    fill="none"
-                    stroke={accentColor}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </div>
-                <h3 className="text-xl md:text-2xl font-bold mb-2 md:mb-3 tracking-tight">
-                  You're In!
-                </h3>
-                <p className="text-v2-ink-subtle text-sm">
-                  We'll be in touch within 24 hours.
-                </p>
-              </div>
-            ) : (
-              <div
-                className="rounded-2xl md:rounded-3xl p-6 md:p-8 lg:p-9 backdrop-blur-xl"
-                style={{
-                  background:
-                    "linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%)",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  boxShadow:
-                    "0 30px 100px -20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15)",
-                }}
-              >
-                <div className="mb-5 md:mb-7">
-                  <h2 className="text-lg md:text-xl lg:text-2xl font-bold mb-1.5 md:mb-2 tracking-tight">
-                    Ready to Learn More?
-                  </h2>
-                  <p className="text-v2-ink-subtle text-xs md:text-sm">
-                    Drop your info and I'll reach out personally.
-                  </p>
-                </div>
-                <LeadInterestForm
-                  recruiterSlug={recruiterId}
-                  onSuccess={handleSuccess}
-                  ctaText={theme.cta_text || "Submit"}
-                  primaryColor={accentColor}
-                  darkMode={true}
-                />
-              </div>
+                <span className="landing-icon-tile h-7 w-7 group-hover:bg-[var(--landing-adventure-yellow)] group-hover:border-[var(--landing-adventure-yellow)] transition-colors">
+                  <Phone className="h-3 w-3" />
+                </span>
+                <span className="font-mono">{theme.support_phone}</span>
+              </a>
             )}
+            {theme.social_links?.instagram && (
+              <a
+                href={theme.social_links.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2 text-eyebrow hover:text-[var(--landing-deep-green)] transition-colors"
+              >
+                <span className="landing-icon-tile h-7 w-7 group-hover:bg-[var(--landing-adventure-yellow)] group-hover:border-[var(--landing-adventure-yellow)] transition-colors">
+                  <Instagram className="h-3 w-3" />
+                </span>
+                <span className="font-mono">@thestandard.hq</span>
+              </a>
+            )}
+            <span className="ml-auto text-eyebrow font-mono opacity-70 hidden sm:inline">
+              © {new Date().getFullYear()} The Standard
+            </span>
+          </div>
+        </section>
 
+        {/* ============ RIGHT / FORM PANEL (desktop only) ============ */}
+        <aside className="hidden lg:flex h-full min-h-0 flex-col surface-paper border-l border-[var(--landing-border-strong)]">
+          <div className="flex-1 min-h-0 overflow-y-auto p-8 xl:p-10">
+            <FormPanel
+              recruiterId={recruiterId}
+              onSuccess={handleSuccess}
+              formSubmitted={formSubmitted}
+              ctaText={theme.cta_text || "Submit Application"}
+            />
             {theme.disclaimer_text && (
-              <p className="mt-4 md:mt-6 text-center text-[9px] md:text-[10px] text-v2-ink-muted leading-relaxed max-w-sm mx-auto px-2">
+              <p className="mt-6 text-eyebrow font-mono leading-relaxed opacity-80">
                 {theme.disclaimer_text}
               </p>
             )}
-
-            <p className="mt-5 md:mt-8 text-center text-[9px] md:text-[10px] text-v2-ink-muted tracking-wide">
-              © {new Date().getFullYear()} The Standard. All rights reserved.
-            </p>
           </div>
-        </div>
+        </aside>
       </div>
 
-      {/* ===== CSS ANIMATIONS ===== */}
-      <style>{`
-        @keyframes floatParticle {
-          0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
-          25% { transform: translate(10px, -20px) scale(1.2); opacity: 0.8; }
-          50% { transform: translate(-5px, -40px) scale(0.8); opacity: 0.4; }
-          75% { transform: translate(15px, -20px) scale(1.1); opacity: 0.7; }
-        }
-        @keyframes gridShift {
-          0% { transform: translate(0, 0); }
-          100% { transform: translate(80px, 80px); }
-        }
-      `}</style>
+      {/* ============ MOBILE STICKY CTA ============ */}
+      <div className="lg:hidden absolute inset-x-0 bottom-0 z-20 px-5 pb-[calc(env(safe-area-inset-bottom,0px)+12px)] pt-3 bg-gradient-to-t from-[var(--landing-icy-blue)] via-[var(--landing-icy-blue)] to-transparent">
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+          <SheetTrigger asChild>
+            <button
+              type="button"
+              className="btn btn-cta btn-lg w-full justify-center"
+            >
+              <Sparkles className="h-4 w-4" />
+              Apply to Join
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </SheetTrigger>
+          <FormDrawer
+            open={sheetOpen}
+            recruiterId={recruiterId}
+            onSuccess={handleSuccess}
+            formSubmitted={formSubmitted}
+            ctaText={theme.cta_text || "Submit Application"}
+            mobile
+          />
+        </Sheet>
+      </div>
     </div>
+  );
+}
+
+function StatTile({
+  icon,
+  value,
+  label,
+}: {
+  icon: React.ReactNode;
+  value: string;
+  label: string;
+}) {
+  return (
+    <div className="lattice-cell !p-3 flex flex-col gap-1">
+      <span className="text-eyebrow inline-flex items-center gap-1.5">
+        {icon}
+        {label}
+      </span>
+      <span
+        className="font-display font-black tabular leading-none"
+        style={{
+          fontSize: "1.5rem",
+          color: "var(--landing-deep-green)",
+          letterSpacing: "-0.02em",
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function FormPanel({
+  recruiterId,
+  onSuccess,
+  formSubmitted,
+  ctaText,
+}: {
+  recruiterId: string;
+  onSuccess: (leadId: string) => void;
+  formSubmitted: boolean;
+  ctaText: string;
+}) {
+  if (formSubmitted) {
+    return (
+      <div className="text-center py-8">
+        <div
+          className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-[2px]"
+          style={{
+            background: "var(--landing-adventure-yellow)",
+            color: "var(--landing-deep-green)",
+          }}
+        >
+          <svg
+            className="h-7 w-7"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2.5}
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        </div>
+        <h3 className="text-display-xl mb-2">You&apos;re In</h3>
+        <p className="text-fluid-base text-muted">
+          We&apos;ll be in touch within 24 hours.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="section-eyebrow-row mb-4">
+        <span className="section-eyebrow-num">02</span>
+        <span className="section-eyebrow-line" />
+        <span className="section-eyebrow-label">Apply</span>
+      </div>
+      <h2 className="text-display-xl mb-2">Ready to Talk?</h2>
+      <p className="text-fluid-base text-muted mb-6">
+        Drop your info and I&apos;ll reach out personally.
+      </p>
+      <LeadInterestForm
+        recruiterSlug={recruiterId}
+        onSuccess={onSuccess}
+        ctaText={ctaText}
+        darkMode={false}
+      />
+    </>
+  );
+}
+
+function FormDrawer({
+  open,
+  recruiterId,
+  onSuccess,
+  formSubmitted,
+  ctaText,
+  mobile = false,
+}: {
+  open: boolean;
+  recruiterId: string;
+  onSuccess: (leadId: string) => void;
+  formSubmitted: boolean;
+  ctaText: string;
+  mobile?: boolean;
+}) {
+  if (!open) return null;
+
+  return (
+    <SheetContent
+      side={mobile ? "bottom" : "right"}
+      size={mobile ? "full" : "lg"}
+      className="theme-landing surface-paper p-0 border-l border-[var(--landing-border-strong)] flex flex-col"
+    >
+      <SheetTitle className="sr-only">Apply to Join The Standard</SheetTitle>
+      <div className="flex-1 min-h-0 overflow-y-auto p-6 sm:p-8">
+        <FormPanel
+          recruiterId={recruiterId}
+          onSuccess={onSuccess}
+          formSubmitted={formSubmitted}
+          ctaText={ctaText}
+        />
+      </div>
+    </SheetContent>
   );
 }
 
