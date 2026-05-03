@@ -270,17 +270,17 @@ export function ExpenseDialogCompact({
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-v2-card text-v2-ink border border-v2-ring shadow-v2-lift w-[calc(100vw-1.5rem)] sm:w-auto max-w-md max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
+          className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-card text-foreground border border-border shadow-v2-lift w-[calc(100vw-1.5rem)] sm:w-auto max-w-md max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
           hideCloseButton
         >
-          <DialogHeader className="px-5 py-3 border-b border-v2-ring bg-v2-card-tinted flex-shrink-0">
+          <DialogHeader className="px-5 py-3 border-b border-border bg-card-tinted flex-shrink-0">
             <div className="flex items-center gap-2.5">
-              <span className="h-2 w-2 rounded-full bg-v2-accent" />
+              <span className="h-2 w-2 rounded-full bg-accent" />
               <div className="flex flex-col leading-tight">
-                <span className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">
                   {expense ? "Edit" : "New"}
                 </span>
-                <DialogTitle className="text-base font-semibold tracking-tight text-v2-ink text-left">
+                <DialogTitle className="text-base font-semibold tracking-tight text-foreground text-left">
                   {expense ? "Edit expense" : "Add expense"}
                 </DialogTitle>
               </div>
@@ -487,10 +487,10 @@ export function ExpenseDialogCompact({
 
                 {/* Lead Purchase Fields - Only shown when Life Insurance Leads category */}
                 {isLeadCategory && (
-                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-2.5 space-y-2">
+                  <div className="bg-info/10 border border-info/30 rounded-lg p-2.5 space-y-2">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <Users className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                      <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-[0.18em]">
+                      <Users className="h-3 w-3 text-info" />
+                      <span className="text-[10px] font-semibold text-info uppercase tracking-[0.18em]">
                         Lead Purchase Details
                       </span>
                     </div>
@@ -596,7 +596,7 @@ export function ExpenseDialogCompact({
 
                     {/* Cost per lead calculation */}
                     {leadFields.leadCount && formData.amount > 0 && (
-                      <div className="text-[10px] text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 rounded px-2 py-1">
+                      <div className="text-[10px] text-info bg-info/15 rounded px-2 py-1">
                         Cost per lead: $
                         {(
                           formData.amount /
@@ -807,7 +807,7 @@ export function ExpenseDialogCompact({
             </div>
 
             {/* Footer — fixed, no scroll */}
-            <DialogFooter className="px-5 py-3 border-t border-v2-ring bg-v2-card-tinted flex-shrink-0 gap-2 sm:justify-end">
+            <DialogFooter className="px-5 py-3 border-t border-border bg-card-tinted flex-shrink-0 gap-2 sm:justify-end">
               <PillButton
                 type="button"
                 tone="ghost"

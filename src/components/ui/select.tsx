@@ -1,6 +1,3 @@
-// src/components/ui/select.tsx
-// Modern select with refined animations
-
 import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { cn } from "@/lib/utils";
@@ -23,10 +20,10 @@ const SelectTrigger = React.forwardRef<
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-9 w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-200",
-      "bg-white dark:bg-zinc-900 text-foreground border border-zinc-200 dark:border-zinc-700 shadow-sm",
-      "hover:border-zinc-300 dark:hover:border-zinc-600",
-      "focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-500",
+      "flex h-9 w-full items-center justify-between rounded-md px-3 py-2 text-sm transition-colors duration-150",
+      "bg-background text-foreground border border-input",
+      "hover:border-foreground/30",
+      "focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring",
       "disabled:cursor-not-allowed disabled:opacity-50",
       "data-[placeholder]:text-muted-foreground",
       "[&>span]:line-clamp-1",
@@ -49,7 +46,7 @@ const SelectScrollUpButton = React.forwardRef<
   <SelectPrimitive.ScrollUpButton
     ref={ref}
     className={cn(
-      "flex cursor-default items-center justify-center py-1 text-zinc-500",
+      "flex cursor-default items-center justify-center py-1 text-muted-foreground",
       className,
     )}
     {...props}
@@ -66,7 +63,7 @@ const SelectScrollDownButton = React.forwardRef<
   <SelectPrimitive.ScrollDownButton
     ref={ref}
     className={cn(
-      "flex cursor-default items-center justify-center py-1 text-zinc-500",
+      "flex cursor-default items-center justify-center py-1 text-muted-foreground",
       className,
     )}
     {...props}
@@ -86,8 +83,7 @@ const SelectContent = React.forwardRef<
       ref={ref}
       className={cn(
         "relative z-[150] max-h-[--radix-select-content-available-height] min-w-[8rem] overflow-hidden",
-        "rounded-lg bg-white dark:bg-zinc-900 shadow-xl shadow-black/10 dark:shadow-black/40",
-        "border border-zinc-200 dark:border-zinc-800",
+        "rounded-md bg-popover text-popover-foreground border border-border shadow-lg",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -124,7 +120,7 @@ const SelectLabel = React.forwardRef<
   <SelectPrimitive.Label
     ref={ref}
     className={cn(
-      "px-2 py-1.5 text-xs font-semibold text-zinc-500 uppercase tracking-wider",
+      "px-2 py-1.5 font-mono text-[10px] font-medium text-muted-foreground uppercase tracking-wider",
       className,
     )}
     {...props}
@@ -139,10 +135,10 @@ const SelectItem = React.forwardRef<
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex w-full cursor-pointer select-none items-center rounded-md py-2 pl-3 pr-8 text-sm outline-none transition-colors",
-      "text-zinc-700 dark:text-zinc-300",
-      "hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-zinc-100",
-      "focus:bg-zinc-100 dark:focus:bg-zinc-800 focus:text-zinc-900 dark:focus:text-zinc-100",
+      "relative flex w-full cursor-pointer select-none items-center rounded-sm py-2 pl-3 pr-8 text-sm outline-none transition-colors",
+      "text-popover-foreground",
+      "hover:bg-accent hover:text-accent-foreground",
+      "focus:bg-accent focus:text-accent-foreground",
       "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
       className,
     )}
@@ -164,7 +160,7 @@ const SelectSeparator = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SelectPrimitive.Separator
     ref={ref}
-    className={cn("-mx-1 my-1 h-px bg-zinc-200 dark:bg-zinc-800", className)}
+    className={cn("-mx-1 my-1 h-px bg-border", className)}
     {...props}
   />
 ));

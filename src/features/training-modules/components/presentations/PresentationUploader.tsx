@@ -73,9 +73,9 @@ export function PresentationUploader({
     return (
       <div className="flex items-center gap-2 p-2.5 rounded-lg border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
         {isAudio ? (
-          <FileAudio className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+          <FileAudio className="h-4 w-4 text-success flex-shrink-0" />
         ) : (
-          <FileVideo className="h-4 w-4 text-blue-500 flex-shrink-0" />
+          <FileVideo className="h-4 w-4 text-info flex-shrink-0" />
         )}
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium truncate">{selectedFile.name}</p>
@@ -107,7 +107,7 @@ export function PresentationUploader({
         onClick={() => inputRef.current?.click()}
         className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
           dragOver
-            ? "border-blue-400 bg-blue-50 dark:bg-blue-900/20"
+            ? "border-info/70 bg-info/10"
             : "border-v2-ring-strong dark:border-v2-ring-strong hover:border-v2-ring-strong dark:hover:border-v2-ring-strong"
         }`}
       >
@@ -130,7 +130,7 @@ export function PresentationUploader({
           e.target.value = "";
         }}
       />
-      {error && <p className="text-[10px] text-red-500 mt-1">{error}</p>}
+      {error && <p className="text-[10px] text-destructive mt-1">{error}</p>}
     </div>
   );
 }

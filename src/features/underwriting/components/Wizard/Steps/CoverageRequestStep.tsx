@@ -184,7 +184,8 @@ export default function CoverageRequestStep({
       {/* Face Amounts */}
       <div className="space-y-3">
         <Label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
-          Face Amounts (Death Benefit) <span className="text-red-500">*</span>
+          Face Amounts (Death Benefit){" "}
+          <span className="text-destructive">*</span>
         </Label>
         <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle -mt-1">
           Enter up to 3 coverage amounts to compare quotes
@@ -205,8 +206,8 @@ export default function CoverageRequestStep({
                 className={cn(
                   "px-2 py-1 text-[10px] rounded border transition-colors",
                   faceAmounts[0] === amount
-                    ? "bg-amber-600 text-white border-amber-600"
-                    : "bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-subtle border-v2-ring dark:border-v2-ring-strong hover:border-amber-300 dark:hover:border-amber-700",
+                    ? "bg-warning text-white border-warning"
+                    : "bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-subtle border-v2-ring dark:border-v2-ring-strong hover:border-warning/40 dark:hover:border-warning",
                 )}
               >
                 {formatCurrency(amount)}
@@ -221,7 +222,9 @@ export default function CoverageRequestStep({
             <div key={index} className="space-y-1">
               <label className="text-[10px] font-medium text-v2-ink-muted">
                 Amount {index + 1}
-                {index === 0 && <span className="text-red-500 ml-0.5">*</span>}
+                {index === 0 && (
+                  <span className="text-destructive ml-0.5">*</span>
+                )}
               </label>
               <div className="relative">
                 <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-v2-ink-subtle">
@@ -238,7 +241,7 @@ export default function CoverageRequestStep({
                   }
                   className={cn(
                     "h-8 text-sm pl-5",
-                    index === 0 && errors.faceAmounts && "border-red-500",
+                    index === 0 && errors.faceAmounts && "border-destructive",
                   )}
                   placeholder={
                     index === 0
@@ -259,14 +262,14 @@ export default function CoverageRequestStep({
         </div>
 
         {errors.faceAmounts && (
-          <p className="text-[10px] text-red-500">{errors.faceAmounts}</p>
+          <p className="text-[10px] text-destructive">{errors.faceAmounts}</p>
         )}
       </div>
 
       {/* Product Types */}
       <div className="space-y-2 pt-2 border-t border-v2-ring dark:border-v2-ring">
         <Label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
-          Product Types <span className="text-red-500">*</span>
+          Product Types <span className="text-destructive">*</span>
         </Label>
         <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
           Select the product types to consider for recommendations
@@ -282,7 +285,7 @@ export default function CoverageRequestStep({
                 className={cn(
                   "flex items-start gap-3 p-2 rounded-lg border cursor-pointer transition-colors",
                   isSelected
-                    ? "bg-amber-50 dark:bg-amber-900/20 border-amber-300 dark:border-amber-700"
+                    ? "bg-warning/10 border-warning/40"
                     : "bg-v2-card-tinted/50 border-v2-ring dark:border-v2-ring-strong hover:border-v2-ring-strong dark:hover:border-v2-ring-strong",
                 )}
               >
@@ -296,7 +299,7 @@ export default function CoverageRequestStep({
                     className={cn(
                       "text-sm font-medium",
                       isSelected
-                        ? "text-amber-700 dark:text-amber-300"
+                        ? "text-warning"
                         : "text-v2-ink dark:text-v2-ink-muted",
                     )}
                   >
@@ -312,17 +315,17 @@ export default function CoverageRequestStep({
         </div>
 
         {errors.productTypes && (
-          <p className="text-[10px] text-red-500">{errors.productTypes}</p>
+          <p className="text-[10px] text-destructive">{errors.productTypes}</p>
         )}
       </div>
 
       {/* Summary */}
       {data.productTypes.length > 0 && validAmounts.length > 0 && (
-        <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
-          <div className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300 mb-1">
+        <div className="mt-4 p-3 bg-success/10 border border-success/30 rounded-lg">
+          <div className="text-[11px] font-medium text-success mb-1">
             Coverage Summary
           </div>
-          <div className="text-xs text-emerald-600 dark:text-emerald-400 space-y-0.5">
+          <div className="text-xs text-success space-y-0.5">
             <div>
               <span className="font-medium">
                 {validAmounts.length} quote

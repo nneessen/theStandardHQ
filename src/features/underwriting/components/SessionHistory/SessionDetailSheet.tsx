@@ -87,7 +87,7 @@ export function SessionDetailSheet({
             Session Details
           </SheetTitle>
           {session && (
-            <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <div className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               {formatSessionDateLong(session.created_at)}
             </div>
           )}
@@ -95,13 +95,13 @@ export function SessionDetailSheet({
 
         <ScrollArea className="h-[calc(100vh-100px)]">
           {isLoading && (
-            <div className="px-6 py-8 text-center text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <div className="px-6 py-8 text-center text-[11px] text-muted-foreground dark:text-muted-foreground">
               Loading session details...
             </div>
           )}
 
           {error && (
-            <div className="px-6 py-8 text-center text-[11px] text-red-500 dark:text-red-400">
+            <div className="px-6 py-8 text-center text-[11px] text-destructive">
               Failed to load session details: {error.message}
             </div>
           )}
@@ -141,11 +141,7 @@ export function SessionDetailSheet({
                   <InfoRow
                     label="Tobacco Use"
                     value={session.tobacco_use ? "Yes" : "No"}
-                    valueClassName={
-                      session.tobacco_use
-                        ? "text-amber-600 dark:text-amber-400"
-                        : ""
-                    }
+                    valueClassName={session.tobacco_use ? "text-warning" : ""}
                   />
                 </div>
               </Section>
@@ -159,7 +155,7 @@ export function SessionDetailSheet({
               >
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <span className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                    <span className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                       Health Tier:
                     </span>
                     <Badge
@@ -173,7 +169,7 @@ export function SessionDetailSheet({
 
                   {conditionsReported.length > 0 && (
                     <div>
-                      <div className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted mb-2">
+                      <div className="text-[11px] font-medium text-foreground dark:text-muted-foreground mb-2">
                         Conditions Reported ({conditionsReported.length})
                       </div>
                       <div className="flex flex-wrap gap-1.5">
@@ -193,17 +189,17 @@ export function SessionDetailSheet({
 
                   {riskFactors.length > 0 && (
                     <div>
-                      <div className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted mb-2 flex items-center gap-1.5">
-                        <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                      <div className="text-[11px] font-medium text-foreground dark:text-muted-foreground mb-2 flex items-center gap-1.5">
+                        <AlertTriangle className="h-3.5 w-3.5 text-warning" />
                         Risk Factors ({riskFactors.length})
                       </div>
                       <ul className="space-y-1">
                         {riskFactors.map((factor, i) => (
                           <li
                             key={i}
-                            className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle flex items-start gap-2"
+                            className="text-[11px] text-muted-foreground dark:text-muted-foreground flex items-start gap-2"
                           >
-                            <span className="text-amber-500 mt-0.5">•</span>
+                            <span className="text-warning mt-0.5">•</span>
                             {factor}
                           </li>
                         ))}
@@ -251,14 +247,14 @@ export function SessionDetailSheet({
                           (rec, i) => (
                             <div
                               key={i}
-                              className="bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-lg p-3 border border-v2-ring dark:border-v2-ring-strong"
+                              className="bg-background dark:bg-card-tinted/50 rounded-lg p-3 border border-border dark:border-border"
                             >
                               <div className="flex items-start justify-between gap-3">
                                 <div className="flex-1">
-                                  <div className="text-[12px] font-medium text-v2-ink dark:text-v2-ink">
+                                  <div className="text-[12px] font-medium text-foreground dark:text-foreground">
                                     {rec.carrierName}
                                   </div>
-                                  <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                                  <div className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                                     {rec.productName}
                                     {rec.termYears
                                       ? ` (${rec.termYears} Year)`
@@ -277,29 +273,29 @@ export function SessionDetailSheet({
                                   rec.underwritingHealthClass !==
                                     (rec.quotedHealthClass ||
                                       rec.healthClass))) && (
-                                <div className="mt-1 text-[10px] text-v2-ink-subtle">
+                                <div className="mt-1 text-[10px] text-muted-foreground">
                                   {rec.quoteClassNote ||
                                     `UW ${rec.underwritingHealthClass} -> Quote ${rec.quotedHealthClass || rec.healthClass}`}
                                 </div>
                               )}
                               <div className="mt-2 flex items-center justify-between text-[11px]">
-                                <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+                                <span className="text-muted-foreground dark:text-muted-foreground">
                                   Face Amount
                                 </span>
-                                <span className="font-medium text-v2-ink dark:text-v2-ink">
+                                <span className="font-medium text-foreground dark:text-foreground">
                                   {formatCurrency(rec.faceAmount)}
                                 </span>
                               </div>
                               <div className="flex items-center justify-between text-[11px]">
-                                <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+                                <span className="text-muted-foreground dark:text-muted-foreground">
                                   Monthly Premium
                                 </span>
                                 {rec.monthlyPremium !== null ? (
-                                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                  <span className="font-semibold text-success">
                                     {formatCurrency(rec.monthlyPremium)}/mo
                                   </span>
                                 ) : (
-                                  <span className="font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
+                                  <span className="font-medium text-muted-foreground dark:text-muted-foreground">
                                     TBD
                                   </span>
                                 )}
@@ -322,14 +318,14 @@ export function SessionDetailSheet({
                           .map((rec, i) => (
                             <div
                               key={i}
-                              className="bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-lg p-3 border border-v2-ring dark:border-v2-ring-strong"
+                              className="bg-background dark:bg-card-tinted/50 rounded-lg p-3 border border-border dark:border-border"
                             >
                               <div className="flex items-start justify-between gap-3">
                                 <div>
-                                  <div className="text-[12px] font-medium text-v2-ink dark:text-v2-ink">
+                                  <div className="text-[12px] font-medium text-foreground dark:text-foreground">
                                     {rec.carrierName}
                                   </div>
-                                  <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                                  <div className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                                     {rec.productName}
                                   </div>
                                 </div>
@@ -340,7 +336,7 @@ export function SessionDetailSheet({
                                   >
                                     {rec.expectedRating}
                                   </Badge>
-                                  <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                                     {(rec.confidence * 100).toFixed(0)}%
                                   </span>
                                 </div>
@@ -350,7 +346,7 @@ export function SessionDetailSheet({
                                   {rec.keyFactors.map((factor, j) => (
                                     <span
                                       key={j}
-                                      className="text-[10px] text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-1.5 py-0.5 rounded"
+                                      className="text-[10px] text-success bg-success/10 px-1.5 py-0.5 rounded"
                                     >
                                       + {factor}
                                     </span>
@@ -362,7 +358,7 @@ export function SessionDetailSheet({
                                   {rec.concerns.map((concern, j) => (
                                     <span
                                       key={j}
-                                      className="text-[10px] text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-1.5 py-0.5 rounded"
+                                      className="text-[10px] text-warning bg-warning/10 px-1.5 py-0.5 rounded"
                                     >
                                       ! {concern}
                                     </span>
@@ -370,7 +366,7 @@ export function SessionDetailSheet({
                                 </div>
                               )}
                               {rec.notes && (
-                                <div className="mt-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle italic">
+                                <div className="mt-2 text-[10px] text-muted-foreground dark:text-muted-foreground italic">
                                   {rec.notes}
                                 </div>
                               )}
@@ -389,7 +385,7 @@ export function SessionDetailSheet({
                     title="Notes"
                     icon={<FileText className="h-3.5 w-3.5" />}
                   >
-                    <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                    <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                       {session.notes}
                     </p>
                   </Section>
@@ -417,11 +413,11 @@ function Section({
     <div>
       <div className="flex items-center gap-2 mb-3">
         {icon && (
-          <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+          <span className="text-muted-foreground dark:text-muted-foreground">
             {icon}
           </span>
         )}
-        <h3 className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
+        <h3 className="text-[12px] font-semibold text-foreground dark:text-foreground">
           {title}
         </h3>
       </div>
@@ -441,11 +437,11 @@ function InfoRow({
 }) {
   return (
     <div className="flex justify-between items-baseline">
-      <span className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+      <span className="text-[11px] text-muted-foreground dark:text-muted-foreground">
         {label}
       </span>
       <span
-        className={`text-[12px] text-v2-ink dark:text-v2-ink ${valueClassName}`}
+        className={`text-[12px] text-foreground dark:text-foreground ${valueClassName}`}
       >
         {value}
       </span>

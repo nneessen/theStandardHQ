@@ -218,24 +218,24 @@ export function ActivityTab({ searchQuery }: ActivityTabProps) {
     switch (status) {
       case "sent":
       case "delivered":
-        return <CheckCircle2 className="h-3 w-3 text-green-500" />;
+        return <CheckCircle2 className="h-3 w-3 text-success" />;
       case "failed":
-        return <AlertCircle className="h-3 w-3 text-red-500" />;
+        return <AlertCircle className="h-3 w-3 text-destructive" />;
       default:
-        return <Clock className="h-3 w-3 text-amber-500" />;
+        return <Clock className="h-3 w-3 text-warning" />;
     }
   };
 
   const getNotificationTypeIcon = (type: string) => {
     switch (type) {
       case "success":
-        return <CheckCircle2 className="h-3 w-3 text-green-500" />;
+        return <CheckCircle2 className="h-3 w-3 text-success" />;
       case "warning":
-        return <AlertCircle className="h-3 w-3 text-amber-500" />;
+        return <AlertCircle className="h-3 w-3 text-warning" />;
       case "error":
-        return <AlertCircle className="h-3 w-3 text-red-500" />;
+        return <AlertCircle className="h-3 w-3 text-destructive" />;
       default:
-        return <Info className="h-3 w-3 text-blue-500" />;
+        return <Info className="h-3 w-3 text-info" />;
     }
   };
 
@@ -244,7 +244,7 @@ export function ActivityTab({ searchQuery }: ActivityTabProps) {
       {/* Stats row */}
       <div className="flex items-center gap-3 text-[11px] mb-2">
         <div className="flex items-center gap-1">
-          <Mail className="h-3 w-3 text-blue-500" />
+          <Mail className="h-3 w-3 text-info" />
           <span className="font-medium text-v2-ink dark:text-v2-ink">
             {recentEmails?.length || 0}
           </span>
@@ -254,7 +254,7 @@ export function ActivityTab({ searchQuery }: ActivityTabProps) {
         </div>
         <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
         <div className="flex items-center gap-1">
-          <Bell className="h-3 w-3 text-purple-500" />
+          <Bell className="h-3 w-3 text-info" />
           <span className="font-medium text-v2-ink dark:text-v2-ink">
             {recentNotifications?.length || 0}
           </span>
@@ -293,12 +293,12 @@ export function ActivityTab({ searchQuery }: ActivityTabProps) {
                 {/* Icon */}
                 <div className="mt-0.5">
                   {activity.type === "email" ? (
-                    <div className="h-5 w-5 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                      <Mail className="h-2.5 w-2.5 text-blue-600 dark:text-blue-400" />
+                    <div className="h-5 w-5 rounded-full bg-info/15 flex items-center justify-center">
+                      <Mail className="h-2.5 w-2.5 text-info" />
                     </div>
                   ) : (
-                    <div className="h-5 w-5 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                      <Bell className="h-2.5 w-2.5 text-purple-600 dark:text-purple-400" />
+                    <div className="h-5 w-5 rounded-full bg-info/20 dark:bg-info/15 flex items-center justify-center">
+                      <Bell className="h-2.5 w-2.5 text-info" />
                     </div>
                   )}
                 </div>
@@ -338,8 +338,8 @@ export function ActivityTab({ searchQuery }: ActivityTabProps) {
                     variant="outline"
                     className={`text-[9px] h-4 px-1 border ${
                       activity.type === "email"
-                        ? "text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800"
-                        : "text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800"
+                        ? "text-info border-info/30"
+                        : "text-info border-info/30"
                     }`}
                   >
                     {activity.type === "email" ? "Email" : "Notification"}

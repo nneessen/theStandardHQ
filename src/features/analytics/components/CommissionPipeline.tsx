@@ -146,11 +146,11 @@ export function CommissionPipeline() {
         {/* Next 30 Days */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Clock className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+            <Clock className="h-3 w-3 text-success" />
             <span className="text-[11px] text-v2-ink-muted">Next 30 days</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold font-mono text-emerald-600 dark:text-emerald-400">
+            <span className="text-xs font-bold font-mono text-success">
               {formatCurrency(pending30)}
             </span>
             {pendingCount30 > 0 && (
@@ -164,11 +164,11 @@ export function CommissionPipeline() {
         {/* Next 60 Days */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Clock className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+            <Clock className="h-3 w-3 text-warning" />
             <span className="text-[11px] text-v2-ink-muted">Next 60 days</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold font-mono text-amber-600 dark:text-amber-400">
+            <span className="text-xs font-bold font-mono text-warning">
               {formatCurrency(pending60)}
             </span>
             {pendingCount60 > 0 && (
@@ -182,11 +182,11 @@ export function CommissionPipeline() {
         {/* Next 90 Days */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Clock className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+            <Clock className="h-3 w-3 text-info" />
             <span className="text-[11px] text-v2-ink-muted">Next 90 days</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold font-mono text-blue-600 dark:text-blue-400">
+            <span className="text-xs font-bold font-mono text-info">
               {formatCurrency(pending90)}
             </span>
             {pendingCount90 > 0 && (
@@ -204,11 +204,11 @@ export function CommissionPipeline() {
         {atRisk > 0 && (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-3 w-3 text-red-600 dark:text-red-400" />
+              <AlertTriangle className="h-3 w-3 text-destructive" />
               <span className="text-[11px] text-v2-ink-muted">At Risk</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold font-mono text-red-600 dark:text-red-400">
+              <span className="text-xs font-bold font-mono text-destructive">
                 {formatCurrency(atRisk)}
               </span>
               {atRiskCount > 0 && (
@@ -226,10 +226,10 @@ export function CommissionPipeline() {
         className={cn(
           "rounded-v2-pill px-3 py-2 text-center text-[11px] font-semibold",
           totalPending > 50000
-            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+            ? "bg-success/20 text-success dark:bg-success/40 dark:text-success"
             : totalPending > 25000
-              ? "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300"
-              : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+              ? "bg-warning/20 text-warning dark:bg-warning/40 dark:text-warning"
+              : "bg-destructive/20 text-destructive dark:bg-destructive/40 dark:text-destructive",
         )}
       >
         {totalPending > 50000

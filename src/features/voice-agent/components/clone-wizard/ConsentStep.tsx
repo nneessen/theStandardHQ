@@ -34,7 +34,7 @@ export function ConsentStep({
 
   return (
     <div className="mx-auto max-w-lg space-y-6">
-      <div className="rounded-xl border border-v2-ring bg-white p-6 dark:border-v2-ring dark:bg-v2-card">
+      <div className="rounded-lg border border-v2-ring bg-white p-6 dark:border-v2-ring dark:bg-v2-card">
         <div className="flex items-center gap-2 mb-4">
           <Mic className="h-5 w-5 text-v2-ink-muted dark:text-v2-ink-subtle" />
           <h2 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
@@ -86,7 +86,7 @@ export function ConsentStep({
         </div>
 
         {remainingAttempts <= 1 && remainingAttempts > 0 && (
-          <div className="mt-4 flex items-center gap-1.5 text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="mt-4 flex items-center gap-1.5 text-[10px] text-warning">
             <AlertTriangle className="h-3 w-3 flex-shrink-0" />
             <span>This is your last remaining attempt.</span>
           </div>
@@ -110,7 +110,7 @@ export function ConsentStep({
         </div>
 
         {startMutation.isError && (
-          <p className="mt-3 text-[11px] text-red-600 dark:text-red-400">
+          <p className="mt-3 text-[11px] text-destructive">
             {startMutation.error.message}
           </p>
         )}

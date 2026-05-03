@@ -45,10 +45,10 @@ export function CircularProgressGauge({
   };
 
   const textColorClasses = {
-    green: "text-emerald-600 dark:text-emerald-400",
-    yellow: "text-amber-600 dark:text-amber-400",
-    red: "text-red-600 dark:text-red-400",
-    blue: "text-blue-600 dark:text-blue-400",
+    green: "text-success",
+    yellow: "text-warning",
+    red: "text-destructive",
+    blue: "text-info",
   };
 
   return (

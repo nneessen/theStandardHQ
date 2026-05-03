@@ -144,7 +144,7 @@ export function ApprovalActions({
       {status === "pending_review" && (
         <>
           {isSelfApproval ? (
-            <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
+            <div className="flex items-center gap-1 text-[10px] text-warning">
               <AlertCircle className="h-3 w-3" />
               Cannot approve own rule set
             </div>
@@ -227,8 +227,8 @@ export function ApprovalActions({
           </DialogHeader>
 
           <div className="space-y-2">
-            <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
-              Rejection Notes <span className="text-red-500">*</span>
+            <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+              Rejection Notes <span className="text-destructive">*</span>
             </Label>
             <Textarea
               className="h-24 text-[11px] resize-none"

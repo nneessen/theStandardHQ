@@ -136,8 +136,8 @@ export function CategoryManager({
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="p-3 border-b border-v2-ring">
-        <h3 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
+      <div className="p-3 border-b border-border">
+        <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
           Categories
         </h3>
       </div>
@@ -150,8 +150,8 @@ export function CategoryManager({
           className={cn(
             "w-full px-2 py-1.5 text-[11px] text-left rounded-sm transition-colors",
             selectedCategory === "all"
-              ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-              : "text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-canvas",
+              ? "bg-info/20 dark:bg-info/15 text-info font-medium"
+              : "text-muted-foreground dark:text-muted-foreground hover:bg-background",
           )}
         >
           All Categories
@@ -159,7 +159,7 @@ export function CategoryManager({
 
         {/* Built-in Categories */}
         <Collapsible open={builtInOpen} onOpenChange={setBuiltInOpen}>
-          <CollapsibleTrigger className="flex items-center gap-1 w-full px-2 py-1 text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide hover:text-v2-ink">
+          <CollapsibleTrigger className="flex items-center gap-1 w-full px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wide hover:text-foreground">
             <span className="flex-1 text-left">Built-in</span>
             <Lock className="h-3 w-3" />
           </CollapsibleTrigger>
@@ -172,8 +172,8 @@ export function CategoryManager({
                 className={cn(
                   "w-full px-2 py-1.5 text-[11px] text-left rounded-sm transition-colors",
                   selectedCategory === type
-                    ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-                    : "text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-canvas",
+                    ? "bg-info/20 dark:bg-info/15 text-info font-medium"
+                    : "text-muted-foreground dark:text-muted-foreground hover:bg-background",
                 )}
               >
                 {PROSPECT_TYPE_LABELS[type]}
@@ -184,13 +184,13 @@ export function CategoryManager({
 
         {/* Custom Categories */}
         <Collapsible open={customOpen} onOpenChange={setCustomOpen}>
-          <CollapsibleTrigger className="flex items-center gap-1 w-full px-2 py-1 text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide hover:text-v2-ink">
+          <CollapsibleTrigger className="flex items-center gap-1 w-full px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wide hover:text-foreground">
             <span className="flex-1 text-left">Custom</span>
             {isLoading && <Loader2 className="h-3 w-3 animate-spin" />}
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-1 space-y-0.5">
             {customCategories.length === 0 && !isLoading && (
-              <p className="px-2 py-1 text-[10px] text-v2-ink-subtle italic">
+              <p className="px-2 py-1 text-[10px] text-muted-foreground italic">
                 No custom categories
               </p>
             )}
@@ -202,8 +202,8 @@ export function CategoryManager({
                   className={cn(
                     "group flex items-center px-2 py-1.5 text-[11px] rounded-sm transition-colors",
                     selectedCategory === categoryValue
-                      ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 font-medium"
-                      : "text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-canvas",
+                      ? "bg-info/20 dark:bg-info/15 text-info font-medium"
+                      : "text-muted-foreground dark:text-muted-foreground hover:bg-background",
                   )}
                 >
                   <button
@@ -230,7 +230,7 @@ export function CategoryManager({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-5 w-5 text-red-500 hover:text-red-600"
+                        className="h-5 w-5 text-destructive hover:text-destructive"
                         onClick={(e) => {
                           e.stopPropagation();
                           setDeleteCategory(category);
@@ -250,7 +250,7 @@ export function CategoryManager({
               <Button
                 variant="ghost"
                 size="sm"
-                className="w-full justify-start h-7 text-[11px] text-v2-ink-muted hover:text-v2-ink dark:text-v2-ink-subtle dark:hover:text-v2-ink-subtle"
+                className="w-full justify-start h-7 text-[11px] text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-muted-foreground"
                 onClick={handleOpenCreate}
               >
                 <Plus className="h-3 w-3 mr-1" />
@@ -344,7 +344,7 @@ export function CategoryManager({
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
-              className="h-8 text-[11px] bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              className="h-8 text-[11px] bg-destructive hover:bg-destructive focus:ring-destructive"
             >
               {deleteMutation.isPending && (
                 <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />

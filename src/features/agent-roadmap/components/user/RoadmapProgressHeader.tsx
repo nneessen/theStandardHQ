@@ -34,7 +34,7 @@ export function RoadmapProgressHeader({
       </h1>
 
       {allDone && (
-        <div className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+        <div className="flex items-center gap-1 text-[10px] font-bold text-success shrink-0">
           <CheckCircle2 className="h-3 w-3" />
           DONE
         </div>

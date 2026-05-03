@@ -32,7 +32,7 @@ export function OverviewTab({ onSwitchTab }: OverviewTabProps) {
   if (error) {
     return (
       <div className="text-center py-12 space-y-2">
-        <p className="text-xs font-medium text-red-600 dark:text-red-400">
+        <p className="text-xs font-medium text-destructive">
           Failed to load summary
         </p>
         <p className="text-[10px] text-v2-ink-muted">
@@ -55,13 +55,13 @@ export function OverviewTab({ onSwitchTab }: OverviewTabProps) {
       {summary.totals.needs_review_count > 0 && (
         <button
           onClick={() => onSwitchTab("transactions")}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-warning/10 border border-warning/30 hover:bg-warning/20 dark:hover:bg-warning/30 transition-colors"
         >
-          <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-          <span className="text-[11px] font-medium text-amber-700 dark:text-amber-300">
+          <AlertTriangle className="h-3.5 w-3.5 text-warning shrink-0" />
+          <span className="text-[11px] font-medium text-warning">
             {summary.totals.needs_review_count} transactions need review
           </span>
-          <span className="text-[10px] text-amber-600 dark:text-amber-400 ml-auto">
+          <span className="text-[10px] text-warning ml-auto">
             Review Now &rarr;
           </span>
         </button>

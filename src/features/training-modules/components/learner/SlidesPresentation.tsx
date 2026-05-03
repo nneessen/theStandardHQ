@@ -132,7 +132,7 @@ export function SlidesPresentation({ url }: SlidesPresentationProps) {
 
       <div
         ref={containerRef}
-        className="rounded-lg overflow-hidden border border-v2-ring dark:border-v2-ring-strong bg-slate-800 flex items-center justify-center"
+        className="rounded-lg overflow-hidden border border-v2-ring dark:border-v2-ring-strong bg-muted flex items-center justify-center"
         style={{ minHeight: 400 }}
       >
         <Document
@@ -145,7 +145,9 @@ export function SlidesPresentation({ url }: SlidesPresentationProps) {
             </div>
           }
           error={
-            <p className="text-xs text-red-400 py-20">Failed to load slides</p>
+            <p className="text-xs text-destructive py-20">
+              Failed to load slides
+            </p>
           }
         >
           <Page

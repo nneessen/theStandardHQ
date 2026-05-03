@@ -257,7 +257,7 @@ export const TeamCallStatsTable: React.FC<TeamCallStatsTableProps> = ({
                         className="inline-flex items-center"
                         title={r.error ?? ""}
                       >
-                        <AlertCircle className="h-3 w-3 text-amber-500" />
+                        <AlertCircle className="h-3 w-3 text-warning" />
                       </span>
                     )}
                     {!hasError && r.truncated && (
@@ -265,7 +265,7 @@ export const TeamCallStatsTable: React.FC<TeamCallStatsTableProps> = ({
                         className="inline-flex items-center"
                         title="Some calls not counted — pagination limit hit. Numbers below are a lower bound."
                       >
-                        <AlertCircle className="h-3 w-3 text-amber-500" />
+                        <AlertCircle className="h-3 w-3 text-warning" />
                       </span>
                     )}
                   </div>
@@ -297,9 +297,7 @@ export const TeamCallStatsTable: React.FC<TeamCallStatsTableProps> = ({
                 <td
                   className={cn(
                     "px-2 py-1.5 text-right font-mono tabular-nums",
-                    r.voicemails > 0
-                      ? "text-amber-600 dark:text-amber-500"
-                      : "text-muted-foreground",
+                    r.voicemails > 0 ? "text-warning" : "text-muted-foreground",
                   )}
                 >
                   {hasError ? "—" : r.voicemails.toLocaleString()}

@@ -912,11 +912,11 @@ export function GuidedRuleBuilderDialog({
             {/* Tier cards */}
             <div className="space-y-2">
               {tiers.length === 0 && (
-                <div className="py-4 text-center border border-dashed border-v2-ring-strong dark:border-v2-ring-strong rounded">
-                  <p className="text-[11px] text-v2-ink-subtle">
+                <div className="py-4 text-center border border-dashed border-border dark:border-border rounded">
+                  <p className="text-[11px] text-muted-foreground">
                     No tiers — will use default outcome below
                   </p>
-                  <p className="text-[9px] text-v2-ink-subtle mt-1">
+                  <p className="text-[9px] text-muted-foreground mt-1">
                     Add tiers for conditional acceptance (IF → ELSE IF → ELSE)
                   </p>
                 </div>

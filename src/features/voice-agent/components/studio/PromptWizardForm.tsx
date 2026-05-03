@@ -178,7 +178,7 @@ export function PromptWizardForm({ onPromptChange }: PromptWizardFormProps) {
           return (
             <div
               key={section.key}
-              className="rounded-xl border border-v2-ring dark:border-v2-ring"
+              className="rounded-lg border border-v2-ring dark:border-v2-ring"
             >
               <button
                 type="button"

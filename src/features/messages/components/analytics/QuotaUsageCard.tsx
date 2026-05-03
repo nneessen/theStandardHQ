@@ -25,8 +25,8 @@ export function QuotaUsageCard({
         {/* Header */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
-            <div className="h-6 w-6 rounded bg-amber-50 dark:bg-amber-950/30 flex items-center justify-center">
-              <Gauge className="h-3 w-3 text-amber-500" />
+            <div className="h-6 w-6 rounded bg-warning/10 flex items-center justify-center">
+              <Gauge className="h-3 w-3 text-warning" />
             </div>
             <span className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
               Quota
@@ -48,10 +48,10 @@ export function QuotaUsageCard({
             <div
               className={`h-full rounded-full transition-all ${
                 isCritical
-                  ? "bg-red-500"
+                  ? "bg-destructive"
                   : isWarning
-                    ? "bg-amber-500"
-                    : "bg-green-500"
+                    ? "bg-warning"
+                    : "bg-success"
               }`}
               style={{ width: `${Math.min(percentUsed, 100)}%` }}
             />
@@ -59,9 +59,9 @@ export function QuotaUsageCard({
           <p
             className={`text-[10px] mt-1 ${
               isCritical
-                ? "text-red-500"
+                ? "text-destructive"
                 : isWarning
-                  ? "text-amber-500"
+                  ? "text-warning"
                   : "text-v2-ink-muted"
             }`}
           >

@@ -16,8 +16,8 @@ export function VideoBlockView({ block }: VideoBlockViewProps) {
   // data:, file: URLs even if they somehow slipped past the validator.
   if (url && !isSafeExternalUrl(url)) {
     return (
-      <div className="flex items-start gap-2 rounded-lg border-l-4 border-l-amber-400 border border-v2-ring dark:border-v2-ring bg-amber-50 dark:bg-amber-950/30 px-4 py-3">
-        <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+      <div className="flex items-start gap-2 rounded-lg border-l-4 border-l-amber-400 border border-v2-ring dark:border-v2-ring bg-warning/10 px-4 py-3">
+        <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-warning" />
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
             Unsafe video link
@@ -51,13 +51,13 @@ export function VideoBlockView({ block }: VideoBlockViewProps) {
 
   if (!embedUrl) {
     return (
-      <div className="rounded-lg border-l-4 border-l-amber-400 border border-v2-ring dark:border-v2-ring bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm text-v2-ink dark:text-v2-ink">
+      <div className="rounded-lg border-l-4 border-l-amber-400 border border-v2-ring dark:border-v2-ring bg-warning/10 px-4 py-3 text-sm text-v2-ink dark:text-v2-ink">
         Unable to embed video.{" "}
         <a
           href={url || undefined}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium text-blue-600 dark:text-blue-400 underline underline-offset-2 hover:opacity-80"
+          className="font-medium text-info underline underline-offset-2 hover:opacity-80"
         >
           Open externally
         </a>

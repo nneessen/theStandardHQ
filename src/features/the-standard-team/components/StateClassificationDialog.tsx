@@ -34,28 +34,28 @@ const CLASSIFICATION_OPTIONS: {
     label: "Green",
     description: "Favorable state - priority market",
     colorClass:
-      "bg-emerald-100 border-emerald-300 dark:bg-emerald-950/40 dark:border-emerald-700",
+      "bg-success/20 border-success/40 dark:bg-success/20 dark:border-success",
   },
   {
     value: "yellow",
     label: "Yellow",
     description: "Moderate state - acceptable market",
     colorClass:
-      "bg-amber-100 border-amber-300 dark:bg-amber-950/40 dark:border-amber-700",
+      "bg-warning/20 border-warning/40 dark:bg-warning/20 dark:border-warning",
   },
   {
     value: "red",
     label: "Red",
     description: "Unfavorable state - avoid if possible",
     colorClass:
-      "bg-red-100 border-red-300 dark:bg-red-950/40 dark:border-red-700",
+      "bg-destructive/20 border-destructive/40 dark:bg-destructive/20 dark:border-destructive",
   },
   {
     value: "neutral",
     label: "Neutral",
     description: "No classification - default",
     colorClass:
-      "bg-v2-card-tinted border-v2-ring-strong dark:bg-v2-card-tinted dark:border-v2-ring-strong",
+      "bg-card-tinted border-border dark:bg-card-tinted dark:border-border",
   },
 ];
 

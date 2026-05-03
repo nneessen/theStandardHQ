@@ -33,22 +33,22 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
   in_progress: {
     label: "In Progress",
     className:
-      "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-800",
+      "bg-info/10 text-info border-info/30 dark:bg-info/10 dark:text-info dark:border-info",
   },
   writing_received: {
     label: "Writing Received",
     className:
-      "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800",
+      "bg-warning/10 text-warning border-warning/30 dark:bg-warning/10 dark:text-warning dark:border-warning",
   },
   completed: {
     label: "Completed",
     className:
-      "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800",
+      "bg-success/10 text-success border-success/30 dark:bg-success/10 dark:text-success dark:border-success",
   },
   rejected: {
     label: "Rejected",
     className:
-      "bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-400 dark:border-red-800",
+      "bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/10 dark:text-destructive dark:border-destructive",
   },
   cancelled: {
     label: "Cancelled",
@@ -182,7 +182,7 @@ export function CarrierContractingItem({
   // Completed state - minimal inline indicator
   if (existingResponse?.completed) {
     return (
-      <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-500">
+      <span className="inline-flex items-center gap-1 text-xs text-success dark:text-success">
         <Check className="h-3.5 w-3.5" />
         {existingResponse.carriers_completed} of{" "}
         {existingResponse.carriers_total} carriers contracted
@@ -203,7 +203,7 @@ export function CarrierContractingItem({
   // Error state
   if (error) {
     return (
-      <div className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400">
+      <div className="flex items-center gap-1.5 text-xs text-destructive">
         <AlertCircle className="h-3.5 w-3.5" />
         Failed to load carrier contracts
       </div>
@@ -229,7 +229,7 @@ export function CarrierContractingItem({
         </span>
         <div className="flex-1 h-1.5 bg-v2-ring rounded-full overflow-hidden max-w-[200px]">
           <div
-            className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+            className="h-full bg-success rounded-full transition-all duration-300"
             style={{
               width: `${requiredCount > 0 ? Math.min((completedCount / requiredCount) * 100, 100) : 0}%`,
             }}
@@ -304,7 +304,7 @@ export function CarrierContractingItem({
 
               {/* Writing number filled indicator */}
               {contract.writing_number?.trim() && (
-                <Check className="h-3 w-3 text-emerald-500 flex-shrink-0" />
+                <Check className="h-3 w-3 text-success flex-shrink-0" />
               )}
 
               {/* Saving indicator */}

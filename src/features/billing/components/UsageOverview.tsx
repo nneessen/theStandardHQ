@@ -114,8 +114,8 @@ function UsageMeter({
           <span
             className={cn(
               "text-v2-ink-subtle",
-              isOverLimit && "text-red-500",
-              isWarning && !isOverLimit && "text-amber-500",
+              isOverLimit && "text-destructive",
+              isWarning && !isOverLimit && "text-warning",
             )}
           >
             {icon}
@@ -139,9 +139,9 @@ function UsageMeter({
             className={cn(
               "text-[11px]",
               isOverLimit
-                ? "text-red-600 dark:text-red-400 font-medium"
+                ? "text-destructive font-medium"
                 : isWarning
-                  ? "text-amber-600 dark:text-amber-400"
+                  ? "text-warning"
                   : "text-v2-ink-muted",
             )}
           >
@@ -157,10 +157,10 @@ function UsageMeter({
             className={cn(
               "h-full rounded-full transition-all",
               isOverLimit
-                ? "bg-red-500"
+                ? "bg-destructive"
                 : isWarning
-                  ? "bg-amber-500"
-                  : "bg-emerald-500",
+                  ? "bg-warning"
+                  : "bg-success",
             )}
             style={{ width: `${percentUsed}%` }}
           />
@@ -169,7 +169,7 @@ function UsageMeter({
 
       {/* Warning */}
       {isWarning && !isOverLimit && (
-        <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
+        <div className="flex items-center gap-1 text-[10px] text-warning">
           <AlertTriangle className="h-2.5 w-2.5" />
           <span>Approaching limit. Overage: $5/500 emails.</span>
         </div>
@@ -177,12 +177,12 @@ function UsageMeter({
 
       {/* Over limit */}
       {isOverLimit && overage !== undefined && overageCost !== undefined && (
-        <div className="flex items-center justify-between p-1.5 bg-red-50 dark:bg-red-950/30 rounded text-[10px]">
-          <div className="flex items-center gap-1 text-red-600 dark:text-red-400">
+        <div className="flex items-center justify-between p-1.5 bg-destructive/10 rounded text-[10px]">
+          <div className="flex items-center gap-1 text-destructive">
             <AlertTriangle className="h-2.5 w-2.5" />
             <span>{overage.toLocaleString()} over limit</span>
           </div>
-          <span className="font-medium text-red-700 dark:text-red-300">
+          <span className="font-medium text-destructive">
             +${(overageCost / 100).toFixed(2)}
           </span>
         </div>

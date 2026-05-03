@@ -282,8 +282,8 @@ function ContactItemContent({ contact }: ContactItemContentProps) {
         className={cn(
           "flex items-center justify-center h-6 w-6 rounded-full shrink-0",
           contact.type === "team"
-            ? "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
-            : "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400",
+            ? "bg-info/20 text-info dark:bg-info/30 dark:text-info"
+            : "bg-success/20 text-success dark:bg-success/15 dark:text-success",
         )}
       >
         <Icon className="h-3 w-3" />
@@ -304,8 +304,8 @@ function ContactItemContent({ contact }: ContactItemContentProps) {
         className={cn(
           "h-4 text-[9px] shrink-0",
           contact.type === "team"
-            ? "bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-            : "bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400",
+            ? "bg-info/10 text-info dark:bg-info/20 dark:text-info"
+            : "bg-success/10 text-success dark:bg-success/20 dark:text-success",
         )}
       >
         {contact.type === "team" ? "Team" : "Client"}

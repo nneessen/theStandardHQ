@@ -39,10 +39,10 @@ const INTEGRATION_ICONS: Record<SchedulingIntegrationType, typeof Calendar> = {
 };
 
 const INTEGRATION_COLORS: Record<SchedulingIntegrationType, string> = {
-  calendly: "text-blue-600 dark:text-blue-400",
-  google_calendar: "text-green-600 dark:text-green-400",
-  zoom: "text-indigo-600 dark:text-indigo-400",
-  google_meet: "text-purple-600 dark:text-purple-400",
+  calendly: "text-info",
+  google_calendar: "text-success",
+  zoom: "text-info",
+  google_meet: "text-info",
 };
 
 export function IntegrationsTab() {
@@ -229,7 +229,7 @@ export function IntegrationsTab() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 px-2 text-[10px] text-red-500 hover:text-red-600 dark:text-red-400"
+                        className="h-6 px-2 text-[10px] text-destructive hover:text-destructive"
                         onClick={() => handleDelete(integration.id)}
                         disabled={deleteIntegration.isPending}
                       >

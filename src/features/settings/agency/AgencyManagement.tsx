@@ -178,8 +178,8 @@ export function AgencyManagement() {
 
   if (!imo) {
     return (
-      <div className="bg-v2-card rounded-lg border border-v2-ring p-6">
-        <div className="flex items-center justify-center text-[11px] text-v2-ink-muted">
+      <div className="bg-card rounded-lg border border-border p-6">
+        <div className="flex items-center justify-center text-[11px] text-muted-foreground">
           No IMO context available
         </div>
       </div>
@@ -188,8 +188,8 @@ export function AgencyManagement() {
 
   if (isLoading) {
     return (
-      <div className="bg-v2-card rounded-lg border border-v2-ring p-6">
-        <div className="flex items-center justify-center text-[11px] text-v2-ink-muted">
+      <div className="bg-card rounded-lg border border-border p-6">
+        <div className="flex items-center justify-center text-[11px] text-muted-foreground">
           Loading agencies...
         </div>
       </div>
@@ -198,16 +198,16 @@ export function AgencyManagement() {
 
   return (
     <>
-      <div className="bg-v2-card rounded-lg border border-v2-ring">
+      <div className="bg-card rounded-lg border border-border">
         {/* Header */}
-        <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring/60">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-border/60">
           <div className="flex items-center gap-2">
-            <Building2 className="h-3.5 w-3.5 text-v2-ink-subtle" />
+            <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
             <div>
-              <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
+              <h3 className="text-[11px] font-semibold text-foreground uppercase tracking-wide">
                 Agency Management
               </h3>
-              <p className="text-[10px] text-v2-ink-muted">
+              <p className="text-[10px] text-muted-foreground">
                 Manage agencies within {imo.name}
               </p>
             </div>
@@ -227,38 +227,38 @@ export function AgencyManagement() {
         <div className="p-3 space-y-2">
           {/* Search */}
           <div className="relative w-64">
-            <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-v2-ink-subtle" />
+            <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search agencies..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-7 h-7 text-[11px] bg-v2-card border-v2-ring"
+              className="pl-7 h-7 text-[11px] bg-card border-border"
             />
           </div>
 
           {/* Table */}
-          <div className="rounded-lg overflow-hidden border border-v2-ring">
+          <div className="rounded-lg overflow-hidden border border-border">
             <Table>
-              <TableHeader className="sticky top-0 bg-v2-canvas z-10">
-                <TableRow className="border-b border-v2-ring hover:bg-transparent">
-                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+              <TableHeader className="sticky top-0 bg-background z-10">
+                <TableRow className="border-b border-border hover:bg-transparent">
+                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                     Agency Name
                   </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px]">
+                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[100px]">
                     Code
                   </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[150px]">
+                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[150px]">
                     Owner
                   </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px]">
+                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[80px]">
                     Agents
                   </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px]">
+                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[80px]">
                     Status
                   </TableHead>
                   {canManage && (
-                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[80px] text-right">
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[80px] text-right">
                       Actions
                     </TableHead>
                   )}
@@ -269,7 +269,7 @@ export function AgencyManagement() {
                   <TableRow>
                     <TableCell
                       colSpan={canManage ? 6 : 5}
-                      className="text-center text-[11px] text-v2-ink-muted py-6"
+                      className="text-center text-[11px] text-muted-foreground py-6"
                     >
                       {searchTerm
                         ? "No agencies found matching your search."
@@ -328,14 +328,14 @@ function AgencyTableRow({
   const { data: metrics } = useAgencyMetrics(agency.id);
 
   return (
-    <TableRow className="hover:bg-v2-canvas border-b border-v2-ring/60">
+    <TableRow className="hover:bg-background border-b border-border/60">
       <TableCell className="py-1.5">
         <div className="flex flex-col">
-          <span className="font-medium text-[11px] text-v2-ink">
+          <span className="font-medium text-[11px] text-foreground">
             {agency.name}
           </span>
           {agency.contact_email && (
-            <span className="text-[10px] text-v2-ink-muted">
+            <span className="text-[10px] text-muted-foreground">
               {agency.contact_email}
             </span>
           )}
@@ -349,21 +349,21 @@ function AgencyTableRow({
       <TableCell className="py-1.5">
         {agency.owner ? (
           <div className="flex items-center gap-1.5">
-            <Crown className="h-3 w-3 text-amber-500" />
-            <span className="text-[11px] text-v2-ink-muted">
+            <Crown className="h-3 w-3 text-warning" />
+            <span className="text-[11px] text-muted-foreground">
               {agency.owner.first_name && agency.owner.last_name
                 ? `${agency.owner.first_name} ${agency.owner.last_name}`
                 : agency.owner.email}
             </span>
           </div>
         ) : (
-          <span className="text-[10px] text-v2-ink-subtle italic">
+          <span className="text-[10px] text-muted-foreground italic">
             No owner assigned
           </span>
         )}
       </TableCell>
       <TableCell className="py-1.5">
-        <div className="flex items-center gap-1 text-[11px] text-v2-ink-muted">
+        <div className="flex items-center gap-1 text-[11px] text-muted-foreground">
           <Users className="h-3 w-3" />
           {metrics?.total_agents ?? "—"}
         </div>
@@ -383,7 +383,7 @@ function AgencyTableRow({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-5 w-5 p-0 text-v2-ink-muted dark:text-v2-ink-subtle"
+                className="h-5 w-5 p-0 text-muted-foreground dark:text-muted-foreground"
               >
                 <MoreHorizontal className="h-3.5 w-3.5" />
               </Button>
@@ -398,14 +398,14 @@ function AgencyTableRow({
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onDeactivate(agency)}
-                className="text-[11px] text-amber-600"
+                className="text-[11px] text-warning"
               >
                 <EyeOff className="h-3 w-3 mr-2" />
                 Deactivate
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => onDelete(agency)}
-                className="text-[11px] text-red-600"
+                className="text-[11px] text-destructive"
               >
                 <Trash2 className="h-3 w-3 mr-2" />
                 Delete

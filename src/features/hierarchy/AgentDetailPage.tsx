@@ -403,7 +403,7 @@ export function AgentDetailPage() {
   if (loadingAgent) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-[11px] text-v2-ink-muted">
+        <div className="text-[11px] text-muted-foreground">
           Loading agent details...
         </div>
       </div>
@@ -413,8 +413,8 @@ export function AgentDetailPage() {
   if (!agentData) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-2">
-        <AlertCircle className="h-6 w-6 text-v2-ink-subtle" />
-        <div className="text-[11px] text-v2-ink-muted">Agent not found</div>
+        <AlertCircle className="h-6 w-6 text-muted-foreground" />
+        <div className="text-[11px] text-muted-foreground">Agent not found</div>
         <Button
           variant="outline"
           size="sm"
@@ -435,34 +435,36 @@ export function AgentDetailPage() {
   return (
     <div className="min-h-screen flex flex-col p-3 space-y-2.5">
       {/* Compact Header with inline stats */}
-      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
+      <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => navigate({ to: "/hierarchy" })}
-            className="h-6 px-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle"
+            className="h-6 px-2 text-[10px] text-muted-foreground dark:text-muted-foreground"
           >
             <ArrowLeft className="h-3 w-3 mr-1" />
             Back
           </Button>
-          <div className="h-3 w-px bg-v2-ring" />
+          <div className="h-3 w-px bg-muted" />
 
           {/* Agent info inline */}
           <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-full bg-v2-ring flex items-center justify-center">
-              <User className="h-3.5 w-3.5 text-v2-ink-muted" />
+            <div className="h-7 w-7 rounded-full bg-muted flex items-center justify-center">
+              <User className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold text-v2-ink">{agentName}</h1>
-              <div className="flex items-center gap-2 text-[10px] text-v2-ink-muted">
+              <h1 className="text-sm font-semibold text-foreground">
+                {agentName}
+              </h1>
+              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                 <span className="flex items-center gap-0.5">
                   <Mail className="h-2.5 w-2.5" />
                   {agentData.email}
                 </span>
                 {agentData.phone && (
                   <>
-                    <span className="text-v2-ink-subtle">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <span className="flex items-center gap-0.5">
                       <Phone className="h-2.5 w-2.5" />
                       {agentData.phone}
@@ -471,7 +473,7 @@ export function AgentDetailPage() {
                 )}
                 {agentData.state && (
                   <>
-                    <span className="text-v2-ink-subtle">|</span>
+                    <span className="text-muted-foreground">|</span>
                     <span className="flex items-center gap-0.5">
                       <MapPin className="h-2.5 w-2.5" />
                       {agentData.state}
@@ -482,47 +484,47 @@ export function AgentDetailPage() {
             </div>
           </div>
 
-          <div className="h-3 w-px bg-v2-ring" />
+          <div className="h-3 w-px bg-muted" />
 
           {/* Inline compact stats */}
           <div className="flex items-center gap-3 text-[11px]">
             <Badge
               variant="outline"
-              className="text-[10px] h-5 px-1.5 border-v2-ring "
+              className="text-[10px] h-5 px-1.5 border-border "
             >
               Level {agentData.contract_level || 80}%
             </Badge>
             {agentData.approval_status === "approved" ? (
-              <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300 text-[10px] h-5 px-1.5">
+              <Badge className="bg-success/20 text-success dark:bg-success/50 dark:text-success text-[10px] h-5 px-1.5">
                 Active
               </Badge>
             ) : (
-              <Badge className="bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300 text-[10px] h-5 px-1.5">
+              <Badge className="bg-warning/20 text-warning dark:bg-warning/50 dark:text-warning text-[10px] h-5 px-1.5">
                 {agentData.approval_status}
               </Badge>
             )}
-            <div className="h-3 w-px bg-v2-ring" />
+            <div className="h-3 w-px bg-muted" />
             <div className="flex items-center gap-1">
-              <FileCheck className="h-3 w-3 text-v2-ink-subtle" />
-              <span className="font-medium text-v2-ink">
+              <FileCheck className="h-3 w-3 text-muted-foreground" />
+              <span className="font-medium text-foreground">
                 {mtdMetrics.policies}
               </span>
-              <span className="text-v2-ink-muted">MTD</span>
+              <span className="text-muted-foreground">MTD</span>
             </div>
-            <div className="h-3 w-px bg-v2-ring" />
+            <div className="h-3 w-px bg-muted" />
             <div className="flex items-center gap-1">
-              <DollarSign className="h-3 w-3 text-emerald-500" />
-              <span className="font-medium text-v2-ink">
+              <DollarSign className="h-3 w-3 text-success" />
+              <span className="font-medium text-foreground">
                 {formatCurrency(mtdMetrics.premium)}
               </span>
             </div>
-            <div className="h-3 w-px bg-v2-ring" />
+            <div className="h-3 w-px bg-muted" />
             <div className="flex items-center gap-1">
-              <TrendingUp className="h-3 w-3 text-blue-500" />
-              <span className="font-medium text-v2-ink">
+              <TrendingUp className="h-3 w-3 text-info" />
+              <span className="font-medium text-foreground">
                 {ytdMetrics.policies}
               </span>
-              <span className="text-v2-ink-muted">YTD</span>
+              <span className="text-muted-foreground">YTD</span>
             </div>
           </div>
         </div>
@@ -531,7 +533,7 @@ export function AgentDetailPage() {
           <Button
             size="sm"
             variant="ghost"
-            className="h-6 px-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle"
+            className="h-6 px-2 text-[10px] text-muted-foreground dark:text-muted-foreground"
             onClick={() =>
               toast.success(
                 `Message feature coming soon for ${agentData.email}`,
@@ -544,7 +546,7 @@ export function AgentDetailPage() {
           <Button
             size="sm"
             variant="ghost"
-            className="h-6 px-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle"
+            className="h-6 px-2 text-[10px] text-muted-foreground dark:text-muted-foreground"
             onClick={() => setIsEditModalOpen(true)}
           >
             <Edit className="h-3 w-3 mr-1" />
@@ -554,14 +556,14 @@ export function AgentDetailPage() {
       </div>
 
       {/* Compact tabs */}
-      <div className="flex items-center gap-0.5 bg-v2-canvas rounded-md p-0.5 w-fit">
+      <div className="flex items-center gap-0.5 bg-background rounded-md p-0.5 w-fit">
         <button
           onClick={() => setActiveTab("policies")}
           className={cn(
             "flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
             activeTab === "policies"
-              ? "bg-v2-card shadow-sm text-v2-ink"
-              : "text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle",
+              ? "bg-card shadow-sm text-foreground"
+              : "text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground",
           )}
         >
           <FileCheck className="h-3.5 w-3.5" />
@@ -572,8 +574,8 @@ export function AgentDetailPage() {
           className={cn(
             "flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
             activeTab === "commissions"
-              ? "bg-v2-card shadow-sm text-v2-ink"
-              : "text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle",
+              ? "bg-card shadow-sm text-foreground"
+              : "text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground",
           )}
         >
           <DollarSign className="h-3.5 w-3.5" />
@@ -584,8 +586,8 @@ export function AgentDetailPage() {
           className={cn(
             "flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
             activeTab === "overrides"
-              ? "bg-v2-card shadow-sm text-v2-ink"
-              : "text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle",
+              ? "bg-card shadow-sm text-foreground"
+              : "text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground",
           )}
         >
           <TrendingUp className="h-3.5 w-3.5" />
@@ -596,8 +598,8 @@ export function AgentDetailPage() {
           className={cn(
             "flex items-center justify-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded transition-all",
             activeTab === "team"
-              ? "bg-v2-card shadow-sm text-v2-ink"
-              : "text-v2-ink-muted hover:text-v2-ink dark:hover:text-v2-ink-subtle",
+              ? "bg-card shadow-sm text-foreground"
+              : "text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground",
           )}
         >
           <Users className="h-3.5 w-3.5" />
@@ -608,8 +610,8 @@ export function AgentDetailPage() {
       {/* Content area */}
       <div className="flex-1 overflow-auto">
         {(activeTab === "policies" || activeTab === "commissions") && (
-          <div className="flex flex-wrap items-center justify-between gap-2 bg-v2-card rounded-lg px-3 py-2 border border-v2-ring mb-2">
-            <div className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide shrink-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-card rounded-lg px-3 py-2 border border-border mb-2">
+            <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide shrink-0">
               Date Filter
             </div>
             <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap min-w-0">
@@ -633,35 +635,35 @@ export function AgentDetailPage() {
           (() => {
             return (
               <div className="space-y-2">
-                <div className="rounded-lg bg-v2-card border border-v2-ring">
+                <div className="rounded-lg bg-card border border-border">
                   <Table>
-                    <TableHeader className="sticky top-0 bg-v2-canvas z-10">
-                      <TableRow className="border-b border-v2-ring hover:bg-transparent">
-                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+                    <TableHeader className="sticky top-0 bg-background z-10">
+                      <TableRow className="border-b border-border hover:bg-transparent">
+                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                           Policy #
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                           Client
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                           Product
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                           Carrier
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                           Submit Date
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                           Effective
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted text-right">
+                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
                           Premium
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                           Status
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-8" />
+                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-8" />
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -669,7 +671,7 @@ export function AgentDetailPage() {
                         <TableRow>
                           <TableCell
                             colSpan={9}
-                            className="text-center text-[11px] text-v2-ink-muted py-8"
+                            className="text-center text-[11px] text-muted-foreground py-8"
                           >
                             Loading policies...
                           </TableCell>
@@ -678,7 +680,7 @@ export function AgentDetailPage() {
                         <TableRow>
                           <TableCell
                             colSpan={9}
-                            className="text-center text-[11px] text-v2-ink-muted py-8"
+                            className="text-center text-[11px] text-muted-foreground py-8"
                           >
                             {policyList.length === 0
                               ? "No policies found"
@@ -689,27 +691,27 @@ export function AgentDetailPage() {
                         paginatedPolicies.map((policy: AgentPolicy) => (
                           <TableRow
                             key={policy.id}
-                            className="hover:bg-v2-canvas border-b border-v2-ring/60"
+                            className="hover:bg-background border-b border-border/60"
                           >
-                            <TableCell className="py-1.5 text-[11px] font-mono text-v2-ink">
+                            <TableCell className="py-1.5 text-[11px] font-mono text-foreground">
                               {policy.policyNumber}
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-v2-ink">
+                            <TableCell className="py-1.5 text-[11px] text-foreground">
                               {policy.clientName}
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-v2-ink">
+                            <TableCell className="py-1.5 text-[11px] text-foreground">
                               {policy.product}
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-v2-ink">
+                            <TableCell className="py-1.5 text-[11px] text-foreground">
                               {policy.carrier}
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-v2-ink">
+                            <TableCell className="py-1.5 text-[11px] text-foreground">
                               {formatDate(policy.submitDate)}
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-v2-ink">
+                            <TableCell className="py-1.5 text-[11px] text-foreground">
                               {formatDate(policy.effectiveDate)}
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] font-semibold text-v2-ink text-right">
+                            <TableCell className="py-1.5 text-[11px] font-semibold text-foreground text-right">
                               {formatCurrency(policy.annualPremium)}
                             </TableCell>
                             <TableCell className="py-1.5">
@@ -718,18 +720,18 @@ export function AgentDetailPage() {
                                 className={cn(
                                   "text-[9px] h-4 px-1",
                                   policy.lifecycleStatus === "active" &&
-                                    "text-emerald-600 border-emerald-300 dark:border-emerald-700",
+                                    "text-success border-success/40",
                                   policy.lifecycleStatus === "lapsed" &&
-                                    "text-yellow-600 border-yellow-300 dark:border-yellow-700",
+                                    "text-warning border-warning dark:border-warning",
                                   policy.lifecycleStatus === "cancelled" &&
-                                    "text-red-600 border-red-300 dark:border-red-700",
+                                    "text-destructive border-destructive/40",
                                   policy.status === "pending" &&
-                                    "text-orange-600 border-orange-300 dark:border-orange-700",
+                                    "text-warning border-warning dark:border-warning",
                                   policy.status === "approved" &&
                                     !policy.lifecycleStatus &&
-                                    "text-blue-600 border-blue-300 dark:border-blue-700",
+                                    "text-info border-info/40",
                                   policy.status === "denied" &&
-                                    "text-red-600 border-red-300 dark:border-red-700",
+                                    "text-destructive border-destructive/40",
                                 )}
                               >
                                 {policy.lifecycleStatus || policy.status}
@@ -810,7 +812,7 @@ export function AgentDetailPage() {
                                       ))}
                                       {policy.lifecycleStatus && (
                                         <DropdownMenuItem
-                                          className="text-[11px] text-v2-ink-muted"
+                                          className="text-[11px] text-muted-foreground"
                                           onClick={() =>
                                             handleLifecycleChange(
                                               policy.id,
@@ -824,7 +826,7 @@ export function AgentDetailPage() {
                                     </DropdownMenuSubContent>
                                   </DropdownMenuSub>
                                   <DropdownMenuItem
-                                    className="text-[11px] text-red-600"
+                                    className="text-[11px] text-destructive"
                                     disabled={deletePolicyMutation.isPending}
                                     onClick={() =>
                                       handleDeletePolicy(
@@ -848,7 +850,7 @@ export function AgentDetailPage() {
                 {/* Pagination */}
                 {totalPolicyPages > 1 && (
                   <div className="flex items-center justify-between px-1">
-                    <span className="text-[10px] text-v2-ink-muted">
+                    <span className="text-[10px] text-muted-foreground">
                       {filteredPolicies.length} policies
                     </span>
                     <div className="flex items-center gap-1">
@@ -861,7 +863,7 @@ export function AgentDetailPage() {
                       >
                         <ChevronLeft className="h-3 w-3" />
                       </Button>
-                      <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle min-w-[4rem] text-center">
+                      <span className="text-[10px] text-muted-foreground dark:text-muted-foreground min-w-[4rem] text-center">
                         {policyPage + 1} / {totalPolicyPages}
                       </span>
                       <Button
@@ -884,32 +886,32 @@ export function AgentDetailPage() {
         {activeTab === "commissions" && (
           <div className="space-y-2">
             {/* Inline commission stats header */}
-            <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
+            <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
               <div className="flex items-center gap-4 text-[11px]">
                 <div className="flex items-center gap-1">
-                  <span className="text-v2-ink-muted">Advances:</span>
-                  <span className="font-semibold text-v2-ink">
+                  <span className="text-muted-foreground">Advances:</span>
+                  <span className="font-semibold text-foreground">
                     {formatCurrency(commissionMetrics.advances)}
                   </span>
                 </div>
-                <div className="h-3 w-px bg-v2-ring" />
+                <div className="h-3 w-px bg-muted" />
                 <div className="flex items-center gap-1">
-                  <span className="text-v2-ink-muted">Earned:</span>
-                  <span className="font-semibold text-emerald-600">
+                  <span className="text-muted-foreground">Earned:</span>
+                  <span className="font-semibold text-success">
                     {formatCurrency(commissionMetrics.earned)}
                   </span>
                 </div>
-                <div className="h-3 w-px bg-v2-ring" />
+                <div className="h-3 w-px bg-muted" />
                 <div className="flex items-center gap-1">
-                  <span className="text-v2-ink-muted">Unearned:</span>
-                  <span className="font-semibold text-yellow-600">
+                  <span className="text-muted-foreground">Unearned:</span>
+                  <span className="font-semibold text-warning">
                     {formatCurrency(commissionMetrics.unearned)}
                   </span>
                 </div>
-                <div className="h-3 w-px bg-v2-ring" />
+                <div className="h-3 w-px bg-muted" />
                 <div className="flex items-center gap-1">
-                  <span className="text-v2-ink-muted">Chargebacks:</span>
-                  <span className="font-semibold text-red-600">
+                  <span className="text-muted-foreground">Chargebacks:</span>
+                  <span className="font-semibold text-destructive">
                     {formatCurrency(commissionMetrics.chargebacks)}
                   </span>
                 </div>
@@ -917,32 +919,32 @@ export function AgentDetailPage() {
             </div>
 
             {/* Commission table */}
-            <div className="rounded-lg bg-v2-card border border-v2-ring">
+            <div className="rounded-lg bg-card border border-border">
               <Table>
-                <TableHeader className="sticky top-0 bg-v2-canvas z-10">
-                  <TableRow className="border-b border-v2-ring hover:bg-transparent">
-                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+                <TableHeader className="sticky top-0 bg-background z-10">
+                  <TableRow className="border-b border-border hover:bg-transparent">
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                       Date
                     </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                       Type
                     </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                       Policy
                     </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted text-right">
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
                       Advance
                     </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted text-right">
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
                       Earned
                     </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted text-right">
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
                       Unearned
                     </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted text-center">
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-center">
                       Progress
                     </TableHead>
-                    <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+                    <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                       Status
                     </TableHead>
                   </TableRow>
@@ -952,7 +954,7 @@ export function AgentDetailPage() {
                     <TableRow>
                       <TableCell
                         colSpan={8}
-                        className="text-center text-[11px] text-v2-ink-muted py-8"
+                        className="text-center text-[11px] text-muted-foreground py-8"
                       >
                         Loading commissions...
                       </TableCell>
@@ -961,7 +963,7 @@ export function AgentDetailPage() {
                     <TableRow>
                       <TableCell
                         colSpan={8}
-                        className="text-center text-[11px] text-v2-ink-muted py-8"
+                        className="text-center text-[11px] text-muted-foreground py-8"
                       >
                         {commissionList.length === 0
                           ? "No commissions found"
@@ -972,27 +974,27 @@ export function AgentDetailPage() {
                     paginatedCommissions.map((commission: AgentCommission) => (
                       <TableRow
                         key={commission.id}
-                        className="hover:bg-v2-canvas border-b border-v2-ring/60"
+                        className="hover:bg-background border-b border-border/60"
                       >
-                        <TableCell className="py-1.5 text-[11px] text-v2-ink">
+                        <TableCell className="py-1.5 text-[11px] text-foreground">
                           {formatDate(commission.date)}
                         </TableCell>
-                        <TableCell className="py-1.5 text-[11px] text-v2-ink capitalize">
+                        <TableCell className="py-1.5 text-[11px] text-foreground capitalize">
                           {commission.type}
                         </TableCell>
-                        <TableCell className="py-1.5 text-[11px] font-mono text-v2-ink">
+                        <TableCell className="py-1.5 text-[11px] font-mono text-foreground">
                           {commission.policyNumber}
                         </TableCell>
-                        <TableCell className="py-1.5 text-[11px] font-semibold text-v2-ink text-right">
+                        <TableCell className="py-1.5 text-[11px] font-semibold text-foreground text-right">
                           {formatCurrency(commission.amount)}
                         </TableCell>
-                        <TableCell className="py-1.5 text-[11px] font-semibold text-emerald-600 text-right">
+                        <TableCell className="py-1.5 text-[11px] font-semibold text-success text-right">
                           {formatCurrency(commission.earnedAmount || 0)}
                         </TableCell>
-                        <TableCell className="py-1.5 text-[11px] text-yellow-600 text-right">
+                        <TableCell className="py-1.5 text-[11px] text-warning text-right">
                           {formatCurrency(commission.unearnedAmount || 0)}
                         </TableCell>
-                        <TableCell className="py-1.5 text-[11px] text-v2-ink-muted text-center">
+                        <TableCell className="py-1.5 text-[11px] text-muted-foreground text-center">
                           {commission.monthsPaid || 0}/
                           {commission.advanceMonths || 9} mo
                         </TableCell>
@@ -1002,9 +1004,9 @@ export function AgentDetailPage() {
                             className={cn(
                               "text-[9px] h-4 px-1",
                               commission.status === "paid" &&
-                                "text-emerald-600 border-emerald-300 dark:border-emerald-700",
+                                "text-success border-success/40",
                               commission.status === "pending" &&
-                                "text-yellow-600 border-yellow-300 dark:border-yellow-700",
+                                "text-warning border-warning dark:border-warning",
                             )}
                           >
                             {commission.status}
@@ -1018,7 +1020,7 @@ export function AgentDetailPage() {
             </div>
             {totalCommissionPages > 1 && (
               <div className="flex items-center justify-between px-1">
-                <span className="text-[10px] text-v2-ink-muted">
+                <span className="text-[10px] text-muted-foreground">
                   {filteredCommissions.length} commissions
                 </span>
                 <div className="flex items-center gap-1">
@@ -1031,7 +1033,7 @@ export function AgentDetailPage() {
                   >
                     <ChevronLeft className="h-3 w-3" />
                   </Button>
-                  <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle min-w-[4rem] text-center">
+                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground min-w-[4rem] text-center">
                     {commissionPage + 1} / {totalCommissionPages}
                   </span>
                   <Button
@@ -1053,30 +1055,34 @@ export function AgentDetailPage() {
         {activeTab === "overrides" && (
           <div className="space-y-2">
             {/* Inline override stats header */}
-            <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
+            <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
               <div className="flex items-center gap-4 text-[11px]">
                 <div className="flex items-center gap-1">
-                  <span className="text-v2-ink-muted">Their MTD Earnings:</span>
-                  <span className="font-semibold text-emerald-600">
+                  <span className="text-muted-foreground">
+                    Their MTD Earnings:
+                  </span>
+                  <span className="font-semibold text-success">
                     {formatCurrency(agentOverrideEarnings.mtd)}
                   </span>
                 </div>
-                <div className="h-3 w-px bg-v2-ring" />
+                <div className="h-3 w-px bg-muted" />
                 <div className="flex items-center gap-1">
-                  <span className="text-v2-ink-muted">Their YTD Earnings:</span>
-                  <span className="font-semibold text-emerald-600">
+                  <span className="text-muted-foreground">
+                    Their YTD Earnings:
+                  </span>
+                  <span className="font-semibold text-success">
                     {formatCurrency(agentOverrideEarnings.ytd)}
                   </span>
                 </div>
                 {/* Show viewer's overrides from this agent if not viewing own profile */}
                 {currentUser?.id !== agentId && (
                   <>
-                    <div className="h-3 w-px bg-v2-ring" />
+                    <div className="h-3 w-px bg-muted" />
                     <div className="flex items-center gap-1">
-                      <span className="text-v2-ink-muted">
+                      <span className="text-muted-foreground">
                         Your MTD from them:
                       </span>
-                      <span className="font-semibold text-blue-600">
+                      <span className="font-semibold text-info">
                         {formatCurrency(viewerEarningsFromAgent.mtd)}
                       </span>
                     </div>
@@ -1088,32 +1094,32 @@ export function AgentDetailPage() {
             {/* Two-column layout for override details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {/* Agent's Override Earnings from Downlines */}
-              <div className="rounded-lg bg-v2-card border border-v2-ring p-4">
-                <h4 className="text-[11px] font-semibold text-v2-ink-muted mb-3">
+              <div className="rounded-lg bg-card border border-border p-4">
+                <h4 className="text-[11px] font-semibold text-muted-foreground mb-3">
                   Their Override Earnings
                 </h4>
                 {agentOverrideEarnings.mtd > 0 ||
                 agentOverrideEarnings.ytd > 0 ? (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-v2-ink-muted">
+                      <span className="text-muted-foreground">
                         MTD Override Income:
                       </span>
-                      <span className="font-semibold text-emerald-600">
+                      <span className="font-semibold text-success">
                         {formatCurrency(agentOverrideEarnings.mtd)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-v2-ink-muted">
+                      <span className="text-muted-foreground">
                         YTD Override Income:
                       </span>
-                      <span className="font-semibold text-emerald-600">
+                      <span className="font-semibold text-success">
                         {formatCurrency(agentOverrideEarnings.ytd)}
                       </span>
                     </div>
                   </div>
                 ) : (
-                  <p className="text-[11px] text-v2-ink-muted text-center py-2">
+                  <p className="text-[11px] text-muted-foreground text-center py-2">
                     No override earnings yet
                   </p>
                 )}
@@ -1121,32 +1127,32 @@ export function AgentDetailPage() {
 
               {/* Your Overrides from This Agent (only if not viewing own profile) */}
               {currentUser?.id !== agentId && (
-                <div className="rounded-lg bg-v2-card border border-v2-ring p-4">
-                  <h4 className="text-[11px] font-semibold text-v2-ink-muted mb-3">
+                <div className="rounded-lg bg-card border border-border p-4">
+                  <h4 className="text-[11px] font-semibold text-muted-foreground mb-3">
                     Your Overrides from This Agent
                   </h4>
                   {viewerEarningsFromAgent.mtd > 0 ||
                   viewerEarningsFromAgent.ytd > 0 ? (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-v2-ink-muted">
+                        <span className="text-muted-foreground">
                           MTD Override Income:
                         </span>
-                        <span className="font-semibold text-blue-600">
+                        <span className="font-semibold text-info">
                           {formatCurrency(viewerEarningsFromAgent.mtd)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-v2-ink-muted">
+                        <span className="text-muted-foreground">
                           YTD Override Income:
                         </span>
-                        <span className="font-semibold text-blue-600">
+                        <span className="font-semibold text-info">
                           {formatCurrency(viewerEarningsFromAgent.ytd)}
                         </span>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-[11px] text-v2-ink-muted text-center py-2">
+                    <p className="text-[11px] text-muted-foreground text-center py-2">
                       No overrides from this agent yet
                     </p>
                   )}
@@ -1162,49 +1168,55 @@ export function AgentDetailPage() {
             {teamComparison?.directReports?.length > 0 ? (
               <>
                 {/* Inline team stats header */}
-                <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
+                <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
                   <div className="flex items-center gap-4 text-[11px]">
                     <div className="flex items-center gap-1">
-                      <Users className="h-3 w-3 text-v2-ink-subtle" />
-                      <span className="font-semibold text-v2-ink">
+                      <Users className="h-3 w-3 text-muted-foreground" />
+                      <span className="font-semibold text-foreground">
                         {teamComparison.totalMembers}
                       </span>
-                      <span className="text-v2-ink-muted">direct reports</span>
+                      <span className="text-muted-foreground">
+                        direct reports
+                      </span>
                     </div>
-                    <div className="h-3 w-px bg-v2-ring" />
+                    <div className="h-3 w-px bg-muted" />
                     <div className="flex items-center gap-1">
-                      <FileCheck className="h-3 w-3 text-v2-ink-subtle" />
-                      <span className="font-semibold text-v2-ink">
+                      <FileCheck className="h-3 w-3 text-muted-foreground" />
+                      <span className="font-semibold text-foreground">
                         {teamComparison.totalPolicies}
                       </span>
-                      <span className="text-v2-ink-muted">team policies</span>
+                      <span className="text-muted-foreground">
+                        team policies
+                      </span>
                     </div>
-                    <div className="h-3 w-px bg-v2-ring" />
+                    <div className="h-3 w-px bg-muted" />
                     <div className="flex items-center gap-1">
-                      <DollarSign className="h-3 w-3 text-emerald-500" />
-                      <span className="font-semibold text-emerald-600">
+                      <DollarSign className="h-3 w-3 text-success" />
+                      <span className="font-semibold text-success">
                         {formatCurrency(teamComparison.totalPremium)}
                       </span>
-                      <span className="text-v2-ink-muted">team premium</span>
+                      <span className="text-muted-foreground">
+                        team premium
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Team table */}
-                <div className="rounded-lg bg-v2-card border border-v2-ring">
+                <div className="rounded-lg bg-card border border-border">
                   <Table>
-                    <TableHeader className="sticky top-0 bg-v2-canvas z-10">
-                      <TableRow className="border-b border-v2-ring hover:bg-transparent">
-                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+                    <TableHeader className="sticky top-0 bg-background z-10">
+                      <TableRow className="border-b border-border hover:bg-transparent">
+                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                           Agent
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted text-right">
+                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
                           Level
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted text-right">
+                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
                           Policies
                         </TableHead>
-                        <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted text-right">
+                        <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground text-right">
                           Premium
                         </TableHead>
                       </TableRow>
@@ -1221,18 +1233,18 @@ export function AgentDetailPage() {
                         }) => (
                           <TableRow
                             key={member.id}
-                            className="hover:bg-v2-canvas border-b border-v2-ring/60"
+                            className="hover:bg-background border-b border-border/60"
                           >
-                            <TableCell className="py-1.5 text-[11px] text-v2-ink">
+                            <TableCell className="py-1.5 text-[11px] text-foreground">
                               {member.name}
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-v2-ink text-right">
+                            <TableCell className="py-1.5 text-[11px] text-foreground text-right">
                               {member.contractLevel}%
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] text-v2-ink text-right">
+                            <TableCell className="py-1.5 text-[11px] text-foreground text-right">
                               {member.policies}
                             </TableCell>
-                            <TableCell className="py-1.5 text-[11px] font-semibold text-v2-ink text-right">
+                            <TableCell className="py-1.5 text-[11px] font-semibold text-foreground text-right">
                               {formatCurrency(member.premium)}
                             </TableCell>
                           </TableRow>
@@ -1243,9 +1255,9 @@ export function AgentDetailPage() {
                 </div>
               </>
             ) : (
-              <div className="rounded-lg bg-v2-card border border-v2-ring p-6 text-center">
-                <Users className="h-5 w-5 text-v2-ink-subtle mx-auto mb-2" />
-                <p className="text-[11px] text-v2-ink-muted">
+              <div className="rounded-lg bg-card border border-border p-6 text-center">
+                <Users className="h-5 w-5 text-muted-foreground mx-auto mb-2" />
+                <p className="text-[11px] text-muted-foreground">
                   No direct reports
                 </p>
               </div>

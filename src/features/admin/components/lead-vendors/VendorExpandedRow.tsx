@@ -33,9 +33,9 @@ export function VendorExpandedRow({
 
   const roiColor = (roi: number) =>
     roi > 0
-      ? "text-emerald-600 dark:text-emerald-400"
+      ? "text-success"
       : roi < 0
-        ? "text-red-600 dark:text-red-400"
+        ? "text-destructive"
         : "text-v2-ink-muted";
 
   const profitableUsers = breakdown?.filter((a) => a.avgRoi > 0).length ?? 0;
@@ -131,37 +131,37 @@ export function VendorExpandedRow({
                     label="Conversion"
                     score={row.heat.breakdown.conversionRate}
                     max={25}
-                    color="bg-red-500"
+                    color="bg-destructive"
                   />
                   <HeatBar
                     label="ROI"
                     score={row.heat.breakdown.roi}
                     max={20}
-                    color="bg-orange-500"
+                    color="bg-warning"
                   />
                   <HeatBar
                     label="Prem/Lead"
                     score={row.heat.breakdown.premiumPerLead}
                     max={15}
-                    color="bg-amber-500"
+                    color="bg-warning"
                   />
                   <HeatBar
                     label="Recency"
                     score={row.heat.breakdown.recency}
                     max={15}
-                    color="bg-blue-500"
+                    color="bg-info"
                   />
                   <HeatBar
                     label="Velocity"
                     score={row.heat.breakdown.velocity}
                     max={15}
-                    color="bg-indigo-500"
+                    color="bg-info"
                   />
                   <HeatBar
                     label="Consistency"
                     score={row.heat.breakdown.agentConsistency}
                     max={10}
-                    color="bg-violet-500"
+                    color="bg-info"
                   />
                 </div>
               </div>
@@ -287,9 +287,7 @@ function MetricLine({
       <span
         className={cn(
           "font-medium",
-          highlight
-            ? "text-emerald-600 dark:text-emerald-400"
-            : "text-v2-ink-muted",
+          highlight ? "text-success" : "text-v2-ink-muted",
         )}
       >
         {value}

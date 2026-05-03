@@ -121,7 +121,7 @@ export function ChecklistItemEditor({
     <div className="space-y-2">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <span className="text-[10px] text-v2-ink-muted">
+        <span className="text-[10px] text-muted-foreground">
           Checklist Items ({itemCount})
         </span>
         {!readOnly && (
@@ -173,11 +173,11 @@ export function ChecklistItemEditor({
         open={!!deleteConfirmId}
         onOpenChange={() => setDeleteConfirmId(null)}
       >
-        <DialogContent className="max-w-sm p-3 bg-v2-card">
+        <DialogContent className="max-w-sm p-3 bg-card">
           <DialogHeader>
             <DialogTitle className="text-sm">Delete Item?</DialogTitle>
           </DialogHeader>
-          <p className="text-[11px] text-v2-ink-muted">
+          <p className="text-[11px] text-muted-foreground">
             This will permanently delete this checklist item.
           </p>
           <DialogFooter>

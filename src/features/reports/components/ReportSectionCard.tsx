@@ -80,9 +80,9 @@ function SectionMetricsTable({ metrics }: { metrics: MetricItem[] }) {
                     <span
                       className={`text-xs font-medium ${
                         metric.trend === "up"
-                          ? "text-emerald-600 dark:text-emerald-400"
+                          ? "text-success"
                           : metric.trend === "down"
-                            ? "text-red-600 dark:text-red-400"
+                            ? "text-destructive"
                             : "text-v2-ink-muted"
                       }`}
                     >
@@ -210,9 +210,9 @@ function SectionInsights({ insights }: { insights: InsightItem[] }) {
       {insights.map((insight, idx) => (
         <div
           key={insight.id || idx}
-          className="flex items-start gap-2 p-2 bg-blue-500/10 rounded-sm border-l-2 border-l-blue-500"
+          className="flex items-start gap-2 p-2 bg-info/10 rounded-sm border-l-2 border-l-blue-500"
         >
-          <CheckCircle className="w-3 h-3 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+          <CheckCircle className="w-3 h-3 text-info flex-shrink-0 mt-0.5" />
           <div className="flex-1">
             <p className="text-xs font-medium text-v2-ink mb-0.5">
               {insight.title}

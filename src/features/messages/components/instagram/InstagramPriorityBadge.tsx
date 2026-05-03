@@ -32,10 +32,7 @@ export function InstagramPriorityBadge({
 }: InstagramPriorityBadgeProps): ReactNode {
   const starIcon = (
     <Star
-      className={cn(
-        "h-3.5 w-3.5",
-        isPriority && "fill-amber-500 text-amber-500",
-      )}
+      className={cn("h-3.5 w-3.5", isPriority && "fill-amber-500 text-warning")}
     />
   );
 
@@ -52,12 +49,12 @@ export function InstagramPriorityBadge({
           <TooltipContent className="text-[10px] max-w-xs">
             <div>Priority conversation</div>
             {prioritySetAt && (
-              <div className="text-v2-ink-subtle">
+              <div className="text-muted-foreground">
                 Since {format(new Date(prioritySetAt), "MMM d, yyyy")}
               </div>
             )}
             {priorityNotes && (
-              <div className="text-v2-ink-subtle mt-1">{priorityNotes}</div>
+              <div className="text-muted-foreground mt-1">{priorityNotes}</div>
             )}
           </TooltipContent>
         </Tooltip>
@@ -75,7 +72,7 @@ export function InstagramPriorityBadge({
             size="icon"
             className={cn(
               "h-7 w-7",
-              isPriority && "text-amber-500 hover:text-amber-600",
+              isPriority && "text-warning hover:text-warning",
             )}
             onClick={onClick}
             disabled={disabled}

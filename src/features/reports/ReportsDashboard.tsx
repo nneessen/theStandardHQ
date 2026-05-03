@@ -149,8 +149,8 @@ export function ReportsDashboard() {
         <header className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2 min-w-0 flex-wrap">
             <div className="flex items-center gap-1.5 flex-shrink-0">
-              <FileBarChart className="h-4 w-4 text-v2-ink" />
-              <h1 className="text-base font-semibold tracking-tight text-v2-ink">
+              <FileBarChart className="h-4 w-4 text-foreground" />
+              <h1 className="text-base font-semibold tracking-tight text-foreground">
                 Reports
               </h1>
             </div>
@@ -169,14 +169,14 @@ export function ReportsDashboard() {
               <DropdownMenuContent align="start" className="w-56">
                 {Object.entries(REPORT_CATEGORIES).map(([key, category]) => (
                   <div key={key}>
-                    <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.18em] text-v2-ink-subtle">
+                    <DropdownMenuLabel className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
                       {category.name}
                     </DropdownMenuLabel>
                     {category.reports.map((report) => (
                       <DropdownMenuItem
                         key={report.type}
                         onClick={() => setSelectedType(report.type)}
-                        className={`text-xs ${selectedType === report.type ? "bg-v2-accent-soft text-v2-ink" : ""}`}
+                        className={`text-xs ${selectedType === report.type ? "bg-accent/40 text-foreground" : ""}`}
                       >
                         <span className="mr-2">{report.icon}</span>
                         {report.name}
@@ -259,8 +259,10 @@ export function ReportsDashboard() {
           {isLoading && (
             <SoftCard padding="lg">
               <div className="flex flex-col items-center justify-center py-6">
-                <Loader2 className="w-6 h-6 text-v2-ink-muted animate-spin mb-2" />
-                <p className="text-xs text-v2-ink-muted">Generating report…</p>
+                <Loader2 className="w-6 h-6 text-muted-foreground animate-spin mb-2" />
+                <p className="text-xs text-muted-foreground">
+                  Generating report…
+                </p>
               </div>
             </SoftCard>
           )}
@@ -269,9 +271,9 @@ export function ReportsDashboard() {
           {error && (
             <SoftCard
               padding="md"
-              className="border-red-300 dark:border-red-800"
+              className="border-destructive/40 dark:border-destructive"
             >
-              <p className="text-xs text-red-600 dark:text-red-400">
+              <p className="text-xs text-destructive">
                 Error:{" "}
                 {error instanceof Error ? error.message : "Unknown error"}
               </p>
@@ -318,8 +320,8 @@ export function ReportsDashboard() {
                 ))}
 
                 {/* Report Footer */}
-                <div className="px-3 py-2 bg-v2-canvas text-center border-t border-v2-ring">
-                  <p className="text-[11px] text-v2-ink-subtle">
+                <div className="px-3 py-2 bg-background text-center border-t border-border">
+                  <p className="text-[11px] text-muted-foreground">
                     Report ID: {report.id} · Generated{" "}
                     {report.generatedAt.toLocaleString()}
                   </p>

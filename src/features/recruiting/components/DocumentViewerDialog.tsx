@@ -81,7 +81,7 @@ export function DocumentViewerDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex flex-col gap-0 p-0 w-[95vw] sm:max-w-6xl h-[90vh] max-h-[90vh] overflow-hidden">
-        <DialogHeader className="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 shrink-0 space-y-1">
+        <DialogHeader className="px-6 py-4 border-b border-border shrink-0 space-y-1">
           <DialogTitle className="pr-8 truncate">
             {userDocument.document_name}
           </DialogTitle>
@@ -91,7 +91,7 @@ export function DocumentViewerDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 overflow-auto bg-zinc-50 dark:bg-zinc-950">
+        <div className="flex-1 min-h-0 overflow-auto bg-muted dark:bg-muted">
           {isLoading ? (
             <div className="flex items-center justify-center h-full py-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -103,7 +103,7 @@ export function DocumentViewerDialog({
                   <img
                     src={documentUrl}
                     alt={userDocument.document_name}
-                    className="max-w-full max-h-full object-contain rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+                    className="max-w-full max-h-full object-contain rounded-lg border border-border bg-white dark:bg-card"
                   />
                 </div>
               )}
@@ -133,7 +133,7 @@ export function DocumentViewerDialog({
           )}
         </div>
 
-        <div className="flex justify-end gap-2 px-6 py-3 border-t border-zinc-200 dark:border-zinc-800 shrink-0">
+        <div className="flex justify-end gap-2 px-6 py-3 border-t border-border shrink-0">
           <Button
             variant="outline"
             onClick={handleOpenInNewTab}

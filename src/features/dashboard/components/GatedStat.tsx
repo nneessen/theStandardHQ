@@ -54,7 +54,7 @@ export const GatedStat: React.FC<GatedStatProps> = ({
         <TooltipTrigger asChild>
           <span
             className={cn(
-              "inline-flex items-center gap-1 text-v2-ink-subtle dark:text-v2-ink-muted cursor-help",
+              "inline-flex items-center gap-1 text-muted-foreground dark:text-muted-foreground cursor-help",
               className,
             )}
           >

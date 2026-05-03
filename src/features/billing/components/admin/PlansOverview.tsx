@@ -136,7 +136,7 @@ export function PlansOverview({ plans }: PlansOverviewProps) {
                   </TableCell>
                   <TableCell className="text-center">
                     {plan.is_active ? (
-                      <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 text-[10px]">
+                      <Badge className="bg-success/20 text-success dark:bg-success/30 dark:text-success text-[10px]">
                         Active
                       </Badge>
                     ) : (
@@ -158,7 +158,7 @@ export function PlansOverview({ plans }: PlansOverviewProps) {
                       {formatPrice(plan.price_annual)}
                     </span>
                     {plan.price_annual > 0 && plan.price_monthly > 0 && (
-                      <span className="text-[10px] text-emerald-600 ml-1">
+                      <span className="text-[10px] text-success ml-1">
                         (
                         {Math.round(
                           (1 - plan.price_annual / (plan.price_monthly * 12)) *

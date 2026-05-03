@@ -88,7 +88,7 @@ export function CreatePlanDialog({
                 placeholder="e.g., enterprise"
               />
               {nameExists && (
-                <p className="text-[10px] text-red-500">
+                <p className="text-[10px] text-destructive">
                   A plan with this name already exists
                 </p>
               )}
@@ -133,7 +133,7 @@ export function CreatePlanDialog({
                 onChange={(e) => setPriceMonthly(parseInt(e.target.value) || 0)}
                 className="h-8 text-sm"
               />
-              <p className="text-[10px] text-v2-ink-muted">
+              <p className="text-[10px] text-muted-foreground">
                 ${(priceMonthly / 100).toFixed(2)} / month
               </p>
             </div>
@@ -148,7 +148,7 @@ export function CreatePlanDialog({
                 onChange={(e) => setPriceAnnual(parseInt(e.target.value) || 0)}
                 className="h-8 text-sm"
               />
-              <p className="text-[10px] text-v2-ink-muted">
+              <p className="text-[10px] text-muted-foreground">
                 ${(priceAnnual / 100).toFixed(2)} / year
               </p>
             </div>

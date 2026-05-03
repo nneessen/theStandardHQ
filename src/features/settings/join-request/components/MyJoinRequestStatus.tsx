@@ -23,19 +23,19 @@ const statusConfig = {
     icon: Clock,
     label: "Pending",
     variant: "outline" as const,
-    color: "text-amber-600 dark:text-amber-400",
+    color: "text-warning",
   },
   approved: {
     icon: CheckCircle2,
     label: "Approved",
     variant: "default" as const,
-    color: "text-green-600 dark:text-green-400",
+    color: "text-success",
   },
   rejected: {
     icon: XCircle,
     label: "Rejected",
     variant: "destructive" as const,
-    color: "text-red-600 dark:text-red-400",
+    color: "text-destructive",
   },
   cancelled: {
     icon: Ban,
@@ -125,7 +125,7 @@ function RequestCard({ request }: { request: JoinRequest }) {
 
         {/* Rejection Reason */}
         {request.status === "rejected" && request.rejection_reason && (
-          <div className="text-[10px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-2 rounded border border-red-200 dark:border-red-800">
+          <div className="text-[10px] text-destructive bg-destructive/10 p-2 rounded border border-destructive/30">
             <span className="font-medium">Reason:</span>{" "}
             {request.rejection_reason}
           </div>

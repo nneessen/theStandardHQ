@@ -150,10 +150,10 @@ export function UploadDocumentDialog({
             {!selectedFile ? (
               <label
                 htmlFor="file-upload"
-                className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-v2-ring rounded-md cursor-pointer hover:bg-v2-canvas transition-colors"
+                className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-border rounded-md cursor-pointer hover:bg-background transition-colors"
               >
-                <Upload className="h-4 w-4 text-v2-ink-subtle" />
-                <span className="text-[11px] text-v2-ink-muted">
+                <Upload className="h-4 w-4 text-muted-foreground" />
+                <span className="text-[11px] text-muted-foreground">
                   Click to select file
                 </span>
                 <Input
@@ -165,13 +165,13 @@ export function UploadDocumentDialog({
                 />
               </label>
             ) : (
-              <div className="flex items-center gap-2 p-2 bg-v2-canvas rounded-md border border-v2-ring">
-                <FileText className="h-4 w-4 text-v2-ink-muted" />
+              <div className="flex items-center gap-2 p-2 bg-background rounded-md border border-border">
+                <FileText className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-medium text-v2-ink truncate">
+                  <p className="text-[11px] font-medium text-foreground truncate">
                     {selectedFile.name}
                   </p>
-                  <p className="text-[10px] text-v2-ink-muted">
+                  <p className="text-[10px] text-muted-foreground">
                     {formatFileSize(selectedFile.size)}
                   </p>
                 </div>
@@ -249,10 +249,10 @@ export function UploadDocumentDialog({
           {/* Upload Progress */}
           {uploadProgress > 0 && uploadProgress < 100 && (
             <div className="space-y-1">
-              <p className="text-[10px] text-v2-ink-muted">Uploading...</p>
-              <div className="w-full bg-v2-ring rounded-full h-1.5">
+              <p className="text-[10px] text-muted-foreground">Uploading...</p>
+              <div className="w-full bg-muted rounded-full h-1.5">
                 <div
-                  className="bg-blue-600 h-1.5 rounded-full transition-all"
+                  className="bg-info h-1.5 rounded-full transition-all"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>

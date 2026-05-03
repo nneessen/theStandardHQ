@@ -294,7 +294,7 @@ export function GoalsManagement() {
 
             {/* Validation Error */}
             {validationError && (
-              <div className="flex items-center gap-2 p-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded text-[10px] text-red-700 dark:text-red-300">
+              <div className="flex items-center gap-2 p-2 bg-destructive/10 border border-destructive/30 rounded text-[10px] text-destructive">
                 <AlertCircle className="h-3 w-3 flex-shrink-0" />
                 {validationError}
               </div>
@@ -302,7 +302,7 @@ export function GoalsManagement() {
 
             {/* Success Message */}
             {showSuccess && (
-              <div className="flex items-center gap-2 p-2 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded text-[10px] text-emerald-700 dark:text-emerald-300">
+              <div className="flex items-center gap-2 p-2 bg-success/10 border border-success/30 rounded text-[10px] text-success">
                 <CheckCircle2 className="h-3 w-3 flex-shrink-0" />
                 Goals updated successfully!
               </div>
@@ -325,29 +325,23 @@ export function GoalsManagement() {
       </div>
 
       {/* Info Card */}
-      <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800 p-3">
-        <h4 className="text-[10px] font-semibold text-blue-700 dark:text-blue-300 mb-1.5">
+      <div className="bg-info/10 rounded-lg border border-info/30 p-3">
+        <h4 className="text-[10px] font-semibold text-info mb-1.5">
           How Goals Are Used
         </h4>
-        <div className="space-y-1 text-[10px] text-blue-600 dark:text-blue-400">
+        <div className="space-y-1 text-[10px] text-info">
           <p>
-            <span className="font-medium text-blue-700 dark:text-blue-300">
-              Income Goal Tracker:
-            </span>{" "}
+            <span className="font-medium text-info">Income Goal Tracker:</span>{" "}
             Your annual income goal is displayed in the Analytics dashboard,
             showing your progress and projecting if you'll hit your target.
           </p>
           <p>
-            <span className="font-medium text-blue-700 dark:text-blue-300">
-              Production Metrics:
-            </span>{" "}
+            <span className="font-medium text-info">Production Metrics:</span>{" "}
             Policy goals help calculate how many policies you need to sell per
             week/month to stay on track.
           </p>
           <p>
-            <span className="font-medium text-blue-700 dark:text-blue-300">
-              Quality Benchmarks:
-            </span>{" "}
+            <span className="font-medium text-info">Quality Benchmarks:</span>{" "}
             Premium and persistency targets help you maintain quality while
             scaling production.
           </p>

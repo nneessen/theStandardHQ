@@ -17,28 +17,26 @@ export function QuizResults({ result, quiz, onRetake }: QuizResultsProps) {
       {result.passed ? (
         <>
           <div className="flex justify-center">
-            <div className="h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+            <div className="h-16 w-16 rounded-full bg-success/20 dark:bg-success/30 flex items-center justify-center">
               {result.score_percentage === 100 ? (
-                <Trophy className="h-8 w-8 text-amber-500" />
+                <Trophy className="h-8 w-8 text-warning" />
               ) : (
-                <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                <CheckCircle2 className="h-8 w-8 text-success" />
               )}
             </div>
           </div>
-          <h2 className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
+          <h2 className="text-lg font-semibold text-success">
             {result.score_percentage === 100 ? "Perfect Score!" : "Passed!"}
           </h2>
         </>
       ) : (
         <>
           <div className="flex justify-center">
-            <div className="h-16 w-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-              <XCircle className="h-8 w-8 text-red-500" />
+            <div className="h-16 w-16 rounded-full bg-destructive/20 dark:bg-destructive/30 flex items-center justify-center">
+              <XCircle className="h-8 w-8 text-destructive" />
             </div>
           </div>
-          <h2 className="text-lg font-semibold text-red-600 dark:text-red-400">
-            Not Quite
-          </h2>
+          <h2 className="text-lg font-semibold text-destructive">Not Quite</h2>
         </>
       )}
 
@@ -50,7 +48,7 @@ export function QuizResults({ result, quiz, onRetake }: QuizResultsProps) {
           {result.score_points}/{result.max_points} points
         </div>
         {result.xp_earned > 0 && (
-          <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+          <div className="text-xs text-warning font-medium">
             +{result.xp_earned} XP earned
           </div>
         )}
@@ -67,9 +65,9 @@ export function QuizResults({ result, quiz, onRetake }: QuizResultsProps) {
                 className="flex items-start gap-2 text-xs"
               >
                 {answer.is_correct ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-success mt-0.5 flex-shrink-0" />
                 ) : (
-                  <XCircle className="h-3.5 w-3.5 text-red-500 mt-0.5 flex-shrink-0" />
+                  <XCircle className="h-3.5 w-3.5 text-destructive mt-0.5 flex-shrink-0" />
                 )}
                 <div>
                   <span className="text-v2-ink dark:text-v2-ink-muted">

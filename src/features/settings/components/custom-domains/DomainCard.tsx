@@ -177,7 +177,7 @@ export function DomainCard({ domain }: DomainCardProps) {
                 className="flex items-center gap-1 text-xs text-v2-ink-muted hover:text-v2-ink"
               >
                 {copied ? (
-                  <Check className="h-3 w-3 text-green-500" />
+                  <Check className="h-3 w-3 text-success" />
                 ) : (
                   <Copy className="h-3 w-3" />
                 )}
@@ -211,9 +211,9 @@ export function DomainCard({ domain }: DomainCardProps) {
 
       {/* Error Message */}
       {domain.last_error && (
-        <div className="mt-2 flex items-start gap-2 rounded bg-red-50 p-2">
-          <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-red-500" />
-          <p className="text-xs text-red-700">{domain.last_error}</p>
+        <div className="mt-2 flex items-start gap-2 rounded bg-destructive/10 p-2">
+          <AlertCircle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-destructive" />
+          <p className="text-xs text-destructive">{domain.last_error}</p>
         </div>
       )}
 
@@ -247,21 +247,21 @@ export function DomainCard({ domain }: DomainCardProps) {
       {domain.status === "provisioning" && (
         <div className="mt-3 space-y-2">
           {provisioningTimedOut ? (
-            <div className="rounded-md border border-amber-300 bg-amber-50 p-2">
+            <div className="rounded-md border border-warning/40 bg-warning/10 p-2">
               <div className="flex items-start gap-2">
-                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-amber-600" />
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-warning" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-amber-800">
+                  <p className="text-xs font-medium text-warning">
                     Provisioning is taking longer than expected
                   </p>
-                  <p className="mt-1 text-[10px] text-amber-700">
+                  <p className="mt-1 text-[10px] text-warning">
                     SSL provisioning has exceeded 2 hours. This usually
                     indicates a DNS configuration issue.
                   </p>
                   <button
                     onClick={handleDelete}
                     disabled={isLoading}
-                    className="mt-2 flex items-center gap-1 rounded bg-amber-600 px-2.5 py-1 text-[10px] font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+                    className="mt-2 flex items-center gap-1 rounded bg-warning px-2.5 py-1 text-[10px] font-medium text-white hover:bg-warning disabled:opacity-50"
                   >
                     <Trash2 className="h-3 w-3" />
                     Cancel & Delete
@@ -270,19 +270,19 @@ export function DomainCard({ domain }: DomainCardProps) {
               </div>
             </div>
           ) : (
-            <div className="rounded-md border border-purple-200 bg-purple-50 p-2">
+            <div className="rounded-md border border-info/30 bg-info/10 p-2">
               <div className="flex items-start gap-2">
-                <Loader2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 animate-spin text-purple-600" />
+                <Loader2 className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 animate-spin text-info" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-purple-800">
+                  <p className="text-xs font-medium text-info">
                     Provisioning SSL Certificate
                   </p>
-                  <p className="mt-1 text-[10px] text-purple-700">
+                  <p className="mt-1 text-[10px] text-info">
                     Vercel is generating your SSL certificate. This typically
                     takes <span className="font-medium">1-15 minutes</span> but
                     can take up to 2 hours for new domains.
                   </p>
-                  <p className="mt-1.5 text-[10px] text-purple-600">
+                  <p className="mt-1.5 text-[10px] text-info">
                     You can leave this page — the process continues in the
                     background.
                   </p>
@@ -302,8 +302,8 @@ export function DomainCard({ domain }: DomainCardProps) {
                   <span
                     className={
                       diagnostics.dns_configured
-                        ? "font-medium text-green-600"
-                        : "font-medium text-amber-600"
+                        ? "font-medium text-success"
+                        : "font-medium text-warning"
                     }
                   >
                     {diagnostics.dns_configured ? "Yes" : "No"}
@@ -323,8 +323,8 @@ export function DomainCard({ domain }: DomainCardProps) {
                     <span
                       className={
                         diagnostics.misconfigured
-                          ? "font-medium text-red-600"
-                          : "font-medium text-green-600"
+                          ? "font-medium text-destructive"
+                          : "font-medium text-success"
                       }
                     >
                       {diagnostics.misconfigured ? "Yes" : "No"}
@@ -337,7 +337,7 @@ export function DomainCard({ domain }: DomainCardProps) {
           <div className="flex items-center justify-between">
             {isPolling ? (
               <span className="flex items-center gap-1.5 text-[10px] text-v2-ink-muted">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-purple-500" />
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-info" />
                 Auto-checking status...
               </span>
             ) : (
@@ -380,8 +380,8 @@ export function DomainCard({ domain }: DomainCardProps) {
         ) &&
         (domain.provider_metadata as { verification: unknown[] }).verification
           .length > 0 && (
-          <div className="mt-2 rounded bg-amber-50 p-2">
-            <p className="text-xs font-medium text-amber-700">
+          <div className="mt-2 rounded bg-warning/10 p-2">
+            <p className="text-xs font-medium text-warning">
               Vercel requires additional verification:
             </p>
             <ul className="mt-1 space-y-1">
@@ -394,10 +394,10 @@ export function DomainCard({ domain }: DomainCardProps) {
                   }>;
                 }
               ).verification.map((v, i) => (
-                <li key={i} className="text-xs text-amber-600">
+                <li key={i} className="text-xs text-warning">
                   Add {v.type} record:{" "}
-                  <code className="bg-amber-100 px-1">{v.domain}</code> →{" "}
-                  <code className="bg-amber-100 px-1">{v.value}</code>
+                  <code className="bg-warning/20 px-1">{v.domain}</code> →{" "}
+                  <code className="bg-warning/20 px-1">{v.value}</code>
                 </li>
               ))}
             </ul>
@@ -476,7 +476,7 @@ export function DomainCard({ domain }: DomainCardProps) {
             variant="outline"
             onClick={handleDelete}
             disabled={isLoading}
-            className="h-7 text-xs text-red-600 hover:bg-red-50 hover:text-red-700"
+            className="h-7 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
           >
             {deleteDomain.isPending ? (
               <Loader2 className="mr-1 h-3 w-3 animate-spin" />
@@ -490,12 +490,12 @@ export function DomainCard({ domain }: DomainCardProps) {
 
       {/* Verification Result */}
       {verifyDomain.isSuccess && !verifyDomain.data.verified && (
-        <div className="mt-2 rounded bg-amber-50 p-2">
-          <p className="text-xs text-amber-700">{verifyDomain.data.message}</p>
+        <div className="mt-2 rounded bg-warning/10 p-2">
+          <p className="text-xs text-warning">{verifyDomain.data.message}</p>
           {verifyDomain.data.expected_record && (
-            <p className="mt-1 text-xs text-amber-600">
+            <p className="mt-1 text-xs text-warning">
               Expected TXT record at:{" "}
-              <code className="bg-amber-100 px-1">
+              <code className="bg-warning/20 px-1">
                 {verifyDomain.data.expected_record.name}
               </code>
             </p>

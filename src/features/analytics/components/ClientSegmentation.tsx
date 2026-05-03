@@ -140,10 +140,10 @@ export function ClientSegmentation() {
                   className={cn(
                     "font-medium",
                     row.tier === "HIGH"
-                      ? "text-emerald-600 dark:text-emerald-400"
+                      ? "text-success"
                       : row.tier === "MED"
-                        ? "text-amber-600 dark:text-amber-400"
-                        : "text-red-600 dark:text-red-400",
+                        ? "text-warning"
+                        : "text-destructive",
                   )}
                 >
                   {row.tier}
@@ -163,10 +163,10 @@ export function ClientSegmentation() {
                   className={cn(
                     "font-mono",
                     row.tier === "HIGH"
-                      ? "text-emerald-600 dark:text-emerald-400"
+                      ? "text-success"
                       : row.tier === "MED"
-                        ? "text-amber-600 dark:text-amber-400"
-                        : "text-red-600 dark:text-red-400",
+                        ? "text-warning"
+                        : "text-destructive",
                   )}
                 >
                   {row.mixPercent.toFixed(1)}%
@@ -211,7 +211,7 @@ export function ClientSegmentation() {
                       {row.clientName}
                     </span>
                   </TableCell>
-                  <TableCell className="p-1.5 text-right font-mono font-semibold text-red-600 dark:text-red-400">
+                  <TableCell className="p-1.5 text-right font-mono font-semibold text-destructive">
                     {formatCurrency(row.atRiskAmount)}
                   </TableCell>
                   <TableCell className="p-1.5 text-right">
@@ -219,9 +219,9 @@ export function ClientSegmentation() {
                       className={cn(
                         "inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium",
                         row.riskLevel === "high"
-                          ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                          ? "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive"
                           : row.riskLevel === "medium"
-                            ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                            ? "bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning"
                             : "bg-v2-ring text-v2-ink-muted",
                       )}
                     >

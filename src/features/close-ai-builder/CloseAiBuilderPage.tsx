@@ -26,7 +26,7 @@ export function CloseAiBuilderPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="rounded-lg bg-gradient-to-br from-amber-500/10 to-violet-500/10 p-2">
-            <Sparkles className="h-5 w-5 text-amber-500" />
+            <Sparkles className="h-5 w-5 text-warning" />
           </div>
           <div>
             <h1 className="text-xl font-semibold">AI Template Builder</h1>
@@ -50,7 +50,7 @@ export function CloseAiBuilderPage() {
         <NotConnectedPrompt />
       ) : (
         <Tabs defaultValue="email" className="space-y-4">
-          <TabsList className="grid h-auto w-full grid-cols-4 gap-1 rounded-xl bg-v2-card-tinted p-1 dark:bg-v2-card-tinted/70">
+          <TabsList className="grid h-auto w-full grid-cols-4 gap-1 rounded-lg bg-v2-card-tinted p-1 dark:bg-v2-card-tinted/70">
             <TabsTrigger value="email" className="gap-2">
               <Mail className="h-3.5 w-3.5" />
               <span className="text-xs">Email</span>

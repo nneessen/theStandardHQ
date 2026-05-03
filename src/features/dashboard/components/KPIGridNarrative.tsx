@@ -94,16 +94,13 @@ function getProgress(
  */
 function getAccentColor(category: string): string {
   const lowerCategory = category.toLowerCase();
-  if (lowerCategory.includes("financial"))
-    return "border-violet-500 dark:border-violet-400";
-  if (lowerCategory.includes("production"))
-    return "border-blue-500 dark:border-blue-400";
+  if (lowerCategory.includes("financial")) return "border-info";
+  if (lowerCategory.includes("production")) return "border-info";
   if (lowerCategory.includes("commission") || lowerCategory.includes("metric"))
-    return "border-emerald-500 dark:border-emerald-400";
-  if (lowerCategory.includes("client"))
-    return "border-cyan-500 dark:border-cyan-400";
+    return "border-success";
+  if (lowerCategory.includes("client")) return "border-info";
   if (lowerCategory.includes("performance") || lowerCategory.includes("target"))
-    return "border-amber-500 dark:border-amber-400";
+    return "border-warning";
   return "border-primary";
 }
 

@@ -42,14 +42,14 @@ const LEVEL_COLORS: Record<
   { bg: string; text: string; label: string; fill: string }
 > = {
   hot: {
-    bg: "bg-red-500",
-    text: "text-red-600 dark:text-red-400",
+    bg: "bg-destructive",
+    text: "text-destructive",
     label: "Hot",
     fill: "#ef4444",
   },
   warming: {
-    bg: "bg-orange-400",
-    text: "text-orange-600 dark:text-orange-400",
+    bg: "bg-warning/70",
+    text: "text-warning",
     label: "Warming",
     fill: "#f97316",
   },
@@ -60,14 +60,14 @@ const LEVEL_COLORS: Record<
     fill: "#a1a1aa",
   },
   cooling: {
-    bg: "bg-blue-400",
-    text: "text-blue-600 dark:text-blue-400",
+    bg: "bg-info/70",
+    text: "text-info",
     label: "Cooling",
     fill: "#60a5fa",
   },
   cold: {
-    bg: "bg-blue-600",
-    text: "text-blue-700 dark:text-blue-300",
+    bg: "bg-info",
+    text: "text-info",
     label: "Cold",
     fill: "#2563eb",
   },
@@ -126,19 +126,19 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
           : "Cold Pipeline";
   const healthColor =
     avgScore >= 60
-      ? "text-red-500"
+      ? "text-destructive"
       : avgScore >= 40
-        ? "text-orange-500"
+        ? "text-warning"
         : avgScore >= 20
           ? "text-v2-ink-muted"
-          : "text-blue-500";
+          : "text-info";
 
   return (
-    <div className="rounded-xl border border-violet-200/80 dark:border-violet-500/20 bg-gradient-to-br from-violet-50/60 via-white to-indigo-50/40 dark:from-violet-950/30  dark:to-indigo-950/20 shadow-sm shadow-violet-200/30 dark:shadow-violet-900/20 overflow-hidden ring-1 ring-violet-100/50 dark:ring-violet-800/20">
+    <div className="rounded-lg border border-info/80 dark:border-info/20 bg-gradient-to-br from-violet-50/60 via-white to-indigo-50/40 dark:from-violet-950/30  dark:to-indigo-950/20 shadow-sm shadow-info/30 dark:shadow-info/30 overflow-hidden ring-1 ring-info/50 dark:ring-info/20">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-violet-200/40 dark:border-violet-800/30">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-info/40 dark:border-info/30">
         <div className="flex items-center gap-2">
-          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 shadow-sm shadow-violet-400/30">
+          <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 shadow-sm shadow-info/30">
             <Sparkles className="h-3.5 w-3.5 text-white" />
           </div>
           <div>
@@ -146,7 +146,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
               <h2 className="text-sm font-bold text-foreground">
                 AI Lead Scoring
               </h2>
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-violet-100 dark:bg-violet-900/40 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-violet-700 dark:text-violet-300">
+              <span className="inline-flex items-center gap-0.5 rounded-full bg-info/20 dark:bg-info/40 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-info">
                 <Sparkles className="h-2 w-2" />
                 AI-Powered
               </span>
@@ -163,7 +163,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                 ? `${totalScored.toLocaleString()} leads scored — ${actionableCount} need attention`
                 : "Score your leads to see AI insights"}
               {isTruncated && totalScored > 0 && (
-                <span className="ml-1.5 inline-flex items-center gap-0.5 text-amber-600 dark:text-amber-400">
+                <span className="ml-1.5 inline-flex items-center gap-0.5 text-warning">
                   <AlertTriangle className="h-2.5 w-2.5" />
                   Partial data — large portfolio exceeded scoring limits
                 </span>
@@ -341,22 +341,22 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
 
             {/* Action callout — slim single-line */}
             {actionableCount > 0 ? (
-              <div className="w-full flex items-center gap-2 rounded-lg bg-red-50/60 dark:bg-red-950/25 border border-red-200/50 dark:border-red-800/40 px-3 py-2">
-                <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-red-500/15 shrink-0">
-                  <Flame className="h-3.5 w-3.5 text-red-500" />
+              <div className="w-full flex items-center gap-2 rounded-lg bg-destructive/10/60 dark:bg-destructive/10/25 border border-destructive/30/50 dark:border-destructive/40 px-3 py-2">
+                <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-destructive/15 shrink-0">
+                  <Flame className="h-3.5 w-3.5 text-destructive" />
                 </div>
                 <div className="min-w-0">
-                  <span className="text-[11px] font-bold text-red-700 dark:text-red-300">
+                  <span className="text-[11px] font-bold text-destructive">
                     {actionableCount} leads need action
                   </span>
-                  <span className="text-[9px] text-red-600/70 dark:text-red-400/70 ml-1.5">
+                  <span className="text-[9px] text-destructive/70 dark:text-destructive/70 ml-1.5">
                     {hotCount} hot + {warmingCount} warming
                   </span>
                 </div>
               </div>
             ) : (
-              <div className="w-full rounded-lg bg-violet-50/60 dark:bg-violet-950/25 border border-violet-200/50 dark:border-violet-800/40 px-3 py-2 text-center">
-                <span className="text-[10px] font-medium text-violet-700 dark:text-violet-300">
+              <div className="w-full rounded-lg bg-info/10/60 dark:bg-info/10/25 border border-info/50 dark:border-info/40 px-3 py-2 text-center">
+                <span className="text-[10px] font-medium text-info">
                   No urgent leads — pipeline is stable
                 </span>
               </div>
@@ -367,7 +367,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
           <div className="lg:col-span-4 p-3">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5">
-                <Flame className="h-3.5 w-3.5 text-red-500" />
+                <Flame className="h-3.5 w-3.5 text-destructive" />
                 <span className="text-[11px] font-bold text-foreground">
                   {actionableCount > 0
                     ? `${actionableCount} Leads Need Action`
@@ -452,7 +452,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                       onClick={() => setLeadPage(i)}
                       className={`w-5 h-5 rounded text-[10px] font-mono transition-colors ${
                         i === effectiveLeadPage
-                          ? "bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300 font-semibold"
+                          ? "bg-info/20 dark:bg-info/40 text-info font-semibold"
                           : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                       }`}
                     >
@@ -482,7 +482,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
           <div className="lg:col-span-4 p-3 flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <Brain className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
+                <Brain className="h-3.5 w-3.5 text-info" />
                 <span className="text-[11px] font-bold text-foreground">
                   AI Insights
                 </span>
@@ -498,7 +498,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
 
             {/* Overall assessment — prominent quote block */}
             {insightsData?.overallAssessment && (
-              <div className="rounded-md border-l-2 border-violet-400 dark:border-violet-500 bg-violet-50/40 dark:bg-violet-950/15 pl-3 pr-2.5 py-2">
+              <div className="rounded-md border-l-2 border-info dark:border-info bg-info/10/40 dark:bg-info/10/15 pl-3 pr-2.5 py-2">
                 <p className="text-[11px] text-foreground leading-relaxed italic">
                   {insightsData.overallAssessment}
                 </p>
@@ -511,10 +511,10 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
             >
               {/* Top recommendation */}
               {topRecommendation && (
-                <div className="rounded-md border border-violet-200/60 dark:border-violet-800/40 bg-violet-50/30 dark:bg-violet-950/10 px-2.5 py-2">
+                <div className="rounded-md border border-info/60 dark:border-info/40 bg-info/10/30 dark:bg-info/10/10 px-2.5 py-2">
                   <div className="flex items-center gap-1 mb-1">
-                    <Target className="h-2.5 w-2.5 text-violet-600 dark:text-violet-400" />
-                    <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-violet-600 dark:text-violet-400">
+                    <Target className="h-2.5 w-2.5 text-info" />
+                    <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-info">
                       Recommendation
                     </span>
                   </div>
@@ -526,10 +526,10 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
 
               {/* Top anomaly */}
               {topAnomaly && (
-                <div className="rounded-md border border-amber-200/60 dark:border-amber-800/40 bg-amber-50/30 dark:bg-amber-950/10 px-2.5 py-2">
+                <div className="rounded-md border border-warning/30/60 dark:border-warning/40 bg-warning/10/30 dark:bg-warning/10/10 px-2.5 py-2">
                   <div className="flex items-center gap-1 mb-1">
-                    <AlertTriangle className="h-2.5 w-2.5 text-amber-600 dark:text-amber-400" />
-                    <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">
+                    <AlertTriangle className="h-2.5 w-2.5 text-warning" />
+                    <span className="text-[9px] font-semibold uppercase tracking-[0.18em] text-warning">
                       Attention
                     </span>
                   </div>
@@ -554,7 +554,7 @@ export const AiHeroSection: React.FC<AiHeroSectionProps> = ({
                     key={i}
                     className="flex items-start gap-1.5 text-[10px] text-muted-foreground"
                   >
-                    <TrendingUp className="h-2.5 w-2.5 mt-0.5 flex-shrink-0 text-violet-500/60" />
+                    <TrendingUp className="h-2.5 w-2.5 mt-0.5 flex-shrink-0 text-info/60" />
                     <span>{rec.text}</span>
                   </div>
                 ))}

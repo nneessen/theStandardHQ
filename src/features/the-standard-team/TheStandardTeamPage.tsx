@@ -237,7 +237,7 @@ export function TheStandardTeamPage({
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col p-3 gap-2.5">
       {trialBanner && (
-        <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 px-3 py-2">
+        <div className="rounded-md border border-border border-l-4 border-l-warning bg-card px-3 py-2">
           <div className="flex items-start justify-between gap-3 flex-wrap">
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
@@ -288,7 +288,7 @@ export function TheStandardTeamPage({
 
           <div className="flex items-center gap-3 text-[11px]">
             <div className="flex items-center gap-1">
-              <Users className="h-3 w-3 text-blue-500" />
+              <Users className="h-3 w-3 text-info" />
               <span className="font-medium text-v2-ink dark:text-v2-ink">
                 {totalAgents}
               </span>
@@ -297,7 +297,7 @@ export function TheStandardTeamPage({
               </span>
             </div>
             <div className="flex items-center gap-1">
-              <UserCircle2 className="h-3 w-3 text-emerald-500" />
+              <UserCircle2 className="h-3 w-3 text-success" />
               <span className="font-medium text-v2-ink dark:text-v2-ink">
                 {downlineCount}
               </span>
@@ -375,7 +375,7 @@ export function TheStandardTeamPage({
                     className={cn(
                       "w-full text-left rounded-md border px-2 py-2 transition-colors",
                       isSelected
-                        ? "border-blue-300 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20"
+                        ? "border-info/40 bg-info/10 dark:border-info dark:bg-info/10"
                         : "border-v2-ring dark:border-v2-ring hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/60",
                     )}
                   >
@@ -462,7 +462,7 @@ export function TheStandardTeamPage({
               </div>
             ) : agentsError ? (
               <div className="h-full flex items-center justify-center p-4">
-                <p className="text-[11px] text-red-500">
+                <p className="text-[11px] text-destructive">
                   Failed to load hierarchy agents: {agentsError.message}
                 </p>
               </div>

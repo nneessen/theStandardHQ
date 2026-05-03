@@ -64,7 +64,7 @@ export function CodeSnippetBlockEditor({
           onChange={(e) => setCodeLocal(e.target.value)}
           placeholder="Paste commands, URLs, or config snippets"
           rows={5}
-          className="text-xs font-mono resize-y bg-[#0d1117] text-v2-canvas border-zinc-800"
+          className="text-xs font-mono resize-y bg-[#0d1117] text-v2-canvas border-border"
         />
       </div>
     </div>

@@ -108,18 +108,18 @@ export function TextResponseConfig({
   };
 
   return (
-    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-background rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <MessageSquare className="h-3.5 w-3.5 text-v2-ink-muted" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
+        <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
           Text Response Configuration
         </span>
       </div>
 
       {/* Prompt */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
-          Question/Prompt <span className="text-red-500">*</span>
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+          Question/Prompt <span className="text-destructive">*</span>
         </Label>
         <Textarea
           value={prompt}
@@ -128,7 +128,7 @@ export function TextResponseConfig({
           className="min-h-[60px] text-[11px] resize-none"
         />
         {!prompt.trim() && (
-          <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1 text-[10px] text-warning">
             <AlertCircle className="h-3 w-3" />
             Prompt is required
           </div>
@@ -137,7 +137,7 @@ export function TextResponseConfig({
 
       {/* Response Type */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Response Type
         </Label>
         <Select
@@ -160,7 +160,7 @@ export function TextResponseConfig({
       {/* Length Constraints */}
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Minimum Characters
           </Label>
           <Input
@@ -173,7 +173,7 @@ export function TextResponseConfig({
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Maximum Characters
           </Label>
           <Input
@@ -189,7 +189,7 @@ export function TextResponseConfig({
 
       {/* Placeholder */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Placeholder Text (Optional)
         </Label>
         <Input
@@ -203,7 +203,7 @@ export function TextResponseConfig({
 
       {/* Required Keywords */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Required Keywords (Optional)
         </Label>
         <Input
@@ -213,14 +213,14 @@ export function TextResponseConfig({
           placeholder="e.g., commitment, growth, team (comma-separated)"
           className="h-7 text-[11px]"
         />
-        <p className="text-[9px] text-v2-ink-muted">
+        <p className="text-[9px] text-muted-foreground">
           Response must contain all specified keywords (comma-separated)
         </p>
       </div>
 
       {/* Validation Pattern (advanced) */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Validation Pattern (Optional, Advanced)
         </Label>
         <Input
@@ -230,15 +230,15 @@ export function TextResponseConfig({
           placeholder="e.g., ^[A-Za-z ]+$ (regex)"
           className="h-7 text-[11px]"
         />
-        <p className="text-[9px] text-v2-ink-muted">
+        <p className="text-[9px] text-muted-foreground">
           Regular expression pattern for validation (leave empty for no pattern
           validation)
         </p>
       </div>
 
       {/* Info */}
-      <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-800">
-        <p className="text-[9px] text-blue-700 dark:text-blue-400">
+      <div className="p-2 bg-info/10 rounded border border-info/30">
+        <p className="text-[9px] text-info">
           <strong>Note:</strong> Recruit will see the prompt and provide a{" "}
           {responseType === "short" ? "single-line" : "multi-line"} text
           response.

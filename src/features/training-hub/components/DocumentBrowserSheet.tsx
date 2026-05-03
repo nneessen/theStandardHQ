@@ -69,18 +69,18 @@ const CATEGORY_ICONS: Record<TrainingDocumentCategory, React.ReactNode> = {
 
 // File type icon helper
 function getFileIcon(fileType: string | null) {
-  if (!fileType) return <File className="h-4 w-4 text-v2-ink-subtle" />;
+  if (!fileType) return <File className="h-4 w-4 text-muted-foreground" />;
   if (fileType.includes("pdf"))
-    return <FileText className="h-4 w-4 text-red-500" />;
+    return <FileText className="h-4 w-4 text-destructive" />;
   if (fileType.includes("word") || fileType.includes("document"))
-    return <FileText className="h-4 w-4 text-blue-500" />;
+    return <FileText className="h-4 w-4 text-info" />;
   if (fileType.includes("excel") || fileType.includes("spreadsheet"))
-    return <Table2 className="h-4 w-4 text-green-500" />;
+    return <Table2 className="h-4 w-4 text-success" />;
   if (fileType.includes("powerpoint") || fileType.includes("presentation"))
-    return <Presentation className="h-4 w-4 text-orange-500" />;
+    return <Presentation className="h-4 w-4 text-warning" />;
   if (fileType.includes("image"))
-    return <Image className="h-4 w-4 text-purple-500" />;
-  return <File className="h-4 w-4 text-v2-ink-subtle" />;
+    return <Image className="h-4 w-4 text-info" />;
+  return <File className="h-4 w-4 text-muted-foreground" />;
 }
 
 export function DocumentBrowserSheet({
@@ -153,7 +153,7 @@ export function DocumentBrowserSheet({
   return (
     <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent className="w-[400px] sm:w-[480px] flex flex-col p-0">
-        <SheetHeader className="px-4 py-3 border-b border-v2-ring dark:border-v2-ring">
+        <SheetHeader className="px-4 py-3 border-b border-border dark:border-border">
           <SheetTitle className="text-sm flex items-center gap-2">
             <Paperclip className="h-4 w-4" />
             Attach Documents
@@ -161,10 +161,10 @@ export function DocumentBrowserSheet({
         </SheetHeader>
 
         {/* Filters */}
-        <div className="px-4 py-2 border-b border-v2-ring dark:border-v2-ring space-y-2">
+        <div className="px-4 py-2 border-b border-border dark:border-border space-y-2">
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-v2-ink-subtle" />
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
               placeholder="Search documents..."
               value={search}
@@ -196,12 +196,12 @@ export function DocumentBrowserSheet({
 
         {/* Selection summary */}
         {localSelection.length > 0 && (
-          <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950/30 border-b border-blue-100 dark:border-blue-900/50 flex items-center justify-between">
+          <div className="px-4 py-2 bg-info/10 border-b border-info/20 dark:border-info/50 flex items-center justify-between">
             <div className="text-xs">
-              <span className="font-medium text-blue-700 dark:text-blue-300">
+              <span className="font-medium text-info">
                 {localSelection.length}
               </span>
-              <span className="text-blue-600 dark:text-blue-400">
+              <span className="text-info">
                 {" "}
                 selected ({formatFileSize(totalSize)})
               </span>
@@ -210,7 +210,7 @@ export function DocumentBrowserSheet({
               variant="ghost"
               size="sm"
               onClick={handleClear}
-              className="h-6 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/50"
+              className="h-6 text-xs text-info hover:text-info hover:bg-info/20 dark:hover:bg-info/50"
             >
               Clear
             </Button>
@@ -221,10 +221,10 @@ export function DocumentBrowserSheet({
         <ScrollArea className="flex-1">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
           ) : documents && documents.length > 0 ? (
-            <div className="divide-y divide-v2-ring dark:divide-v2-ring">
+            <div className="divide-y divide-border dark:divide-border">
               {documents.map((doc) => {
                 const selected = isSelected(doc);
                 const disabled =
@@ -236,10 +236,10 @@ export function DocumentBrowserSheet({
                     onClick={() => !disabled && toggleSelection(doc)}
                     className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors ${
                       selected
-                        ? "bg-blue-50 dark:bg-blue-950/30"
+                        ? "bg-info/10"
                         : disabled
                           ? "opacity-50 cursor-not-allowed"
-                          : "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50"
+                          : "hover:bg-background dark:hover:bg-card-tinted/50"
                     }`}
                   >
                     <Checkbox
@@ -249,7 +249,7 @@ export function DocumentBrowserSheet({
                     />
                     {getFileIcon(doc.fileType)}
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-v2-ink dark:text-v2-ink truncate">
+                      <p className="text-xs font-medium text-foreground dark:text-foreground truncate">
                         {doc.name}
                       </p>
                       <div className="flex items-center gap-2 mt-0.5">
@@ -259,7 +259,7 @@ export function DocumentBrowserSheet({
                         >
                           {TRAINING_CATEGORY_CONFIG[doc.category]?.label}
                         </Badge>
-                        <span className="text-[10px] text-v2-ink-subtle">
+                        <span className="text-[10px] text-muted-foreground">
                           {formatFileSize(doc.fileSize)}
                         </span>
                       </div>
@@ -269,7 +269,7 @@ export function DocumentBrowserSheet({
               })}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-v2-ink-subtle">
+            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
               <FileText className="h-8 w-8 mb-2 opacity-50" />
               <p className="text-xs">No documents found</p>
               {(search || categoryFilter !== "all") && (
@@ -280,7 +280,7 @@ export function DocumentBrowserSheet({
         </ScrollArea>
 
         {/* Footer */}
-        <SheetFooter className="px-4 py-3 border-t border-v2-ring dark:border-v2-ring gap-2">
+        <SheetFooter className="px-4 py-3 border-t border-border dark:border-border gap-2">
           <Button
             variant="outline"
             size="sm"

@@ -105,7 +105,7 @@ export function VoicePhoneNumbersCard({
 
   if (!voiceAgentCreated || !voiceAccessActive) {
     return (
-      <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+      <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
         <div className="flex items-start gap-3">
           <Phone className="mt-0.5 h-4 w-4 shrink-0 text-v2-ink-subtle" />
           <div>
@@ -124,7 +124,7 @@ export function VoicePhoneNumbersCard({
   }
 
   return (
-    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-start gap-3">
@@ -176,14 +176,14 @@ export function VoicePhoneNumbersCard({
                     <span
                       className={`inline-block rounded px-1.5 py-0.5 text-[9px] font-medium ${
                         num.tollFree
-                          ? "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                          ? "bg-info/10 text-info dark:bg-info/30 dark:text-info"
                           : "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle"
                       }`}
                     >
                       {num.tollFree ? "Toll-Free" : "Local"}
                     </span>
                     {num.status === "releasing" && (
-                      <span className="ml-1 inline-block rounded bg-amber-50 px-1.5 py-0.5 text-[9px] font-medium text-amber-600 dark:bg-amber-900/30 dark:text-amber-400">
+                      <span className="ml-1 inline-block rounded bg-warning/10 px-1.5 py-0.5 text-[9px] font-medium text-warning dark:bg-warning/30 dark:text-warning">
                         Releasing
                       </span>
                     )}
@@ -225,11 +225,11 @@ export function VoicePhoneNumbersCard({
                   {/* Primary */}
                   <td className="py-1.5 pr-3 text-center">
                     {num.isPrimary ? (
-                      <Star className="mx-auto h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                      <Star className="mx-auto h-3.5 w-3.5 fill-amber-400 text-warning" />
                     ) : (
                       <button
                         type="button"
-                        className="mx-auto block text-v2-ink-subtle hover:text-amber-400 disabled:opacity-50 dark:text-v2-ink-muted"
+                        className="mx-auto block text-v2-ink-subtle hover:text-warning disabled:opacity-50 dark:text-v2-ink-muted"
                         onClick={() => handleSetPrimary(num.id)}
                         disabled={
                           update.isPending || num.status === "releasing"
@@ -271,7 +271,7 @@ export function VoicePhoneNumbersCard({
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-6 w-6 p-0 text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
+                        className="h-6 w-6 p-0 text-destructive hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/20"
                         onClick={() => setReleaseConfirmId(num.id)}
                         disabled={anyPending || num.status === "releasing"}
                         title="Release number"

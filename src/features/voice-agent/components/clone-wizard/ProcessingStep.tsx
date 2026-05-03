@@ -34,7 +34,7 @@ export function ProcessingStep({ cloneId, onComplete }: ProcessingStepProps) {
 
   return (
     <div className="mx-auto flex max-w-md flex-col items-center justify-center py-16 text-center">
-      <Loader2 className="mb-4 h-8 w-8 animate-spin text-indigo-500" />
+      <Loader2 className="mb-4 h-8 w-8 animate-spin text-info" />
       <h3 className="text-[14px] font-semibold text-v2-ink dark:text-v2-ink">
         Processing Your Voice Clone
       </h3>
@@ -49,7 +49,7 @@ export function ProcessingStep({ cloneId, onComplete }: ProcessingStepProps) {
         </p>
       )}
       {submitMutation.isError && (
-        <p className="mt-4 text-[11px] text-red-600 dark:text-red-400">
+        <p className="mt-4 text-[11px] text-destructive">
           {submitMutation.error.message}
         </p>
       )}

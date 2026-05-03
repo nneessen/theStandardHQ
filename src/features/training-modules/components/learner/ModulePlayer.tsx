@@ -124,7 +124,7 @@ export default function ModulePlayer({ moduleId }: ModulePlayerProps) {
                 }`}
               >
                 {isComplete ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-success flex-shrink-0" />
                 ) : (
                   <span className="h-3.5 w-3.5 rounded-full border border-v2-ring-strong dark:border-v2-ring-strong flex-shrink-0 flex items-center justify-center text-[8px]">
                     {index + 1}

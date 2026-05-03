@@ -252,13 +252,13 @@ export function AssignModuleDialog({
               exists, no further assignments can be created for this module
               because the agency row already covers everyone in the agency. */}
           {activeAgencyAssignment && (
-            <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] text-amber-900 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-100">
+            <div className="flex items-start gap-2 rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-[11px] text-warning dark:border-warning dark:bg-warning/15 dark:text-warning">
               <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
               <div>
                 <div className="font-medium">
                   Already assigned to the entire agency
                 </div>
-                <div className="text-amber-800 dark:text-amber-200/80">
+                <div className="text-warning/80">
                   To change who has this module, revoke the existing agency
                   assignment first.
                 </div>
@@ -268,7 +268,7 @@ export function AssignModuleDialog({
 
           {/* Assignment Mode */}
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-v2-ink-muted">
+            <label className="text-[11px] font-medium text-muted-foreground">
               Assignment Type
             </label>
             <Select
@@ -301,37 +301,37 @@ export function AssignModuleDialog({
 
           {/* Downline summary — shown when "My Team" is selected */}
           {assignMode === "downline" && !activeAgencyAssignment && (
-            <div className="rounded-md border border-v2-ring bg-v2-canvas px-3 py-2.5 text-[11px] dark:border-v2-ring-strong dark:bg-v2-card-tinted/50">
+            <div className="rounded-md border border-border bg-background px-3 py-2.5 text-[11px] dark:border-border dark:bg-card-tinted/50">
               {downlinesLoading ? (
-                <div className="flex items-center gap-2 text-v2-ink-muted">
+                <div className="flex items-center gap-2 text-muted-foreground">
                   <Loader2 className="h-3 w-3 animate-spin" />
                   Loading your downline...
                 </div>
               ) : downlineStats.total === 0 ? (
-                <div className="text-v2-ink-muted">
+                <div className="text-muted-foreground">
                   You don&apos;t have any agents in your downline yet.
                 </div>
               ) : (
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-v2-ink-muted dark:text-v2-ink-muted">
+                    <span className="text-muted-foreground dark:text-muted-foreground">
                       Total downline
                     </span>
                     <span className="font-medium">{downlineStats.total}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-v2-ink-muted dark:text-v2-ink-muted">
+                    <span className="text-muted-foreground dark:text-muted-foreground">
                       Already assigned
                     </span>
                     <span className="font-medium">
                       {downlineStats.alreadyAssigned}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between border-t border-v2-ring pt-1 dark:border-v2-ring-strong">
-                    <span className="font-medium text-emerald-700 dark:text-emerald-400">
+                  <div className="flex items-center justify-between border-t border-border pt-1 dark:border-border">
+                    <span className="font-medium text-success">
                       Will be assigned
                     </span>
-                    <span className="font-semibold text-emerald-700 dark:text-emerald-400">
+                    <span className="font-semibold text-success">
                       {downlineStats.eligible}
                     </span>
                   </div>
@@ -343,15 +343,15 @@ export function AssignModuleDialog({
           {/* Multi-user search (only for individual) */}
           {assignMode === "individual" && !activeAgencyAssignment && (
             <div className="space-y-1.5">
-              <label className="text-[11px] font-medium text-v2-ink-muted">
+              <label className="text-[11px] font-medium text-muted-foreground">
                 Assign To
                 {selectedUsers.length > 0 && (
-                  <span className="ml-1 text-v2-ink-subtle">
+                  <span className="ml-1 text-muted-foreground">
                     ({selectedUsers.length} selected)
                   </span>
                 )}
                 {unassignedCount > 0 && selectedUsers.length === 0 && (
-                  <span className="ml-1 text-v2-ink-subtle">
+                  <span className="ml-1 text-muted-foreground">
                     — {unassignedCount} unassigned
                   </span>
                 )}
@@ -359,7 +359,7 @@ export function AssignModuleDialog({
 
               {/* Selected user chips */}
               {selectedUsers.length > 0 && (
-                <div className="max-h-20 overflow-y-auto flex flex-wrap gap-1 p-1.5 border border-v2-ring dark:border-v2-ring-strong rounded-md bg-v2-canvas dark:bg-v2-card-tinted/50">
+                <div className="max-h-20 overflow-y-auto flex flex-wrap gap-1 p-1.5 border border-border dark:border-border rounded-md bg-background dark:bg-card-tinted/50">
                   {selectedUsers.map((user) => (
                     <Badge
                       key={user.id}
@@ -382,7 +382,7 @@ export function AssignModuleDialog({
 
               {/* Search input */}
               <div className="relative">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
                 <Input
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -392,26 +392,26 @@ export function AssignModuleDialog({
               </div>
 
               {/* Results list */}
-              <div className="h-52 overflow-y-auto border border-v2-ring dark:border-v2-ring-strong rounded-md">
+              <div className="h-52 overflow-y-auto border border-border dark:border-border rounded-md">
                 {agentsLoading && (
                   <div className="flex items-center justify-center py-6">
-                    <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   </div>
                 )}
                 {!agentsLoading && unassignedCount === 0 && (
-                  <div className="py-6 text-center text-[11px] text-v2-ink-muted">
+                  <div className="py-6 text-center text-[11px] text-muted-foreground">
                     All agents have been assigned this module
                   </div>
                 )}
                 {!agentsLoading &&
                   unassignedCount > 0 &&
                   visibleAgents.length === 0 && (
-                    <div className="py-6 text-center text-[11px] text-v2-ink-muted">
+                    <div className="py-6 text-center text-[11px] text-muted-foreground">
                       No agents match your search
                     </div>
                   )}
                 {!agentsLoading && visibleAgents.length > 0 && (
-                  <div className="divide-y divide-v2-ring dark:divide-v2-ring">
+                  <div className="divide-y divide-border dark:divide-border">
                     {visibleAgents.map((user) => {
                       const selected = isSelected(user.id);
                       return (
@@ -421,15 +421,15 @@ export function AssignModuleDialog({
                           onClick={() => toggleUser(user)}
                           className={`w-full flex items-center gap-2 px-3 py-2 text-left transition-colors ${
                             selected
-                              ? "bg-blue-50 dark:bg-blue-950/30 hover:bg-blue-50 dark:hover:bg-blue-950/30"
-                              : "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted"
+                              ? "bg-info/10 hover:bg-info/10 dark:hover:bg-info/15"
+                              : "hover:bg-background dark:hover:bg-card-tinted"
                           }`}
                         >
                           <div
                             className={`h-4 w-4 shrink-0 rounded border flex items-center justify-center ${
                               selected
-                                ? "bg-blue-600 border-blue-600"
-                                : "border-v2-ring-strong dark:border-v2-ring-strong"
+                                ? "bg-info border-info"
+                                : "border-border dark:border-border"
                             }`}
                           >
                             {selected && (
@@ -441,7 +441,7 @@ export function AssignModuleDialog({
                               {`${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() ||
                                 user.email}
                             </div>
-                            <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
+                            <div className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate">
                               {user.email}
                             </div>
                           </div>
@@ -456,7 +456,7 @@ export function AssignModuleDialog({
 
           {/* Due Date */}
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-v2-ink-muted">
+            <label className="text-[11px] font-medium text-muted-foreground">
               Due Date (optional)
             </label>
             <Input
@@ -469,7 +469,7 @@ export function AssignModuleDialog({
 
           {/* Priority */}
           <div className="space-y-1">
-            <label className="text-[11px] font-medium text-v2-ink-muted">
+            <label className="text-[11px] font-medium text-muted-foreground">
               Priority
             </label>
             <Select
@@ -490,7 +490,7 @@ export function AssignModuleDialog({
           </div>
 
           {/* Mandatory */}
-          <label className="flex items-center gap-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <label className="flex items-center gap-2 text-[11px] text-muted-foreground dark:text-muted-foreground">
             <input
               type="checkbox"
               checked={isMandatory}

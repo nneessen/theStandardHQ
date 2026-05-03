@@ -154,7 +154,7 @@ export function SmsBuilderTab() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <MessageSquare className="h-4 w-4 text-cyan-500" />
+            <MessageSquare className="h-4 w-4 text-info" />
             Describe the SMS
           </CardTitle>
         </CardHeader>
@@ -235,9 +235,9 @@ export function SmsBuilderTab() {
           </div>
 
           {!includeStop && (
-            <div className="flex items-start gap-2 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-[11px] dark:border-red-900/60 dark:bg-red-950/30">
-              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-600 dark:text-red-400" />
-              <p className="text-red-800 dark:text-red-200">
+            <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-[11px] dark:border-destructive/60 dark:bg-destructive/15">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
+              <p className="text-destructive dark:text-destructive">
                 <span className="font-semibold">
                   TCPA / CTIA compliance warning.
                 </span>{" "}
@@ -303,7 +303,7 @@ export function SmsBuilderTab() {
             {savedCloseId && (
               <Badge
                 variant="outline"
-                className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                className="border-success/40 text-success"
               >
                 <Check className="mr-1 h-3 w-3" />
                 Saved
@@ -339,9 +339,9 @@ export function SmsBuilderTab() {
                   <span
                     className={`text-[11px] tabular-nums ${
                       overBudget
-                        ? "text-red-500"
+                        ? "text-destructive"
                         : charCount > maxChars * 0.9
-                          ? "text-amber-500"
+                          ? "text-warning"
                           : "text-muted-foreground"
                     }`}
                     title={

@@ -251,8 +251,8 @@ export function VoiceGreetingView({
               className={cn(
                 "flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5",
                 selectedVoice
-                  ? "border-emerald-200 bg-emerald-50/80 dark:border-emerald-900/40 dark:bg-emerald-950/20"
-                  : "border-amber-200 bg-amber-50/80 dark:border-amber-900/40 dark:bg-amber-950/20",
+                  ? "border-success/30 bg-success/10/80 dark:border-success/40 dark:bg-success/10"
+                  : "border-warning/30 bg-warning/10/80 dark:border-warning/40 dark:bg-warning/10",
               )}
             >
               <div className="min-w-0">
@@ -269,8 +269,8 @@ export function VoiceGreetingView({
                 className={cn(
                   "flex-shrink-0 text-[9px]",
                   selectedVoice
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-                    : "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+                    ? "bg-success/20 text-success dark:bg-success/20 dark:text-success"
+                    : "bg-warning/20 text-warning dark:bg-warning/20 dark:text-warning",
                 )}
               >
                 {selectedVoice ? "Selected" : "Needs selection"}
@@ -532,13 +532,13 @@ export function VoiceGreetingView({
                         isSelected
                           ? "bg-foreground/5 dark:bg-foreground/5"
                           : isClone
-                            ? "bg-emerald-50/50 dark:bg-emerald-950/10"
+                            ? "bg-success/10/50 dark:bg-success/10/10"
                             : "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/40",
                       )}
                     >
                       <div className="flex items-center gap-2 min-w-0 overflow-hidden">
                         {isClone ? (
-                          <Mic className="h-3 w-3 text-emerald-500 flex-shrink-0" />
+                          <Mic className="h-3 w-3 text-success flex-shrink-0" />
                         ) : (
                           <WandSparkles className="h-3 w-3 text-v2-ink-subtle flex-shrink-0" />
                         )}
@@ -548,7 +548,7 @@ export function VoiceGreetingView({
                               {voice.voice_name}
                             </p>
                             {isClone && (
-                              <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 text-[8px] px-1 py-0 leading-tight">
+                              <Badge className="bg-success/20 text-success dark:bg-success/20 dark:text-success text-[8px] px-1 py-0 leading-tight">
                                 Cloned
                               </Badge>
                             )}

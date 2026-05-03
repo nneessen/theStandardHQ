@@ -292,7 +292,7 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
       <div
         className={
           isHero
-            ? "border-t border-violet-200/40 dark:border-violet-800/40 pt-2 mt-2"
+            ? "border-t border-info/40 dark:border-info/40 pt-2 mt-2"
             : "border-t border-border/30 pt-1.5"
         }
       >
@@ -301,14 +301,14 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
           onClick={() => setPanelOpen((v) => !v)}
           className={
             isHero
-              ? "flex w-full items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 transition-colors"
+              ? "flex w-full items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-info hover:text-info dark:hover:text-info transition-colors"
               : "flex w-full items-center gap-1 text-[10px] font-semibold uppercase text-muted-foreground hover:text-foreground transition-colors"
           }
         >
           <Sliders className="h-3 w-3" />
           <span>Manage Signal Weights</span>
           {aiRecMap.size > 0 && (
-            <span className="rounded-sm bg-violet-500/20 px-1 text-[9px] font-bold text-violet-600 dark:text-violet-400">
+            <span className="rounded-sm bg-info/20 px-1 text-[9px] font-bold text-info">
               {aiRecMap.size} AI suggestion{aiRecMap.size === 1 ? "" : "s"}
             </span>
           )}
@@ -320,15 +320,13 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
         {panelOpen && (
           <div className="mt-1.5 space-y-1">
             {/* Help banner — written for non-technical users. No jargon. */}
-            <div className="rounded border border-violet-200/40 dark:border-violet-800/30 bg-violet-50/30 dark:bg-violet-950/20 px-2 py-1.5 text-[10px] text-foreground/80 leading-relaxed">
-              <span className="font-semibold text-violet-700 dark:text-violet-300">
-                How this works:
-              </span>{" "}
+            <div className="rounded border border-info/40 dark:border-info/30 bg-info/10/30 dark:bg-info/10 px-2 py-1.5 text-[10px] text-foreground/80 leading-relaxed">
+              <span className="font-semibold text-info">How this works:</span>{" "}
               Each row below is a behavior the system uses to decide which of
               your leads are hot. <strong>Drag a slider RIGHT</strong> to make
               that behavior matter MORE in the ranking.{" "}
               <strong>Drag LEFT</strong> to make it matter less.{" "}
-              <span className="text-violet-700 dark:text-violet-300 font-medium">
+              <span className="text-info font-medium">
                 Hover any signal name for a full explanation
               </span>{" "}
               of what it does and when to adjust it. Click <em>Save</em> when
@@ -340,7 +338,7 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
             <div
               className={
                 isHero
-                  ? "rounded border border-violet-200/40 dark:border-violet-800/30 bg-violet-50/20 dark:bg-violet-950/10 p-1.5 max-h-[280px] overflow-y-auto overscroll-contain"
+                  ? "rounded border border-info/40 dark:border-info/30 bg-info/10/20 dark:bg-info/10/10 p-1.5 max-h-[280px] overflow-y-auto overscroll-contain"
                   : "rounded border border-border/50 bg-muted/5 p-1.5 max-h-[260px] overflow-y-auto overscroll-contain"
               }
             >
@@ -384,7 +382,7 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
                               return (
                                 <div className="text-[11px] leading-snug">
                                   {/* Header */}
-                                  <div className="px-3 py-2 bg-violet-50 dark:bg-violet-950/40 border-b border-border/50">
+                                  <div className="px-3 py-2 bg-info/10 dark:bg-info/10/40 border-b border-border/50">
                                     <div className="font-bold text-foreground">
                                       {SIGNAL_LABELS[signalKey] ?? signalKey}
                                     </div>
@@ -395,7 +393,7 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
                                   {/* Slide directions */}
                                   <div className="px-3 py-2 space-y-1.5">
                                     <div>
-                                      <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                                      <span className="font-bold text-success">
                                         → Slide RIGHT:
                                       </span>{" "}
                                       <span className="text-foreground">
@@ -403,7 +401,7 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
                                       </span>
                                     </div>
                                     <div>
-                                      <span className="font-bold text-amber-600 dark:text-amber-400">
+                                      <span className="font-bold text-warning">
                                         ← Slide LEFT:
                                       </span>{" "}
                                       <span className="text-foreground">
@@ -418,8 +416,8 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
                                   </div>
                                   {/* AI suggestion if present */}
                                   {aiRec?.reason && (
-                                    <div className="px-3 py-2 bg-violet-100/60 dark:bg-violet-950/60 border-t border-violet-200 dark:border-violet-800">
-                                      <div className="font-bold text-violet-700 dark:text-violet-300 text-[10px] uppercase tracking-[0.18em] mb-0.5">
+                                    <div className="px-3 py-2 bg-info/20/60 dark:bg-info/10/60 border-t border-info/30">
+                                      <div className="font-bold text-info text-[10px] uppercase tracking-[0.18em] mb-0.5">
                                         AI Suggestion (
                                         {aiRec.multiplier.toFixed(2)}x)
                                       </div>
@@ -435,7 +433,7 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
                         </Tooltip>
                         {aiRec && (
                           <span
-                            className="rounded-sm bg-violet-500/15 px-1 text-[9px] font-semibold text-violet-600 dark:text-violet-400"
+                            className="rounded-sm bg-info/15 px-1 text-[9px] font-semibold text-info"
                             title={aiRec.reason}
                           >
                             AI {aiRec.multiplier.toFixed(2)}x
@@ -472,11 +470,11 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
                     <span
                       className={`text-[10px] font-mono tabular-nums w-9 text-right ${
                         hasDraftEdit
-                          ? "text-violet-600 dark:text-violet-400 font-semibold"
+                          ? "text-info font-semibold"
                           : isUnderweight
-                            ? "text-amber-600 dark:text-amber-400"
+                            ? "text-warning"
                             : isOverweight
-                              ? "text-emerald-600 dark:text-emerald-400"
+                              ? "text-success"
                               : "text-muted-foreground"
                       }`}
                     >
@@ -493,7 +491,7 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
                         type="button"
                         variant="outline"
                         size="sm"
-                        className="h-5 px-1.5 text-[9px] font-semibold gap-0.5 border-violet-300 dark:border-violet-700 text-violet-700 dark:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-950/30"
+                        className="h-5 px-1.5 text-[9px] font-semibold gap-0.5 border-info dark:border-info text-info hover:bg-info/10 dark:hover:bg-info/10/30"
                         onClick={() =>
                           handleApplySingle(signalKey, aiRec.multiplier)
                         }
@@ -530,7 +528,7 @@ export const ManageWeightsPanel: React.FC<ManageWeightsPanelProps> = ({
                   <Button
                     type="button"
                     size="sm"
-                    className="h-6 px-2 text-[10px] gap-1 bg-violet-600 hover:bg-violet-700 text-white"
+                    className="h-6 px-2 text-[10px] gap-1 bg-info hover:bg-info text-white"
                     onClick={handleSaveDraft}
                     disabled={applyWeights.isPending}
                   >

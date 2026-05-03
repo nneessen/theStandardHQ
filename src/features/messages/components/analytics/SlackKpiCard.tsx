@@ -16,8 +16,8 @@ export function SlackKpiCard({ data }: SlackKpiCardProps) {
         {/* Header */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
-            <div className="h-6 w-6 rounded bg-purple-50 dark:bg-purple-950/30 flex items-center justify-center">
-              <MessageSquare className="h-3 w-3 text-purple-500" />
+            <div className="h-6 w-6 rounded bg-info/10 flex items-center justify-center">
+              <MessageSquare className="h-3 w-3 text-info" />
             </div>
             <span className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
               Slack

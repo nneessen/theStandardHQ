@@ -135,7 +135,7 @@ export default function UnderwritingWizardPage() {
   if (featureLoading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-3.5rem)]">
-        <div className="h-6 w-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        <div className="h-6 w-6 border-2 border-warning border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -755,7 +755,7 @@ function UnderwritingWizardInner() {
     <Suspense
       fallback={
         <div className="flex items-center justify-center h-[calc(100vh-3.5rem)]">
-          <div className="h-6 w-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+          <div className="h-6 w-6 border-2 border-warning border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >
@@ -780,7 +780,7 @@ function UnderwritingWizardInner() {
                 }
                 className={`flex items-center gap-1 text-[10px] px-2 py-0.5 ${
                   usageStatus.status === "warning"
-                    ? "border-amber-500 text-amber-600 dark:text-amber-400"
+                    ? "border-warning text-warning"
                     : ""
                 }`}
               >
@@ -823,13 +823,13 @@ function UnderwritingWizardInner() {
                     </Badge>
                     <Badge
                       variant="secondary"
-                      className="rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200"
+                      className="rounded-full bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning"
                     >
                       Screening workflow
                     </Badge>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-warning/15 text-warning">
                       <Sparkles className="h-5 w-5" />
                     </div>
                     <div className="min-w-0">
@@ -848,10 +848,8 @@ function UnderwritingWizardInner() {
                 </div>
 
                 {errors.submit && (
-                  <div className="border-b border-red-200 bg-red-50/80 px-5 py-3 dark:border-red-800 dark:bg-red-950/20">
-                    <p className="text-sm text-red-600 dark:text-red-400">
-                      {errors.submit}
-                    </p>
+                  <div className="border-b border-destructive/30 bg-destructive/10/80 px-5 py-3 dark:border-destructive dark:bg-destructive/10">
+                    <p className="text-sm text-destructive">{errors.submit}</p>
                   </div>
                 )}
 
@@ -896,7 +894,7 @@ function UnderwritingWizardInner() {
                   !decisionEngineMutation.data?.authoritativeRunEnvelope
                 }
                 size="sm"
-                className="h-8 text-xs px-4 bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="h-8 text-xs px-4 bg-success hover:bg-success text-white"
               >
                 <Save className="h-3.5 w-3.5 mr-1.5" />
                 {isSaving ? "Saving..." : "Save Session"}
@@ -906,7 +904,7 @@ function UnderwritingWizardInner() {
                 onClick={handleNext}
                 size="sm"
                 disabled={isAnalyzing}
-                className="h-8 text-xs px-4 bg-amber-600 hover:bg-amber-700 text-white"
+                className="h-8 text-xs px-4 bg-warning hover:bg-warning text-white"
               >
                 {currentStep.id === "review" ? (
                   <>

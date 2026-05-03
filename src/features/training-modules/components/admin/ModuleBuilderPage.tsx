@@ -379,7 +379,7 @@ function SortableLessonItem({
         }}
         title="Duplicate lesson"
       >
-        <Copy className="h-3 w-3 text-v2-ink-subtle hover:text-blue-500" />
+        <Copy className="h-3 w-3 text-v2-ink-subtle hover:text-info" />
       </button>
       <button
         className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
@@ -389,7 +389,7 @@ function SortableLessonItem({
         }}
         title="Delete lesson"
       >
-        <Trash2 className="h-3 w-3 text-v2-ink-subtle hover:text-red-500" />
+        <Trash2 className="h-3 w-3 text-v2-ink-subtle hover:text-destructive" />
       </button>
     </div>
   );

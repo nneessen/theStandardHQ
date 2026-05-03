@@ -882,7 +882,7 @@ export default function Sidebar({
                       Loading...
                     </div>
                   ) : imoError ? (
-                    <div className="text-[10px] text-red-400/70 truncate mt-0.5">
+                    <div className="text-[10px] text-destructive/70 truncate mt-0.5">
                       Organization unavailable
                     </div>
                   ) : imo || agency ? (

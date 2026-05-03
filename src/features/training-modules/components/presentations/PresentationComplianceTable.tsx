@@ -32,7 +32,9 @@ export function PresentationComplianceTable({
   if (error) {
     return (
       <div className="text-center py-4">
-        <p className="text-xs text-red-500">Failed to load compliance data</p>
+        <p className="text-xs text-destructive">
+          Failed to load compliance data
+        </p>
       </div>
     );
   }
@@ -92,7 +94,7 @@ export function PresentationComplianceTable({
                 <td className="px-3 py-2 text-v2-ink-muted">{row.email}</td>
                 <td className="px-3 py-2 text-center">
                   {row.submitted ? (
-                    <CheckCircle className="h-3.5 w-3.5 text-emerald-500 mx-auto" />
+                    <CheckCircle className="h-3.5 w-3.5 text-success mx-auto" />
                   ) : (
                     <XCircle className="h-3.5 w-3.5 text-v2-ink-subtle dark:text-v2-ink-muted mx-auto" />
                   )}

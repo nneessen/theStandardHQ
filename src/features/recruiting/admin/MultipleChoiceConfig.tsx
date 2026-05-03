@@ -140,18 +140,18 @@ export function MultipleChoiceConfig({
   const validOptionsCount = options.filter((o) => o.label.trim()).length;
 
   return (
-    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-background rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <List className="h-3.5 w-3.5 text-v2-ink-muted" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
+        <List className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
           Multiple Choice Configuration
         </span>
       </div>
 
       {/* Question Text */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
-          Question Text <span className="text-red-500">*</span>
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+          Question Text <span className="text-destructive">*</span>
         </Label>
         <Textarea
           value={questionText}
@@ -160,7 +160,7 @@ export function MultipleChoiceConfig({
           className="min-h-[60px] text-[11px] resize-none"
         />
         {!questionText.trim() && (
-          <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1 text-[10px] text-warning">
             <AlertCircle className="h-3 w-3" />
             Question text is required
           </div>
@@ -169,7 +169,7 @@ export function MultipleChoiceConfig({
 
       {/* Selection Type */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Selection Type
         </Label>
         <Select
@@ -196,8 +196,8 @@ export function MultipleChoiceConfig({
       {/* Options */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
-            Options <span className="text-red-500">*</span> (min 2)
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+            Options <span className="text-destructive">*</span> (min 2)
           </Label>
           <Button
             type="button"
@@ -215,9 +215,9 @@ export function MultipleChoiceConfig({
           {options.map((option, index) => (
             <div
               key={option.id}
-              className="flex items-start gap-2 p-2 bg-v2-card rounded border"
+              className="flex items-start gap-2 p-2 bg-card rounded border"
             >
-              <GripVertical className="h-4 w-4 text-v2-ink-subtle mt-1.5 flex-shrink-0" />
+              <GripVertical className="h-4 w-4 text-muted-foreground mt-1.5 flex-shrink-0" />
               <div className="flex-1 space-y-1">
                 <Input
                   type="text"
@@ -237,7 +237,7 @@ export function MultipleChoiceConfig({
                 />
                 <div className="flex items-center gap-3">
                   {requireCorrect && (
-                    <label className="flex items-center gap-1 text-[9px] text-v2-ink-muted">
+                    <label className="flex items-center gap-1 text-[9px] text-muted-foreground">
                       <Checkbox
                         checked={option.is_correct ?? false}
                         onCheckedChange={(checked) =>
@@ -248,7 +248,7 @@ export function MultipleChoiceConfig({
                       Correct
                     </label>
                   )}
-                  <label className="flex items-center gap-1 text-[9px] text-v2-ink-muted">
+                  <label className="flex items-center gap-1 text-[9px] text-muted-foreground">
                     <Checkbox
                       checked={option.is_disqualifying ?? false}
                       onCheckedChange={(checked) =>
@@ -270,7 +270,7 @@ export function MultipleChoiceConfig({
                 size="sm"
                 onClick={() => removeOption(index)}
                 disabled={options.length <= 2}
-                className="h-6 w-6 p-0 text-v2-ink-subtle hover:text-red-500"
+                className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
               >
                 <Trash2 className="h-3 w-3" />
               </Button>
@@ -279,7 +279,7 @@ export function MultipleChoiceConfig({
         </div>
 
         {validOptionsCount < 2 && (
-          <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1 text-[10px] text-warning">
             <AlertCircle className="h-3 w-3" />
             At least 2 options with labels are required
           </div>
@@ -290,7 +290,7 @@ export function MultipleChoiceConfig({
       {selectionType === "multiple" && (
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
-            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               Min Selections
             </Label>
             <Input
@@ -305,7 +305,7 @@ export function MultipleChoiceConfig({
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               Max Selections
             </Label>
             <Input
@@ -325,10 +325,10 @@ export function MultipleChoiceConfig({
       {/* Require Correct Answer */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Require Correct Answer
           </Label>
-          <p className="text-[9px] text-v2-ink-muted">
+          <p className="text-[9px] text-muted-foreground">
             Must select the marked correct option(s) to complete
           </p>
         </div>
@@ -342,10 +342,10 @@ export function MultipleChoiceConfig({
       {/* Randomize Order */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Randomize Option Order
           </Label>
-          <p className="text-[9px] text-v2-ink-muted">
+          <p className="text-[9px] text-muted-foreground">
             Shuffle options each time the question is displayed
           </p>
         </div>
@@ -357,8 +357,8 @@ export function MultipleChoiceConfig({
       </div>
 
       {/* Info */}
-      <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-800">
-        <p className="text-[9px] text-blue-700 dark:text-blue-400">
+      <div className="p-2 bg-info/10 rounded border border-info/30">
+        <p className="text-[9px] text-info">
           <strong>Note:</strong>{" "}
           {selectionType === "single"
             ? "Recruit will select one option."

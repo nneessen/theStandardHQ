@@ -80,8 +80,8 @@ export function ContractingTab({ entity, permissions }: ContractingTabProps) {
   if (error) {
     return (
       <div className="py-8 text-center">
-        <AlertCircle className="h-8 w-8 text-red-400 mx-auto mb-2" />
-        <p className="text-xs text-red-500">Failed to load contracts</p>
+        <AlertCircle className="h-8 w-8 text-destructive mx-auto mb-2" />
+        <p className="text-xs text-destructive">Failed to load contracts</p>
       </div>
     );
   }

@@ -172,11 +172,11 @@ export function RuleEditor({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
         {/* Header */}
-        <DialogHeader className="px-4 pt-4 pb-2 border-b border-v2-ring dark:border-v2-ring">
+        <DialogHeader className="px-4 pt-4 pb-2 border-b border-border dark:border-border">
           <DialogTitle className="text-sm font-semibold">
             {isEditing ? "Edit Rule" : "Add Rule"}
             {conditionCode && (
-              <span className="text-v2-ink-subtle font-normal ml-2">
+              <span className="text-muted-foreground font-normal ml-2">
                 for {conditionName}
               </span>
             )}
@@ -188,8 +188,8 @@ export function RuleEditor({
           <div className="space-y-2">
             <div className="grid grid-cols-4 gap-2">
               <div className="col-span-3 space-y-1">
-                <Label className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
-                  Rule Name <span className="text-red-500">*</span>
+                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                  Rule Name <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   className="h-7 text-[11px]"
@@ -201,7 +201,7 @@ export function RuleEditor({
                 />
               </div>
               <div className="space-y-1">
-                <Label className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
+                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
                   Priority
                 </Label>
                 <Input
@@ -220,7 +220,7 @@ export function RuleEditor({
               </div>
             </div>
             <div className="space-y-1">
-              <Label className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
+              <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
                 Description
               </Label>
               <Textarea
@@ -235,10 +235,10 @@ export function RuleEditor({
           </div>
 
           {/* Conditions Section */}
-          <div className="border border-blue-200 dark:border-blue-800/50 rounded-lg overflow-hidden">
-            <div className="bg-blue-50 dark:bg-blue-900/20 px-3 py-2 flex items-center justify-between">
+          <div className="border border-info/30/50 rounded-lg overflow-hidden">
+            <div className="bg-info/10 px-3 py-2 flex items-center justify-between">
               <div>
-                <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
+                <span className="text-[11px] font-semibold text-info uppercase tracking-wider">
                   When These Conditions Are Met
                 </span>
               </div>
@@ -286,9 +286,9 @@ export function RuleEditor({
           </div>
 
           {/* Decision/Outcome Section */}
-          <div className="border border-green-200 dark:border-green-800/50 rounded-lg overflow-hidden">
-            <div className="bg-green-50 dark:bg-green-900/20 px-3 py-2">
-              <span className="text-[11px] font-semibold text-green-700 dark:text-green-300 uppercase tracking-wider">
+          <div className="border border-success/30/50 rounded-lg overflow-hidden">
+            <div className="bg-success/10 px-3 py-2">
+              <span className="text-[11px] font-semibold text-success uppercase tracking-wider">
                 Then Apply This Decision
               </span>
             </div>
@@ -302,35 +302,35 @@ export function RuleEditor({
 
           {/* Client Filters (Collapsible) */}
           <Collapsible open={filtersOpen} onOpenChange={setFiltersOpen}>
-            <div className="border border-v2-ring dark:border-v2-ring-strong rounded-lg overflow-hidden">
-              <CollapsibleTrigger className="flex items-center gap-2 w-full bg-v2-canvas dark:bg-v2-card-tinted/50 px-3 py-2 text-left">
+            <div className="border border-border dark:border-border rounded-lg overflow-hidden">
+              <CollapsibleTrigger className="flex items-center gap-2 w-full bg-background dark:bg-card-tinted/50 px-3 py-2 text-left">
                 {filtersOpen ? (
-                  <ChevronDown className="h-3 w-3 text-v2-ink-subtle" />
+                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
                 ) : (
-                  <ChevronRight className="h-3 w-3 text-v2-ink-subtle" />
+                  <ChevronRight className="h-3 w-3 text-muted-foreground" />
                 )}
-                <span className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider">
+                <span className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider">
                   Client Filters
                 </span>
-                <span className="text-[9px] text-v2-ink-subtle ml-1">
+                <span className="text-[9px] text-muted-foreground ml-1">
                   (optional - age, gender restrictions)
                 </span>
                 {hasFilters && !filtersOpen && (
-                  <span className="text-[9px] bg-v2-ring dark:bg-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-muted px-1.5 py-0.5 rounded ml-auto">
+                  <span className="text-[9px] bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground px-1.5 py-0.5 rounded ml-auto">
                     Active
                   </span>
                 )}
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="p-3 space-y-3">
-                  <p className="text-[10px] text-v2-ink-subtle">
+                  <p className="text-[10px] text-muted-foreground">
                     Optionally restrict this rule to specific client
                     demographics. Leave blank to apply to all clients.
                   </p>
 
                   {/* Age Band */}
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
+                    <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
                       Age Range
                     </Label>
                     <div className="flex items-center gap-2">
@@ -350,7 +350,9 @@ export function RuleEditor({
                         min={0}
                         max={120}
                       />
-                      <span className="text-[10px] text-v2-ink-subtle">to</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        to
+                      </span>
                       <Input
                         type="number"
                         className="h-6 w-16 text-[10px]"
@@ -367,7 +369,7 @@ export function RuleEditor({
                         min={0}
                         max={120}
                       />
-                      <span className="text-[10px] text-v2-ink-subtle">
+                      <span className="text-[10px] text-muted-foreground">
                         years
                       </span>
                     </div>
@@ -375,7 +377,7 @@ export function RuleEditor({
 
                   {/* Gender */}
                   <div className="space-y-1">
-                    <Label className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
+                    <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
                       Gender
                     </Label>
                     <Select
@@ -411,17 +413,17 @@ export function RuleEditor({
           {/* Provenance (if AI-extracted) */}
           {hasProvenance && (
             <Collapsible open={provenanceOpen} onOpenChange={setProvenanceOpen}>
-              <div className="border border-amber-200 dark:border-amber-800/50 rounded-lg overflow-hidden">
-                <CollapsibleTrigger className="flex items-center gap-2 w-full bg-amber-50 dark:bg-amber-900/20 px-3 py-2 text-left">
+              <div className="border border-warning/30/50 rounded-lg overflow-hidden">
+                <CollapsibleTrigger className="flex items-center gap-2 w-full bg-warning/10 px-3 py-2 text-left">
                   {provenanceOpen ? (
-                    <ChevronDown className="h-3 w-3 text-amber-500" />
+                    <ChevronDown className="h-3 w-3 text-warning" />
                   ) : (
-                    <ChevronRight className="h-3 w-3 text-amber-500" />
+                    <ChevronRight className="h-3 w-3 text-warning" />
                   )}
-                  <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-300 uppercase tracking-wider">
+                  <span className="text-[10px] font-semibold text-warning uppercase tracking-wider">
                     Source Information
                   </span>
-                  <span className="text-[9px] text-amber-500 ml-1">
+                  <span className="text-[9px] text-warning ml-1">
                     (AI-extracted from carrier document)
                   </span>
                 </CollapsibleTrigger>
@@ -441,14 +443,14 @@ export function RuleEditor({
 
           {/* Validation Error */}
           {validationError && (
-            <div className="p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-[10px] text-red-600 dark:text-red-400">
+            <div className="p-2 bg-destructive/10 border border-destructive/30 rounded text-[10px] text-destructive">
               {validationError}
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <DialogFooter className="px-4 py-3 border-t border-v2-ring dark:border-v2-ring gap-2">
+        <DialogFooter className="px-4 py-3 border-t border-border dark:border-border gap-2">
           <Button
             type="button"
             variant="ghost"

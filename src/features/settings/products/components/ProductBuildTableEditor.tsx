@@ -41,11 +41,11 @@ export function ProductBuildChartSelector({
   if (!carrierId) {
     return (
       <div className="space-y-1">
-        <Label className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide flex items-center gap-1">
+        <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
           <Ruler className="h-3 w-3" />
           Build Chart
         </Label>
-        <p className="text-[10px] text-v2-ink-subtle">
+        <p className="text-[10px] text-muted-foreground">
           Select a carrier first to choose a build chart.
         </p>
       </div>
@@ -56,11 +56,11 @@ export function ProductBuildChartSelector({
   if (!isLoading && options.length === 0) {
     return (
       <div className="space-y-1">
-        <Label className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide flex items-center gap-1">
+        <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
           <Ruler className="h-3 w-3" />
           Build Chart
         </Label>
-        <div className="flex items-start gap-2 p-2 bg-amber-50 dark:bg-amber-900/20 rounded text-[10px] text-amber-700 dark:text-amber-300">
+        <div className="flex items-start gap-2 p-2 bg-warning/10 rounded text-[10px] text-warning">
           <AlertCircle className="h-3 w-3 mt-0.5 flex-shrink-0" />
           <p>
             No build charts configured for {carrierName}. Add build charts in
@@ -76,7 +76,7 @@ export function ProductBuildChartSelector({
 
   return (
     <div className="space-y-1">
-      <Label className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide flex items-center gap-1">
+      <Label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
         <Ruler className="h-3 w-3" />
         Build Chart
       </Label>
@@ -85,7 +85,7 @@ export function ProductBuildChartSelector({
         onValueChange={(v) => onChange(v === "default" ? null : v)}
         disabled={disabled || isLoading}
       >
-        <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
+        <SelectTrigger className="h-7 text-[11px] bg-card border-border">
           <SelectValue placeholder="Select build chart..." />
         </SelectTrigger>
         <SelectContent>
@@ -119,7 +119,7 @@ export function ProductBuildChartSelector({
                 {option.isDefault && (
                   <Badge
                     variant="outline"
-                    className="h-4 px-1 text-[9px] rounded-sm text-blue-600"
+                    className="h-4 px-1 text-[9px] rounded-sm text-info"
                   >
                     Default
                   </Badge>
@@ -130,13 +130,13 @@ export function ProductBuildChartSelector({
         </SelectContent>
       </Select>
       {!value && defaultChart && (
-        <p className="text-[10px] text-v2-ink-subtle">
+        <p className="text-[10px] text-muted-foreground">
           Will use carrier default: {defaultChart.name} (
           {BUILD_TABLE_TYPE_LABELS[defaultChart.tableType]})
         </p>
       )}
       {value && selectedChart && (
-        <p className="text-[10px] text-v2-ink-subtle">
+        <p className="text-[10px] text-muted-foreground">
           Using: {selectedChart.name} (
           {BUILD_TABLE_TYPE_LABELS[selectedChart.tableType]})
         </p>

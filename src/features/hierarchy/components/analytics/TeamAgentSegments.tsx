@@ -75,19 +75,19 @@ export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
   const getColorClass = (color: string, type: "text" | "bg" | "border") => {
     const colors: Record<string, Record<string, string>> = {
       emerald: {
-        text: "text-emerald-600 dark:text-emerald-400",
-        bg: "bg-emerald-500/10",
-        border: "border-emerald-500/20",
+        text: "text-success",
+        bg: "bg-success/10",
+        border: "border-success/20",
       },
       blue: {
-        text: "text-blue-600 dark:text-blue-400",
-        bg: "bg-blue-500/10",
-        border: "border-blue-500/20",
+        text: "text-info",
+        bg: "bg-info/10",
+        border: "border-info/20",
       },
       amber: {
-        text: "text-amber-600 dark:text-amber-400",
-        bg: "bg-amber-500/10",
-        border: "border-amber-500/20",
+        text: "text-warning",
+        bg: "bg-warning/10",
+        border: "border-warning/20",
       },
     };
     return colors[color]?.[type] || "";
@@ -223,7 +223,7 @@ export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
                     <TableCell className="p-1.5 text-right font-mono text-v2-ink-muted">
                       {agent.policyCount}
                     </TableCell>
-                    <TableCell className="p-1.5 text-right font-mono font-semibold text-emerald-600 dark:text-emerald-400">
+                    <TableCell className="p-1.5 text-right font-mono font-semibold text-success">
                       {formatCurrency(agent.totalAP)}
                     </TableCell>
                     <TableCell className="p-1.5 text-right">
@@ -231,10 +231,10 @@ export function TeamAgentSegments({ data, isLoading }: TeamAgentSegmentsProps) {
                         className={cn(
                           "font-mono",
                           agent.persistencyRate >= 80
-                            ? "text-emerald-600 dark:text-emerald-400"
+                            ? "text-success"
                             : agent.persistencyRate >= 60
-                              ? "text-amber-600 dark:text-amber-400"
-                              : "text-red-600 dark:text-red-400",
+                              ? "text-warning"
+                              : "text-destructive",
                         )}
                       >
                         {agent.persistencyRate.toFixed(0)}%

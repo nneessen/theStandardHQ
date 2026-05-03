@@ -60,30 +60,30 @@ const STATUS_CONFIG: Record<
   draft: {
     label: "Draft",
     className:
-      "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle",
+      "bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground",
   },
   sending: {
     label: "Sending",
-    className: "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
+    className: "bg-info/10 text-info dark:bg-info/10 dark:text-info",
   },
   sent: {
     label: "Sent",
     className:
-      "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300",
+      "bg-success/10 text-success dark:bg-success/10 dark:text-success",
   },
   scheduled: {
     label: "Scheduled",
     className:
-      "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
+      "bg-warning/10 text-warning dark:bg-warning/10 dark:text-warning",
   },
   paused: {
     label: "Paused",
-    className:
-      "bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300",
+    className: "bg-warning/10 text-warning dark:bg-warning dark:text-warning",
   },
   failed: {
     label: "Failed",
-    className: "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300",
+    className:
+      "bg-destructive/10 text-destructive dark:bg-destructive/10 dark:text-destructive",
   },
 };
 
@@ -236,43 +236,43 @@ export function CampaignDetailSheet({
               </SheetHeader>
 
               {/* KPI Row */}
-              <div className="grid grid-cols-6 gap-1.5 px-4 py-2.5 border-b bg-v2-canvas dark:bg-v2-card shrink-0">
+              <div className="grid grid-cols-6 gap-1.5 px-4 py-2.5 border-b bg-background dark:bg-card shrink-0">
                 {[
                   {
                     label: "Recipients",
                     value: campaign.recipient_count,
                     icon: Users,
-                    cls: "text-v2-ink-muted",
+                    cls: "text-muted-foreground",
                   },
                   {
                     label: "Sent",
                     value: campaign.sent_count,
                     icon: Send,
-                    cls: "text-blue-500",
+                    cls: "text-info",
                   },
                   {
                     label: "Opened",
                     value: pct(campaign.opened_count, campaign.sent_count),
                     icon: Eye,
-                    cls: "text-green-500",
+                    cls: "text-success",
                   },
                   {
                     label: "Clicked",
                     value: pct(campaign.clicked_count, campaign.sent_count),
                     icon: MousePointer,
-                    cls: "text-amber-500",
+                    cls: "text-warning",
                   },
                   {
                     label: "Bounced",
                     value: pct(campaign.bounced_count, campaign.sent_count),
                     icon: AlertTriangle,
-                    cls: "text-orange-500",
+                    cls: "text-warning",
                   },
                   {
                     label: "Failed",
                     value: campaign.failed_count,
                     icon: XCircle,
-                    cls: "text-red-500",
+                    cls: "text-destructive",
                   },
                 ].map(({ label, value, icon: Icon, cls }) => (
                   <div key={label} className="text-center">
@@ -323,7 +323,7 @@ export function CampaignDetailSheet({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 text-[10px] px-2 gap-1 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                  className="h-6 text-[10px] px-2 gap-1 text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/10"
                   onClick={() => setDeleteConfirm(true)}
                 >
                   <Trash2 className="h-3 w-3" />
@@ -414,11 +414,11 @@ export function CampaignDetailSheet({
                                 className={cn(
                                   "text-[9px] h-3.5 px-1 font-normal capitalize",
                                   r.status === "sent" &&
-                                    "bg-green-50 text-green-600 border-green-200",
+                                    "bg-success/10 text-success border-success/30",
                                   r.status === "failed" &&
-                                    "bg-red-50 text-red-600 border-red-200",
+                                    "bg-destructive/10 text-destructive border-destructive/30",
                                   r.status === "pending" &&
-                                    "bg-v2-canvas text-v2-ink-muted border-v2-ring",
+                                    "bg-background text-muted-foreground border-border",
                                 )}
                               >
                                 {r.status}
@@ -429,7 +429,7 @@ export function CampaignDetailSheet({
                                 ? format(new Date(r.sent_at), "MMM d, h:mm a")
                                 : "—"}
                             </TableCell>
-                            <TableCell className="py-1 px-3 text-[10px] text-red-500 truncate max-w-[150px]">
+                            <TableCell className="py-1 px-3 text-[10px] text-destructive truncate max-w-[150px]">
                               {r.error_message || ""}
                             </TableCell>
                           </TableRow>
@@ -460,7 +460,7 @@ export function CampaignDetailSheet({
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="h-7 text-[11px] bg-red-600 hover:bg-red-700 text-white"
+              className="h-7 text-[11px] bg-destructive hover:bg-destructive text-white"
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
             >

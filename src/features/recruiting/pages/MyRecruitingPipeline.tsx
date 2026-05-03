@@ -362,7 +362,7 @@ export function MyRecruitingPipeline() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-v2-canvas ">
         <div className="text-center">
-          <Loader2 className="h-6 w-6 animate-spin mx-auto mb-3 text-amber-600 dark:text-amber-400" />
+          <Loader2 className="h-6 w-6 animate-spin mx-auto mb-3 text-warning" />
           <p className="text-[11px] uppercase tracking-[0.2em] font-bold text-v2-ink-muted dark:text-v2-ink-subtle">
             Loading your pipeline…
           </p>
@@ -375,7 +375,7 @@ export function MyRecruitingPipeline() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-v2-canvas ">
         <div className="bg-white dark:bg-v2-card rounded-2xl ring-1 ring-v2-ring  shadow-md dark:shadow-none p-6 max-w-sm text-center">
-          <AlertCircle className="h-6 w-6 text-red-700 dark:text-red-400 mx-auto mb-3" />
+          <AlertCircle className="h-6 w-6 text-destructive mx-auto mb-3" />
           <h2 className="text-base font-bold text-v2-ink  mb-1">
             Couldn&apos;t load your profile
           </h2>
@@ -392,7 +392,7 @@ export function MyRecruitingPipeline() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-v2-canvas ">
         <div className="bg-white dark:bg-v2-card rounded-2xl ring-1 ring-v2-ring  shadow-md dark:shadow-none p-6 max-w-sm text-center">
-          <AlertCircle className="h-6 w-6 text-amber-600 dark:text-amber-400 mx-auto mb-3" />
+          <AlertCircle className="h-6 w-6 text-warning mx-auto mb-3" />
           <h2 className="text-base font-bold text-v2-ink  mb-1">
             Profile not found
           </h2>
@@ -428,7 +428,7 @@ export function MyRecruitingPipeline() {
           title={
             <>
               Welcome,{" "}
-              <span className="text-amber-600 dark:text-amber-400">
+              <span className="text-warning">
                 {recruitFirstName || "recruit"}
               </span>
               .

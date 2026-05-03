@@ -87,7 +87,7 @@ export default function MyTrainingPage() {
             <XpDisplay xp={stats?.total_xp || 0} />
             <StreakIndicator days={stats?.current_streak_days || 0} />
             <span className="inline-flex items-center gap-1">
-              <Target className="h-3 w-3 text-blue-500" />
+              <Target className="h-3 w-3 text-info" />
               <span className="text-v2-ink font-semibold">
                 {stats?.modules_completed || 0}
               </span>

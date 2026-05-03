@@ -94,7 +94,7 @@ export function ConfirmStep({
         />
       </div>
 
-      <div className="rounded-md bg-amber-500/10 border border-amber-500/20 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
+      <div className="rounded-md bg-warning/10 border border-warning/20 px-3 py-2 text-xs text-warning">
         {selectedCount} lead{selectedCount !== 1 ? "s" : ""} will be{" "}
         <strong>created</strong> in {recipient.full_name}'s Close CRM. This
         cannot be undone.
@@ -115,7 +115,7 @@ export function ConfirmStep({
           size="sm"
           onClick={onConfirm}
           disabled={isDropping}
-          className="gap-1.5 text-xs bg-green-600 hover:bg-green-700 text-white"
+          className="gap-1.5 text-xs bg-success hover:bg-success text-white"
         >
           {isDropping
             ? "Starting…"

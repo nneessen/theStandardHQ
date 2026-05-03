@@ -308,21 +308,21 @@ export function ComposeDialog({
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
-          className="flex flex-col p-0 gap-0 max-w-2xl bg-v2-canvas  transition-all duration-200"
+          className="flex flex-col p-0 gap-0 max-w-2xl bg-background  transition-all duration-200"
           style={{
             maxHeight: "85vh",
             left: showContactBrowser ? "calc(50% - 200px)" : "50%",
           }}
         >
-          <DialogHeader className="px-3 py-2 bg-v2-card border-b border-v2-ring">
-            <DialogTitle className="text-sm font-semibold text-v2-ink">
+          <DialogHeader className="px-3 py-2 bg-card border-b border-border">
+            <DialogTitle className="text-sm font-semibold text-foreground">
               {replyTo ? "Reply" : forward ? "Forward" : "New Message"}
             </DialogTitle>
           </DialogHeader>
 
           {/* Compose Form */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-3 space-y-2.5 bg-v2-card">
+            <div className="flex-1 overflow-y-auto p-3 space-y-2.5 bg-card">
               {/* Contacts & Template Buttons */}
               <div className="flex justify-end gap-2">
                 {isSuperAdmin && (
@@ -335,20 +335,20 @@ export function ComposeDialog({
                 {isSuperAdmin &&
                   (addAllPending ? (
                     // Step 2 — inline confirm, no nested modal
-                    <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-md px-2 py-1">
-                      <span className="text-[11px] text-amber-700 dark:text-amber-300 font-medium">
+                    <div className="flex items-center gap-1 bg-warning/10 dark:bg-warning/30 border border-warning/40 rounded-md px-2 py-1">
+                      <span className="text-[11px] text-warning font-medium">
                         Add all users?
                       </span>
                       <button
                         onClick={handleAddAllUsers}
-                        className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-amber-600 hover:bg-amber-700 text-white transition-colors"
+                        className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-warning hover:bg-warning text-white transition-colors"
                       >
                         <Check className="h-3 w-3" />
                         Yes
                       </button>
                       <button
                         onClick={() => setAddAllPending(false)}
-                        className="flex items-center px-1.5 py-0.5 rounded text-[10px] bg-v2-ring hover:bg-v2-ring-strong  text-v2-ink-muted dark:text-v2-ink-subtle transition-colors"
+                        className="flex items-center px-1.5 py-0.5 rounded text-[10px] bg-muted hover:bg-muted  text-muted-foreground dark:text-muted-foreground transition-colors"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -360,8 +360,8 @@ export function ComposeDialog({
                       className={cn(
                         "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium border transition-colors",
                         isAddingAll
-                          ? "bg-v2-ring text-v2-ink-subtle cursor-not-allowed border-v2-ring"
-                          : "bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/50 border-amber-300 dark:border-amber-700",
+                          ? "bg-muted text-muted-foreground cursor-not-allowed border-border"
+                          : "bg-warning/10 dark:bg-warning/30 text-warning hover:bg-warning/20 dark:hover:bg-warning/50 border-warning/40",
                       )}
                     >
                       {isAddingAll ? (
@@ -374,7 +374,7 @@ export function ComposeDialog({
                   ))}
                 <button
                   onClick={() => setShowContactBrowser(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-medium bg-info/10 dark:bg-info/30 text-info hover:bg-info/20 dark:hover:bg-info/50 border border-info/30 transition-colors"
                 >
                   <Users className="h-3.5 w-3.5" />
                   <span>Browse Contacts</span>
@@ -386,7 +386,7 @@ export function ComposeDialog({
                 <div className="flex items-center gap-1.5">
                   <Badge
                     variant="secondary"
-                    className="h-5 text-[10px] gap-1 pr-1 bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800"
+                    className="h-5 text-[10px] gap-1 pr-1 bg-info/10 dark:bg-info/30 text-info border border-info/30"
                   >
                     <LayoutTemplate className="h-3 w-3" />
                     <span className="max-w-[200px] truncate">
@@ -395,7 +395,7 @@ export function ComposeDialog({
                     <button
                       type="button"
                       onClick={clearTemplate}
-                      className="hover:bg-violet-200 dark:hover:bg-violet-800 rounded-full p-0.5"
+                      className="hover:bg-info dark:hover:bg-info rounded-full p-0.5"
                     >
                       <X className="h-2.5 w-2.5" />
                     </button>
@@ -418,7 +418,7 @@ export function ComposeDialog({
               <div className="flex justify-end">
                 <Button
                   size="sm"
-                  className="h-5 px-2 text-[10px] bg-transparent hover:bg-v2-ring dark:hover:bg-v2-ring text-v2-ink-muted hover:text-v2-ink border-0 shadow-none"
+                  className="h-5 px-2 text-[10px] bg-transparent hover:bg-muted dark:hover:bg-muted text-muted-foreground hover:text-foreground border-0 shadow-none"
                   onClick={() => setShowCcBcc(!showCcBcc)}
                 >
                   {showCcBcc ? (
@@ -456,14 +456,14 @@ export function ComposeDialog({
 
               {/* Subject */}
               <div className="flex items-center gap-2">
-                <Label className="text-[11px] text-v2-ink-muted w-8">
+                <Label className="text-[11px] text-muted-foreground w-8">
                   Subj
                 </Label>
                 <Input
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Subject"
-                  className="flex-1 h-7 text-[11px] bg-v2-canvas border-v2-ring"
+                  className="flex-1 h-7 text-[11px] bg-background border-border"
                   disabled={isSending}
                 />
               </div>
@@ -476,21 +476,21 @@ export function ComposeDialog({
                 showMenuBar={isSuperAdmin}
                 minHeight="180px"
                 editable={!isSending}
-                className="bg-v2-canvas border border-v2-ring rounded-sm"
+                className="bg-background border border-border rounded-sm"
               />
 
               {/* Schedule */}
               {showSchedule && (
-                <div className="flex items-center gap-2 p-2 bg-v2-ring rounded-sm border border-v2-ring">
-                  <Clock className="h-3.5 w-3.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
-                  <span className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                <div className="flex items-center gap-2 p-2 bg-muted rounded-sm border border-border">
+                  <Clock className="h-3.5 w-3.5 text-muted-foreground dark:text-muted-foreground" />
+                  <span className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                     Scheduled for:
                   </span>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
                         size="sm"
-                        className="h-6 text-[10px] bg-v2-ring hover:bg-v2-ring-strong  text-v2-ink-muted border-0 shadow-none"
+                        className="h-6 text-[10px] bg-muted hover:bg-muted  text-muted-foreground border-0 shadow-none"
                       >
                         {scheduledDate
                           ? format(scheduledDate, "PPp")
@@ -511,7 +511,7 @@ export function ComposeDialog({
                   </Popover>
                   <Button
                     size="sm"
-                    className="h-6 px-1 bg-transparent hover:bg-red-100 dark:hover:bg-red-900/30 text-v2-ink-muted hover:text-red-600 dark:hover:text-red-400 border-0 shadow-none"
+                    className="h-6 px-1 bg-transparent hover:bg-destructive/20 dark:hover:bg-destructive/30 text-muted-foreground hover:text-destructive dark:hover:text-destructive border-0 shadow-none"
                     onClick={() => {
                       setShowSchedule(false);
                       setScheduledDate(undefined);
@@ -525,7 +525,7 @@ export function ComposeDialog({
               {/* Attachments Display */}
               {attachments.length > 0 && (
                 <div className="space-y-1.5">
-                  <Label className="text-[11px] font-medium text-v2-ink-muted">
+                  <Label className="text-[11px] font-medium text-muted-foreground">
                     Attachments ({attachments.length})
                   </Label>
                   <div className="flex flex-wrap gap-1.5">
@@ -533,13 +533,13 @@ export function ComposeDialog({
                       <Badge
                         key={doc.id}
                         variant="secondary"
-                        className="h-6 text-[10px] gap-1.5 pr-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                        className="h-6 text-[10px] gap-1.5 pr-1 bg-info/10 dark:bg-info/30 text-info border border-info/30"
                       >
                         <Paperclip className="h-3 w-3" />
                         <span className="max-w-[120px] truncate">
                           {doc.name}
                         </span>
-                        <span className="text-[9px] text-blue-500 dark:text-blue-400">
+                        <span className="text-[9px] text-info">
                           ({formatFileSize(doc.fileSize)})
                         </span>
                         <button
@@ -549,7 +549,7 @@ export function ComposeDialog({
                               prev.filter((a) => a.id !== doc.id),
                             )
                           }
-                          className="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5"
+                          className="hover:bg-info/30 dark:hover:bg-info rounded-full p-0.5"
                         >
                           <X className="h-2.5 w-2.5" />
                         </button>
@@ -561,20 +561,20 @@ export function ComposeDialog({
 
               {/* Error */}
               {error && (
-                <div className="text-[11px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded-sm border border-red-200 dark:border-red-800">
+                <div className="text-[11px] text-destructive bg-destructive/10 px-2 py-1 rounded-sm border border-destructive/30">
                   {error}
                 </div>
               )}
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between px-3 py-2 border-t border-v2-ring bg-v2-canvas dark:bg-v2-card-dark">
+            <div className="flex items-center justify-between px-3 py-2 border-t border-border bg-background dark:bg-card-dark">
               <div className="flex items-center gap-2">
                 <Button
                   onClick={handleSend}
                   disabled={isSending || to.length === 0}
                   size="sm"
-                  className="h-6 text-[10px] gap-1.5 bg-v2-card-dark dark:bg-v2-ring hover:bg-v2-ring dark:hover:bg-v2-ring text-white dark:text-v2-ink border-0 shadow-none"
+                  className="h-6 text-[10px] gap-1.5 bg-card-dark dark:bg-muted hover:bg-muted dark:hover:bg-muted text-white dark:text-foreground border-0 shadow-none"
                 >
                   <Send className="h-3 w-3" />
                   {scheduledDate ? "Schedule" : "Send"}
@@ -582,7 +582,7 @@ export function ComposeDialog({
 
                 <Button
                   size="sm"
-                  className="h-6 px-2 bg-v2-ring hover:bg-v2-ring dark:hover:bg-v2-card-dark text-v2-ink-muted dark:text-v2-ink-subtle border-0 shadow-none"
+                  className="h-6 px-2 bg-muted hover:bg-muted dark:hover:bg-card-dark text-muted-foreground dark:text-muted-foreground border-0 shadow-none"
                   onClick={() => setShowSchedule(!showSchedule)}
                 >
                   <Clock className="h-3 w-3" />
@@ -593,8 +593,8 @@ export function ComposeDialog({
                   className={cn(
                     "h-6 px-2 border-0 shadow-none",
                     attachments.length > 0
-                      ? "bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-900/50 text-blue-600 dark:text-blue-400"
-                      : "bg-v2-ring hover:bg-v2-ring dark:hover:bg-v2-card-dark text-v2-ink-muted dark:text-v2-ink-subtle",
+                      ? "bg-info/15 hover:bg-info/30 dark:hover:bg-info/50 text-info"
+                      : "bg-muted hover:bg-muted dark:hover:bg-card-dark text-muted-foreground dark:text-muted-foreground",
                   )}
                   onClick={() => setShowDocumentBrowser(true)}
                 >
@@ -608,13 +608,13 @@ export function ComposeDialog({
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-v2-ink-muted">
+                <span className="text-[10px] text-muted-foreground">
                   {remainingDaily} remaining
                 </span>
 
                 <Button
                   size="sm"
-                  className="h-6 px-2 bg-transparent hover:bg-v2-ring dark:hover:bg-v2-ring text-v2-ink-muted hover:text-v2-ink border-0 shadow-none"
+                  className="h-6 px-2 bg-transparent hover:bg-muted dark:hover:bg-muted text-muted-foreground hover:text-foreground border-0 shadow-none"
                   onClick={handleSaveDraft}
                   disabled={isSavingDraft}
                 >
@@ -623,7 +623,7 @@ export function ComposeDialog({
 
                 <Button
                   size="sm"
-                  className="h-6 px-2 bg-transparent hover:bg-red-50 dark:hover:bg-red-900/20 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 border-0 shadow-none"
+                  className="h-6 px-2 bg-transparent hover:bg-destructive/10 dark:hover:bg-destructive/20 text-destructive hover:text-destructive dark:hover:text-destructive border-0 shadow-none"
                   onClick={() => {
                     resetForm();
                     onOpenChange(false);
@@ -679,23 +679,21 @@ function RecipientField({
 }: RecipientFieldProps) {
   return (
     <div className="flex items-start gap-2">
-      <Label className="text-[11px] text-v2-ink-muted w-8 pt-1.5">
+      <Label className="text-[11px] text-muted-foreground w-8 pt-1.5">
         {label}
       </Label>
       <div
         onClick={onActivate}
         className={cn(
-          "flex-1 flex flex-wrap items-center gap-1 min-h-[32px] px-2 py-1 border rounded-sm bg-v2-canvas cursor-text",
-          isActive
-            ? "border-v2-ring-strong  ring-1 ring-v2-ring "
-            : "border-v2-ring",
+          "flex-1 flex flex-wrap items-center gap-1 min-h-[32px] px-2 py-1 border rounded-sm bg-background cursor-text",
+          isActive ? "border-border  ring-1 ring-border " : "border-border",
           disabled && "opacity-50 cursor-not-allowed",
         )}
       >
         {values.map((email) => (
           <Badge
             key={email}
-            className="h-5 text-[10px] gap-1 pr-1 shrink-0 bg-v2-ring text-v2-ink-muted border-0"
+            className="h-5 text-[10px] gap-1 pr-1 shrink-0 bg-muted text-muted-foreground border-0"
           >
             <span className="max-w-[150px] truncate">{email}</span>
             {!disabled && (
@@ -705,7 +703,7 @@ function RecipientField({
                   e.stopPropagation();
                   onRemove(email);
                 }}
-                className="hover:bg-v2-ring-strong  rounded-full p-0.5"
+                className="hover:bg-muted  rounded-full p-0.5"
               >
                 <X className="h-2.5 w-2.5" />
               </button>
@@ -719,7 +717,7 @@ function RecipientField({
               e.stopPropagation();
               onOpenContacts();
             }}
-            className="text-[11px] text-v2-ink-muted hover:text-v2-ink"
+            className="text-[11px] text-muted-foreground hover:text-foreground"
           >
             Click to add from contacts →
           </button>

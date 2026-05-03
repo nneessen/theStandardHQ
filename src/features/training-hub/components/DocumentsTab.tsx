@@ -102,15 +102,15 @@ const CATEGORY_ICONS: Record<TrainingDocumentCategory, React.ReactNode> = {
 function getFileIcon(fileType: string | null) {
   if (!fileType) return <File className="h-4 w-4" />;
   if (fileType.includes("pdf"))
-    return <FileText className="h-4 w-4 text-red-500" />;
+    return <FileText className="h-4 w-4 text-destructive" />;
   if (fileType.includes("word") || fileType.includes("document"))
-    return <FileText className="h-4 w-4 text-blue-500" />;
+    return <FileText className="h-4 w-4 text-info" />;
   if (fileType.includes("excel") || fileType.includes("spreadsheet"))
-    return <Table2 className="h-4 w-4 text-green-500" />;
+    return <Table2 className="h-4 w-4 text-success" />;
   if (fileType.includes("powerpoint") || fileType.includes("presentation"))
-    return <Presentation className="h-4 w-4 text-orange-500" />;
+    return <Presentation className="h-4 w-4 text-warning" />;
   if (fileType.includes("image"))
-    return <Image className="h-4 w-4 text-purple-500" />;
+    return <Image className="h-4 w-4 text-info" />;
   return <File className="h-4 w-4" />;
 }
 
@@ -131,16 +131,16 @@ function DocumentRow({
   canDelete: boolean;
 }) {
   return (
-    <TableRow className="text-[11px] border-b border-v2-ring dark:border-v2-ring hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50">
+    <TableRow className="text-[11px] border-b border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted/50">
       <TableCell className="py-1.5">
         <div className="flex items-center gap-2">
           {getFileIcon(document.fileType)}
           <div className="min-w-0">
-            <span className="font-medium text-v2-ink dark:text-v2-ink block truncate">
+            <span className="font-medium text-foreground dark:text-foreground block truncate">
               {document.name}
             </span>
             {document.description && (
-              <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle block truncate">
+              <span className="text-[10px] text-muted-foreground dark:text-muted-foreground block truncate">
                 {document.description}
               </span>
             )}
@@ -150,17 +150,17 @@ function DocumentRow({
       <TableCell className="py-1.5">
         <Badge
           variant="outline"
-          className="text-[9px] px-1.5 py-0 border-v2-ring dark:border-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-subtle gap-1"
+          className="text-[9px] px-1.5 py-0 border-border dark:border-border text-muted-foreground dark:text-muted-foreground gap-1"
         >
           {CATEGORY_ICONS[document.category]}
           {TRAINING_CATEGORY_CONFIG[document.category]?.label ||
             document.category}
         </Badge>
       </TableCell>
-      <TableCell className="py-1.5 text-v2-ink-muted dark:text-v2-ink-subtle">
+      <TableCell className="py-1.5 text-muted-foreground dark:text-muted-foreground">
         {formatFileSize(document.fileSize)}
       </TableCell>
-      <TableCell className="py-1.5 text-v2-ink-muted dark:text-v2-ink-subtle">
+      <TableCell className="py-1.5 text-muted-foreground dark:text-muted-foreground">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -176,7 +176,7 @@ function DocumentRow({
           </Tooltip>
         </TooltipProvider>
       </TableCell>
-      <TableCell className="py-1.5 text-v2-ink-muted dark:text-v2-ink-subtle">
+      <TableCell className="py-1.5 text-muted-foreground dark:text-muted-foreground">
         {format(new Date(document.createdAt), "MMM d, yyyy")}
       </TableCell>
       <TableCell className="py-1.5 w-8">
@@ -185,7 +185,7 @@ function DocumentRow({
             <Button
               variant="ghost"
               size="icon"
-              className="h-6 w-6 text-v2-ink-muted hover:text-v2-ink dark:text-v2-ink-subtle dark:hover:text-v2-canvas"
+              className="h-6 w-6 text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-background"
             >
               <MoreHorizontal className="h-3 w-3" />
             </Button>
@@ -207,7 +207,7 @@ function DocumentRow({
             {canDelete && (
               <DropdownMenuItem
                 onClick={onDelete}
-                className="text-xs text-red-600 dark:text-red-400"
+                className="text-xs text-destructive"
               >
                 <Trash2 className="h-3 w-3 mr-2" />
                 Delete
@@ -245,7 +245,7 @@ function DocumentViewer({
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div className="bg-v2-card rounded-lg p-4 flex items-center gap-2">
+        <div className="bg-card rounded-lg p-4 flex items-center gap-2">
           <Loader2 className="h-4 w-4 animate-spin" />
           <span className="text-sm">Opening document...</span>
         </div>
@@ -354,7 +354,7 @@ export function DocumentsTab({ searchQuery }: DocumentsTabProps) {
 
   if (error) {
     return (
-      <div className="p-4 text-center text-red-500 dark:text-red-400">
+      <div className="p-4 text-center text-destructive">
         Failed to load documents. Please try again.
       </div>
     );
@@ -384,7 +384,7 @@ export function DocumentsTab({ searchQuery }: DocumentsTabProps) {
             </SelectContent>
           </Select>
           {documents && (
-            <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               {documents.length} document{documents.length !== 1 ? "s" : ""}
             </span>
           )}
@@ -403,26 +403,26 @@ export function DocumentsTab({ searchQuery }: DocumentsTabProps) {
       {/* Documents table */}
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : documents && documents.length > 0 ? (
-        <div className="border border-v2-ring dark:border-v2-ring rounded-md overflow-hidden">
+        <div className="border border-border dark:border-border rounded-md overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow className="bg-v2-canvas dark:bg-v2-card-tinted/50 border-b border-v2-ring dark:border-v2-ring-strong">
-                <TableHead className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle py-1.5">
+              <TableRow className="bg-background dark:bg-card-tinted/50 border-b border-border dark:border-border">
+                <TableHead className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground py-1.5">
                   Document
                 </TableHead>
-                <TableHead className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle py-1.5">
+                <TableHead className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground py-1.5">
                   Category
                 </TableHead>
-                <TableHead className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle py-1.5">
+                <TableHead className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground py-1.5">
                   Size
                 </TableHead>
-                <TableHead className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle py-1.5">
+                <TableHead className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground py-1.5">
                   Uploaded By
                 </TableHead>
-                <TableHead className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle py-1.5">
+                <TableHead className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground py-1.5">
                   Date
                 </TableHead>
                 <TableHead className="w-8 py-1.5" />
@@ -444,7 +444,7 @@ export function DocumentsTab({ searchQuery }: DocumentsTabProps) {
           </Table>
         </div>
       ) : (
-        <div className="text-center py-8 text-v2-ink-muted dark:text-v2-ink-subtle">
+        <div className="text-center py-8 text-muted-foreground dark:text-muted-foreground">
           <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
           <p className="text-sm">No documents found</p>
           <p className="text-xs mt-1">
@@ -530,7 +530,7 @@ export function DocumentsTab({ searchQuery }: DocumentsTabProps) {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="h-7 text-xs bg-red-600 hover:bg-red-700"
+              className="h-7 text-xs bg-destructive hover:bg-destructive"
               disabled={deleteDocument.isPending}
             >
               {deleteDocument.isPending ? (

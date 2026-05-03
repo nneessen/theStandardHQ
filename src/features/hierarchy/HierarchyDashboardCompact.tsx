@@ -164,7 +164,7 @@ export function HierarchyDashboardCompact() {
                 </span>
                 <span className="text-v2-ink-subtle">·</span>
                 <span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                  <span className="text-success font-semibold">
                     {compactDollar(stats.total_override_income_mtd ?? 0)}
                   </span>{" "}
                   override MTD
@@ -181,7 +181,7 @@ export function HierarchyDashboardCompact() {
                     <>
                       <span className="text-v2-ink-subtle">·</span>
                       <span>
-                        <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                        <span className="text-warning font-semibold">
                           {stats.pending_invitations}
                         </span>{" "}
                         pending

@@ -172,7 +172,7 @@ function SavedTemplateCard({
         <Button
           size="sm"
           variant="ghost"
-          className="h-5 w-5 p-0 text-red-500 hover:text-red-600"
+          className="h-5 w-5 p-0 text-destructive hover:text-destructive"
           onClick={onDelete}
           disabled={deleting}
         >

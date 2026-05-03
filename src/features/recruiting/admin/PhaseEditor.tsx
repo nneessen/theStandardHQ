@@ -383,7 +383,7 @@ export function PhaseEditor({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4">
-        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -391,7 +391,7 @@ export function PhaseEditor({
   return (
     <div className="space-y-2.5">
       <div className="flex items-center justify-between">
-        <h3 className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
+        <h3 className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
           Pipeline Phases ({sortedPhases.length})
         </h3>
         {!readOnly && (
@@ -408,7 +408,7 @@ export function PhaseEditor({
       </div>
 
       {sortedPhases.length === 0 ? (
-        <div className="text-center py-6 text-[11px] text-v2-ink-muted">
+        <div className="text-center py-6 text-[11px] text-muted-foreground">
           No phases yet. Add your first phase to get started.
         </div>
       ) : (
@@ -445,13 +445,13 @@ export function PhaseEditor({
 
       {/* Create Phase Dialog */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-md p-3 bg-v2-card">
+        <DialogContent className="max-w-md p-3 bg-card">
           <DialogHeader>
             <DialogTitle className="text-sm">Add Phase</DialogTitle>
           </DialogHeader>
           <div className="space-y-3 py-3">
             <div className="space-y-1.5">
-              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+              <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                 Phase Name
               </Label>
               <Input
@@ -460,11 +460,11 @@ export function PhaseEditor({
                   setPhaseForm({ ...phaseForm, phase_name: e.target.value })
                 }
                 placeholder="e.g., Background Check"
-                className="h-7 text-[11px] bg-v2-canvas border-v2-ring"
+                className="h-7 text-[11px] bg-background border-border"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+              <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                 Description
               </Label>
               <Textarea
@@ -476,11 +476,11 @@ export function PhaseEditor({
                   })
                 }
                 placeholder="Optional description..."
-                className="text-[11px] min-h-14 bg-v2-canvas border-v2-ring"
+                className="text-[11px] min-h-14 bg-background border-border"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+              <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                 Estimated Days
               </Label>
               <Input
@@ -492,7 +492,7 @@ export function PhaseEditor({
                     estimated_days: parseInt(e.target.value) || 7,
                   })
                 }
-                className="h-7 text-[11px] w-20 bg-v2-canvas border-v2-ring"
+                className="h-7 text-[11px] w-20 bg-background border-border"
               />
             </div>
             <div className="flex items-center gap-2">
@@ -505,7 +505,7 @@ export function PhaseEditor({
               />
               <label
                 htmlFor="auto_advance"
-                className="text-[11px] text-v2-ink-muted cursor-pointer"
+                className="text-[11px] text-muted-foreground cursor-pointer"
               >
                 Auto-advance when all items complete
               </label>
@@ -520,13 +520,13 @@ export function PhaseEditor({
               />
               <label
                 htmlFor="visible_to_recruit"
-                className="text-[11px] text-v2-ink-muted cursor-pointer"
+                className="text-[11px] text-muted-foreground cursor-pointer"
               >
                 Visible to recruits
               </label>
             </div>
             {phaseForm.visible_to_recruit === false && (
-              <p className="text-[10px] text-amber-600 dark:text-amber-400 ml-5">
+              <p className="text-[10px] text-warning ml-5">
                 This phase will be hidden from recruits. They will see a
                 &quot;waiting&quot; state instead.
               </p>
@@ -558,14 +558,14 @@ export function PhaseEditor({
 
       {/* Edit Phase Dialog */}
       <Dialog open={!!editingPhase} onOpenChange={() => setEditingPhase(null)}>
-        <DialogContent className="max-w-md p-3 bg-v2-card">
+        <DialogContent className="max-w-md p-3 bg-card">
           <DialogHeader>
             <DialogTitle className="text-sm">Edit Phase</DialogTitle>
           </DialogHeader>
           {editingPhase && (
             <div className="space-y-3 py-3">
               <div className="space-y-1.5">
-                <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                   Phase Name
                 </Label>
                 <Input
@@ -576,11 +576,11 @@ export function PhaseEditor({
                       phase_name: e.target.value,
                     })
                   }
-                  className="h-7 text-[11px] bg-v2-canvas border-v2-ring"
+                  className="h-7 text-[11px] bg-background border-border"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                   Description
                 </Label>
                 <Textarea
@@ -591,11 +591,11 @@ export function PhaseEditor({
                       phase_description: e.target.value,
                     })
                   }
-                  className="text-[11px] min-h-14 bg-v2-canvas border-v2-ring"
+                  className="text-[11px] min-h-14 bg-background border-border"
                 />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                   Estimated Days
                 </Label>
                 <Input
@@ -607,7 +607,7 @@ export function PhaseEditor({
                       estimated_days: parseInt(e.target.value) || 7,
                     })
                   }
-                  className="h-7 text-[11px] w-20 bg-v2-canvas border-v2-ring"
+                  className="h-7 text-[11px] w-20 bg-background border-border"
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -623,7 +623,7 @@ export function PhaseEditor({
                 />
                 <label
                   htmlFor="edit_auto_advance"
-                  className="text-[11px] text-v2-ink-muted cursor-pointer"
+                  className="text-[11px] text-muted-foreground cursor-pointer"
                 >
                   Auto-advance when all items complete
                 </label>
@@ -641,13 +641,13 @@ export function PhaseEditor({
                 />
                 <label
                   htmlFor="edit_visible_to_recruit"
-                  className="text-[11px] text-v2-ink-muted cursor-pointer"
+                  className="text-[11px] text-muted-foreground cursor-pointer"
                 >
                   Visible to recruits
                 </label>
               </div>
               {!editingPhase.visible_to_recruit && (
-                <p className="text-[10px] text-amber-600 dark:text-amber-400 ml-5">
+                <p className="text-[10px] text-warning ml-5">
                   This phase will be hidden from recruits. They will see a
                   &quot;waiting&quot; state instead.
                 </p>
@@ -683,11 +683,11 @@ export function PhaseEditor({
         open={!!deleteConfirmId}
         onOpenChange={() => setDeleteConfirmId(null)}
       >
-        <DialogContent className="max-w-sm p-3 bg-v2-card">
+        <DialogContent className="max-w-sm p-3 bg-card">
           <DialogHeader>
             <DialogTitle className="text-sm">Delete Phase?</DialogTitle>
           </DialogHeader>
-          <p className="text-[11px] text-v2-ink-muted">
+          <p className="text-[11px] text-muted-foreground">
             This will permanently delete this phase and all its checklist items.
           </p>
           <DialogFooter>

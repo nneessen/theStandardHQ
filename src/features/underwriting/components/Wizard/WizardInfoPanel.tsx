@@ -176,12 +176,12 @@ export function WizardInfoPanel({
     <div className="xl:sticky xl:top-4">
       <ScrollArea className="xl:h-[calc(100vh-14rem)]">
         <div className="space-y-4 xl:pr-4">
-          <div className="rounded-[28px] border border-amber-200/80 bg-gradient-to-br from-amber-100 via-orange-50 to-white p-5 shadow-sm dark:border-amber-800/70 dark:from-amber-950/40 dark:via-zinc-950 dark:to-zinc-900">
+          <div className="rounded-[28px] border border-warning/30/80 bg-gradient-to-br from-amber-100 via-orange-50 to-white p-5 shadow-sm dark:border-warning/70 dark:from-amber-950/40 dark:via-zinc-950 dark:to-zinc-900">
             <div className="mb-4 flex items-center justify-between gap-3">
-              <Badge className="bg-amber-600 text-white hover:bg-amber-600">
+              <Badge className="bg-warning text-white hover:bg-warning">
                 Use With Caution
               </Badge>
-              <ShieldAlert className="h-5 w-5 text-amber-700 dark:text-amber-400" />
+              <ShieldAlert className="h-5 w-5 text-warning" />
             </div>
             <div className="space-y-2">
               <h2
@@ -212,7 +212,7 @@ export function WizardInfoPanel({
             <CardHeader className="pb-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1">
-                  <CardDescription className="uppercase tracking-[0.16em] text-[11px] text-amber-700 dark:text-amber-400">
+                  <CardDescription className="uppercase tracking-[0.16em] text-[11px] text-warning">
                     {guidance.eyebrow}
                   </CardDescription>
                   <CardTitle className="text-base">{guidance.title}</CardTitle>
@@ -232,14 +232,14 @@ export function WizardInfoPanel({
                   {guidance.checklist.map((item) => (
                     <li
                       key={item}
-                      className="rounded-xl border border-v2-ring/80 bg-white/70 px-3 py-2 dark:border-v2-ring dark:bg-v2-card/60"
+                      className="rounded-lg border border-v2-ring/80 bg-white/70 px-3 py-2 dark:border-v2-ring dark:bg-v2-card/60"
                     >
                       {item}
                     </li>
                   ))}
                 </ul>
               </div>
-              <div className="rounded-xl border border-amber-200 bg-amber-50/90 px-3 py-2 text-sm text-amber-900 dark:border-amber-800/70 dark:bg-amber-950/30 dark:text-amber-100">
+              <div className="rounded-lg border border-warning/30 bg-warning/10/90 px-3 py-2 text-sm text-warning dark:border-warning/70 dark:bg-warning/15 dark:text-warning">
                 {guidance.caution}
               </div>
             </CardContent>
@@ -261,7 +261,7 @@ export function WizardInfoPanel({
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-xl bg-v2-card-tinted px-3 py-2 dark:bg-v2-card">
+                <div className="rounded-lg bg-v2-card-tinted px-3 py-2 dark:bg-v2-card">
                   <div className="text-[11px] uppercase tracking-[0.16em] text-v2-ink-muted">
                     Applicant
                   </div>
@@ -269,7 +269,7 @@ export function WizardInfoPanel({
                     {formData.client.name || "Unnamed case"}
                   </div>
                 </div>
-                <div className="rounded-xl bg-v2-card-tinted px-3 py-2 dark:bg-v2-card">
+                <div className="rounded-lg bg-v2-card-tinted px-3 py-2 dark:bg-v2-card">
                   <div className="text-[11px] uppercase tracking-[0.16em] text-v2-ink-muted">
                     Profile
                   </div>
@@ -280,7 +280,7 @@ export function WizardInfoPanel({
                     {formData.client.state ? `, ${formData.client.state}` : ""}
                   </div>
                 </div>
-                <div className="rounded-xl bg-v2-card-tinted px-3 py-2 dark:bg-v2-card">
+                <div className="rounded-lg bg-v2-card-tinted px-3 py-2 dark:bg-v2-card">
                   <div className="text-[11px] uppercase tracking-[0.16em] text-v2-ink-muted">
                     Conditions
                   </div>
@@ -288,7 +288,7 @@ export function WizardInfoPanel({
                     {formData.health.conditions.length}
                   </div>
                 </div>
-                <div className="rounded-xl bg-v2-card-tinted px-3 py-2 dark:bg-v2-card">
+                <div className="rounded-lg bg-v2-card-tinted px-3 py-2 dark:bg-v2-card">
                   <div className="text-[11px] uppercase tracking-[0.16em] text-v2-ink-muted">
                     Med Signals
                   </div>
@@ -358,7 +358,7 @@ export function WizardInfoPanel({
               <ul className="space-y-2 text-sm text-v2-ink dark:text-v2-ink-muted">
                 {KNOWN_LIMITATIONS.map((item) => (
                   <li key={item} className="flex gap-2">
-                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-amber-500" />
+                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-warning" />
                     <span>{item}</span>
                   </li>
                 ))}

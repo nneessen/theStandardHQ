@@ -246,7 +246,7 @@ export function CompTable({ data, isLoading, error }: CompTableProps) {
   }
 
   return (
-    <div className="bg-v2-card shadow-md overflow-hidden sm:rounded-md">
+    <div className="bg-card shadow-md overflow-hidden sm:rounded-md">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>

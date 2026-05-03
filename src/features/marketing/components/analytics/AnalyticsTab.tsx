@@ -20,12 +20,12 @@ import type { CampaignStatus } from "../../types/marketing.types";
 import { CampaignDetailSheet } from "../campaigns/CampaignDetailSheet";
 
 const STATUS_COLORS: Record<CampaignStatus, string> = {
-  draft: "bg-zinc-500/10 text-v2-ink-muted border-zinc-500/20",
-  sending: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-  sent: "bg-green-500/10 text-green-600 border-green-500/20",
-  scheduled: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-  paused: "bg-orange-500/10 text-orange-600 border-orange-500/20",
-  failed: "bg-red-500/10 text-red-600 border-red-500/20",
+  draft: "bg-muted text-v2-ink-muted border-input/20",
+  sending: "bg-info/10 text-info border-info/20",
+  sent: "bg-success/10 text-success border-success/20",
+  scheduled: "bg-warning/10 text-warning border-warning/20",
+  paused: "bg-warning/10 text-warning border-warning/20",
+  failed: "bg-destructive/10 text-destructive border-destructive/20",
 };
 
 interface KpiBlockProps {
@@ -107,28 +107,28 @@ export function AnalyticsTab() {
           label="Total Sent"
           value={(metrics?.totalSent ?? 0).toLocaleString()}
           sub="across all campaigns"
-          iconClass="text-blue-500"
+          iconClass="text-info"
         />
         <KpiBlock
           icon={Eye}
           label="Open Rate"
           value={openRate}
           sub={`${(metrics?.totalOpened ?? 0).toLocaleString()} opens`}
-          iconClass="text-green-500"
+          iconClass="text-success"
         />
         <KpiBlock
           icon={MousePointer}
           label="Click Rate"
           value={clickRate}
           sub={`${(metrics?.totalClicked ?? 0).toLocaleString()} clicks`}
-          iconClass="text-amber-500"
+          iconClass="text-warning"
         />
         <KpiBlock
           icon={AlertTriangle}
           label="Bounce Rate"
           value={bounceRate}
           sub={`${(metrics?.totalBounced ?? 0).toLocaleString()} bounces`}
-          iconClass="text-red-500"
+          iconClass="text-destructive"
         />
       </div>
 
@@ -207,7 +207,7 @@ export function AnalyticsTab() {
                         {sent.toLocaleString()}
                       </TableCell>
                       <TableCell className="py-1.5 px-3 text-[11px] text-right tabular-nums">
-                        <span className={opens > 0 ? "text-green-600" : ""}>
+                        <span className={opens > 0 ? "text-success" : ""}>
                           {opens.toLocaleString()}
                         </span>
                         {sent > 0 && (
@@ -217,7 +217,7 @@ export function AnalyticsTab() {
                         )}
                       </TableCell>
                       <TableCell className="py-1.5 px-3 text-[11px] text-right tabular-nums">
-                        <span className={clicks > 0 ? "text-amber-600" : ""}>
+                        <span className={clicks > 0 ? "text-warning" : ""}>
                           {clicks.toLocaleString()}
                         </span>
                         {sent > 0 && (
@@ -227,7 +227,7 @@ export function AnalyticsTab() {
                         )}
                       </TableCell>
                       <TableCell className="py-1.5 px-3 text-[11px] text-right tabular-nums">
-                        <span className={bounces > 0 ? "text-red-600" : ""}>
+                        <span className={bounces > 0 ? "text-destructive" : ""}>
                           {bounces.toLocaleString()}
                         </span>
                         {sent > 0 && (

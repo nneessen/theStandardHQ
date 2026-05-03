@@ -12,7 +12,7 @@ export function BadgeCard({ badge, earned, earnedAt }: BadgeCardProps) {
     <div
       className={`relative flex flex-col items-center p-2.5 rounded-lg border text-center transition-all ${
         earned
-          ? "border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/10"
+          ? "border-warning/30 bg-warning/10 dark:bg-warning/10"
           : "border-v2-ring dark:border-v2-ring bg-v2-canvas dark:bg-v2-card opacity-50"
       }`}
     >
@@ -37,7 +37,7 @@ export function BadgeCard({ badge, earned, earnedAt }: BadgeCardProps) {
         </span>
       )}
       {earned && earnedAt && (
-        <span className="text-[9px] text-amber-600 dark:text-amber-400 mt-1">
+        <span className="text-[9px] text-warning mt-1">
           {new Date(earnedAt).toLocaleDateString()}
         </span>
       )}

@@ -1,17 +1,21 @@
-import {useState, useRef, useMemo} from 'react'
-import {ChevronDown, AlertCircle, CheckCircle} from 'lucide-react'
-import {cn} from '@/lib/utils'
-import {Input} from '@/components/ui/input'
-import {Label} from '@/components/ui/label'
-import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover'
-import {Button} from '@/components/ui/button'
-import {getVariablesByCategory} from '@/lib/templateVariables'
+import { useState, useRef, useMemo } from "react";
+import { ChevronDown, AlertCircle, CheckCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { getVariablesByCategory } from "@/lib/templateVariables";
 
 interface SubjectEditorProps {
-  value: string
-  onChange: (value: string) => void
-  previewVariables?: Record<string, string>
-  className?: string
+  value: string;
+  onChange: (value: string) => void;
+  previewVariables?: Record<string, string>;
+  className?: string;
 }
 
 export function SubjectEditor({
@@ -20,64 +24,70 @@ export function SubjectEditor({
   previewVariables = {},
   className,
 }: SubjectEditorProps) {
-  const [variableOpen, setVariableOpen] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [variableOpen, setVariableOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Derive subject variables from shared source (email context)
-  const SUBJECT_VARIABLES = useMemo(() =>
-    getVariablesByCategory('email')
-      .flatMap(group => group.variables)
-      .map(v => ({ key: v.key, label: v.description, preview: v.preview })),
-    []
-  )
+  const SUBJECT_VARIABLES = useMemo(
+    () =>
+      getVariablesByCategory("email")
+        .flatMap((group) => group.variables)
+        .map((v) => ({ key: v.key, label: v.description, preview: v.preview })),
+    [],
+  );
 
   // Character count and recommendations
-  const charCount = value.length
-  const isRecommended = charCount <= 50
-  const isAcceptable = charCount <= 100
-  const isTooLong = charCount > 100
+  const charCount = value.length;
+  const isRecommended = charCount <= 50;
+  const isAcceptable = charCount <= 100;
+  const isTooLong = charCount > 100;
 
   // Preview with variables replaced
   const previewText = value.replace(
     /\{\{(\w+)\}\}/g,
-    (_, key) => previewVariables[key] || SUBJECT_VARIABLES.find(v => v.key === key)?.preview || `{{${key}}}`
-  )
+    (_, key) =>
+      previewVariables[key] ||
+      SUBJECT_VARIABLES.find((v) => v.key === key)?.preview ||
+      `{{${key}}}`,
+  );
 
   const insertVariable = (variable: string) => {
-    const input = inputRef.current
+    const input = inputRef.current;
     if (!input) {
-      onChange(value + `{{${variable}}}`)
-      return
+      onChange(value + `{{${variable}}}`);
+      return;
     }
 
-    const start = input.selectionStart || value.length
-    const end = input.selectionEnd || value.length
-    const newValue = value.slice(0, start) + `{{${variable}}}` + value.slice(end)
-    onChange(newValue)
+    const start = input.selectionStart || value.length;
+    const end = input.selectionEnd || value.length;
+    const newValue =
+      value.slice(0, start) + `{{${variable}}}` + value.slice(end);
+    onChange(newValue);
 
     // Restore focus and cursor position
     setTimeout(() => {
-      input.focus()
-      const newPos = start + variable.length + 4 // {{}} = 4 chars
-      input.setSelectionRange(newPos, newPos)
-    }, 0)
+      input.focus();
+      const newPos = start + variable.length + 4; // {{}} = 4 chars
+      input.setSelectionRange(newPos, newPos);
+    }, 0);
 
-    setVariableOpen(false)
-  }
+    setVariableOpen(false);
+  };
 
   return (
-    <div className={cn('space-y-1', className)}>
+    <div className={cn("space-y-1", className)}>
       <div className="flex items-center justify-between">
         <Label className="text-xs font-medium">Subject Line</Label>
         <span
           className={cn(
-            'text-[10px]',
-            isRecommended && 'text-green-600',
-            !isRecommended && isAcceptable && 'text-yellow-600',
-            isTooLong && 'text-red-600'
+            "text-[10px]",
+            isRecommended && "text-success",
+            !isRecommended && isAcceptable && "text-warning",
+            isTooLong && "text-destructive",
           )}
         >
-          {charCount}/50 {isRecommended ? '✓' : charCount <= 100 ? '⚠️' : '⚠️ Too long'}
+          {charCount}/50{" "}
+          {isRecommended ? "✓" : charCount <= 100 ? "⚠️" : "⚠️ Too long"}
         </span>
       </div>
 
@@ -93,9 +103,9 @@ export function SubjectEditor({
           {value && (
             <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2">
               {isRecommended ? (
-                <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+                <CheckCircle className="h-3.5 w-3.5 text-success" />
               ) : isTooLong ? (
-                <AlertCircle className="h-3.5 w-3.5 text-red-500" />
+                <AlertCircle className="h-3.5 w-3.5 text-destructive" />
               ) : null}
             </span>
           )}
@@ -104,7 +114,7 @@ export function SubjectEditor({
         <Popover open={variableOpen} onOpenChange={setVariableOpen}>
           <PopoverTrigger asChild>
             <Button variant="outline" size="sm" className="h-8 gap-1 px-2">
-              <span className="text-[10px]">{'{{}}'}</span>
+              <span className="text-[10px]">{"{{}}"}</span>
               <ChevronDown className="h-3 w-3" />
             </Button>
           </PopoverTrigger>
@@ -139,10 +149,12 @@ export function SubjectEditor({
       {/* Tips */}
       {!value && (
         <p className="text-[10px] text-muted-foreground">
-          Keep under 50 characters for best open rates. Use variables like{' '}
-          <code className="rounded bg-muted px-1">{'{{recruit_first_name}}'}</code>
+          Keep under 50 characters for best open rates. Use variables like{" "}
+          <code className="rounded bg-muted px-1">
+            {"{{recruit_first_name}}"}
+          </code>
         </p>
       )}
     </div>
-  )
+  );
 }

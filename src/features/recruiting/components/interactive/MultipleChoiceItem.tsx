@@ -129,7 +129,7 @@ export function MultipleChoiceItem({
 
     return (
       <div className="space-y-1">
-        <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+        <span className="inline-flex items-center gap-1 text-xs text-success">
           <CheckCircle2 className="h-3.5 w-3.5" />
           Selection submitted
         </span>
@@ -147,7 +147,7 @@ export function MultipleChoiceItem({
     metadata.options.length === 0
   ) {
     return (
-      <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
+      <div className="flex items-center gap-2 text-xs text-destructive">
         <AlertCircle className="h-3.5 w-3.5" />
         <span>Question configuration error: No options available</span>
       </div>
@@ -210,7 +210,7 @@ export function MultipleChoiceItem({
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs text-v2-ink">{option.label}</span>
                   {isDisqualifying && isSelected && (
-                    <AlertTriangle className="h-3 w-3 text-amber-500" />
+                    <AlertTriangle className="h-3 w-3 text-warning" />
                   )}
                 </div>
                 {option.description && (
@@ -236,7 +236,7 @@ export function MultipleChoiceItem({
             onClick={handleSubmit}
             disabled={isSubmitting}
             size="sm"
-            className="h-7 text-xs px-3 gap-1.5 bg-emerald-600 hover:bg-emerald-700"
+            className="h-7 text-xs px-3 gap-1.5 bg-success hover:bg-success"
           >
             {isSubmitting ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />

@@ -18,7 +18,7 @@ export function AppointmentMetrics({
   return (
     <div className="p-2.5 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
       <div className="flex items-center gap-1.5 mb-2">
-        <Calendar className="h-3 w-3 text-violet-500" />
+        <Calendar className="h-3 w-3 text-info" />
         <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
           Appointments
         </h4>
@@ -32,19 +32,19 @@ export function AppointmentMetrics({
           label="Booking Rate"
           value={`${(bookingRate * 100).toFixed(1)}%`}
           barPercent={bookingRate * 100}
-          color="bg-violet-500"
+          color="bg-info"
         />
         <FunnelRow
           label="Show Rate"
           value={`${(showRate * 100).toFixed(1)}%`}
           barPercent={showRate * 100}
-          color="bg-emerald-500"
+          color="bg-success"
         />
         <FunnelRow
           label="Cancel Rate"
           value={`${(cancelRate * 100).toFixed(1)}%`}
           barPercent={cancelRate * 100}
-          color="bg-red-400"
+          color="bg-destructive/70"
         />
       </div>
 

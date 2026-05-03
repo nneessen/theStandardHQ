@@ -58,14 +58,12 @@ interface RecruitBottomPanelProps {
 }
 
 const CHECKLIST_STATUS_COLORS: Record<string, string> = {
-  completed:
-    "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
-  in_progress:
-    "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  completed: "bg-success/20 text-success dark:bg-success/30 dark:text-success",
+  in_progress: "bg-info/20 text-info dark:bg-info/30 dark:text-info",
   not_started: "bg-v2-ring text-v2-ink-muted  -subtle",
-  rejected: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
-  pending:
-    "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+  rejected:
+    "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive",
+  pending: "bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning",
 };
 
 type ChecklistProgressRecord = { checklist_item_id: string; status: string };
@@ -103,7 +101,7 @@ function PhaseChecklist({
 
   if (isError) {
     return (
-      <p className="text-[10px] text-red-400 dark:text-red-500 py-1">
+      <p className="text-[10px] text-destructive dark:text-destructive py-1">
         Failed to load checklist items.
       </p>
     );
@@ -430,10 +428,10 @@ export function RecruitBottomPanel({
                     recruit.onboarding_status || "",
                   )
                   ? TERMINAL_STATUS_COLORS[recruit.onboarding_status!]
-                  : "bg-blue-100 text-blue-800"
+                  : "bg-info/20 text-info"
                 : recruit.approval_status === "active" ||
                     recruit.approval_status === "approved"
-                  ? "bg-green-100 text-green-800"
+                  ? "bg-success/20 text-success"
                   : "",
             )}
           >
@@ -542,7 +540,7 @@ export function RecruitBottomPanel({
                       "border-v2-ring hover:border-v2-ring-strong ",
                       "hover:bg-v2-canvas",
                       enrollingTemplateId === t.id &&
-                        "border-blue-400 bg-blue-50 dark:border-blue-600 dark:bg-blue-950/30",
+                        "border-info/70 bg-info/10 dark:border-info dark:bg-info/15",
                     )}
                     disabled={initializeProgress.isPending}
                     onClick={() => handleEnroll(t.id)}
@@ -558,7 +556,7 @@ export function RecruitBottomPanel({
                       )}
                     </div>
                     {enrollingTemplateId === t.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-blue-500 shrink-0 ml-2" />
+                      <Loader2 className="h-4 w-4 animate-spin text-info shrink-0 ml-2" />
                     ) : (
                       <ChevronRight className="h-4 w-4 text-v2-ink-subtle shrink-0 ml-2" />
                     )}
@@ -602,7 +600,7 @@ export function RecruitBottomPanel({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 px-2 text-[10px] text-v2-ink-subtle hover:text-red-600 dark:hover:text-red-400 gap-1"
+                    className="h-7 px-2 text-[10px] text-v2-ink-subtle hover:text-destructive dark:hover:text-destructive gap-1"
                     onClick={() => setConfirmUnenroll(true)}
                     disabled={unenrollFromPipeline.isPending}
                     title="Unenroll from pipeline"
@@ -644,11 +642,11 @@ export function RecruitBottomPanel({
                           isSelected &&
                             "ring-2 ring-offset-1 ring-v2-ring-strong ",
                           status === "completed"
-                            ? "bg-emerald-500"
+                            ? "bg-success"
                             : status === "in_progress"
-                              ? "bg-blue-500"
+                              ? "bg-info"
                               : status === "blocked"
-                                ? "bg-red-400"
+                                ? "bg-destructive/70"
                                 : "bg-v2-ring",
                         )}
                         title={`${phase.phase_name} — ${status.replace(/_/g, " ")} (click to view)`}
@@ -699,8 +697,8 @@ export function RecruitBottomPanel({
                           <Badge
                             className={`px-1 py-0 text-[9px] h-4 ${
                               String(doc.status) === "active"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-gray-100 text-gray-700"
+                                ? "bg-success/20 text-success"
+                                : "bg-muted text-foreground"
                             }`}
                           >
                             {String(doc.status)}
@@ -708,7 +706,7 @@ export function RecruitBottomPanel({
                         </div>
                       ))}
                       {documents.length > 3 && (
-                        <div className="text-[10px] text-blue-600 cursor-pointer hover:underline px-1">
+                        <div className="text-[10px] text-info cursor-pointer hover:underline px-1">
                           +{documents.length - 3} more documents
                         </div>
                       )}
@@ -792,7 +790,7 @@ export function RecruitBottomPanel({
               <div className="flex items-center justify-center py-2">
                 <Badge
                   variant="default"
-                  className="text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
+                  className="text-[10px] bg-success/20 text-success dark:bg-success/30 dark:text-success"
                 >
                   Pipeline Complete
                 </Badge>
@@ -826,7 +824,7 @@ export function RecruitBottomPanel({
               </Button>
               <Button
                 size="sm"
-                className="flex-1 h-7 text-[10px] bg-red-600 hover:bg-red-700 text-white"
+                className="flex-1 h-7 text-[10px] bg-destructive hover:bg-destructive text-white"
                 onClick={handleUnenroll}
                 disabled={unenrollFromPipeline.isPending}
               >

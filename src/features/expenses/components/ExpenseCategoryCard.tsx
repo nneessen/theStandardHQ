@@ -1,10 +1,10 @@
 // src/features/expenses/components/ExpenseCategoryCard.tsx
 
-import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
-import {formatCurrency} from '../../../lib/format';
-import {EXPENSE_CARD_STYLES} from '../config/expenseDashboardConfig';
-import {cn} from '@/lib/utils';
-import type {CategoryBreakdownData} from '../../../types/expense.types';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatCurrency } from "../../../lib/format";
+import { EXPENSE_CARD_STYLES } from "../config/expenseDashboardConfig";
+import { cn } from "@/lib/utils";
+import type { CategoryBreakdownData } from "../../../types/expense.types";
 
 export interface ExpenseCategoryCardProps {
   categories: CategoryBreakdownData[];
@@ -19,7 +19,10 @@ export interface ExpenseCategoryCardProps {
  * - Percentage of total
  * - Progress bar with category-specific color
  */
-export function ExpenseCategoryCard({ categories, totalAmount }: ExpenseCategoryCardProps) {
+export function ExpenseCategoryCard({
+  categories,
+  totalAmount,
+}: ExpenseCategoryCardProps) {
   // Show top 5 categories + "Other" if more exist
   const topCategories = categories.slice(0, 5);
   const hasMore = categories.length > 5;
@@ -34,7 +37,9 @@ export function ExpenseCategoryCard({ categories, totalAmount }: ExpenseCategory
           Expenses by Category
         </CardTitle>
       </CardHeader>
-      <CardContent className={cn(EXPENSE_CARD_STYLES.content, EXPENSE_CARD_STYLES.spacing)}>
+      <CardContent
+        className={cn(EXPENSE_CARD_STYLES.content, EXPENSE_CARD_STYLES.spacing)}
+      >
         {topCategories.length === 0 ? (
           <div className="text-center text-muted-foreground text-sm py-8">
             No expenses to display
@@ -42,12 +47,16 @@ export function ExpenseCategoryCard({ categories, totalAmount }: ExpenseCategory
         ) : (
           <>
             {topCategories.map((category, index) => (
-              <CategoryRow key={category.category} category={category} index={index} />
+              <CategoryRow
+                key={category.category}
+                category={category}
+                index={index}
+              />
             ))}
             {hasMore && (
               <CategoryRow
                 category={{
-                  category: 'Other',
+                  category: "Other",
                   amount: otherAmount,
                   percentage: (otherAmount / totalAmount) * 100,
                   count: 0,
@@ -74,12 +83,12 @@ function CategoryRow({
 }) {
   // Rotate through colors for visual distinction
   const colors = [
-    'bg-blue-500',
-    'bg-green-500',
-    'bg-purple-500',
-    'bg-orange-500',
-    'bg-pink-500',
-    'bg-muted-foreground',
+    "bg-info",
+    "bg-success",
+    "bg-info",
+    "bg-warning",
+    "bg-info",
+    "bg-muted-foreground",
   ];
   const barColor = colors[index % colors.length];
 
@@ -98,7 +107,7 @@ function CategoryRow({
       </div>
       <div className="h-2 bg-muted rounded-full overflow-hidden shadow-inner">
         <div
-          className={cn('h-full transition-all duration-300', barColor)}
+          className={cn("h-full transition-all duration-300", barColor)}
           style={{ width: `${category.percentage}%` }}
         />
       </div>

@@ -24,7 +24,7 @@ export function ReviewStatusBadge({
   // Active criteria takes precedence
   if (isActive) {
     return (
-      <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-[9px] px-1.5 py-0">
+      <Badge className="bg-info/20 text-info dark:bg-info/30 dark:text-info text-[9px] px-1.5 py-0">
         {showIcon && <CheckCircle2 className="h-2.5 w-2.5 mr-1" />}
         Active
       </Badge>
@@ -34,21 +34,21 @@ export function ReviewStatusBadge({
   switch (status) {
     case "approved":
       return (
-        <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-[9px] px-1.5 py-0">
+        <Badge className="bg-success/20 text-success dark:bg-success/15 dark:text-success text-[9px] px-1.5 py-0">
           {showIcon && <CheckCircle2 className="h-2.5 w-2.5 mr-1" />}
           Approved
         </Badge>
       );
     case "rejected":
       return (
-        <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-[9px] px-1.5 py-0">
+        <Badge className="bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive text-[9px] px-1.5 py-0">
           {showIcon && <XCircle className="h-2.5 w-2.5 mr-1" />}
           Rejected
         </Badge>
       );
     case "needs_revision":
       return (
-        <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 text-[9px] px-1.5 py-0">
+        <Badge className="bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning text-[9px] px-1.5 py-0">
           {showIcon && <AlertTriangle className="h-2.5 w-2.5 mr-1" />}
           {showIcon ? "Revision" : "Needs Revision"}
         </Badge>

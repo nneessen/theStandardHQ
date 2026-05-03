@@ -409,12 +409,12 @@ export function EmailComposer({
               {trainingDocAttachments.map((doc) => (
                 <div
                   key={doc.id}
-                  className="inline-flex items-center gap-2 px-2 py-1 text-xs bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-800"
+                  className="inline-flex items-center gap-2 px-2 py-1 text-xs bg-info/10 dark:bg-info/10 text-info rounded border border-info/30"
                 >
                   <Library className="h-3 w-3" />
                   <span className="max-w-[150px] truncate">{doc.name}</span>
                   {doc.fileSize !== null && (
-                    <span className="text-blue-500">
+                    <span className="text-info">
                       ({formatFileSize(doc.fileSize)})
                     </span>
                   )}

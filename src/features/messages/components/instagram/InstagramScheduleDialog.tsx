@@ -233,10 +233,10 @@ export function InstagramScheduleDialog({
                 className={cn(
                   "text-[9px]",
                   isOverLimit
-                    ? "text-red-500 font-medium"
+                    ? "text-destructive font-medium"
                     : charCount > MAX_CHARS * 0.9
-                      ? "text-amber-500"
-                      : "text-v2-ink-subtle",
+                      ? "text-warning"
+                      : "text-muted-foreground",
                 )}
               >
                 {charCount}/{MAX_CHARS}
@@ -249,7 +249,7 @@ export function InstagramScheduleDialog({
               placeholder="Type your message..."
               className={cn(
                 "min-h-[100px] text-[11px] resize-none",
-                isOverLimit && "border-red-300 dark:border-red-700",
+                isOverLimit && "border-destructive/40",
               )}
             />
           </div>
@@ -261,7 +261,7 @@ export function InstagramScheduleDialog({
                 Date
               </Label>
               <div className="relative">
-                <Calendar className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-v2-ink-subtle" />
+                <Calendar className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
                   id="date"
                   type="date"
@@ -282,7 +282,7 @@ export function InstagramScheduleDialog({
                 Time
               </Label>
               <div className="relative">
-                <Clock className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-v2-ink-subtle" />
+                <Clock className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                 <Input
                   id="time"
                   type="time"
@@ -296,18 +296,20 @@ export function InstagramScheduleDialog({
 
           {/* Time validation error */}
           {!timeValidation.valid && timeValidation.error && (
-            <p className="text-[10px] text-red-500">{timeValidation.error}</p>
+            <p className="text-[10px] text-destructive">
+              {timeValidation.error}
+            </p>
           )}
 
           {/* Window warning */}
           {isWindowClosingSoon && (
-            <div className="flex items-start gap-2 p-2 bg-amber-50 dark:bg-amber-950/30 rounded border border-amber-200 dark:border-amber-800">
-              <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2 p-2 bg-warning/10 rounded border border-warning/30">
+              <AlertTriangle className="h-4 w-4 text-warning flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-[11px] font-medium text-amber-700 dark:text-amber-400">
+                <p className="text-[11px] font-medium text-warning">
                   Window closing soon
                 </p>
-                <p className="text-[10px] text-amber-600 dark:text-amber-500">
+                <p className="text-[10px] text-warning">
                   {formatTimeRemaining(windowTimeRemaining)} until window closes
                   {windowExpiryFormatted && ` (${windowExpiryFormatted})`}
                 </p>
@@ -317,7 +319,7 @@ export function InstagramScheduleDialog({
 
           {/* Window info */}
           {windowExpiryFormatted && !isWindowClosingSoon && (
-            <p className="text-[10px] text-v2-ink-muted">
+            <p className="text-[10px] text-muted-foreground">
               Messaging window closes: {windowExpiryFormatted}
             </p>
           )}

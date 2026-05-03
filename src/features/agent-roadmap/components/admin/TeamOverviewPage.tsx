@@ -91,7 +91,7 @@ export function TeamOverviewPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
       {/* ── Header bar ─────────────────────────────────────────────── */}
-      <div className="flex items-center gap-3 bg-v2-card rounded-lg px-3 py-2 border border-v2-ring dark:border-v2-ring">
+      <div className="flex items-center gap-3 bg-card rounded-lg px-3 py-2 border border-border dark:border-border">
         <Button
           variant="ghost"
           size="sm"
@@ -102,11 +102,11 @@ export function TeamOverviewPage() {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-v2-ink dark:text-v2-ink" />
-          <h1 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
+          <Users className="h-4 w-4 text-foreground dark:text-foreground" />
+          <h1 className="text-sm font-semibold text-foreground dark:text-foreground">
             Team Progress
           </h1>
-          <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hidden sm:inline">
+          <span className="text-[10px] text-muted-foreground dark:text-muted-foreground hidden sm:inline">
             All agents across all roadmaps
           </span>
         </div>
@@ -116,29 +116,29 @@ export function TeamOverviewPage() {
         {stats && (
           <div className="flex items-center gap-3 text-[11px]">
             <div className="flex items-center gap-1">
-              <span className="font-medium text-v2-ink dark:text-v2-ink">
+              <span className="font-medium text-foreground dark:text-foreground">
                 {stats.total}
               </span>
-              <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+              <span className="text-muted-foreground dark:text-muted-foreground">
                 agents
               </span>
             </div>
-            <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
+            <div className="h-3 w-px bg-muted dark:bg-muted" />
             <div className="flex items-center gap-1">
-              <span className="font-medium text-v2-ink dark:text-v2-ink">
+              <span className="font-medium text-foreground dark:text-foreground">
                 {stats.avgPercent}%
               </span>
-              <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+              <span className="text-muted-foreground dark:text-muted-foreground">
                 avg
               </span>
             </div>
             {stats.allDone > 0 && (
               <>
-                <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
+                <div className="h-3 w-px bg-muted dark:bg-muted" />
                 <div className="flex items-center gap-1">
-                  <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                  <CheckCircle2 className="h-3 w-3 text-success" />
                   <span className="font-medium">{stats.allDone}</span>
-                  <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <span className="text-muted-foreground dark:text-muted-foreground">
                     done
                   </span>
                 </div>
@@ -146,11 +146,11 @@ export function TeamOverviewPage() {
             )}
             {stats.stuck > 0 && (
               <>
-                <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
+                <div className="h-3 w-px bg-muted dark:bg-muted" />
                 <div className="flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3 text-amber-500" />
+                  <AlertTriangle className="h-3 w-3 text-warning" />
                   <span className="font-medium">{stats.stuck}</span>
-                  <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <span className="text-muted-foreground dark:text-muted-foreground">
                     stuck
                   </span>
                 </div>
@@ -167,7 +167,7 @@ export function TeamOverviewPage() {
             {[1, 2, 3, 4].map((n) => (
               <div
                 key={n}
-                className="h-14 rounded-lg bg-v2-card border border-v2-ring dark:border-v2-ring animate-pulse"
+                className="h-14 rounded-lg bg-card border border-border dark:border-border animate-pulse"
               />
             ))}
           </div>
@@ -176,7 +176,7 @@ export function TeamOverviewPage() {
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
-                  <Users className="h-5 w-5 text-v2-ink-subtle" />
+                  <Users className="h-5 w-5 text-muted-foreground" />
                 </EmptyMedia>
                 <EmptyTitle>No agent activity yet</EmptyTitle>
                 <EmptyDescription>
@@ -187,15 +187,15 @@ export function TeamOverviewPage() {
             </Empty>
           </div>
         ) : (
-          <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring overflow-x-auto">
+          <div className="bg-card rounded-lg border border-border dark:border-border overflow-x-auto">
             <TooltipProvider delayDuration={200}>
               <Table>
                 <TableHeader>
-                  <TableRow className="border-b border-v2-ring dark:border-v2-ring">
-                    <TableHead className="w-[200px] sticky left-0 bg-v2-card z-10 text-[10px] uppercase tracking-wider font-bold text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <TableRow className="border-b border-border dark:border-border">
+                    <TableHead className="w-[200px] sticky left-0 bg-card z-10 text-[10px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground">
                       Agent
                     </TableHead>
-                    <TableHead className="w-[120px] text-[10px] uppercase tracking-wider font-bold text-v2-ink-muted dark:text-v2-ink-subtle">
+                    <TableHead className="w-[120px] text-[10px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground">
                       Overall
                     </TableHead>
                     {publishedRoadmaps.map((rm) => (
@@ -211,13 +211,13 @@ export function TeamOverviewPage() {
                               params: { roadmapId: rm.id },
                             })
                           }
-                          className="text-[10px] uppercase tracking-wider font-bold text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-canvas hover:underline underline-offset-2 truncate max-w-[120px] inline-block"
+                          className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-background hover:underline underline-offset-2 truncate max-w-[120px] inline-block"
                         >
                           {rm.title}
                         </button>
                       </TableHead>
                     ))}
-                    <TableHead className="text-[10px] uppercase tracking-wider font-bold text-v2-ink-muted dark:text-v2-ink-subtle">
+                    <TableHead className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground dark:text-muted-foreground">
                       Last active
                     </TableHead>
                   </TableRow>
@@ -234,14 +234,14 @@ export function TeamOverviewPage() {
                     return (
                       <TableRow
                         key={agent.userId}
-                        className="border-b border-v2-ring dark:border-v2-ring/50 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/30"
+                        className="border-b border-border dark:border-border/50 hover:bg-background dark:hover:bg-card-tinted/30"
                       >
-                        <TableCell className="sticky left-0 bg-v2-card z-10">
-                          <div className="text-sm font-semibold text-v2-ink dark:text-v2-ink truncate max-w-[180px]">
+                        <TableCell className="sticky left-0 bg-card z-10">
+                          <div className="text-sm font-semibold text-foreground dark:text-foreground truncate max-w-[180px]">
                             {displayName(agent)}
                           </div>
                           {agent.email && (
-                            <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate max-w-[180px]">
+                            <div className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate max-w-[180px]">
                               {agent.email}
                             </div>
                           )}
@@ -253,7 +253,7 @@ export function TeamOverviewPage() {
                               value={agent.overallPercent}
                               className="h-1.5 w-14"
                             />
-                            <span className="text-[11px] font-bold text-v2-ink dark:text-v2-ink tabular-nums w-8 text-right">
+                            <span className="text-[11px] font-bold text-foreground dark:text-foreground tabular-nums w-8 text-right">
                               {agent.overallPercent}%
                             </span>
                           </div>
@@ -268,14 +268,14 @@ export function TeamOverviewPage() {
                         <TableCell>
                           <div className="flex items-center gap-1.5">
                             {agent.lastActivityAt ? (
-                              <span className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                              <span className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                                 {formatDistanceToNow(
                                   new Date(agent.lastActivityAt),
                                   { addSuffix: true },
                                 )}
                               </span>
                             ) : (
-                              <span className="text-[11px] text-v2-ink-subtle dark:text-v2-ink-muted">
+                              <span className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                                 Never
                               </span>
                             )}
@@ -305,7 +305,9 @@ export function TeamOverviewPage() {
 
 function RoadmapCell({ summary }: { summary?: RoadmapProgressSummary }) {
   if (!summary || summary.totalItems === 0) {
-    return <span className="text-v2-ink-subtle dark:text-v2-ink">—</span>;
+    return (
+      <span className="text-muted-foreground dark:text-foreground">—</span>
+    );
   }
 
   const { percent, status, requiredDone, requiredTotal } = summary;
@@ -319,10 +321,10 @@ function RoadmapCell({ summary }: { summary?: RoadmapProgressSummary }) {
 
   const iconColor =
     status === "completed"
-      ? "text-emerald-500"
+      ? "text-success"
       : status === "in_progress"
-        ? "text-blue-500"
-        : "text-v2-ink-subtle dark:text-v2-ink-muted";
+        ? "text-info"
+        : "text-muted-foreground dark:text-muted-foreground";
 
   return (
     <Tooltip>
@@ -332,10 +334,10 @@ function RoadmapCell({ summary }: { summary?: RoadmapProgressSummary }) {
           <span
             className={`text-[11px] font-semibold tabular-nums ${
               status === "completed"
-                ? "text-emerald-600 dark:text-emerald-400"
+                ? "text-success"
                 : status === "in_progress"
-                  ? "text-v2-ink dark:text-v2-ink"
-                  : "text-v2-ink-subtle dark:text-v2-ink-muted"
+                  ? "text-foreground dark:text-foreground"
+                  : "text-muted-foreground dark:text-muted-foreground"
             }`}
           >
             {percent}%

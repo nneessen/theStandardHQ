@@ -227,7 +227,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h1 className="text-sm font-semibold text-v2-ink">Recruiting</h1>
+          <h1 className="text-sm font-semibold text-foreground">Recruiting</h1>
           <Badge variant="secondary" className="text-[9px] h-4">
             {recruits.length} recruits
           </Badge>
@@ -246,28 +246,28 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
         open={showUpgradeDetails}
         onOpenChange={setShowUpgradeDetails}
       >
-        <div className="rounded-lg border-2 border-violet-200 dark:border-violet-800 bg-gradient-to-br from-violet-50 via-white to-indigo-50 dark:from-violet-950/40  dark:to-indigo-950/30">
+        <div className="rounded-lg border-2 border-info/30 bg-gradient-to-br from-violet-50 via-white to-indigo-50 dark:from-violet-950/40  dark:to-indigo-950/30">
           <CollapsibleTrigger asChild>
             <button
               type="button"
-              className="w-full p-4 text-left hover:bg-violet-50/60 dark:hover:bg-violet-950/10 transition-colors rounded-lg"
+              className="w-full p-4 text-left hover:bg-info/10/60 dark:hover:bg-info/10/10 transition-colors rounded-lg"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900/50 flex-shrink-0">
-                    <Sparkles className="h-4.5 w-4.5 text-violet-600 dark:text-violet-400" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-info/20 dark:bg-info/50 flex-shrink-0">
+                    <Sparkles className="h-4.5 w-4.5 text-info" />
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-violet-900 dark:text-violet-100 leading-tight">
+                    <p className="text-xs font-semibold text-info dark:text-info leading-tight">
                       Unlock the Full Recruiting Pipeline
                     </p>
-                    <p className="text-[10px] text-violet-600 dark:text-violet-400 mt-0.5">
+                    <p className="text-[10px] text-info mt-0.5">
                       Expand to preview Team plan features and upgrade options
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 text-violet-700 dark:text-violet-300 bg-white/80 /60 border border-violet-200 dark:border-violet-800 rounded-md px-2.5 py-1 text-[10px] font-semibold flex-shrink-0">
+                <div className="flex items-center gap-1.5 text-info bg-white/80 /60 border border-info/30 rounded-md px-2.5 py-1 text-[10px] font-semibold flex-shrink-0">
                   {showUpgradeDetails ? "Hide" : "View"}
                   {showUpgradeDetails ? (
                     <ChevronUp className="h-3 w-3" />
@@ -280,16 +280,16 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
           </CollapsibleTrigger>
 
           <CollapsibleContent className="px-4 pb-4">
-            <div className="border-t border-violet-200/80 dark:border-violet-800/80 pt-3">
+            <div className="border-t border-info/80 dark:border-info/80 pt-3">
               <Link to="/billing" className="block group">
-                <div className="rounded-md border border-violet-100 dark:border-violet-900/50 bg-white/80 /40 p-3 hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-sm transition-all cursor-pointer">
+                <div className="rounded-md border border-info dark:border-info/50 bg-white/80 /40 p-3 hover:border-info dark:hover:border-info hover:shadow-sm transition-all cursor-pointer">
                   {/* CTA row */}
                   <div className="flex items-start justify-between gap-3 mb-3">
-                    <p className="text-[10px] text-violet-700 dark:text-violet-300 leading-tight">
+                    <p className="text-[10px] text-info leading-tight">
                       Everything you need to build, onboard, and grow your team
                       on the <span className="font-semibold">Team plan</span>
                     </p>
-                    <div className="flex items-center gap-1.5 bg-violet-600 group-hover:bg-violet-700 text-white rounded-md px-3 py-1.5 text-[11px] font-semibold flex-shrink-0 transition-colors shadow-sm">
+                    <div className="flex items-center gap-1.5 bg-info group-hover:bg-info text-white rounded-md px-3 py-1.5 text-[11px] font-semibold flex-shrink-0 transition-colors shadow-sm">
                       Upgrade to Team
                       <ArrowRight className="h-3 w-3" />
                     </div>
@@ -347,14 +347,14 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                     ).map(({ icon: Icon, label, desc }) => (
                       <div
                         key={label}
-                        className="flex items-start gap-2 p-2 rounded-md bg-white/80 /60 border border-violet-100 dark:border-violet-900/50"
+                        className="flex items-start gap-2 p-2 rounded-md bg-white/80 /60 border border-info dark:border-info/50"
                       >
-                        <Icon className="h-3.5 w-3.5 text-violet-500 dark:text-violet-400 mt-0.5 flex-shrink-0" />
+                        <Icon className="h-3.5 w-3.5 text-info dark:text-info mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="text-[10px] font-semibold text-v2-ink -subtle leading-tight">
+                          <p className="text-[10px] font-semibold text-foreground -subtle leading-tight">
                             {label}
                           </p>
-                          <p className="text-[9px] text-v2-ink-muted leading-tight mt-0.5">
+                          <p className="text-[9px] text-muted-foreground leading-tight mt-0.5">
                             {desc}
                           </p>
                         </div>
@@ -363,7 +363,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                   </div>
 
                   {/* Click hint */}
-                  <p className="text-center text-[9px] text-violet-500 dark:text-violet-500 mt-2.5 group-hover:text-violet-700 dark:group-hover:text-violet-300 transition-colors">
+                  <p className="text-center text-[9px] text-info dark:text-info mt-2.5 group-hover:text-info dark:group-hover:text-info transition-colors">
                     Click anywhere in this panel to see pricing and upgrade →
                   </p>
                 </div>
@@ -374,43 +374,43 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
       </Collapsible>
 
       {/* Recruiting Process Instructions */}
-      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
+      <div className="bg-card rounded-v2-md border border-border shadow-v2-soft">
         <button
           onClick={() => setShowInstructions(!showInstructions)}
-          className="w-full flex items-center justify-between px-3 py-2 hover:bg-v2-canvas rounded-lg transition-colors"
+          className="w-full flex items-center justify-between px-3 py-2 hover:bg-background rounded-lg transition-colors"
         >
           <div className="flex items-center gap-2">
-            <Info className="h-3.5 w-3.5 text-blue-500" />
-            <span className="text-[11px] font-medium text-v2-ink-muted">
+            <Info className="h-3.5 w-3.5 text-info" />
+            <span className="text-[11px] font-medium text-muted-foreground">
               How the Recruiting Process Works
             </span>
           </div>
           {showInstructions ? (
-            <ChevronUp className="h-3.5 w-3.5 text-v2-ink-subtle" />
+            <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
           ) : (
-            <ChevronDown className="h-3.5 w-3.5 text-v2-ink-subtle" />
+            <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
           )}
         </button>
         {showInstructions && (
           <div className="px-3 pb-3 space-y-2">
-            <div className="border-t border-v2-ring/60 pt-2" />
-            <ol className="space-y-1.5 text-[10px] text-v2-ink-muted -subtle list-decimal list-inside">
+            <div className="border-t border-border/60 pt-2" />
+            <ol className="space-y-1.5 text-[10px] text-muted-foreground -subtle list-decimal list-inside">
               <li>
-                <span className="font-medium text-v2-ink -subtle">
+                <span className="font-medium text-foreground -subtle">
                   Add a new recruit
                 </span>{" "}
                 — Click "Add Recruit" and enter their name, email, and phone
                 number.
               </li>
               <li>
-                <span className="font-medium text-v2-ink -subtle">
+                <span className="font-medium text-foreground -subtle">
                   Recruit receives a password email
                 </span>{" "}
                 — They will be emailed a link to set their password and log in
                 to the system.
               </li>
               <li>
-                <span className="font-medium text-v2-ink -subtle">
+                <span className="font-medium text-foreground -subtle">
                   Licensing status determines next steps
                 </span>{" "}
                 — If the recruit is <em>not already licensed</em>, they are
@@ -418,14 +418,14 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                 Slack recruit channel.
               </li>
               <li>
-                <span className="font-medium text-v2-ink -subtle">
+                <span className="font-medium text-foreground -subtle">
                   Recruit enters the onboarding pipeline
                 </span>{" "}
                 — They are enrolled in the standard pipeline where you can track
                 their progress through each phase.
               </li>
               <li>
-                <span className="font-medium text-v2-ink -subtle">
+                <span className="font-medium text-foreground -subtle">
                   NPN received triggers a second notification
                 </span>{" "}
                 — When the recruit's NPN (National Producer Number) is entered,
@@ -433,7 +433,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                 sent.
               </li>
               <li>
-                <span className="font-medium text-v2-ink -subtle">
+                <span className="font-medium text-foreground -subtle">
                   Graduate to agent
                 </span>{" "}
                 — Once onboarding is complete, use the "Graduate" button to
@@ -445,16 +445,16 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
       </div>
 
       {/* Recruits Table */}
-      <div className="flex-1 overflow-hidden bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
+      <div className="flex-1 overflow-hidden bg-card rounded-v2-md border border-border shadow-v2-soft">
         {isLoading ? (
-          <div className="flex items-center justify-center h-32 text-[11px] text-v2-ink-muted">
+          <div className="flex items-center justify-center h-32 text-[11px] text-muted-foreground">
             Loading recruits...
           </div>
         ) : recruits.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-32 gap-2 text-v2-ink-muted">
-            <User className="h-8 w-8 text-v2-ink-subtle" />
+          <div className="flex flex-col items-center justify-center h-32 gap-2 text-muted-foreground">
+            <User className="h-8 w-8 text-muted-foreground" />
             <p className="text-[11px]">No recruits yet</p>
-            <p className="text-[10px] text-v2-ink-subtle">
+            <p className="text-[10px] text-muted-foreground">
               Add your first recruit to get started
             </p>
           </div>
@@ -489,8 +489,8 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                   className={cn(
                     "cursor-pointer transition-colors",
                     selectedRecruit?.id === recruit.id
-                      ? "bg-v2-ring"
-                      : "hover:bg-v2-canvas",
+                      ? "bg-muted"
+                      : "hover:bg-background",
                   )}
                   onClick={() => handleSelectRecruit(recruit)}
                 >
@@ -500,12 +500,12 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                         <AvatarImage
                           src={recruit.profile_photo_url || undefined}
                         />
-                        <AvatarFallback className="text-[9px] bg-v2-ring text-v2-ink-muted -subtle">
+                        <AvatarFallback className="text-[9px] bg-muted text-muted-foreground -subtle">
                           {(recruit.first_name?.[0] || "").toUpperCase()}
                           {(recruit.last_name?.[0] || "").toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-[11px] font-medium text-v2-ink">
+                      <span className="text-[11px] font-medium text-foreground">
                         {recruit.first_name} {recruit.last_name}
                       </span>
                     </div>
@@ -513,13 +513,13 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                   <TableCell className="py-2">
                     <div className="flex flex-col gap-0.5">
                       {recruit.email && (
-                        <div className="flex items-center gap-1 text-[10px] text-v2-ink-muted">
+                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                           <Mail className="h-3 w-3" />
                           {recruit.email}
                         </div>
                       )}
                       {recruit.phone && (
-                        <div className="flex items-center gap-1 text-[10px] text-v2-ink-muted">
+                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                           <Phone className="h-3 w-3" />
                           {recruit.phone}
                         </div>
@@ -529,14 +529,14 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                   <TableCell className="py-2">
                     {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {(recruit as any).upline ? (
-                      <span className="text-[10px] text-v2-ink-muted">
+                      <span className="text-[10px] text-muted-foreground">
                         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         {(recruit as any).upline.first_name}{" "}
                         {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                         {(recruit as any).upline.last_name}
                       </span>
                     ) : (
-                      <span className="text-[10px] text-v2-ink-subtle italic">
+                      <span className="text-[10px] text-muted-foreground italic">
                         {recruit.upline_id ? "Loading..." : "Not assigned"}
                       </span>
                     )}
@@ -570,7 +570,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                         return (
                           <Badge
                             variant="secondary"
-                            className="text-[9px] h-4 bg-blue-100 text-blue-800"
+                            className="text-[9px] h-4 bg-info/20 text-info"
                           >
                             {recruit.current_onboarding_phase || "In Pipeline"}
                           </Badge>
@@ -580,7 +580,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                     })()}
                   </TableCell>
                   <TableCell className="py-2">
-                    <span className="text-[10px] text-v2-ink-muted">
+                    <span className="text-[10px] text-muted-foreground">
                       {recruit.created_at
                         ? formatDistanceToNow(new Date(recruit.created_at), {
                             addSuffix: true,
@@ -600,7 +600,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                className="h-5 w-5 p-0 text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                                className="h-5 w-5 p-0 text-info hover:text-info dark:hover:text-info"
                                 disabled={resendingRecruitId === recruit.id}
                                 onClick={() => handleResendInvite(recruit)}
                               >
@@ -620,7 +620,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-5 w-5 p-0 text-v2-ink-muted hover:text-v2-ink -subtle dark:hover:text-v2-ink-subtle"
+                        className="h-5 w-5 p-0 text-muted-foreground hover:text-foreground -subtle dark:hover:text-muted-foreground"
                         onClick={() => setEditingRecruit(recruit)}
                       >
                         <Pencil className="h-3 w-3" />
@@ -628,7 +628,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-5 w-5 p-0 text-v2-ink-subtle hover:text-red-600 -muted dark:hover:text-red-400"
+                        className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive -muted dark:hover:text-destructive"
                         onClick={() => setDeletingRecruit(recruit)}
                       >
                         <Trash2 className="h-3 w-3" />
@@ -639,7 +639,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-5 px-1.5 text-[10px] text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:text-emerald-300 dark:hover:bg-emerald-900/20"
+                          className="h-5 px-1.5 text-[10px] text-success hover:text-success hover:bg-success/10 dark:text-success dark:hover:text-success dark:hover:bg-success/20"
                           onClick={() => setGraduatingRecruit(recruit)}
                         >
                           <GraduationCap className="h-3 w-3 mr-0.5" />
@@ -662,7 +662,7 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
             className="absolute inset-0 bg-black/40"
             onClick={() => setDetailSheetOpen(false)}
           />
-          <div className="absolute inset-x-0 bottom-0 bg-v2-card border-t border-v2-ring rounded-t-xl shadow-2xl h-[60vh] animate-in slide-in-from-bottom duration-300">
+          <div className="absolute inset-x-0 bottom-0 bg-card border-t border-border rounded-t-xl shadow-2xl h-[60vh] animate-in slide-in-from-bottom duration-300">
             <RecruitBottomPanel
               recruit={selectedRecruit}
               onClose={() => setDetailSheetOpen(false)}
@@ -785,7 +785,7 @@ function BasicEditRecruitDialog({
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle className="text-sm">Edit Recruit</DialogTitle>
-          <DialogDescription className="text-[11px] text-v2-ink-muted">
+          <DialogDescription className="text-[11px] text-muted-foreground">
             Update {recruit.first_name} {recruit.last_name}&apos;s information.
           </DialogDescription>
         </DialogHeader>
@@ -808,7 +808,9 @@ function BasicEditRecruitDialog({
                 className="h-8 text-[11px]"
               />
               {errors.first_name && (
-                <p className="text-[9px] text-red-500">{errors.first_name}</p>
+                <p className="text-[9px] text-destructive">
+                  {errors.first_name}
+                </p>
               )}
             </div>
             <div className="space-y-1">
@@ -827,7 +829,9 @@ function BasicEditRecruitDialog({
                 className="h-8 text-[11px]"
               />
               {errors.last_name && (
-                <p className="text-[9px] text-red-500">{errors.last_name}</p>
+                <p className="text-[9px] text-destructive">
+                  {errors.last_name}
+                </p>
               )}
             </div>
           </div>
@@ -845,7 +849,7 @@ function BasicEditRecruitDialog({
               className="h-8 text-[11px]"
             />
             {errors.email && (
-              <p className="text-[9px] text-red-500">{errors.email}</p>
+              <p className="text-[9px] text-destructive">{errors.email}</p>
             )}
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -923,7 +927,7 @@ function BasicEditRecruitDialog({
               >
                 <SelectTrigger
                   id="edit_contract_level"
-                  className="h-8 text-[11px] bg-v2-card border-v2-ring"
+                  className="h-8 text-[11px] bg-card border-border"
                 >
                   <SelectValue placeholder="Select level" />
                 </SelectTrigger>
@@ -941,7 +945,7 @@ function BasicEditRecruitDialog({
               </Select>
             </div>
           </div>
-          <div className="flex items-center justify-between rounded-md border border-v2-ring px-3 py-2">
+          <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
             <Label
               htmlFor="edit_is_licensed"
               className="text-[10px] cursor-pointer"
@@ -1032,7 +1036,7 @@ function BasicDeleteRecruitDialog({
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
-            className="h-7 text-[10px] bg-red-600 hover:bg-red-700 text-white"
+            className="h-7 text-[10px] bg-destructive hover:bg-destructive text-white"
             onClick={handleDelete}
             disabled={deleteRecruit.isPending}
           >
@@ -1135,7 +1139,7 @@ function BasicAddRecruitDialog({
       <DialogTrigger asChild>
         <Button
           size="sm"
-          className="h-6 text-[10px] px-2 bg-v2-card-dark hover:bg-black text-white dark:hover:bg-v2-ring "
+          className="h-6 text-[10px] px-2 bg-card-dark hover:bg-black text-white dark:hover:bg-muted "
         >
           <UserPlus className="h-3 w-3 mr-1" />
           Add Recruit
@@ -1144,17 +1148,17 @@ function BasicAddRecruitDialog({
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
           <DialogTitle className="text-sm">Add New Recruit</DialogTitle>
-          <DialogDescription className="text-[11px] text-v2-ink-muted">
+          <DialogDescription className="text-[11px] text-muted-foreground">
             Add basic contact information for your new recruit.
           </DialogDescription>
         </DialogHeader>
 
         {/* Upline Assignment Info */}
-        <div className="flex items-center gap-2 px-3 py-2 bg-v2-canvas rounded-md border border-v2-ring">
-          <User className="h-4 w-4 text-v2-ink-muted" />
+        <div className="flex items-center gap-2 px-3 py-2 bg-background rounded-md border border-border">
+          <User className="h-4 w-4 text-muted-foreground" />
           <div className="flex-1">
-            <p className="text-[10px] text-v2-ink-muted">Assigned Upline</p>
-            <p className="text-[11px] font-medium text-v2-ink">
+            <p className="text-[10px] text-muted-foreground">Assigned Upline</p>
+            <p className="text-[11px] font-medium text-foreground">
               {user?.first_name} {user?.last_name}
             </p>
           </div>
@@ -1179,7 +1183,9 @@ function BasicAddRecruitDialog({
                 placeholder="John"
               />
               {errors.first_name && (
-                <p className="text-[9px] text-red-500">{errors.first_name}</p>
+                <p className="text-[9px] text-destructive">
+                  {errors.first_name}
+                </p>
               )}
             </div>
             <div className="space-y-1">
@@ -1199,7 +1205,9 @@ function BasicAddRecruitDialog({
                 placeholder="Doe"
               />
               {errors.last_name && (
-                <p className="text-[9px] text-red-500">{errors.last_name}</p>
+                <p className="text-[9px] text-destructive">
+                  {errors.last_name}
+                </p>
               )}
             </div>
           </div>
@@ -1218,7 +1226,7 @@ function BasicAddRecruitDialog({
               placeholder="john.doe@example.com"
             />
             {errors.email && (
-              <p className="text-[9px] text-red-500">{errors.email}</p>
+              <p className="text-[9px] text-destructive">{errors.email}</p>
             )}
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -1265,7 +1273,7 @@ function BasicAddRecruitDialog({
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex items-center justify-between rounded-md border border-v2-ring px-3 py-2">
+            <div className="flex items-center justify-between rounded-md border border-border px-3 py-2">
               <Label
                 htmlFor="is_licensed"
                 className="text-[10px] cursor-pointer"
@@ -1296,7 +1304,7 @@ function BasicAddRecruitDialog({
               >
                 <SelectTrigger
                   id="contract_level"
-                  className="h-8 text-[11px] bg-v2-card border-v2-ring"
+                  className="h-8 text-[11px] bg-card border-border"
                 >
                   <SelectValue placeholder="Select level" />
                 </SelectTrigger>

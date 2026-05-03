@@ -47,7 +47,7 @@ export function HowItWorksTab() {
         <div className="grid grid-cols-3 gap-4">
           {steps.map((item, i) => (
             <div key={item.step} className="flex items-start gap-2.5">
-              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-white dark:text-black text-[10px] font-bold flex-shrink-0 mt-0.5">
+              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-foreground text-white text-[10px] font-bold flex-shrink-0 mt-0.5">
                 {item.step}
               </div>
               <div className="flex-1 min-w-0">
@@ -96,7 +96,7 @@ export function HowItWorksTab() {
             <ul className="space-y-2.5">
               {sellingPoints.map((point) => (
                 <li key={point} className="flex items-start gap-2">
-                  <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                  <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                   <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted leading-relaxed">
                     {point}
                   </span>

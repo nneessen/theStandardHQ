@@ -44,9 +44,9 @@ export function UploadResultSummary({
       {/* Header */}
       <div className="flex items-center gap-2">
         {isComplete ? (
-          <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+          <CheckCircle2 className="h-4 w-4 text-success" />
         ) : (
-          <XCircle className="h-4 w-4 text-red-500" />
+          <XCircle className="h-4 w-4 text-destructive" />
         )}
         <span className="text-xs font-medium text-v2-ink dark:text-v2-ink-subtle">
           {isComplete ? "Processing Complete" : "Processing Failed"}
@@ -73,7 +73,7 @@ export function UploadResultSummary({
             </span>
           )}
           {needsReview > 0 && (
-            <span className="text-amber-600 dark:text-amber-400">
+            <span className="text-warning">
               <strong>{needsReview}</strong> need review
             </span>
           )}
@@ -89,16 +89,16 @@ export function UploadResultSummary({
               className={cn(
                 "flex items-center gap-2 px-2 py-1 rounded text-[10px]",
                 f.status === "imported"
-                  ? "bg-emerald-50 dark:bg-emerald-900/10"
+                  ? "bg-success/10 dark:bg-success/10"
                   : f.status === "error"
-                    ? "bg-red-50 dark:bg-red-900/10"
+                    ? "bg-destructive/10 dark:bg-destructive/10"
                     : "bg-v2-canvas/30",
               )}
             >
               {f.status === "imported" ? (
-                <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
+                <CheckCircle2 className="h-3 w-3 text-success shrink-0" />
               ) : f.status === "error" ? (
-                <XCircle className="h-3 w-3 text-red-500 shrink-0" />
+                <XCircle className="h-3 w-3 text-destructive shrink-0" />
               ) : (
                 <AlertCircle className="h-3 w-3 text-v2-ink-subtle shrink-0" />
               )}
@@ -120,7 +120,7 @@ export function UploadResultSummary({
 
       {/* Error message */}
       {isFailed && job.error && (
-        <p className="text-[10px] text-red-500">{job.error}</p>
+        <p className="text-[10px] text-destructive">{job.error}</p>
       )}
 
       {/* Actions */}
@@ -128,7 +128,7 @@ export function UploadResultSummary({
         {isComplete && needsReview > 0 && (
           <Button
             size="sm"
-            className="h-7 text-[11px] bg-teal-600 hover:bg-teal-700 text-white"
+            className="h-7 text-[11px] bg-success hover:bg-success text-white"
             onClick={() => onSwitchTab("transactions")}
           >
             Start Reviewing

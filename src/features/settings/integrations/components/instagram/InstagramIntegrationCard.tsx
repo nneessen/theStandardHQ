@@ -92,7 +92,7 @@ export function InstagramIntegrationCard() {
   if (isLoading || isProfileLoading) {
     return (
       <div className="flex items-center justify-center p-4">
-        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -100,23 +100,23 @@ export function InstagramIntegrationCard() {
   return (
     <div className="space-y-3">
       {/* Header Card */}
-      <div className="bg-v2-card rounded-lg border border-v2-ring p-3">
+      <div className="bg-card rounded-lg border border-border p-3">
         <div className="flex items-start gap-3">
           {/* Icon */}
           <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 dark:from-purple-900/30 dark:to-pink-900/30">
-            <Instagram className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+            <Instagram className="h-5 w-5 text-info" />
           </div>
 
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-v2-ink">
+              <h3 className="text-sm font-semibold text-foreground">
                 Instagram DM
               </h3>
               {isConnected ? (
                 <Badge
                   variant="default"
-                  className="text-[9px] h-4 px-1.5 bg-green-600"
+                  className="text-[9px] h-4 px-1.5 bg-success"
                 >
                   <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
                   Connected
@@ -124,7 +124,7 @@ export function InstagramIntegrationCard() {
               ) : isExpired ? (
                 <Badge
                   variant="secondary"
-                  className="text-[9px] h-4 px-1.5 bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
+                  className="text-[9px] h-4 px-1.5 bg-warning/20 text-warning dark:bg-warning/50 dark:text-warning"
                 >
                   <AlertCircle className="h-2.5 w-2.5 mr-0.5" />
                   Expired
@@ -132,7 +132,7 @@ export function InstagramIntegrationCard() {
               ) : hasError ? (
                 <Badge
                   variant="secondary"
-                  className="text-[9px] h-4 px-1.5 bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300"
+                  className="text-[9px] h-4 px-1.5 bg-destructive/20 text-destructive dark:bg-destructive/50 dark:text-destructive"
                 >
                   <XCircle className="h-2.5 w-2.5 mr-0.5" />
                   Error
@@ -145,7 +145,7 @@ export function InstagramIntegrationCard() {
               )}
             </div>
 
-            <p className="text-[10px] text-v2-ink-muted mt-1">
+            <p className="text-[10px] text-muted-foreground mt-1">
               {hasIntegration
                 ? "Manage Instagram DM conversations and recruiting leads."
                 : "Connect your Instagram Business account to manage DMs and recruiting."}
@@ -173,12 +173,12 @@ export function InstagramIntegrationCard() {
 
       {/* Connected Account Card */}
       {hasIntegration && (
-        <div className="bg-v2-card rounded-lg border border-v2-ring p-3 space-y-3">
-          <h4 className="text-[11px] font-semibold text-v2-ink">
+        <div className="bg-card rounded-lg border border-border p-3 space-y-3">
+          <h4 className="text-[11px] font-semibold text-foreground">
             Connected Account
           </h4>
 
-          <div className="flex items-center gap-3 p-2.5 bg-v2-canvas rounded-lg">
+          <div className="flex items-center gap-3 p-2.5 bg-background rounded-lg">
             <Avatar className="h-10 w-10">
               <AvatarImage
                 src={integration.instagram_profile_picture_url || undefined}
@@ -191,10 +191,10 @@ export function InstagramIntegrationCard() {
             </Avatar>
 
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-medium text-v2-ink">
+              <p className="text-[11px] font-medium text-foreground">
                 {integration.instagram_name || integration.instagram_username}
               </p>
-              <p className="text-[10px] text-v2-ink-muted">
+              <p className="text-[10px] text-muted-foreground">
                 @{integration.instagram_username}
               </p>
             </div>
@@ -222,7 +222,7 @@ export function InstagramIntegrationCard() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-[9px] text-red-500 hover:text-red-600 dark:text-red-400"
+                className="h-6 px-2 text-[9px] text-destructive hover:text-destructive"
                 onClick={() => setShowDisconnectDialog(true)}
                 disabled={disconnectInstagram.isPending}
               >
@@ -233,8 +233,8 @@ export function InstagramIntegrationCard() {
 
           {/* Warning message for expired/error state */}
           {(isExpired || hasError) && (
-            <div className="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-              <p className="text-[10px] text-amber-800 dark:text-amber-200">
+            <div className="p-2.5 rounded-lg bg-warning/10 border border-warning/30">
+              <p className="text-[10px] text-warning">
                 {isExpired
                   ? "Your Instagram connection has expired. Please reconnect to continue using Instagram DM features."
                   : "There was an error with your Instagram connection. Please try reconnecting."}
@@ -244,7 +244,7 @@ export function InstagramIntegrationCard() {
 
           {/* Info note for connected state */}
           {isConnected && (
-            <p className="text-[9px] text-v2-ink-subtle">
+            <p className="text-[9px] text-muted-foreground">
               Access Instagram DMs from the Messages page. Templates can be
               managed in Messages → Settings → Templates.
             </p>
@@ -260,7 +260,7 @@ export function InstagramIntegrationCard() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-sm flex items-center gap-2">
-              <Instagram className="h-4 w-4 text-purple-500" />
+              <Instagram className="h-4 w-4 text-info" />
               Disconnect Instagram
             </DialogTitle>
             <DialogDescription className="text-[11px]">
@@ -269,7 +269,7 @@ export function InstagramIntegrationCard() {
           </DialogHeader>
 
           <div className="py-3">
-            <div className="flex items-center gap-3 p-3 bg-v2-canvas rounded-lg">
+            <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
               <Avatar className="h-8 w-8">
                 <AvatarImage
                   src={integration?.instagram_profile_picture_url || undefined}
@@ -281,17 +281,17 @@ export function InstagramIntegrationCard() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-[11px] font-medium text-v2-ink">
+                <p className="text-[11px] font-medium text-foreground">
                   @{integration?.instagram_username}
                 </p>
-                <p className="text-[10px] text-v2-ink-muted">
+                <p className="text-[10px] text-muted-foreground">
                   {integration?.instagram_name}
                 </p>
               </div>
             </div>
 
-            <div className="mt-3 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-              <p className="text-[10px] text-amber-800 dark:text-amber-200">
+            <div className="mt-3 p-2.5 rounded-lg bg-warning/10 border border-warning/30">
+              <p className="text-[10px] text-warning">
                 This will stop all Instagram DM features. Your conversation
                 history will be preserved, but you won't be able to send or
                 receive messages until you reconnect.

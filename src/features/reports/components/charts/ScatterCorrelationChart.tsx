@@ -250,13 +250,13 @@ export function ScatterCorrelationChart({
             {rSquared.toFixed(3)}
           </span>
           {rSquared > 0.7 && (
-            <span className="ml-2 text-green-600">Strong correlation</span>
+            <span className="ml-2 text-success">Strong correlation</span>
           )}
           {rSquared >= 0.4 && rSquared <= 0.7 && (
-            <span className="ml-2 text-amber-600">Moderate correlation</span>
+            <span className="ml-2 text-warning">Moderate correlation</span>
           )}
           {rSquared < 0.4 && (
-            <span className="ml-2 text-red-600">Weak correlation</span>
+            <span className="ml-2 text-destructive">Weak correlation</span>
           )}
         </div>
       )}

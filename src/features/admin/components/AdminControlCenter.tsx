@@ -160,25 +160,25 @@ export default function AdminControlCenter() {
             </span>
             <span className="text-v2-ink-subtle">·</span>
             <span className="inline-flex items-center gap-1">
-              <Shield className="h-3 w-3 text-red-500" />
+              <Shield className="h-3 w-3 text-destructive" />
               <span className="text-v2-ink font-semibold">{admins}</span>
               admins
             </span>
             <span className="text-v2-ink-subtle">·</span>
             <span className="inline-flex items-center gap-1">
-              <UserCog className="h-3 w-3 text-blue-500" />
+              <UserCog className="h-3 w-3 text-info" />
               <span className="text-v2-ink font-semibold">{agents}</span>
               agents
             </span>
             <span className="text-v2-ink-subtle">·</span>
             <span className="inline-flex items-center gap-1">
-              <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+              <CheckCircle2 className="h-3 w-3 text-success" />
               <span className="text-v2-ink font-semibold">{approved}</span>
               approved
             </span>
             <span className="text-v2-ink-subtle">·</span>
             <span className="inline-flex items-center gap-1">
-              <XCircle className="h-3 w-3 text-amber-500" />
+              <XCircle className="h-3 w-3 text-warning" />
               <span className="text-v2-ink font-semibold">{pending}</span>
               pending
             </span>

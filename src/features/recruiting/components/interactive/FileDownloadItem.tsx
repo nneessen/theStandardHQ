@@ -89,7 +89,7 @@ export function FileDownloadItem({
   // Completed state
   if (existingResponse?.acknowledged) {
     return (
-      <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-500">
+      <span className="inline-flex items-center gap-1 text-xs text-success dark:text-success">
         <Check className="h-3.5 w-3.5" />
         Downloaded & reviewed
       </span>
@@ -99,7 +99,7 @@ export function FileDownloadItem({
   // Error state - missing file URL
   if (!metadata?.file_url || !metadata?.file_name) {
     return (
-      <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
+      <div className="flex items-center gap-2 text-xs text-destructive">
         <AlertCircle className="h-3.5 w-3.5" />
         <span>File configuration error: Missing file URL or name</span>
       </div>
@@ -146,7 +146,7 @@ export function FileDownloadItem({
 
       {/* Status indicator */}
       {hasDownloaded && !metadata.acknowledgment_text && (
-        <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-500">
+        <span className="inline-flex items-center gap-1 text-xs text-success dark:text-success">
           <Check className="h-3.5 w-3.5" />
           Downloaded
         </span>
@@ -178,7 +178,7 @@ export function FileDownloadItem({
           disabled={isSubmitting}
           size="sm"
           variant="default"
-          className="h-7 text-xs px-3 gap-1.5 bg-emerald-600 hover:bg-emerald-700 ml-auto"
+          className="h-7 text-xs px-3 gap-1.5 bg-success hover:bg-success ml-auto"
         >
           {isSubmitting ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />

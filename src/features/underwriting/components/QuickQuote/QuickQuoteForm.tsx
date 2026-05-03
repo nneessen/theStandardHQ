@@ -103,8 +103,8 @@ export default function QuickQuoteForm({
       <div className="space-y-2">
         {formData.mode === "budget" ? (
           <>
-            <Label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
-              Monthly Budget <span className="text-red-500">*</span>
+            <Label className="text-[11px] font-medium text-foreground dark:text-muted-foreground">
+              Monthly Budget <span className="text-destructive">*</span>
             </Label>
             <div className="flex flex-wrap gap-1.5">
               {BUDGET_PRESETS.map((amount) => (
@@ -115,8 +115,8 @@ export default function QuickQuoteForm({
                   className={cn(
                     "px-2 py-1 text-[10px] rounded border transition-colors",
                     formData.monthlyBudget === amount
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-subtle border-v2-ring dark:border-v2-ring-strong hover:border-blue-300 dark:hover:border-blue-700",
+                      ? "bg-info text-white border-info"
+                      : "bg-card-tinted text-muted-foreground dark:text-muted-foreground border-border dark:border-border hover:border-info/40 dark:hover:border-info",
                   )}
                 >
                   ${amount}/mo
@@ -124,7 +124,7 @@ export default function QuickQuoteForm({
               ))}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-v2-ink-muted">$</span>
+              <span className="text-sm text-muted-foreground">$</span>
               <Input
                 type="number"
                 min={10}
@@ -136,20 +136,22 @@ export default function QuickQuoteForm({
                 }
                 className={cn(
                   "h-8 text-sm w-32",
-                  errors.monthlyBudget && "border-red-500",
+                  errors.monthlyBudget && "border-destructive",
                 )}
                 placeholder="Amount"
               />
-              <span className="text-xs text-v2-ink-muted">/month</span>
+              <span className="text-xs text-muted-foreground">/month</span>
             </div>
             {errors.monthlyBudget && (
-              <p className="text-[10px] text-red-500">{errors.monthlyBudget}</p>
+              <p className="text-[10px] text-destructive">
+                {errors.monthlyBudget}
+              </p>
             )}
           </>
         ) : (
           <>
-            <Label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
-              Face Amount <span className="text-red-500">*</span>
+            <Label className="text-[11px] font-medium text-foreground dark:text-muted-foreground">
+              Face Amount <span className="text-destructive">*</span>
             </Label>
             <div className="flex flex-wrap gap-1.5">
               {FACE_AMOUNT_PRESETS.map((amount) => (
@@ -160,8 +162,8 @@ export default function QuickQuoteForm({
                   className={cn(
                     "px-2 py-1 text-[10px] rounded border transition-colors",
                     formData.faceAmount === amount
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-subtle border-v2-ring dark:border-v2-ring-strong hover:border-blue-300 dark:hover:border-blue-700",
+                      ? "bg-info text-white border-info"
+                      : "bg-card-tinted text-muted-foreground dark:text-muted-foreground border-border dark:border-border hover:border-info/40 dark:hover:border-info",
                   )}
                 >
                   {formatCurrency(amount)}
@@ -169,7 +171,7 @@ export default function QuickQuoteForm({
               ))}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-v2-ink-muted">$</span>
+              <span className="text-sm text-muted-foreground">$</span>
               <Input
                 type="number"
                 min={5000}
@@ -181,13 +183,15 @@ export default function QuickQuoteForm({
                 }
                 className={cn(
                   "h-8 text-sm w-32",
-                  errors.faceAmount && "border-red-500",
+                  errors.faceAmount && "border-destructive",
                 )}
                 placeholder="Amount"
               />
             </div>
             {errors.faceAmount && (
-              <p className="text-[10px] text-red-500">{errors.faceAmount}</p>
+              <p className="text-[10px] text-destructive">
+                {errors.faceAmount}
+              </p>
             )}
           </>
         )}
@@ -196,8 +200,8 @@ export default function QuickQuoteForm({
       {/* Demographics Row */}
       <div className="grid grid-cols-4 gap-3">
         <div className="space-y-1">
-          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
-            Age <span className="text-red-500">*</span>
+          <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+            Age <span className="text-destructive">*</span>
           </Label>
           <Input
             type="number"
@@ -205,17 +209,17 @@ export default function QuickQuoteForm({
             max={100}
             value={formData.age || ""}
             onChange={(e) => onChange({ age: parseInt(e.target.value) || 0 })}
-            className={cn("h-8 text-sm", errors.age && "border-red-500")}
+            className={cn("h-8 text-sm", errors.age && "border-destructive")}
             placeholder="Age"
           />
           {errors.age && (
-            <p className="text-[10px] text-red-500">{errors.age}</p>
+            <p className="text-[10px] text-destructive">{errors.age}</p>
           )}
         </div>
 
         <div className="space-y-1">
-          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
-            Gender <span className="text-red-500">*</span>
+          <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+            Gender <span className="text-destructive">*</span>
           </Label>
           <Select
             value={formData.gender || ""}
@@ -224,7 +228,10 @@ export default function QuickQuoteForm({
             }
           >
             <SelectTrigger
-              className={cn("h-8 text-sm", errors.gender && "border-red-500")}
+              className={cn(
+                "h-8 text-sm",
+                errors.gender && "border-destructive",
+              )}
             >
               <SelectValue placeholder="Select" />
             </SelectTrigger>
@@ -234,20 +241,23 @@ export default function QuickQuoteForm({
             </SelectContent>
           </Select>
           {errors.gender && (
-            <p className="text-[10px] text-red-500">{errors.gender}</p>
+            <p className="text-[10px] text-destructive">{errors.gender}</p>
           )}
         </div>
 
         <div className="space-y-1">
-          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
-            State <span className="text-red-500">*</span>
+          <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+            State <span className="text-destructive">*</span>
           </Label>
           <Select
             value={formData.state || ""}
             onValueChange={(value) => onChange({ state: value })}
           >
             <SelectTrigger
-              className={cn("h-8 text-sm", errors.state && "border-red-500")}
+              className={cn(
+                "h-8 text-sm",
+                errors.state && "border-destructive",
+              )}
             >
               <SelectValue placeholder="State" />
             </SelectTrigger>
@@ -262,7 +272,7 @@ export default function QuickQuoteForm({
         </div>
 
         <div className="space-y-1">
-          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
             Tobacco
           </Label>
           <div className="flex items-center h-8 gap-2">
@@ -275,7 +285,7 @@ export default function QuickQuoteForm({
             />
             <label
               htmlFor="tobacco"
-              className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
+              className="text-[11px] text-muted-foreground dark:text-muted-foreground"
             >
               Tobacco user
             </label>
@@ -285,7 +295,7 @@ export default function QuickQuoteForm({
 
       {/* Health Class */}
       <div className="space-y-1">
-        <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
           Health Class (assumed)
         </Label>
         <Select
@@ -305,16 +315,16 @@ export default function QuickQuoteForm({
             ))}
           </SelectContent>
         </Select>
-        <p className="text-[10px] text-v2-ink-muted">
+        <p className="text-[10px] text-muted-foreground">
           Rates shown will be for this health class. Health conditions may
           adjust the actual rating.
         </p>
       </div>
 
       {/* Product Types */}
-      <div className="space-y-2 pt-2 border-t border-v2-ring dark:border-v2-ring">
-        <Label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
-          Product Types <span className="text-red-500">*</span>
+      <div className="space-y-2 pt-2 border-t border-border dark:border-border">
+        <Label className="text-[11px] font-medium text-foreground dark:text-muted-foreground">
+          Product Types <span className="text-destructive">*</span>
         </Label>
         <div className="flex flex-wrap gap-2">
           {PRODUCT_OPTIONS.map((option) => {
@@ -327,8 +337,8 @@ export default function QuickQuoteForm({
                 className={cn(
                   "flex items-center gap-1.5 px-2 py-1.5 rounded border transition-colors text-[11px]",
                   isSelected
-                    ? "bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300"
-                    : "bg-v2-card-tinted/50 border-v2-ring dark:border-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-subtle hover:border-v2-ring-strong dark:hover:border-v2-ring-strong",
+                    ? "bg-info/10 border-info/40 text-info"
+                    : "bg-card-tinted/50 border-border dark:border-border text-muted-foreground dark:text-muted-foreground hover:border-border dark:hover:border-border",
                 )}
               >
                 <Checkbox
@@ -342,14 +352,14 @@ export default function QuickQuoteForm({
           })}
         </div>
         {errors.productTypes && (
-          <p className="text-[10px] text-red-500">{errors.productTypes}</p>
+          <p className="text-[10px] text-destructive">{errors.productTypes}</p>
         )}
       </div>
 
       {/* Term Years (if term life selected) */}
       {showTermYears && (
         <div className="space-y-2">
-          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
             Term Lengths (optional filter)
           </Label>
           <div className="flex flex-wrap gap-1.5">
@@ -363,8 +373,8 @@ export default function QuickQuoteForm({
                   className={cn(
                     "px-2 py-1 text-[10px] rounded border transition-colors",
                     isSelected
-                      ? "bg-blue-600 text-white border-blue-600"
-                      : "bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-subtle border-v2-ring dark:border-v2-ring-strong hover:border-blue-300 dark:hover:border-blue-700",
+                      ? "bg-info text-white border-info"
+                      : "bg-card-tinted text-muted-foreground dark:text-muted-foreground border-border dark:border-border hover:border-info/40 dark:hover:border-info",
                   )}
                 >
                   {option.label}
@@ -372,7 +382,7 @@ export default function QuickQuoteForm({
               );
             })}
           </div>
-          <p className="text-[10px] text-v2-ink-muted">
+          <p className="text-[10px] text-muted-foreground">
             Leave empty to show all term lengths
           </p>
         </div>

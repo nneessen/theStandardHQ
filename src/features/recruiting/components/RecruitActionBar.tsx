@@ -112,7 +112,7 @@ function InvitationActionBar({
   if (entity.kind !== "invitation") return null;
   return (
     <>
-      <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-amber-700 dark:text-amber-400">
+      <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-warning">
         {entity.invitationStatus
           ? INVITATION_STATUS_LABELS[entity.invitationStatus]
           : "Pending"}
@@ -144,7 +144,7 @@ function InvitationActionBar({
           disabled={!policy.canCancelInvitation}
           className={cn(
             buttonBase,
-            "text-red-700 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-950/30",
+            "text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15",
           )}
         >
           {loading.isCancellingInvitation ? (
@@ -256,7 +256,7 @@ function PipelineActionBar({
               disabled={loading.isUnenrolling}
               className={cn(
                 buttonBase,
-                "text-amber-700 hover:text-amber-800 hover:bg-amber-50 dark:hover:bg-amber-950/30",
+                "text-warning hover:text-warning hover:bg-warning/10 dark:hover:bg-warning/15",
               )}
             >
               <RotateCcw className="h-3 w-3 mr-1" />
@@ -309,7 +309,7 @@ function PipelineActionBar({
             onClick={onDeleteOpen}
             aria-label="Delete recruit"
             className={cn(
-              "h-7 px-2 flex-shrink-0 text-red-700 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-950/30",
+              "h-7 px-2 flex-shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15",
             )}
           >
             <Trash2 className="h-3 w-3" />
@@ -357,7 +357,7 @@ function SlackActionBar({
             className={cn(
               buttonBase,
               slack.notificationStatus?.newRecruitSent &&
-                "text-teal-700 border-teal-300 dark:text-teal-400 dark:border-teal-700",
+                "text-success border-success dark:text-success dark:border-success",
             )}
           >
             {sendingType === "new_recruit" && loading.isSendingSlack ? (
@@ -395,7 +395,7 @@ function SlackActionBar({
             className={cn(
               buttonBase,
               slack.notificationStatus?.npnReceivedSent &&
-                "text-teal-700 border-teal-300 dark:text-teal-400 dark:border-teal-700",
+                "text-success border-success dark:text-success dark:border-success",
             )}
           >
             {sendingType === "npn_received" && loading.isSendingSlack ? (
@@ -473,7 +473,7 @@ export function RecruitActionBar({
 
   return (
     <TooltipProvider delayDuration={250}>
-      <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-v2-ring">
+      <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-border">
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
           {isInvitation ? (
             <InvitationActionBar
@@ -537,7 +537,7 @@ export function RecruitActionBar({
                 onClick={() => setGraduateDialogOpen(true)}
                 className={cn(
                   buttonBase,
-                  "text-teal-700 border-teal-300 hover:text-teal-800 hover:bg-teal-50 dark:text-teal-400 dark:border-teal-800 dark:hover:bg-teal-950/30",
+                  "text-success border-success hover:text-success hover:bg-success/10 dark:text-success dark:border-success dark:hover:bg-success/30",
                 )}
               >
                 <GraduationCap className="h-3 w-3 mr-1" />
@@ -636,7 +636,7 @@ export function RecruitActionBar({
                 );
               }}
               disabled={!blockReason.trim() || pendingAction === "block"}
-              className="bg-red-600 hover:bg-red-700 h-7 text-xs"
+              className="bg-destructive hover:bg-destructive h-7 text-xs"
             >
               {pendingAction === "block" ? (
                 <Loader2 className="h-3 w-3 animate-spin mr-1" />
@@ -745,7 +745,7 @@ export function RecruitActionBar({
                   actions.onCancelInvitation,
                 );
               }}
-              className="bg-red-600 hover:bg-red-700 h-7 text-xs"
+              className="bg-destructive hover:bg-destructive h-7 text-xs"
             >
               {pendingAction === "cancel-invite" ? (
                 <Loader2 className="h-3 w-3 animate-spin mr-1" />

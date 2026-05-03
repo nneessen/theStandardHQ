@@ -63,7 +63,7 @@ export function TemplateDeleteDialog({
           <AlertDialogAction
             onClick={handleDelete}
             disabled={deleteMutation.isPending}
-            className="h-8 text-[11px] bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            className="h-8 text-[11px] bg-destructive hover:bg-destructive focus:ring-destructive"
           >
             {deleteMutation.isPending && (
               <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />

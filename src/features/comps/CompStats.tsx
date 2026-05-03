@@ -33,8 +33,11 @@ export function CompStats() {
 
   if (error || !stats) {
     return (
-      <SoftCard padding="md" className="border-red-300 dark:border-red-800">
-        <p className="text-sm text-red-600 dark:text-red-400">
+      <SoftCard
+        padding="md"
+        className="border-destructive/40 dark:border-destructive"
+      >
+        <p className="text-sm text-destructive">
           Failed to load comp statistics
         </p>
       </SoftCard>
@@ -56,7 +59,7 @@ export function CompStats() {
           </span>
           <span className="text-v2-ink-subtle">·</span>
           <span className="inline-flex items-center gap-1">
-            <Building2 className="h-3 w-3 text-emerald-500" />
+            <Building2 className="h-3 w-3 text-success" />
             <span className="text-v2-ink font-semibold">
               {stats.activeCarriers.toLocaleString()}
             </span>
@@ -64,7 +67,7 @@ export function CompStats() {
           </span>
           <span className="text-v2-ink-subtle">·</span>
           <span className="inline-flex items-center gap-1">
-            <Package className="h-3 w-3 text-blue-500" />
+            <Package className="h-3 w-3 text-info" />
             <span className="text-v2-ink font-semibold">
               {stats.productTypes.toLocaleString()}
             </span>
@@ -72,7 +75,7 @@ export function CompStats() {
           </span>
           <span className="text-v2-ink-subtle">·</span>
           <span className="inline-flex items-center gap-1">
-            <TrendingUp className="h-3 w-3 text-amber-500" />
+            <TrendingUp className="h-3 w-3 text-warning" />
             <span className="text-v2-ink font-semibold">
               {stats.avgCommission.toFixed(1)}%
             </span>

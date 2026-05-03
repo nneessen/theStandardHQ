@@ -1,7 +1,7 @@
 // src/features/analytics/visualizations/CohortHeatmap.tsx
 
-import React from 'react';
-import {CohortRetentionData} from '../../../services/analytics/cohortService';
+import React from "react";
+import { CohortRetentionData } from "../../../services/analytics/cohortService";
 
 interface CohortHeatmapProps {
   data: CohortRetentionData[];
@@ -17,7 +17,7 @@ interface CohortHeatmapProps {
 export function CohortHeatmap({ data, maxMonths = 12 }: CohortHeatmapProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="p-10 text-center text-gray-400 text-xs">
+      <div className="p-10 text-center text-muted-foreground text-xs">
         No cohort data available
       </div>
     );
@@ -25,11 +25,11 @@ export function CohortHeatmap({ data, maxMonths = 12 }: CohortHeatmapProps) {
 
   // Get Tailwind classes based on retention percentage
   const getRetentionClasses = (retention: number) => {
-    if (retention >= 90) return { bg: 'bg-green-100', text: 'text-green-900' };
-    if (retention >= 80) return { bg: 'bg-blue-100', text: 'text-blue-900' };
-    if (retention >= 70) return { bg: 'bg-amber-100', text: 'text-amber-900' };
-    if (retention >= 60) return { bg: 'bg-orange-100', text: 'text-orange-900' };
-    return { bg: 'bg-red-100', text: 'text-red-900' };
+    if (retention >= 90) return { bg: "bg-success/20", text: "text-success" };
+    if (retention >= 80) return { bg: "bg-info/20", text: "text-info" };
+    if (retention >= 70) return { bg: "bg-warning/20", text: "text-warning" };
+    if (retention >= 60) return { bg: "bg-warning/20", text: "text-warning" };
+    return { bg: "bg-destructive/20", text: "text-destructive" };
   };
 
   return (
@@ -37,14 +37,17 @@ export function CohortHeatmap({ data, maxMonths = 12 }: CohortHeatmapProps) {
       <table className="border-collapse">
         <thead>
           <tr>
-            <th className="sticky left-0 bg-white z-[2] p-2 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-slate-300">
+            <th className="sticky left-0 bg-white z-[2] p-2 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border">
               Cohort
             </th>
-            <th className="p-2 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-slate-300">
+            <th className="p-2 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border">
               Size
             </th>
             {Array.from({ length: maxMonths + 1 }, (_, i) => (
-              <th key={i} className="p-2 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-slate-300 min-w-[60px]">
+              <th
+                key={i}
+                className="p-2 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wide border-b-2 border-border min-w-[60px]"
+              >
                 M{i}
               </th>
             ))}
@@ -54,7 +57,7 @@ export function CohortHeatmap({ data, maxMonths = 12 }: CohortHeatmapProps) {
           {data.map((cohort, idx) => (
             <tr
               key={cohort.cohortMonth}
-              className={idx < data.length - 1 ? 'border-b border-slate-100' : ''}
+              className={idx < data.length - 1 ? "border-b border-muted" : ""}
             >
               <td className="sticky left-0 bg-white z-[1] py-2.5 px-2 font-semibold text-xs text-foreground whitespace-nowrap">
                 {cohort.cohortLabel}
@@ -68,7 +71,10 @@ export function CohortHeatmap({ data, maxMonths = 12 }: CohortHeatmapProps) {
 
                 if (retention === undefined) {
                   return (
-                    <td key={monthsElapsed} className="py-2.5 px-2 text-center bg-muted text-slate-400 text-xs">
+                    <td
+                      key={monthsElapsed}
+                      className="py-2.5 px-2 text-center bg-muted text-muted-foreground text-xs"
+                    >
                       -
                     </td>
                   );
@@ -107,12 +113,12 @@ export function CohortHeatmap({ data, maxMonths = 12 }: CohortHeatmapProps) {
           <span>70-79%</span>
         </div>
         <div className="flex gap-2 items-center">
-          <div className="w-3 h-3 bg-orange-400 rounded-sm" />
+          <div className="w-3 h-3 bg-warning/70 rounded-sm" />
           <span>60-69%</span>
         </div>
         <div className="flex gap-2 items-center">
           <div className="w-3 h-3 bg-error rounded-sm" />
-          <span>{'<'}60%</span>
+          <span>{"<"}60%</span>
         </div>
       </div>
     </div>

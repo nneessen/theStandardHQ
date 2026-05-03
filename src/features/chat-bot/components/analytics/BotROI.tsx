@@ -40,7 +40,7 @@ export function BotROI({
   return (
     <div className="p-2.5 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
       <div className="flex items-center gap-1.5 mb-2">
-        <DollarSign className="h-3 w-3 text-emerald-500" />
+        <DollarSign className="h-3 w-3 text-success" />
         <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
           ROI
         </h4>
@@ -54,9 +54,7 @@ export function BotROI({
           <span
             className={cn(
               "text-xs font-bold",
-              roiPercent > 0
-                ? "text-emerald-600 dark:text-emerald-400"
-                : "text-red-500",
+              roiPercent > 0 ? "text-success" : "text-destructive",
             )}
           >
             {roiPercent > 0 ? "+" : ""}

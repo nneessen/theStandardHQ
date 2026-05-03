@@ -65,17 +65,17 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-border bg-white p-4 dark:border-border dark:bg-card">
       <div className="mb-3 flex items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-card-tinted text-foreground dark:bg-card-tinted dark:text-foreground">
           {icon}
         </div>
         <div>
-          <h2 className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
+          <h2 className="text-[12px] font-semibold text-foreground dark:text-foreground">
             {title}
           </h2>
           {description ? (
-            <p className="mt-0.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <p className="mt-0.5 text-[10px] text-muted-foreground dark:text-muted-foreground">
               {description}
             </p>
           ) : null}
@@ -130,7 +130,7 @@ function DelayPicker({
           max={7}
           disabled={disabled}
         />
-        <span className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <span className="text-[9px] text-muted-foreground dark:text-muted-foreground">
           days
         </span>
       </div>
@@ -144,7 +144,7 @@ function DelayPicker({
           max={23}
           disabled={disabled}
         />
-        <span className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <span className="text-[9px] text-muted-foreground dark:text-muted-foreground">
           hours
         </span>
       </div>
@@ -158,7 +158,7 @@ function DelayPicker({
           max={59}
           disabled={disabled}
         />
-        <span className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <span className="text-[9px] text-muted-foreground dark:text-muted-foreground">
           mins
         </span>
       </div>
@@ -170,32 +170,28 @@ function DelayPicker({
 
 const STEP_COLORS = [
   {
-    bg: "bg-blue-50 dark:bg-blue-950/40",
+    bg: "bg-info/10 dark:bg-info/20",
     border: "border-l-blue-400 dark:border-l-blue-500",
     hoverBorder: "hover:border-l-blue-500 dark:hover:border-l-blue-400",
-    circle: "bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300",
-    editCircle: "bg-blue-500 text-white",
-    badge: "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
+    circle: "bg-info/20 text-info dark:bg-info/60 dark:text-info",
+    editCircle: "bg-info text-white",
+    badge: "bg-info/20 text-info dark:bg-info/50 dark:text-info",
   },
   {
-    bg: "bg-amber-50 dark:bg-amber-950/40",
+    bg: "bg-warning/10 dark:bg-warning/20",
     border: "border-l-amber-400 dark:border-l-amber-500",
     hoverBorder: "hover:border-l-amber-500 dark:hover:border-l-amber-400",
-    circle:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300",
-    editCircle: "bg-amber-500 text-white",
-    badge:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300",
+    circle: "bg-warning/20 text-warning dark:bg-warning/60 dark:text-warning",
+    editCircle: "bg-warning text-white",
+    badge: "bg-warning/20 text-warning dark:bg-warning/50 dark:text-warning",
   },
   {
-    bg: "bg-emerald-50 dark:bg-emerald-950/40",
+    bg: "bg-success/10 dark:bg-success/20",
     border: "border-l-emerald-400 dark:border-l-emerald-500",
     hoverBorder: "hover:border-l-emerald-500 dark:hover:border-l-emerald-400",
-    circle:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/60 dark:text-emerald-300",
-    editCircle: "bg-emerald-500 text-white",
-    badge:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300",
+    circle: "bg-success/20 text-success dark:bg-success/60 dark:text-success",
+    editCircle: "bg-success text-white",
+    badge: "bg-success/20 text-success dark:bg-success/50 dark:text-success",
   },
 ] as const;
 
@@ -243,25 +239,25 @@ function StepSummaryRow({
         {formatDelay(step.delayMinutes)}
       </Badge>
 
-      <span className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
+      <span className="text-[9px] text-muted-foreground dark:text-muted-foreground">
         ·
       </span>
 
-      <span className="min-w-0 flex-1 truncate text-[11px] text-v2-ink dark:text-v2-ink-muted">
+      <span className="min-w-0 flex-1 truncate text-[11px] text-foreground dark:text-muted-foreground">
         {instructions ? (
           <>
             &ldquo;{instructions.slice(0, 80)}
             {instructions.length > 80 ? "..." : ""}&rdquo;
           </>
         ) : (
-          <span className="italic text-v2-ink-subtle dark:text-v2-ink-muted">
+          <span className="italic text-muted-foreground dark:text-muted-foreground">
             No instructions yet
           </span>
         )}
       </span>
 
       <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-        <Pencil className="h-3 w-3 text-v2-ink-subtle dark:text-v2-ink-muted" />
+        <Pencil className="h-3 w-3 text-muted-foreground dark:text-muted-foreground" />
         {canRemove && (
           <button
             type="button"
@@ -270,7 +266,7 @@ function StepSummaryRow({
               onRemove();
             }}
             disabled={disabled}
-            className="text-v2-ink-subtle hover:text-red-500 disabled:opacity-50 dark:text-v2-ink-muted dark:hover:text-red-400"
+            className="text-muted-foreground hover:text-destructive disabled:opacity-50 dark:text-muted-foreground dark:hover:text-destructive"
           >
             <X className="h-3 w-3" />
           </button>
@@ -304,7 +300,7 @@ function StepEditForm({
   return (
     <div
       className={cn(
-        "rounded-md border border-v2-ring p-2.5 dark:border-v2-ring-strong",
+        "rounded-md border border-border p-2.5 dark:border-border",
         colors.bg,
       )}
     >
@@ -318,7 +314,7 @@ function StepEditForm({
           >
             {index + 1}
           </span>
-          <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
+          <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground dark:text-muted-foreground">
             Step {index + 1}
           </span>
         </div>
@@ -328,7 +324,7 @@ function StepEditForm({
               type="button"
               onClick={onRemove}
               disabled={disabled}
-              className="rounded p-0.5 text-v2-ink-subtle hover:text-red-500 disabled:opacity-50 dark:text-v2-ink-muted dark:hover:text-red-400"
+              className="rounded p-0.5 text-muted-foreground hover:text-destructive disabled:opacity-50 dark:text-muted-foreground dark:hover:text-destructive"
             >
               <Trash2 className="h-3 w-3" />
             </button>
@@ -336,7 +332,7 @@ function StepEditForm({
           <button
             type="button"
             onClick={onClose}
-            className="rounded p-0.5 text-v2-ink-subtle hover:text-v2-ink dark:text-v2-ink-muted dark:hover:text-v2-canvas"
+            className="rounded p-0.5 text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-background"
           >
             <Check className="h-3 w-3" />
           </button>
@@ -345,7 +341,7 @@ function StepEditForm({
 
       <div className="space-y-2">
         <div>
-          <label className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
+          <label className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground">
             Delay
           </label>
           <DelayPicker
@@ -353,13 +349,13 @@ function StepEditForm({
             onChange={(delayMinutes) => onChange({ ...step, delayMinutes })}
             disabled={disabled}
           />
-          <p className="mt-0.5 text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
+          <p className="mt-0.5 text-[9px] text-muted-foreground dark:text-muted-foreground">
             {formatDelay(step.delayMinutes)} after trigger
           </p>
         </div>
 
         <div>
-          <label className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
+          <label className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground">
             AI Instructions
           </label>
           <Textarea
@@ -375,8 +371,8 @@ function StepEditForm({
             className={cn(
               "mt-0.5 text-right text-[9px]",
               step.aiInstructions.length > MAX_AI_INSTRUCTIONS_LENGTH
-                ? "text-red-500"
-                : "text-v2-ink-subtle dark:text-v2-ink-muted",
+                ? "text-destructive"
+                : "text-muted-foreground dark:text-muted-foreground",
             )}
           >
             {step.aiInstructions.length}/{MAX_AI_INSTRUCTIONS_LENGTH}
@@ -445,13 +441,13 @@ function SequenceRow({
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <div className="rounded-lg border border-v2-ring bg-white dark:border-v2-ring dark:bg-v2-card">
+      <div className="rounded-lg border border-border bg-white dark:border-border dark:bg-card">
         {/* Header row */}
         <div className="flex items-center gap-1.5 px-2 py-1.5">
           <CollapsibleTrigger asChild>
             <button
               type="button"
-              className="shrink-0 rounded p-0.5 text-v2-ink-subtle hover:text-v2-ink-muted dark:text-v2-ink-muted dark:hover:text-v2-ink-subtle"
+              className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-muted-foreground dark:text-muted-foreground dark:hover:text-muted-foreground"
             >
               {open ? (
                 <ChevronDown className="h-3.5 w-3.5" />
@@ -523,7 +519,7 @@ function SequenceRow({
               type="button"
               onClick={onDelete}
               disabled={disabled}
-              className="text-v2-ink-subtle hover:text-red-500 disabled:opacity-50 dark:text-v2-ink-muted dark:hover:text-red-400"
+              className="text-muted-foreground hover:text-destructive disabled:opacity-50 dark:text-muted-foreground dark:hover:text-destructive"
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
@@ -532,7 +528,7 @@ function SequenceRow({
 
         {/* Collapsible steps area */}
         <CollapsibleContent>
-          <div className="border-t border-v2-ring bg-v2-canvas/50 px-2 pb-2 pt-1.5 dark:border-v2-ring dark:bg-v2-card-tinted/30">
+          <div className="border-t border-border bg-background/50 px-2 pb-2 pt-1.5 dark:border-border dark:bg-card-tinted/30">
             <div className="space-y-0.5">
               {sequence.steps.map((step, stepIdx) =>
                 editingStepIndex === stepIdx ? (
@@ -564,7 +560,7 @@ function SequenceRow({
               <Button
                 variant="ghost"
                 size="sm"
-                className="mt-1 h-6 gap-1 text-[10px] text-v2-ink-muted"
+                className="mt-1 h-6 gap-1 text-[10px] text-muted-foreground"
                 onClick={addStep}
                 disabled={disabled}
               >
@@ -573,7 +569,7 @@ function SequenceRow({
               </Button>
             )}
 
-            <p className="mt-0.5 text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
+            <p className="mt-0.5 text-[9px] text-muted-foreground dark:text-muted-foreground">
               {sequence.steps.length}/{MAX_STEPS_PER_SEQUENCE} steps
             </p>
           </div>
@@ -663,7 +659,7 @@ export function StatusTriggerSequenceEditor() {
         title="Status-Triggered Sequences"
         description="Automatically send AI-generated SMS outreach when a lead's CRM status changes."
       >
-        <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Connect Close CRM in the Integrations tab to configure
           status-triggered sequences.
         </p>
@@ -680,7 +676,7 @@ export function StatusTriggerSequenceEditor() {
       >
         {/* Add button */}
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             {displayedSequences.length}/{MAX_SEQUENCES} sequences
           </p>
           <Button
@@ -700,9 +696,9 @@ export function StatusTriggerSequenceEditor() {
 
         {/* Empty state */}
         {displayedSequences.length === 0 && (
-          <div className="rounded-lg border border-dashed border-v2-ring px-4 py-6 text-center dark:border-v2-ring-strong">
-            <MessageSquare className="mx-auto h-5 w-5 text-v2-ink-subtle dark:text-v2-ink-muted" />
-            <p className="mt-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <div className="rounded-lg border border-dashed border-border px-4 py-6 text-center dark:border-border">
+            <MessageSquare className="mx-auto h-5 w-5 text-muted-foreground dark:text-muted-foreground" />
+            <p className="mt-2 text-[11px] text-muted-foreground dark:text-muted-foreground">
               No sequences configured. Add one to start automated outreach when
               a lead enters a specific status.
             </p>
@@ -728,7 +724,7 @@ export function StatusTriggerSequenceEditor() {
         {dirty && errors.length > 0 && (
           <div className="mt-3 space-y-0.5">
             {errors.map((err, i) => (
-              <p key={i} className="text-[10px] text-red-500">
+              <p key={i} className="text-[10px] text-destructive">
                 {err}
               </p>
             ))}
@@ -737,7 +733,7 @@ export function StatusTriggerSequenceEditor() {
 
         {/* Save / Discard bar */}
         {dirty && (
-          <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
+          <div className="mt-3 flex items-center gap-2 border-t border-border pt-3 dark:border-border">
             <Button
               size="sm"
               className="h-7 text-[10px]"

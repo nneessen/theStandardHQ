@@ -322,7 +322,7 @@ export function CreateCriteriaDialog({
           <div className="space-y-1.5">
             <Label className="text-[10px] flex items-center gap-1">
               <Building className="h-3 w-3" />
-              Carrier <span className="text-red-500">*</span>
+              Carrier <span className="text-destructive">*</span>
             </Label>
             <Select value={carrierId} onValueChange={setCarrierId}>
               <SelectTrigger className="h-8 text-[11px]">
@@ -331,10 +331,10 @@ export function CreateCriteriaDialog({
               <SelectContent>
                 {carriersLoading ? (
                   <div className="flex items-center justify-center py-4">
-                    <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   </div>
                 ) : carriersError ? (
-                  <div className="py-4 px-2 text-[10px] text-red-500">
+                  <div className="py-4 px-2 text-[10px] text-destructive">
                     Failed to load carriers
                   </div>
                 ) : (
@@ -360,7 +360,7 @@ export function CreateCriteriaDialog({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Info className="h-3 w-3 text-v2-ink-subtle cursor-help" />
+                    <Info className="h-3 w-3 text-muted-foreground cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent
                     side="right"
@@ -388,16 +388,16 @@ export function CreateCriteriaDialog({
               <SelectContent>
                 <SelectItem
                   value={CARRIER_WIDE_VALUE}
-                  className="text-[11px] text-v2-ink-muted"
+                  className="text-[11px] text-muted-foreground"
                 >
                   All products (carrier-wide)
                 </SelectItem>
                 {productsLoading ? (
                   <div className="flex items-center justify-center py-4">
-                    <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                   </div>
                 ) : productsError ? (
-                  <div className="py-4 px-2 text-[10px] text-red-500">
+                  <div className="py-4 px-2 text-[10px] text-destructive">
                     Failed to load products
                   </div>
                 ) : (
@@ -416,11 +416,11 @@ export function CreateCriteriaDialog({
           </div>
 
           {/* Medication Restrictions */}
-          <div className="space-y-2 pt-2 border-t border-v2-ring dark:border-v2-ring">
-            <Label className="text-[10px] font-semibold text-v2-ink dark:text-v2-ink-muted">
+          <div className="space-y-2 pt-2 border-t border-border dark:border-border">
+            <Label className="text-[10px] font-semibold text-foreground dark:text-muted-foreground">
               Medication Restrictions
             </Label>
-            <p className="text-[9px] text-v2-ink-muted">
+            <p className="text-[9px] text-muted-foreground">
               Toggle switches OFF to mark medications as NOT ALLOWED for this
               carrier.
             </p>
@@ -436,12 +436,12 @@ export function CreateCriteriaDialog({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="w-full justify-between h-7 text-[10px] font-medium px-2 hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted"
+                      className="w-full justify-between h-7 text-[10px] font-medium px-2 hover:bg-card-tinted dark:hover:bg-card-tinted"
                     >
                       <span>{category.label}</span>
                       <div className="flex items-center gap-2">
                         {category.meds.some((m) => isRestricted(m.key)) && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive">
                             {
                               category.meds.filter((m) => isRestricted(m.key))
                                 .length
@@ -463,8 +463,8 @@ export function CreateCriteriaDialog({
                         key={med.key}
                         className={`p-2 rounded-md ${
                           isRestricted(med.key)
-                            ? "bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800"
-                            : "bg-v2-canvas dark:bg-v2-card-tinted/50"
+                            ? "bg-destructive/10 border border-destructive/30"
+                            : "bg-background dark:bg-card-tinted/50"
                         }`}
                       >
                         {"isCount" in med && med.isCount ? (
@@ -489,7 +489,7 @@ export function CreateCriteriaDialog({
                                 className="h-7 text-[10px] w-20"
                                 min={0}
                               />
-                              <span className="text-[9px] text-v2-ink-muted">
+                              <span className="text-[9px] text-muted-foreground">
                                 max allowed
                               </span>
                             </div>
@@ -512,7 +512,7 @@ export function CreateCriteriaDialog({
                               med.hasRatingImpact &&
                               isRestricted(med.key) && (
                                 <div className="mt-2 space-y-1">
-                                  <Label className="text-[9px] text-v2-ink-muted">
+                                  <Label className="text-[9px] text-muted-foreground">
                                     Rating Impact
                                   </Label>
                                   <Input
@@ -533,7 +533,7 @@ export function CreateCriteriaDialog({
                               med.hasTimeSinceUse &&
                               isRestricted(med.key) && (
                                 <div className="mt-2 space-y-1">
-                                  <Label className="text-[9px] text-v2-ink-muted">
+                                  <Label className="text-[9px] text-muted-foreground">
                                     Months since last use required
                                   </Label>
                                   <Input
@@ -565,7 +565,7 @@ export function CreateCriteriaDialog({
           </div>
 
           {/* Notes */}
-          <div className="space-y-1.5 pt-2 border-t border-v2-ring dark:border-v2-ring">
+          <div className="space-y-1.5 pt-2 border-t border-border dark:border-border">
             <Label className="text-[10px]">Notes (optional)</Label>
             <Textarea
               value={notes}
@@ -578,8 +578,8 @@ export function CreateCriteriaDialog({
 
         {/* Validation message */}
         {carrierId && !hasAnyRestriction && (
-          <div className="p-2.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
-            <p className="text-[10px] text-amber-800 dark:text-amber-300">
+          <div className="p-2.5 bg-warning/10 border border-warning/30 rounded-md">
+            <p className="text-[10px] text-warning">
               Please configure at least one medication restriction to create
               criteria.
             </p>
@@ -617,8 +617,8 @@ export function CreateCriteriaDialog({
 
         {/* Summary */}
         {carrierId && (
-          <div className="mt-2 p-2.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md">
-            <p className="text-[10px] text-blue-800 dark:text-blue-300">
+          <div className="mt-2 p-2.5 bg-info/10 border border-info/30 rounded-md">
+            <p className="text-[10px] text-info dark:text-info">
               <strong>Summary:</strong> Creating criteria for{" "}
               <strong>{selectedCarrier?.name}</strong>
               {productId !== CARRIER_WIDE_VALUE &&
@@ -628,7 +628,7 @@ export function CreateCriteriaDialog({
               {productId === CARRIER_WIDE_VALUE && " (all products)"}
             </p>
             {hasAnyRestriction && (
-              <p className="text-[9px] text-blue-600 dark:text-blue-400 mt-1">
+              <p className="text-[9px] text-info mt-1">
                 {Object.keys(restrictions).length} medication restriction(s)
                 configured.
               </p>

@@ -154,10 +154,10 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
           <div
             className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
               dragActive
-                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                ? "border-info bg-info/10"
                 : selectedFile
-                  ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                  : "border-v2-ring-strong dark:border-v2-ring-strong hover:border-v2-ring-strong dark:hover:border-v2-ring-strong"
+                  ? "border-success bg-success/10"
+                  : "border-border dark:border-border hover:border-border dark:hover:border-border"
             }`}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
@@ -165,12 +165,12 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
           >
             {selectedFile ? (
               <div className="flex items-center justify-center gap-3">
-                <FileText className="h-8 w-8 text-red-500" />
+                <FileText className="h-8 w-8 text-destructive" />
                 <div className="text-left">
-                  <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
+                  <p className="text-[11px] font-medium text-foreground dark:text-foreground">
                     {selectedFile.name}
                   </p>
-                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                     {formatFileSize(selectedFile.size)}
                   </p>
                 </div>
@@ -185,8 +185,8 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
               </div>
             ) : (
               <>
-                <Upload className="h-8 w-8 mx-auto mb-2 text-v2-ink-subtle" />
-                <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle mb-1">
+                <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-[11px] text-muted-foreground dark:text-muted-foreground mb-1">
                   Drag and drop a PDF file here, or
                 </p>
                 <Button
@@ -197,7 +197,7 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
                 >
                   Browse Files
                 </Button>
-                <p className="text-[9px] text-v2-ink-muted dark:text-v2-ink-muted mt-2">
+                <p className="text-[9px] text-muted-foreground dark:text-muted-foreground mt-2">
                   PDF only, max {MAX_FILE_SIZE / (1024 * 1024)}MB
                 </p>
               </>
@@ -213,7 +213,7 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
 
           {/* Error Message */}
           {error && (
-            <div className="flex items-center gap-2 text-[11px] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded">
+            <div className="flex items-center gap-2 text-[11px] text-destructive bg-destructive/10 px-3 py-2 rounded">
               <AlertCircle className="h-3.5 w-3.5 shrink-0" />
               {error}
             </div>
@@ -222,7 +222,7 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
           {/* Carrier Selection */}
           <div className="space-y-1.5">
             <Label className="text-[11px]">
-              Carrier <span className="text-red-500">*</span>
+              Carrier <span className="text-destructive">*</span>
             </Label>
             <Select value={carrierId} onValueChange={setCarrierId}>
               <SelectTrigger className="h-8 text-[11px]">
@@ -255,7 +255,7 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
           {/* Guide Name */}
           <div className="space-y-1.5">
             <Label className="text-[11px]">
-              Guide Name <span className="text-red-500">*</span>
+              Guide Name <span className="text-destructive">*</span>
             </Label>
             <Input
               value={name}
@@ -268,7 +268,9 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
           {/* Optional Fields */}
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-[10px] text-v2-ink-muted">Version</Label>
+              <Label className="text-[10px] text-muted-foreground">
+                Version
+              </Label>
               <Input
                 value={version}
                 onChange={(e) => setVersion(e.target.value)}
@@ -277,7 +279,7 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[10px] text-v2-ink-muted">
+              <Label className="text-[10px] text-muted-foreground">
                 Effective Date
               </Label>
               <Input
@@ -288,7 +290,7 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[10px] text-v2-ink-muted">
+              <Label className="text-[10px] text-muted-foreground">
                 Expiration Date
               </Label>
               <Input

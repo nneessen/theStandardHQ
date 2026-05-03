@@ -32,7 +32,7 @@ export function InstagramSetupGuide({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[85vh] p-0">
         <DialogHeader className="px-4 pt-4 pb-2">
-          <DialogTitle className="text-sm font-semibold text-v2-ink">
+          <DialogTitle className="text-sm font-semibold text-foreground">
             Instagram Business Account Setup
           </DialogTitle>
         </DialogHeader>
@@ -42,35 +42,35 @@ export function InstagramSetupGuide({
             {/* Section 1: What You Need */}
             <section>
               <div className="flex items-center gap-1.5 mb-2">
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
+                <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                <h3 className="text-[11px] font-semibold text-foreground uppercase tracking-wide">
                   What You Need
                 </h3>
               </div>
-              <div className="bg-v2-canvas rounded-md p-3 space-y-2">
+              <div className="bg-background rounded-md p-3 space-y-2">
                 <div className="flex items-start gap-2">
-                  <span className="text-[10px] font-medium text-v2-ink-muted mt-0.5">
+                  <span className="text-[10px] font-medium text-muted-foreground mt-0.5">
                     1.
                   </span>
-                  <p className="text-[11px] text-v2-ink-muted">
+                  <p className="text-[11px] text-muted-foreground">
                     <strong>Instagram Business or Creator account</strong> (not
                     Personal)
                   </p>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-[10px] font-medium text-v2-ink-muted mt-0.5">
+                  <span className="text-[10px] font-medium text-muted-foreground mt-0.5">
                     2.
                   </span>
-                  <p className="text-[11px] text-v2-ink-muted">
+                  <p className="text-[11px] text-muted-foreground">
                     <strong>A Facebook Page</strong> connected to your Instagram
                     account
                   </p>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-[10px] font-medium text-v2-ink-muted mt-0.5">
+                  <span className="text-[10px] font-medium text-muted-foreground mt-0.5">
                     3.
                   </span>
-                  <p className="text-[11px] text-v2-ink-muted">
+                  <p className="text-[11px] text-muted-foreground">
                     <strong>Admin access</strong> to both your Instagram and
                     Facebook Page
                   </p>
@@ -81,43 +81,43 @@ export function InstagramSetupGuide({
             {/* Section 2: Convert to Business Account */}
             <section>
               <div className="flex items-center gap-1.5 mb-2">
-                <Building2 className="h-3.5 w-3.5 text-blue-500" />
-                <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
+                <Building2 className="h-3.5 w-3.5 text-info" />
+                <h3 className="text-[11px] font-semibold text-foreground uppercase tracking-wide">
                   Convert to Business Account
                 </h3>
               </div>
-              <div className="bg-v2-canvas rounded-md p-3 space-y-2">
-                <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle mb-2">
+              <div className="bg-background rounded-md p-3 space-y-2">
+                <p className="text-[11px] text-muted-foreground dark:text-muted-foreground mb-2">
                   If you have a Personal account, convert it to Business or
                   Creator:
                 </p>
-                <ol className="space-y-1.5 text-[11px] text-v2-ink-muted">
+                <ol className="space-y-1.5 text-[11px] text-muted-foreground">
                   <li className="flex items-start gap-2">
-                    <span className="text-[10px] font-medium text-v2-ink-muted mt-0.5">
+                    <span className="text-[10px] font-medium text-muted-foreground mt-0.5">
                       1.
                     </span>
                     Open Instagram and go to your profile
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-[10px] font-medium text-v2-ink-muted mt-0.5">
+                    <span className="text-[10px] font-medium text-muted-foreground mt-0.5">
                       2.
                     </span>
                     Tap the menu (≡) → Settings → Account
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-[10px] font-medium text-v2-ink-muted mt-0.5">
+                    <span className="text-[10px] font-medium text-muted-foreground mt-0.5">
                       3.
                     </span>
                     Tap "Switch to Professional Account"
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-[10px] font-medium text-v2-ink-muted mt-0.5">
+                    <span className="text-[10px] font-medium text-muted-foreground mt-0.5">
                       4.
                     </span>
                     Choose "Business" or "Creator" based on your needs
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-[10px] font-medium text-v2-ink-muted mt-0.5">
+                    <span className="text-[10px] font-medium text-muted-foreground mt-0.5">
                       5.
                     </span>
                     Follow the prompts to complete setup
@@ -127,7 +127,7 @@ export function InstagramSetupGuide({
                   href="https://help.instagram.com/502981923235522"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[10px] text-blue-600 dark:text-blue-400 hover:underline mt-2"
+                  className="inline-flex items-center gap-1 text-[10px] text-info hover:underline mt-2"
                 >
                   Instagram Help: Set up a Business account
                   <ExternalLink className="h-2.5 w-2.5" />
@@ -138,40 +138,40 @@ export function InstagramSetupGuide({
             {/* Section 3: Connect Facebook Page */}
             <section>
               <div className="flex items-center gap-1.5 mb-2">
-                <Link2 className="h-3.5 w-3.5 text-purple-500" />
-                <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
+                <Link2 className="h-3.5 w-3.5 text-info" />
+                <h3 className="text-[11px] font-semibold text-foreground uppercase tracking-wide">
                   Connect a Facebook Page
                 </h3>
               </div>
-              <div className="bg-v2-canvas rounded-md p-3 space-y-2">
+              <div className="bg-background rounded-md p-3 space-y-2">
                 <div className="flex items-start gap-2 mb-2">
-                  <AlertCircle className="h-3 w-3 text-amber-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-[10px] text-amber-700 dark:text-amber-400">
+                  <AlertCircle className="h-3 w-3 text-warning mt-0.5 flex-shrink-0" />
+                  <p className="text-[10px] text-warning">
                     A Facebook Page is required because Instagram's messaging
                     API is accessed through Meta's Business platform.
                   </p>
                 </div>
-                <ol className="space-y-1.5 text-[11px] text-v2-ink-muted">
+                <ol className="space-y-1.5 text-[11px] text-muted-foreground">
                   <li className="flex items-start gap-2">
-                    <span className="text-[10px] font-medium text-v2-ink-muted mt-0.5">
+                    <span className="text-[10px] font-medium text-muted-foreground mt-0.5">
                       1.
                     </span>
                     Go to your Instagram profile → Edit profile
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-[10px] font-medium text-v2-ink-muted mt-0.5">
+                    <span className="text-[10px] font-medium text-muted-foreground mt-0.5">
                       2.
                     </span>
                     Tap "Page" under "Profile information"
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-[10px] font-medium text-v2-ink-muted mt-0.5">
+                    <span className="text-[10px] font-medium text-muted-foreground mt-0.5">
                       3.
                     </span>
                     Select an existing Page or create a new one
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-[10px] font-medium text-v2-ink-muted mt-0.5">
+                    <span className="text-[10px] font-medium text-muted-foreground mt-0.5">
                       4.
                     </span>
                     Confirm the connection
@@ -181,7 +181,7 @@ export function InstagramSetupGuide({
                   href="https://help.instagram.com/570895513091465"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[10px] text-blue-600 dark:text-blue-400 hover:underline mt-2"
+                  className="inline-flex items-center gap-1 text-[10px] text-info hover:underline mt-2"
                 >
                   Instagram Help: Connect to a Facebook Page
                   <ExternalLink className="h-2.5 w-2.5" />
@@ -192,35 +192,35 @@ export function InstagramSetupGuide({
             {/* Section 4: Troubleshooting */}
             <section>
               <div className="flex items-center gap-1.5 mb-2">
-                <HelpCircle className="h-3.5 w-3.5 text-v2-ink-muted" />
-                <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
+                <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                <h3 className="text-[11px] font-semibold text-foreground uppercase tracking-wide">
                   Troubleshooting
                 </h3>
               </div>
-              <div className="bg-v2-canvas rounded-md p-3 space-y-3">
+              <div className="bg-background rounded-md p-3 space-y-3">
                 <div>
-                  <p className="text-[11px] font-medium text-v2-ink-muted">
+                  <p className="text-[11px] font-medium text-muted-foreground">
                     "I don't see the option to connect a Page"
                   </p>
-                  <p className="text-[10px] text-v2-ink-muted mt-0.5">
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
                     Make sure you've switched to a Business or Creator account
                     first. Personal accounts cannot connect to Facebook Pages.
                   </p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-medium text-v2-ink-muted">
+                  <p className="text-[11px] font-medium text-muted-foreground">
                     "Connection failed during OAuth"
                   </p>
-                  <p className="text-[10px] text-v2-ink-muted mt-0.5">
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
                     Ensure you have admin access to the Facebook Page. Only
                     admins can authorize messaging integrations.
                   </p>
                 </div>
                 <div>
-                  <p className="text-[11px] font-medium text-v2-ink-muted">
+                  <p className="text-[11px] font-medium text-muted-foreground">
                     "My Facebook Page doesn't appear"
                   </p>
-                  <p className="text-[10px] text-v2-ink-muted mt-0.5">
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
                     You may need to request admin access from the current Page
                     admin, or create a new Page for your business.
                   </p>

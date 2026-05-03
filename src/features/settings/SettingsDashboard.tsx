@@ -304,12 +304,12 @@ export function SettingsDashboard({ initialTab }: SettingsDashboardProps) {
       {/* Compact header */}
       <header className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
-          <Settings className="h-4 w-4 text-v2-ink" />
-          <h1 className="text-base font-semibold tracking-tight text-v2-ink">
+          <Settings className="h-4 w-4 text-foreground" />
+          <h1 className="text-base font-semibold tracking-tight text-foreground">
             Settings
           </h1>
         </div>
-        <p className="text-[11px] text-v2-ink-muted">
+        <p className="text-[11px] text-muted-foreground">
           {canManageCarriers
             ? "Configure your account, organization, and insurance setup."
             : "Manage your account, alerts, and integrations."}
@@ -319,7 +319,7 @@ export function SettingsDashboard({ initialTab }: SettingsDashboardProps) {
       {/* Mobile: dropdown selector */}
       <div className="lg:hidden">
         <Select value={activeId} onValueChange={setActiveTab}>
-          <SelectTrigger className="h-9 bg-v2-card border-v2-ring rounded-v2-pill text-sm">
+          <SelectTrigger className="h-9 bg-card border-border rounded-v2-pill text-sm">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -328,7 +328,7 @@ export function SettingsDashboard({ initialTab }: SettingsDashboardProps) {
               if (groupItems.length === 0) return null;
               return (
                 <div key={g.label}>
-                  <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-v2-ink-subtle">
+                  <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                     {g.label}
                   </div>
                   {groupItems.map((i) => (
@@ -353,7 +353,7 @@ export function SettingsDashboard({ initialTab }: SettingsDashboardProps) {
               if (groupItems.length === 0) return null;
               return (
                 <div key={g.label} className="flex flex-col gap-1">
-                  <div className="px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-v2-ink-subtle">
+                  <div className="px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                     {g.label}
                   </div>
                   <ul className="flex flex-col gap-0.5">
@@ -369,21 +369,21 @@ export function SettingsDashboard({ initialTab }: SettingsDashboardProps) {
                             className={cn(
                               "w-full flex items-center gap-2 h-8 px-2.5 rounded-v2-pill text-[12px] font-medium transition-colors",
                               isActive
-                                ? "bg-v2-ink text-v2-canvas shadow-v2-soft"
-                                : "text-v2-ink-muted hover:text-v2-ink hover:bg-v2-accent-soft",
+                                ? "bg-foreground text-background shadow-v2-soft"
+                                : "text-muted-foreground hover:text-foreground hover:bg-accent/40",
                             )}
                           >
                             <Icon
                               className={cn(
                                 "h-3.5 w-3.5 flex-shrink-0",
-                                isActive && "text-v2-accent",
+                                isActive && "text-warning",
                               )}
                             />
                             <span className="truncate flex-1 text-left">
                               {i.label}
                             </span>
                             {i.badge && i.badge > 0 ? (
-                              <span className="inline-flex items-center justify-center min-w-[18px] h-4 px-1 rounded-v2-pill bg-v2-accent text-v2-ink text-[10px] font-bold">
+                              <span className="inline-flex items-center justify-center min-w-[18px] h-4 px-1 rounded-v2-pill bg-accent text-foreground text-[10px] font-bold">
                                 {i.badge}
                               </span>
                             ) : null}
@@ -402,14 +402,14 @@ export function SettingsDashboard({ initialTab }: SettingsDashboardProps) {
           {activeItem && (
             <SoftCard padding="md">
               <div className="flex items-start gap-2.5">
-                <span className="inline-flex items-center justify-center h-8 w-8 rounded-v2-pill bg-v2-accent-soft text-v2-ink flex-shrink-0">
+                <span className="inline-flex items-center justify-center h-8 w-8 rounded-v2-pill bg-accent/40 text-foreground flex-shrink-0">
                   <activeItem.icon className="h-4 w-4" />
                 </span>
                 <div className="flex flex-col leading-tight min-w-0">
-                  <h2 className="text-base font-semibold tracking-tight text-v2-ink">
+                  <h2 className="text-base font-semibold tracking-tight text-foreground">
                     {activeItem.label}
                   </h2>
-                  <p className="text-[12px] text-v2-ink-muted">
+                  <p className="text-[12px] text-muted-foreground">
                     {activeItem.description}
                   </p>
                 </div>
@@ -428,14 +428,14 @@ export function SettingsDashboard({ initialTab }: SettingsDashboardProps) {
         {activeItem && (
           <SoftCard padding="md">
             <div className="flex items-start gap-2.5">
-              <span className="inline-flex items-center justify-center h-8 w-8 rounded-v2-pill bg-v2-accent-soft text-v2-ink flex-shrink-0">
+              <span className="inline-flex items-center justify-center h-8 w-8 rounded-v2-pill bg-accent/40 text-foreground flex-shrink-0">
                 <activeItem.icon className="h-4 w-4" />
               </span>
               <div className="flex flex-col leading-tight min-w-0">
-                <h2 className="text-base font-semibold tracking-tight text-v2-ink">
+                <h2 className="text-base font-semibold tracking-tight text-foreground">
                   {activeItem.label}
                 </h2>
-                <p className="text-[12px] text-v2-ink-muted">
+                <p className="text-[12px] text-muted-foreground">
                   {activeItem.description}
                 </p>
               </div>

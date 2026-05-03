@@ -143,7 +143,7 @@ export function ConversationsTab() {
       <TooltipProvider delayDuration={200}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Icon className="h-3 w-3 text-v2-ink-subtle" />
+            <Icon className="h-3 w-3 text-muted-foreground" />
           </TooltipTrigger>
           <TooltipContent side="top" className="text-[10px]">
             {entry.label}
@@ -157,37 +157,37 @@ export function ConversationsTab() {
     switch (s) {
       case "open":
         return (
-          <Badge className="text-[9px] h-3.5 px-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+          <Badge className="text-[9px] h-3.5 px-1 bg-success/20 text-success dark:bg-success dark:text-success">
             Open
           </Badge>
         );
       case "awaiting_reply":
         return (
-          <Badge className="text-[9px] h-3.5 px-1 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+          <Badge className="text-[9px] h-3.5 px-1 bg-info/20 text-info dark:bg-info dark:text-info">
             Awaiting Reply
           </Badge>
         );
       case "scheduling":
         return (
-          <Badge className="text-[9px] h-3.5 px-1 bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">
+          <Badge className="text-[9px] h-3.5 px-1 bg-info/20 text-info dark:bg-info dark:text-info">
             Scheduling
           </Badge>
         );
       case "scheduled":
         return (
-          <Badge className="text-[9px] h-3.5 px-1 bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300">
+          <Badge className="text-[9px] h-3.5 px-1 bg-success/20 text-success dark:bg-success dark:text-success">
             Scheduled
           </Badge>
         );
       case "closed":
         return (
-          <Badge className="text-[9px] h-3.5 px-1 bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-muted">
+          <Badge className="text-[9px] h-3.5 px-1 bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground">
             Closed
           </Badge>
         );
       case "stale":
         return (
-          <Badge className="text-[9px] h-3.5 px-1 bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
+          <Badge className="text-[9px] h-3.5 px-1 bg-warning/20 text-warning dark:bg-warning dark:text-warning">
             Stale
           </Badge>
         );
@@ -195,7 +195,7 @@ export function ConversationsTab() {
         return (
           <Badge
             variant="secondary"
-            className="text-[9px] h-3.5 px-1 bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-muted"
+            className="text-[9px] h-3.5 px-1 bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground"
           >
             {s}
           </Badge>
@@ -208,7 +208,7 @@ export function ConversationsTab() {
       {/* Search + Filters */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <Input
             placeholder="Search name or phone..."
             value={searchInput}
@@ -218,7 +218,7 @@ export function ConversationsTab() {
           {searchInput && (
             <button
               onClick={clearSearch}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-v2-ink-subtle hover:text-v2-ink-muted"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
             >
               <X className="h-3 w-3" />
             </button>
@@ -246,7 +246,7 @@ export function ConversationsTab() {
             ))}
           </SelectContent>
         </Select>
-        <span className="text-[10px] text-v2-ink-subtle whitespace-nowrap">
+        <span className="text-[10px] text-muted-foreground whitespace-nowrap">
           {debouncedSearch
             ? `${total} result${total !== 1 ? "s" : ""}`
             : `${engagedTotal} conversation${engagedTotal !== 1 ? "s" : ""}`}
@@ -263,21 +263,21 @@ export function ConversationsTab() {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring">
+      <div className="overflow-hidden bg-card rounded-lg border border-border dark:border-border">
         <div className="overflow-auto">
           <Table>
-            <TableHeader className="sticky top-0 bg-v2-canvas dark:bg-v2-card-tinted/50 z-10">
-              <TableRow className="border-b border-v2-ring dark:border-v2-ring hover:bg-transparent">
-                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
+            <TableHeader className="sticky top-0 bg-background dark:bg-card-tinted/50 z-10">
+              <TableRow className="border-b border-border dark:border-border hover:bg-transparent">
+                <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground dark:text-muted-foreground">
                   Lead
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted w-10 text-center">
+                <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground dark:text-muted-foreground w-10 text-center">
                   Ch
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
+                <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground dark:text-muted-foreground">
                   Status
                 </TableHead>
-                <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted text-right">
+                <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground dark:text-muted-foreground text-right">
                   Last Activity
                 </TableHead>
               </TableRow>
@@ -286,20 +286,20 @@ export function ConversationsTab() {
               {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={4} className="py-8 text-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle mx-auto" />
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground mx-auto" />
                   </TableCell>
                 </TableRow>
               ) : conversations.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={4} className="py-8 text-center">
-                    <MessageSquare className="h-8 w-8 text-v2-ink-subtle dark:text-v2-ink-muted mx-auto mb-2" />
-                    <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                    <MessageSquare className="h-8 w-8 text-muted-foreground dark:text-muted-foreground mx-auto mb-2" />
+                    <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                       {debouncedSearch
                         ? "No conversations match your search"
                         : "No conversations yet"}
                     </p>
                     {!debouncedSearch && (
-                      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-muted">
+                      <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                         Conversations will appear when leads text in
                       </p>
                     )}
@@ -309,16 +309,16 @@ export function ConversationsTab() {
                 conversations.map((conv) => (
                   <TableRow
                     key={conv.id}
-                    className="hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 border-b border-v2-ring dark:border-v2-ring/50 cursor-pointer"
+                    className="hover:bg-background dark:hover:bg-card-tinted/50 border-b border-border dark:border-border/50 cursor-pointer"
                     onClick={() => setSelectedConv(conv)}
                   >
                     <TableCell className="py-1.5">
                       <div>
-                        <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
+                        <span className="text-[11px] font-medium text-foreground dark:text-foreground">
                           {leadLabel(conv)}
                         </span>
                         {conv.leadName && conv.leadPhone && (
-                          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                          <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                             {conv.leadPhone}
                           </p>
                         )}
@@ -331,7 +331,7 @@ export function ConversationsTab() {
                       {statusBadge(conv.status)}
                     </TableCell>
                     <TableCell className="py-1.5 text-right">
-                      <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                      <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                         {formatTime(conv.lastEventAt || conv.updatedAt)}
                       </span>
                     </TableCell>
@@ -356,7 +356,7 @@ export function ConversationsTab() {
             <ChevronLeft className="h-3 w-3 mr-0.5" />
             Previous
           </Button>
-          <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Page {page} of {totalPages}
           </span>
           <Button

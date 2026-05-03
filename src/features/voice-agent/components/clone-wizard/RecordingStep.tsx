@@ -121,7 +121,7 @@ export function RecordingStep({
             <div className="flex items-center justify-between">
               <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
                 {session.canSubmit ? (
-                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                  <span className="text-success font-medium">
                     Ready to submit
                   </span>
                 ) : (

@@ -40,11 +40,11 @@ export function ProgressStep({
     <div className="space-y-5 py-4">
       <div className="text-center space-y-1">
         {!isComplete && (
-          <Loader2 className="h-8 w-8 animate-spin text-green-500 mx-auto" />
+          <Loader2 className="h-8 w-8 animate-spin text-success mx-auto" />
         )}
         {isComplete && job?.status === "completed" && (
-          <div className="h-8 w-8 rounded-full bg-green-500/20 flex items-center justify-center mx-auto">
-            <span className="text-green-500 text-base">✓</span>
+          <div className="h-8 w-8 rounded-full bg-success/20 flex items-center justify-center mx-auto">
+            <span className="text-success text-base">✓</span>
           </div>
         )}
         {isComplete && job?.status === "failed" && (
@@ -70,7 +70,7 @@ export function ProgressStep({
       <div className="space-y-1">
         <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
           <div
-            className="h-full rounded-full bg-green-500 transition-all duration-500"
+            className="h-full rounded-full bg-success transition-all duration-500"
             style={{ width: `${percent}%` }}
           />
         </div>
@@ -84,7 +84,7 @@ export function ProgressStep({
 
       <div className="flex justify-center gap-6 text-xs">
         <div className="text-center">
-          <p className="text-lg font-semibold text-green-500 tabular-nums">
+          <p className="text-lg font-semibold text-success tabular-nums">
             {created}
           </p>
           <p className="text-muted-foreground">Created</p>

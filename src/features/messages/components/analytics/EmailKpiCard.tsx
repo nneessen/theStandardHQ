@@ -16,8 +16,8 @@ export function EmailKpiCard({ data }: EmailKpiCardProps) {
         {/* Header */}
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
-            <div className="h-6 w-6 rounded bg-blue-50 dark:bg-blue-950/30 flex items-center justify-center">
-              <Mail className="h-3 w-3 text-blue-500" />
+            <div className="h-6 w-6 rounded bg-info/10 flex items-center justify-center">
+              <Mail className="h-3 w-3 text-info" />
             </div>
             <span className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
               Email

@@ -180,7 +180,7 @@ export function DeleteRecruitDialogOptimized({
 
               {/* Downlines warning and reassignment */}
               {!checkingDownlines && hasDownlines && (
-                <Alert className="py-1 px-1.5 border-orange-500/50 bg-orange-500/10">
+                <Alert className="py-1 px-1.5 border-warning/50 bg-warning/10">
                   <Users className="h-2.5 w-2.5" />
                   <AlertDescription className="text-[11px]">
                     <p className="font-medium mb-0.5">
@@ -225,7 +225,7 @@ export function DeleteRecruitDialogOptimized({
             <AlertDialogAction
               onClick={handleReassignAndDelete}
               disabled={deleting || checkingDownlines}
-              className="bg-orange-600 hover:bg-orange-700 h-7 text-xs"
+              className="bg-warning hover:bg-warning h-7 text-xs"
             >
               {deleting ? (
                 <>

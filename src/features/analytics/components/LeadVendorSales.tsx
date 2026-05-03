@@ -138,8 +138,8 @@ export function LeadVendorSales() {
                       className={cn(
                         "px-1 py-0.5 rounded text-[9px] font-medium",
                         p.leadFreshness === "fresh"
-                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                          : "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+                          ? "bg-success/10 text-success"
+                          : "bg-warning/10 text-warning",
                       )}
                     >
                       {p.leadFreshness}

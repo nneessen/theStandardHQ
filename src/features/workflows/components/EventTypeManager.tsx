@@ -51,19 +51,16 @@ const EVENT_CATEGORIES = [
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
-  recruit:
-    "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-0",
+  recruit: "bg-info/20 text-info dark:bg-info/30 dark:text-info border-0",
   policy:
-    "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-0",
+    "bg-success/20 text-success dark:bg-success/30 dark:text-success border-0",
   commission:
-    "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-0",
-  user: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-0",
-  email:
-    "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400 border-0",
+    "bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning border-0",
+  user: "bg-info/20 text-info dark:bg-info/15 dark:text-info border-0",
+  email: "bg-info/20 text-info dark:bg-info/30 dark:text-info border-0",
   system:
     "bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-subtle border-0",
-  custom:
-    "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400 border-0",
+  custom: "bg-info/20 text-info dark:bg-info/30 dark:text-info border-0",
 };
 
 export default function EventTypeManager() {
@@ -472,7 +469,7 @@ export default function EventTypeManager() {
                             <>
                               <TableCell className="text-[11px] font-mono">
                                 <div className="flex items-center gap-1 text-v2-ink dark:text-v2-ink">
-                                  <Zap className="h-3 w-3 text-amber-500" />
+                                  <Zap className="h-3 w-3 text-warning" />
                                   {event.eventName}
                                 </div>
                               </TableCell>
@@ -494,7 +491,7 @@ export default function EventTypeManager() {
                                   className={cn(
                                     "h-5 px-1",
                                     event.isActive
-                                      ? "text-emerald-600 dark:text-emerald-400"
+                                      ? "text-success"
                                       : "text-v2-ink-subtle dark:text-v2-ink-muted",
                                   )}
                                 >
@@ -519,7 +516,7 @@ export default function EventTypeManager() {
                                     size="sm"
                                     variant="ghost"
                                     onClick={() => handleDelete(event.id)}
-                                    className="h-5 px-1 text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300"
+                                    className="h-5 px-1 text-destructive hover:text-destructive dark:hover:text-destructive"
                                   >
                                     <Trash2 className="h-3 w-3" />
                                   </Button>

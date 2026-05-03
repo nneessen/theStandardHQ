@@ -189,7 +189,7 @@ export default function HealthConditionsStep({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8 text-sm text-v2-ink-muted">
+      <div className="flex items-center justify-center p-8 text-sm text-muted-foreground">
         Loading health conditions...
       </div>
     );
@@ -197,7 +197,7 @@ export default function HealthConditionsStep({
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/20 dark:text-red-300">
+      <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive dark:border-destructive dark:bg-destructive/10 dark:text-destructive">
         Unable to load health conditions. Retry before using the wizard for
         underwriting screening.
       </div>
@@ -213,15 +213,15 @@ export default function HealthConditionsStep({
     <div className="flex gap-4 p-1 h-full">
       {/* Left Panel - Conditions List */}
       <div className="flex-1 min-w-0 flex flex-col">
-        <div className="text-sm text-v2-ink-muted dark:text-v2-ink-subtle mb-3">
+        <div className="text-sm text-muted-foreground dark:text-muted-foreground mb-3">
           Select health conditions. Follow-up questions appear on the right.
         </div>
 
         {errors.health && (
-          <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/20 dark:text-red-300">
+          <div className="mb-3 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive dark:border-destructive dark:bg-destructive/10 dark:text-destructive">
             <div className="font-medium">{errors.health}</div>
             {errors.healthDetails && (
-              <div className="mt-1 text-xs text-red-600 dark:text-red-400">
+              <div className="mt-1 text-xs text-destructive">
                 {errors.healthDetails}
               </div>
             )}
@@ -230,7 +230,7 @@ export default function HealthConditionsStep({
 
         {/* Search */}
         <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-v2-ink-subtle" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search conditions (e.g., diabetes, cancer)..."
             value={searchTerm}
@@ -240,14 +240,14 @@ export default function HealthConditionsStep({
         </div>
 
         {/* Conditions List - Flex grow to fill available space */}
-        <div className="flex-1 min-h-0 bg-v2-card border border-v2-ring dark:border-v2-ring-strong rounded-lg divide-y divide-v2-ring dark:divide-v2-ring overflow-y-auto shadow-sm">
+        <div className="flex-1 min-h-0 bg-card border border-border dark:border-border rounded-lg divide-y divide-border dark:divide-border overflow-y-auto shadow-sm">
           {Object.entries(filteredGroups).map(([category, items]) => (
             <Collapsible key={category} open={isCategoryExpanded(category)}>
               <CollapsibleTrigger
                 onClick={() => toggleCategory(category)}
-                className="w-full flex items-center justify-between px-4 py-2.5 bg-v2-canvas dark:bg-v2-card-tinted/50 hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted transition-colors"
+                className="w-full flex items-center justify-between px-4 py-2.5 bg-background dark:bg-card-tinted/50 hover:bg-card-tinted dark:hover:bg-card-tinted transition-colors"
               >
-                <span className="text-sm font-medium text-v2-ink dark:text-v2-ink-muted">
+                <span className="text-sm font-medium text-foreground dark:text-muted-foreground">
                   {CONDITION_CATEGORY_LABELS[category as ConditionCategory] ||
                     category}
                 </span>
@@ -255,7 +255,7 @@ export default function HealthConditionsStep({
                   {items.some((item) =>
                     selectedConditionCodes.has(item.code),
                   ) && (
-                    <span className="text-xs font-medium text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 rounded-full">
+                    <span className="text-xs font-medium text-info bg-info/15 px-2 py-0.5 rounded-full">
                       {
                         items.filter((item) =>
                           selectedConditionCodes.has(item.code),
@@ -265,14 +265,14 @@ export default function HealthConditionsStep({
                     </span>
                   )}
                   {isCategoryExpanded(category) ? (
-                    <ChevronDown className="h-4 w-4 text-v2-ink-subtle" />
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <ChevronRight className="h-4 w-4 text-v2-ink-subtle" />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   )}
                 </div>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="px-3 py-2 bg-v2-card grid grid-cols-2 gap-2">
+                <div className="px-3 py-2 bg-card grid grid-cols-2 gap-2">
                   {items.map((condition) => {
                     const isSelected = selectedConditionCodes.has(
                       condition.code,
@@ -298,10 +298,10 @@ export default function HealthConditionsStep({
                         className={cn(
                           "flex items-center gap-2 py-2 px-2.5 rounded-md cursor-pointer transition-all border",
                           isSelected
-                            ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
-                            : "bg-v2-canvas dark:bg-v2-card-tinted/50 border-v2-ring dark:border-v2-ring-strong hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted hover:border-v2-ring-strong dark:hover:border-v2-ring-strong",
+                            ? "bg-info/10 border-info/30"
+                            : "bg-background dark:bg-card-tinted/50 border-border dark:border-border hover:bg-card-tinted dark:hover:bg-card-tinted hover:border-border dark:hover:border-border",
                           activeConditionCode === condition.code &&
-                            "ring-2 ring-amber-400 ring-offset-1",
+                            "ring-2 ring-warning ring-offset-1",
                         )}
                         onClick={() => {
                           if (!isSelected) {
@@ -315,8 +315,8 @@ export default function HealthConditionsStep({
                           className={cn(
                             "flex items-center justify-center w-4 h-4 rounded border-2 transition-colors flex-shrink-0",
                             isSelected
-                              ? "bg-blue-600 border-blue-600"
-                              : "bg-v2-card border-v2-ring-strong dark:border-v2-ring-strong",
+                              ? "bg-info border-info"
+                              : "bg-card border-border dark:border-border",
                           )}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -331,14 +331,14 @@ export default function HealthConditionsStep({
                           className={cn(
                             "text-sm truncate",
                             isSelected
-                              ? "text-v2-ink dark:text-v2-ink font-medium"
-                              : "text-v2-ink-muted dark:text-v2-ink-subtle",
+                              ? "text-foreground dark:text-foreground font-medium"
+                              : "text-muted-foreground dark:text-muted-foreground",
                           )}
                         >
                           {condition.name}
                         </span>
                         {hasUnanswered && (
-                          <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                          <AlertCircle className="h-4 w-4 text-warning flex-shrink-0" />
                         )}
                       </div>
                     );
@@ -351,8 +351,8 @@ export default function HealthConditionsStep({
 
         {/* Selected Summary */}
         {data.conditions.length > 0 && (
-          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-            <div className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2">
+          <div className="bg-info/10 border border-info/30 rounded-lg p-3">
+            <div className="text-xs font-semibold text-info mb-2">
               Selected Conditions ({data.conditions.length})
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -360,10 +360,10 @@ export default function HealthConditionsStep({
                 <span
                   key={c.conditionCode}
                   className={cn(
-                    "inline-flex items-center gap-1.5 px-2 py-1 bg-v2-card-tinted border rounded-md text-xs cursor-pointer transition-colors",
+                    "inline-flex items-center gap-1.5 px-2 py-1 bg-card-tinted border rounded-md text-xs cursor-pointer transition-colors",
                     activeConditionCode === c.conditionCode
-                      ? "border-amber-400 text-amber-700 dark:text-amber-300 ring-1 ring-amber-400"
-                      : "border-blue-200 dark:border-blue-700 text-v2-ink dark:text-v2-ink-muted hover:border-blue-300",
+                      ? "border-warning/70 text-warning ring-1 ring-warning"
+                      : "border-info/30 dark:border-info text-foreground dark:text-muted-foreground hover:border-info/40",
                   )}
                   onClick={() => {
                     const cond = conditions.find(
@@ -390,7 +390,7 @@ export default function HealthConditionsStep({
                         setActiveConditionCode(null);
                       }
                     }}
-                    className="text-v2-ink-subtle hover:text-red-500 transition-colors"
+                    className="text-muted-foreground hover:text-destructive transition-colors"
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -401,8 +401,8 @@ export default function HealthConditionsStep({
         )}
 
         {/* Tobacco Section */}
-        <div className="pt-3 border-t border-v2-ring dark:border-v2-ring-strong">
-          <div className="flex items-center gap-3 p-3 bg-v2-card border border-v2-ring dark:border-v2-ring-strong rounded-lg">
+        <div className="pt-3 border-t border-border dark:border-border">
+          <div className="flex items-center gap-3 p-3 bg-card border border-border dark:border-border rounded-lg">
             <Checkbox
               id="tobacco"
               checked={data.tobacco.currentUse}
@@ -412,7 +412,7 @@ export default function HealthConditionsStep({
             />
             <Label
               htmlFor="tobacco"
-              className="text-sm text-v2-ink-muted dark:text-v2-ink-subtle cursor-pointer"
+              className="text-sm text-muted-foreground dark:text-muted-foreground cursor-pointer"
             >
               Currently uses tobacco/nicotine
             </Label>
@@ -420,7 +420,7 @@ export default function HealthConditionsStep({
           {data.tobacco.currentUse && (
             <div className="mt-3 ml-0 grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-v2-ink-muted">
+                <Label className="text-xs font-medium text-muted-foreground">
                   Type
                 </Label>
                 <Select
@@ -444,7 +444,7 @@ export default function HealthConditionsStep({
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label className="text-xs font-medium text-v2-ink-muted">
+                <Label className="text-xs font-medium text-muted-foreground">
                   Frequency
                 </Label>
                 <Select
@@ -468,16 +468,16 @@ export default function HealthConditionsStep({
 
       {/* Right Panel - Follow-up Questions */}
       <div className="w-[320px] flex-shrink-0">
-        <div className="sticky top-0 bg-v2-card border border-v2-ring dark:border-v2-ring-strong rounded-lg p-4 min-h-[320px] shadow-sm">
+        <div className="sticky top-0 bg-card border border-border dark:border-border rounded-lg p-4 min-h-[320px] shadow-sm">
           {hasActiveFollowUps && activeCondition ? (
             <>
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-v2-ring dark:border-v2-ring-strong">
-                <div className="text-sm font-semibold text-v2-ink dark:text-v2-ink-muted truncate pr-2">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-border dark:border-border">
+                <div className="text-sm font-semibold text-foreground dark:text-muted-foreground truncate pr-2">
                   {activeCondition.name}
                 </div>
                 <button
                   onClick={() => setActiveConditionCode(null)}
-                  className="text-v2-ink-subtle hover:text-v2-ink-muted dark:hover:text-v2-ink-subtle p-1 rounded hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted"
+                  className="text-muted-foreground hover:text-muted-foreground dark:hover:text-muted-foreground p-1 rounded hover:bg-card-tinted dark:hover:bg-card-tinted"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -509,11 +509,11 @@ export default function HealthConditionsStep({
             </>
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center py-10">
-              <AlertCircle className="h-8 w-8 text-v2-ink-subtle dark:text-v2-ink-muted mb-3" />
-              <p className="text-sm text-v2-ink-muted dark:text-v2-ink-subtle font-medium mb-1">
+              <AlertCircle className="h-8 w-8 text-muted-foreground dark:text-muted-foreground mb-3" />
+              <p className="text-sm text-muted-foreground dark:text-muted-foreground font-medium mb-1">
                 No Follow-up Questions
               </p>
-              <p className="text-xs text-v2-ink-subtle dark:text-v2-ink-muted">
+              <p className="text-xs text-muted-foreground dark:text-muted-foreground">
                 {data.conditions.length === 0
                   ? "Select a condition from the list"
                   : "Click a selected condition to answer follow-up questions"}
@@ -579,7 +579,7 @@ function FollowUpQuestionField({
       case "multiselect": {
         const selectedValues = (value as string[]) || [];
         return (
-          <div className="space-y-2 max-h-[150px] overflow-y-auto p-2 bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-md border border-v2-ring dark:border-v2-ring-strong">
+          <div className="space-y-2 max-h-[150px] overflow-y-auto p-2 bg-background dark:bg-card-tinted/50 rounded-md border border-border dark:border-border">
             {sortedOptions.map((option) => (
               <div key={option} className="flex items-center gap-2">
                 <Checkbox
@@ -595,7 +595,7 @@ function FollowUpQuestionField({
                 />
                 <Label
                   htmlFor={`${question.id}-${option}`}
-                  className="text-sm text-v2-ink-muted dark:text-v2-ink-subtle cursor-pointer"
+                  className="text-sm text-muted-foreground dark:text-muted-foreground cursor-pointer"
                 >
                   {option}
                 </Label>
@@ -652,9 +652,9 @@ function FollowUpQuestionField({
 
   return (
     <div className="space-y-1.5">
-      <Label className="text-sm font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
+      <Label className="text-sm font-medium text-muted-foreground dark:text-muted-foreground">
         {question.label}
-        {question.required && <span className="text-red-500 ml-1">*</span>}
+        {question.required && <span className="text-destructive ml-1">*</span>}
       </Label>
       {renderField()}
     </div>

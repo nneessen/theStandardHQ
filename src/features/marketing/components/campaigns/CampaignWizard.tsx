@@ -587,7 +587,7 @@ export function CampaignWizard({
           {state.resolvedContacts.length > 0 && (
             <Badge
               variant="outline"
-              className="text-[10px] h-5 px-1.5 bg-green-50 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800"
+              className="text-[10px] h-5 px-1.5 bg-success/10 text-success border-success/30 dark:bg-success/10 dark:text-success dark:border-success"
             >
               <Check className="h-2.5 w-2.5 mr-0.5" />
               {state.resolvedContacts.length} contacts
@@ -596,10 +596,10 @@ export function CampaignWizard({
         </div>
 
         {state.resolvedContacts.length > 0 && (
-          <div className="rounded-md border border-border bg-v2-canvas dark:bg-v2-card max-h-[140px] overflow-y-auto">
+          <div className="rounded-md border border-border bg-background dark:bg-card max-h-[140px] overflow-y-auto">
             <table className="w-full text-[10px]">
               <thead>
-                <tr className="border-b border-border/60 bg-v2-card-tinted dark:bg-v2-card-tinted">
+                <tr className="border-b border-border/60 bg-card-tinted dark:bg-card-tinted">
                   <th className="text-left font-medium text-muted-foreground px-2 py-1">
                     Email
                   </th>
@@ -663,7 +663,7 @@ export function CampaignWizard({
         </div>
 
         {starterOpen && (
-          <div className="grid grid-cols-4 gap-1.5 max-h-[120px] overflow-y-auto rounded-md border border-border p-2 bg-v2-canvas dark:bg-v2-card">
+          <div className="grid grid-cols-4 gap-1.5 max-h-[120px] overflow-y-auto rounded-md border border-border p-2 bg-background dark:bg-card">
             {STARTER_TEMPLATES.map((tpl) => (
               <button
                 key={tpl.id}
@@ -720,7 +720,7 @@ export function CampaignWizard({
     return (
       <div className="flex flex-col gap-3 px-4 py-3">
         {/* Summary */}
-        <div className="rounded-md border border-border bg-v2-canvas dark:bg-v2-card p-3">
+        <div className="rounded-md border border-border bg-background dark:bg-card p-3">
           <div className="grid grid-cols-2 gap-y-2 text-[11px]">
             <div>
               <p className="text-[10px] text-muted-foreground uppercase tracking-wide">
@@ -780,7 +780,7 @@ export function CampaignWizard({
         </div>
 
         {/* Step Indicator */}
-        <div className="flex items-center gap-0 px-4 py-2 border-b bg-v2-canvas dark:bg-v2-card shrink-0">
+        <div className="flex items-center gap-0 px-4 py-2 border-b bg-background dark:bg-card shrink-0">
           {STEPS.map((label, i) => (
             <div key={label} className="flex items-center">
               {i > 0 && (
@@ -792,7 +792,7 @@ export function CampaignWizard({
                   i === state.step
                     ? "bg-primary text-primary-foreground font-medium"
                     : i < state.step
-                      ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                      ? "bg-success/20 text-success dark:bg-success dark:text-success"
                       : "text-muted-foreground",
                 )}
                 onClick={() => {
@@ -821,7 +821,7 @@ export function CampaignWizard({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-t bg-v2-canvas dark:bg-v2-card shrink-0">
+        <div className="flex items-center justify-between px-4 py-2.5 border-t bg-background dark:bg-card shrink-0">
           <Button
             variant="ghost"
             size="sm"
@@ -874,7 +874,7 @@ export function CampaignWizard({
             ) : (
               <Button
                 size="sm"
-                className="h-7 text-[11px] px-3 gap-1 bg-green-600 hover:bg-green-700 text-white"
+                className="h-7 text-[11px] px-3 gap-1 bg-success hover:bg-success text-white"
                 onClick={() => setConfirmSend(true)}
                 disabled={state.sending}
               >
@@ -908,7 +908,7 @@ export function CampaignWizard({
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="h-7 text-[11px] bg-green-600 hover:bg-green-700 text-white"
+              className="h-7 text-[11px] bg-success hover:bg-success text-white"
               onClick={handleSend}
               disabled={state.sending}
             >

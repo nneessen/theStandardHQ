@@ -38,13 +38,13 @@ type ClassificationFilter = "all" | StateClassificationType;
 const classificationDotClass = (classification: StateClassificationType) => {
   switch (classification) {
     case "green":
-      return "bg-emerald-500 border-emerald-600";
+      return "bg-success border-success";
     case "yellow":
-      return "bg-amber-500 border-amber-600";
+      return "bg-warning border-warning";
     case "red":
-      return "bg-red-500 border-red-600";
+      return "bg-destructive border-destructive";
     default:
-      return "bg-zinc-300 border-zinc-400 dark:bg-v2-ring-strong dark:border-zinc-500";
+      return "bg-muted border-input dark:bg-v2-ring-strong dark:border-input";
   }
 };
 
@@ -187,7 +187,7 @@ function AgentStateLicensesPanel({
         className={cn(
           "px-3 py-2 transition-colors",
           isLicensed
-            ? "bg-emerald-50/40 dark:bg-emerald-950/10"
+            ? "bg-success/10/40 dark:bg-success/10/10"
             : "bg-transparent",
         )}
       >
@@ -390,10 +390,10 @@ function AgentStateLicensesPanel({
                   className={cn(
                     "h-full transition-all",
                     coveragePercent >= 80
-                      ? "bg-emerald-500"
+                      ? "bg-success"
                       : coveragePercent >= 40
-                        ? "bg-amber-500"
-                        : "bg-red-500",
+                        ? "bg-warning"
+                        : "bg-destructive",
                   )}
                   style={{ width: `${coveragePercent}%` }}
                 />
@@ -459,16 +459,16 @@ function AgentStateLicensesPanel({
             ) : (
               <div className="grid grid-cols-1 gap-3 items-start">
                 {visibleUnlicensedStates.length > 0 && (
-                  <section className="min-w-0 space-y-2 rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50/40 dark:bg-amber-950/10 p-2.5">
+                  <section className="min-w-0 space-y-2 rounded-lg border border-warning/30 dark:border-warning/40 bg-warning/10/40 dark:bg-warning/10/10 p-2.5">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-warning">
                         Missing Licenses
                       </p>
                       <Badge variant="outline" size="sm">
                         {visibleUnlicensedStates.length}
                       </Badge>
                     </div>
-                    <div className="rounded-md border border-amber-200/80 dark:border-amber-900/40 overflow-hidden divide-y divide-amber-200/60 dark:divide-amber-900/30 bg-white/70 dark:bg-v2-canvas/10">
+                    <div className="rounded-md border border-warning/30/80 dark:border-warning/40 overflow-hidden divide-y divide-amber-200/60 dark:divide-amber-900/30 bg-white/70 dark:bg-v2-canvas/10">
                       {visibleUnlicensedStates.map(renderStateRow)}
                     </div>
                   </section>
@@ -627,7 +627,7 @@ export function StateLicensesTab({
   if (error) {
     return (
       <div className="flex items-center justify-center h-full p-4">
-        <div className="flex items-center gap-2 text-red-500 text-[11px]">
+        <div className="flex items-center gap-2 text-destructive text-[11px]">
           <AlertCircle className="h-4 w-4" />
           <span>Failed to load data: {error.message}</span>
         </div>

@@ -45,19 +45,19 @@ export const CurrentPhaseSection: React.FC<CurrentPhaseSectionProps> = ({
 
   const TONE_CHIP: Record<string, string> = {
     error:
-      "bg-red-50 dark:bg-red-950/40 ring-red-200 dark:ring-red-900 text-red-700 dark:text-red-400",
+      "bg-destructive/10 dark:bg-destructive/20 ring-destructive/30 dark:ring-destructive text-destructive",
     neutral:
       "bg-v2-ring dark:bg-v2-ring ring-v2-ring  text-v2-ink-muted dark:text-v2-ink-subtle",
     success:
-      "bg-emerald-50 dark:bg-emerald-950/40 ring-emerald-200 dark:ring-emerald-900 text-emerald-700 dark:text-emerald-400",
+      "bg-success/10 dark:bg-success/20 ring-success/30 dark:ring-success text-success",
     progress:
-      "bg-sky-50 dark:bg-sky-950/40 ring-sky-200 dark:ring-sky-900 text-sky-700 dark:text-sky-400",
+      "bg-info/10 dark:bg-info/40 ring-info dark:ring-info text-info dark:text-info",
   };
   const TONE_BAR: Record<string, string> = {
-    error: "bg-red-500",
+    error: "bg-destructive",
     neutral: "bg-v2-ring-strong ",
-    success: "bg-emerald-500",
-    progress: "bg-sky-500",
+    success: "bg-success",
+    progress: "bg-info",
   };
 
   return (
@@ -117,12 +117,12 @@ export const CurrentPhaseSection: React.FC<CurrentPhaseSectionProps> = ({
 
       <div className="px-6 md:px-8 py-6">
         {isBlocked && blockedReason && (
-          <div className="mb-5 rounded-xl bg-red-50 dark:bg-red-950/30 ring-1 ring-red-200 dark:ring-red-900 px-4 py-3.5">
-            <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-red-800 dark:text-red-300 flex items-center gap-1.5">
+          <div className="mb-5 rounded-xl bg-destructive/10 ring-1 ring-destructive/30 dark:ring-destructive px-4 py-3.5">
+            <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-destructive dark:text-destructive flex items-center gap-1.5">
               <CircleAlert className="h-3 w-3" />
               Phase blocked by your recruiter
             </div>
-            <p className="mt-1.5 text-[13px] text-red-900 dark:text-red-200 leading-relaxed">
+            <p className="mt-1.5 text-[13px] text-destructive dark:text-destructive leading-relaxed">
               {blockedReason}
             </p>
           </div>

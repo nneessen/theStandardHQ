@@ -112,7 +112,7 @@ export function AddonTierEditor({
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Zap className="h-3.5 w-3.5 text-amber-500" />
+          <Zap className="h-3.5 w-3.5 text-warning" />
           <span className="text-xs font-medium">Usage Tiers</span>
         </div>
         <Badge variant="outline" className="text-[9px]">
@@ -245,7 +245,7 @@ export function AddonTierEditor({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                    className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
                     onClick={() => removeTier(i)}
                   >
                     <Trash2 className="h-3 w-3" />

@@ -156,7 +156,7 @@ export function IntegrationDialog({
 
   return (
     <Dialog open={open} onOpenChange={() => !isPending && onClose()}>
-      <DialogContent className="max-w-md p-3 bg-v2-card">
+      <DialogContent className="max-w-md p-3 bg-card">
         <DialogHeader className="space-y-1">
           <DialogTitle className="text-sm font-semibold">
             {isEditing ? "Edit" : "Connect"} {INTEGRATION_TYPE_LABELS[type]}
@@ -171,34 +171,36 @@ export function IntegrationDialog({
         <div className="space-y-3 py-2">
           {/* Display Name */}
           <div className="space-y-1">
-            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               Display Name
-              <span className="text-v2-ink-subtle ml-1">(optional)</span>
+              <span className="text-muted-foreground ml-1">(optional)</span>
             </Label>
             <Input
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="e.g., 30 Min Phone Call"
-              className="h-7 text-[11px] bg-v2-canvas border-v2-ring"
+              className="h-7 text-[11px] bg-background border-border"
             />
           </div>
 
           {/* Booking URL */}
           <div className="space-y-1">
-            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               Booking URL
-              <span className="text-red-500 ml-0.5">*</span>
+              <span className="text-destructive ml-0.5">*</span>
             </Label>
             <Input
               value={bookingUrl}
               onChange={(e) => handleUrlChange(e.target.value)}
               placeholder={INTEGRATION_TYPE_PLACEHOLDERS[type]}
-              className={`h-7 text-[11px] bg-v2-canvas border-v2-ring ${
-                urlError ? "border-red-500 dark:border-red-500" : ""
+              className={`h-7 text-[11px] bg-background border-border ${
+                urlError ? "border-destructive dark:border-destructive" : ""
               }`}
             />
-            {urlError && <p className="text-[10px] text-red-500">{urlError}</p>}
-            <p className="text-[10px] text-v2-ink-muted flex items-center gap-1">
+            {urlError && (
+              <p className="text-[10px] text-destructive">{urlError}</p>
+            )}
+            <p className="text-[10px] text-muted-foreground flex items-center gap-1">
               <ExternalLink className="h-2.5 w-2.5" />
               This link will be shown to recruits for scheduling
             </p>
@@ -208,30 +210,30 @@ export function IntegrationDialog({
           {type === "zoom" && (
             <>
               <div className="space-y-1">
-                <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                   Meeting ID
-                  <span className="text-v2-ink-subtle ml-1">(optional)</span>
+                  <span className="text-muted-foreground ml-1">(optional)</span>
                 </Label>
                 <Input
                   value={meetingId}
                   onChange={(e) => setMeetingId(e.target.value)}
                   placeholder="e.g., 123 456 7890"
-                  className="h-7 text-[11px] bg-v2-canvas border-v2-ring"
+                  className="h-7 text-[11px] bg-background border-border"
                 />
               </div>
 
               <div className="space-y-1">
-                <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                   Passcode
-                  <span className="text-v2-ink-subtle ml-1">(optional)</span>
+                  <span className="text-muted-foreground ml-1">(optional)</span>
                 </Label>
                 <Input
                   value={passcode}
                   onChange={(e) => setPasscode(e.target.value)}
                   placeholder="e.g., abc123"
-                  className="h-7 text-[11px] bg-v2-canvas border-v2-ring"
+                  className="h-7 text-[11px] bg-background border-border"
                 />
-                <p className="text-[10px] text-v2-ink-muted">
+                <p className="text-[10px] text-muted-foreground">
                   Will be shown to recruits along with the meeting link
                 </p>
               </div>
@@ -240,15 +242,15 @@ export function IntegrationDialog({
 
           {/* Instructions */}
           <div className="space-y-1">
-            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               Instructions for Recruits
-              <span className="text-v2-ink-subtle ml-1">(optional)</span>
+              <span className="text-muted-foreground ml-1">(optional)</span>
             </Label>
             <Textarea
               value={instructions}
               onChange={(e) => setInstructions(e.target.value)}
               placeholder="e.g., Please book a time that works for you. I'll call you at the scheduled time."
-              className="text-[11px] min-h-14 bg-v2-canvas border-v2-ring"
+              className="text-[11px] min-h-14 bg-background border-border"
             />
           </div>
         </div>

@@ -142,17 +142,17 @@ export default function WorkflowTriggerSetup({
             // Define color themes for each trigger type
             const colorTheme = {
               manual: isSelected
-                ? "bg-blue-500/10 text-blue-600 border-blue-500/50 dark:text-blue-400"
-                : "bg-background border-input hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-950/20",
+                ? "bg-info/10 text-info border-info/50 dark:text-info"
+                : "bg-background border-input hover:border-info/70 hover:bg-info/10/50 dark:hover:bg-info/10",
               schedule: isSelected
-                ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/50 dark:text-emerald-400"
-                : "bg-background border-input hover:border-emerald-400 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20",
+                ? "bg-success/10 text-success border-success/50 dark:text-success"
+                : "bg-background border-input hover:border-success/70 hover:bg-success/10/50 dark:hover:bg-success/10",
               event: isSelected
-                ? "bg-amber-500/10 text-amber-600 border-amber-500/50 dark:text-amber-400"
-                : "bg-background border-input hover:border-amber-400 hover:bg-amber-50/50 dark:hover:bg-amber-950/20",
+                ? "bg-warning/10 text-warning border-warning/50 dark:text-warning"
+                : "bg-background border-input hover:border-warning/70 hover:bg-warning/10/50 dark:hover:bg-warning/10",
               webhook: isSelected
-                ? "bg-violet-500/10 text-violet-600 border-violet-500/50 dark:text-violet-400"
-                : "bg-background border-input hover:border-violet-400 hover:bg-violet-50/50 dark:hover:bg-violet-950/20",
+                ? "bg-info/10 text-info border-info/50 dark:text-info"
+                : "bg-background border-input hover:border-info hover:bg-info/10/50 dark:hover:bg-info/10",
             }[trigger.value];
 
             return (
@@ -185,8 +185,8 @@ export default function WorkflowTriggerSetup({
           </Label>
 
           {data.triggerType === "manual" && (
-            <div className="p-2 rounded bg-blue-500/10 border border-blue-500/20">
-              <p className="text-xs text-blue-600 dark:text-blue-400">
+            <div className="p-2 rounded bg-info/10 border border-info/20">
+              <p className="text-xs text-info">
                 This workflow will only run when you manually trigger it from
                 the workflows list.
               </p>
@@ -195,8 +195,8 @@ export default function WorkflowTriggerSetup({
 
           {data.triggerType === "schedule" && (
             <div className="space-y-2">
-              <div className="p-2 rounded bg-emerald-500/10 border border-emerald-500/20">
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-2">
+              <div className="p-2 rounded bg-success/10 border border-success/20">
+                <p className="text-xs text-success mb-2">
                   Schedule this workflow to run automatically at a specific
                   time.
                 </p>
@@ -210,7 +210,7 @@ export default function WorkflowTriggerSetup({
                     type="time"
                     value={scheduleTime}
                     onChange={(e) => setScheduleTime(e.target.value)}
-                    className="h-8 text-xs bg-background border-emerald-500/30 focus:border-emerald-500"
+                    className="h-8 text-xs bg-background border-success/30 focus:border-success"
                   />
                 </div>
                 <div className="flex-1">
@@ -221,7 +221,7 @@ export default function WorkflowTriggerSetup({
                     value={scheduleDayOfWeek}
                     onValueChange={(v) => setScheduleDayOfWeek(v)}
                   >
-                    <SelectTrigger className="h-8 text-xs bg-background border-emerald-500/30 focus:border-emerald-500">
+                    <SelectTrigger className="h-8 text-xs bg-background border-success/30 focus:border-success">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -264,8 +264,8 @@ export default function WorkflowTriggerSetup({
 
           {data.triggerType === "event" && (
             <div className="space-y-2">
-              <div className="p-2 rounded bg-amber-500/10 border border-amber-500/20">
-                <p className="text-xs text-amber-600 dark:text-amber-400">
+              <div className="p-2 rounded bg-warning/10 border border-warning/20">
+                <p className="text-xs text-warning">
                   Trigger this workflow when specific events occur in your
                   system.
                 </p>
@@ -279,14 +279,14 @@ export default function WorkflowTriggerSetup({
                   variant="outline"
                   onClick={() => setEventDialogOpen(true)}
                   className={cn(
-                    "w-full h-8 justify-between text-xs bg-background border-amber-500/30 hover:border-amber-500",
+                    "w-full h-8 justify-between text-xs bg-background border-warning/30 hover:border-warning",
                     errors.trigger && "border-destructive",
                     !data.trigger?.eventName && "text-muted-foreground",
                   )}
                 >
                   {data.trigger?.eventName ? (
                     <span className="flex items-center gap-2">
-                      <Zap className="h-3 w-3 text-amber-600 dark:text-amber-400" />
+                      <Zap className="h-3 w-3 text-warning" />
                       <span className="font-medium">
                         {data.trigger.eventName}
                       </span>
@@ -304,8 +304,8 @@ export default function WorkflowTriggerSetup({
 
                 {/* Show selected event details */}
                 {data.trigger?.eventName && (
-                  <div className="mt-2 p-2 rounded bg-muted/50 border border-amber-500/20">
-                    <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium mb-1">
+                  <div className="mt-2 p-2 rounded bg-muted/50 border border-warning/20">
+                    <p className="text-[10px] text-warning font-medium mb-1">
                       Event: {data.trigger.eventName}
                     </p>
                     {(() => {
@@ -337,8 +337,8 @@ export default function WorkflowTriggerSetup({
           )}
 
           {data.triggerType === "webhook" && (
-            <div className="p-2 rounded bg-violet-500/10 border border-violet-500/20">
-              <p className="text-xs text-violet-600 dark:text-violet-400">
+            <div className="p-2 rounded bg-info/10 border border-info/20">
+              <p className="text-xs text-info">
                 A unique webhook URL will be generated after you create this
                 workflow.
               </p>

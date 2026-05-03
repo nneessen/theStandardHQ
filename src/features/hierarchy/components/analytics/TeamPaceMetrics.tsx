@@ -57,8 +57,8 @@ export function TeamPaceMetrics({ data, isLoading }: TeamPaceMetricsProps) {
           className={cn(
             "px-1.5 py-0.5 rounded text-[9px] font-medium",
             data.isProfitable
-              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-              : "bg-red-500/10 text-red-600 dark:text-red-400",
+              ? "bg-success/10 text-success"
+              : "bg-destructive/10 text-destructive",
           )}
         >
           {data.isProfitable ? "ON TRACK" : "BEHIND"}
@@ -84,7 +84,7 @@ export function TeamPaceMetrics({ data, isLoading }: TeamPaceMetricsProps) {
         <div className="flex items-center justify-between text-[11px]">
           <span className="text-v2-ink-muted">Projected AP</span>
           <div className="flex items-center gap-2">
-            <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
+            <span className="font-mono font-bold text-warning">
               {formatCurrency(data.projectedAPTotal)}
             </span>
             <span className="text-v2-ink-subtle">
@@ -120,9 +120,7 @@ export function TeamPaceMetrics({ data, isLoading }: TeamPaceMetricsProps) {
           <span
             className={cn(
               "font-mono font-bold",
-              data.isProfitable
-                ? "text-emerald-600 dark:text-emerald-400"
-                : "text-red-600 dark:text-red-400",
+              data.isProfitable ? "text-success" : "text-destructive",
             )}
           >
             {formatCurrency(Math.abs(data.surplusDeficit))}

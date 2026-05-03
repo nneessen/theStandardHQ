@@ -179,17 +179,17 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
   if (!isAdmin) {
     return (
       <div
-        className={`bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft ${className || ""}`}
+        className={`bg-card rounded-v2-md border border-border shadow-v2-soft ${className || ""}`}
       >
-        <div className="px-3 py-2 border-b border-v2-ring">
-          <h3 className="text-sm font-semibold text-v2-ink">
+        <div className="px-3 py-2 border-b border-border">
+          <h3 className="text-sm font-semibold text-foreground">
             Hierarchy Management
           </h3>
         </div>
         <div className="p-3">
-          <div className="flex items-start gap-2 p-2 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
-            <Shield className="h-4 w-4 text-red-600 dark:text-red-400 mt-0.5" />
-            <p className="text-[11px] text-red-700 dark:text-red-300">
+          <div className="flex items-start gap-2 p-2 bg-destructive/10 rounded border border-destructive/30">
+            <Shield className="h-4 w-4 text-destructive mt-0.5" />
+            <p className="text-[11px] text-destructive">
               You do not have permission to manage hierarchy. This feature is
               restricted to administrators only.
             </p>
@@ -216,23 +216,23 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
 
   return (
     <div
-      className={`bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft ${className || ""}`}
+      className={`bg-card rounded-v2-md border border-border shadow-v2-soft ${className || ""}`}
     >
-      <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border">
         <div className="flex items-center gap-2">
-          <Shield className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          <Shield className="h-4 w-4 text-warning" />
           <div>
-            <h3 className="text-sm font-semibold text-v2-ink">
+            <h3 className="text-sm font-semibold text-foreground">
               Hierarchy Management
             </h3>
-            <p className="text-[10px] text-v2-ink-muted">
+            <p className="text-[10px] text-muted-foreground">
               {downlines?.length || 0} agents across {levels.length} levels
             </p>
           </div>
         </div>
         <Badge
           variant="outline"
-          className="text-[9px] h-5 border-amber-300 dark:border-amber-600 text-amber-600 dark:text-amber-400"
+          className="text-[9px] h-5 border-warning/40 dark:border-warning text-warning"
         >
           Admin Only
         </Badge>
@@ -240,41 +240,41 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
       <div className="p-3">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-4">
-            <div className="text-[11px] text-v2-ink-muted">
+            <div className="text-[11px] text-muted-foreground">
               Loading agents...
             </div>
           </div>
         ) : !downlines || downlines.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-4">
-            <Shield className="h-6 w-6 text-v2-ink-subtle mb-1" />
-            <p className="text-[11px] text-v2-ink-muted">
+            <Shield className="h-6 w-6 text-muted-foreground mb-1" />
+            <p className="text-[11px] text-muted-foreground">
               No agents in hierarchy
             </p>
-            <p className="text-[10px] text-v2-ink-subtle">
+            <p className="text-[10px] text-muted-foreground">
               Agents will appear here once they are added to the system
             </p>
           </div>
         ) : (
-          <div className="rounded-lg overflow-hidden border border-v2-ring">
+          <div className="rounded-lg overflow-hidden border border-border">
             <Table>
               <TableHeader>
-                <TableRow className="h-8 bg-v2-canvas border-b border-v2-ring">
-                  <TableHead className="text-[10px] font-semibold text-v2-ink-muted">
+                <TableRow className="h-8 bg-background border-b border-border">
+                  <TableHead className="text-[10px] font-semibold text-muted-foreground">
                     Agent
                   </TableHead>
-                  <TableHead className="text-[10px] font-semibold text-v2-ink-muted">
+                  <TableHead className="text-[10px] font-semibold text-muted-foreground">
                     Level
                   </TableHead>
-                  <TableHead className="text-[10px] font-semibold text-v2-ink-muted">
+                  <TableHead className="text-[10px] font-semibold text-muted-foreground">
                     Reports To
                   </TableHead>
-                  <TableHead className="text-[10px] font-semibold text-v2-ink-muted text-right">
+                  <TableHead className="text-[10px] font-semibold text-muted-foreground text-right">
                     Direct
                   </TableHead>
-                  <TableHead className="text-[10px] font-semibold text-v2-ink-muted text-right">
+                  <TableHead className="text-[10px] font-semibold text-muted-foreground text-right">
                     Total Down
                   </TableHead>
-                  <TableHead className="text-[10px] font-semibold text-v2-ink-muted text-right">
+                  <TableHead className="text-[10px] font-semibold text-muted-foreground text-right">
                     Actions
                   </TableHead>
                 </TableRow>
@@ -296,30 +296,30 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
                   return (
                     <TableRow
                       key={agent.id}
-                      className="h-9 border-b border-v2-ring/60 hover:bg-v2-canvas"
+                      className="h-9 border-b border-border/60 hover:bg-background"
                     >
-                      <TableCell className="text-[11px] font-medium text-v2-ink">
+                      <TableCell className="text-[11px] font-medium text-foreground">
                         {agent.email}
                       </TableCell>
                       <TableCell>
-                        <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                        <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                           L{agent.hierarchy_depth}
                         </span>
                       </TableCell>
-                      <TableCell className="text-[11px] text-v2-ink-muted">
+                      <TableCell className="text-[11px] text-muted-foreground">
                         {uplineEmail || (
                           <Badge
                             variant="outline"
-                            className="text-[9px] px-1 py-0 h-4 border-v2-ring "
+                            className="text-[9px] px-1 py-0 h-4 border-border "
                           >
                             Root
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="text-[11px] text-right text-v2-ink-muted">
+                      <TableCell className="text-[11px] text-right text-muted-foreground">
                         {directDownlines}
                       </TableCell>
-                      <TableCell className="text-[11px] text-right text-v2-ink-muted">
+                      <TableCell className="text-[11px] text-right text-muted-foreground">
                         {totalDownlines}
                       </TableCell>
                       <TableCell className="text-right">
@@ -327,7 +327,7 @@ export function HierarchyManagement({ className }: HierarchyManagementProps) {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEditAgent(agent)}
-                          className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
+                          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                         >
                           <Edit className="h-3.5 w-3.5" />
                         </Button>

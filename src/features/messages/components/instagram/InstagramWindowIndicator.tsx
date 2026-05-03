@@ -38,30 +38,30 @@ export function InstagramWindowIndicator({
       case "open":
         return {
           icon: CheckCircle,
-          color: "text-emerald-600 dark:text-emerald-400",
-          bgColor: "bg-emerald-100 dark:bg-emerald-900/30",
-          borderColor: "border-emerald-200 dark:border-emerald-800",
-          dotColor: "bg-emerald-500",
+          color: "text-success",
+          bgColor: "bg-success/20 dark:bg-success/30",
+          borderColor: "border-success/30",
+          dotColor: "bg-success",
           label: formattedTime,
           shortLabel: "Open",
         };
       case "closing_soon":
         return {
           icon: AlertCircle,
-          color: "text-amber-600 dark:text-amber-400",
-          bgColor: "bg-amber-100 dark:bg-amber-900/30",
-          borderColor: "border-amber-200 dark:border-amber-800",
-          dotColor: "bg-amber-500",
+          color: "text-warning",
+          bgColor: "bg-warning/20 dark:bg-warning/30",
+          borderColor: "border-warning/30",
+          dotColor: "bg-warning",
           label: formattedTime,
           shortLabel: "Closing soon",
         };
       case "closed":
         return {
           icon: XCircle,
-          color: "text-v2-ink-muted",
-          bgColor: "bg-v2-ring",
-          borderColor: "border-v2-ring",
-          dotColor: "bg-v2-ring-strong",
+          color: "text-muted-foreground",
+          bgColor: "bg-muted",
+          borderColor: "border-border",
+          dotColor: "bg-muted",
           label: "Window closed",
           shortLabel: "Closed",
         };
@@ -74,13 +74,13 @@ export function InstagramWindowIndicator({
   const tooltipContent = (
     <div className="max-w-xs space-y-1">
       <p className="font-medium text-[11px]">Instagram 24-Hour Window</p>
-      <p className="text-[10px] text-v2-ink-subtle">
+      <p className="text-[10px] text-muted-foreground">
         {status === "closed"
           ? "You can only send messages within 24 hours of the user's last message. Wait for them to message you first."
           : "You can reply to this conversation until the window closes. After that, wait for the user to message you."}
       </p>
       {canReplyUntil && status !== "closed" && (
-        <p className="text-[10px] text-v2-ink-subtle">
+        <p className="text-[10px] text-muted-foreground">
           Expires:{" "}
           {new Date(canReplyUntil).toLocaleString(undefined, {
             month: "short",

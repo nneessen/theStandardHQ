@@ -62,7 +62,7 @@ export function ContactsSection({
     <button
       type="button"
       onClick={() => setShowSmsForm((s) => !s)}
-      className="inline-flex items-center gap-1.5 text-[12px] uppercase tracking-[0.18em] font-semibold text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-300 underline underline-offset-4 decoration-2 transition-colors"
+      className="inline-flex items-center gap-1.5 text-[12px] uppercase tracking-[0.18em] font-semibold text-warning hover:text-warning dark:hover:text-warning underline underline-offset-4 decoration-2 transition-colors"
     >
       <MessageSquare className="h-3 w-3" />
       {showSmsForm ? "Close" : "Text recruiter"}
@@ -84,7 +84,7 @@ export function ContactsSection({
             value={smsMessage}
             onChange={(e) => setSmsMessage(e.target.value)}
             placeholder="Type a quick message to your recruiter..."
-            className="w-full bg-white dark:bg-v2-card rounded-lg ring-1 ring-v2-ring  p-3 text-sm text-v2-ink  placeholder:text-v2-ink-subtle dark:placeholder:text-v2-ink-muted resize-none focus:outline-none focus:ring-amber-500 dark:focus:ring-amber-400"
+            className="w-full bg-white dark:bg-v2-card rounded-lg ring-1 ring-v2-ring  p-3 text-sm text-v2-ink  placeholder:text-v2-ink-subtle dark:placeholder:text-v2-ink-muted resize-none focus:outline-none focus:ring-warning dark:focus:ring-warning"
             rows={3}
             disabled={sendingSms}
           />
@@ -96,7 +96,7 @@ export function ContactsSection({
               type="button"
               onClick={handleSendSms}
               disabled={sendingSms || !smsMessage.trim()}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-v2-ink px-3.5 py-2 text-[12px] font-semibold transition-all hover:-translate-y-px hover:shadow-md active:translate-y-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-warning hover:bg-warning/70 text-v2-ink px-3.5 py-2 text-[12px] font-semibold transition-all hover:-translate-y-px hover:shadow-md active:translate-y-0 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
             >
               {sendingSms ? (
                 <Loader2 className="h-3 w-3 animate-spin" />
@@ -187,7 +187,7 @@ function ContactRow({
           <span
             className={
               isPrimary
-                ? "text-[10px] uppercase tracking-[0.18em] font-bold text-amber-700 dark:text-amber-400"
+                ? "text-[10px] uppercase tracking-[0.18em] font-bold text-warning"
                 : "text-[10px] uppercase tracking-[0.18em] font-bold text-v2-ink-muted dark:text-v2-ink-subtle"
             }
           >

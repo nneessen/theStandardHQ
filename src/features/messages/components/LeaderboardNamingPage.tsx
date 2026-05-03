@@ -178,7 +178,7 @@ export function LeaderboardNamingPage({ logId }: LeaderboardNamingPageProps) {
       <div className="flex min-h-screen items-center justify-center bg-background">
         <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-green-600">
+            <CardTitle className="flex items-center gap-2 text-success">
               <CheckCircle className="h-5 w-5" />
               Leaderboard Named!
             </CardTitle>
@@ -226,13 +226,13 @@ export function LeaderboardNamingPage({ logId }: LeaderboardNamingPageProps) {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-lg">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100">
-            <Trophy className="h-8 w-8 text-yellow-600" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-warning/20">
+            <Trophy className="h-8 w-8 text-warning" />
           </div>
           <CardTitle className="flex items-center justify-center gap-2 text-2xl">
-            <Sparkles className="h-5 w-5 text-yellow-500" />
+            <Sparkles className="h-5 w-5 text-warning" />
             Congrats, First Sale!
-            <Sparkles className="h-5 w-5 text-yellow-500" />
+            <Sparkles className="h-5 w-5 text-warning" />
           </CardTitle>
           <CardDescription className="text-base">
             You made the first sale of {getDayName()}! Give today's leaderboard

@@ -1,9 +1,9 @@
 // src/features/expenses/components/ExpenseTrendCard.tsx
 
-import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
-import {EXPENSE_CARD_STYLES} from '../config/expenseDashboardConfig';
-import {cn} from '@/lib/utils';
-import type {ExpenseTrendData} from '../../../types/expense.types';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EXPENSE_CARD_STYLES } from "../config/expenseDashboardConfig";
+import { cn } from "@/lib/utils";
+import type { ExpenseTrendData } from "../../../types/expense.types";
 
 export interface ExpenseTrendCardProps {
   data: ExpenseTrendData[];
@@ -46,15 +46,15 @@ export function ExpenseTrendCard({ data }: ExpenseTrendCardProps) {
           6-Month Trend
         </CardTitle>
       </CardHeader>
-      <CardContent className={cn(EXPENSE_CARD_STYLES.content, 'space-y-4')}>
+      <CardContent className={cn(EXPENSE_CARD_STYLES.content, "space-y-4")}>
         {/* Legend */}
         <div className="flex items-center gap-4 text-xs">
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded bg-blue-500" />
+            <div className="w-3 h-3 rounded bg-info" />
             <span className="text-muted-foreground">Business</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded bg-purple-500" />
+            <div className="w-3 h-3 rounded bg-info" />
             <span className="text-muted-foreground">Personal</span>
           </div>
         </div>
@@ -69,7 +69,7 @@ export function ExpenseTrendCard({ data }: ExpenseTrendCardProps) {
               <div className="flex gap-1 h-8">
                 {/* Business bar */}
                 <div
-                  className="bg-blue-500 rounded transition-all duration-300"
+                  className="bg-info rounded transition-all duration-300"
                   style={{
                     width: `${maxAmount > 0 ? (month.business / maxAmount) * 100 : 0}%`,
                   }}
@@ -77,7 +77,7 @@ export function ExpenseTrendCard({ data }: ExpenseTrendCardProps) {
                 />
                 {/* Personal bar */}
                 <div
-                  className="bg-purple-500 rounded transition-all duration-300"
+                  className="bg-info rounded transition-all duration-300"
                   style={{
                     width: `${maxAmount > 0 ? (month.personal / maxAmount) * 100 : 0}%`,
                   }}

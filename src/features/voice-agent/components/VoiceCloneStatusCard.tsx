@@ -102,7 +102,7 @@ export function VoiceCloneStatusCard({
   // Show a compact loading skeleton while first fetch is in-flight
   if (isLoading && !cloneStatus) {
     return (
-      <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+      <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
         <div className="flex items-center gap-2">
           <Mic className="h-4 w-4 text-v2-ink-subtle dark:text-v2-ink-muted" />
           <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
@@ -132,13 +132,13 @@ export function VoiceCloneStatusCard({
     };
 
     return (
-      <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+      <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
         <div className="flex items-center gap-2">
-          <Mic className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+          <Mic className="h-4 w-4 text-success" />
           <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
             Voice Cloning
           </span>
-          <Badge className="ml-auto bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 text-[10px] px-1.5 py-0">
+          <Badge className="ml-auto bg-success/20 text-success dark:bg-success/20 dark:text-success text-[10px] px-1.5 py-0">
             Custom Voice Active
           </Badge>
         </div>
@@ -150,7 +150,7 @@ export function VoiceCloneStatusCard({
             type="button"
             onClick={handleRemoveClone}
             disabled={deactivateMutation.isPending}
-            className="text-[10px] text-red-400 hover:text-red-600 dark:text-red-500 dark:hover:text-red-400 transition-colors"
+            className="text-[10px] text-destructive hover:text-destructive dark:text-destructive dark:hover:text-destructive transition-colors"
           >
             {deactivateMutation.isPending ? "Removing..." : "Remove Clone"}
           </button>
@@ -181,18 +181,18 @@ export function VoiceCloneStatusCard({
     };
 
     return (
-      <div className="rounded-xl border border-indigo-200 bg-indigo-50/50 p-4 dark:border-indigo-900/50 dark:bg-indigo-950/20">
+      <div className="rounded-lg border border-info/30 bg-info/10/50 p-4 dark:border-info/50 dark:bg-info/10">
         <div className="flex items-center gap-2">
-          <Mic className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+          <Mic className="h-4 w-4 text-info" />
           <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
             Voice Cloning
           </span>
-          <Badge className="ml-auto bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 text-[10px] px-1.5 py-0">
+          <Badge className="ml-auto bg-info/20 text-info dark:bg-info/10/40 dark:text-info text-[10px] px-1.5 py-0">
             Ready to Activate
           </Badge>
         </div>
         <div className="mt-1.5 flex items-center justify-between">
-          <p className="text-[11px] text-indigo-700 dark:text-indigo-400">
+          <p className="text-[11px] text-info dark:text-info">
             Your voice clone is ready. Activate it to use on all calls.
           </p>
           <div className="flex items-center gap-1.5">
@@ -227,7 +227,7 @@ export function VoiceCloneStatusCard({
           </div>
         </div>
         {activateMutation.isError && (
-          <p className="mt-1.5 text-[10px] text-red-600 dark:text-red-400">
+          <p className="mt-1.5 text-[10px] text-destructive">
             {activateMutation.error.message}
           </p>
         )}
@@ -260,20 +260,20 @@ export function VoiceCloneStatusCard({
     };
 
     return (
-      <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-900/50 dark:bg-amber-950/20">
+      <div className="rounded-lg border border-warning/30 bg-warning/10/50 p-4 dark:border-warning/50 dark:bg-warning/10">
         <div className="flex items-center gap-2">
-          <Mic className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          <Mic className="h-4 w-4 text-warning" />
           <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
             Voice Cloning
           </span>
-          <Badge className="ml-auto bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 text-[10px] px-1.5 py-0">
+          <Badge className="ml-auto bg-warning/20 text-warning dark:bg-warning/20 dark:text-warning text-[10px] px-1.5 py-0">
             Recording in Progress
           </Badge>
         </div>
         <div className="mt-2 flex items-center gap-3">
           <div className="h-1.5 flex-1 rounded-full bg-v2-ring dark:bg-v2-ring-strong">
             <div
-              className="h-full rounded-full bg-amber-500 transition-all"
+              className="h-full rounded-full bg-warning transition-all"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -282,9 +282,7 @@ export function VoiceCloneStatusCard({
           </span>
         </div>
         <div className="mt-2 flex items-center justify-between">
-          <p className="text-[11px] text-amber-700 dark:text-amber-400">
-            Your progress is saved.
-          </p>
+          <p className="text-[11px] text-warning">Your progress is saved.</p>
           <div className="flex items-center gap-2">
             <Button
               variant="destructive"
@@ -299,7 +297,7 @@ export function VoiceCloneStatusCard({
             <Button
               variant="outline"
               size="sm"
-              className="h-7 text-[11px] px-2.5 border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-950/30"
+              className="h-7 text-[11px] px-2.5 border-warning/40 text-warning hover:bg-warning/20 dark:border-warning dark:text-warning dark:hover:bg-warning/15"
               onClick={() => navigate({ to: "/voice-agent/clone" })}
             >
               Continue Recording
@@ -327,7 +325,7 @@ export function VoiceCloneStatusCard({
     };
 
     return (
-      <div className="rounded-xl border border-v2-ring bg-v2-canvas/50 p-4 dark:border-v2-ring dark:bg-v2-card/50">
+      <div className="rounded-lg border border-v2-ring bg-v2-canvas/50 p-4 dark:border-v2-ring dark:bg-v2-card/50">
         <div className="flex items-center gap-2">
           <Mic className="h-4 w-4 text-v2-ink-muted dark:text-v2-ink-subtle" />
           <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
@@ -369,7 +367,7 @@ export function VoiceCloneStatusCard({
   // No attempts remaining
   if (cloneStatus && cloneStatus.remainingAttempts === 0) {
     return (
-      <div className="rounded-xl border border-v2-ring bg-v2-canvas p-4 dark:border-v2-ring dark:bg-v2-card/50">
+      <div className="rounded-lg border border-v2-ring bg-v2-canvas p-4 dark:border-v2-ring dark:bg-v2-card/50">
         <div className="flex items-center gap-2">
           <Mic className="h-4 w-4 text-v2-ink-subtle dark:text-v2-ink-muted" />
           <span className="text-[12px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
@@ -393,7 +391,7 @@ export function VoiceCloneStatusCard({
     : null;
 
   return (
-    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="flex items-center gap-2">
         <Mic className="h-4 w-4 text-v2-ink-muted dark:text-v2-ink-subtle" />
         <span className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">

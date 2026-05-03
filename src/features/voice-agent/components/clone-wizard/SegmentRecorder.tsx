@@ -124,15 +124,15 @@ export function SegmentRecorder({
 
       {/* Existing segment info */}
       {existingSegment && recorder.state !== "done" && (
-        <div className="mb-4 flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50/50 px-3 py-2 dark:border-emerald-900/50 dark:bg-emerald-950/20">
-          <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
+        <div className="mb-4 flex items-center gap-3 rounded-lg border border-success/30 bg-success/10/50 px-3 py-2 dark:border-success/50 dark:bg-success/10">
+          <span className="text-[11px] font-medium text-success">
             Recorded ({formatDuration(existingSegment.durationSeconds)})
           </span>
           <div className="ml-auto flex items-center gap-1.5">
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 text-[10px] text-v2-ink-muted hover:text-red-600"
+              className="h-6 text-[10px] text-v2-ink-muted hover:text-destructive"
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
             >
@@ -200,8 +200,8 @@ function RecordingControls({
 }: RecordingControlsProps) {
   if (!isSupported) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-950/20">
-        <p className="text-[11px] text-red-600 dark:text-red-400">
+      <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 dark:border-destructive/50 dark:bg-destructive/10">
+        <p className="text-[11px] text-destructive">
           Your browser does not support audio recording. Please use Chrome,
           Firefox, or Edge.
         </p>
@@ -212,10 +212,8 @@ function RecordingControls({
   if (state === "error") {
     return (
       <div className="space-y-2">
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900/50 dark:bg-red-950/20">
-          <p className="text-[11px] text-red-600 dark:text-red-400">
-            {recorderError}
-          </p>
+        <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 dark:border-destructive/50 dark:bg-destructive/10">
+          <p className="text-[11px] text-destructive">{recorderError}</p>
         </div>
         <Button
           variant="outline"
@@ -256,7 +254,7 @@ function RecordingControls({
     return (
       <Button
         size="sm"
-        className="h-8 text-[11px] px-4 bg-red-600 hover:bg-red-700 text-white"
+        className="h-8 text-[11px] px-4 bg-destructive hover:bg-destructive text-white"
         onClick={onStart}
       >
         <Mic className="h-3.5 w-3.5 mr-1.5" />
@@ -269,7 +267,7 @@ function RecordingControls({
     return (
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
-          <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-500" />
+          <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-destructive" />
           <span className="text-[13px] font-mono font-medium tabular-nums text-v2-ink dark:text-v2-ink">
             {formatTime(elapsed)}
           </span>
@@ -294,7 +292,7 @@ function RecordingControls({
         <audio
           src={recordedUrl}
           controls
-          className="h-8 w-full [&::-webkit-media-controls-panel]:bg-v2-card-tinted dark:[&::-webkit-media-controls-panel]:bg-zinc-800"
+          className="h-8 w-full [&::-webkit-media-controls-panel]:bg-v2-card-tinted dark:[&::-webkit-media-controls-panel]:bg-muted"
         />
       )}
       <div className="flex items-center gap-2">
@@ -316,7 +314,7 @@ function RecordingControls({
             size="sm"
             className={cn(
               "h-7 text-[11px] px-3",
-              hasExisting && "bg-amber-600 hover:bg-amber-700",
+              hasExisting && "bg-warning hover:bg-warning",
             )}
             onClick={onUpload}
             disabled={isUploading}
@@ -336,9 +334,7 @@ function RecordingControls({
         </div>
       </div>
       {uploadError && (
-        <p className="text-[10px] text-red-600 dark:text-red-400">
-          {uploadError}
-        </p>
+        <p className="text-[10px] text-destructive">{uploadError}</p>
       )}
     </div>
   );

@@ -27,11 +27,11 @@ export function AuthDiagnostic() {
   }, [session]);
 
   const statusIcon = authStatus.isApproved ? (
-    <CheckCircle className="h-5 w-5 text-green-500" />
+    <CheckCircle className="h-5 w-5 text-success" />
   ) : authStatus.isPending ? (
-    <AlertCircle className="h-5 w-5 text-yellow-500" />
+    <AlertCircle className="h-5 w-5 text-warning" />
   ) : (
-    <XCircle className="h-5 w-5 text-red-500" />
+    <XCircle className="h-5 w-5 text-destructive" />
   );
 
   return (
@@ -44,10 +44,8 @@ export function AuthDiagnostic() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               Auth User
-              {supabaseUser && (
-                <CheckCircle className="h-4 w-4 text-green-500" />
-              )}
-              {authError && <XCircle className="h-4 w-4 text-red-500" />}
+              {supabaseUser && <CheckCircle className="h-4 w-4 text-success" />}
+              {authError && <XCircle className="h-4 w-4 text-destructive" />}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -83,7 +81,7 @@ export function AuthDiagnostic() {
                 </details>
               </div>
             ) : authError ? (
-              <p className="text-red-500">Error: {authError.message}</p>
+              <p className="text-destructive">Error: {authError.message}</p>
             ) : (
               <p className="text-muted-foreground">Loading...</p>
             )}
@@ -125,8 +123,8 @@ export function AuthDiagnostic() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               User Profile
-              {profile && <CheckCircle className="h-4 w-4 text-green-500" />}
-              {profileError && <XCircle className="h-4 w-4 text-red-500" />}
+              {profile && <CheckCircle className="h-4 w-4 text-success" />}
+              {profileError && <XCircle className="h-4 w-4 text-destructive" />}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -145,10 +143,10 @@ export function AuthDiagnostic() {
                   <span
                     className={`ml-2 px-2 py-1 rounded text-xs ${
                       profile.approval_status === "approved"
-                        ? "bg-green-500/20 text-green-700"
+                        ? "bg-success/20 text-success"
                         : profile.approval_status === "pending"
-                          ? "bg-yellow-500/20 text-yellow-700"
-                          : "bg-red-500/20 text-red-700"
+                          ? "bg-warning/20 text-warning"
+                          : "bg-destructive/20 text-destructive"
                     }`}
                   >
                     {profile.approval_status}
@@ -157,7 +155,7 @@ export function AuthDiagnostic() {
                 <p>
                   <strong>Is Admin:</strong>
                   <span
-                    className={`ml-2 ${profile.is_admin ? "text-green-600" : "text-gray-500"}`}
+                    className={`ml-2 ${profile.is_admin ? "text-success" : "text-muted-foreground"}`}
                   >
                     {profile.is_admin ? "Yes" : "No"}
                   </span>
@@ -169,13 +167,13 @@ export function AuthDiagnostic() {
                   </p>
                 )}
                 {profile.denial_reason && (
-                  <p className="text-red-600">
+                  <p className="text-destructive">
                     <strong>Denial Reason:</strong> {profile.denial_reason}
                   </p>
                 )}
               </div>
             ) : profileError ? (
-              <p className="text-red-500">Error: {profileError.message}</p>
+              <p className="text-destructive">Error: {profileError.message}</p>
             ) : (
               <p className="text-muted-foreground">No profile found</p>
             )}
@@ -195,18 +193,18 @@ export function AuthDiagnostic() {
               <p className="flex items-center gap-2">
                 <strong>Is Admin:</strong>
                 {authStatus.isAdmin ? (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <CheckCircle className="h-4 w-4 text-success" />
                 ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
+                  <XCircle className="h-4 w-4 text-destructive" />
                 )}
                 {authStatus.isAdmin ? "Yes" : "No"}
               </p>
               <p className="flex items-center gap-2">
                 <strong>Is Approved:</strong>
                 {authStatus.isApproved ? (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  <CheckCircle className="h-4 w-4 text-success" />
                 ) : (
-                  <XCircle className="h-4 w-4 text-red-500" />
+                  <XCircle className="h-4 w-4 text-destructive" />
                 )}
                 {authStatus.isApproved ? "Yes" : "No"}
               </p>
@@ -241,13 +239,13 @@ export function AuthDiagnostic() {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               {supabaseUser?.id === profile?.id ? (
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-success" />
               ) : (
-                <XCircle className="h-4 w-4 text-red-500" />
+                <XCircle className="h-4 w-4 text-destructive" />
               )}
               <span>Auth User ID matches Profile ID</span>
               {supabaseUser?.id !== profile?.id && (
-                <span className="text-red-500 text-sm ml-2">
+                <span className="text-destructive text-sm ml-2">
                   (Auth: {supabaseUser?.id}, Profile: {profile?.id})
                 </span>
               )}
@@ -255,13 +253,13 @@ export function AuthDiagnostic() {
 
             <div className="flex items-center gap-2">
               {supabaseUser?.email === profile?.email ? (
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-success" />
               ) : (
-                <XCircle className="h-4 w-4 text-red-500" />
+                <XCircle className="h-4 w-4 text-destructive" />
               )}
               <span>Auth Email matches Profile Email</span>
               {supabaseUser?.email !== profile?.email && (
-                <span className="text-red-500 text-sm ml-2">
+                <span className="text-destructive text-sm ml-2">
                   (Auth: {supabaseUser?.email}, Profile: {profile?.email})
                 </span>
               )}
@@ -269,18 +267,18 @@ export function AuthDiagnostic() {
 
             <div className="flex items-center gap-2">
               {profile?.approval_status === "approved" || profile?.is_admin ? (
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-success" />
               ) : (
-                <XCircle className="h-4 w-4 text-red-500" />
+                <XCircle className="h-4 w-4 text-destructive" />
               )}
               <span>User should have access (approved or admin)</span>
             </div>
 
             <div className="flex items-center gap-2">
               {authStatus.isApproved ? (
-                <CheckCircle className="h-4 w-4 text-green-500" />
+                <CheckCircle className="h-4 w-4 text-success" />
               ) : (
-                <XCircle className="h-4 w-4 text-red-500" />
+                <XCircle className="h-4 w-4 text-destructive" />
               )}
               <span>Authorization hook returns approved</span>
             </div>

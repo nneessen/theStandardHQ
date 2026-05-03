@@ -25,7 +25,7 @@ export function ConversationMetrics({
   return (
     <div className="p-2.5 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
       <div className="flex items-center gap-1.5 mb-2">
-        <MessageSquare className="h-3 w-3 text-blue-500" />
+        <MessageSquare className="h-3 w-3 text-info" />
         <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
           Conversations
         </h4>
@@ -107,9 +107,7 @@ function RateRow({
       <span
         className={cn(
           "text-[10px] font-medium",
-          warn
-            ? "text-amber-600 dark:text-amber-400"
-            : "text-v2-ink dark:text-v2-ink",
+          warn ? "text-warning" : "text-v2-ink dark:text-v2-ink",
         )}
       >
         {value}

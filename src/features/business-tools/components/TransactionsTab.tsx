@@ -38,22 +38,19 @@ const PAGE_SIZE = 50;
 const TRUST_BADGE: Record<string, { label: string; className: string }> = {
   auto_trusted: {
     label: "Auto",
-    className:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
+    className: "bg-success/20 text-success dark:bg-success dark:text-success",
   },
   trusted: {
     label: "Trusted",
-    className:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
+    className: "bg-success/20 text-success dark:bg-success dark:text-success",
   },
   approved: {
     label: "Approved",
-    className: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+    className: "bg-info/20 text-info dark:bg-info dark:text-info",
   },
   needs_review: {
     label: "Review",
-    className:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
+    className: "bg-warning/20 text-warning dark:bg-warning dark:text-warning",
   },
   excluded: {
     label: "Excluded",
@@ -62,7 +59,8 @@ const TRUST_BADGE: Record<string, { label: string; className: string }> = {
   },
   rejected: {
     label: "Rejected",
-    className: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+    className:
+      "bg-destructive/20 text-destructive dark:bg-destructive dark:text-destructive",
   },
 };
 
@@ -139,7 +137,7 @@ const TransactionRow = React.memo(function TransactionRow({
           className={cn(
             "px-2 py-1 text-right tabular-nums whitespace-nowrap",
             txn.direction === "income"
-              ? "text-emerald-600 dark:text-emerald-400"
+              ? "text-success"
               : "text-v2-ink dark:text-v2-ink-subtle",
           )}
         >
@@ -181,7 +179,7 @@ const TransactionRow = React.memo(function TransactionRow({
             {txn.trust_state !== "approved" && (
               <button
                 onClick={() => onApprove({ id: txn.id })}
-                className="p-0.5 rounded hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600"
+                className="p-0.5 rounded hover:bg-success/20 dark:hover:bg-success/30 text-success"
                 title="Approve"
               >
                 <Check className="h-3 w-3" />
@@ -335,7 +333,7 @@ export function TransactionsTab() {
   if (error) {
     return (
       <div className="text-center py-12 space-y-2">
-        <p className="text-xs font-medium text-red-600 dark:text-red-400">
+        <p className="text-xs font-medium text-destructive">
           Failed to load transactions
         </p>
         <p className="text-[10px] text-v2-ink-muted">
@@ -401,8 +399,8 @@ export function TransactionsTab() {
 
       {/* Quick classify bar (shown when items selected) */}
       {selected.size > 0 && (
-        <div className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 flex-wrap">
-          <span className="text-[11px] font-medium text-teal-700 dark:text-teal-300 mr-1">
+        <div className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-success/10 dark:bg-success/20 border border-success/30 dark:border-success flex-wrap">
+          <span className="text-[11px] font-medium text-success dark:text-success mr-1">
             {selected.size} selected
           </span>
 

@@ -340,37 +340,33 @@ export function TrainerDashboard() {
   // Status badge helper
   const getStatusBadgeClass = (status: string | null): string => {
     if (!status)
-      return "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-subtle";
+      return "bg-card-tinted dark:bg-card-tinted text-muted-foreground dark:text-muted-foreground";
     switch (status.toLowerCase()) {
       case "completed":
       case "approved":
-        return "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400";
+        return "bg-success/20 dark:bg-success/30 text-success";
       case "dropped":
       case "rejected":
       case "terminated":
-        return "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400";
+        return "bg-destructive/20 dark:bg-destructive/30 text-destructive";
       case "submitted":
-        return "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400";
+        return "bg-info/15 text-info";
       case "pending":
-        return "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400";
+        return "bg-warning/20 dark:bg-warning/30 text-warning";
       default:
-        return "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-muted";
+        return "bg-card-tinted dark:bg-card-tinted text-muted-foreground dark:text-muted-foreground";
     }
   };
 
   const getAlertIcon = (type: AlertItem["type"]) => {
     switch (type) {
       case "info":
-        return (
-          <AlertCircle className="h-3 w-3 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-        );
+        return <AlertCircle className="h-3 w-3 text-info flex-shrink-0" />;
       case "warning":
-        return (
-          <AlertTriangle className="h-3 w-3 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-        );
+        return <AlertTriangle className="h-3 w-3 text-warning flex-shrink-0" />;
       case "danger":
         return (
-          <AlertCircle className="h-3 w-3 text-red-600 dark:text-red-400 flex-shrink-0" />
+          <AlertCircle className="h-3 w-3 text-destructive flex-shrink-0" />
         );
     }
   };
@@ -378,11 +374,11 @@ export function TrainerDashboard() {
   const getAlertTextColor = (type: AlertItem["type"]) => {
     switch (type) {
       case "info":
-        return "text-blue-600 dark:text-blue-400";
+        return "text-info";
       case "warning":
-        return "text-amber-600 dark:text-amber-400";
+        return "text-warning";
       case "danger":
-        return "text-red-600 dark:text-red-400";
+        return "text-destructive";
     }
   };
 
@@ -391,21 +387,21 @@ export function TrainerDashboard() {
   return (
     <div className="flex flex-col gap-2.5">
       {/* Header */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-v2-card rounded-lg px-2 sm:px-3 py-2 border border-v2-ring dark:border-v2-ring">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between bg-card rounded-lg px-2 sm:px-3 py-2 border border-border dark:border-border">
         <div className="flex items-center gap-2">
-          <GraduationCap className="h-4 w-4 text-v2-ink dark:text-v2-ink" />
+          <GraduationCap className="h-4 w-4 text-foreground dark:text-foreground" />
           <div>
-            <h1 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
+            <h1 className="text-sm font-semibold text-foreground dark:text-foreground">
               Welcome back, {userName}
             </h1>
-            <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               Training & Contracting Overview
             </span>
           </div>
         </div>
         <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
           {/* Time Period Switcher */}
-          <div className="flex items-center bg-v2-card-tinted dark:bg-v2-card-tinted rounded-md p-0.5">
+          <div className="flex items-center bg-card-tinted dark:bg-card-tinted rounded-md p-0.5">
             {(["week", "month", "quarter"] as TimePeriod[]).map((period) => (
               <button
                 key={period}
@@ -416,8 +412,8 @@ export function TrainerDashboard() {
                 className={cn(
                   "px-2 py-0.5 text-[10px] font-medium rounded transition-colors",
                   timePeriod === period
-                    ? "bg-white dark:bg-v2-ring-strong text-v2-ink dark:text-v2-ink shadow-sm"
-                    : "text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-ink-subtle",
+                    ? "bg-white dark:bg-muted text-foreground dark:text-foreground shadow-sm"
+                    : "text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground",
                 )}
               >
                 {period.charAt(0).toUpperCase() + period.slice(1)}
@@ -435,7 +431,7 @@ export function TrainerDashboard() {
             >
               <ChevronLeft className="h-3 w-3" />
             </Button>
-            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-v2-card-tinted dark:bg-v2-card-tinted rounded text-[10px] text-v2-ink-muted dark:text-v2-ink-muted">
+            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-card-tinted dark:bg-card-tinted rounded text-[10px] text-muted-foreground dark:text-muted-foreground">
               <Calendar className="h-3 w-3" />
               <span>
                 {format(dateRange.start, "MMM d")} -{" "}
@@ -461,8 +457,8 @@ export function TrainerDashboard() {
           {/* Main 3-column layout */}
           <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-[280px_1fr_280px]">
             {/* Left Column - Key Metrics */}
-            <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring p-3">
-              <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mb-2">
+            <div className="bg-card rounded-lg border border-border dark:border-border p-3">
+              <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-2">
                 Key Metrics
               </div>
               <div className="space-y-0.5">
@@ -478,31 +474,31 @@ export function TrainerDashboard() {
                   value={recruitStats?.active || 0}
                   loading={statsLoading}
                   icon={<Clock className="h-3 w-3" />}
-                  color="text-blue-600 dark:text-blue-400"
+                  color="text-info"
                 />
                 <StatRow
                   label="Completed (MTD)"
                   value={recruitStats?.completedThisMonth || 0}
                   loading={statsLoading}
                   icon={<CheckCircle2 className="h-3 w-3" />}
-                  color="text-emerald-600 dark:text-emerald-400"
+                  color="text-success"
                 />
                 <StatRow
                   label="Dropped"
                   value={recruitStats?.dropped || 0}
                   loading={statsLoading}
                   icon={<TrendingDown className="h-3 w-3" />}
-                  color="text-red-600 dark:text-red-400"
+                  color="text-destructive"
                 />
                 <StatRow
                   label="Prospects (Not Enrolled)"
                   value={recruitStats?.prospects || 0}
                   loading={statsLoading}
                   icon={<UserPlus className="h-3 w-3" />}
-                  color="text-v2-ink-muted dark:text-v2-ink-subtle"
+                  color="text-muted-foreground dark:text-muted-foreground"
                 />
 
-                <div className="my-2 border-t border-v2-ring dark:border-v2-ring" />
+                <div className="my-2 border-t border-border dark:border-border" />
 
                 {/* Contracting Metrics */}
                 <StatRow
@@ -516,52 +512,50 @@ export function TrainerDashboard() {
                   value={contractStats?.submitted || 0}
                   loading={contractsLoading}
                   icon={<Send className="h-3 w-3" />}
-                  color="text-blue-600 dark:text-blue-400"
+                  color="text-info"
                 />
                 <StatRow
                   label="Contracts Approved"
                   value={contractStats?.approved || 0}
                   loading={contractsLoading}
                   icon={<CheckCircle2 className="h-3 w-3" />}
-                  color="text-emerald-600 dark:text-emerald-400"
+                  color="text-success"
                 />
                 <StatRow
                   label="Contracts Rejected"
                   value={contractStats?.rejected || 0}
                   loading={contractsLoading}
                   icon={<XCircle className="h-3 w-3" />}
-                  color="text-red-600 dark:text-red-400"
+                  color="text-destructive"
                 />
               </div>
             </div>
 
             {/* Center Column - Performance Overview */}
-            <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring p-3">
-              <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mb-2">
+            <div className="bg-card rounded-lg border border-border dark:border-border p-3">
+              <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-2">
                 Performance Overview
               </div>
 
               {/* Status Banner */}
-              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-v2-ring dark:border-v2-ring">
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border dark:border-border">
                 {conversionRate >= 60 ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-success" />
                 ) : (
-                  <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                  <AlertCircle className="h-3.5 w-3.5 text-warning" />
                 )}
                 <div className="flex-1">
                   <div
                     className={cn(
                       "text-[11px] font-semibold",
-                      conversionRate >= 60
-                        ? "text-emerald-600 dark:text-emerald-400"
-                        : "text-amber-600 dark:text-amber-400",
+                      conversionRate >= 60 ? "text-success" : "text-warning",
                     )}
                   >
                     {conversionRate >= 60
                       ? "Pipeline Healthy"
                       : "Pipeline Needs Attention"}
                   </div>
-                  <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <div className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                     {conversionRate}% conversion rate |{" "}
                     {recruitStats?.avgDaysToComplete || 0} avg days to complete
                   </div>
@@ -572,17 +566,17 @@ export function TrainerDashboard() {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-v2-ring dark:border-v2-ring">
-                      <th className="text-left py-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase">
+                    <tr className="border-b border-border dark:border-border">
+                      <th className="text-left py-1.5 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase">
                         Metric
                       </th>
-                      <th className="text-right py-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase">
+                      <th className="text-right py-1.5 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase">
                         Current
                       </th>
-                      <th className="text-right py-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase">
+                      <th className="text-right py-1.5 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase">
                         Target
                       </th>
-                      <th className="text-center py-1.5 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase w-8">
+                      <th className="text-center py-1.5 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase w-8">
                         Status
                       </th>
                     </tr>
@@ -656,15 +650,15 @@ export function TrainerDashboard() {
             <div className="flex flex-col gap-2 md:col-span-2 lg:col-span-1">
               {/* Alerts Panel */}
               {alerts.length > 0 && (
-                <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring p-3">
-                  <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mb-2">
+                <div className="bg-card rounded-lg border border-border dark:border-border p-3">
+                  <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-2">
                     Alerts
                   </div>
                   <div className="space-y-2">
                     {alerts.map((alert, index) => (
                       <div
                         key={index}
-                        className="flex items-start gap-2 pb-2 border-b border-v2-ring dark:border-v2-ring/50 last:border-b-0 last:pb-0"
+                        className="flex items-start gap-2 pb-2 border-b border-border dark:border-border/50 last:border-b-0 last:pb-0"
                       >
                         {getAlertIcon(alert.type)}
                         <div className="flex-1 min-w-0">
@@ -676,7 +670,7 @@ export function TrainerDashboard() {
                           >
                             {alert.title}
                           </div>
-                          <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                          <div className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                             {alert.message}
                           </div>
                         </div>
@@ -687,15 +681,15 @@ export function TrainerDashboard() {
               )}
 
               {/* Quick Actions Panel */}
-              <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring p-3">
-                <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mb-2">
+              <div className="bg-card rounded-lg border border-border dark:border-border p-3">
+                <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-2">
                   Quick Actions
                 </div>
                 <div className="flex flex-col gap-1">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] font-medium justify-start w-full border-v2-ring dark:border-v2-ring-strong hover:bg-v2-canvas dark:hover:bg-v2-card-tinted"
+                    className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted"
                     onClick={() => navigate({ to: "/recruiting" })}
                   >
                     <UserPlus className="h-3 w-3 mr-1.5" />
@@ -704,7 +698,7 @@ export function TrainerDashboard() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] font-medium justify-start w-full border-v2-ring dark:border-v2-ring-strong hover:bg-v2-canvas dark:hover:bg-v2-card-tinted"
+                    className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted"
                     onClick={() => navigate({ to: "/contracting" })}
                   >
                     <FileCheck className="h-3 w-3 mr-1.5" />
@@ -713,13 +707,13 @@ export function TrainerDashboard() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] font-medium justify-start w-full border-v2-ring dark:border-v2-ring-strong hover:bg-v2-canvas dark:hover:bg-v2-card-tinted"
+                    className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted"
                     onClick={() => navigate({ to: "/messages" })}
                   >
                     <Mail className="h-3 w-3 mr-1.5" />
                     Messages
                     {messageStats?.unread ? (
-                      <Badge className="ml-auto h-4 px-1 text-[9px] bg-red-500 text-white">
+                      <Badge className="ml-auto h-4 px-1 text-[9px] bg-destructive text-white">
                         {messageStats.unread}
                       </Badge>
                     ) : null}
@@ -727,7 +721,7 @@ export function TrainerDashboard() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-6 text-[10px] font-medium justify-start w-full border-v2-ring dark:border-v2-ring-strong hover:bg-v2-canvas dark:hover:bg-v2-card-tinted"
+                    className="h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted"
                     onClick={() => navigate({ to: "/training-hub" })}
                   >
                     <GraduationCap className="h-3 w-3 mr-1.5" />
@@ -742,8 +736,8 @@ export function TrainerDashboard() {
                   className={cn(
                     "rounded-lg p-3 text-white",
                     conversionRate >= 60
-                      ? "bg-emerald-500 dark:bg-emerald-600"
-                      : "bg-amber-500 dark:bg-amber-600",
+                      ? "bg-success dark:bg-success"
+                      : "bg-warning dark:bg-warning",
                   )}
                 >
                   <p className="text-[10px] font-medium opacity-80 uppercase tracking-wide">
@@ -760,15 +754,15 @@ export function TrainerDashboard() {
           </div>
 
           {/* KPI Grid */}
-          <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring p-3">
-            <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider mb-2">
+          <div className="bg-card rounded-lg border border-border dark:border-border p-3">
+            <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider mb-2">
               Detailed KPI Breakdown
             </div>
             <TooltipProvider delayDuration={200}>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {/* Recruiting Section */}
                 <div>
-                  <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide mb-2">
+                  <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wide mb-2">
                     Recruiting Pipeline
                   </div>
                   <div className="space-y-1">
@@ -813,8 +807,8 @@ export function TrainerDashboard() {
                 </div>
 
                 {/* Contracting Section */}
-                <div className="lg:border-l lg:border-v2-ring lg:dark:border-v2-ring-strong lg:pl-4 border-t border-v2-ring dark:border-v2-ring-strong pt-4 sm:border-t-0 sm:pt-0">
-                  <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide mb-2">
+                <div className="lg:border-l lg:border-border lg:dark:border-border lg:pl-4 border-t border-border dark:border-border pt-4 sm:border-t-0 sm:pt-0">
+                  <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wide mb-2">
                     Carrier Contracts
                   </div>
                   <div className="space-y-1">
@@ -852,8 +846,8 @@ export function TrainerDashboard() {
                 </div>
 
                 {/* Activity Section */}
-                <div className="lg:border-l lg:border-v2-ring lg:dark:border-v2-ring-strong lg:pl-4 border-t border-v2-ring dark:border-v2-ring-strong pt-4 lg:border-t-0 lg:pt-0 sm:col-span-2 lg:col-span-1">
-                  <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide mb-2">
+                <div className="lg:border-l lg:border-border lg:dark:border-border lg:pl-4 border-t border-border dark:border-border pt-4 lg:border-t-0 lg:pt-0 sm:col-span-2 lg:col-span-1">
+                  <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wide mb-2">
                     Activity & Engagement
                   </div>
                   <div className="space-y-1">
@@ -889,11 +883,11 @@ export function TrainerDashboard() {
           {/* Recent Activity Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
             {/* Recent Recruits */}
-            <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring">
-              <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring dark:border-v2-ring">
+            <div className="bg-card rounded-lg border border-border dark:border-border">
+              <div className="flex items-center justify-between px-3 py-2 border-b border-border dark:border-border">
                 <div className="flex items-center gap-1.5">
-                  <Users className="h-3.5 w-3.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
-                  <h2 className="text-xs font-semibold text-v2-ink dark:text-v2-ink">
+                  <Users className="h-3.5 w-3.5 text-muted-foreground dark:text-muted-foreground" />
+                  <h2 className="text-xs font-semibold text-foreground dark:text-foreground">
                     Recent Recruits
                   </h2>
                 </div>
@@ -901,14 +895,14 @@ export function TrainerDashboard() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-canvas"
+                    className="h-6 text-[10px] text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-background"
                   >
                     View All
                     <ArrowRight className="h-3 w-3 ml-1" />
                   </Button>
                 </Link>
               </div>
-              <div className="divide-y divide-v2-ring dark:divide-v2-ring">
+              <div className="divide-y divide-border dark:divide-border">
                 {recruitsLoading ? (
                   [1, 2, 3, 4, 5].map((i) => (
                     <div key={i} className="px-3 py-2">
@@ -935,17 +929,17 @@ export function TrainerDashboard() {
                             search: { recruitId: recruit.id },
                           })
                         }
-                        className="flex items-center justify-between px-3 py-2 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 transition-colors cursor-pointer"
+                        className="flex items-center justify-between px-3 py-2 hover:bg-background dark:hover:bg-card-tinted/50 transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-2">
-                          <div className="h-7 w-7 rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted flex items-center justify-center text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
+                          <div className="h-7 w-7 rounded-full bg-card-tinted dark:bg-card-tinted flex items-center justify-center text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
                             {name.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink truncate max-w-[140px]">
+                            <p className="text-[11px] font-medium text-foreground dark:text-foreground truncate max-w-[140px]">
                               {name}
                             </p>
-                            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate max-w-[140px]">
+                            <p className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate max-w-[140px]">
                               {recruit.email}
                             </p>
                           </div>
@@ -960,7 +954,7 @@ export function TrainerDashboard() {
                           >
                             {phase.replace(/_/g, " ")}
                           </Badge>
-                          <span className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted whitespace-nowrap">
+                          <span className="text-[9px] text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
                             {recruit.updated_at
                               ? formatDistanceToNow(
                                   new Date(recruit.updated_at),
@@ -974,8 +968,8 @@ export function TrainerDashboard() {
                   })
                 ) : (
                   <div className="px-3 py-6 text-center">
-                    <UserPlus className="h-6 w-6 text-v2-ink-subtle dark:text-v2-ink-muted mx-auto mb-1" />
-                    <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                    <UserPlus className="h-6 w-6 text-muted-foreground dark:text-muted-foreground mx-auto mb-1" />
+                    <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                       No recruits in pipeline yet
                     </p>
                   </div>
@@ -984,11 +978,11 @@ export function TrainerDashboard() {
             </div>
 
             {/* Recent Contracts */}
-            <div className="bg-v2-card rounded-lg border border-v2-ring dark:border-v2-ring">
-              <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring dark:border-v2-ring">
+            <div className="bg-card rounded-lg border border-border dark:border-border">
+              <div className="flex items-center justify-between px-3 py-2 border-b border-border dark:border-border">
                 <div className="flex items-center gap-1.5">
-                  <FileCheck className="h-3.5 w-3.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
-                  <h2 className="text-xs font-semibold text-v2-ink dark:text-v2-ink">
+                  <FileCheck className="h-3.5 w-3.5 text-muted-foreground dark:text-muted-foreground" />
+                  <h2 className="text-xs font-semibold text-foreground dark:text-foreground">
                     Recent Contracts
                   </h2>
                 </div>
@@ -996,14 +990,14 @@ export function TrainerDashboard() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-canvas"
+                    className="h-6 text-[10px] text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-background"
                   >
                     View All
                     <ArrowRight className="h-3 w-3 ml-1" />
                   </Button>
                 </Link>
               </div>
-              <div className="divide-y divide-v2-ring dark:divide-v2-ring">
+              <div className="divide-y divide-border dark:divide-border">
                 {contractsListLoading ? (
                   [1, 2, 3, 4, 5].map((i) => (
                     <div key={i} className="px-3 py-2">
@@ -1026,17 +1020,17 @@ export function TrainerDashboard() {
                       <Link
                         key={contract.id}
                         to="/contracting"
-                        className="flex items-center justify-between px-3 py-2 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 transition-colors"
+                        className="flex items-center justify-between px-3 py-2 hover:bg-background dark:hover:bg-card-tinted/50 transition-colors"
                       >
                         <div className="flex items-center gap-2">
-                          <div className="h-7 w-7 rounded-full bg-v2-card-tinted dark:bg-v2-card-tinted flex items-center justify-center text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted">
+                          <div className="h-7 w-7 rounded-full bg-card-tinted dark:bg-card-tinted flex items-center justify-center text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
                             {agentName.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink truncate max-w-[140px]">
+                            <p className="text-[11px] font-medium text-foreground dark:text-foreground truncate max-w-[140px]">
                               {agentName}
                             </p>
-                            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate max-w-[140px]">
+                            <p className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate max-w-[140px]">
                               {carrier?.name || "Unknown Carrier"}
                             </p>
                           </div>
@@ -1051,7 +1045,7 @@ export function TrainerDashboard() {
                           >
                             {contract.status}
                           </Badge>
-                          <span className="text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted whitespace-nowrap">
+                          <span className="text-[9px] text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
                             {contract.updated_at
                               ? formatDistanceToNow(
                                   new Date(contract.updated_at),
@@ -1065,8 +1059,8 @@ export function TrainerDashboard() {
                   })
                 ) : (
                   <div className="px-3 py-6 text-center">
-                    <FileCheck className="h-6 w-6 text-v2-ink-subtle dark:text-v2-ink-muted mx-auto mb-1" />
-                    <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                    <FileCheck className="h-6 w-6 text-muted-foreground dark:text-muted-foreground mx-auto mb-1" />
+                    <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                       No contracts yet
                     </p>
                   </div>
@@ -1092,8 +1086,8 @@ interface StatRowProps {
 
 function StatRow({ label, value, loading, icon, color }: StatRowProps) {
   return (
-    <div className="flex justify-between items-center text-[11px] hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 rounded px-1 -mx-1 py-0.5">
-      <div className="flex items-center gap-1.5 text-v2-ink-muted dark:text-v2-ink-subtle">
+    <div className="flex justify-between items-center text-[11px] hover:bg-background dark:hover:bg-card-tinted/50 rounded px-1 -mx-1 py-0.5">
+      <div className="flex items-center gap-1.5 text-muted-foreground dark:text-muted-foreground">
         {icon}
         <span>{label}</span>
       </div>
@@ -1103,7 +1097,7 @@ function StatRow({ label, value, loading, icon, color }: StatRowProps) {
         <span
           className={cn(
             "font-mono font-semibold",
-            color || "text-v2-ink dark:text-v2-ink",
+            color || "text-foreground dark:text-foreground",
           )}
         >
           {value}
@@ -1129,22 +1123,22 @@ function PerformanceRow({
   loading,
 }: PerformanceRowProps) {
   const statusDotClass = {
-    hit: "bg-emerald-500",
-    good: "bg-blue-500",
-    fair: "bg-amber-500",
-    poor: "bg-red-500",
-    neutral: "bg-zinc-400 dark:bg-zinc-500",
+    hit: "bg-success",
+    good: "bg-info",
+    fair: "bg-warning",
+    poor: "bg-destructive",
+    neutral: "bg-muted dark:bg-muted",
   }[status];
 
   return (
-    <tr className="hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50">
-      <td className="py-1.5 text-[11px] text-v2-ink dark:text-v2-ink">
+    <tr className="hover:bg-background dark:hover:bg-card-tinted/50">
+      <td className="py-1.5 text-[11px] text-foreground dark:text-foreground">
         {metric}
       </td>
-      <td className="py-1.5 text-right text-[11px] font-mono font-semibold text-v2-ink dark:text-v2-ink">
+      <td className="py-1.5 text-right text-[11px] font-mono font-semibold text-foreground dark:text-foreground">
         {loading ? <Skeleton className="h-4 w-8 ml-auto" /> : current}
       </td>
-      <td className="py-1.5 text-right text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle font-mono">
+      <td className="py-1.5 text-right text-[11px] text-muted-foreground dark:text-muted-foreground font-mono">
         {target}
       </td>
       <td className="py-1.5 text-center">
@@ -1169,14 +1163,14 @@ function KPIRow({ label, value, loading }: KPIRowProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex justify-between items-center text-[11px] cursor-help hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 rounded px-1 -mx-1 py-0.5">
-          <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+        <div className="flex justify-between items-center text-[11px] cursor-help hover:bg-background dark:hover:bg-card-tinted/50 rounded px-1 -mx-1 py-0.5">
+          <span className="text-muted-foreground dark:text-muted-foreground">
             {label}
           </span>
           {loading ? (
             <Skeleton className="h-4 w-8" />
           ) : (
-            <span className="font-mono font-semibold text-v2-ink dark:text-v2-ink">
+            <span className="font-mono font-semibold text-foreground dark:text-foreground">
               {value}
             </span>
           )}
@@ -1184,12 +1178,12 @@ function KPIRow({ label, value, loading }: KPIRowProps) {
       </TooltipTrigger>
       <TooltipContent
         side="top"
-        className="max-w-xs bg-zinc-900 dark:bg-v2-card-tinted border-v2-ring-strong"
+        className="max-w-xs bg-card dark:bg-card-tinted border-border"
       >
         <div className="space-y-1">
-          <div className="text-xs font-semibold text-v2-canvas">{label}</div>
-          <div className="text-[10px] text-v2-ink-subtle">
-            Value: <span className="font-mono text-v2-canvas">{value}</span>
+          <div className="text-xs font-semibold text-background">{label}</div>
+          <div className="text-[10px] text-muted-foreground">
+            Value: <span className="font-mono text-background">{value}</span>
           </div>
         </div>
       </TooltipContent>

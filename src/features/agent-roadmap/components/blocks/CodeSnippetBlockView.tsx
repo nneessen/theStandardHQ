@@ -26,7 +26,7 @@ export function CodeSnippetBlockView({ block }: CodeSnippetBlockViewProps) {
   return (
     <div className="my-2 rounded-lg border border-border overflow-hidden shadow-sm bg-[#0d1117]">
       {label && (
-        <div className="flex items-center justify-between px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-v2-ink-subtle bg-[#161b22] border-b border-zinc-800">
+        <div className="flex items-center justify-between px-4 py-2 text-[11px] font-semibold uppercase tracking-wider text-v2-ink-subtle bg-[#161b22] border-b border-border">
           <span>{label}</span>
           <span className="text-[9px] text-v2-ink-muted font-normal normal-case tracking-normal">
             Click to copy
@@ -40,7 +40,7 @@ export function CodeSnippetBlockView({ block }: CodeSnippetBlockViewProps) {
         <button
           type="button"
           onClick={handleCopy}
-          className="absolute top-3 right-3 h-7 w-7 flex items-center justify-center rounded-md bg-zinc-800 text-v2-ink-subtle opacity-0 shadow-sm transition-all hover:bg-v2-ring-strong hover:text-v2-canvas group-hover:opacity-100 active:scale-95"
+          className="absolute top-3 right-3 h-7 w-7 flex items-center justify-center rounded-md bg-muted text-v2-ink-subtle opacity-0 shadow-sm transition-all hover:bg-v2-ring-strong hover:text-v2-canvas group-hover:opacity-100 active:scale-95"
           aria-label="Copy to clipboard"
         >
           {copied ? (

@@ -176,7 +176,7 @@ export function InstagramTemplateSelector({
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-[900px] h-[600px] p-0 gap-0 overflow-hidden">
           {/* Header */}
-          <DialogHeader className="px-4 py-3 border-b border-v2-ring">
+          <DialogHeader className="px-4 py-3 border-b border-border">
             <DialogTitle className="text-sm font-semibold">
               Select Message Template
             </DialogTitle>
@@ -191,12 +191,12 @@ export function InstagramTemplateSelector({
             />
 
             {/* Right panel - Template browser */}
-            <div className="flex-1 flex flex-col min-w-0 border-l border-v2-ring">
+            <div className="flex-1 flex flex-col min-w-0 border-l border-border">
               {/* Filters row */}
-              <div className="px-3 py-2 border-b border-v2-ring space-y-2">
+              <div className="px-3 py-2 border-b border-border space-y-2">
                 {/* Search */}
                 <div className="relative">
-                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-v2-ink-subtle" />
+                  <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
@@ -273,8 +273,8 @@ export function InstagramTemplateSelector({
                       recentlyUsed.length > 0 && (
                         <div className="mb-4">
                           <div className="flex items-center gap-1.5 px-2 py-1 mb-1">
-                            <Clock className="h-3 w-3 text-v2-ink-subtle" />
-                            <span className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
+                            <Clock className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
                               Recently Used
                             </span>
                           </div>
@@ -308,8 +308,8 @@ export function InstagramTemplateSelector({
               </ScrollArea>
 
               {/* Footer with count */}
-              <div className="px-3 py-2 border-t border-v2-ring bg-v2-canvas dark:bg-v2-card-dark/50">
-                <p className="text-[10px] text-v2-ink-muted">
+              <div className="px-3 py-2 border-t border-border bg-background dark:bg-card-dark/50">
+                <p className="text-[10px] text-muted-foreground">
                   {filteredTemplates.length} of {templates.length} templates
                   {search && ` matching "${search}"`}
                 </p>
@@ -337,10 +337,10 @@ function ConversationContextPanel({
 }: ConversationContextPanelProps): ReactNode {
   if (!conversation) {
     return (
-      <div className="w-[280px] bg-v2-canvas dark:bg-v2-card-dark/50 p-4 flex items-center justify-center">
+      <div className="w-[280px] bg-background dark:bg-card-dark/50 p-4 flex items-center justify-center">
         <div className="text-center">
-          <User className="h-8 w-8 mx-auto text-v2-ink-subtle mb-2" />
-          <p className="text-[11px] text-v2-ink-muted">
+          <User className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+          <p className="text-[11px] text-muted-foreground">
             No conversation selected
           </p>
         </div>
@@ -358,9 +358,9 @@ function ConversationContextPanel({
   const contextMessages = recentMessages.slice(0, 5);
 
   return (
-    <div className="w-[280px] bg-v2-canvas dark:bg-v2-card-dark/50 flex flex-col">
+    <div className="w-[280px] bg-background dark:bg-card-dark/50 flex flex-col">
       {/* Contact header */}
-      <div className="p-3 border-b border-v2-ring">
+      <div className="p-3 border-b border-border">
         <div className="flex items-center gap-2">
           <Avatar className="h-10 w-10">
             <AvatarImage
@@ -372,14 +372,14 @@ function ConversationContextPanel({
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-[12px] font-semibold text-v2-ink truncate">
+            <p className="text-[12px] font-semibold text-foreground truncate">
               {conversation.participant_username
                 ? `@${conversation.participant_username}`
                 : displayName}
             </p>
             {conversation.participant_name &&
               conversation.participant_username && (
-                <p className="text-[10px] text-v2-ink-muted truncate">
+                <p className="text-[10px] text-muted-foreground truncate">
                   {conversation.participant_name}
                 </p>
               )}
@@ -389,14 +389,14 @@ function ConversationContextPanel({
 
       {/* Recent messages */}
       <div className="flex-1 overflow-auto p-2">
-        <p className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide px-1 mb-2">
+        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide px-1 mb-2">
           Recent Messages
         </p>
 
         {contextMessages.length === 0 ? (
           <div className="text-center py-4">
-            <MessageSquare className="h-6 w-6 mx-auto text-v2-ink-subtle mb-1" />
-            <p className="text-[10px] text-v2-ink-subtle">No messages yet</p>
+            <MessageSquare className="h-6 w-6 mx-auto text-muted-foreground mb-1" />
+            <p className="text-[10px] text-muted-foreground">No messages yet</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -406,14 +406,14 @@ function ConversationContextPanel({
                 className={cn(
                   "p-2 rounded-lg text-[11px]",
                   message.isOutbound
-                    ? "bg-v2-ring ml-4"
-                    : "bg-v2-card mr-4 border border-v2-ring",
+                    ? "bg-muted ml-4"
+                    : "bg-card mr-4 border border-border",
                 )}
               >
-                <p className="text-v2-ink-muted whitespace-pre-wrap break-words">
+                <p className="text-muted-foreground whitespace-pre-wrap break-words">
                   {message.message_text || "[Media]"}
                 </p>
-                <p className="text-[9px] text-v2-ink-subtle mt-1">
+                <p className="text-[9px] text-muted-foreground mt-1">
                   {message.sent_at
                     ? formatDistanceToNow(new Date(message.sent_at), {
                         addSuffix: true,
@@ -427,8 +427,8 @@ function ConversationContextPanel({
       </div>
 
       {/* Context hint */}
-      <div className="p-2 border-t border-v2-ring">
-        <p className="text-[9px] text-v2-ink-subtle text-center">
+      <div className="p-2 border-t border-border">
+        <p className="text-[9px] text-muted-foreground text-center">
           Choose a template that matches the conversation
         </p>
       </div>
@@ -461,8 +461,8 @@ function FilterChip({
       className={cn(
         "px-2 py-0.5 rounded text-[10px] font-medium transition-colors",
         active
-          ? "bg-v2-card-dark text-white dark:bg-v2-ring dark:text-v2-ink"
-          : "bg-v2-ring text-v2-ink-muted hover:bg-v2-ring dark:text-v2-ink-subtle dark:hover:bg-v2-card-dark",
+          ? "bg-card-dark text-white dark:bg-muted dark:text-foreground"
+          : "bg-muted text-muted-foreground hover:bg-muted dark:text-muted-foreground dark:hover:bg-card-dark",
       )}
     >
       {children}
@@ -487,15 +487,13 @@ function StageChip({
   children,
 }: StageChipProps): ReactNode {
   const stageColors: Record<MessageStage, string> = {
-    opener: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    opener: "bg-info/20 text-info dark:bg-info/30 dark:text-info",
     follow_up:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-    engagement:
-      "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
+      "bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning",
+    engagement: "bg-info/20 text-info dark:bg-info/30 dark:text-info",
     discovery:
-      "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
-    closer:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+      "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive",
+    closer: "bg-success/20 text-success dark:bg-success/30 dark:text-success",
   };
 
   return (
@@ -506,8 +504,8 @@ function StageChip({
         active
           ? stage
             ? stageColors[stage]
-            : "bg-v2-card-dark text-white dark:bg-v2-ring dark:text-v2-ink"
-          : "bg-v2-ring text-v2-ink-muted hover:bg-v2-ring dark:text-v2-ink-muted dark:hover:bg-v2-card-dark",
+            : "bg-card-dark text-white dark:bg-muted dark:text-foreground"
+          : "bg-muted text-muted-foreground hover:bg-muted dark:text-muted-foreground dark:hover:bg-card-dark",
       )}
     >
       {children}
@@ -537,15 +535,13 @@ function TemplateCard({
     : null;
 
   const stageColors: Record<MessageStage, string> = {
-    opener: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    opener: "bg-info/20 text-info dark:bg-info/30 dark:text-info",
     follow_up:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-    engagement:
-      "bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400",
+      "bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning",
+    engagement: "bg-info/20 text-info dark:bg-info/30 dark:text-info",
     discovery:
-      "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
-    closer:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+      "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive",
+    closer: "bg-success/20 text-success dark:bg-success/30 dark:text-success",
   };
 
   return (
@@ -553,17 +549,17 @@ function TemplateCard({
       onClick={() => onSelect(template)}
       className={cn(
         "w-full text-left p-3 rounded-lg border transition-all",
-        "border-v2-ring",
-        "bg-v2-card",
-        "hover:border-v2-ring-strong ",
+        "border-border",
+        "bg-card",
+        "hover:border-border ",
         "hover:shadow-sm",
-        "focus:outline-none focus:ring-2 focus:ring-v2-accent/50",
+        "focus:outline-none focus:ring-2 focus:ring-accent/50",
       )}
     >
       {/* Header row */}
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-semibold text-v2-ink truncate">
+          <p className="text-[11px] font-semibold text-foreground truncate">
             {template.name}
           </p>
         </div>
@@ -581,7 +577,7 @@ function TemplateCard({
             </span>
           )}
           {categoryLabel && (
-            <span className="text-[9px] px-1.5 py-0.5 bg-v2-ring dark:bg-v2-card-dark text-v2-ink-muted rounded">
+            <span className="text-[9px] px-1.5 py-0.5 bg-muted dark:bg-card-dark text-muted-foreground rounded">
               {categoryLabel}
             </span>
           )}
@@ -591,7 +587,7 @@ function TemplateCard({
       {/* Content preview - show full content */}
       <p
         className={cn(
-          "text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle whitespace-pre-wrap break-words",
+          "text-[11px] text-muted-foreground dark:text-muted-foreground whitespace-pre-wrap break-words",
           variant === "compact" ? "line-clamp-2" : "line-clamp-4",
         )}
       >
@@ -600,15 +596,15 @@ function TemplateCard({
 
       {/* Footer - use stats */}
       {(template.use_count ?? 0) > 0 && (
-        <div className="flex items-center gap-1 mt-2 pt-1.5 border-t border-v2-ring/60 /50">
-          <TrendingUp className="h-3 w-3 text-v2-ink-subtle" />
-          <span className="text-[9px] text-v2-ink-subtle">
+        <div className="flex items-center gap-1 mt-2 pt-1.5 border-t border-border/60 /50">
+          <TrendingUp className="h-3 w-3 text-muted-foreground" />
+          <span className="text-[9px] text-muted-foreground">
             Used {template.use_count} time{template.use_count !== 1 ? "s" : ""}
           </span>
           {template.last_used_at && (
             <>
-              <span className="text-[9px] text-v2-ink-subtle">•</span>
-              <span className="text-[9px] text-v2-ink-subtle">
+              <span className="text-[9px] text-muted-foreground">•</span>
+              <span className="text-[9px] text-muted-foreground">
                 Last{" "}
                 {formatDistanceToNow(new Date(template.last_used_at), {
                   addSuffix: true,
@@ -635,11 +631,11 @@ function EmptyState({ type, search }: EmptyStateProps): ReactNode {
   if (type === "no-templates") {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-        <MessageSquare className="h-10 w-10 text-v2-ink-subtle mb-3" />
-        <p className="text-[12px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-1">
+        <MessageSquare className="h-10 w-10 text-muted-foreground mb-3" />
+        <p className="text-[12px] font-medium text-muted-foreground dark:text-muted-foreground mb-1">
           No templates yet
         </p>
-        <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-muted">
+        <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
           Create templates in Settings → Instagram Templates
         </p>
       </div>
@@ -648,11 +644,11 @@ function EmptyState({ type, search }: EmptyStateProps): ReactNode {
 
   return (
     <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-      <Search className="h-10 w-10 text-v2-ink-subtle mb-3" />
-      <p className="text-[12px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-1">
+      <Search className="h-10 w-10 text-muted-foreground mb-3" />
+      <p className="text-[12px] font-medium text-muted-foreground dark:text-muted-foreground mb-1">
         No templates found
       </p>
-      <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-muted">
+      <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
         {search
           ? `No templates match "${search}"`
           : "Try adjusting your filters"}

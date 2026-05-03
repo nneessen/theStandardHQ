@@ -48,7 +48,7 @@ export function PresentationSubmissionList({
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-xs text-red-500">Failed to load submissions</p>
+        <p className="text-xs text-destructive">Failed to load submissions</p>
       </div>
     );
   }

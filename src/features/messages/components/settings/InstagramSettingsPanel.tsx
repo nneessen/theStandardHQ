@@ -67,7 +67,7 @@ export function InstagramSettingsPanel() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-40">
-        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -79,10 +79,10 @@ export function InstagramSettingsPanel() {
   return (
     <div className="space-y-4 max-w-2xl">
       {/* Connection Status */}
-      <Card className="border-v2-ring">
+      <Card className="border-border">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Instagram className="h-4 w-4 text-v2-ink-muted" />
+            <Instagram className="h-4 w-4 text-muted-foreground" />
             Instagram Connection
           </CardTitle>
         </CardHeader>
@@ -98,7 +98,7 @@ export function InstagramSettingsPanel() {
           ) : (
             <div className="space-y-4">
               {/* Account Info */}
-              <div className="flex items-center gap-3 p-3 rounded-lg border border-v2-ring">
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-border">
                 <Avatar className="h-10 w-10">
                   <AvatarImage
                     src={integration.instagram_profile_picture_url || undefined}
@@ -110,18 +110,18 @@ export function InstagramSettingsPanel() {
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <p className="text-[11px] font-medium text-v2-ink">
+                  <p className="text-[11px] font-medium text-foreground">
                     {integration.instagram_name ||
                       integration.instagram_username}
                   </p>
-                  <p className="text-[10px] text-v2-ink-muted">
+                  <p className="text-[10px] text-muted-foreground">
                     @{integration.instagram_username}
                   </p>
                 </div>
                 {isConnected && (
                   <Badge
                     variant="outline"
-                    className="text-[10px] h-5 bg-green-50 dark:bg-green-950/20 text-green-600 dark:text-green-400 border-green-200 dark:border-green-800"
+                    className="text-[10px] h-5 bg-success/10 dark:bg-success/10 text-success border-success/30"
                   >
                     <Check className="h-2.5 w-2.5 mr-1" />
                     Connected
@@ -130,7 +130,7 @@ export function InstagramSettingsPanel() {
                 {isExpired && (
                   <Badge
                     variant="outline"
-                    className="text-[10px] h-5 bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800"
+                    className="text-[10px] h-5 bg-warning/10 text-warning border-warning/30"
                   >
                     <AlertCircle className="h-2.5 w-2.5 mr-1" />
                     Expired
@@ -139,7 +139,7 @@ export function InstagramSettingsPanel() {
                 {hasError && (
                   <Badge
                     variant="outline"
-                    className="text-[10px] h-5 bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800"
+                    className="text-[10px] h-5 bg-destructive/10 text-destructive border-destructive/30"
                   >
                     <AlertCircle className="h-2.5 w-2.5 mr-1" />
                     Error
@@ -149,7 +149,7 @@ export function InstagramSettingsPanel() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 px-2 text-[10px] text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                  className="h-7 px-2 text-[10px] text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/10"
                   onClick={() => setShowDisconnectDialog(true)}
                   disabled={disconnectInstagram.isPending}
                 >
@@ -159,8 +159,8 @@ export function InstagramSettingsPanel() {
 
               {/* Reconnect if needed */}
               {(isExpired || hasError) && (
-                <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-                  <p className="text-[11px] text-amber-800 dark:text-amber-200 mb-2">
+                <div className="p-3 rounded-lg bg-warning/10 border border-warning/30">
+                  <p className="text-[11px] text-warning mb-2">
                     {isExpired
                       ? "Your Instagram connection has expired. Please reconnect to continue messaging."
                       : "There was an error with your Instagram connection. Please try reconnecting."}
@@ -184,7 +184,7 @@ export function InstagramSettingsPanel() {
 
               {/* Info Note */}
               {isConnected && (
-                <p className="text-[10px] text-v2-ink-muted">
+                <p className="text-[10px] text-muted-foreground">
                   Manage templates in the Templates tab.
                 </p>
               )}
@@ -201,7 +201,7 @@ export function InstagramSettingsPanel() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-sm flex items-center gap-2">
-              <Instagram className="h-4 w-4 text-purple-500" />
+              <Instagram className="h-4 w-4 text-info" />
               Disconnect Instagram
             </DialogTitle>
             <DialogDescription className="text-[11px]">
@@ -210,7 +210,7 @@ export function InstagramSettingsPanel() {
           </DialogHeader>
 
           <div className="py-3">
-            <div className="flex items-center gap-3 p-3 bg-v2-canvas rounded-lg">
+            <div className="flex items-center gap-3 p-3 bg-background rounded-lg">
               <Avatar className="h-8 w-8">
                 <AvatarImage
                   src={integration?.instagram_profile_picture_url || undefined}
@@ -222,17 +222,17 @@ export function InstagramSettingsPanel() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="text-[11px] font-medium text-v2-ink">
+                <p className="text-[11px] font-medium text-foreground">
                   @{integration?.instagram_username}
                 </p>
-                <p className="text-[10px] text-v2-ink-muted">
+                <p className="text-[10px] text-muted-foreground">
                   {integration?.instagram_name}
                 </p>
               </div>
             </div>
 
-            <div className="mt-3 p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-              <p className="text-[10px] text-amber-800 dark:text-amber-200">
+            <div className="mt-3 p-2.5 rounded-lg bg-warning/10 border border-warning/30">
+              <p className="text-[10px] text-warning">
                 This will stop all Instagram DM features. Your conversation
                 history will be preserved, but you won't be able to send or
                 receive messages until you reconnect.

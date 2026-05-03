@@ -60,9 +60,9 @@ export function SchedulingBookingModal({
   const renderEmbed = () => {
     if (!isValidUrl) {
       return (
-        <div className="flex flex-col items-center justify-center p-6 bg-v2-canvas rounded-lg h-full">
-          <AlertCircle className="h-8 w-8 text-amber-500 mb-3" />
-          <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle text-center mb-3">
+        <div className="flex flex-col items-center justify-center p-6 bg-background rounded-lg h-full">
+          <AlertCircle className="h-8 w-8 text-warning mb-3" />
+          <p className="text-[11px] text-muted-foreground dark:text-muted-foreground text-center mb-3">
             Invalid booking URL. Please contact your recruiter.
           </p>
         </div>
@@ -102,9 +102,9 @@ export function SchedulingBookingModal({
         );
       default:
         return (
-          <div className="flex flex-col items-center justify-center p-6 bg-v2-canvas rounded-lg h-full">
-            <AlertCircle className="h-8 w-8 text-amber-500 mb-3" />
-            <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle text-center mb-3">
+          <div className="flex flex-col items-center justify-center p-6 bg-background rounded-lg h-full">
+            <AlertCircle className="h-8 w-8 text-warning mb-3" />
+            <p className="text-[11px] text-muted-foreground dark:text-muted-foreground text-center mb-3">
               Unsupported scheduling type
             </p>
             <Button
@@ -126,7 +126,7 @@ export function SchedulingBookingModal({
   return (
     <Sheet open={open} onOpenChange={handleClose}>
       <SheetContent side="right" size="xl" className="flex flex-col p-0">
-        <SheetHeader className="p-4 pb-2 border-b border-v2-ring">
+        <SheetHeader className="p-4 pb-2 border-b border-border">
           <SheetTitle className="text-sm font-semibold">{itemName}</SheetTitle>
           <SheetDescription className="text-[10px]">
             {INTEGRATION_TYPE_LABELS[integrationType]} Scheduling
@@ -135,10 +135,8 @@ export function SchedulingBookingModal({
 
         {/* Instructions (for Calendly/Google Calendar only) */}
         {instructions && integrationType !== "zoom" && (
-          <div className="px-4 py-2 bg-blue-50 dark:bg-blue-950/30 mx-4 mt-2 rounded-lg">
-            <p className="text-[11px] text-blue-700 dark:text-blue-400">
-              {instructions}
-            </p>
+          <div className="px-4 py-2 bg-info/10 mx-4 mt-2 rounded-lg">
+            <p className="text-[11px] text-info">{instructions}</p>
           </div>
         )}
 
@@ -146,8 +144,8 @@ export function SchedulingBookingModal({
         <div className="flex-1 p-4 pt-2 overflow-hidden">{renderEmbed()}</div>
 
         {/* Footer */}
-        <div className="p-4 pt-2 border-t border-v2-ring flex items-center justify-between">
-          <p className="text-[10px] text-v2-ink-muted">
+        <div className="p-4 pt-2 border-t border-border flex items-center justify-between">
+          <p className="text-[10px] text-muted-foreground">
             {hasBooked
               ? "Booking confirmed! You can close this panel."
               : "Having trouble? "}
@@ -156,7 +154,7 @@ export function SchedulingBookingModal({
                 href={bookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-v2-ink-muted underline hover:no-underline"
+                className="text-muted-foreground underline hover:no-underline"
               >
                 Open in new tab
               </a>

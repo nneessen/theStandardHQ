@@ -160,7 +160,7 @@ export function VoiceAgentUsageCard({
               <div
                 className={cn(
                   "h-full rounded-full transition-all",
-                  usageNeedsAttention ? "bg-amber-500" : "bg-sky-500",
+                  usageNeedsAttention ? "bg-warning" : "bg-info",
                 )}
                 style={{ width: `${percentUsed}%` }}
               />

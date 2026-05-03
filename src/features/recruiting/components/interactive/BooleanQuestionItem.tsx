@@ -91,9 +91,9 @@ export function BooleanQuestionItem({
   if (existingResponse && selectedAnswer !== null) {
     return (
       <div className="flex items-start gap-2">
-        <Check className="h-3.5 w-3.5 text-emerald-600 mt-0.5 flex-shrink-0" />
+        <Check className="h-3.5 w-3.5 text-success mt-0.5 flex-shrink-0" />
         <div className="flex-1 min-w-0">
-          <span className="text-xs text-emerald-600 dark:text-emerald-500">
+          <span className="text-xs text-success dark:text-success">
             <strong>{selectedAnswer ? positiveLabel : negativeLabel}</strong>
           </span>
           {existingResponse.explanation && (
@@ -120,7 +120,7 @@ export function BooleanQuestionItem({
           variant={selectedAnswer === true ? "default" : "outline"}
           size="sm"
           className={`flex-1 h-7 text-xs ${
-            selectedAnswer === true ? "bg-emerald-600 hover:bg-emerald-700" : ""
+            selectedAnswer === true ? "bg-success hover:bg-success" : ""
           }`}
           onClick={() => setSelectedAnswer(true)}
           disabled={isSubmitting}
@@ -148,7 +148,7 @@ export function BooleanQuestionItem({
         <div className="space-y-1">
           <label className="text-[10px] text-v2-ink-muted -subtle">
             {metadata.explanation_prompt || "Please explain your answer"}{" "}
-            <span className="text-red-500">*</span>
+            <span className="text-destructive">*</span>
           </label>
           <Textarea
             value={explanation}
@@ -162,7 +162,7 @@ export function BooleanQuestionItem({
 
       {/* Requirement note - subtle */}
       {metadata.require_positive && (
-        <p className="text-[10px] text-amber-600 dark:text-amber-400">
+        <p className="text-[10px] text-warning">
           Note: You must select "{positiveLabel}" to complete this item.
         </p>
       )}
@@ -174,7 +174,7 @@ export function BooleanQuestionItem({
           disabled={isSubmitting}
           size="sm"
           variant="default"
-          className="h-7 text-xs px-3 gap-1.5 bg-emerald-600 hover:bg-emerald-700"
+          className="h-7 text-xs px-3 gap-1.5 bg-success hover:bg-success"
         >
           {isSubmitting ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />

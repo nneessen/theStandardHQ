@@ -61,7 +61,7 @@ export function PricingSection({ data, onChange }: PricingSectionProps) {
               <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
                 {opt.label}
                 {opt.value === "bridge_to_appointment" && (
-                  <span className="ml-1.5 text-[10px] font-normal text-emerald-600 dark:text-emerald-400">
+                  <span className="ml-1.5 text-[10px] font-normal text-success">
                     recommended
                   </span>
                 )}

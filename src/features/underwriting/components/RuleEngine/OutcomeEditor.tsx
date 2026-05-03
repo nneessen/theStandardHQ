@@ -101,7 +101,7 @@ export function OutcomeEditor({
       {/* Row 1: Eligibility + Health Class */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
-          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
             Eligibility
           </Label>
           <Select
@@ -125,7 +125,7 @@ export function OutcomeEditor({
         </div>
 
         <div className="space-y-1">
-          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
             Health Class
           </Label>
           <Select
@@ -151,7 +151,7 @@ export function OutcomeEditor({
 
       {/* Row 2: Table Rating */}
       <div className="space-y-1">
-        <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
           Table Rating
         </Label>
         <Select
@@ -177,7 +177,7 @@ export function OutcomeEditor({
       {/* Row 3: Flat Extra */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
-          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
             Flat Extra ($/1000)
           </Label>
           <Input
@@ -200,7 +200,7 @@ export function OutcomeEditor({
         </div>
 
         <div className="space-y-1">
-          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
             Duration (years)
           </Label>
           <Input
@@ -225,8 +225,8 @@ export function OutcomeEditor({
 
       {/* Row 4: Reason */}
       <div className="space-y-1">
-        <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
-          Reason <span className="text-red-500">*</span>
+        <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+          Reason <span className="text-destructive">*</span>
         </Label>
         <Textarea
           className="h-16 text-[11px] resize-none"
@@ -239,7 +239,7 @@ export function OutcomeEditor({
 
       {/* Row 5: Concerns */}
       <div className="space-y-1">
-        <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
           Concerns
         </Label>
         {value.concerns.length > 0 && (
@@ -247,14 +247,14 @@ export function OutcomeEditor({
             {value.concerns.map((concern, index) => (
               <span
                 key={index}
-                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] bg-v2-card-tinted dark:bg-v2-card-tinted rounded"
+                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] bg-card-tinted dark:bg-card-tinted rounded"
               >
                 {concern}
                 {!disabled && (
                   <button
                     type="button"
                     onClick={() => removeConcern(index)}
-                    className="text-v2-ink-subtle hover:text-v2-ink-muted dark:hover:text-v2-ink-subtle"
+                    className="text-muted-foreground hover:text-muted-foreground dark:hover:text-muted-foreground"
                   >
                     <X className="h-2.5 w-2.5" />
                   </button>

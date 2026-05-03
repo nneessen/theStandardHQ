@@ -110,18 +110,18 @@ export function FileDownloadConfig({
   };
 
   return (
-    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-background rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <Download className="h-3.5 w-3.5 text-v2-ink-muted" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
+        <Download className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
           File Download Configuration
         </span>
       </div>
 
       {/* File URL */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
-          File URL <span className="text-red-500">*</span>
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+          File URL <span className="text-destructive">*</span>
         </Label>
         <Input
           type="url"
@@ -131,7 +131,7 @@ export function FileDownloadConfig({
           className="h-7 text-[11px]"
         />
         {!fileUrl.trim() && (
-          <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1 text-[10px] text-warning">
             <AlertCircle className="h-3 w-3" />
             File URL is required
           </div>
@@ -140,8 +140,8 @@ export function FileDownloadConfig({
 
       {/* File Name */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
-          Display Name <span className="text-red-500">*</span>
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+          Display Name <span className="text-destructive">*</span>
         </Label>
         <Input
           type="text"
@@ -151,7 +151,7 @@ export function FileDownloadConfig({
           className="h-7 text-[11px]"
         />
         {!fileName.trim() && (
-          <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1 text-[10px] text-warning">
             <AlertCircle className="h-3 w-3" />
             Display name is required
           </div>
@@ -161,7 +161,7 @@ export function FileDownloadConfig({
       {/* File Type and Size */}
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             File Type
           </Label>
           <Select
@@ -183,7 +183,7 @@ export function FileDownloadConfig({
           </Select>
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             File Size (bytes)
           </Label>
           <Input
@@ -197,7 +197,7 @@ export function FileDownloadConfig({
             className="h-7 text-[11px]"
           />
           {fileSizeBytes && (
-            <p className="text-[9px] text-v2-ink-muted">
+            <p className="text-[9px] text-muted-foreground">
               {formatFileSize(fileSizeBytes)}
             </p>
           )}
@@ -207,10 +207,10 @@ export function FileDownloadConfig({
       {/* Require Download */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Require Download
           </Label>
-          <p className="text-[9px] text-v2-ink-muted">
+          <p className="text-[9px] text-muted-foreground">
             Track that recruit clicked download before completing
           </p>
         </div>
@@ -223,7 +223,7 @@ export function FileDownloadConfig({
 
       {/* Minimum Review Time */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Minimum Review Time (seconds)
         </Label>
         <Input
@@ -236,14 +236,14 @@ export function FileDownloadConfig({
           placeholder="Optional (e.g., 60 for 1 minute)"
           className="h-7 text-[11px]"
         />
-        <p className="text-[9px] text-v2-ink-muted">
+        <p className="text-[9px] text-muted-foreground">
           Time recruit must wait after download before marking complete
         </p>
       </div>
 
       {/* Acknowledgment Text */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Acknowledgment Text (Optional)
         </Label>
         <Input
@@ -253,14 +253,14 @@ export function FileDownloadConfig({
           placeholder="e.g., I have downloaded and reviewed this document"
           className="h-7 text-[11px]"
         />
-        <p className="text-[9px] text-v2-ink-muted">
+        <p className="text-[9px] text-muted-foreground">
           If set, recruit must check this box after downloading
         </p>
       </div>
 
       {/* Info */}
-      <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-800">
-        <p className="text-[9px] text-blue-700 dark:text-blue-400">
+      <div className="p-2 bg-info/10 rounded border border-info/30">
+        <p className="text-[9px] text-info">
           <strong>Note:</strong> Recruit will see a download button for "
           {fileName || "the file"}".
           {requireDownload && " Download will be tracked."}

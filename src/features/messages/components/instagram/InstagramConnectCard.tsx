@@ -55,19 +55,19 @@ export function InstagramConnectCard({
             </p>
             <div className="space-y-1.5">
               <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3 w-3 text-emerald-500 flex-shrink-0" />
+                <CheckCircle2 className="h-3 w-3 text-success flex-shrink-0" />
                 <span className="text-[11px] text-v2-ink-muted">
                   Instagram Business or Creator account
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3 w-3 text-emerald-500 flex-shrink-0" />
+                <CheckCircle2 className="h-3 w-3 text-success flex-shrink-0" />
                 <span className="text-[11px] text-v2-ink-muted">
                   Connected to a Facebook Page
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3 w-3 text-emerald-500 flex-shrink-0" />
+                <CheckCircle2 className="h-3 w-3 text-success flex-shrink-0" />
                 <span className="text-[11px] text-v2-ink-muted">
                   Facebook Page admin access
                 </span>
@@ -77,21 +77,19 @@ export function InstagramConnectCard({
 
           {/* Error message */}
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3 mb-4">
+            <div className="bg-destructive/10 border border-destructive/30 rounded-md p-3 mb-4">
               <div className="flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-medium text-red-700 dark:text-red-300">
+                  <p className="text-[11px] font-medium text-destructive">
                     Connection failed
                   </p>
-                  <p className="text-[10px] text-red-600 dark:text-red-400 mt-0.5">
-                    {error}
-                  </p>
+                  <p className="text-[10px] text-destructive mt-0.5">{error}</p>
                 </div>
                 {onClearError && (
                   <button
                     onClick={onClearError}
-                    className="text-red-400 hover:text-red-600 dark:hover:text-red-300"
+                    className="text-destructive hover:text-destructive dark:hover:text-destructive"
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
@@ -134,7 +132,7 @@ export function InstagramConnectCard({
             Need help?{" "}
             <button
               onClick={() => setShowGuide(true)}
-              className="text-blue-500 hover:underline"
+              className="text-info hover:underline"
             >
               See our Instagram Business Account Setup Guide
             </button>

@@ -41,18 +41,18 @@ import {
 import type { SourcePool, ContactType } from "../../types/marketing.types";
 
 const SOURCE_POOL_COLORS: Record<SourcePool, string> = {
-  agents: "bg-blue-500/10 text-blue-600 border-blue-500/20",
-  clients: "bg-green-500/10 text-green-600 border-green-500/20",
-  leads: "bg-amber-500/10 text-amber-600 border-amber-500/20",
-  external: "bg-violet-500/10 text-violet-600 border-violet-500/20",
-  mixed: "bg-zinc-500/10 text-v2-ink-muted border-zinc-500/20",
+  agents: "bg-info/10 text-info border-info/20",
+  clients: "bg-success/10 text-success border-success/20",
+  leads: "bg-warning/10 text-warning border-warning/20",
+  external: "bg-info/10 text-info border-info/20",
+  mixed: "bg-muted text-muted-foreground border-input/20",
 };
 
 const CONTACT_TYPE_COLORS: Record<ContactType, string> = {
-  agent: "bg-blue-50 text-blue-600 border-blue-200",
-  client: "bg-green-50 text-green-600 border-green-200",
-  lead: "bg-amber-50 text-amber-600 border-amber-200",
-  external: "bg-violet-50 text-violet-600 border-violet-200",
+  agent: "bg-info/10 text-info border-info/30",
+  client: "bg-success/10 text-success border-success/30",
+  lead: "bg-warning/10 text-warning border-warning/30",
+  external: "bg-info/10 text-info border-info",
 };
 
 interface AudienceDetailSheetProps {
@@ -182,7 +182,7 @@ export function AudienceDetailSheet({
                       className="h-5 w-5 p-0"
                       onClick={saveName}
                     >
-                      <Check className="h-3 w-3 text-green-600" />
+                      <Check className="h-3 w-3 text-success" />
                     </Button>
                     <Button
                       variant="ghost"
@@ -231,7 +231,7 @@ export function AudienceDetailSheet({
                         className="h-5 w-5 p-0"
                         onClick={saveDesc}
                       >
-                        <Check className="h-3 w-3 text-green-600" />
+                        <Check className="h-3 w-3 text-success" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -346,7 +346,7 @@ export function AudienceDetailSheet({
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="h-5 w-5 text-muted-foreground hover:text-red-500"
+                              className="h-5 w-5 text-muted-foreground hover:text-destructive"
                               onClick={() => handleRemoveMember(m.id)}
                               disabled={removeMember.isPending}
                             >

@@ -963,16 +963,14 @@ export default function ActionConfigPanel({
 
             <div className="space-y-2">
               <Label className="text-sm font-medium">Branch Actions</Label>
-              <div className="p-2 rounded-md bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800">
-                <p className="text-xs font-medium text-green-700 dark:text-green-300 mb-1">
-                  If True
-                </p>
+              <div className="p-2 rounded-md bg-success/10 dark:bg-success/10 border border-success/30">
+                <p className="text-xs font-medium text-success mb-1">If True</p>
                 <p className="text-xs text-muted-foreground">
                   Continue to next action
                 </p>
               </div>
-              <div className="p-2 rounded-md bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800">
-                <p className="text-xs font-medium text-red-700 dark:text-red-300 mb-1">
+              <div className="p-2 rounded-md bg-destructive/10 dark:bg-destructive/10 border border-destructive/30">
+                <p className="text-xs font-medium text-destructive mb-1">
                   If False
                 </p>
                 <Select
@@ -1209,7 +1207,7 @@ export default function ActionConfigPanel({
             type="button"
             variant="outline"
             size="sm"
-            className="w-full h-9 text-sm border-blue-200 hover:border-blue-400 hover:bg-blue-50"
+            className="w-full h-9 text-sm border-info/30 hover:border-info/70 hover:bg-info/10"
             onClick={async () => {
               setTestMode(true);
               const { toast } = await import("sonner");
@@ -1383,7 +1381,7 @@ export default function ActionConfigPanel({
                       // Show a toast feedback
                       const toast = document.createElement("div");
                       toast.className =
-                        "fixed bottom-4 right-4 bg-green-600 text-white text-xs px-3 py-1.5 rounded-md shadow-lg z-50 animate-in fade-in slide-in-from-bottom-2";
+                        "fixed bottom-4 right-4 bg-success text-white text-xs px-3 py-1.5 rounded-md shadow-lg z-50 animate-in fade-in slide-in-from-bottom-2";
                       toast.textContent = `Copied: ${variable}`;
                       document.body.appendChild(toast);
                       setTimeout(() => {

@@ -84,27 +84,27 @@ export function PolicyStatusBreakdown() {
 
       {/* Three big stat tiles */}
       <div className="grid grid-cols-3 gap-2 mb-4">
-        <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/50 rounded-v2-sm p-3">
-          <div className="text-[10px] uppercase tracking-[0.14em] text-emerald-700 dark:text-emerald-300 font-semibold">
+        <div className="bg-success/10 border border-success/30/50 rounded-v2-sm p-3">
+          <div className="text-[10px] uppercase tracking-[0.14em] text-success font-semibold">
             Active
           </div>
-          <div className="text-2xl font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5 leading-none">
+          <div className="text-2xl font-semibold text-success mt-0.5 leading-none">
             {statusSummary.active.count}
           </div>
         </div>
-        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-v2-sm p-3">
-          <div className="text-[10px] uppercase tracking-[0.14em] text-amber-700 dark:text-amber-300 font-semibold">
+        <div className="bg-warning/10 border border-warning/30/50 rounded-v2-sm p-3">
+          <div className="text-[10px] uppercase tracking-[0.14em] text-warning font-semibold">
             Lapsed
           </div>
-          <div className="text-2xl font-semibold text-amber-600 dark:text-amber-400 mt-0.5 leading-none">
+          <div className="text-2xl font-semibold text-warning mt-0.5 leading-none">
             {statusSummary.lapsed.count}
           </div>
         </div>
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 rounded-v2-sm p-3">
-          <div className="text-[10px] uppercase tracking-[0.14em] text-red-700 dark:text-red-300 font-semibold">
+        <div className="bg-destructive/10 border border-destructive/30/50 rounded-v2-sm p-3">
+          <div className="text-[10px] uppercase tracking-[0.14em] text-destructive font-semibold">
             Cancelled
           </div>
-          <div className="text-2xl font-semibold text-red-600 dark:text-red-400 mt-0.5 leading-none">
+          <div className="text-2xl font-semibold text-destructive mt-0.5 leading-none">
             {statusSummary.cancelled.count}
           </div>
         </div>
@@ -194,7 +194,7 @@ export function PolicyStatusBreakdown() {
                           ({product.activePolicies})
                         </span>
                       </TableCell>
-                      <TableCell className="p-1.5 text-right font-semibold font-mono text-emerald-600 dark:text-emerald-400">
+                      <TableCell className="p-1.5 text-right font-semibold font-mono text-success">
                         {product.retentionRate}%
                       </TableCell>
                     </TableRow>
@@ -233,7 +233,7 @@ export function PolicyStatusBreakdown() {
                           ({product.activePolicies})
                         </span>
                       </TableCell>
-                      <TableCell className="p-1.5 text-right font-semibold font-mono text-amber-600 dark:text-amber-400">
+                      <TableCell className="p-1.5 text-right font-semibold font-mono text-warning">
                         {product.retentionRate}%
                       </TableCell>
                     </TableRow>

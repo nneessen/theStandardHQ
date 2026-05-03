@@ -393,7 +393,7 @@ function QuestionEditor({
             handleDelete();
           }}
         >
-          <Trash2 className="h-3 w-3 text-v2-ink-subtle hover:text-red-500" />
+          <Trash2 className="h-3 w-3 text-v2-ink-subtle hover:text-destructive" />
         </button>
       </div>
 
@@ -613,7 +613,7 @@ function OptionRow({
         title={option.is_correct ? "Correct answer" : "Mark as correct"}
       >
         {option.is_correct ? (
-          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+          <CheckCircle2 className="h-3.5 w-3.5 text-success" />
         ) : (
           <Circle className="h-3.5 w-3.5 text-v2-ink-subtle" />
         )}
@@ -626,7 +626,7 @@ function OptionRow({
       />
       {questionType !== "true_false" && (
         <button onClick={() => onDelete(option.id)}>
-          <Trash2 className="h-3 w-3 text-v2-ink-subtle hover:text-red-500" />
+          <Trash2 className="h-3 w-3 text-v2-ink-subtle hover:text-destructive" />
         </button>
       )}
     </div>

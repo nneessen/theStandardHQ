@@ -78,7 +78,7 @@ export function LibraryTab() {
       </div>
 
       <Tabs defaultValue="email" className="space-y-3">
-        <TabsList className="grid h-auto w-full grid-cols-3 gap-1 rounded-xl bg-v2-card-tinted p-1 dark:bg-v2-card-tinted/70">
+        <TabsList className="grid h-auto w-full grid-cols-3 gap-1 rounded-lg bg-v2-card-tinted p-1 dark:bg-v2-card-tinted/70">
           <TabsTrigger value="email" className="gap-2">
             <Mail className="h-3.5 w-3.5" />
             <span className="text-xs">Email Templates</span>
@@ -203,7 +203,7 @@ function EmailLibrary({
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <Mail className="h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                    <Mail className="h-3.5 w-3.5 shrink-0 text-success" />
                     <span className="truncate text-sm font-medium">
                       {t.name}
                     </span>
@@ -215,7 +215,7 @@ function EmailLibrary({
                     {t.is_archived && (
                       <Badge
                         variant="outline"
-                        className="border-amber-400/50 text-[10px] text-amber-600 dark:text-amber-400"
+                        className="border-warning/70/50 text-[10px] text-warning"
                       >
                         <Archive className="mr-1 h-2.5 w-2.5" />
                         archived
@@ -248,7 +248,7 @@ function EmailLibrary({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 text-muted-foreground hover:text-blue-500"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-info"
                     onClick={() => onClone(t)}
                     title="Clone to teammate"
                   >
@@ -257,7 +257,7 @@ function EmailLibrary({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
                     onClick={() => handleDelete(t.id, t.name)}
                     disabled={del.isPending}
                     title="Delete"
@@ -340,7 +340,7 @@ function SmsLibrary({
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <MessageSquare className="h-3.5 w-3.5 shrink-0 text-cyan-500" />
+                    <MessageSquare className="h-3.5 w-3.5 shrink-0 text-info" />
                     <span className="truncate text-sm font-medium">
                       {t.name}
                     </span>
@@ -361,7 +361,7 @@ function SmsLibrary({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 text-muted-foreground hover:text-blue-500"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-info"
                     onClick={() => onClone(t)}
                     title="Clone to teammate"
                   >
@@ -370,7 +370,7 @@ function SmsLibrary({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
                     onClick={() => handleDelete(t.id, t.name)}
                     disabled={del.isPending}
                     title="Delete"
@@ -454,7 +454,7 @@ function SequenceLibrary({
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <GitBranch className="h-3.5 w-3.5 shrink-0 text-violet-500" />
+                    <GitBranch className="h-3.5 w-3.5 shrink-0 text-info" />
                     <span className="truncate text-sm font-medium">
                       {s.name}
                     </span>
@@ -474,7 +474,7 @@ function SequenceLibrary({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 text-muted-foreground hover:text-blue-500"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-info"
                     onClick={() => onClone(s)}
                     title="Clone to teammate"
                   >
@@ -483,7 +483,7 @@ function SequenceLibrary({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500"
+                    className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
                     onClick={() => handleDelete(s.id, s.name)}
                     disabled={del.isPending}
                     title="Delete"
@@ -531,7 +531,7 @@ function ListHeader({
         )}
       </div>
       {truncated && (
-        <div className="flex items-start gap-2 rounded-md border border-amber-300/50 bg-amber-50/50 p-2 text-[11px] text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-400">
+        <div className="flex items-start gap-2 rounded-md border border-warning/40/50 bg-warning/10/50 p-2 text-[11px] text-warning dark:border-warning/50 dark:bg-warning/15 dark:text-warning">
           <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0" />
           <span>
             Your library has more than 2000 items. Showing the first 2000 — use
@@ -567,7 +567,7 @@ function EmptyRow({ text }: { text: string }) {
 
 function ErrorCard({ message }: { message: string }) {
   return (
-    <div className="rounded-md border border-red-200 bg-red-50/50 p-4 text-sm text-red-600 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-400">
+    <div className="rounded-md border border-destructive/30 bg-destructive/10/50 p-4 text-sm text-destructive dark:border-destructive/50 dark:bg-destructive/10 dark:text-destructive">
       {message}
     </div>
   );

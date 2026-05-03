@@ -221,7 +221,7 @@ export function AgencyForm({
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4 mt-4">
           {/* Basic Info */}
           <div className="space-y-3">
-            <h4 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
+            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
               Basic Information
             </h4>
 
@@ -237,7 +237,7 @@ export function AgencyForm({
                   placeholder="e.g., Dallas Regional Agency"
                 />
                 {errors.name && (
-                  <p className="text-[10px] text-red-500">
+                  <p className="text-[10px] text-destructive">
                     {errors.name.message}
                   </p>
                 )}
@@ -261,7 +261,7 @@ export function AgencyForm({
                   placeholder="e.g., DFW-001"
                 />
                 {errors.code && (
-                  <p className="text-[10px] text-red-500">
+                  <p className="text-[10px] text-destructive">
                     {errors.code.message}
                   </p>
                 )}
@@ -283,7 +283,7 @@ export function AgencyForm({
             {/* Owner Selection */}
             <div className="space-y-1">
               <Label className="text-[11px] flex items-center gap-1">
-                <Crown className="h-3 w-3 text-amber-500" />
+                <Crown className="h-3 w-3 text-warning" />
                 Agency Owner
               </Label>
               <Select
@@ -312,7 +312,7 @@ export function AgencyForm({
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-[10px] text-v2-ink-muted">
+              <p className="text-[10px] text-muted-foreground">
                 The owner has full control over this agency
               </p>
             </div>
@@ -322,12 +322,12 @@ export function AgencyForm({
               cascadePreview &&
               cascadePreview.downlineCount > 0 && (
                 <div className="mt-2 space-y-2">
-                  <div className="flex items-center justify-between p-2 rounded-lg border border-v2-ring bg-v2-canvas">
+                  <div className="flex items-center justify-between p-2 rounded-lg border border-border bg-background">
                     <div className="flex-1 min-w-0">
-                      <p className="text-[11px] font-medium text-v2-ink">
+                      <p className="text-[11px] font-medium text-foreground">
                         Assign owner's team to this agency
                       </p>
-                      <p className="text-[10px] text-v2-ink-muted">
+                      <p className="text-[10px] text-muted-foreground">
                         {isLoadingPreview ? (
                           "Checking team size..."
                         ) : (
@@ -350,7 +350,7 @@ export function AgencyForm({
                     />
                   </div>
                   {cascadeDownlines && (
-                    <p className="text-[10px] text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                    <p className="text-[10px] text-warning flex items-center gap-1">
                       <AlertTriangle className="h-3 w-3 flex-shrink-0" />
                       <span>
                         {cascadePreview.totalCount} user
@@ -365,7 +365,7 @@ export function AgencyForm({
 
           {/* Contact Info */}
           <div className="space-y-3">
-            <h4 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
+            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
               Contact Information
             </h4>
 
@@ -411,7 +411,7 @@ export function AgencyForm({
 
           {/* Address */}
           <div className="space-y-3">
-            <h4 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
+            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
               Address
             </h4>
 
@@ -470,14 +470,16 @@ export function AgencyForm({
           {/* Status (edit only) */}
           {isEditing && (
             <div className="space-y-3">
-              <h4 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
+              <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
                 Status
               </h4>
 
-              <div className="flex items-center justify-between p-2 rounded-lg border border-v2-ring">
+              <div className="flex items-center justify-between p-2 rounded-lg border border-border">
                 <div>
-                  <p className="text-[11px] font-medium text-v2-ink">Active</p>
-                  <p className="text-[10px] text-v2-ink-muted">
+                  <p className="text-[11px] font-medium text-foreground">
+                    Active
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
                     Deactivating will hide this agency from users
                   </p>
                 </div>
@@ -490,7 +492,7 @@ export function AgencyForm({
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-2 pt-4 border-t border-v2-ring">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border">
             <Button
               type="button"
               variant="outline"

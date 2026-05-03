@@ -290,10 +290,10 @@ const DeepDivePanel: React.FC<DeepDivePanelProps> = ({
   }
 
   const probColors: Record<string, string> = {
-    high: "text-emerald-600 dark:text-emerald-400",
-    medium: "text-amber-600 dark:text-amber-400",
-    low: "text-orange-600 dark:text-orange-400",
-    very_low: "text-red-600 dark:text-red-400",
+    high: "text-success",
+    medium: "text-warning",
+    low: "text-warning",
+    very_low: "text-destructive",
   };
 
   return (

@@ -22,7 +22,7 @@ export function BuilderSection({
     : icon;
 
   return (
-    <section className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+    <section className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm">
       {/* ── Header ── */}
       <div className="relative overflow-hidden border-b border-border/60 px-4 py-3">
         {/* Subtle gradient background */}

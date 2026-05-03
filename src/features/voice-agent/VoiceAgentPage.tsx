@@ -391,7 +391,7 @@ function SetupStepButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-xl border px-3 py-2.5 text-left transition-all shadow-sm ${
+      className={`rounded-lg border px-3 py-2.5 text-left transition-all shadow-sm ${
         active
           ? "border-foreground bg-foreground text-background shadow-md"
           : "border-v2-ring bg-white hover:border-v2-ring-strong hover:shadow-md dark:border-v2-ring dark:bg-v2-card dark:hover:border-v2-ring-strong"
@@ -435,7 +435,7 @@ function CreateVoiceAgentCard({
   isSuperAdmin?: boolean;
 }) {
   return (
-    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div className="max-w-3xl">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
@@ -449,9 +449,9 @@ function CreateVoiceAgentCard({
         <Badge
           className={
             statusTone === "created"
-              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+              ? "bg-success/20 text-success dark:bg-success/20 dark:text-success"
               : statusTone === "creating"
-                ? "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
+                ? "bg-warning/20 text-warning dark:bg-warning/20 dark:text-warning"
                 : "bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted"
           }
         >
@@ -471,7 +471,7 @@ function CreateVoiceAgentCard({
       </div>
 
       {errorMessage && (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-3 text-[11px] leading-5 text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
+        <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-3 text-[11px] leading-5 text-destructive dark:border-destructive/60 dark:bg-destructive/10 dark:text-destructive">
           <div className="flex items-start gap-2">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
@@ -950,19 +950,19 @@ export function VoiceAgentPage() {
   };
 
   const statusBadge = hasDegradedState ? (
-    <Badge className="h-4 bg-red-100 px-1.5 text-[9px] text-red-700 dark:bg-red-950/40 dark:text-red-300">
+    <Badge className="h-4 bg-destructive/20 px-1.5 text-[9px] text-destructive dark:bg-destructive/20 dark:text-destructive">
       Service Issue
     </Badge>
   ) : voiceAgentPublished ? (
-    <Badge className="h-4 bg-emerald-100 px-1.5 text-[9px] text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+    <Badge className="h-4 bg-success/20 px-1.5 text-[9px] text-success dark:bg-success/20 dark:text-success">
       Live
     </Badge>
   ) : voiceAgentProvisioning ? (
-    <Badge className="h-4 bg-amber-100 px-1.5 text-[9px] text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+    <Badge className="h-4 bg-warning/20 px-1.5 text-[9px] text-warning dark:bg-warning/20 dark:text-warning">
       Provisioning
     </Badge>
   ) : voiceAgentCreated ? (
-    <Badge className="h-4 bg-amber-100 px-1.5 text-[9px] text-amber-700 dark:bg-amber-950/40 dark:text-amber-300">
+    <Badge className="h-4 bg-warning/20 px-1.5 text-[9px] text-warning dark:bg-warning/20 dark:text-warning">
       Draft
     </Badge>
   ) : !voiceAccessActive ? (
@@ -988,7 +988,7 @@ export function VoiceAgentPage() {
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col space-y-2.5 bg-v2-canvas p-3 dark:bg-v2-canvas">
       {/* Hero Header — identical structure to ChatBotPage */}
-      <div className="relative overflow-hidden rounded-xl bg-foreground">
+      <div className="relative overflow-hidden rounded-lg bg-v2-card-dark">
         <div className="absolute inset-0 opacity-[0.03]">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -1011,25 +1011,25 @@ export function VoiceAgentPage() {
         </div>
         <div
           className="absolute top-1/3 -left-16 w-64 h-64 rounded-full blur-3xl"
-          style={{ backgroundColor: "rgba(99,102,241,0.12)" }}
+          style={{ backgroundColor: "rgba(226, 255, 204, 0.15)" }}
         />
         <div
           className="absolute bottom-0 -right-16 w-48 h-48 rounded-full blur-3xl"
-          style={{ backgroundColor: "rgba(139,92,246,0.08)" }}
+          style={{ backgroundColor: "rgba(132, 144, 127, 0.14)" }}
         />
         <div className="relative px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
               className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
-              style={{ backgroundColor: "rgba(99,102,241,0.2)" }}
+              style={{ backgroundColor: "rgba(226, 255, 204, 0.22)" }}
             >
-              <PhoneCall className="h-4 w-4 text-white dark:text-black" />
+              <PhoneCall className="h-4 w-4 text-white" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-white dark:text-black tracking-tight">
+              <h1 className="text-sm font-bold text-white tracking-tight">
                 AI Voice Agent
               </h1>
-              <p className="text-[10px] text-white/50 dark:text-black/40">
+              <p className="text-[10px] text-white/60">
                 Automated AI phone calls for follow-ups and inbound
               </p>
             </div>
@@ -1039,13 +1039,13 @@ export function VoiceAgentPage() {
       </div>
 
       {/* Under Construction Banner */}
-      <div className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 dark:border-amber-700 dark:bg-amber-950/30">
-        <Construction className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+      <div className="flex items-center gap-3 rounded-lg border border-warning/40 bg-warning/10 px-4 py-2.5 dark:border-warning dark:bg-warning/15">
+        <Construction className="h-4 w-4 shrink-0 text-warning" />
         <div>
-          <p className="text-[11px] font-semibold text-amber-800 dark:text-amber-200">
+          <p className="text-[11px] font-semibold text-warning">
             Under Construction
           </p>
-          <p className="text-[10px] text-amber-600 dark:text-amber-400">
+          <p className="text-[10px] text-warning">
             The AI Voice Agent is actively being built. Configuration and
             calling features are not yet available for general use.
           </p>
@@ -1157,7 +1157,7 @@ export function VoiceAgentPage() {
             {/* Create flow — shown when voice active but agent not yet created */}
             {voiceAccessActive && !voiceAgentCreated && (
               <>
-                <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+                <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
                   <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
                     <div className="max-w-3xl">
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
@@ -1173,7 +1173,7 @@ export function VoiceAgentPage() {
                     <Badge
                       className={
                         closeConnected
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                          ? "bg-success/20 text-success dark:bg-success/20 dark:text-success"
                           : "bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted"
                       }
                     >
@@ -1244,7 +1244,7 @@ export function VoiceAgentPage() {
         {activeTab === "setup" && (
           <div className="space-y-3">
             {!canOpenSetup ? (
-              <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+              <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
                 <p className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
                   Create your voice agent first
                 </p>
@@ -1256,11 +1256,11 @@ export function VoiceAgentPage() {
               </div>
             ) : voiceAgentProvisioning && !retellConnected ? (
               <div className="space-y-3">
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/20">
-                  <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">
+                <div className="rounded-lg border border-warning/30 bg-warning/10 p-4 dark:border-warning/60 dark:bg-warning/10">
+                  <p className="text-sm font-semibold text-warning dark:text-warning">
                     Your voice agent is being created now
                   </p>
-                  <p className="mt-2 text-[11px] leading-5 text-amber-800 dark:text-amber-200">
+                  <p className="mt-2 text-[11px] leading-5 text-warning">
                     The Standard HQ is finishing the managed workspace and
                     loading the live draft. You can stay on this page while it
                     finishes, or return to the Plans tab and refresh in a
@@ -1270,7 +1270,7 @@ export function VoiceAgentPage() {
               </div>
             ) : (
               <>
-                <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+                <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
                   <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
@@ -1324,9 +1324,9 @@ export function VoiceAgentPage() {
                   </div>
 
                   {!closeConnected && (
-                    <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-[11px] leading-5 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-300">
+                    <div className="mt-4 rounded-lg border border-warning/30 bg-warning/10 px-3 py-3 text-[11px] leading-5 text-warning dark:border-warning/60 dark:bg-warning/10 dark:text-warning">
                       <div className="mb-2 flex items-center gap-2">
-                        <CloseCrmLogo className="h-4 w-auto text-amber-700 dark:text-amber-300" />
+                        <CloseCrmLogo className="h-4 w-auto text-warning" />
                         <span className="font-semibold">
                           Close CRM required
                         </span>
@@ -1398,7 +1398,7 @@ export function VoiceAgentPage() {
                     <VoiceAgentRuntimeCard agent={agent} />
 
                     {/* Blocked Lead Statuses — who the voice agent should NOT call */}
-                    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+                    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
                       <div className="flex items-start gap-3">
                         <ShieldBan className="mt-0.5 h-4 w-4 shrink-0 text-v2-ink-muted dark:text-v2-ink-subtle" />
                         <div className="flex-1 space-y-1">
@@ -1474,7 +1474,7 @@ export function VoiceAgentPage() {
 
         {activeTab === "stats" && (
           <div className="space-y-3">
-            <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+            <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
                 Voice Stats
               </p>
@@ -1513,14 +1513,14 @@ export function VoiceAgentPage() {
         {activeTab === "admin" && isSuperAdmin && (
           <div className="space-y-3">
             {!agent ? (
-              <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+              <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
                 <p className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
                   No workspace is available for admin voice controls yet
                 </p>
               </div>
             ) : (
               <>
-                <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+                <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
                     Super-Admin Controls
                   </p>

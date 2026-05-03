@@ -491,32 +491,32 @@ function ChecklistItemFormDialogComponent({
     return (
       <div className="space-y-3 py-3 max-h-[60vh] overflow-y-auto">
         <div className="space-y-1.5">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Item Name
           </Label>
           <Input
             value={item.item_name}
             onChange={(e) => updateField("item_name", e.target.value)}
             placeholder="e.g., Upload Resume"
-            className="h-7 text-[11px] bg-v2-canvas border-v2-ring"
+            className="h-7 text-[11px] bg-background border-border"
           />
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Description
           </Label>
           <Textarea
             value={item.item_description || ""}
             onChange={(e) => updateField("item_description", e.target.value)}
             placeholder="Optional instructions..."
-            className="text-[11px] min-h-14 bg-v2-canvas border-v2-ring"
+            className="text-[11px] min-h-14 bg-background border-border"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               Type
             </Label>
             <Select
@@ -525,7 +525,7 @@ function ChecklistItemFormDialogComponent({
                 updateField("item_type", value)
               }
             >
-              <SelectTrigger className="h-7 text-[11px] bg-v2-canvas border-v2-ring">
+              <SelectTrigger className="h-7 text-[11px] bg-background border-border">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
@@ -539,7 +539,7 @@ function ChecklistItemFormDialogComponent({
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               Completed By
             </Label>
             <Select
@@ -548,7 +548,7 @@ function ChecklistItemFormDialogComponent({
                 updateField("can_be_completed_by", value)
               }
             >
-              <SelectTrigger className="h-7 text-[11px] bg-v2-canvas border-v2-ring">
+              <SelectTrigger className="h-7 text-[11px] bg-background border-border">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -564,14 +564,14 @@ function ChecklistItemFormDialogComponent({
 
         {item.item_type === "training_module" && (
           <div className="space-y-1.5">
-            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               External Link
             </Label>
             <Input
               value={item.external_link || ""}
               onChange={(e) => updateField("external_link", e.target.value)}
               placeholder="https://..."
-              className="h-7 text-[11px] bg-v2-canvas border-v2-ring"
+              className="h-7 text-[11px] bg-background border-border"
             />
           </div>
         )}
@@ -613,7 +613,7 @@ function ChecklistItemFormDialogComponent({
             />
             <label
               htmlFor={`${mode}_is_required`}
-              className="text-[11px] text-v2-ink-muted cursor-pointer"
+              className="text-[11px] text-muted-foreground cursor-pointer"
             >
               Required
             </label>
@@ -629,7 +629,7 @@ function ChecklistItemFormDialogComponent({
             />
             <label
               htmlFor={`${mode}_requires_verification`}
-              className="text-[11px] text-v2-ink-muted cursor-pointer"
+              className="text-[11px] text-muted-foreground cursor-pointer"
             >
               Requires Verification
             </label>
@@ -646,14 +646,14 @@ function ChecklistItemFormDialogComponent({
           />
           <label
             htmlFor={`${mode}_visible_to_recruit`}
-            className="text-[11px] text-v2-ink-muted cursor-pointer"
+            className="text-[11px] text-muted-foreground cursor-pointer"
           >
             Visible to recruits
           </label>
         </div>
 
         {item.visible_to_recruit === false && (
-          <p className="text-[10px] text-amber-600 dark:text-amber-400 ml-5">
+          <p className="text-[10px] text-warning ml-5">
             This item will be hidden from recruits.
           </p>
         )}
@@ -663,7 +663,7 @@ function ChecklistItemFormDialogComponent({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg p-3 bg-v2-card">
+      <DialogContent className="max-w-lg p-3 bg-card">
         <DialogHeader>
           <DialogTitle className="text-sm">
             {mode === "create" ? "Add Checklist Item" : "Edit Checklist Item"}

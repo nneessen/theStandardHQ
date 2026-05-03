@@ -252,18 +252,18 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
   ).length;
 
   return (
-    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-background rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <ClipboardCheck className="h-3.5 w-3.5 text-v2-ink-muted" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
+        <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
           Quiz Configuration
         </span>
       </div>
 
       {/* Title */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
-          Quiz Title <span className="text-red-500">*</span>
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+          Quiz Title <span className="text-destructive">*</span>
         </Label>
         <Input
           type="text"
@@ -273,7 +273,7 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
           className="h-7 text-[11px]"
         />
         {!title.trim() && (
-          <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1 text-[10px] text-warning">
             <AlertCircle className="h-3 w-3" />
             Title is required
           </div>
@@ -282,7 +282,7 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
 
       {/* Description */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Description (Optional)
         </Label>
         <Textarea
@@ -296,7 +296,7 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
       {/* Quiz Settings */}
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Passing Score (%)
           </Label>
           <Input
@@ -316,7 +316,7 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
           />
         </div>
         <div className="space-y-1">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Time Limit (minutes)
           </Label>
           <Input
@@ -335,10 +335,10 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
       {/* Retry Settings */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Allow Retries
           </Label>
-          <p className="text-[9px] text-v2-ink-muted">
+          <p className="text-[9px] text-muted-foreground">
             Let recruit retry if they fail
           </p>
         </div>
@@ -351,7 +351,7 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
 
       {allowRetries && (
         <div className="space-y-1">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Max Retries
           </Label>
           <Input
@@ -370,10 +370,10 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
       {/* Show Correct Answers */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Show Correct Answers
           </Label>
-          <p className="text-[9px] text-v2-ink-muted">
+          <p className="text-[9px] text-muted-foreground">
             Show corrections after quiz completion
           </p>
         </div>
@@ -386,7 +386,7 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
 
       {/* Randomization */}
       <div className="flex gap-4">
-        <label className="flex items-center gap-1.5 text-[10px] text-v2-ink-muted">
+        <label className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
           <Checkbox
             checked={randomizeQuestions}
             onCheckedChange={(c) => setRandomizeQuestions(c === true)}
@@ -394,7 +394,7 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
           />
           Randomize Questions
         </label>
-        <label className="flex items-center gap-1.5 text-[10px] text-v2-ink-muted">
+        <label className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
           <Checkbox
             checked={randomizeOptions}
             onCheckedChange={(c) => setRandomizeOptions(c === true)}
@@ -407,8 +407,8 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
       {/* Questions */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
-            Questions <span className="text-red-500">*</span>
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+            Questions <span className="text-destructive">*</span>
           </Label>
           <Button
             type="button"
@@ -429,14 +429,14 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
               open={expandedQuestions.has(question.id)}
               onOpenChange={() => toggleQuestion(question.id)}
             >
-              <div className="border rounded bg-v2-card">
+              <div className="border rounded bg-card">
                 <CollapsibleTrigger asChild>
-                  <div className="flex items-center gap-2 p-2 cursor-pointer hover:bg-v2-canvas">
-                    <GripVertical className="h-3.5 w-3.5 text-v2-ink-subtle" />
+                  <div className="flex items-center gap-2 p-2 cursor-pointer hover:bg-background">
+                    <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
                     {expandedQuestions.has(question.id) ? (
-                      <ChevronDown className="h-3.5 w-3.5 text-v2-ink-subtle" />
+                      <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                     ) : (
-                      <ChevronRight className="h-3.5 w-3.5 text-v2-ink-subtle" />
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                     )}
                     <span className="flex-1 text-[11px] font-medium truncate">
                       {question.question_text || `Question ${qIndex + 1}`}
@@ -450,7 +450,7 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
                         removeQuestion(qIndex);
                       }}
                       disabled={questions.length <= 1}
-                      className="h-5 w-5 p-0 text-v2-ink-subtle hover:text-red-500"
+                      className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>
@@ -461,7 +461,7 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
                   <div className="p-2 pt-0 space-y-2 border-t">
                     {/* Question Text */}
                     <div className="space-y-1">
-                      <Label className="text-[9px] text-v2-ink-muted">
+                      <Label className="text-[9px] text-muted-foreground">
                         Question Text
                       </Label>
                       <Textarea
@@ -480,7 +480,7 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
 
                     {/* Question Type */}
                     <div className="space-y-1">
-                      <Label className="text-[9px] text-v2-ink-muted">
+                      <Label className="text-[9px] text-muted-foreground">
                         Answer Type
                       </Label>
                       <Select
@@ -511,7 +511,7 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
                     {/* Options */}
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <Label className="text-[9px] text-v2-ink-muted">
+                        <Label className="text-[9px] text-muted-foreground">
                           Options (mark correct ones)
                         </Label>
                         <Button
@@ -564,7 +564,7 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
                               size="sm"
                               onClick={() => removeOption(qIndex, oIndex)}
                               disabled={question.options.length <= 2}
-                              className="h-5 w-5 p-0 text-v2-ink-subtle hover:text-red-500"
+                              className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive"
                             >
                               <Trash2 className="h-2.5 w-2.5" />
                             </Button>
@@ -575,7 +575,7 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
 
                     {/* Explanation */}
                     <div className="space-y-1">
-                      <Label className="text-[9px] text-v2-ink-muted">
+                      <Label className="text-[9px] text-muted-foreground">
                         Explanation (shown after answer)
                       </Label>
                       <Input
@@ -596,7 +596,7 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
         </div>
 
         {validQuestionsCount === 0 && (
-          <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1 text-[10px] text-warning">
             <AlertCircle className="h-3 w-3" />
             Add at least 1 question with text, 2+ options, and 1+ correct answer
           </div>
@@ -604,8 +604,8 @@ export function QuizConfig({ metadata, onChange }: QuizConfigProps) {
       </div>
 
       {/* Summary */}
-      <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-800">
-        <p className="text-[9px] text-blue-700 dark:text-blue-400">
+      <div className="p-2 bg-info/10 rounded border border-info/30">
+        <p className="text-[9px] text-info">
           <strong>Summary:</strong> {validQuestionsCount} valid question(s),{" "}
           {passingScorePercent}% to pass
           {timeLimitMinutes && `, ${timeLimitMinutes} min limit`}

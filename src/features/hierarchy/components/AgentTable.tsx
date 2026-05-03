@@ -251,31 +251,31 @@ function AgentRow({
     if (agent.approval_status === "approved") {
       return {
         label: `Level ${agent.contract_level || 100}`,
-        className: "bg-emerald-500/10 text-emerald-600",
+        className: "bg-success/10 text-success",
       };
     }
     // Non-approved: show onboarding phase if available
     if (agent.current_onboarding_phase) {
       return {
         label: agent.current_onboarding_phase,
-        className: "bg-blue-500/10 text-blue-600",
+        className: "bg-info/10 text-info",
       };
     }
     switch (agent.approval_status) {
       case "pending":
         return {
           label: "Pending Approval",
-          className: "bg-yellow-500/10 text-yellow-600",
+          className: "bg-warning/10 text-warning",
         };
       case "denied":
         return {
           label: "Denied",
-          className: "bg-red-500/10 text-red-600",
+          className: "bg-destructive/10 text-destructive",
         };
       default:
         return {
           label: agent.onboarding_status || "Unknown",
-          className: "bg-gray-500/10 text-gray-600",
+          className: "bg-muted/10 text-muted-foreground",
         };
     }
   };
@@ -299,9 +299,9 @@ function AgentRow({
   const statusDisplay = getStatusDisplay();
 
   return (
-    <tr className="h-9 transition-colors hover:bg-v2-canvas border-b border-v2-ring/60">
+    <tr className="h-9 transition-colors hover:bg-background border-b border-border/60">
       {/* Agent Name with Hierarchy */}
-      <td className="px-2 py-1.5 text-[11px] text-v2-ink">
+      <td className="px-2 py-1.5 text-[11px] text-foreground">
         <div
           className="flex items-center gap-1"
           style={{ paddingLeft: `${depth * 16}px` }}
@@ -311,7 +311,7 @@ function AgentRow({
               variant="ghost"
               size="sm"
               onClick={onToggle}
-              className="h-4 w-4 p-0 text-v2-ink-muted"
+              className="h-4 w-4 p-0 text-muted-foreground"
             >
               {isExpanded ? (
                 <ChevronDown className="h-3 w-3" />
@@ -321,7 +321,7 @@ function AgentRow({
             </Button>
           )}
           {!hasChildren && depth > 0 && (
-            <span className="text-v2-ink-subtle text-[10px] mr-1">└─</span>
+            <span className="text-muted-foreground text-[10px] mr-1">└─</span>
           )}
           <span className="font-medium">
             {agent.first_name && agent.last_name
@@ -329,12 +329,12 @@ function AgentRow({
               : agent.email}
           </span>
           {isOwner && (
-            <span className="inline-flex items-center px-1 py-0.5 rounded text-[8px] font-semibold bg-blue-500/20 text-blue-700 dark:text-blue-300 ml-1">
+            <span className="inline-flex items-center px-1 py-0.5 rounded text-[8px] font-semibold bg-info/20 text-info ml-1">
               You
             </span>
           )}
           {agent.approval_status === "approved" && (
-            <UserCheck className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+            <UserCheck className="h-3 w-3 text-success" />
           )}
         </div>
       </td>
@@ -354,53 +354,51 @@ function AgentRow({
       {/* Total AP (All Submissions) */}
       <td className="px-2 py-1.5 text-right text-[11px] font-mono">
         {total_ap > 0 ? (
-          <span className="font-bold text-v2-ink">
+          <span className="font-bold text-foreground">
             {formatCurrency(total_ap)}
           </span>
         ) : (
-          <span className="text-v2-ink-subtle">$0</span>
+          <span className="text-muted-foreground">$0</span>
         )}
       </td>
 
       {/* Pending AP */}
       <td className="px-2 py-1.5 text-right text-[11px] font-mono">
         {pending_ap > 0 ? (
-          <span className="font-semibold text-amber-600 dark:text-amber-400">
+          <span className="font-semibold text-warning">
             {formatCurrency(pending_ap)}
           </span>
         ) : (
-          <span className="text-v2-ink-subtle">$0</span>
+          <span className="text-muted-foreground">$0</span>
         )}
       </td>
 
       {/* MTD Policies */}
       <td className="px-2 py-1.5 text-center text-[11px] font-mono">
         {mtd_policies > 0 ? (
-          <span className="font-semibold text-v2-ink">{mtd_policies}</span>
+          <span className="font-semibold text-foreground">{mtd_policies}</span>
         ) : (
-          <span className="text-v2-ink-subtle">0</span>
+          <span className="text-muted-foreground">0</span>
         )}
       </td>
 
       {/* Override Spread % */}
       <td className="px-2 py-1.5 text-center text-[11px] font-mono">
         {overrideSpread > 0 ? (
-          <span className="font-medium text-emerald-600 dark:text-emerald-400">
-            {overrideSpread}%
-          </span>
+          <span className="font-medium text-success">{overrideSpread}%</span>
         ) : (
-          <span className="text-v2-ink-subtle">-</span>
+          <span className="text-muted-foreground">-</span>
         )}
       </td>
 
       {/* Override $ MTD */}
       <td className="px-2 py-1.5 text-right text-[11px] font-mono">
         {override_amount > 0 ? (
-          <span className="font-bold text-emerald-600 dark:text-emerald-400">
+          <span className="font-bold text-success">
             {formatCurrency(override_amount)}
           </span>
         ) : (
-          <span className="text-v2-ink-subtle">$0</span>
+          <span className="text-muted-foreground">$0</span>
         )}
       </td>
 
@@ -411,7 +409,7 @@ function AgentRow({
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
             >
               <MoreVertical className="h-3 w-3" />
             </Button>
@@ -712,44 +710,42 @@ export function AgentTable({
 
   return (
     <>
-      <div className="bg-v2-card rounded-lg border border-v2-ring">
+      <div className="bg-card rounded-lg border border-border">
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
-            <thead className="bg-v2-canvas border-b border-v2-ring">
+            <thead className="bg-background border-b border-border">
               <tr className="h-8">
-                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-v2-ink-muted">
+                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-muted-foreground">
                   Agent
                 </th>
-                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-v2-ink-muted">
+                <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-muted-foreground">
                   Status
                 </th>
-                <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-v2-ink-muted">
+                <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-muted-foreground">
                   Total AP
                 </th>
-                <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-v2-ink-muted">
-                  <span className="text-amber-600 dark:text-amber-400">
-                    Pending
-                  </span>
+                <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-muted-foreground">
+                  <span className="text-warning">Pending</span>
                 </th>
-                <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-v2-ink-muted">
+                <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-muted-foreground">
                   Policies
                 </th>
-                <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-v2-ink-muted">
+                <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-muted-foreground">
                   Spread
                 </th>
-                <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-v2-ink-muted">
+                <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-muted-foreground">
                   Override
                 </th>
-                <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-v2-ink-muted">
+                <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-muted-foreground">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-v2-ring/60">
+            <tbody className="divide-y divide-border/60">
               {isLoading ? (
                 <tr>
                   <td colSpan={8} className="text-center py-8">
-                    <div className="text-[11px] text-v2-ink-muted">
+                    <div className="text-[11px] text-muted-foreground">
                       Loading team members...
                     </div>
                   </td>
@@ -758,11 +754,11 @@ export function AgentTable({
                 <tr>
                   <td colSpan={8} className="text-center py-8">
                     <div className="flex flex-col items-center gap-1">
-                      <UserX className="h-6 w-6 text-v2-ink-subtle" />
-                      <span className="text-[11px] text-v2-ink-muted">
+                      <UserX className="h-6 w-6 text-muted-foreground" />
+                      <span className="text-[11px] text-muted-foreground">
                         No team members found
                       </span>
-                      <span className="text-[10px] text-v2-ink-subtle">
+                      <span className="text-[10px] text-muted-foreground">
                         Start by inviting agents to join your team
                       </span>
                     </div>
@@ -798,21 +794,21 @@ export function AgentTable({
 
         {/* Pagination Controls */}
         {totalRootAgents > 0 && (
-          <div className="flex items-center justify-between px-3 py-2 border-t border-v2-ring bg-v2-canvas/30">
+          <div className="flex items-center justify-between px-3 py-2 border-t border-border bg-background/30">
             <div className="flex items-center gap-4">
-              <span className="text-[10px] text-v2-ink-muted">
+              <span className="text-[10px] text-muted-foreground">
                 Total: {agents.length + (owner ? 1 : 0)} agent
                 {agents.length + (owner ? 1 : 0) !== 1 ? "s" : ""}
               </span>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-v2-ink-muted">
+                <span className="text-[10px] text-muted-foreground">
                   Rows per page:
                 </span>
                 <Select
                   value={rowsPerPage.toString()}
                   onValueChange={handleRowsPerPageChange}
                 >
-                  <SelectTrigger className="h-6 w-14 text-[10px] bg-v2-card border-v2-ring">
+                  <SelectTrigger className="h-6 w-14 text-[10px] bg-card border-border">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -826,7 +822,7 @@ export function AgentTable({
             </div>
 
             <div className="flex items-center gap-1">
-              <span className="text-[10px] text-v2-ink-muted">
+              <span className="text-[10px] text-muted-foreground">
                 Page {currentPage} of {totalPages || 1}
               </span>
               <Button
@@ -834,7 +830,7 @@ export function AgentTable({
                 size="sm"
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
+                className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
               >
                 <ChevronLeft className="h-3 w-3" />
               </Button>
@@ -845,7 +841,7 @@ export function AgentTable({
                   setCurrentPage(Math.min(totalPages || 1, currentPage + 1))
                 }
                 disabled={currentPage >= totalPages}
-                className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
+                className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
               >
                 <ChevronRight className="h-3 w-3" />
               </Button>
@@ -923,7 +919,7 @@ export function AgentTable({
             <AlertDialogAction
               onClick={handleDeleteAgent}
               disabled={deleteUser.isPending}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className="bg-destructive hover:bg-destructive text-white"
             >
               {deleteUser.isPending ? "Deleting..." : "Delete Permanently"}
             </AlertDialogAction>

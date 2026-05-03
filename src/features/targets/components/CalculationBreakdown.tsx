@@ -54,9 +54,9 @@ export function CalculationBreakdown({
         <div className="p-3 space-y-4">
           {/* Data Source Alert */}
           {targets.calculationMethod === "default" && showWarnings && (
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-2">
-              <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-blue-700 dark:text-blue-300">
+            <div className="bg-info/10 border border-info/20 rounded-lg p-3 flex items-start gap-2">
+              <Info className="h-4 w-4 text-info mt-0.5 flex-shrink-0" />
+              <div className="text-sm text-info">
                 Using default values for calculations. As you add more policies
                 and commissions, calculations will become more accurate based on
                 your actual performance.
@@ -218,10 +218,10 @@ export function CalculationBreakdown({
                         ["high", "medium"].includes(targets.confidence)) ||
                       level === "low"
                         ? level === "high"
-                          ? "bg-emerald-500"
+                          ? "bg-success"
                           : level === "medium"
-                            ? "bg-amber-500"
-                            : "bg-red-500"
+                            ? "bg-warning"
+                            : "bg-destructive"
                         : "bg-v2-ring"
                     }`}
                   />

@@ -39,7 +39,7 @@ export function ZoomEmbed({
       <div
         className={`flex flex-col items-center justify-center p-6 bg-v2-canvas rounded-lg ${className}`}
       >
-        <AlertCircle className="h-8 w-8 text-amber-500 mb-3" />
+        <AlertCircle className="h-8 w-8 text-warning mb-3" />
         <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle text-center">
           No Zoom link provided
         </p>
@@ -52,8 +52,8 @@ export function ZoomEmbed({
       className={`flex flex-col items-center p-6 bg-v2-canvas rounded-lg ${className}`}
     >
       {/* Zoom Icon */}
-      <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
-        <Video className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+      <div className="w-16 h-16 rounded-full bg-info/15 flex items-center justify-center mb-4">
+        <Video className="h-8 w-8 text-info" />
       </div>
 
       {/* Title */}
@@ -84,7 +84,7 @@ export function ZoomEmbed({
               onClick={() => copyToClipboard(meetingId, "Meeting ID")}
             >
               {copiedField === "Meeting ID" ? (
-                <Check className="h-3.5 w-3.5 text-green-500" />
+                <Check className="h-3.5 w-3.5 text-success" />
               ) : (
                 <Copy className="h-3.5 w-3.5 text-v2-ink-subtle" />
               )}
@@ -108,7 +108,7 @@ export function ZoomEmbed({
               onClick={() => copyToClipboard(passcode, "Passcode")}
             >
               {copiedField === "Passcode" ? (
-                <Check className="h-3.5 w-3.5 text-green-500" />
+                <Check className="h-3.5 w-3.5 text-success" />
               ) : (
                 <Copy className="h-3.5 w-3.5 text-v2-ink-subtle" />
               )}
@@ -134,7 +134,7 @@ export function ZoomEmbed({
       >
         {copiedField === "Link" ? (
           <>
-            <Check className="h-3 w-3 mr-1 text-green-500" />
+            <Check className="h-3 w-3 mr-1 text-success" />
             Copied!
           </>
         ) : (

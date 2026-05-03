@@ -151,7 +151,7 @@ export function WizardSessionHistory({
       <ScrollArea className="flex-1">
         <div className="p-4">
           {error ? (
-            <div className="text-center py-8 text-red-500 dark:text-red-400 text-xs">
+            <div className="text-center py-8 text-destructive text-xs">
               Failed to load sessions: {error.message}
             </div>
           ) : isLoading ? (
@@ -239,7 +239,7 @@ export function WizardSessionHistory({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 px-2 text-[10px] text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                            className="h-6 px-2 text-[10px] text-warning hover:text-warning hover:bg-warning/10 dark:hover:bg-warning/20"
                             onClick={() => loadSessionById(session.session_id)}
                           >
                             <Upload className="h-3 w-3 mr-1" />
@@ -352,7 +352,7 @@ function SessionDetailView({
             </h3>
           </div>
         </div>
-        <div className="flex-1 flex items-center justify-center px-6 text-xs text-red-500 dark:text-red-400 text-center">
+        <div className="flex-1 flex items-center justify-center px-6 text-xs text-destructive text-center">
           {error?.message || "Failed to load session details."}
         </div>
       </div>
@@ -399,7 +399,7 @@ function SessionDetailView({
         </div>
         <Button
           size="sm"
-          className="h-7 px-3 text-[10px] bg-amber-600 hover:bg-amber-700 text-white"
+          className="h-7 px-3 text-[10px] bg-warning hover:bg-warning text-white"
           onClick={onLoad}
         >
           <Upload className="h-3 w-3 mr-1.5" />
@@ -480,7 +480,7 @@ function SessionDetailView({
               {riskFactors.length > 0 && (
                 <div>
                   <div className="text-[10px] font-medium text-foreground mb-1.5 flex items-center gap-1">
-                    <AlertTriangle className="h-3 w-3 text-amber-500" />
+                    <AlertTriangle className="h-3 w-3 text-warning" />
                     Risk Factors ({riskFactors.length})
                   </div>
                   <ul className="space-y-0.5">
@@ -489,7 +489,7 @@ function SessionDetailView({
                         key={i}
                         className="text-[10px] text-muted-foreground flex items-start gap-1.5"
                       >
-                        <span className="text-amber-500">•</span>
+                        <span className="text-warning">•</span>
                         {factor}
                       </li>
                     ))}
@@ -582,7 +582,7 @@ function SessionDetailView({
                                 Monthly Premium
                               </span>
                               {rec.monthlyPremium !== null ? (
-                                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                <span className="font-semibold text-success">
                                   {formatCurrency(rec.monthlyPremium)}/mo
                                 </span>
                               ) : (
@@ -628,7 +628,7 @@ function SessionDetailView({
                                 {rec.keyFactors.map((factor, j) => (
                                   <span
                                     key={j}
-                                    className="text-[9px] text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-1 rounded"
+                                    className="text-[9px] text-success bg-success/10 px-1 rounded"
                                   >
                                     + {factor}
                                   </span>
@@ -640,7 +640,7 @@ function SessionDetailView({
                                 {rec.concerns.map((concern, j) => (
                                   <span
                                     key={j}
-                                    className="text-[9px] text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-1 rounded"
+                                    className="text-[9px] text-warning bg-warning/10 px-1 rounded"
                                   >
                                     ! {concern}
                                   </span>
@@ -695,7 +695,7 @@ function InfoItem({
     <div className="flex justify-between items-baseline">
       <span className="text-[10px] text-muted-foreground">{label}</span>
       <span
-        className={`text-[11px] ${bold ? "font-semibold" : ""} ${highlight ? "text-amber-600 dark:text-amber-400" : "text-foreground"}`}
+        className={`text-[11px] ${bold ? "font-semibold" : ""} ${highlight ? "text-warning" : "text-foreground"}`}
       >
         {value}
       </span>

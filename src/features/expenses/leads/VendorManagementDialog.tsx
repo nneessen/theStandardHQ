@@ -173,7 +173,7 @@ export function VendorManagementDialog({
           </DialogHeader>
 
           {/* Toolbar */}
-          <div className="flex items-center justify-between gap-2 py-2 border-b border-v2-ring">
+          <div className="flex items-center justify-between gap-2 py-2 border-b border-border">
             <div className="flex items-center gap-2">
               {/* Search */}
               <div className="relative">
@@ -216,7 +216,7 @@ export function VendorManagementDialog({
               </div>
             ) : filteredVendors.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8">
-                <Building2 className="h-8 w-8 text-v2-ink-subtle mb-2" />
+                <Building2 className="h-8 w-8 text-muted-foreground mb-2" />
                 <p className="text-[11px] text-muted-foreground">
                   {searchTerm
                     ? "No vendors match your search"
@@ -225,8 +225,8 @@ export function VendorManagementDialog({
               </div>
             ) : (
               <table className="w-full text-xs">
-                <thead className="bg-v2-canvas sticky top-0">
-                  <tr className="border-b border-v2-ring">
+                <thead className="bg-background sticky top-0">
+                  <tr className="border-b border-border">
                     <th className="w-8 px-2 py-1.5">
                       <Checkbox
                         checked={
@@ -261,9 +261,9 @@ export function VendorManagementDialog({
                     <th className="w-10 px-2 py-1.5"></th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-v2-ring/60">
+                <tbody className="divide-y divide-border/60">
                   {filteredVendors.map((vendor) => (
-                    <tr key={vendor.id} className="hover:bg-v2-canvas/30">
+                    <tr key={vendor.id} className="hover:bg-background/30">
                       <td className="px-2 py-2">
                         <Checkbox
                           checked={selectedVendors.includes(vendor.id)}
@@ -287,7 +287,7 @@ export function VendorManagementDialog({
                             autoFocus
                           />
                         ) : (
-                          <span className="font-medium text-v2-ink">
+                          <span className="font-medium text-foreground">
                             {vendor.name}
                           </span>
                         )}
@@ -333,7 +333,7 @@ export function VendorManagementDialog({
                               {updateVendor.isPending ? (
                                 <Loader2 className="h-3 w-3 animate-spin" />
                               ) : (
-                                <Check className="h-3 w-3 text-emerald-500" />
+                                <Check className="h-3 w-3 text-success" />
                               )}
                             </Button>
                             <Button
@@ -342,7 +342,7 @@ export function VendorManagementDialog({
                               className="h-6 w-6 p-0"
                               onClick={handleCancelEdit}
                             >
-                              <X className="h-3 w-3 text-red-500" />
+                              <X className="h-3 w-3 text-destructive" />
                             </Button>
                           </div>
                         ) : (
@@ -350,7 +350,7 @@ export function VendorManagementDialog({
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
+                              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                               onClick={() => handleStartEdit(vendor)}
                               title="Edit vendor"
                             >
@@ -359,7 +359,7 @@ export function VendorManagementDialog({
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-6 w-6 p-0 text-red-500 hover:text-red-600"
+                              className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                               onClick={() => setVendorToDelete(vendor)}
                               title="Delete vendor"
                             >
@@ -376,7 +376,7 @@ export function VendorManagementDialog({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between pt-2 border-t border-v2-ring">
+          <div className="flex items-center justify-between pt-2 border-t border-border">
             <span className="text-[10px] text-muted-foreground">
               {filteredVendors.length} vendor
               {filteredVendors.length !== 1 ? "s" : ""}
@@ -412,7 +412,7 @@ export function VendorManagementDialog({
               Are you sure you want to delete "{vendorToDelete?.name}"? This
               action cannot be undone.
               {vendorToDelete && vendorToDelete.totalPurchases > 0 && (
-                <span className="block mt-2 text-amber-600 dark:text-amber-400">
+                <span className="block mt-2 text-warning">
                   Note: This vendor has {vendorToDelete.totalPurchases}{" "}
                   purchase(s). You must merge it into another vendor first.
                 </span>
@@ -423,7 +423,7 @@ export function VendorManagementDialog({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteVendor}
-              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              className="bg-destructive hover:bg-destructive focus:ring-destructive"
               disabled={deleteVendor.isPending}
             >
               {deleteVendor.isPending ? (

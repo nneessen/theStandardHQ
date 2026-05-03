@@ -49,7 +49,7 @@ export const DashboardSection: React.FC<DashboardSectionProps> = ({
     <div
       className={
         isHero
-          ? "space-y-3 rounded-xl border border-primary/15 bg-gradient-to-br from-primary/[0.04] via-transparent to-primary/[0.07] p-3"
+          ? "space-y-3 rounded-lg border border-primary/15 bg-gradient-to-br from-primary/[0.04] via-transparent to-primary/[0.07] p-3"
           : "space-y-2"
       }
     >

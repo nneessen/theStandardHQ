@@ -37,7 +37,7 @@ export function ChallengeCard({
             </p>
           )}
         </div>
-        <span className="text-[10px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 rounded">
+        <span className="text-[10px] bg-warning/20 dark:bg-warning/30 text-warning px-1.5 rounded">
           +{challenge.xp_reward} XP
         </span>
       </div>

@@ -281,7 +281,7 @@ function AnalyticsDashboardContent() {
                               {accessibleSections.map((section) => (
                                 <span
                                   key={section}
-                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-v2-pill text-[11px] bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-v2-pill text-[11px] bg-success/20 dark:bg-success/40 text-success"
                                 >
                                   <CheckCircle2 className="h-3 w-3" />
                                   {ANALYTICS_SECTION_NAMES[section]}

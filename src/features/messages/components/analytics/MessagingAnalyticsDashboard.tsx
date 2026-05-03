@@ -80,7 +80,7 @@ export function MessagingAnalyticsDashboard() {
           </div>
         ) : isError ? (
           <div className="flex flex-col items-center justify-center h-40 text-center">
-            <AlertCircle className="h-8 w-8 text-red-400 mb-2" />
+            <AlertCircle className="h-8 w-8 text-destructive mb-2" />
             <p className="text-[11px] font-medium text-v2-ink-muted">
               Failed to load analytics
             </p>

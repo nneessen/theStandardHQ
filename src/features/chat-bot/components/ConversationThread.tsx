@@ -94,9 +94,9 @@ export function ConversationThread({
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md p-0 max-h-[80vh] flex flex-col">
-        <DialogHeader className="px-3 pt-3 pb-2 border-b border-v2-ring dark:border-v2-ring">
+        <DialogHeader className="px-3 pt-3 pb-2 border-b border-border dark:border-border">
           <DialogTitle className="text-sm font-semibold flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-v2-ink-subtle" />
+            <MessageSquare className="h-4 w-4 text-muted-foreground" />
             {conversation?.leadName ??
               conversation?.leadPhone ??
               "Unknown Lead"}
@@ -104,12 +104,12 @@ export function ConversationThread({
           {conversation && (
             <div className="flex items-center gap-2 mt-1">
               {conversation.localPhone && (
-                <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                   {conversation.localPhone}
                 </span>
               )}
               {conversation.channel && conversation.channel !== "email" && (
-                <span className="flex items-center gap-0.5 text-[10px] text-v2-ink-subtle">
+                <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
                   {conversation.channel === "sms" && (
                     <Phone className="h-2.5 w-2.5" />
                   )}
@@ -124,23 +124,23 @@ export function ConversationThread({
                   "text-[9px] h-3.5 px-1",
                   conversation.status === "open" ||
                     conversation.status === "awaiting_reply"
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
+                    ? "bg-success/20 text-success dark:bg-success dark:text-success"
                     : conversation.status === "scheduling" ||
                         conversation.status === "scheduled"
-                      ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                      : "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-muted",
+                      ? "bg-info/20 text-info dark:bg-info dark:text-info"
+                      : "bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground",
                 )}
               >
                 {conversation.status}
               </Badge>
               {sync.isPending && (
-                <span className="text-[9px] text-v2-ink-subtle flex items-center gap-0.5">
+                <span className="text-[9px] text-muted-foreground flex items-center gap-0.5">
                   <RefreshCw className="h-2.5 w-2.5 animate-spin" />
                   Syncing to Close…
                 </span>
               )}
               {sync.isSuccess && sync.data && sync.data.synced > 0 && (
-                <span className="text-[9px] text-emerald-600 dark:text-emerald-400">
+                <span className="text-[9px] text-success">
                   {sync.data.synced} synced to Close
                 </span>
               )}
@@ -152,12 +152,12 @@ export function ConversationThread({
         <div className="flex-1 overflow-y-auto px-3 py-2 space-y-2 min-h-[300px]">
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
           ) : messages.length === 0 ? (
             <div className="py-8 text-center">
-              <MessageSquare className="h-8 w-8 text-v2-ink-subtle dark:text-v2-ink-muted mx-auto mb-2" />
-              <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+              <MessageSquare className="h-8 w-8 text-muted-foreground dark:text-muted-foreground mx-auto mb-2" />
+              <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                 No messages yet
               </p>
             </div>
@@ -174,16 +174,16 @@ export function ConversationThread({
                   )}
                 >
                   {msg.direction === "inbound" && (
-                    <div className="w-5 h-5 rounded-full bg-v2-ring dark:bg-v2-ring-strong flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <User className="h-2.5 w-2.5 text-v2-ink-muted dark:text-v2-ink-subtle" />
+                    <div className="w-5 h-5 rounded-full bg-muted dark:bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <User className="h-2.5 w-2.5 text-muted-foreground dark:text-muted-foreground" />
                     </div>
                   )}
                   <div
                     className={cn(
                       "max-w-[75%] rounded-lg px-2.5 py-1.5",
                       msg.direction === "outbound"
-                        ? "bg-blue-600 text-white"
-                        : "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink dark:text-v2-ink",
+                        ? "bg-info text-white"
+                        : "bg-card-tinted dark:bg-card-tinted text-foreground dark:text-foreground",
                     )}
                   >
                     <p className="text-[11px] whitespace-pre-wrap">
@@ -193,8 +193,8 @@ export function ConversationThread({
                       className={cn(
                         "flex items-center gap-1 mt-0.5",
                         msg.direction === "outbound"
-                          ? "text-blue-200"
-                          : "text-v2-ink-subtle dark:text-v2-ink-muted",
+                          ? "text-info"
+                          : "text-muted-foreground dark:text-muted-foreground",
                       )}
                     >
                       <span className="text-[9px]">
@@ -212,9 +212,7 @@ export function ConversationThread({
                     <div
                       className={cn(
                         "w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5",
-                        msg.senderType === "human"
-                          ? "bg-zinc-600"
-                          : "bg-blue-600",
+                        msg.senderType === "human" ? "bg-muted" : "bg-info",
                       )}
                     >
                       {msg.senderType === "human" ? (
@@ -233,7 +231,7 @@ export function ConversationThread({
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-3 py-2 border-t border-v2-ring dark:border-v2-ring">
+          <div className="flex items-center justify-between px-3 py-2 border-t border-border dark:border-border">
             <Button
               variant="ghost"
               size="sm"
@@ -244,7 +242,7 @@ export function ConversationThread({
               <ChevronLeft className="h-3 w-3 mr-0.5" />
               Prev
             </Button>
-            <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               {page} / {totalPages}
             </span>
             <Button

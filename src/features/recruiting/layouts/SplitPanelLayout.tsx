@@ -113,7 +113,7 @@ export function SplitPanelLayout({
             {showDisplayName && (
               <div className="flex flex-col">
                 <span
-                  className="text-white dark:text-black text-2xl font-bold tracking-wide"
+                  className="text-white text-2xl font-bold tracking-wide"
                   style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                 >
                   {theme.display_name.toUpperCase()}
@@ -137,7 +137,7 @@ export function SplitPanelLayout({
                 className="text-4xl xl:text-5xl font-bold leading-tight mb-3"
                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}
               >
-                <span className="text-white dark:text-black">
+                <span className="text-white">
                   {theme.headline.split(" ").slice(0, 2).join(" ")}{" "}
                 </span>
                 <span
@@ -149,7 +149,7 @@ export function SplitPanelLayout({
                   {theme.headline.split(" ").slice(2).join(" ")}
                 </span>
               </h1>
-              <p className="text-white/80 dark:text-black/70 text-sm max-w-sm leading-relaxed">
+              <p className="text-white/80 text-sm max-w-sm leading-relaxed">
                 {theme.subheadline}
               </p>
             </div>
@@ -157,24 +157,24 @@ export function SplitPanelLayout({
             {/* About section */}
             {theme.about_text &&
               theme.enabled_features?.show_about !== false && (
-                <div className="bg-white/5 dark:bg-black/10 border border-white/10 dark:border-black/10 rounded-lg p-3 max-w-sm">
+                <div className="bg-white/5 dark:bg-white/10 border border-white/10 dark:border-black/10 rounded-lg p-3 max-w-sm">
                   {theme.default_city && (
                     <div className="flex items-center gap-2 mb-2">
                       <MapPin
                         className="h-3.5 w-3.5"
                         style={{ color: theme.primary_color }}
                       />
-                      <span className="text-[10px] text-white/60 dark:text-black/60 uppercase tracking-[0.18em]">
+                      <span className="text-[10px] text-white/60 uppercase tracking-[0.18em]">
                         {theme.default_city}
                         {theme.default_state && `, ${theme.default_state}`}
                       </span>
                     </div>
                   )}
-                  <p className="text-xs text-white/90 dark:text-black/80 leading-relaxed">
+                  <p className="text-xs text-white/90 leading-relaxed">
                     {recruiterFullName && (
                       <>
                         Founded by{" "}
-                        <span className="text-white dark:text-black font-medium">
+                        <span className="text-white font-medium">
                           {recruiterFullName}
                         </span>
                         —
@@ -207,7 +207,7 @@ export function SplitPanelLayout({
                 >
                   $20,000+
                 </p>
-                <p className="relative text-white/80 dark:text-black/70 text-xs mt-1">
+                <p className="relative text-white/80 text-xs mt-1">
                   Average monthly commissions for our agents
                 </p>
               </div>
@@ -215,38 +215,38 @@ export function SplitPanelLayout({
 
             {/* Feature highlights */}
             <div className="grid grid-cols-2 gap-2 max-w-sm">
-              <div className="flex items-center gap-2 text-white/90 dark:text-black/80">
-                <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-black/10">
+              <div className="flex items-center gap-2 text-white/90">
+                <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-white/10">
                   <DollarSign className="h-3.5 w-3.5" />
                 </div>
                 <span className="text-xs">Uncapped earnings</span>
               </div>
-              <div className="flex items-center gap-2 text-white/90 dark:text-black/80">
-                <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-black/10">
+              <div className="flex items-center gap-2 text-white/90">
+                <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-white/10">
                   <Zap className="h-3.5 w-3.5" />
                 </div>
                 <span className="text-xs">Latest tech</span>
               </div>
-              <div className="flex items-center gap-2 text-white/90 dark:text-black/80">
-                <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-black/10">
+              <div className="flex items-center gap-2 text-white/90">
+                <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-white/10">
                   <BookOpen className="h-3.5 w-3.5" />
                 </div>
                 <span className="text-xs">Full training</span>
               </div>
-              <div className="flex items-center gap-2 text-white/90 dark:text-black/80">
-                <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-black/10">
+              <div className="flex items-center gap-2 text-white/90">
+                <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-white/10">
                   <Clock className="h-3.5 w-3.5" />
                 </div>
                 <span className="text-xs">Flexible schedule</span>
               </div>
-              <div className="flex items-center gap-2 text-white/90 dark:text-black/80">
-                <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-black/10">
+              <div className="flex items-center gap-2 text-white/90">
+                <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-white/10">
                   <Rocket className="h-3.5 w-3.5" />
                 </div>
                 <span className="text-xs">Build a business</span>
               </div>
-              <div className="flex items-center gap-2 text-white/90 dark:text-black/80">
-                <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-black/10">
+              <div className="flex items-center gap-2 text-white/90">
+                <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-white/10">
                   <Users className="h-3.5 w-3.5" />
                 </div>
                 <span className="text-xs">Mentorship</span>
@@ -256,7 +256,7 @@ export function SplitPanelLayout({
 
           {/* Bottom - Footer with social links */}
           <div className="flex items-center justify-between">
-            <div className="text-white/50 dark:text-black/50 text-xs">
+            <div className="text-white/50 text-xs">
               &copy; {new Date().getFullYear()} {theme.display_name}
             </div>
 

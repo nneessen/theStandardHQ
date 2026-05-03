@@ -49,7 +49,7 @@ export function VendorCombobox({
           role="combobox"
           aria-expanded={open}
           disabled={disabled}
-          className="h-8 w-full justify-between text-xs font-normal bg-v2-canvas border-v2-ring"
+          className="h-8 w-full justify-between text-xs font-normal bg-background border-border"
         >
           {selectedVendor ? (
             <span className="truncate">{selectedVendor.name}</span>

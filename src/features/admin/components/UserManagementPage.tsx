@@ -121,24 +121,23 @@ export function UserManagementPage() {
 
   const getRoleColor = (roleName: RoleName): string => {
     const colors: Record<string, string> = {
-      admin: "bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300",
-      agent: "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
-      upline_manager:
-        "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300",
+      admin:
+        "bg-destructive/20 text-destructive dark:bg-destructive/50 dark:text-destructive",
+      agent: "bg-info/20 text-info dark:bg-info/50 dark:text-info",
+      upline_manager: "bg-info/20 text-info dark:bg-info/50 dark:text-info",
       trainer:
-        "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300",
+        "bg-success/20 text-success dark:bg-success/50 dark:text-success",
       recruiter:
-        "bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300",
+        "bg-warning/20 text-warning dark:bg-warning/50 dark:text-warning",
       contracting_manager:
-        "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300",
-      office_staff:
-        "bg-pink-100 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300",
+        "bg-info/20 text-info dark:bg-info/50 dark:text-info",
+      office_staff: "bg-info/20 text-info dark:bg-info/50 dark:text-info",
       view_only:
-        "bg-v2-ring text-v2-ink dark:bg-v2-ring dark:text-v2-ink-subtle",
+        "bg-muted text-foreground dark:bg-muted dark:text-muted-foreground",
     };
     return (
       colors[roleName] ||
-      "bg-v2-ring text-v2-ink dark:bg-v2-ring dark:text-v2-ink-subtle"
+      "bg-muted text-foreground dark:bg-muted dark:text-muted-foreground"
     );
   };
 
@@ -202,8 +201,8 @@ export function UserManagementPage() {
   if (usersError) {
     return (
       <div className="p-3 min-h-screen">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-3">
-          <p className="text-[11px] text-red-600 dark:text-red-400">
+        <div className="bg-destructive/10 border border-destructive/30 rounded p-3">
+          <p className="text-[11px] text-destructive">
             Failed to load users:{" "}
             {usersError instanceof Error ? usersError.message : "Unknown error"}
           </p>
@@ -215,11 +214,11 @@ export function UserManagementPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
       {/* Compact Header with inline stats */}
-      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
+      <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
         <div className="flex items-center gap-5">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-v2-ink" />
-            <h1 className="text-sm font-semibold text-v2-ink">
+            <Users className="h-4 w-4 text-foreground" />
+            <h1 className="text-sm font-semibold text-foreground">
               User Management
             </h1>
           </div>
@@ -227,26 +226,28 @@ export function UserManagementPage() {
           {/* Inline compact stats */}
           <div className="flex items-center gap-3 text-[11px]">
             <div className="flex items-center gap-1">
-              <span className="font-medium text-v2-ink">{totalUsers}</span>
-              <span className="text-v2-ink-muted">total</span>
+              <span className="font-medium text-foreground">{totalUsers}</span>
+              <span className="text-muted-foreground">total</span>
             </div>
-            <div className="h-3 w-px bg-v2-ring" />
+            <div className="h-3 w-px bg-muted" />
             <div className="flex items-center gap-1">
-              <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-              <span className="font-medium text-v2-ink">{approvedUsers}</span>
-              <span className="text-v2-ink-muted">approved</span>
+              <CheckCircle2 className="h-3 w-3 text-success" />
+              <span className="font-medium text-foreground">
+                {approvedUsers}
+              </span>
+              <span className="text-muted-foreground">approved</span>
             </div>
-            <div className="h-3 w-px bg-v2-ring" />
+            <div className="h-3 w-px bg-muted" />
             <div className="flex items-center gap-1">
-              <Shield className="h-3 w-3 text-red-500" />
-              <span className="font-medium text-v2-ink">{adminCount}</span>
-              <span className="text-v2-ink-muted">admins</span>
+              <Shield className="h-3 w-3 text-destructive" />
+              <span className="font-medium text-foreground">{adminCount}</span>
+              <span className="text-muted-foreground">admins</span>
             </div>
-            <div className="h-3 w-px bg-v2-ring" />
+            <div className="h-3 w-px bg-muted" />
             <div className="flex items-center gap-1">
-              <UserCog className="h-3 w-3 text-blue-500" />
-              <span className="font-medium text-v2-ink">{agentCount}</span>
-              <span className="text-v2-ink-muted">agents</span>
+              <UserCog className="h-3 w-3 text-info" />
+              <span className="font-medium text-foreground">{agentCount}</span>
+              <span className="text-muted-foreground">agents</span>
             </div>
           </div>
         </div>
@@ -255,34 +256,34 @@ export function UserManagementPage() {
       {/* Search */}
       <div className="flex items-center gap-2">
         <div className="relative w-64">
-          <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-v2-ink-subtle" />
+          <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search by name or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-7 h-7 text-[11px] bg-v2-card border-v2-ring"
+            className="pl-7 h-7 text-[11px] bg-card border-border"
           />
         </div>
       </div>
 
       {/* Users Table */}
-      <div className="flex-1 overflow-auto rounded-lg bg-v2-card border border-v2-ring">
+      <div className="flex-1 overflow-auto rounded-lg bg-card border border-border">
         <Table>
-          <TableHeader className="sticky top-0 bg-v2-canvas z-10">
-            <TableRow className="border-b border-v2-ring hover:bg-transparent">
-              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[200px]">
+          <TableHeader className="sticky top-0 bg-background z-10">
+            <TableRow className="border-b border-border hover:bg-transparent">
+              <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[200px]">
                 User
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+              <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                 Roles
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[120px]">
+              <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[120px]">
                 Upline
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px]">
+              <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[100px]">
                 Status
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px] text-right">
+              <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[100px] text-right">
                 Actions
               </TableHead>
             </TableRow>
@@ -291,19 +292,19 @@ export function UserManagementPage() {
             {filteredUsers?.map((user: UserProfile) => (
               <TableRow
                 key={user.id}
-                className="hover:bg-v2-canvas border-b border-v2-ring/60"
+                className="hover:bg-background border-b border-border/60"
               >
                 <TableCell className="py-1.5">
                   <div className="flex items-center gap-1.5">
-                    <div className="h-5 w-5 rounded-full bg-v2-ring flex items-center justify-center text-[10px] font-semibold text-v2-ink-muted shrink-0">
+                    <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center text-[10px] font-semibold text-muted-foreground shrink-0">
                       {user.first_name?.charAt(0)?.toUpperCase() ||
                         user.email?.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <div className="font-medium text-[11px] text-v2-ink truncate leading-tight">
+                      <div className="font-medium text-[11px] text-foreground truncate leading-tight">
                         {getDisplayName(user)}
                       </div>
-                      <div className="text-[10px] text-v2-ink-muted truncate leading-tight">
+                      <div className="text-[10px] text-muted-foreground truncate leading-tight">
                         {user.email}
                       </div>
                     </div>
@@ -323,20 +324,20 @@ export function UserManagementPage() {
                     {(user.roles?.length || 0) > 3 && (
                       <Badge
                         variant="outline"
-                        className="text-[10px] px-1 py-0 h-4 border-v2-ring "
+                        className="text-[10px] px-1 py-0 h-4 border-border "
                       >
                         +{(user.roles?.length || 0) - 3}
                       </Badge>
                     )}
                     {(!user.roles || user.roles.length === 0) && (
-                      <span className="text-[10px] text-v2-ink-subtle italic">
+                      <span className="text-[10px] text-muted-foreground italic">
                         No roles
                       </span>
                     )}
                   </div>
                 </TableCell>
                 <TableCell className="py-1.5">
-                  <span className="text-[11px] text-v2-ink-muted">
+                  <span className="text-[11px] text-muted-foreground">
                     {user.upline
                       ? `${user.upline.first_name || ""} ${user.upline.last_name || ""}`.trim() ||
                         "-"
@@ -347,7 +348,7 @@ export function UserManagementPage() {
                   {user.approval_status === "approved" ? (
                     <Badge
                       variant="outline"
-                      className="text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 text-[10px] h-4 px-1"
+                      className="text-success border-success/30 text-[10px] h-4 px-1"
                     >
                       <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
                       Approved
@@ -355,7 +356,7 @@ export function UserManagementPage() {
                   ) : (
                     <Badge
                       variant="outline"
-                      className="text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800 text-[10px] h-4 px-1"
+                      className="text-warning border-warning/30 text-[10px] h-4 px-1"
                     >
                       <XCircle className="h-2.5 w-2.5 mr-0.5" />
                       Pending
@@ -366,7 +367,7 @@ export function UserManagementPage() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-5 px-1.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
+                    className="h-5 px-1.5 text-[10px] text-muted-foreground dark:text-muted-foreground hover:text-foreground"
                     onClick={() => openEditDialog(user)}
                   >
                     <Shield className="h-2.5 w-2.5 mr-0.5" />
@@ -379,7 +380,7 @@ export function UserManagementPage() {
               <TableRow>
                 <TableCell
                   colSpan={5}
-                  className="text-center text-[11px] text-v2-ink-muted py-6"
+                  className="text-center text-[11px] text-muted-foreground py-6"
                 >
                   No users found matching "{searchQuery}"
                 </TableCell>
@@ -391,12 +392,12 @@ export function UserManagementPage() {
 
       {/* Edit Roles Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto p-3 bg-v2-card border-v2-ring">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto p-3 bg-card border-border">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-sm font-semibold text-v2-ink">
+            <DialogTitle className="text-sm font-semibold text-foreground">
               Edit User Roles
             </DialogTitle>
-            <DialogDescription className="text-[10px] text-v2-ink-muted">
+            <DialogDescription className="text-[10px] text-muted-foreground">
               Assign roles to {selectedUser ? getDisplayName(selectedUser) : ""}
             </DialogDescription>
           </DialogHeader>
@@ -404,7 +405,7 @@ export function UserManagementPage() {
           <div className="space-y-3 py-2">
             {/* Role Selection */}
             <div className="space-y-2">
-              <div className="text-[11px] font-semibold text-v2-ink-muted">
+              <div className="text-[11px] font-semibold text-muted-foreground">
                 Available Roles
               </div>
               {roles?.map((role) => {
@@ -414,7 +415,7 @@ export function UserManagementPage() {
                 return (
                   <div
                     key={role.id}
-                    className={`border rounded p-2 ${isSelected ? "border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-900/10" : "border-v2-ring"}`}
+                    className={`border rounded p-2 ${isSelected ? "border-info/40 bg-info/10/50 dark:bg-info/10" : "border-border"}`}
                   >
                     <div className="flex items-start space-x-2">
                       <Checkbox
@@ -429,7 +430,7 @@ export function UserManagementPage() {
                           className="cursor-pointer"
                         >
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[11px] font-medium text-v2-ink">
+                            <span className="text-[11px] font-medium text-foreground">
                               {role.display_name}
                             </span>
                             <Badge
@@ -440,14 +441,14 @@ export function UserManagementPage() {
                             </Badge>
                             <Badge
                               variant="outline"
-                              className="text-[9px] h-3.5 px-1 border-v2-ring "
+                              className="text-[9px] h-3.5 px-1 border-border "
                             >
                               {permissionCount} perms
                             </Badge>
                           </div>
                         </Label>
                         {role.description && (
-                          <p className="text-[10px] text-v2-ink-muted mt-0.5">
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
                             {role.description}
                           </p>
                         )}
@@ -457,7 +458,7 @@ export function UserManagementPage() {
                           role.permissions &&
                           role.permissions.length > 0 && (
                             <Collapsible>
-                              <CollapsibleTrigger className="flex items-center gap-0.5 text-[10px] text-v2-ink-muted hover:text-v2-ink mt-1">
+                              <CollapsibleTrigger className="flex items-center gap-0.5 text-[10px] text-muted-foreground hover:text-foreground mt-1">
                                 <ChevronRight className="h-2.5 w-2.5" />
                                 View {permissionCount} permission
                                 {permissionCount !== 1 ? "s" : ""}
@@ -466,9 +467,9 @@ export function UserManagementPage() {
                                 {role.permissions.map((perm) => (
                                   <div
                                     key={perm.id}
-                                    className="text-[9px] text-v2-ink-muted"
+                                    className="text-[9px] text-muted-foreground"
                                   >
-                                    <code className="bg-v2-ring px-1 py-0.5 rounded">
+                                    <code className="bg-muted px-1 py-0.5 rounded">
                                       {perm.code}
                                     </code>
                                   </div>
@@ -484,29 +485,31 @@ export function UserManagementPage() {
             </div>
 
             {/* Permission Preview - Compact */}
-            <div className="bg-v2-canvas rounded p-2 border border-v2-ring/50">
-              <div className="text-[11px] font-semibold text-v2-ink-muted mb-1.5">
+            <div className="bg-background rounded p-2 border border-border/50">
+              <div className="text-[11px] font-semibold text-muted-foreground mb-1.5">
                 Permission Summary
               </div>
 
               <div className="grid grid-cols-3 gap-2 text-center">
                 <div>
-                  <div className="text-sm font-bold text-v2-ink">
+                  <div className="text-sm font-bold text-foreground">
                     {permissionPreview.total}
                   </div>
-                  <div className="text-[9px] text-v2-ink-muted">Total</div>
+                  <div className="text-[9px] text-muted-foreground">Total</div>
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                  <div className="text-sm font-bold text-success">
                     +{permissionPreview.added.length}
                   </div>
-                  <div className="text-[9px] text-v2-ink-muted">Added</div>
+                  <div className="text-[9px] text-muted-foreground">Added</div>
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-red-600 dark:text-red-400">
+                  <div className="text-sm font-bold text-destructive">
                     -{permissionPreview.removed.length}
                   </div>
-                  <div className="text-[9px] text-v2-ink-muted">Removed</div>
+                  <div className="text-[9px] text-muted-foreground">
+                    Removed
+                  </div>
                 </div>
               </div>
 
@@ -516,20 +519,20 @@ export function UserManagementPage() {
                 <div className="space-y-1.5 mt-2 text-[9px]">
                   {permissionPreview.added.length > 0 && (
                     <div>
-                      <div className="font-medium text-emerald-600 dark:text-emerald-400 mb-0.5">
+                      <div className="font-medium text-success mb-0.5">
                         + Adding:
                       </div>
                       <div className="flex flex-wrap gap-0.5">
                         {permissionPreview.added.slice(0, 5).map((code) => (
                           <code
                             key={code}
-                            className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-1 py-0.5 rounded"
+                            className="bg-success/10 dark:bg-success/30 text-success px-1 py-0.5 rounded"
                           >
                             {code}
                           </code>
                         ))}
                         {permissionPreview.added.length > 5 && (
-                          <span className="text-v2-ink-muted">
+                          <span className="text-muted-foreground">
                             +{permissionPreview.added.length - 5} more
                           </span>
                         )}
@@ -538,20 +541,20 @@ export function UserManagementPage() {
                   )}
                   {permissionPreview.removed.length > 0 && (
                     <div>
-                      <div className="font-medium text-red-600 dark:text-red-400 mb-0.5">
+                      <div className="font-medium text-destructive mb-0.5">
                         - Removing:
                       </div>
                       <div className="flex flex-wrap gap-0.5">
                         {permissionPreview.removed.slice(0, 5).map((code) => (
                           <code
                             key={code}
-                            className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-1 py-0.5 rounded"
+                            className="bg-destructive/10 dark:bg-destructive/30 text-destructive px-1 py-0.5 rounded"
                           >
                             {code}
                           </code>
                         ))}
                         {permissionPreview.removed.length > 5 && (
-                          <span className="text-v2-ink-muted">
+                          <span className="text-muted-foreground">
                             +{permissionPreview.removed.length - 5} more
                           </span>
                         )}
@@ -563,7 +566,7 @@ export function UserManagementPage() {
 
               {permissionPreview.added.length === 0 &&
                 permissionPreview.removed.length === 0 && (
-                  <p className="text-[10px] text-v2-ink-muted text-center mt-1">
+                  <p className="text-[10px] text-muted-foreground text-center mt-1">
                     No permission changes
                   </p>
                 )}

@@ -113,7 +113,7 @@ export function InstagramMessageInput({
       <div
         className={cn(
           "flex items-end gap-2 p-1.5 bg-v2-canvas rounded-lg border transition-colors",
-          isOverLimit ? "border-red-300 dark:border-red-700" : "border-v2-ring",
+          isOverLimit ? "border-destructive/40" : "border-v2-ring",
         )}
       >
         <Textarea
@@ -185,9 +185,9 @@ export function InstagramMessageInput({
           className={cn(
             "text-[9px]",
             isOverLimit
-              ? "text-red-500 font-medium"
+              ? "text-destructive font-medium"
               : charCount > MAX_CHARS * 0.9
-                ? "text-amber-500"
+                ? "text-warning"
                 : "text-v2-ink-subtle",
           )}
         >

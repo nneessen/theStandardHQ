@@ -170,9 +170,7 @@ export function RulesTab() {
             <span
               className={cn(
                 "text-[10px] font-medium",
-                ruleset.isActive
-                  ? "text-emerald-600 dark:text-emerald-400"
-                  : "text-v2-ink-subtle",
+                ruleset.isActive ? "text-success" : "text-v2-ink-subtle",
               )}
             >
               {ruleset.isActive ? "Active" : "Inactive"}
@@ -325,7 +323,7 @@ function FallbackEditor({
               className={cn(
                 "px-2 py-0.5 text-[10px] rounded border transition-colors",
                 fallback.allowedChannels.includes(ch)
-                  ? "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300"
+                  ? "bg-info/10 dark:bg-info/30 border-info/40 text-info"
                   : "border-v2-ring dark:border-v2-ring-strong text-v2-ink-subtle",
               )}
             >
@@ -345,7 +343,7 @@ function FallbackEditor({
                 className={cn(
                   "px-1.5 py-0.5 text-[9px] rounded border transition-colors",
                   fallback.preferredChannel === ch
-                    ? "bg-emerald-50 dark:bg-emerald-900/30 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300"
+                    ? "bg-success/10 dark:bg-success/30 border-success/40 text-success"
                     : "border-v2-ring dark:border-v2-ring-strong text-v2-ink-subtle",
                 )}
               >

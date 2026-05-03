@@ -175,7 +175,7 @@ export function TemplateList({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                        className="h-6 w-6 text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/10"
                         onClick={() => setDeleteTemplate(template)}
                         title="Delete template"
                       >

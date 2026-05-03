@@ -49,45 +49,45 @@ const HEALTH_TIER_CONFIG: Record<
   { color: string; bgColor: string; borderColor: string; icon: typeof Award }
 > = {
   preferred_plus: {
-    color: "text-emerald-700 dark:text-emerald-300",
-    bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
-    borderColor: "border-emerald-200 dark:border-emerald-800",
+    color: "text-success",
+    bgColor: "bg-success/10",
+    borderColor: "border-success/30",
     icon: Award,
   },
   preferred: {
-    color: "text-emerald-600 dark:text-emerald-400",
-    bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
-    borderColor: "border-emerald-200 dark:border-emerald-800",
+    color: "text-success",
+    bgColor: "bg-success/10",
+    borderColor: "border-success/30",
     icon: Award,
   },
   standard_plus: {
-    color: "text-blue-700 dark:text-blue-300",
-    bgColor: "bg-blue-50 dark:bg-blue-900/20",
-    borderColor: "border-blue-200 dark:border-blue-800",
+    color: "text-info",
+    bgColor: "bg-info/10",
+    borderColor: "border-info/30",
     icon: CheckCircle,
   },
   standard: {
-    color: "text-blue-600 dark:text-blue-400",
-    bgColor: "bg-blue-50 dark:bg-blue-900/20",
-    borderColor: "border-blue-200 dark:border-blue-800",
+    color: "text-info",
+    bgColor: "bg-info/10",
+    borderColor: "border-info/30",
     icon: CheckCircle,
   },
   substandard: {
-    color: "text-yellow-700 dark:text-yellow-300",
-    bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
-    borderColor: "border-yellow-200 dark:border-yellow-800",
+    color: "text-warning",
+    bgColor: "bg-warning/10 dark:bg-warning/20",
+    borderColor: "border-warning/30",
     icon: AlertTriangle,
   },
   table_rated: {
-    color: "text-orange-700 dark:text-orange-300",
-    bgColor: "bg-orange-50 dark:bg-orange-900/20",
-    borderColor: "border-orange-200 dark:border-orange-800",
+    color: "text-warning",
+    bgColor: "bg-warning/10 dark:bg-warning/20",
+    borderColor: "border-warning/30",
     icon: AlertTriangle,
   },
   decline: {
-    color: "text-red-700 dark:text-red-300",
-    bgColor: "bg-red-50 dark:bg-red-900/20",
-    borderColor: "border-red-200 dark:border-red-800",
+    color: "text-destructive",
+    bgColor: "bg-destructive/10",
+    borderColor: "border-destructive/30",
     icon: XCircle,
   },
 };
@@ -143,7 +143,7 @@ export default function RecommendationsStep({
   ) {
     return (
       <div className="flex flex-col items-center justify-center p-8 gap-3">
-        <div className="h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="h-6 w-6 border-2 border-info border-t-transparent rounded-full animate-spin" />
         <span className="text-sm text-v2-ink-muted">
           Analyzing client profile...
         </span>
@@ -159,7 +159,7 @@ export default function RecommendationsStep({
       {isAILoading && !aiResult ? (
         <div className="p-4 rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-canvas dark:bg-v2-card-tinted/50">
           <div className="flex items-center gap-3">
-            <div className="h-5 w-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div className="h-5 w-5 border-2 border-info border-t-transparent rounded-full animate-spin" />
             <div className="flex-1">
               <div className="text-sm font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                 AI analyzing health classification...
@@ -224,12 +224,12 @@ export default function RecommendationsStep({
 
       {/* ========== SECTION 1: Decision Engine (Rate Table) Results ========== */}
       <div className="border border-v2-ring dark:border-v2-ring rounded-lg overflow-hidden">
-        <div className="px-4 py-3 bg-indigo-50 dark:bg-indigo-900/20 border-b border-indigo-200 dark:border-indigo-800 flex items-center gap-2">
-          <Database className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-          <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+        <div className="px-4 py-3 bg-info/10 dark:bg-info/20 border-b border-info/30 flex items-center gap-2">
+          <Database className="h-5 w-5 text-info" />
+          <span className="text-sm font-semibold text-info">
             Rate Table Recommendations
           </span>
-          <span className="text-xs text-indigo-500 dark:text-indigo-400 ml-auto">
+          <span className="text-xs text-info dark:text-info ml-auto">
             Based on your rate data
           </span>
         </div>
@@ -253,7 +253,7 @@ export default function RecommendationsStep({
                       displayedTerm === term ||
                         (displayedTerm === null &&
                           term === sortedTerms[sortedTerms.length - 1])
-                        ? "bg-indigo-100 dark:bg-indigo-900/40 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300"
+                        ? "bg-info/20 dark:bg-info/40 border-info dark:border-info text-info"
                         : "bg-v2-card-tinted border-v2-ring-strong dark:border-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-card-tinted dark:hover:bg-v2-ring-strong",
                       isDecisionEngineLoading &&
                         "opacity-50 cursor-not-allowed",
@@ -264,7 +264,7 @@ export default function RecommendationsStep({
                 ))}
               </div>
               {isDecisionEngineLoading && (
-                <div className="ml-2 h-3 w-3 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                <div className="ml-2 h-3 w-3 border-2 border-info border-t-transparent rounded-full animate-spin" />
               )}
             </div>
           </div>
@@ -273,7 +273,7 @@ export default function RecommendationsStep({
         <div className="p-4">
           {isDecisionEngineLoading ? (
             <div className="flex items-center gap-3 p-6 justify-center">
-              <div className="h-5 w-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+              <div className="h-5 w-5 border-2 border-info border-t-transparent rounded-full animate-spin" />
               <span className="text-sm text-v2-ink-muted">
                 Searching rate tables...
               </span>
@@ -298,7 +298,7 @@ export default function RecommendationsStep({
                 <span className="text-v2-ink-subtle dark:text-v2-ink-muted">
                   •
                 </span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                <span className="text-success font-medium">
                   {decisionEngineResult.filtered.passedEligibility} eligible
                 </span>
                 {decisionEngineResult.filtered.unknownEligibility > 0 && (
@@ -306,7 +306,7 @@ export default function RecommendationsStep({
                     <span className="text-v2-ink-subtle dark:text-v2-ink-muted">
                       •
                     </span>
-                    <span className="text-yellow-600 dark:text-yellow-400 font-medium">
+                    <span className="text-warning font-medium">
                       {decisionEngineResult.filtered.unknownEligibility} need
                       verification
                     </span>
@@ -326,7 +326,7 @@ export default function RecommendationsStep({
           ) : decisionEngineResult ? (
             <div className="p-4">
               <div className="flex items-center gap-2 mb-3">
-                <Database className="h-5 w-5 text-amber-500" />
+                <Database className="h-5 w-5 text-warning" />
                 <span className="text-xs font-medium text-v2-ink dark:text-v2-ink-muted">
                   No Quoted Products Available
                 </span>
@@ -349,8 +349,8 @@ export default function RecommendationsStep({
                     <span
                       className={
                         decisionEngineResult.filtered.passedEligibility > 0
-                          ? "text-emerald-600"
-                          : "text-red-500"
+                          ? "text-success"
+                          : "text-destructive"
                       }
                     >
                       {decisionEngineResult.filtered.passedEligibility} passed
@@ -363,8 +363,8 @@ export default function RecommendationsStep({
                     <span
                       className={
                         decisionEngineResult.filtered.passedAcceptance > 0
-                          ? "text-emerald-600"
-                          : "text-red-500"
+                          ? "text-success"
+                          : "text-destructive"
                       }
                     >
                       {decisionEngineResult.filtered.passedAcceptance} passed
@@ -377,8 +377,8 @@ export default function RecommendationsStep({
                     <span
                       className={
                         decisionEngineResult.filtered.withPremiums > 0
-                          ? "text-emerald-600"
-                          : "text-red-500 font-medium"
+                          ? "text-success"
+                          : "text-destructive font-medium"
                       }
                     >
                       {decisionEngineResult.filtered.withPremiums} found
@@ -464,9 +464,9 @@ function AIAnalysisSummary({
 
   if (isLoading) {
     return (
-      <div className="border border-purple-200 dark:border-purple-800 rounded-lg overflow-hidden">
-        <div className="px-4 py-3 bg-purple-50 dark:bg-purple-900/20 flex items-center gap-2">
-          <div className="h-4 w-4 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      <div className="border border-info/30 rounded-lg overflow-hidden">
+        <div className="px-4 py-3 bg-info/10 dark:bg-info/20 flex items-center gap-2">
+          <div className="h-4 w-4 border-2 border-info border-t-transparent rounded-full animate-spin" />
           <span className="text-sm text-v2-ink-muted">AI analyzing...</span>
         </div>
       </div>
@@ -474,29 +474,29 @@ function AIAnalysisSummary({
   }
 
   return (
-    <div className="border border-purple-200 dark:border-purple-800 rounded-lg overflow-hidden">
+    <div className="border border-info/30 rounded-lg overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-3 bg-purple-50 dark:bg-purple-900/20 flex items-center gap-2 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors text-left"
+        className="w-full px-4 py-3 bg-info/10 dark:bg-info/20 flex items-center gap-2 hover:bg-info/20 dark:hover:bg-info/15 transition-colors text-left"
       >
-        <Sparkles className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-        <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
+        <Sparkles className="h-4 w-4 text-info" />
+        <span className="text-sm font-medium text-info">
           AI Analysis Summary
         </span>
         {processingTimeMs && (
-          <span className="text-xs text-purple-400 ml-auto mr-2">
+          <span className="text-xs text-info ml-auto mr-2">
             {(processingTimeMs / 1000).toFixed(1)}s
           </span>
         )}
         <ChevronDown
           className={cn(
-            "h-4 w-4 text-purple-500 transition-transform",
+            "h-4 w-4 text-info transition-transform",
             isOpen && "rotate-180",
           )}
         />
       </button>
       {isOpen && (
-        <div className="p-4 border-t border-purple-200 dark:border-purple-800">
+        <div className="p-4 border-t border-info/30">
           <p className="text-sm text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed whitespace-pre-wrap">
             {reasoning}
           </p>
@@ -592,49 +592,47 @@ function getHealthClassBadge(healthClass: string): {
       return {
         label: "Preferred Plus",
         className:
-          "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700",
+          "bg-success/20 dark:bg-success/30 text-success border-success/30 dark:border-success",
       };
     case "preferred":
       return {
         label: "Preferred",
         className:
-          "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700",
+          "bg-success/20 dark:bg-success/30 text-success border-success/30 dark:border-success",
       };
     case "standard_plus":
       return {
         label: "Standard Plus",
-        className:
-          "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700",
+        className: "bg-info/15 text-info border-info/30 dark:border-info",
       };
     case "standard":
       return {
         label: "Standard",
-        className:
-          "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700",
+        className: "bg-info/15 text-info border-info/30 dark:border-info",
       };
     case "table_rated":
       return {
         label: "Table Rated",
         className:
-          "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700",
+          "bg-warning/20 dark:bg-warning/30 text-warning border-warning/30 dark:border-warning",
       };
     case "graded":
       return {
         label: "Graded",
         className:
-          "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-700",
+          "bg-warning/20 dark:bg-warning/30 text-warning border-warning/30 dark:border-warning",
       };
     case "modified":
       return {
         label: "Modified",
         className:
-          "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-700",
+          "bg-warning/20 dark:bg-warning/30 text-warning border-warning/30 dark:border-warning",
       };
     case "guaranteed_issue":
       return {
         label: "Guaranteed Issue",
         className:
-          "bg-rose-100 dark:bg-rose-900/30 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-700",
+          "bg-destructive/20 dark:bg-destructive/30 text-destructive dark:text-destructive border-destructive dark:border-destructive",
       };
     default:
       return {
@@ -681,7 +679,7 @@ function DecisionEngineRow({
   const uwBadge = getHealthClassBadge(uwHealthClass);
 
   const healthClassDisplay = isTableRated ? (
-    <span className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+    <span className="text-xs text-warning font-medium">
       {BUILD_RATING_CLASS_LABELS[recommendation.buildRating!] ?? "Table Rated"}
     </span>
   ) : hasNoRateMatrix ? (
@@ -727,14 +725,14 @@ function DecisionEngineRow({
     <tr
       className={cn(
         "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 transition-colors bg-v2-card",
-        isUnknown && "bg-yellow-50 dark:bg-yellow-900/20",
+        isUnknown && "bg-warning/10 dark:bg-warning/20",
       )}
     >
       {/* Product Column */}
       <td className="py-3 px-4">
         <div className="flex items-center gap-2">
           {isUnknown && (
-            <HelpCircle className="h-4 w-4 text-yellow-500 shrink-0" />
+            <HelpCircle className="h-4 w-4 text-warning shrink-0" />
           )}
           <div className="min-w-0">
             <div className="font-medium text-v2-ink dark:text-v2-ink truncate text-sm">
@@ -744,12 +742,12 @@ function DecisionEngineRow({
               {recommendation.productName}
               {recommendation.termYears !== null &&
                 recommendation.termYears !== undefined && (
-                  <span className="text-indigo-500 ml-1.5 font-medium">
+                  <span className="text-info ml-1.5 font-medium">
                     {recommendation.termYears} Year
                   </span>
                 )}
               {recommendation.termYears === null && (
-                <span className="text-emerald-500 ml-1.5 font-medium">
+                <span className="text-success ml-1.5 font-medium">
                   Permanent
                 </span>
               )}
@@ -769,7 +767,7 @@ function DecisionEngineRow({
           </div>
         ) : recommendation.buildRating?.startsWith("table_") ? (
           <div>
-            <span className="text-xs font-medium text-orange-600 dark:text-orange-400">
+            <span className="text-xs font-medium text-warning">
               Substandard
             </span>
             <div className="text-[9px] text-v2-ink-subtle mt-0.5">
@@ -812,14 +810,14 @@ function DecisionEngineRow({
                     key={idx}
                     className={cn(
                       "border-b border-v2-ring dark:border-v2-ring last:border-0",
-                      isRequested && "bg-indigo-50 dark:bg-indigo-900/30",
+                      isRequested && "bg-info/10 dark:bg-info/30",
                     )}
                   >
                     <td
                       className={cn(
                         "py-1.5 px-2",
                         isRequested
-                          ? "font-semibold text-indigo-600 dark:text-indigo-400"
+                          ? "font-semibold text-info"
                           : "text-v2-ink dark:text-v2-ink-muted",
                       )}
                     >
@@ -829,7 +827,7 @@ function DecisionEngineRow({
                       className={cn(
                         "py-1.5 px-2 text-right",
                         isRequested
-                          ? "font-semibold text-indigo-600 dark:text-indigo-400"
+                          ? "font-semibold text-info"
                           : "text-v2-ink-muted dark:text-v2-ink-subtle",
                       )}
                     >

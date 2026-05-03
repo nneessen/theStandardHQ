@@ -247,7 +247,7 @@ export function CriteriaReviewDashboard() {
 
   if (error) {
     return (
-      <div className="text-center py-8 text-red-500 dark:text-red-400 text-[11px]">
+      <div className="text-center py-8 text-destructive text-[11px]">
         Failed to load criteria: {error.message}
       </div>
     );
@@ -258,10 +258,10 @@ export function CriteriaReviewDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
+          <h3 className="text-[11px] font-medium text-foreground dark:text-foreground">
             Extracted Criteria Review
           </h3>
-          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Review and approve AI-extracted underwriting criteria
           </p>
         </div>
@@ -287,7 +287,7 @@ export function CriteriaReviewDashboard() {
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px] max-w-[300px]">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <Input
             placeholder="Search carrier, guide, product..."
             value={searchQuery}
@@ -373,11 +373,11 @@ export function CriteriaReviewDashboard() {
       </div>
 
       {/* Table */}
-      <div className="border border-v2-ring dark:border-v2-ring rounded-md overflow-hidden">
+      <div className="border border-border dark:border-border rounded-md overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-v2-canvas dark:bg-v2-card-tinted/50">
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
+            <TableRow className="bg-background dark:bg-card-tinted/50">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -388,10 +388,10 @@ export function CriteriaReviewDashboard() {
                   <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />
                 </Button>
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
                 Guide / Product
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-center">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground text-center">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -402,10 +402,10 @@ export function CriteriaReviewDashboard() {
                   <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />
                 </Button>
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-center">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground text-center">
                 Extraction
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-center">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground text-center">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -416,7 +416,7 @@ export function CriteriaReviewDashboard() {
                   <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />
                 </Button>
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -427,7 +427,7 @@ export function CriteriaReviewDashboard() {
                   <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />
                 </Button>
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle w-[60px]">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground w-[60px]">
                 Actions
               </TableHead>
             </TableRow>
@@ -463,26 +463,26 @@ export function CriteriaReviewDashboard() {
               filteredAndSortedData.map((criteria) => (
                 <TableRow
                   key={criteria.id}
-                  className="hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/30 cursor-pointer"
+                  className="hover:bg-background dark:hover:bg-card-tinted/30 cursor-pointer"
                   onClick={() => setSelectedCriteria(criteria)}
                 >
                   <TableCell className="px-3 py-2">
                     <div className="flex items-center gap-1.5">
-                      <Building className="h-3.5 w-3.5 text-v2-ink-subtle shrink-0" />
-                      <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
+                      <Building className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                      <span className="text-[11px] font-medium text-foreground dark:text-foreground">
                         {criteria.carrier?.name || "Unknown"}
                       </span>
                     </div>
                   </TableCell>
                   <TableCell className="px-3 py-2">
                     <div className="flex items-center gap-1.5">
-                      <FileText className="h-3 w-3 text-v2-ink-subtle shrink-0" />
+                      <FileText className="h-3 w-3 text-muted-foreground shrink-0" />
                       <div>
-                        <div className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
+                        <div className="text-[10px] text-foreground dark:text-muted-foreground">
                           {criteria.guide?.name || "—"}
                         </div>
                         {criteria.product?.name && (
-                          <div className="text-[9px] text-v2-ink-subtle">
+                          <div className="text-[9px] text-muted-foreground">
                             {criteria.product.name}
                           </div>
                         )}
@@ -505,7 +505,7 @@ export function CriteriaReviewDashboard() {
                       isActive={criteria.is_active}
                     />
                   </TableCell>
-                  <TableCell className="px-3 py-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <TableCell className="px-3 py-2 text-[10px] text-muted-foreground dark:text-muted-foreground">
                     {criteria.extracted_at
                       ? formatSessionDate(criteria.extracted_at)
                       : "—"}
@@ -521,7 +521,7 @@ export function CriteriaReviewDashboard() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-6 w-6 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                              className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20"
                               onClick={() => handleDeleteClick(criteria)}
                             >
                               <Trash2 className="h-3 w-3" />
@@ -532,7 +532,7 @@ export function CriteriaReviewDashboard() {
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                      <ChevronRight className="h-3.5 w-3.5 text-v2-ink-subtle" />
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -541,7 +541,7 @@ export function CriteriaReviewDashboard() {
               <TableRow>
                 <TableCell
                   colSpan={7}
-                  className="px-3 py-8 text-center text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
+                  className="px-3 py-8 text-center text-[11px] text-muted-foreground dark:text-muted-foreground"
                 >
                   <FileText className="h-8 w-8 mx-auto mb-2 opacity-30" />
                   {criteriaList?.length === 0
@@ -573,7 +573,7 @@ export function CriteriaReviewDashboard() {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="h-7 text-[11px] bg-red-600 hover:bg-red-700"
+              className="h-7 text-[11px] bg-destructive hover:bg-destructive"
               disabled={deleteMutation.isPending}
             >
               {deleteMutation.isPending ? "Deleting..." : "Delete"}
@@ -596,21 +596,22 @@ export function CriteriaReviewDashboard() {
 
 function ConfidenceBadge({ confidence }: { confidence: number | null }) {
   if (!confidence) {
-    return <span className="text-[10px] text-v2-ink-subtle">—</span>;
+    return <span className="text-[10px] text-muted-foreground">—</span>;
   }
 
   const percent = Math.round(confidence * 100);
   let colorClass =
-    "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle";
+    "bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground";
 
   if (percent >= 80) {
     colorClass =
-      "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+      "bg-success/20 text-success dark:bg-success/15 dark:text-success";
   } else if (percent >= 60) {
     colorClass =
-      "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400";
+      "bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning";
   } else if (percent > 0) {
-    colorClass = "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+    colorClass =
+      "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive";
   }
 
   return (
@@ -625,21 +626,21 @@ function ExtractionStatusBadge({ status }: { status: ExtractionStatus }) {
   switch (status) {
     case "completed":
       return (
-        <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-[9px] px-1.5 py-0">
+        <Badge className="bg-success/20 text-success dark:bg-success/15 dark:text-success text-[9px] px-1.5 py-0">
           <CheckCircle2 className="h-2.5 w-2.5 mr-1" />
           Done
         </Badge>
       );
     case "processing":
       return (
-        <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-[9px] px-1.5 py-0">
+        <Badge className="bg-info/20 text-info dark:bg-info/30 dark:text-info text-[9px] px-1.5 py-0">
           <Loader2 className="h-2.5 w-2.5 mr-1 animate-spin" />
           Processing
         </Badge>
       );
     case "failed":
       return (
-        <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-[9px] px-1.5 py-0">
+        <Badge className="bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive text-[9px] px-1.5 py-0">
           <XCircle className="h-2.5 w-2.5 mr-1" />
           Failed
         </Badge>
@@ -647,7 +648,7 @@ function ExtractionStatusBadge({ status }: { status: ExtractionStatus }) {
     case "pending":
     default:
       return (
-        <Badge className="bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle text-[9px] px-1.5 py-0">
+        <Badge className="bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground text-[9px] px-1.5 py-0">
           <Clock className="h-2.5 w-2.5 mr-1" />
           Pending
         </Badge>
@@ -664,7 +665,7 @@ function ReviewStatusBadge({
 }) {
   if (isActive) {
     return (
-      <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-[9px] px-1.5 py-0">
+      <Badge className="bg-info/20 text-info dark:bg-info/30 dark:text-info text-[9px] px-1.5 py-0">
         <CheckCircle2 className="h-2.5 w-2.5 mr-1" />
         Active
       </Badge>
@@ -674,28 +675,28 @@ function ReviewStatusBadge({
   switch (status) {
     case "approved":
       return (
-        <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-[9px] px-1.5 py-0">
+        <Badge className="bg-success/20 text-success dark:bg-success/15 dark:text-success text-[9px] px-1.5 py-0">
           <CheckCircle2 className="h-2.5 w-2.5 mr-1" />
           Approved
         </Badge>
       );
     case "rejected":
       return (
-        <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-[9px] px-1.5 py-0">
+        <Badge className="bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive text-[9px] px-1.5 py-0">
           <XCircle className="h-2.5 w-2.5 mr-1" />
           Rejected
         </Badge>
       );
     case "needs_revision":
       return (
-        <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 text-[9px] px-1.5 py-0">
+        <Badge className="bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning text-[9px] px-1.5 py-0">
           <AlertTriangle className="h-2.5 w-2.5 mr-1" />
           Revision
         </Badge>
       );
     default:
       return (
-        <Badge className="bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle text-[9px] px-1.5 py-0">
+        <Badge className="bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground text-[9px] px-1.5 py-0">
           <Clock className="h-2.5 w-2.5 mr-1" />
           Pending
         </Badge>

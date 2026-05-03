@@ -124,20 +124,20 @@ export function SupportDialog({ open, onClose, userName }: SupportDialogProps) {
   return (
     <Dialog.Root open={open} onOpenChange={(v) => !v && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm" />
-        <Dialog.Content className="fixed z-[201] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xl focus:outline-none">
+        <Dialog.Overlay className="fixed inset-0 z-[200] bg-foreground/40 backdrop-blur-sm" />
+        <Dialog.Content className="fixed z-[201] left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-card text-card-foreground rounded-md border border-border shadow-2xl focus:outline-none">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <div>
-              <Dialog.Title className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <Dialog.Title className="text-sm font-semibold text-foreground">
                 Contact Support
               </Dialog.Title>
-              <Dialog.Description className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <Dialog.Description className="text-[11px] text-muted-foreground mt-0.5">
                 We'll reply to {userEmail || "your email"}.
               </Dialog.Description>
             </div>
             <Dialog.Close asChild>
-              <button className="h-7 w-7 flex items-center justify-center rounded-md text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
+              <button className="h-7 w-7 flex items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
                 <X className="h-3.5 w-3.5" />
               </button>
             </Dialog.Close>
@@ -147,9 +147,7 @@ export function SupportDialog({ open, onClose, userName }: SupportDialogProps) {
           <div className="px-4 py-3 space-y-3">
             {/* Category selector */}
             <div>
-              <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
-                Type
-              </p>
+              <p className="text-eyebrow mb-1.5">Type</p>
               <div className="grid grid-cols-2 gap-1.5">
                 {CATEGORIES.map((cat, i) => {
                   const Icon = cat.icon;
@@ -158,10 +156,10 @@ export function SupportDialog({ open, onClose, userName }: SupportDialogProps) {
                       key={cat.label}
                       onClick={() => setSelectedIdx(i)}
                       className={cn(
-                        "flex items-center gap-1.5 px-2.5 py-2 rounded-lg border text-[11px] font-medium transition-colors text-left",
+                        "flex items-center gap-1.5 px-2.5 py-2 rounded-sm border text-[11px] font-medium transition-colors text-left",
                         selectedIdx === i
-                          ? "bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 border-zinc-900 dark:border-zinc-100"
-                          : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500",
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-background text-muted-foreground border-input hover:border-foreground/40 hover:text-foreground",
                       )}
                     >
                       <Icon className="h-3 w-3 flex-shrink-0" />
@@ -174,28 +172,26 @@ export function SupportDialog({ open, onClose, userName }: SupportDialogProps) {
 
             {/* Message */}
             <div>
-              <p className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-1.5">
-                Message
-              </p>
+              <p className="text-eyebrow mb-1.5">Message</p>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={category.placeholder}
                 rows={5}
-                className="w-full text-[12px] px-2.5 py-2 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 resize-none focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:focus:ring-zinc-500 leading-relaxed"
+                className="w-full text-[12px] px-2.5 py-2 rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring leading-relaxed transition-colors"
               />
             </div>
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-100 dark:border-zinc-800">
-            <p className="text-[10px] text-zinc-400 dark:text-zinc-500">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+            <p className="text-[10px] text-muted-foreground">
               Sent to support@thestandardhq.com
             </p>
             <button
               onClick={handleSubmit}
               disabled={submitting || !message.trim()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-[11px] font-semibold hover:bg-zinc-700 dark:hover:bg-zinc-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-primary text-primary-foreground text-[11px] font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {submitting ? (
                 <Loader2 className="h-3 w-3 animate-spin" />

@@ -98,6 +98,11 @@ export default {
         "v2-lift": "var(--v2-shadow-lift)",
       },
       fontFamily: {
+        sans: ["var(--font-sans)"],
+        mono: ["var(--font-mono)"],
+        // `display` keeps the v2 Plus Jakarta value so existing v2 surfaces
+        // are unchanged. App surfaces use `.text-page-title` (Big Shoulders
+        // Display via --font-display) for landing-style headlines.
         display: "var(--v2-font-display)",
       },
       animation: {

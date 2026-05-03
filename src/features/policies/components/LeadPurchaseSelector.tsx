@@ -52,7 +52,7 @@ export function LeadPurchaseSelector({
           className,
         )}
       >
-        <Package className="h-5 w-5 text-blue-300 dark:text-blue-700 mb-1" />
+        <Package className="h-5 w-5 text-info mb-1" />
         <p className="text-[11px] text-muted-foreground">
           No lead purchases in the last 90 days
         </p>
@@ -109,8 +109,8 @@ function LeadPurchaseItem({
       className={cn(
         "w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-left border transition-all duration-150",
         isSelected
-          ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800"
-          : "border-transparent hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/40 active:bg-v2-card-tinted dark:active:bg-zinc-800/60",
+          ? "bg-info/10 border-info/30"
+          : "border-transparent hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/40 active:bg-v2-card-tinted dark:active:bg-muted",
       )}
     >
       {/* Selection indicator */}
@@ -118,7 +118,7 @@ function LeadPurchaseItem({
         className={cn(
           "flex-shrink-0 w-3.5 h-3.5 rounded-full border flex items-center justify-center transition-colors",
           isSelected
-            ? "border-blue-600 bg-blue-600 dark:border-blue-500 dark:bg-blue-500 text-white"
+            ? "border-info bg-info text-info-foreground"
             : "border-muted-foreground/40",
         )}
       >

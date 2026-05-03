@@ -58,7 +58,7 @@ export function WorkbookReview() {
         className={cn(
           "border border-dashed rounded p-3 text-center cursor-pointer transition-colors",
           dragOver
-            ? "border-teal-500 bg-teal-50/50 dark:bg-teal-900/20"
+            ? "border-success bg-success/10/50 dark:bg-success/20"
             : "border-v2-ring  hover:border-v2-ring-strong dark:hover:border-v2-ring",
           reviewWorkbook.isPending && "opacity-50 pointer-events-none",
         )}
@@ -87,7 +87,7 @@ export function WorkbookReview() {
         />
         {file ? (
           <div className="flex items-center justify-center gap-2">
-            <FileSpreadsheet className="h-4 w-4 text-teal-500" />
+            <FileSpreadsheet className="h-4 w-4 text-success" />
             <span className="text-[11px] text-v2-ink-muted">{file.name}</span>
             <button
               onClick={(e) => {
@@ -127,7 +127,7 @@ export function WorkbookReview() {
 
       {/* Success result */}
       {reviewWorkbook.isSuccess && reviewWorkbook.data && (
-        <div className="flex items-center gap-2 px-2 py-1.5 rounded bg-emerald-50 dark:bg-emerald-900/20 text-[10px] text-emerald-700 dark:text-emerald-300">
+        <div className="flex items-center gap-2 px-2 py-1.5 rounded bg-success/10 text-[10px] text-success">
           <CheckCircle2 className="h-3 w-3 shrink-0" />
           <span>
             Applied: {reviewWorkbook.data.applied_count} | Categorized:{" "}

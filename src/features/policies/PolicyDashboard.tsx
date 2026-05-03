@@ -244,9 +244,9 @@ export const PolicyDashboard: React.FC = () => {
 
   if (error) {
     return (
-      <div className="flex items-center gap-3 p-4 bg-red-500/10 rounded-lg border border-red-200 dark:border-red-800">
-        <AlertCircle size={20} className="text-red-600 dark:text-red-400" />
-        <span className="text-red-600 dark:text-red-400 font-medium">
+      <div className="flex items-center gap-3 p-4 bg-destructive/10 rounded-lg border border-destructive/30">
+        <AlertCircle size={20} className="text-destructive" />
+        <span className="text-destructive font-medium">
           Error loading policies: {(error as Error).message}
         </span>
         <Button

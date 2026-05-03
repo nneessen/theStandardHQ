@@ -41,14 +41,14 @@ interface DocumentManagerProps {
 
 const DOCUMENT_STATUS_STYLES: Record<string, string> = {
   pending:
-    "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800",
+    "bg-warning/10 text-warning border-warning/30 dark:bg-warning/15 dark:text-warning dark:border-warning",
   received:
-    "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800",
+    "bg-info/10 text-info border-info/30 dark:bg-info/15 dark:text-info dark:border-info",
   approved:
-    "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800",
+    "bg-success/10 text-success border-success/30 dark:bg-success/15 dark:text-success dark:border-success",
   rejected:
-    "bg-red-50 text-red-700 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800",
-  expired: "bg-v2-ring text-v2-ink-muted border-v2-ring  -subtle ",
+    "bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15 dark:text-destructive dark:border-destructive",
+  expired: "bg-muted text-muted-foreground border-border  -subtle ",
 };
 
 export function DocumentManager({
@@ -146,7 +146,7 @@ export function DocumentManager({
     <div className="space-y-2">
       {/* Header with Upload Button */}
       <div className="flex items-center justify-between">
-        <p className="text-[10px] text-v2-ink-muted">
+        <p className="text-[10px] text-muted-foreground">
           {documents && documents.length > 0
             ? `${documents.length} document${documents.length > 1 ? "s" : ""}`
             : "No documents"}
@@ -167,44 +167,44 @@ export function DocumentManager({
           {documents.map((doc) => (
             <div
               key={doc.id}
-              className="p-2 rounded-md border border-v2-ring bg-v2-card hover:border-v2-ring  transition-all"
+              className="p-2 rounded-md border border-border bg-card hover:border-border  transition-all"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-2 flex-1 min-w-0">
-                  <div className="p-1.5 rounded bg-v2-ring">
-                    <FileText className="h-3.5 w-3.5 text-v2-ink-muted -subtle" />
+                  <div className="p-1.5 rounded bg-muted">
+                    <FileText className="h-3.5 w-3.5 text-muted-foreground -subtle" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 mb-0.5">
-                      <h4 className="text-[11px] font-medium text-v2-ink truncate">
+                      <h4 className="text-[11px] font-medium text-foreground truncate">
                         {doc.document_name}
                       </h4>
                       {doc.required && (
                         <Badge
                           variant="outline"
-                          className="text-[9px] h-3.5 px-1 border-v2-ring text-v2-ink-muted  -subtle"
+                          className="text-[9px] h-3.5 px-1 border-border text-muted-foreground  -subtle"
                         >
                           Required
                         </Badge>
                       )}
                     </div>
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-v2-ink-muted">
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground">
                       <span className="capitalize">
                         {doc.document_type.replace(/_/g, " ")}
                       </span>
-                      <span className="text-v2-ink-subtle">•</span>
+                      <span className="text-muted-foreground">•</span>
                       <span>{formatFileSize(doc.file_size || 0)}</span>
-                      <span className="text-v2-ink-subtle">•</span>
+                      <span className="text-muted-foreground">•</span>
                       <span>
                         {new Date(doc.uploaded_at).toLocaleDateString()}
                       </span>
                       {doc.expires_at && (
                         <>
-                          <span className="text-v2-ink-subtle">•</span>
+                          <span className="text-muted-foreground">•</span>
                           <span
                             className={
                               new Date(doc.expires_at) < new Date()
-                                ? "text-red-600 dark:text-red-400 font-medium"
+                                ? "text-destructive font-medium"
                                 : ""
                             }
                           >
@@ -251,14 +251,14 @@ export function DocumentManager({
                             onClick={() => handleApprove(doc)}
                             className="text-[11px]"
                           >
-                            <CheckCircle2 className="h-3.5 w-3.5 mr-1.5 text-emerald-600" />
+                            <CheckCircle2 className="h-3.5 w-3.5 mr-1.5 text-success" />
                             Approve
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleReject(doc)}
                             className="text-[11px]"
                           >
-                            <XCircle className="h-3.5 w-3.5 mr-1.5 text-red-600" />
+                            <XCircle className="h-3.5 w-3.5 mr-1.5 text-destructive" />
                             Reject
                           </DropdownMenuItem>
                         </>
@@ -279,7 +279,7 @@ export function DocumentManager({
               </div>
 
               {doc.notes && (
-                <p className="text-[10px] text-v2-ink-muted mt-1.5 italic ml-7">
+                <p className="text-[10px] text-muted-foreground mt-1.5 italic ml-7">
                   {doc.notes}
                 </p>
               )}
@@ -288,11 +288,11 @@ export function DocumentManager({
         </div>
       ) : (
         <div className="py-6 text-center">
-          <FolderOpen className="h-8 w-8 text-v2-ink-subtle mx-auto mb-2" />
-          <p className="text-[11px] text-v2-ink-muted -subtle mb-0.5">
+          <FolderOpen className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+          <p className="text-[11px] text-muted-foreground -subtle mb-0.5">
             No documents uploaded yet
           </p>
-          <p className="text-[10px] text-v2-ink-muted -muted">
+          <p className="text-[10px] text-muted-foreground -muted">
             Click "Upload" to add documents
           </p>
         </div>

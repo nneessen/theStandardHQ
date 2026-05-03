@@ -183,9 +183,9 @@ export function PublicRegistrationPage() {
       </div>
 
       {/* Animated glow orbs */}
-      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-warning/10 rounded-full blur-3xl animate-pulse" />
       <div
-        className="absolute bottom-1/4 -right-20 w-80 h-80 bg-amber-400/5 rounded-full blur-3xl animate-pulse"
+        className="absolute bottom-1/4 -right-20 w-80 h-80 bg-warning/70/5 rounded-full blur-3xl animate-pulse"
         style={{ animationDelay: "1s" }}
       />
 
@@ -194,7 +194,7 @@ export function PublicRegistrationPage() {
         {/* Logo */}
         <div className="flex items-center gap-4 group">
           <div className="relative">
-            <div className="absolute inset-0 bg-amber-500/20 rounded-xl blur-xl group-hover:bg-amber-500/30 transition-all duration-500" />
+            <div className="absolute inset-0 bg-warning/20 rounded-xl blur-xl group-hover:bg-warning/30 transition-all duration-500" />
             <img
               src="/logos/Light Letter Logo .png"
               alt="The Standard"
@@ -208,12 +208,12 @@ export function PublicRegistrationPage() {
           </div>
           <div className="flex flex-col">
             <span
-              className="text-white dark:text-black text-2xl font-bold tracking-wide"
+              className="text-white text-2xl font-bold tracking-wide"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
               THE STANDARD
             </span>
-            <span className="text-amber-400 text-[10px] uppercase tracking-[0.3em] font-medium">
+            <span className="text-warning text-[10px] uppercase tracking-[0.3em] font-medium">
               Financial Group
             </span>
           </div>
@@ -226,13 +226,13 @@ export function PublicRegistrationPage() {
               className="text-4xl xl:text-5xl font-bold leading-tight mb-3"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              <span className="text-white dark:text-black">Welcome to</span>
+              <span className="text-white">Welcome to</span>
               <br />
               <span className="bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 bg-clip-text text-transparent">
                 The Team
               </span>
             </h1>
-            <p className="text-white/80 dark:text-black/70 text-sm max-w-md leading-relaxed">
+            <p className="text-white/80 text-sm max-w-md leading-relaxed">
               Complete your registration to get started with your insurance
               career. We&apos;re excited to have you join our growing team.
             </p>
@@ -240,24 +240,24 @@ export function PublicRegistrationPage() {
 
           {/* Feature highlights */}
           <div className="grid gap-2 max-w-md">
-            <div className="flex items-center gap-2 text-white/90 dark:text-black/80">
-              <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-black/10">
+            <div className="flex items-center gap-2 text-white/90">
+              <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-white/10">
                 <TrendingUp className="h-3.5 w-3.5" />
               </div>
               <span className="text-xs">
                 Comprehensive training & mentorship
               </span>
             </div>
-            <div className="flex items-center gap-2 text-white/90 dark:text-black/80">
-              <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-black/10">
+            <div className="flex items-center gap-2 text-white/90">
+              <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-white/10">
                 <FileText className="h-3.5 w-3.5" />
               </div>
               <span className="text-xs">
                 Industry-leading commission structure
               </span>
             </div>
-            <div className="flex items-center gap-2 text-white/90 dark:text-black/80">
-              <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-black/10">
+            <div className="flex items-center gap-2 text-white/90">
+              <div className="flex items-center justify-center w-7 h-7 rounded bg-white/10 dark:bg-white/10">
                 <Shield className="h-3.5 w-3.5" />
               </div>
               <span className="text-xs">Full support from day one</span>
@@ -266,7 +266,7 @@ export function PublicRegistrationPage() {
         </div>
 
         {/* Footer */}
-        <div className="text-white/50 dark:text-black/50 text-xs">
+        <div className="text-white/50 text-xs">
           &copy; {new Date().getFullYear()} The Standard Financial Group
         </div>
       </div>
@@ -294,7 +294,7 @@ export function PublicRegistrationPage() {
           >
             THE STANDARD
           </span>
-          <span className="text-amber-500 text-[9px] uppercase tracking-[0.25em] font-medium">
+          <span className="text-warning text-[9px] uppercase tracking-[0.25em] font-medium">
             Financial Group
           </span>
         </div>
@@ -332,7 +332,7 @@ export function PublicRegistrationPage() {
           <div className="w-full max-w-md">
             <MobileLogo />
             <div className="bg-card/50 backdrop-blur-sm rounded-lg border border-border/50 shadow-xl p-6 text-center">
-              <AlertCircle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+              <AlertCircle className="h-12 w-12 text-warning mx-auto mb-4" />
               <h1 className="text-xl font-semibold text-foreground mb-2">
                 {errorType === "invitation_expired"
                   ? "Invitation Expired"
@@ -383,8 +383,8 @@ export function PublicRegistrationPage() {
           <div className="w-full max-w-md">
             <MobileLogo />
             <div className="bg-card/50 backdrop-blur-sm rounded-lg border border-border/50 shadow-xl p-6 text-center">
-              <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 className="h-8 w-8 text-green-600" />
+              <div className="w-16 h-16 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="h-8 w-8 text-success" />
               </div>
               <h1 className="text-xl font-semibold text-foreground mb-2">
                 Welcome to the Team!
@@ -394,17 +394,17 @@ export function PublicRegistrationPage() {
               </p>
 
               {/* Next steps */}
-              <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6 text-left">
-                <p className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
+              <div className="bg-info/10 border border-info/30 rounded-lg p-4 mb-6 text-left">
+                <p className="text-sm font-medium text-info dark:text-info mb-2">
                   What happens next?
                 </p>
-                <p className="text-xs text-blue-700 dark:text-blue-300 mb-2">
+                <p className="text-xs text-info mb-2">
                   You can now log in to track your progress through the
                   onboarding process. Your recruiter will enroll you in a
                   pipeline, and you'll be guided through each step of becoming
                   part of the team.
                 </p>
-                <p className="text-xs text-blue-600 dark:text-blue-400">
+                <p className="text-xs text-info">
                   You'll be notified by text, email, or your upline will reach
                   out directly when it's time to complete the next step.
                 </p>

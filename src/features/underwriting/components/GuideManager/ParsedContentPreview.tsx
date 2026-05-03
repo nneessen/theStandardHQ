@@ -55,10 +55,10 @@ export function ParsedContentPreview({
 
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-v2-ink dark:border-v2-ring" />
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-foreground dark:border-border" />
           </div>
         ) : !content ? (
-          <div className="flex flex-col items-center justify-center py-12 text-v2-ink-subtle">
+          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
             <FileText className="h-8 w-8 mb-2 opacity-30" />
             <p className="text-[11px]">No parsed content available</p>
             <p className="text-[10px] mt-1">
@@ -69,7 +69,7 @@ export function ParsedContentPreview({
           <>
             {/* Stats Bar */}
             {stats && (
-              <div className="flex flex-wrap items-center gap-3 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle px-1">
+              <div className="flex flex-wrap items-center gap-3 text-[10px] text-muted-foreground dark:text-muted-foreground px-1">
                 <div className="flex items-center gap-1">
                   <BarChart3 className="h-3 w-3" />
                   <span>{formatNumber(stats.totalWords)} words</span>
@@ -80,7 +80,7 @@ export function ParsedContentPreview({
                 {stats.lowDensityPages.length > 0 && (
                   <Badge
                     variant="secondary"
-                    className="text-[8px] px-1 py-0 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                    className="text-[8px] px-1 py-0 bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning"
                   >
                     <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
                     {stats.lowDensityPages.length} low-density pages
@@ -103,13 +103,13 @@ export function ParsedContentPreview({
                 <ChevronLeft className="h-3 w-3 mr-1" />
                 Prev
               </Button>
-              <span className="text-[10px] text-v2-ink-muted">
+              <span className="text-[10px] text-muted-foreground">
                 Page {section?.pageNumber ?? currentPage + 1} of{" "}
                 {sections.length}
                 {stats?.lowDensityPages.includes(section?.pageNumber) && (
                   <Badge
                     variant="secondary"
-                    className="text-[8px] px-1 py-0 ml-2 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                    className="text-[8px] px-1 py-0 ml-2 bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning"
                   >
                     Low density
                   </Badge>
@@ -128,14 +128,14 @@ export function ParsedContentPreview({
             </div>
 
             {/* Page Content */}
-            <ScrollArea className="flex-1 min-h-0 border border-v2-ring dark:border-v2-ring-strong rounded-md">
+            <ScrollArea className="flex-1 min-h-0 border border-border dark:border-border rounded-md">
               <div className="p-4">
                 {section ? (
-                  <pre className="text-[11px] text-v2-ink dark:text-v2-ink-muted whitespace-pre-wrap font-mono leading-relaxed">
+                  <pre className="text-[11px] text-foreground dark:text-muted-foreground whitespace-pre-wrap font-mono leading-relaxed">
                     {section.content}
                   </pre>
                 ) : (
-                  <p className="text-[11px] text-v2-ink-subtle text-center py-8">
+                  <p className="text-[11px] text-muted-foreground text-center py-8">
                     No content for this page
                   </p>
                 )}
@@ -144,7 +144,7 @@ export function ParsedContentPreview({
 
             {/* Tables indicator */}
             {content.metadata?.tables && content.metadata.tables.length > 0 && (
-              <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle px-1">
+              <div className="text-[10px] text-muted-foreground dark:text-muted-foreground px-1">
                 <Badge variant="secondary" className="text-[9px] px-1.5 py-0">
                   {content.metadata.tables.length} tables detected (OCR)
                 </Badge>

@@ -49,7 +49,7 @@ export function BulkActionToolbar({
         size="sm"
         variant="ghost"
         onClick={onDelete}
-        className="h-7 bg-transparent px-2 text-xs text-red-600 shadow-none hover:bg-red-500/10 hover:text-red-700 dark:bg-transparent dark:text-red-400 dark:hover:text-red-300"
+        className="h-7 bg-transparent px-2 text-xs text-destructive shadow-none hover:bg-destructive/10 hover:text-destructive dark:bg-transparent dark:text-destructive dark:hover:text-destructive"
       >
         <Trash2 className="h-3 w-3 mr-1" />
         Delete

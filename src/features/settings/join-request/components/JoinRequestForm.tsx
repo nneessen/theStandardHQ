@@ -69,14 +69,14 @@ export function JoinRequestForm({ onSuccess }: JoinRequestFormProps) {
   const selectedImo = imos?.find((i) => i.id === selectedImoId);
 
   return (
-    <div className="border border-v2-ring rounded-lg p-3">
+    <div className="border border-border rounded-lg p-3">
       <div className="flex items-center gap-2 mb-3">
-        <Send className="h-3.5 w-3.5 text-v2-ink-subtle" />
+        <Send className="h-3.5 w-3.5 text-muted-foreground" />
         <div>
-          <h4 className="text-[11px] font-semibold text-v2-ink">
+          <h4 className="text-[11px] font-semibold text-foreground">
             Request to Join
           </h4>
-          <p className="text-[10px] text-v2-ink-muted">
+          <p className="text-[10px] text-muted-foreground">
             Select an organization to join
           </p>
         </div>
@@ -85,7 +85,7 @@ export function JoinRequestForm({ onSuccess }: JoinRequestFormProps) {
       <form onSubmit={handleSubmit} className="space-y-3">
         {/* IMO Selection */}
         <div className="space-y-1.5">
-          <Label htmlFor="imo" className="text-[11px] text-v2-ink-muted">
+          <Label htmlFor="imo" className="text-[11px] text-muted-foreground">
             <Building2 className="h-3 w-3 inline mr-1" />
             Select IMO *
           </Label>
@@ -99,13 +99,15 @@ export function JoinRequestForm({ onSuccess }: JoinRequestFormProps) {
               {imos?.map((imo) => (
                 <SelectItem key={imo.id} value={imo.id} className="text-[11px]">
                   <span className="font-medium">{imo.name}</span>
-                  <span className="text-v2-ink-muted ml-2">({imo.code})</span>
+                  <span className="text-muted-foreground ml-2">
+                    ({imo.code})
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           {selectedImo?.description && (
-            <p className="text-[10px] text-v2-ink-muted mt-1">
+            <p className="text-[10px] text-muted-foreground mt-1">
               {selectedImo.description}
             </p>
           )}
@@ -114,7 +116,10 @@ export function JoinRequestForm({ onSuccess }: JoinRequestFormProps) {
         {/* Agency Selection (Optional) */}
         {selectedImoId && (
           <div className="space-y-1.5">
-            <Label htmlFor="agency" className="text-[11px] text-v2-ink-muted">
+            <Label
+              htmlFor="agency"
+              className="text-[11px] text-muted-foreground"
+            >
               <Users className="h-3 w-3 inline mr-1" />
               Select Agency (Optional)
             </Label>
@@ -133,7 +138,7 @@ export function JoinRequestForm({ onSuccess }: JoinRequestFormProps) {
               <SelectContent>
                 <SelectItem
                   value="__none__"
-                  className="text-[11px] text-v2-ink-muted"
+                  className="text-[11px] text-muted-foreground"
                 >
                   No specific agency
                 </SelectItem>
@@ -144,7 +149,7 @@ export function JoinRequestForm({ onSuccess }: JoinRequestFormProps) {
                     className="text-[11px]"
                   >
                     <span className="font-medium">{agency.name}</span>
-                    <span className="text-v2-ink-muted ml-2">
+                    <span className="text-muted-foreground ml-2">
                       ({agency.code})
                     </span>
                   </SelectItem>
@@ -156,7 +161,10 @@ export function JoinRequestForm({ onSuccess }: JoinRequestFormProps) {
 
         {/* Message */}
         <div className="space-y-1.5">
-          <Label htmlFor="message" className="text-[11px] text-v2-ink-muted">
+          <Label
+            htmlFor="message"
+            className="text-[11px] text-muted-foreground"
+          >
             Message (Optional)
           </Label>
           <Textarea

@@ -568,7 +568,7 @@ function StatsSection({ theme, updateField }: SectionProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => removeStat(index)}
-                  className="h-6 text-xs text-red-500 hover:text-red-700"
+                  className="h-6 text-xs text-destructive hover:text-destructive"
                 >
                   Remove
                 </Button>
@@ -802,7 +802,7 @@ function GallerySection({ theme, updateField }: SectionProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => removeImage(index)}
-                    className="h-6 text-xs text-red-500 hover:text-red-700"
+                    className="h-6 text-xs text-destructive hover:text-destructive"
                   >
                     Remove
                   </Button>
@@ -949,7 +949,7 @@ function OpportunitySection({ theme, updateField }: SectionProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => removeStep(index)}
-                    className="h-6 text-xs text-red-500 hover:text-red-700"
+                    className="h-6 text-xs text-destructive hover:text-destructive"
                   >
                     Remove
                   </Button>
@@ -1107,7 +1107,7 @@ function RequirementsSection({ theme, updateField }: SectionProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => removeItem(index)}
-                    className="h-6 text-xs text-red-500 hover:text-red-700"
+                    className="h-6 text-xs text-destructive hover:text-destructive"
                   >
                     Remove
                   </Button>
@@ -1248,7 +1248,7 @@ function TechSection({ theme, updateField }: SectionProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => removeFeature(index)}
-                    className="h-6 text-xs text-red-500 hover:text-red-700"
+                    className="h-6 text-xs text-destructive hover:text-destructive"
                   >
                     Remove
                   </Button>
@@ -1402,7 +1402,7 @@ function TestimonialsSection({ theme, updateField }: SectionProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => removeTestimonial(index)}
-                    className="h-6 text-xs text-red-500 hover:text-red-700"
+                    className="h-6 text-xs text-destructive hover:text-destructive"
                   >
                     Remove
                   </Button>
@@ -1565,7 +1565,7 @@ function FaqSection({ theme, updateField }: SectionProps) {
                     variant="ghost"
                     size="sm"
                     onClick={() => removeFaq(index)}
-                    className="h-6 text-xs text-red-500 hover:text-red-700"
+                    className="h-6 text-xs text-destructive hover:text-destructive"
                   >
                     Remove
                   </Button>

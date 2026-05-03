@@ -1,7 +1,7 @@
 // src/features/analytics/visualizations/USMap.tsx
 
-import React from 'react';
-import {cn} from '@/lib/utils';
+import React from "react";
+import { cn } from "@/lib/utils";
 
 export interface StateData {
   state: string; // Two-letter state code (e.g., 'CA', 'TX')
@@ -17,19 +17,57 @@ interface USMapProps {
 
 // Full state names mapping
 const STATE_NAMES: { [key: string]: string } = {
-  AL: 'Alabama', AK: 'Alaska', AZ: 'Arizona', AR: 'Arkansas',
-  CA: 'California', CO: 'Colorado', CT: 'Connecticut', DE: 'Delaware',
-  FL: 'Florida', GA: 'Georgia', HI: 'Hawaii', ID: 'Idaho',
-  IL: 'Illinois', IN: 'Indiana', IA: 'Iowa', KS: 'Kansas',
-  KY: 'Kentucky', LA: 'Louisiana', ME: 'Maine', MD: 'Maryland',
-  MA: 'Massachusetts', MI: 'Michigan', MN: 'Minnesota', MS: 'Mississippi',
-  MO: 'Missouri', MT: 'Montana', NE: 'Nebraska', NV: 'Nevada',
-  NH: 'New Hampshire', NJ: 'New Jersey', NM: 'New Mexico', NY: 'New York',
-  NC: 'North Carolina', ND: 'North Dakota', OH: 'Ohio', OK: 'Oklahoma',
-  OR: 'Oregon', PA: 'Pennsylvania', RI: 'Rhode Island', SC: 'South Carolina',
-  SD: 'South Dakota', TN: 'Tennessee', TX: 'Texas', UT: 'Utah',
-  VT: 'Vermont', VA: 'Virginia', WA: 'Washington', WV: 'West Virginia',
-  WI: 'Wisconsin', WY: 'Wyoming', DC: 'Washington DC'
+  AL: "Alabama",
+  AK: "Alaska",
+  AZ: "Arizona",
+  AR: "Arkansas",
+  CA: "California",
+  CO: "Colorado",
+  CT: "Connecticut",
+  DE: "Delaware",
+  FL: "Florida",
+  GA: "Georgia",
+  HI: "Hawaii",
+  ID: "Idaho",
+  IL: "Illinois",
+  IN: "Indiana",
+  IA: "Iowa",
+  KS: "Kansas",
+  KY: "Kentucky",
+  LA: "Louisiana",
+  ME: "Maine",
+  MD: "Maryland",
+  MA: "Massachusetts",
+  MI: "Michigan",
+  MN: "Minnesota",
+  MS: "Mississippi",
+  MO: "Missouri",
+  MT: "Montana",
+  NE: "Nebraska",
+  NV: "Nevada",
+  NH: "New Hampshire",
+  NJ: "New Jersey",
+  NM: "New Mexico",
+  NY: "New York",
+  NC: "North Carolina",
+  ND: "North Dakota",
+  OH: "Ohio",
+  OK: "Oklahoma",
+  OR: "Oregon",
+  PA: "Pennsylvania",
+  RI: "Rhode Island",
+  SC: "South Carolina",
+  SD: "South Dakota",
+  TN: "Tennessee",
+  TX: "Texas",
+  UT: "Utah",
+  VT: "Vermont",
+  VA: "Virginia",
+  WA: "Washington",
+  WV: "West Virginia",
+  WI: "Wisconsin",
+  WY: "Wyoming",
+  DC: "Washington DC",
 };
 
 /**
@@ -40,8 +78,8 @@ const STATE_NAMES: { [key: string]: string } = {
  */
 export function USMap({
   data,
-  title = 'Performance by State',
-  valueLabel = 'Premium'
+  title = "Performance by State",
+  valueLabel = "Premium",
 }: USMapProps) {
   if (!data || data.length === 0) {
     return (
@@ -55,13 +93,13 @@ export function USMap({
   const sortedData = [...data].sort((a, b) => b.value - a.value);
 
   // Get max value for scaling bars
-  const maxValue = Math.max(...data.map(d => d.value));
+  const maxValue = Math.max(...data.map((d) => d.value));
 
   // Format currency
   const formatValue = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(value);
@@ -73,23 +111,23 @@ export function USMap({
 
     // Top performers (top 3)
     if (index < 3) {
-      return 'bg-gradient-to-r from-emerald-500 to-emerald-600';
+      return "bg-gradient-to-r from-emerald-500 to-emerald-600";
     }
     // Good performers (80%+ of max)
     else if (percentage >= 80) {
-      return 'bg-gradient-to-r from-blue-500 to-blue-600';
+      return "bg-gradient-to-r from-blue-500 to-blue-600";
     }
     // Average performers (50-80%)
     else if (percentage >= 50) {
-      return 'bg-gradient-to-r from-indigo-400 to-indigo-500';
+      return "bg-gradient-to-r from-indigo-400 to-indigo-500";
     }
     // Below average (25-50%)
     else if (percentage >= 25) {
-      return 'bg-gradient-to-r from-slate-400 to-slate-500';
+      return "bg-gradient-to-r from-slate-400 to-slate-500";
     }
     // Low performers (below 25%)
     else {
-      return 'bg-gradient-to-r from-gray-400 to-gray-500';
+      return "bg-gradient-to-r from-gray-400 to-gray-500";
     }
   };
 
@@ -117,13 +155,15 @@ export function USMap({
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
                   {/* Rank Badge */}
-                  <div className={cn(
-                    "flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold",
-                    index === 0 && "bg-yellow-500 text-white", // Gold
-                    index === 1 && "bg-gray-400 text-white",   // Silver
-                    index === 2 && "bg-orange-600 text-white",  // Bronze
-                    index >= 3 && "bg-muted text-muted-foreground"
-                  )}>
+                  <div
+                    className={cn(
+                      "flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold",
+                      index === 0 && "bg-warning text-white", // Gold
+                      index === 1 && "bg-muted text-white", // Silver
+                      index === 2 && "bg-warning text-white", // Bronze
+                      index >= 3 && "bg-muted text-muted-foreground",
+                    )}
+                  >
                     {index + 1}
                   </div>
 
@@ -150,7 +190,7 @@ export function USMap({
                   <div
                     className={cn(
                       "h-full transition-all duration-500 ease-out rounded-md",
-                      getBarColor(state.value, index)
+                      getBarColor(state.value, index),
                     )}
                     style={{ width: `${percentage}%` }}
                   >
@@ -184,7 +224,7 @@ export function USMap({
             Showing top 10 of {sortedData.length} states
           </div>
           <div className="text-xs text-muted-foreground mt-1">
-            Total across all states: {' '}
+            Total across all states:{" "}
             <span className="font-semibold text-foreground">
               {formatValue(data.reduce((sum, d) => sum + d.value, 0))}
             </span>
@@ -208,7 +248,9 @@ export function USMap({
         </div>
         <div className="flex items-center gap-1">
           <div className="w-3 h-3 rounded-sm bg-gradient-to-r from-gray-400 to-gray-500" />
-          <span className="text-[10px] text-muted-foreground">Below Average</span>
+          <span className="text-[10px] text-muted-foreground">
+            Below Average
+          </span>
         </div>
       </div>
     </div>

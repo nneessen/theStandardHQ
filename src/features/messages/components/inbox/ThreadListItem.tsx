@@ -41,7 +41,7 @@ export function ThreadListItem({
       className={cn(
         "w-full text-left p-2 hover:bg-v2-canvas transition-colors border-b border-v2-ring/60",
         isSelected && "bg-v2-ring border-l-2 border-l-blue-500",
-        isUnread && "bg-blue-50/30 dark:bg-blue-900/10",
+        isUnread && "bg-info/10/30 dark:bg-info/10",
       )}
       onClick={onClick}
     >
@@ -71,7 +71,7 @@ export function ThreadListItem({
 
             {/* Indicators */}
             {thread.isStarred && (
-              <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 flex-shrink-0" />
+              <Star className="h-3 w-3 text-warning fill-yellow-500 flex-shrink-0" />
             )}
             {hasAttachments && (
               <Paperclip className="h-3 w-3 text-v2-ink-subtle flex-shrink-0" />

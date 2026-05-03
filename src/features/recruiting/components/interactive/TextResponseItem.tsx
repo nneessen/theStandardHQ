@@ -73,7 +73,7 @@ export function TextResponseItem({
   if (existingResponse?.text) {
     return (
       <div className="space-y-1">
-        <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+        <span className="inline-flex items-center gap-1 text-xs text-success">
           <CheckCircle2 className="h-3.5 w-3.5" />
           Response submitted
         </span>
@@ -104,7 +104,7 @@ export function TextResponseItem({
         <div className="flex justify-between items-center text-[10px] text-v2-ink-muted">
           <span>
             {minLength > 0 && characterCount < minLength && (
-              <span className="text-amber-600">
+              <span className="text-warning">
                 {minLength - characterCount} more required
               </span>
             )}
@@ -126,7 +126,7 @@ export function TextResponseItem({
           onClick={handleSubmit}
           disabled={isSubmitting}
           size="sm"
-          className="h-7 text-xs px-3 gap-1.5 bg-emerald-600 hover:bg-emerald-700"
+          className="h-7 text-xs px-3 gap-1.5 bg-success hover:bg-success"
         >
           {isSubmitting ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />

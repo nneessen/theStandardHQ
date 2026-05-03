@@ -44,9 +44,9 @@ const ICON_BY_STATUS: Record<
 };
 
 const ICON_RING: Record<StepperStatus, string> = {
-  completed: "bg-emerald-500 text-white ring-emerald-100 dark:ring-emerald-950",
-  in_progress: "bg-sky-500 text-white ring-sky-100 dark:ring-sky-950",
-  blocked: "bg-red-600 text-white ring-red-100 dark:ring-red-950",
+  completed: "bg-success text-white ring-success dark:ring-success",
+  in_progress: "bg-info text-white ring-info dark:ring-info",
+  blocked: "bg-destructive text-white ring-destructive dark:ring-destructive",
   locked:
     "bg-v2-ring  text-v2-ink-muted dark:text-v2-ink-subtle ring-v2-ring/60 ",
   not_started:
@@ -55,11 +55,10 @@ const ICON_RING: Record<StepperStatus, string> = {
 
 const STATUS_PILL: Record<StepperStatus, string> = {
   completed:
-    "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 ring-emerald-200 dark:ring-emerald-900",
-  in_progress:
-    "bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300 ring-sky-200 dark:ring-sky-900",
+    "bg-success/10 dark:bg-success/20 text-success ring-success/30 dark:ring-success",
+  in_progress: "bg-info/10 dark:bg-info/40 text-info ring-info dark:ring-info",
   blocked:
-    "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 ring-red-200 dark:ring-red-900",
+    "bg-destructive/10 dark:bg-destructive/20 text-destructive ring-destructive/30 dark:ring-destructive",
   locked:
     "bg-v2-ring dark:bg-v2-ring text-v2-ink-muted dark:text-v2-ink-subtle ring-v2-ring ",
   not_started:

@@ -43,7 +43,7 @@ export const SpeedToLeadWidget: React.FC<SpeedToLeadWidgetProps> = ({
     medianMinutes <= 15
       ? "text-[hsl(var(--success))]"
       : medianMinutes <= 60
-        ? "text-amber-500"
+        ? "text-warning"
         : "text-destructive";
 
   // Find the most impactful missed window signal (first one with significant count)
@@ -129,10 +129,10 @@ export const SpeedToLeadWidget: React.FC<SpeedToLeadWidgetProps> = ({
         (untouchedCount > 0 &&
           untouchedAvgAgeDays &&
           untouchedAvgAgeDays > 1)) && (
-        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 rounded bg-amber-50/50 px-1.5 py-0.5 dark:bg-amber-950/20">
-          <AlertTriangle className="h-2.5 w-2.5 text-amber-600 dark:text-amber-400" />
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 rounded bg-warning/10/50 px-1.5 py-0.5 dark:bg-warning/10">
+          <AlertTriangle className="h-2.5 w-2.5 text-warning" />
           {topMissedWindow && (
-            <span className="text-[10px] text-amber-700 dark:text-amber-300">
+            <span className="text-[10px] text-warning">
               <span className="font-mono font-semibold">
                 {topMissedWindow.count}
               </span>{" "}
@@ -142,7 +142,7 @@ export const SpeedToLeadWidget: React.FC<SpeedToLeadWidgetProps> = ({
           {untouchedCount > 0 &&
             untouchedAvgAgeDays != null &&
             untouchedAvgAgeDays > 1 && (
-              <span className="text-[10px] text-amber-700 dark:text-amber-300">
+              <span className="text-[10px] text-warning">
                 <span className="font-mono font-semibold">
                   {untouchedCount}
                 </span>{" "}
@@ -155,13 +155,9 @@ export const SpeedToLeadWidget: React.FC<SpeedToLeadWidgetProps> = ({
       {/* Footer stats */}
       <div className="flex gap-3 text-[10px] text-muted-foreground">
         <span>{totalLeads} leads</span>
-        <span className="text-emerald-600 dark:text-emerald-400">
-          {leadsWithActivity} contacted
-        </span>
+        <span className="text-success">{leadsWithActivity} contacted</span>
         {untouchedCount > 0 && (
-          <span className="text-amber-600 dark:text-amber-400">
-            {untouchedCount} untouched
-          </span>
+          <span className="text-warning">{untouchedCount} untouched</span>
         )}
       </div>
     </div>

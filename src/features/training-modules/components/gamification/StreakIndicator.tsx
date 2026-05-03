@@ -6,10 +6,10 @@ export function StreakIndicator({ days }: { days: number }) {
   return (
     <div className="flex items-center gap-1">
       <Flame
-        className={`h-3 w-3 ${isActive ? "text-orange-500" : "text-v2-ink-subtle dark:text-v2-ink-muted"}`}
+        className={`h-3 w-3 ${isActive ? "text-warning" : "text-v2-ink-subtle dark:text-v2-ink-muted"}`}
       />
       <span
-        className={`font-bold text-[11px] ${isActive ? "text-orange-600 dark:text-orange-400" : "text-v2-ink-subtle"}`}
+        className={`font-bold text-[11px] ${isActive ? "text-warning" : "text-v2-ink-subtle"}`}
       >
         {days}
       </span>

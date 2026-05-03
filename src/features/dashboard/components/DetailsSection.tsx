@@ -31,12 +31,12 @@ function intensityScore(hint: KPIIntensity | undefined): number | null {
 }
 
 function intensityDotClass(score: number | null): string {
-  if (score == null) return "bg-v2-ring";
-  if (score >= 0.5) return "bg-emerald-500";
-  if (score >= 0.15) return "bg-emerald-400";
-  if (score > -0.15) return "bg-v2-ring-strong";
-  if (score > -0.5) return "bg-amber-500";
-  return "bg-red-500";
+  if (score == null) return "bg-muted";
+  if (score >= 0.5) return "bg-success";
+  if (score >= 0.15) return "bg-success/70";
+  if (score > -0.15) return "bg-muted";
+  if (score > -0.5) return "bg-warning";
+  return "bg-destructive";
 }
 
 interface DetailsSectionProps {
@@ -47,9 +47,9 @@ const DetailsRow: React.FC<{
   section: KPISection;
 }> = ({ section }) => (
   <TooltipProvider delayDuration={200}>
-    <div className="grid grid-cols-1 lg:grid-cols-[100px_1fr] gap-x-4 gap-y-2 py-3 border-t border-dashed border-v2-ring first:border-t-0">
+    <div className="grid grid-cols-1 lg:grid-cols-[100px_1fr] gap-x-4 gap-y-2 py-3 border-t border-dashed border-border first:border-t-0">
       {/* Category label — magazine-style margin label */}
-      <div className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-subtle lg:pt-0.5">
+      <div className="text-[10px] uppercase tracking-[0.18em] font-semibold text-muted-foreground lg:pt-0.5">
         {section.category}
       </div>
 
@@ -63,11 +63,11 @@ const DetailsRow: React.FC<{
             <Tooltip key={i}>
               <TooltipTrigger asChild>
                 <div className="flex items-baseline justify-between gap-2 cursor-default group min-w-0">
-                  <dt className="text-[12px] italic text-v2-ink-muted group-hover:text-v2-ink transition-colors min-w-0 break-words">
+                  <dt className="text-[12px] italic text-muted-foreground group-hover:text-foreground transition-colors min-w-0 break-words">
                     {kpi.label}
                   </dt>
                   <dd className="flex items-center gap-1.5 flex-shrink-0">
-                    <span className="font-mono tabular-nums text-[12px] font-medium text-v2-ink whitespace-nowrap">
+                    <span className="font-mono tabular-nums text-[12px] font-medium text-foreground whitespace-nowrap">
                       {kpi.value}
                     </span>
                     {score != null && (
@@ -84,19 +84,19 @@ const DetailsRow: React.FC<{
               </TooltipTrigger>
               <TooltipContent
                 side="top"
-                className="bg-v2-card-dark border-v2-ring max-w-xs"
+                className="bg-card-dark border-border max-w-xs"
               >
                 <div className="space-y-0.5">
-                  <div className="text-xs font-semibold text-v2-canvas">
+                  <div className="text-xs font-semibold text-background">
                     {kpi.label}
                   </div>
-                  <div className="text-[10px] text-v2-ink-subtle">
+                  <div className="text-[10px] text-muted-foreground">
                     {section.category}
                   </div>
                   {kpi.intensity?.target != null && (
-                    <div className="text-[10px] text-v2-ink-subtle">
+                    <div className="text-[10px] text-muted-foreground">
                       Target:{" "}
-                      <span className="font-mono tabular-nums text-v2-canvas">
+                      <span className="font-mono tabular-nums text-background">
                         {kpi.intensity.target}
                         {kpi.intensity.direction === "lower_better" ? "↓" : "↑"}
                       </span>
@@ -114,22 +114,22 @@ const DetailsRow: React.FC<{
 
 export const DetailsSection: React.FC<DetailsSectionProps> = ({ sections }) => {
   return (
-    <section className="py-6 border-t border-v2-ring">
+    <section className="py-6 border-t border-border">
       <div className="flex items-baseline justify-between mb-3 flex-wrap gap-2">
-        <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted">
+        <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-muted-foreground">
           Details
         </h2>
-        <div className="flex items-center gap-3 text-[10px] italic text-v2-ink-subtle">
+        <div className="flex items-center gap-3 text-[10px] italic text-muted-foreground">
           <span className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <span className="h-1.5 w-1.5 rounded-full bg-success" />
             above target
           </span>
           <span className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+            <span className="h-1.5 w-1.5 rounded-full bg-warning" />
             watch
           </span>
           <span className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+            <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
             below
           </span>
         </div>

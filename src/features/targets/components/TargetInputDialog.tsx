@@ -90,12 +90,12 @@ export function TargetInputDialog({
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+            <Target className="h-5 w-5 text-info" />
             {isFirstTime
               ? "Welcome to Your Targets Dashboard"
               : "Set Your Annual Income Target"}
           </DialogTitle>
-          <DialogDescription className="text-v2-ink-muted">
+          <DialogDescription className="text-muted-foreground">
             {isFirstTime ? (
               <>
                 Let's start by setting your commission income goal for{" "}
@@ -113,9 +113,9 @@ export function TargetInputDialog({
 
         <div className="space-y-4 py-4">
           {isFirstTime && (
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 flex items-start gap-2">
-              <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-              <div className="text-blue-700 dark:text-blue-300">
+            <div className="bg-info/10 border border-info/20 rounded-lg p-3 flex items-start gap-2">
+              <TrendingUp className="h-4 w-4 text-info mt-0.5 flex-shrink-0" />
+              <div className="text-info">
                 <strong>How it works:</strong>
                 <ul className="mt-2 space-y-1 text-sm">
                   <li>
@@ -132,11 +132,11 @@ export function TargetInputDialog({
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="annual-target" className="text-v2-ink">
+            <Label htmlFor="annual-target" className="text-foreground">
               Annual Commission Income Target for {targetYear}
             </Label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-v2-ink-muted">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                 $
               </span>
               <Input
@@ -156,23 +156,21 @@ export function TargetInputDialog({
                 autoFocus
               />
             </div>
-            {error && (
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-            )}
-            <p className="text-xs text-v2-ink-muted">
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <p className="text-xs text-muted-foreground">
               This is your total commission income goal for the year, not
               including expenses.
             </p>
           </div>
 
-          <div className="rounded-lg bg-v2-ring p-3 space-y-2">
+          <div className="rounded-lg bg-muted p-3 space-y-2">
             <div className="flex items-start gap-2">
-              <Calculator className="h-4 w-4 text-v2-ink-muted mt-0.5" />
+              <Calculator className="h-4 w-4 text-muted-foreground mt-0.5" />
               <div className="text-sm">
-                <p className="font-medium text-v2-ink">
+                <p className="font-medium text-foreground">
                   What we'll calculate for you:
                 </p>
-                <ul className="mt-1 space-y-0.5 text-v2-ink-muted">
+                <ul className="mt-1 space-y-0.5 text-muted-foreground">
                   <li>• Quarterly target: Annual ÷ 4</li>
                   <li>• Monthly target: Annual ÷ 12</li>
                   <li>

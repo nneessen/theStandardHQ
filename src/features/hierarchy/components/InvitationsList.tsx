@@ -63,7 +63,7 @@ export function InvitationsList() {
         return (
           <Badge
             variant="outline"
-            className="text-[9px] px-1 py-0 h-4 text-emerald-600 dark:text-emerald-400 border-emerald-300 dark:border-emerald-600"
+            className="text-[9px] px-1 py-0 h-4 text-success border-success/40 dark:border-success"
           >
             <CheckCircle className="h-2 w-2 mr-0.5" />
             Accepted
@@ -73,7 +73,7 @@ export function InvitationsList() {
         return (
           <Badge
             variant="outline"
-            className="text-[9px] px-1 py-0 h-4 text-red-600 dark:text-red-400 border-red-300 dark:border-red-600"
+            className="text-[9px] px-1 py-0 h-4 text-destructive border-destructive/40 dark:border-destructive"
           >
             <XCircle className="h-2 w-2 mr-0.5" />
             Declined
@@ -145,7 +145,7 @@ export function InvitationsList() {
                   key={invitation.id}
                   className={`flex items-center justify-between py-1.5 px-2 rounded transition-colors ${
                     isInvalid
-                      ? "bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800"
+                      ? "bg-warning/10/50 dark:bg-warning/10 border border-warning/30"
                       : "hover:bg-v2-canvas"
                   }`}
                 >
@@ -158,7 +158,7 @@ export function InvitationsList() {
                         Sent {formatDate(invitation.created_at)}
                       </div>
                       {isInvalid && invalidReason && (
-                        <div className="text-[9px] text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-0.5">
+                        <div className="text-[9px] text-warning flex items-center gap-1 mt-0.5">
                           <AlertTriangle className="h-2.5 w-2.5" />
                           {invalidReason}
                         </div>
@@ -169,7 +169,7 @@ export function InvitationsList() {
                       {isStale && (
                         <Badge
                           variant="outline"
-                          className="text-[9px] px-1 py-0 h-4 text-amber-600 dark:text-amber-400 border-amber-300 dark:border-amber-600"
+                          className="text-[9px] px-1 py-0 h-4 text-warning border-warning/40 dark:border-warning"
                         >
                           <AlertTriangle className="h-2 w-2 mr-0.5" />
                           Stale
@@ -199,7 +199,7 @@ export function InvitationsList() {
                         size="sm"
                         onClick={() => handleCancelInvitation(invitation.id)}
                         disabled={cancelMutation.isPending || isInvalid}
-                        className="h-5 w-5 p-0 text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 disabled:opacity-30"
+                        className="h-5 w-5 p-0 text-destructive hover:text-destructive dark:hover:text-destructive disabled:opacity-30"
                         title={
                           isInvalid
                             ? "Cannot cancel invalid invitation - delete manually if needed"

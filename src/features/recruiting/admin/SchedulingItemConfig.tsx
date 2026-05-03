@@ -141,17 +141,17 @@ export function SchedulingItemConfig({
   const Icon = INTEGRATION_ICONS[schedulingType];
 
   return (
-    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-background rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <Icon className="h-3.5 w-3.5 text-v2-ink-muted" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
+        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
           Scheduling Configuration
         </span>
       </div>
 
       {/* Scheduling Type */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Scheduling Type
         </Label>
         <Select
@@ -165,7 +165,7 @@ export function SchedulingItemConfig({
             }
           }}
         >
-          <SelectTrigger className="h-7 text-[11px] bg-white  border-v2-ring">
+          <SelectTrigger className="h-7 text-[11px] bg-white  border-border">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -201,14 +201,14 @@ export function SchedulingItemConfig({
       {!isLoading && (
         <div className="space-y-1">
           {selectedIntegration ? (
-            <div className="flex items-center gap-2 p-1.5 bg-green-50 dark:bg-green-900/20 rounded shadow-sm">
+            <div className="flex items-center gap-2 p-1.5 bg-success/10 rounded shadow-sm">
               <Badge
                 variant="outline"
-                className="text-[9px] h-4 px-1.5 border-green-300 text-green-700 dark:border-green-700 dark:text-green-400"
+                className="text-[9px] h-4 px-1.5 border-success/40 text-success dark:border-success dark:text-success"
               >
                 Connected
               </Badge>
-              <span className="text-[10px] text-green-700 dark:text-green-400 truncate flex-1">
+              <span className="text-[10px] text-success truncate flex-1">
                 {selectedIntegration.display_name ||
                   selectedIntegration.booking_url}
               </span>
@@ -216,15 +216,15 @@ export function SchedulingItemConfig({
                 href={selectedIntegration.booking_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
+                className="text-success hover:text-success dark:hover:text-success"
               >
                 <ExternalLink className="h-3 w-3" />
               </a>
             </div>
           ) : (
-            <div className="flex items-center gap-2 p-1.5 bg-amber-50 dark:bg-amber-900/20 rounded shadow-sm">
-              <AlertCircle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-              <span className="text-[10px] text-amber-700 dark:text-amber-400">
+            <div className="flex items-center gap-2 p-1.5 bg-warning/10 rounded shadow-sm">
+              <AlertCircle className="h-3 w-3 text-warning" />
+              <span className="text-[10px] text-warning">
                 No {INTEGRATION_TYPE_LABELS[schedulingType]} integration
                 configured.{" "}
                 <button
@@ -252,21 +252,23 @@ export function SchedulingItemConfig({
       {/* Custom URL Toggle & Input */}
       {(useCustomUrl || !selectedIntegration) && (
         <div className="space-y-1">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Custom Booking URL
             {!selectedIntegration && (
-              <span className="text-red-500 ml-0.5">*</span>
+              <span className="text-destructive ml-0.5">*</span>
             )}
           </Label>
           <Input
             value={customUrl}
             onChange={(e) => handleCustomUrlChange(e.target.value)}
             placeholder={`https://${schedulingType === "zoom" ? "zoom.us/j/..." : schedulingType === "calendly" ? "calendly.com/..." : "calendar.google.com/..."}`}
-            className={`h-7 text-[11px] bg-white  border-v2-ring ${
-              urlError ? "border-red-500 dark:border-red-500" : ""
+            className={`h-7 text-[11px] bg-white  border-border ${
+              urlError ? "border-destructive dark:border-destructive" : ""
             }`}
           />
-          {urlError && <p className="text-[10px] text-red-500">{urlError}</p>}
+          {urlError && (
+            <p className="text-[10px] text-destructive">{urlError}</p>
+          )}
           {selectedIntegration && useCustomUrl && (
             <button
               type="button"
@@ -275,7 +277,7 @@ export function SchedulingItemConfig({
                 setCustomUrl("");
                 setUrlError(null);
               }}
-              className="text-[10px] text-v2-ink-muted underline hover:no-underline"
+              className="text-[10px] text-muted-foreground underline hover:no-underline"
             >
               Use configured integration instead
             </button>
@@ -285,15 +287,15 @@ export function SchedulingItemConfig({
 
       {/* Instructions */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Instructions for Recruit
-          <span className="text-v2-ink-subtle ml-1">(optional)</span>
+          <span className="text-muted-foreground ml-1">(optional)</span>
         </Label>
         <Textarea
           value={instructions}
           onChange={(e) => setInstructions(e.target.value)}
           placeholder="e.g., Please book a 30-minute call at your earliest convenience."
-          className="text-[11px] min-h-12 bg-white  border-v2-ring"
+          className="text-[11px] min-h-12 bg-white  border-border"
         />
       </div>
     </div>

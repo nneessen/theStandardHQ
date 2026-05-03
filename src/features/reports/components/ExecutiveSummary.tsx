@@ -33,9 +33,7 @@ export function ExecutiveSummary({ summary }: ExecutiveSummaryProps) {
             {metric.trend && (
               <span
                 className={`text-xs font-medium ${
-                  metric.trend === "up"
-                    ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-red-600 dark:text-red-400"
+                  metric.trend === "up" ? "text-success" : "text-destructive"
                 }`}
               >
                 {metric.trend === "up" ? "↑" : "↓"}
@@ -56,7 +54,7 @@ export function ExecutiveSummary({ summary }: ExecutiveSummaryProps) {
               key={insight.id}
               className="flex items-start gap-2 p-2 rounded-sm bg-v2-accent-soft border-l-2 border-l-v2-accent-strong"
             >
-              <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-3 h-3 text-warning flex-shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <h4 className="text-xs font-semibold text-v2-ink">
                   {insight.title}

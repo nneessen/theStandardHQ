@@ -155,7 +155,7 @@ export function ImoForm({
         <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4 mt-4">
           {/* Basic Info */}
           <div className="space-y-3">
-            <h4 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
+            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
               Basic Information
             </h4>
 
@@ -171,7 +171,7 @@ export function ImoForm({
                   placeholder="e.g., Founders Financial Group"
                 />
                 {errors.name && (
-                  <p className="text-[10px] text-red-500">
+                  <p className="text-[10px] text-destructive">
                     {errors.name.message}
                   </p>
                 )}
@@ -195,7 +195,7 @@ export function ImoForm({
                   placeholder="e.g., FFG"
                 />
                 {errors.code && (
-                  <p className="text-[10px] text-red-500">
+                  <p className="text-[10px] text-destructive">
                     {errors.code.message}
                   </p>
                 )}
@@ -217,7 +217,7 @@ export function ImoForm({
 
           {/* Contact Info */}
           <div className="space-y-3">
-            <h4 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
+            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
               Contact Information
             </h4>
 
@@ -263,7 +263,7 @@ export function ImoForm({
 
           {/* Address */}
           <div className="space-y-3">
-            <h4 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
+            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
               Address
             </h4>
 
@@ -321,7 +321,7 @@ export function ImoForm({
 
           {/* Branding */}
           <div className="space-y-3">
-            <h4 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
+            <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
               Branding
             </h4>
 
@@ -369,14 +369,16 @@ export function ImoForm({
           {/* Status (edit only) */}
           {isEditing && (
             <div className="space-y-3">
-              <h4 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
+              <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
                 Status
               </h4>
 
-              <div className="flex items-center justify-between p-2 rounded-lg border border-v2-ring">
+              <div className="flex items-center justify-between p-2 rounded-lg border border-border">
                 <div>
-                  <p className="text-[11px] font-medium text-v2-ink">Active</p>
-                  <p className="text-[10px] text-v2-ink-muted">
+                  <p className="text-[11px] font-medium text-foreground">
+                    Active
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
                     Deactivating will hide this IMO from users
                   </p>
                 </div>
@@ -389,7 +391,7 @@ export function ImoForm({
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-2 pt-4 border-t border-v2-ring">
+          <div className="flex justify-end gap-2 pt-4 border-t border-border">
             <Button
               type="button"
               variant="outline"

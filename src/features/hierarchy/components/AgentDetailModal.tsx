@@ -155,10 +155,10 @@ export function AgentDetailModal({
   const performanceScore = details?.performanceScore || 0;
   const performanceColor =
     performanceScore >= 90
-      ? "text-emerald-600"
+      ? "text-success"
       : performanceScore >= 70
-        ? "text-amber-600"
-        : "text-red-600";
+        ? "text-warning"
+        : "text-destructive";
 
   const isLoading = detailsLoading || policiesLoading || commissionsLoading;
 
@@ -292,7 +292,7 @@ export function AgentDetailModal({
                           <span className="text-sm text-muted-foreground">
                             Active Policies
                           </span>
-                          <span className="font-mono font-semibold text-emerald-600">
+                          <span className="font-mono font-semibold text-success">
                             {details?.activePolicies || 0}
                           </span>
                         </div>
@@ -346,7 +346,7 @@ export function AgentDetailModal({
                           <span className="text-sm text-muted-foreground">
                             Overrides Generated
                           </span>
-                          <span className="font-mono font-semibold text-violet-600">
+                          <span className="font-mono font-semibold text-info">
                             {safeFormatCurrency(details?.overridesGenerated)}
                           </span>
                         </div>
@@ -459,10 +459,10 @@ export function AgentDetailModal({
                                   className={cn(
                                     "h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0",
                                     activity.type === "policy"
-                                      ? "bg-blue-100 text-blue-600"
+                                      ? "bg-info/20 text-info"
                                       : activity.type === "commission"
-                                        ? "bg-emerald-100 text-emerald-600"
-                                        : "bg-amber-100 text-amber-600",
+                                        ? "bg-success/20 text-success"
+                                        : "bg-warning/20 text-warning",
                                   )}
                                 >
                                   {activity.type === "policy" ? (
@@ -620,7 +620,7 @@ export function AgentDetailModal({
                           <span className="text-sm text-muted-foreground">
                             Total Earned
                           </span>
-                          <span className="font-mono font-semibold text-emerald-600 text-lg">
+                          <span className="font-mono font-semibold text-success text-lg">
                             {safeFormatCurrency(commissions?.totalEarned)}
                           </span>
                         </div>
@@ -638,7 +638,7 @@ export function AgentDetailModal({
                           <span className="text-sm text-muted-foreground">
                             Advances
                           </span>
-                          <span className="font-mono font-semibold text-amber-600">
+                          <span className="font-mono font-semibold text-warning">
                             {safeFormatCurrency(commissions?.advances)}
                           </span>
                         </div>
@@ -665,7 +665,7 @@ export function AgentDetailModal({
                           <span className="text-sm text-muted-foreground">
                             This Month (MTD)
                           </span>
-                          <span className="font-mono font-semibold text-violet-600 text-lg">
+                          <span className="font-mono font-semibold text-info text-lg">
                             {safeFormatCurrency(overrides?.mtd)}
                           </span>
                         </div>
@@ -674,7 +674,7 @@ export function AgentDetailModal({
                           <span className="text-sm text-muted-foreground">
                             Year to Date (YTD)
                           </span>
-                          <span className="font-mono font-semibold text-violet-600">
+                          <span className="font-mono font-semibold text-info">
                             {safeFormatCurrency(overrides?.ytd)}
                           </span>
                         </div>
@@ -881,14 +881,17 @@ export function AgentDetailModal({
                                         variant={
                                           policy.lifecycleStatus === "active"
                                             ? "default"
-                                            : policy.lifecycleStatus === "lapsed"
+                                            : policy.lifecycleStatus ===
+                                                "lapsed"
                                               ? "destructive"
-                                              : policy.lifecycleStatus === "cancelled"
+                                              : policy.lifecycleStatus ===
+                                                  "cancelled"
                                                 ? "destructive"
                                                 : "secondary"
                                         }
                                       >
-                                        {policy.lifecycleStatus || policy.status}
+                                        {policy.lifecycleStatus ||
+                                          policy.status}
                                       </Badge>
                                     </TableCell>
                                     <TableCell className="text-sm">
@@ -978,12 +981,12 @@ export function AgentDetailModal({
                                   className={cn(
                                     "h-10 w-10 rounded-full flex items-center justify-center flex-shrink-0",
                                     activity.category === "policy"
-                                      ? "bg-blue-100 text-blue-600"
+                                      ? "bg-info/20 text-info"
                                       : activity.category === "commission"
-                                        ? "bg-emerald-100 text-emerald-600"
+                                        ? "bg-success/20 text-success"
                                         : activity.category === "override"
-                                          ? "bg-violet-100 text-violet-600"
-                                          : "bg-amber-100 text-amber-600",
+                                          ? "bg-info/20 text-info"
+                                          : "bg-warning/20 text-warning",
                                   )}
                                 >
                                   {activity.category === "policy" ? (

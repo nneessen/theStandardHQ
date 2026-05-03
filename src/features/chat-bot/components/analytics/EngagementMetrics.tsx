@@ -61,7 +61,7 @@ export function EngagementMetrics({
   return (
     <div className="p-2.5 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
       <div className="flex items-center gap-1.5 mb-2">
-        <Zap className="h-3 w-3 text-amber-500" />
+        <Zap className="h-3 w-3 text-warning" />
         <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
           Engagement
         </h4>
@@ -76,9 +76,7 @@ export function EngagementMetrics({
             <span
               className={cn(
                 "text-[10px] font-medium",
-                r.good
-                  ? "text-v2-ink dark:text-v2-ink"
-                  : "text-amber-600 dark:text-amber-400",
+                r.good ? "text-v2-ink dark:text-v2-ink" : "text-warning",
               )}
             >
               {r.value}

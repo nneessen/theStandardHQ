@@ -26,21 +26,21 @@ export function UWWizardDisclaimerGate({
       >
         <DialogHeader>
           <DialogTitle className="text-sm flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0" />
+            <AlertTriangle className="h-5 w-5 text-warning flex-shrink-0" />
             Important: Use With Caution
           </DialogTitle>
         </DialogHeader>
 
         <ul className="space-y-2 text-xs text-muted-foreground pl-1">
           <li className="flex gap-2">
-            <span className="text-amber-500 flex-shrink-0 mt-0.5">•</span>
+            <span className="text-warning flex-shrink-0 mt-0.5">•</span>
             <span>
               This tool is still under active development and may not cover all
               scenarios.
             </span>
           </li>
           <li className="flex gap-2">
-            <span className="text-amber-500 flex-shrink-0 mt-0.5">•</span>
+            <span className="text-warning flex-shrink-0 mt-0.5">•</span>
             <span>
               Results marked{" "}
               <strong className="text-foreground">
@@ -55,13 +55,13 @@ export function UWWizardDisclaimerGate({
             </span>
           </li>
           <li className="flex gap-2">
-            <span className="text-amber-500 flex-shrink-0 mt-0.5">•</span>
+            <span className="text-warning flex-shrink-0 mt-0.5">•</span>
             <span>
               Do not rely solely on this tool for final underwriting decisions.
             </span>
           </li>
           <li className="flex gap-2">
-            <span className="text-amber-500 flex-shrink-0 mt-0.5">•</span>
+            <span className="text-warning flex-shrink-0 mt-0.5">•</span>
             <span>Always verify results against carrier guidelines.</span>
           </li>
         </ul>

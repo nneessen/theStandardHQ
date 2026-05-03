@@ -256,7 +256,7 @@ export function MessagesPage() {
                         "ml-0.5 inline-flex items-center justify-center min-w-[16px] h-[16px] px-1 rounded-full text-[9.5px] font-semibold tabular-nums",
                         isActive
                           ? "bg-v2-ink text-v2-canvas"
-                          : "bg-blue-500 text-white",
+                          : "bg-info text-white",
                       )}
                     >
                       {tab.badge}
@@ -373,9 +373,9 @@ function HeroStat({ icon, value, label, tone = "neutral" }: HeroStatProps) {
           <span
             className={cn(
               "inline-flex items-center justify-center w-5 h-5 rounded-full self-center",
-              tone === "accent" && "bg-blue-500 text-white",
-              tone === "warn" && "bg-amber-500 text-white",
-              tone === "danger" && "bg-red-500 text-white",
+              tone === "accent" && "bg-info text-white",
+              tone === "warn" && "bg-warning text-white",
+              tone === "danger" && "bg-destructive text-white",
               tone === "neutral" &&
                 "bg-v2-canvas text-v2-ink-muted border border-v2-ring",
             )}
@@ -386,9 +386,7 @@ function HeroStat({ icon, value, label, tone = "neutral" }: HeroStatProps) {
         <span
           className={cn(
             "text-[22px] font-semibold tracking-tight leading-none tabular-nums",
-            tone === "danger"
-              ? "text-red-600 dark:text-red-400"
-              : "text-v2-ink",
+            tone === "danger" ? "text-destructive" : "text-v2-ink",
           )}
         >
           {value}

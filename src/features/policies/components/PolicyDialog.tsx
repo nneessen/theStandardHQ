@@ -63,7 +63,7 @@ export function PolicyDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
-        className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-v2-card text-v2-ink border border-v2-ring shadow-v2-lift ring-0 outline-none w-[calc(100vw-1.5rem)] sm:w-[calc(100vw-3rem)] max-w-3xl max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
+        className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-card text-foreground border border-border shadow-v2-lift ring-0 outline-none w-[calc(100vw-1.5rem)] sm:w-[calc(100vw-3rem)] max-w-3xl max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
         hideCloseButton
         // Block ESC key and click-outside during submission
         onPointerDownOutside={(e) => {
@@ -81,14 +81,14 @@ export function PolicyDialog({
         </DialogTitle>
 
         {/* Header — fixed, no scroll */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-v2-ring bg-v2-card-tinted flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-card-tinted flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <span className="h-2 w-2 rounded-full bg-v2-accent" />
+            <span className="h-2 w-2 rounded-full bg-accent" />
             <div className="flex flex-col leading-tight">
-              <span className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">
                 {policyId ? "Edit" : "New"}
               </span>
-              <span className="text-base font-semibold tracking-tight text-v2-ink">
+              <span className="text-base font-semibold tracking-tight text-foreground">
                 {policyId ? "Edit Policy" : "New Policy"}
               </span>
             </div>
@@ -98,7 +98,7 @@ export function PolicyDialog({
             onClick={handleClose}
             disabled={isLoading}
             aria-label="Close"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-v2-pill text-v2-ink hover:bg-v2-accent-soft disabled:opacity-40 transition-colors"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-v2-pill text-foreground hover:bg-accent/40 disabled:opacity-40 transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -106,7 +106,7 @@ export function PolicyDialog({
 
         {/* Content — only this region scrolls */}
         {isLoadingPolicy && policyId ? (
-          <div className="flex-1 flex items-center justify-center p-8 text-v2-ink-muted text-sm">
+          <div className="flex-1 flex items-center justify-center p-8 text-muted-foreground text-sm">
             Loading policy data…
           </div>
         ) : (

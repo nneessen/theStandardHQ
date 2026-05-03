@@ -97,8 +97,8 @@ export function AttributionTable({
                       className={cn(
                         "text-[9px] px-1 py-0",
                         a.attribution_type === "bot_converted"
-                          ? "border-emerald-300 text-emerald-700 dark:border-emerald-700 dark:text-emerald-400"
-                          : "border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-400",
+                          ? "border-success/40 text-success dark:border-success dark:text-success"
+                          : "border-info/40 text-info dark:border-info dark:text-info",
                       )}
                     >
                       {a.attribution_type === "bot_converted"
@@ -118,7 +118,7 @@ export function AttributionTable({
                     <button
                       onClick={() => handleUnlink(a.id)}
                       disabled={unlinkingId === a.id}
-                      className="inline-flex items-center gap-0.5 text-[9px] text-red-500 hover:text-red-700 disabled:opacity-50"
+                      className="inline-flex items-center gap-0.5 text-[9px] text-destructive hover:text-destructive disabled:opacity-50"
                       title="Remove attribution"
                     >
                       {unlinkingId === a.id ? (
@@ -145,10 +145,10 @@ function ConfidenceBadge({ score }: { score: number }) {
       className={cn(
         "text-[9px] font-medium",
         pct >= 90
-          ? "text-emerald-600 dark:text-emerald-400"
+          ? "text-success"
           : pct >= 60
-            ? "text-amber-600 dark:text-amber-400"
-            : "text-red-500",
+            ? "text-warning"
+            : "text-destructive",
       )}
     >
       {pct}%

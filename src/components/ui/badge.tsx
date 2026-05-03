@@ -1,45 +1,32 @@
-// src/components/ui/badge.tsx
-// Modern badge with matching button variants
-
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-all duration-200",
+  "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors duration-150",
   {
     variants: {
       variant: {
-        // Default: Dark badge with strong contrast
-        default:
-          "bg-zinc-900 text-white shadow-sm dark:bg-zinc-100 dark:text-zinc-900",
+        default: "bg-primary text-primary-foreground",
 
-        // Secondary: Light slate with visible background
-        secondary:
-          "bg-slate-200 text-slate-800 shadow-sm dark:bg-slate-700 dark:text-slate-100",
+        secondary: "bg-secondary text-secondary-foreground",
 
-        // Success: VIBRANT green
-        success: "bg-emerald-500 text-white shadow-sm",
+        success: "bg-success text-success-foreground",
 
-        // Warning: VIBRANT amber/orange
-        warning: "bg-amber-500 text-white shadow-sm",
+        warning: "bg-warning text-warning-foreground",
 
-        // Destructive: VIBRANT red
-        destructive: "bg-red-500 text-white shadow-sm",
+        destructive: "bg-destructive text-destructive-foreground",
 
-        // Info: VIBRANT blue
-        info: "bg-blue-500 text-white shadow-sm",
+        info: "bg-info text-info-foreground",
 
-        // Outline: Visible background instead of transparent
-        outline:
-          "border border-zinc-400 bg-zinc-100 text-zinc-800 shadow-sm dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-200",
+        outline: "border border-border bg-background text-foreground",
 
-        // Ghost: Visible subtle background
-        ghost: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+        ghost: "bg-muted text-muted-foreground",
 
-        // Premium: Gradient amber to orange
-        premium:
-          "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-sm",
+        accent: "bg-accent text-accent-foreground",
+
+        // Premium retained for backward compat — neutralized to accent.
+        premium: "bg-accent text-accent-foreground",
       },
       size: {
         default: "px-2.5 py-0.5 text-xs",

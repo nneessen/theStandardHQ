@@ -88,20 +88,20 @@ export function TeamPolicyStatusBreakdown({
   const getColorClass = (color: string, type: "text" | "bg") => {
     const colors: Record<string, Record<string, string>> = {
       emerald: {
-        text: "text-emerald-600 dark:text-emerald-400",
-        bg: "bg-emerald-600 dark:bg-emerald-400",
+        text: "text-success",
+        bg: "bg-success dark:bg-success/70",
       },
       blue: {
-        text: "text-blue-600 dark:text-blue-400",
-        bg: "bg-blue-600 dark:bg-blue-400",
+        text: "text-info",
+        bg: "bg-info dark:bg-info/70",
       },
       amber: {
-        text: "text-amber-600 dark:text-amber-400",
-        bg: "bg-amber-600 dark:bg-amber-400",
+        text: "text-warning",
+        bg: "bg-warning dark:bg-warning/70",
       },
       red: {
-        text: "text-red-600 dark:text-red-400",
-        bg: "bg-red-600 dark:bg-red-400",
+        text: "text-destructive",
+        bg: "bg-destructive dark:bg-destructive/70",
       },
     };
     return colors[color]?.[type] || "";
@@ -123,10 +123,10 @@ export function TeamPolicyStatusBreakdown({
           className={cn(
             "px-1.5 py-0.5 rounded text-[9px] font-medium",
             data.persistencyRate >= 80
-              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+              ? "bg-success/10 text-success"
               : data.persistencyRate >= 60
-                ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                : "bg-red-500/10 text-red-600 dark:text-red-400",
+                ? "bg-warning/10 text-warning"
+                : "bg-destructive/10 text-destructive",
           )}
         >
           {data.persistencyRate.toFixed(1)}% Persistency

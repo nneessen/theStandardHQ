@@ -19,11 +19,11 @@ const VALUE_SIZE: Record<NonNullable<EditorialStatProps["size"]>, string> = {
 
 const TONE: Record<NonNullable<EditorialStatProps["tone"]>, string> = {
   default: "text-v2-ink ",
-  brand: "text-amber-700 dark:text-amber-400",
-  success: "text-emerald-700 dark:text-emerald-400",
-  progress: "text-sky-700 dark:text-sky-400",
-  warn: "text-orange-700 dark:text-orange-400",
-  error: "text-red-700 dark:text-red-400",
+  brand: "text-warning",
+  success: "text-success",
+  progress: "text-info dark:text-info",
+  warn: "text-warning dark:text-warning",
+  error: "text-destructive",
 };
 
 export const EditorialStat: React.FC<EditorialStatProps> = ({

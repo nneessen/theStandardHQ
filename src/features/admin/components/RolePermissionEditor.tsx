@@ -222,9 +222,9 @@ export function RolePermissionEditor({
         className="flex flex-col p-0 w-full sm:max-w-2xl"
       >
         {/* Header */}
-        <SheetHeader className="px-6 pt-6 pb-4 border-b border-v2-ring">
+        <SheetHeader className="px-6 pt-6 pb-4 border-b border-border">
           <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-v2-ink" />
+            <Shield className="h-5 w-5 text-foreground" />
             <SheetTitle className="text-base">
               Manage Permissions: {role?.display_name}
             </SheetTitle>
@@ -236,15 +236,15 @@ export function RolePermissionEditor({
           </SheetDescription>
 
           {/* Role stats */}
-          <div className="flex items-center gap-4 mt-2 pt-2 border-t border-v2-ring/60">
+          <div className="flex items-center gap-4 mt-2 pt-2 border-t border-border/60">
             <div className="flex items-center gap-1.5 text-[11px]">
-              <span className="text-v2-ink-muted">Role:</span>
-              <code className="px-1.5 py-0.5 bg-v2-ring rounded text-v2-ink-muted">
+              <span className="text-muted-foreground">Role:</span>
+              <code className="px-1.5 py-0.5 bg-muted rounded text-muted-foreground">
                 {role?.name}
               </code>
             </div>
             <div className="flex items-center gap-1.5 text-[11px]">
-              <span className="text-v2-ink-muted">Permissions:</span>
+              <span className="text-muted-foreground">Permissions:</span>
               <Badge variant="secondary" className="h-5 text-[10px]">
                 {selectedPermissions} / {totalPermissions}
               </Badge>
@@ -253,15 +253,15 @@ export function RolePermissionEditor({
         </SheetHeader>
 
         {/* Search and controls */}
-        <div className="px-6 py-3 border-b border-v2-ring bg-v2-canvas dark:bg-v2-card-dark/50">
+        <div className="px-6 py-3 border-b border-border bg-background dark:bg-card-dark/50">
           <div className="flex items-center gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-v2-ink-subtle" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
                 placeholder="Search permissions..."
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                className="pl-8 h-8 text-[11px] bg-v2-card"
+                className="pl-8 h-8 text-[11px] bg-card"
               />
             </div>
             <div className="flex items-center gap-1">
@@ -303,19 +303,19 @@ export function RolePermissionEditor({
                   open={isExpanded}
                   onOpenChange={() => toggleCategory(category.key)}
                 >
-                  <div className="border border-v2-ring rounded-lg overflow-hidden">
+                  <div className="border border-border rounded-lg overflow-hidden">
                     {/* Category header */}
                     <CollapsibleTrigger asChild>
-                      <div className="flex items-center justify-between px-3 py-2 bg-v2-canvas cursor-pointer hover:bg-v2-ring dark:hover:bg-v2-ring transition-colors">
+                      <div className="flex items-center justify-between px-3 py-2 bg-background cursor-pointer hover:bg-muted dark:hover:bg-muted transition-colors">
                         <div className="flex items-center gap-2">
                           {isExpanded ? (
-                            <ChevronDown className="h-4 w-4 text-v2-ink-muted" />
+                            <ChevronDown className="h-4 w-4 text-muted-foreground" />
                           ) : (
-                            <ChevronRight className="h-4 w-4 text-v2-ink-muted" />
+                            <ChevronRight className="h-4 w-4 text-muted-foreground" />
                           )}
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="text-[12px] font-medium text-v2-ink">
+                              <span className="text-[12px] font-medium text-foreground">
                                 {category.label}
                               </span>
                               <Badge
@@ -332,7 +332,7 @@ export function RolePermissionEditor({
                                 {category.permissions.length}
                               </Badge>
                             </div>
-                            <p className="text-[10px] text-v2-ink-muted">
+                            <p className="text-[10px] text-muted-foreground">
                               {category.description}
                             </p>
                           </div>
@@ -346,7 +346,7 @@ export function RolePermissionEditor({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 px-2 text-[10px] text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                            className="h-6 px-2 text-[10px] text-success hover:text-success hover:bg-success/10 dark:hover:bg-success/20"
                             onClick={() => handleCategoryToggle(category, true)}
                             disabled={allSelected || isLoading}
                             title="Select all in category"
@@ -357,7 +357,7 @@ export function RolePermissionEditor({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 px-2 text-[10px] text-v2-ink-muted hover:text-v2-ink"
+                            className="h-6 px-2 text-[10px] text-muted-foreground hover:text-foreground"
                             onClick={() =>
                               handleCategoryToggle(category, false)
                             }
@@ -373,7 +373,7 @@ export function RolePermissionEditor({
 
                     {/* Permission list */}
                     <CollapsibleContent>
-                      <div className="divide-y divide-v2-ring/60">
+                      <div className="divide-y divide-border/60">
                         {category.permissions.map((permission) => {
                           const isChecked = rolePermissionIds.has(
                             permission.id,
@@ -385,11 +385,11 @@ export function RolePermissionEditor({
                           return (
                             <div
                               key={permission.id}
-                              className="flex items-start gap-3 px-3 py-2 hover:bg-v2-canvas/30"
+                              className="flex items-start gap-3 px-3 py-2 hover:bg-background/30"
                             >
                               <div className="pt-0.5">
                                 {isPending ? (
-                                  <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
+                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                                 ) : (
                                   <Checkbox
                                     id={permission.id}
@@ -406,15 +406,15 @@ export function RolePermissionEditor({
                                 className="flex-1 cursor-pointer"
                               >
                                 <div className="flex items-center gap-2">
-                                  <code className="text-[11px] font-medium text-v2-ink bg-v2-ring px-1.5 py-0.5 rounded">
+                                  <code className="text-[11px] font-medium text-foreground bg-muted px-1.5 py-0.5 rounded">
                                     {permission.code}
                                   </code>
                                   {isChecked && (
-                                    <Check className="h-3 w-3 text-emerald-500" />
+                                    <Check className="h-3 w-3 text-success" />
                                   )}
                                 </div>
                                 {permission.description && (
-                                  <p className="text-[10px] text-v2-ink-muted mt-0.5">
+                                  <p className="text-[10px] text-muted-foreground mt-0.5">
                                     {permission.description}
                                   </p>
                                 )}
@@ -430,7 +430,7 @@ export function RolePermissionEditor({
             })}
 
             {filteredCategories.length === 0 && (
-              <div className="text-center py-8 text-[11px] text-v2-ink-muted">
+              <div className="text-center py-8 text-[11px] text-muted-foreground">
                 {searchQuery
                   ? `No permissions found matching "${searchQuery}"`
                   : "No permissions available"}
@@ -440,9 +440,9 @@ export function RolePermissionEditor({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-v2-ring bg-v2-canvas dark:bg-v2-card-dark/50">
+        <div className="px-6 py-4 border-t border-border bg-background dark:bg-card-dark/50">
           <div className="flex items-center justify-between">
-            <div className="text-[11px] text-v2-ink-muted">
+            <div className="text-[11px] text-muted-foreground">
               {pendingPermissions.size > 0 ? (
                 <span className="flex items-center gap-1">
                   <Loader2 className="h-3 w-3 animate-spin" />

@@ -106,7 +106,7 @@ const DailyCallsSection: React.FC = () => {
 
       {isError && (
         <div className="rounded-md border border-border bg-background p-4 flex flex-col items-center text-center">
-          <AlertTriangle className="h-5 w-5 text-amber-500 mb-2" />
+          <AlertTriangle className="h-5 w-5 text-warning mb-2" />
           <p className="text-[11px] font-medium text-foreground mb-1">
             Couldn't load call stats
           </p>
@@ -189,7 +189,7 @@ const PipelineSnapshotSection: React.FC = () => {
           </span>
         </div>
         <div className="rounded-md border border-border bg-background p-4 flex flex-col items-center text-center">
-          <AlertTriangle className="h-5 w-5 text-amber-500 mb-2" />
+          <AlertTriangle className="h-5 w-5 text-warning mb-2" />
           <p className="text-[11px] font-medium text-foreground mb-1">
             Couldn't load pipeline snapshot
           </p>
@@ -246,7 +246,7 @@ const PipelineSnapshotSection: React.FC = () => {
 
       {!hasAnyLeads && (
         <div className="flex items-center gap-2 rounded-md border border-border bg-muted px-3 py-2">
-          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-warning" />
           <p className="text-[11px] text-muted-foreground">
             No leads scored yet for any team member. Last cron run:{" "}
             {relativeTime(lastRun ?? null)}.

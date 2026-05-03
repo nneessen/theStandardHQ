@@ -166,14 +166,14 @@ export function AlertRuleDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto p-0">
-        <DialogHeader className="px-3 py-2 border-b border-v2-ring/60">
+        <DialogHeader className="px-3 py-2 border-b border-border/60">
           <div className="flex items-center gap-2">
-            <Bell className="h-3.5 w-3.5 text-v2-ink-subtle" />
+            <Bell className="h-3.5 w-3.5 text-muted-foreground" />
             <div>
-              <DialogTitle className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
+              <DialogTitle className="text-[11px] font-semibold text-foreground uppercase tracking-wide">
                 {isEditing ? "Edit Alert Rule" : "Create Alert Rule"}
               </DialogTitle>
-              <DialogDescription className="text-[10px] text-v2-ink-muted">
+              <DialogDescription className="text-[10px] text-muted-foreground">
                 {isEditing
                   ? "Update the settings for this alert rule"
                   : "Set up a new alert to monitor business metrics"}
@@ -193,13 +193,13 @@ export function AlertRuleDialog({
               name="name"
               render={({ field }) => (
                 <FormItem className="space-y-1">
-                  <Label className="text-[11px] text-v2-ink-muted">
+                  <Label className="text-[11px] text-muted-foreground">
                     Rule Name *
                   </Label>
                   <FormControl>
                     <Input
                       placeholder="e.g., Policy Lapse Warning"
-                      className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                      className="h-7 text-[11px] bg-card border-border"
                       {...field}
                     />
                   </FormControl>
@@ -213,13 +213,13 @@ export function AlertRuleDialog({
               name="description"
               render={({ field }) => (
                 <FormItem className="space-y-1">
-                  <Label className="text-[11px] text-v2-ink-muted">
+                  <Label className="text-[11px] text-muted-foreground">
                     Description (optional)
                   </Label>
                   <FormControl>
                     <Textarea
                       placeholder="Describe what this rule monitors..."
-                      className="resize-none text-[11px] bg-v2-card border-v2-ring"
+                      className="resize-none text-[11px] bg-card border-border"
                       rows={2}
                       {...field}
                     />
@@ -230,8 +230,8 @@ export function AlertRuleDialog({
             />
 
             {/* Metric Configuration */}
-            <div className="pt-2 border-t border-v2-ring/60 space-y-2">
-              <h4 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
+            <div className="pt-2 border-t border-border/60 space-y-2">
+              <h4 className="text-[11px] font-semibold text-foreground uppercase tracking-wide">
                 Alert Condition
               </h4>
 
@@ -240,7 +240,7 @@ export function AlertRuleDialog({
                 name="metric"
                 render={({ field }) => (
                   <FormItem className="space-y-1">
-                    <Label className="text-[11px] text-v2-ink-muted">
+                    <Label className="text-[11px] text-muted-foreground">
                       Metric
                     </Label>
                     <Select
@@ -249,7 +249,7 @@ export function AlertRuleDialog({
                       disabled={isEditing}
                     >
                       <FormControl>
-                        <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
+                        <SelectTrigger className="h-7 text-[11px] bg-card border-border">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
@@ -262,7 +262,7 @@ export function AlertRuleDialog({
                           >
                             <div>
                               <div className="font-medium">{m.label}</div>
-                              <div className="text-[10px] text-v2-ink-muted">
+                              <div className="text-[10px] text-muted-foreground">
                                 {m.description}
                               </div>
                             </div>
@@ -281,7 +281,7 @@ export function AlertRuleDialog({
                   name="comparison"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <Label className="text-[11px] text-v2-ink-muted">
+                      <Label className="text-[11px] text-muted-foreground">
                         Condition
                       </Label>
                       <Select
@@ -289,7 +289,7 @@ export function AlertRuleDialog({
                         onValueChange={field.onChange}
                       >
                         <FormControl>
-                          <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
+                          <SelectTrigger className="h-7 text-[11px] bg-card border-border">
                             <SelectValue />
                           </SelectTrigger>
                         </FormControl>
@@ -320,14 +320,14 @@ export function AlertRuleDialog({
                   name="threshold_value"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <Label className="text-[11px] text-v2-ink-muted">
+                      <Label className="text-[11px] text-muted-foreground">
                         Threshold ({form.watch("threshold_unit") || "value"})
                       </Label>
                       <FormControl>
                         <Input
                           type="number"
                           min={0}
-                          className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                          className="h-7 text-[11px] bg-card border-border"
                           {...field}
                           onChange={(e) =>
                             field.onChange(Number(e.target.value))
@@ -342,12 +342,12 @@ export function AlertRuleDialog({
             </div>
 
             {/* Scope */}
-            <div className="pt-2 border-t border-v2-ring/60 space-y-2">
+            <div className="pt-2 border-t border-border/60 space-y-2">
               <div>
-                <h4 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
+                <h4 className="text-[11px] font-semibold text-foreground uppercase tracking-wide">
                   Alert Scope
                 </h4>
-                <p className="text-[10px] text-v2-ink-muted">
+                <p className="text-[10px] text-muted-foreground">
                   Who should this alert monitor?
                 </p>
               </div>
@@ -357,12 +357,12 @@ export function AlertRuleDialog({
                   control={form.control}
                   name="applies_to_self"
                   render={({ field }) => (
-                    <FormItem className="flex items-center justify-between rounded border border-v2-ring p-2">
+                    <FormItem className="flex items-center justify-between rounded border border-border p-2">
                       <div>
-                        <Label className="text-[11px] text-v2-ink-muted">
+                        <Label className="text-[11px] text-muted-foreground">
                           My own data
                         </Label>
-                        <p className="text-[10px] text-v2-ink-muted">
+                        <p className="text-[10px] text-muted-foreground">
                           Monitor your personal metrics
                         </p>
                       </div>
@@ -380,12 +380,12 @@ export function AlertRuleDialog({
                   control={form.control}
                   name="applies_to_downlines"
                   render={({ field }) => (
-                    <FormItem className="flex items-center justify-between rounded border border-v2-ring p-2">
+                    <FormItem className="flex items-center justify-between rounded border border-border p-2">
                       <div>
-                        <Label className="text-[11px] text-v2-ink-muted">
+                        <Label className="text-[11px] text-muted-foreground">
                           My downlines
                         </Label>
-                        <p className="text-[10px] text-v2-ink-muted">
+                        <p className="text-[10px] text-muted-foreground">
                           Monitor agents in your hierarchy
                         </p>
                       </div>
@@ -403,12 +403,12 @@ export function AlertRuleDialog({
                   control={form.control}
                   name="applies_to_team"
                   render={({ field }) => (
-                    <FormItem className="flex items-center justify-between rounded border border-v2-ring p-2">
+                    <FormItem className="flex items-center justify-between rounded border border-border p-2">
                       <div>
-                        <Label className="text-[11px] text-v2-ink-muted">
+                        <Label className="text-[11px] text-muted-foreground">
                           Entire team
                         </Label>
-                        <p className="text-[10px] text-v2-ink-muted">
+                        <p className="text-[10px] text-muted-foreground">
                           Monitor all agents in your organization
                         </p>
                       </div>
@@ -425,8 +425,8 @@ export function AlertRuleDialog({
             </div>
 
             {/* Notification Settings */}
-            <div className="pt-2 border-t border-v2-ring/60 space-y-2">
-              <h4 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
+            <div className="pt-2 border-t border-border/60 space-y-2">
+              <h4 className="text-[11px] font-semibold text-foreground uppercase tracking-wide">
                 Notification Settings
               </h4>
 
@@ -435,8 +435,8 @@ export function AlertRuleDialog({
                   control={form.control}
                   name="notify_in_app"
                   render={({ field }) => (
-                    <FormItem className="flex items-center justify-between rounded border border-v2-ring p-2">
-                      <Label className="text-[11px] text-v2-ink-muted">
+                    <FormItem className="flex items-center justify-between rounded border border-border p-2">
+                      <Label className="text-[11px] text-muted-foreground">
                         In-app
                       </Label>
                       <FormControl>
@@ -453,8 +453,8 @@ export function AlertRuleDialog({
                   control={form.control}
                   name="notify_email"
                   render={({ field }) => (
-                    <FormItem className="flex items-center justify-between rounded border border-v2-ring p-2">
-                      <Label className="text-[11px] text-v2-ink-muted">
+                    <FormItem className="flex items-center justify-between rounded border border-border p-2">
+                      <Label className="text-[11px] text-muted-foreground">
                         Email
                       </Label>
                       <FormControl>
@@ -473,7 +473,7 @@ export function AlertRuleDialog({
                 name="cooldown_hours"
                 render={({ field }) => (
                   <FormItem className="space-y-1">
-                    <Label className="text-[11px] text-v2-ink-muted">
+                    <Label className="text-[11px] text-muted-foreground">
                       Cooldown Period (hours)
                     </Label>
                     <FormControl>
@@ -481,12 +481,12 @@ export function AlertRuleDialog({
                         type="number"
                         min={1}
                         max={168}
-                        className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                        className="h-7 text-[11px] bg-card border-border"
                         {...field}
                         onChange={(e) => field.onChange(Number(e.target.value))}
                       />
                     </FormControl>
-                    <p className="text-[10px] text-v2-ink-subtle">
+                    <p className="text-[10px] text-muted-foreground">
                       Minimum time between repeat alerts for the same condition
                     </p>
                     <FormMessage className="text-[10px]" />
@@ -495,7 +495,7 @@ export function AlertRuleDialog({
               />
             </div>
 
-            <DialogFooter className="pt-2 border-t border-v2-ring/60 gap-2 sm:gap-0">
+            <DialogFooter className="pt-2 border-t border-border/60 gap-2 sm:gap-0">
               <Button
                 type="button"
                 variant="outline"

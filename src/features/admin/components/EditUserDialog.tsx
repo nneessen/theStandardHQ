@@ -631,23 +631,23 @@ export default function EditUserDialog({
     <>
       <Dialog open={dialogOpen} onOpenChange={onOpenChange}>
         <DialogContent
-          className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-v2-card text-v2-ink border border-v2-ring shadow-v2-lift w-[calc(100vw-1.5rem)] sm:w-auto max-w-xl max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
+          className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-card text-foreground border border-border shadow-v2-lift w-[calc(100vw-1.5rem)] sm:w-auto max-w-xl max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
           hideCloseButton
         >
-          <DialogHeader className="px-5 py-3 border-b border-v2-ring bg-v2-card-tinted flex-shrink-0">
+          <DialogHeader className="px-5 py-3 border-b border-border bg-card-tinted flex-shrink-0">
             <div className="flex items-center gap-2.5">
-              <span className="h-2 w-2 rounded-full bg-v2-accent" />
+              <span className="h-2 w-2 rounded-full bg-accent" />
               <div className="flex flex-col leading-tight min-w-0 flex-1">
-                <span className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">
                   Edit user
                 </span>
-                <DialogTitle className="text-base font-semibold tracking-tight text-v2-ink text-left flex items-center gap-1.5">
+                <DialogTitle className="text-base font-semibold tracking-tight text-foreground text-left flex items-center gap-1.5">
                   <User className="h-4 w-4" />
                   {user.email}
                 </DialogTitle>
               </div>
             </div>
-            <DialogDescription className="text-[11px] text-v2-ink-muted text-left mt-1">
+            <DialogDescription className="text-[11px] text-muted-foreground text-left mt-1">
               Created{" "}
               {user.created_at
                 ? new Date(user.created_at).toLocaleDateString()
@@ -659,34 +659,34 @@ export default function EditUserDialog({
             defaultValue="basic"
             className="w-full flex flex-col flex-1 min-h-0"
           >
-            <TabsList className="mx-5 mt-3 grid w-[calc(100%-2.5rem)] grid-cols-5 h-7 bg-v2-canvas border border-v2-ring p-0.5 rounded-v2-pill flex-shrink-0">
+            <TabsList className="mx-5 mt-3 grid w-[calc(100%-2.5rem)] grid-cols-5 h-7 bg-background border border-border p-0.5 rounded-v2-pill flex-shrink-0">
               <TabsTrigger
                 value="basic"
-                className="text-[10px] h-6 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-v2-card-dark data-[state=active]:shadow-sm"
+                className="text-[10px] h-6 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-card-dark data-[state=active]:shadow-sm"
               >
                 Basic
               </TabsTrigger>
               <TabsTrigger
                 value="roles"
-                className="text-[10px] h-6 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-v2-card-dark data-[state=active]:shadow-sm"
+                className="text-[10px] h-6 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-card-dark data-[state=active]:shadow-sm"
               >
                 Roles
               </TabsTrigger>
               <TabsTrigger
                 value="org"
-                className="text-[10px] h-6 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-v2-card-dark data-[state=active]:shadow-sm"
+                className="text-[10px] h-6 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-card-dark data-[state=active]:shadow-sm"
               >
                 Organization
               </TabsTrigger>
               <TabsTrigger
                 value="details"
-                className="text-[10px] h-6 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-v2-card-dark data-[state=active]:shadow-sm"
+                className="text-[10px] h-6 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-card-dark data-[state=active]:shadow-sm"
               >
                 Details
               </TabsTrigger>
               <TabsTrigger
                 value="actions"
-                className="text-[10px] h-6 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-v2-card-dark data-[state=active]:shadow-sm"
+                className="text-[10px] h-6 rounded data-[state=active]:bg-white dark:data-[state=active]:bg-card-dark data-[state=active]:shadow-sm"
               >
                 Actions
               </TabsTrigger>
@@ -696,7 +696,7 @@ export default function EditUserDialog({
               <TabsContent value="basic" className="space-y-3 mt-0">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label className="text-[10px] text-v2-ink-muted">
+                    <Label className="text-[10px] text-muted-foreground">
                       First Name
                     </Label>
                     <Input
@@ -707,12 +707,12 @@ export default function EditUserDialog({
                           first_name: e.target.value,
                         }))
                       }
-                      className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                      className="h-7 text-[11px] bg-card border-border"
                       placeholder="First name"
                     />
                   </div>
                   <div>
-                    <Label className="text-[10px] text-v2-ink-muted">
+                    <Label className="text-[10px] text-muted-foreground">
                       Last Name
                     </Label>
                     <Input
@@ -723,7 +723,7 @@ export default function EditUserDialog({
                           last_name: e.target.value,
                         }))
                       }
-                      className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                      className="h-7 text-[11px] bg-card border-border"
                       placeholder="Last name"
                     />
                   </div>
@@ -731,28 +731,28 @@ export default function EditUserDialog({
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label className="text-[10px] text-v2-ink-muted">
+                    <Label className="text-[10px] text-muted-foreground">
                       Email
                     </Label>
                     <div className="relative">
-                      <Mail className="absolute left-2 top-1.5 h-3 w-3 text-v2-ink-subtle" />
+                      <Mail className="absolute left-2 top-1.5 h-3 w-3 text-muted-foreground" />
                       <Input
                         value={formData.email}
                         disabled
-                        className="h-7 text-[11px] pl-7 bg-v2-ring border-v2-ring"
+                        className="h-7 text-[11px] pl-7 bg-muted border-border"
                         title="Email cannot be changed"
                       />
                     </div>
-                    <p className="text-[9px] text-v2-ink-subtle mt-0.5">
+                    <p className="text-[9px] text-muted-foreground mt-0.5">
                       Email cannot be changed
                     </p>
                   </div>
                   <div>
-                    <Label className="text-[10px] text-v2-ink-muted">
+                    <Label className="text-[10px] text-muted-foreground">
                       Phone
                     </Label>
                     <div className="relative">
-                      <Phone className="absolute left-2 top-1.5 h-3 w-3 text-v2-ink-subtle" />
+                      <Phone className="absolute left-2 top-1.5 h-3 w-3 text-muted-foreground" />
                       <Input
                         value={formData.phone}
                         onChange={(e) =>
@@ -761,7 +761,7 @@ export default function EditUserDialog({
                             phone: e.target.value,
                           }))
                         }
-                        className="h-7 text-[11px] pl-7 bg-v2-card border-v2-ring"
+                        className="h-7 text-[11px] pl-7 bg-card border-border"
                         placeholder="(555) 123-4567"
                       />
                     </div>
@@ -770,7 +770,7 @@ export default function EditUserDialog({
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label className="text-[10px] text-v2-ink-muted">
+                    <Label className="text-[10px] text-muted-foreground">
                       Upline
                     </Label>
                     <UserSearchCombobox
@@ -790,7 +790,7 @@ export default function EditUserDialog({
                     />
                   </div>
                   <div>
-                    <Label className="text-[10px] text-v2-ink-muted">
+                    <Label className="text-[10px] text-muted-foreground">
                       Contract Level
                     </Label>
                     <Select
@@ -803,7 +803,7 @@ export default function EditUserDialog({
                         }))
                       }
                     >
-                      <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
+                      <SelectTrigger className="h-7 text-[11px] bg-card border-border">
                         <SelectValue placeholder="Not set" />
                       </SelectTrigger>
                       <SelectContent>
@@ -828,7 +828,7 @@ export default function EditUserDialog({
               <TabsContent value="roles" className="space-y-3 mt-0">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <Label className="text-[10px] text-v2-ink-muted">
+                    <Label className="text-[10px] text-muted-foreground">
                       Approval Status
                     </Label>
                     <Select
@@ -843,7 +843,7 @@ export default function EditUserDialog({
                         }))
                       }
                     >
-                      <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
+                      <SelectTrigger className="h-7 text-[11px] bg-card border-border">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -860,7 +860,7 @@ export default function EditUserDialog({
                     </Select>
                   </div>
                   <div>
-                    <Label className="text-[10px] text-v2-ink-muted">
+                    <Label className="text-[10px] text-muted-foreground">
                       Agent Status
                     </Label>
                     <Select
@@ -878,7 +878,7 @@ export default function EditUserDialog({
                         }))
                       }
                     >
-                      <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
+                      <SelectTrigger className="h-7 text-[11px] bg-card border-border">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -902,15 +902,15 @@ export default function EditUserDialog({
                   </div>
                 </div>
 
-                <div className="border-t border-v2-ring pt-2">
-                  <Label className="text-[10px] text-v2-ink-muted mb-1.5 block">
+                <div className="border-t border-border pt-2">
+                  <Label className="text-[10px] text-muted-foreground mb-1.5 block">
                     Roles
                   </Label>
                   <div className="grid grid-cols-2 gap-1.5">
                     {roles?.map((role) => (
                       <div
                         key={role.id}
-                        className="flex items-center gap-1.5 p-1.5 bg-v2-canvas rounded hover:bg-v2-ring dark:hover:bg-v2-ring transition-colors"
+                        className="flex items-center gap-1.5 p-1.5 bg-background rounded hover:bg-muted dark:hover:bg-muted transition-colors"
                       >
                         <Checkbox
                           id={`role-${role.id}`}
@@ -924,7 +924,7 @@ export default function EditUserDialog({
                         />
                         <Label
                           htmlFor={`role-${role.id}`}
-                          className="cursor-pointer text-[10px] font-normal text-v2-ink-muted flex-1"
+                          className="cursor-pointer text-[10px] font-normal text-muted-foreground flex-1"
                           title={role.description ?? undefined}
                         >
                           {role.display_name}
@@ -932,7 +932,7 @@ export default function EditUserDialog({
                       </div>
                     ))}
                   </div>
-                  <p className="text-[9px] text-v2-ink-muted mt-1.5 italic">
+                  <p className="text-[9px] text-muted-foreground mt-1.5 italic">
                     Note: Agent/Active Agent and Recruit roles are mutually
                     exclusive.
                   </p>
@@ -940,23 +940,23 @@ export default function EditUserDialog({
               </TabsContent>
 
               <TabsContent value="org" className="space-y-3 mt-0">
-                <div className="p-2.5 bg-v2-canvas rounded-lg border border-v2-ring relative">
+                <div className="p-2.5 bg-background rounded-lg border border-border relative">
                   {/* LOW-3 fix: Loading overlay for organization data */}
                   {isOrgDataLoading && (
-                    <div className="absolute inset-0 bg-v2-canvas/80 dark:bg-v2-ring/80 rounded-lg flex items-center justify-center z-10">
-                      <div className="flex items-center gap-2 text-v2-ink-muted">
+                    <div className="absolute inset-0 bg-background/80 dark:bg-muted/80 rounded-lg flex items-center justify-center z-10">
+                      <div className="flex items-center gap-2 text-muted-foreground">
                         <Loader2 className="h-4 w-4 animate-spin" />
                         <span className="text-[10px]">Loading...</span>
                       </div>
                     </div>
                   )}
                   <div className="flex items-center gap-2 mb-2">
-                    <Building2 className="h-3.5 w-3.5 text-v2-ink-muted" />
-                    <Label className="text-[11px] font-medium text-v2-ink-muted">
+                    <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+                    <Label className="text-[11px] font-medium text-muted-foreground">
                       Organization Assignment
                     </Label>
                   </div>
-                  <p className="text-[10px] text-v2-ink-muted mb-3">
+                  <p className="text-[10px] text-muted-foreground mb-3">
                     {isSuperAdmin
                       ? "As Super Admin, you can assign this user to any IMO and agency."
                       : isImoAdmin
@@ -969,7 +969,7 @@ export default function EditUserDialog({
                       {/* IMO Selection - Only for super admins */}
                       {isSuperAdmin && (
                         <div>
-                          <Label className="text-[10px] text-v2-ink-muted">
+                          <Label className="text-[10px] text-muted-foreground">
                             IMO
                           </Label>
                           <Select
@@ -984,7 +984,7 @@ export default function EditUserDialog({
                               }));
                             }}
                           >
-                            <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
+                            <SelectTrigger className="h-7 text-[11px] bg-card border-border">
                               <SelectValue placeholder="Select IMO" />
                             </SelectTrigger>
                             <SelectContent>
@@ -1007,7 +1007,7 @@ export default function EditUserDialog({
 
                       {/* Agency Selection */}
                       <div>
-                        <Label className="text-[10px] text-v2-ink-muted">
+                        <Label className="text-[10px] text-muted-foreground">
                           Agency
                         </Label>
                         <Select
@@ -1021,10 +1021,10 @@ export default function EditUserDialog({
                           disabled={isSuperAdmin && !selectedImoId}
                         >
                           <SelectTrigger
-                            className={`h-7 text-[11px] border-v2-ring ${
+                            className={`h-7 text-[11px] border-border ${
                               isSuperAdmin && !selectedImoId
-                                ? "bg-v2-ring opacity-60 cursor-not-allowed"
-                                : "bg-v2-card"
+                                ? "bg-muted opacity-60 cursor-not-allowed"
+                                : "bg-card"
                             }`}
                           >
                             <SelectValue
@@ -1052,18 +1052,18 @@ export default function EditUserDialog({
                         </Select>
                         {/* MEDIUM-2 fix: Helper text explaining why dropdown is disabled */}
                         {isSuperAdmin && !selectedImoId && (
-                          <p className="text-[9px] text-amber-600 dark:text-amber-400 mt-0.5">
+                          <p className="text-[9px] text-warning mt-0.5">
                             Choose an IMO above to see available agencies
                           </p>
                         )}
                       </div>
 
                       {/* Current assignment info */}
-                      <div className="pt-2 mt-2 border-t border-v2-ring">
-                        <p className="text-[10px] text-v2-ink-muted">
+                      <div className="pt-2 mt-2 border-t border-border">
+                        <p className="text-[10px] text-muted-foreground">
                           Current Assignment:
                         </p>
-                        <p className="text-[11px] text-v2-ink-muted mt-0.5">
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
                           {user?.imo_id
                             ? allImos?.find((i) => i.id === user.imo_id)
                                 ?.name || "Unknown IMO"
@@ -1081,7 +1081,7 @@ export default function EditUserDialog({
 
               <TabsContent value="details" className="space-y-3 mt-0">
                 <div>
-                  <Label className="text-[10px] text-v2-ink-muted flex items-center gap-1 mb-1">
+                  <Label className="text-[10px] text-muted-foreground flex items-center gap-1 mb-1">
                     <MapPin className="h-2.5 w-2.5" /> Address
                   </Label>
                   <div className="space-y-1.5">
@@ -1093,7 +1093,7 @@ export default function EditUserDialog({
                           street_address: e.target.value,
                         }))
                       }
-                      className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                      className="h-7 text-[11px] bg-card border-border"
                       placeholder="Street address"
                     />
                     <div className="grid grid-cols-3 gap-1.5">
@@ -1105,7 +1105,7 @@ export default function EditUserDialog({
                             city: e.target.value,
                           }))
                         }
-                        className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                        className="h-7 text-[11px] bg-card border-border"
                         placeholder="City"
                       />
                       <Input
@@ -1116,7 +1116,7 @@ export default function EditUserDialog({
                             state: e.target.value,
                           }))
                         }
-                        className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                        className="h-7 text-[11px] bg-card border-border"
                         placeholder="State"
                       />
                       <Input
@@ -1127,12 +1127,12 @@ export default function EditUserDialog({
                             zip: e.target.value,
                           }))
                         }
-                        className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                        className="h-7 text-[11px] bg-card border-border"
                         placeholder="ZIP"
                       />
                     </div>
                     <div>
-                      <Label className="text-[9px] text-v2-ink-subtle">
+                      <Label className="text-[9px] text-muted-foreground">
                         Resident State (licensing)
                       </Label>
                       <Input
@@ -1143,20 +1143,20 @@ export default function EditUserDialog({
                             resident_state: e.target.value,
                           }))
                         }
-                        className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                        className="h-7 text-[11px] bg-card border-border"
                         placeholder="Resident state"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="border-t border-v2-ring pt-2">
-                  <Label className="text-[10px] text-v2-ink-muted flex items-center gap-1 mb-1">
+                <div className="border-t border-border pt-2">
+                  <Label className="text-[10px] text-muted-foreground flex items-center gap-1 mb-1">
                     <CreditCard className="h-2.5 w-2.5" /> License Information
                   </Label>
                   <div className="grid grid-cols-3 gap-1.5">
                     <div>
-                      <Label className="text-[9px] text-v2-ink-subtle">
+                      <Label className="text-[9px] text-muted-foreground">
                         License #
                       </Label>
                       <Input
@@ -1167,12 +1167,12 @@ export default function EditUserDialog({
                             license_number: e.target.value,
                           }))
                         }
-                        className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                        className="h-7 text-[11px] bg-card border-border"
                         placeholder="License number"
                       />
                     </div>
                     <div>
-                      <Label className="text-[9px] text-v2-ink-subtle">
+                      <Label className="text-[9px] text-muted-foreground">
                         NPN
                       </Label>
                       <Input
@@ -1183,12 +1183,12 @@ export default function EditUserDialog({
                             npn: e.target.value,
                           }))
                         }
-                        className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                        className="h-7 text-[11px] bg-card border-border"
                         placeholder="NPN"
                       />
                     </div>
                     <div>
-                      <Label className="text-[9px] text-v2-ink-subtle">
+                      <Label className="text-[9px] text-muted-foreground">
                         Expiration
                       </Label>
                       <Input
@@ -1200,14 +1200,14 @@ export default function EditUserDialog({
                             license_expiration: e.target.value,
                           }))
                         }
-                        className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                        className="h-7 text-[11px] bg-card border-border"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="border-t border-v2-ring pt-2">
-                  <Label className="text-[10px] text-v2-ink-muted flex items-center gap-1 mb-1">
+                <div className="border-t border-border pt-2">
+                  <Label className="text-[10px] text-muted-foreground flex items-center gap-1 mb-1">
                     <Globe className="h-2.5 w-2.5" /> Social & Web
                   </Label>
                   <div className="grid grid-cols-1 gap-1.5">
@@ -1219,7 +1219,7 @@ export default function EditUserDialog({
                           instagram_url: e.target.value,
                         }))
                       }
-                      className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                      className="h-7 text-[11px] bg-card border-border"
                       placeholder="Instagram URL"
                     />
                   </div>
@@ -1227,21 +1227,21 @@ export default function EditUserDialog({
 
                 {isSuperAdmin && (
                   <>
-                    <div className="border-t border-v2-ring my-3" />
+                    <div className="border-t border-border my-3" />
 
                     <div className="space-y-2">
-                      <Label className="text-[11px] font-semibold text-v2-ink-muted">
+                      <Label className="text-[11px] font-semibold text-muted-foreground">
                         Premium Features
                       </Label>
 
-                      <div className="flex items-center justify-between bg-v2-canvas rounded p-2 border border-v2-ring">
+                      <div className="flex items-center justify-between bg-background rounded p-2 border border-border">
                         <div className="flex items-center gap-2">
-                          <ShieldCheck className="h-4 w-4 text-blue-500" />
+                          <ShieldCheck className="h-4 w-4 text-info" />
                           <div>
-                            <div className="text-[11px] font-medium text-v2-ink">
+                            <div className="text-[11px] font-medium text-foreground">
                               Underwriting Wizard
                             </div>
-                            <div className="text-[10px] text-v2-ink-muted">
+                            <div className="text-[10px] text-muted-foreground">
                               Access to UW decision engine and quick quote tools
                             </div>
                           </div>
@@ -1264,20 +1264,20 @@ export default function EditUserDialog({
               </TabsContent>
 
               <TabsContent value="actions" className="space-y-3 mt-0">
-                <div className="p-2.5 border border-v2-ring rounded-lg bg-v2-canvas">
+                <div className="p-2.5 border border-border rounded-lg bg-background">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-[11px] font-medium text-v2-ink-muted">
+                      <p className="text-[11px] font-medium text-muted-foreground">
                         Send Signup Confirmation
                       </p>
-                      <p className="text-[10px] text-v2-ink-muted">
+                      <p className="text-[10px] text-muted-foreground">
                         Email {user.email} to set password
                       </p>
                     </div>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-6 text-[10px] px-2 border-v2-ring"
+                      className="h-6 text-[10px] px-2 border-border"
                       onClick={handleResendInvite}
                       disabled={isSendingInvite}
                     >
@@ -1287,24 +1287,24 @@ export default function EditUserDialog({
                   </div>
                 </div>
 
-                <div className="p-2.5 bg-v2-ring rounded-lg text-[10px] space-y-0.5">
+                <div className="p-2.5 bg-muted rounded-lg text-[10px] space-y-0.5">
                   <p>
-                    <span className="text-v2-ink-muted">ID:</span>{" "}
-                    <span className="text-v2-ink-muted font-mono">
+                    <span className="text-muted-foreground">ID:</span>{" "}
+                    <span className="text-muted-foreground font-mono">
                       {user.id}
                     </span>
                   </p>
                   <p>
-                    <span className="text-v2-ink-muted">Created:</span>{" "}
-                    <span className="text-v2-ink-muted">
+                    <span className="text-muted-foreground">Created:</span>{" "}
+                    <span className="text-muted-foreground">
                       {user.created_at
                         ? new Date(user.created_at).toLocaleString()
                         : "Unknown"}
                     </span>
                   </p>
                   <p>
-                    <span className="text-v2-ink-muted">Updated:</span>{" "}
-                    <span className="text-v2-ink-muted">
+                    <span className="text-muted-foreground">Updated:</span>{" "}
+                    <span className="text-muted-foreground">
                       {user.updated_at
                         ? new Date(user.updated_at).toLocaleString()
                         : "Unknown"}
@@ -1312,8 +1312,8 @@ export default function EditUserDialog({
                   </p>
                   {user.onboarding_status && (
                     <p>
-                      <span className="text-v2-ink-muted">Onboarding:</span>{" "}
-                      <span className="text-v2-ink-muted">
+                      <span className="text-muted-foreground">Onboarding:</span>{" "}
+                      <span className="text-muted-foreground">
                         {user.onboarding_status}
                       </span>
                     </p>
@@ -1322,16 +1322,16 @@ export default function EditUserDialog({
 
                 <Alert
                   variant="destructive"
-                  className="border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/20 py-2"
+                  className="border-destructive/30 dark:border-destructive bg-destructive/10 py-2"
                 >
                   <AlertTriangle className="h-3 w-3" />
                   <AlertDescription className="ml-2">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-[11px] font-medium text-red-700 dark:text-red-400">
+                        <p className="text-[11px] font-medium text-destructive">
                           Delete User Permanently
                         </p>
-                        <p className="text-[9px] text-red-600 dark:text-red-500">
+                        <p className="text-[9px] text-destructive dark:text-destructive">
                           Cannot be undone
                         </p>
                       </div>
@@ -1351,7 +1351,7 @@ export default function EditUserDialog({
             </div>
           </Tabs>
 
-          <DialogFooter className="px-5 py-3 gap-2 border-t border-v2-ring bg-v2-card-tinted flex-shrink-0 sm:justify-end">
+          <DialogFooter className="px-5 py-3 gap-2 border-t border-border bg-card-tinted flex-shrink-0 sm:justify-end">
             <PillButton
               type="button"
               tone="ghost"
@@ -1379,36 +1379,37 @@ export default function EditUserDialog({
           setShowDeleteConfirm(isOpen);
         }}
       >
-        <AlertDialogContent className="max-w-md bg-v2-card border-v2-ring">
+        <AlertDialogContent className="max-w-md bg-card border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-sm text-red-600 dark:text-red-400">
+            <AlertDialogTitle className="flex items-center gap-2 text-sm text-destructive">
               <AlertTriangle className="h-4 w-4" />
               Permanently Delete User?
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-2">
-                <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
-                  Delete <strong className="text-v2-ink">{user?.email}</strong>?
+                <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+                  Delete{" "}
+                  <strong className="text-foreground">{user?.email}</strong>?
                 </p>
 
                 {checkingDependencies && (
-                  <div className="flex items-center gap-2 text-[11px] text-v2-ink-muted">
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                     <Loader2 className="h-3 w-3 animate-spin" />
                     Checking for downlines...
                   </div>
                 )}
 
                 {!checkingDependencies && downlineCount > 0 && (
-                  <div className="p-2 border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 rounded">
+                  <div className="p-2 border border-warning/30 bg-warning/10 rounded">
                     <div className="flex items-start gap-2">
-                      <Users className="h-3 w-3 text-amber-600 mt-0.5" />
+                      <Users className="h-3 w-3 text-warning mt-0.5" />
                       <div className="flex-1">
-                        <p className="text-[11px] font-medium text-amber-700 dark:text-amber-400">
+                        <p className="text-[11px] font-medium text-warning">
                           {downlineCount} downline{downlineCount > 1 ? "s" : ""}{" "}
                           must be reassigned
                         </p>
                         <div className="mt-1.5">
-                          <p className="text-[10px] text-amber-600 dark:text-amber-500 mb-1">
+                          <p className="text-[10px] text-warning mb-1">
                             Select new upline:
                           </p>
                           <UserSearchCombobox
@@ -1426,7 +1427,7 @@ export default function EditUserDialog({
                   </div>
                 )}
 
-                <p className="text-[11px] font-medium text-red-600 dark:text-red-400">
+                <p className="text-[11px] font-medium text-destructive">
                   This will delete all associated data. Cannot be undone.
                 </p>
               </div>
@@ -1446,7 +1447,7 @@ export default function EditUserDialog({
                 checkingDependencies ||
                 (downlineCount > 0 && !reassignUplineId)
               }
-              className="h-7 text-[11px] px-3 bg-red-600 hover:bg-red-700 text-white"
+              className="h-7 text-[11px] px-3 bg-destructive hover:bg-destructive text-white"
             >
               {isDeleting ? (
                 <>
@@ -1468,26 +1469,26 @@ export default function EditUserDialog({
         open={showOrgChangeConfirm}
         onOpenChange={setShowOrgChangeConfirm}
       >
-        <AlertDialogContent className="max-w-md bg-v2-card border-v2-ring">
+        <AlertDialogContent className="max-w-md bg-card border-border">
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
+            <AlertDialogTitle className="flex items-center gap-2 text-sm text-warning">
               <Building2 className="h-4 w-4" />
               Confirm Organization Change
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-2">
-                <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                   You are about to change the organization assignment for{" "}
-                  <strong className="text-v2-ink">
+                  <strong className="text-foreground">
                     {user?.first_name} {user?.last_name || user?.email}
                   </strong>
                 </p>
 
-                <div className="p-2 border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 rounded text-[11px]">
-                  <p className="font-medium text-amber-700 dark:text-amber-400 mb-1">
+                <div className="p-2 border border-warning/30 bg-warning/10 rounded text-[11px]">
+                  <p className="font-medium text-warning mb-1">
                     This may affect:
                   </p>
-                  <ul className="list-disc list-inside text-amber-600 dark:text-amber-500 space-y-0.5">
+                  <ul className="list-disc list-inside text-warning space-y-0.5">
                     <li>Hierarchy/upline relationships</li>
                     <li>Access to IMO-specific products & carriers</li>
                     <li>Commission calculations and overrides</li>
@@ -1495,7 +1496,7 @@ export default function EditUserDialog({
                   </ul>
                 </div>
 
-                <p className="text-[10px] text-v2-ink-muted">
+                <p className="text-[10px] text-muted-foreground">
                   The user may need to re-establish their upline relationship in
                   the new organization.
                 </p>
@@ -1515,7 +1516,7 @@ export default function EditUserDialog({
                 handleSave();
               }}
               disabled={isSaving}
-              className="h-7 text-[11px] px-3 bg-amber-600 hover:bg-amber-700 text-white"
+              className="h-7 text-[11px] px-3 bg-warning hover:bg-warning text-white"
             >
               {isSaving ? (
                 <>

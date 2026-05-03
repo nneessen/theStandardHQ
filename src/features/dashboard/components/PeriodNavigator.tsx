@@ -77,7 +77,7 @@ export const PeriodNavigator: React.FC<PeriodNavigatorProps> = ({
         onClick={handlePrevious}
         variant="outline"
         size="sm"
-        className="h-6 w-6 p-0 border-v2-ring dark:border-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-canvas"
+        className="h-6 w-6 p-0 border-border dark:border-border text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-background"
         title="Previous period"
       >
         <ChevronLeft className="h-3 w-3" />
@@ -89,7 +89,7 @@ export const PeriodNavigator: React.FC<PeriodNavigatorProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 px-2 text-[10px] font-medium text-v2-ink dark:text-v2-ink hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted"
+            className="h-6 px-2 text-[10px] font-medium text-foreground dark:text-foreground hover:bg-card-tinted dark:hover:bg-card-tinted"
             title="Select period"
           >
             {currentPeriodLabel}
@@ -97,16 +97,16 @@ export const PeriodNavigator: React.FC<PeriodNavigatorProps> = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="center"
-          className="max-h-[300px] overflow-y-auto bg-v2-card border-v2-ring dark:border-v2-ring-strong"
+          className="max-h-[300px] overflow-y-auto bg-card border-border dark:border-border"
         >
           {dropdownOptions.map((option) => (
             <DropdownMenuItem
               key={option.offset}
               onClick={() => handleSelectFromDropdown(option.offset)}
               className={cn(
-                "cursor-pointer text-[10px] text-v2-ink dark:text-v2-ink-muted",
+                "cursor-pointer text-[10px] text-foreground dark:text-muted-foreground",
                 option.offset === periodOffset &&
-                  "bg-v2-card-tinted dark:bg-v2-card-tinted font-semibold text-v2-ink dark:text-v2-ink",
+                  "bg-card-tinted dark:bg-card-tinted font-semibold text-foreground dark:text-foreground",
               )}
             >
               {option.label}
@@ -120,7 +120,7 @@ export const PeriodNavigator: React.FC<PeriodNavigatorProps> = ({
         onClick={handleNext}
         variant="outline"
         size="sm"
-        className="h-6 w-6 p-0 border-v2-ring dark:border-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-canvas"
+        className="h-6 w-6 p-0 border-border dark:border-border text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-background"
         disabled={isAtCurrentPeriod}
         title={isAtCurrentPeriod ? "Already at current period" : "Next period"}
       >
@@ -133,7 +133,7 @@ export const PeriodNavigator: React.FC<PeriodNavigatorProps> = ({
           onClick={handleJumpToCurrent}
           variant="ghost"
           size="sm"
-          className="h-6 px-2 gap-1 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-canvas"
+          className="h-6 px-2 gap-1 text-[10px] text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-background"
           title="Jump to current period"
         >
           <Calendar className="h-3 w-3" />

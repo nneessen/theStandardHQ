@@ -47,9 +47,9 @@ export function LeadSubmissionConfirmation({
         </div>
 
         {/* Animated glow orbs */}
-        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-success/10 rounded-full blur-3xl animate-pulse" />
         <div
-          className="absolute bottom-1/4 -right-20 w-80 h-80 bg-emerald-400/5 rounded-full blur-3xl animate-pulse"
+          className="absolute bottom-1/4 -right-20 w-80 h-80 bg-success/70/5 rounded-full blur-3xl animate-pulse"
           style={{ animationDelay: "1s" }}
         />
 
@@ -58,7 +58,7 @@ export function LeadSubmissionConfirmation({
           {/* Logo and brand - Enhanced */}
           <div className="flex items-center gap-4 group">
             <div className="relative">
-              <div className="absolute inset-0 bg-emerald-500/20 rounded-xl blur-xl group-hover:bg-emerald-500/30 transition-all duration-500" />
+              <div className="absolute inset-0 bg-success/20 rounded-xl blur-xl group-hover:bg-success/30 transition-all duration-500" />
               <img
                 src="/logos/Light Letter Logo .png"
                 alt="The Standard"
@@ -72,12 +72,12 @@ export function LeadSubmissionConfirmation({
             </div>
             <div className="flex flex-col">
               <span
-                className="text-white dark:text-black text-2xl font-bold tracking-wide"
+                className="text-white text-2xl font-bold tracking-wide"
                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}
               >
                 THE STANDARD
               </span>
-              <span className="text-emerald-400 text-[10px] uppercase tracking-[0.3em] font-medium">
+              <span className="text-success text-[10px] uppercase tracking-[0.3em] font-medium">
                 Financial Group
               </span>
             </div>
@@ -86,8 +86,8 @@ export function LeadSubmissionConfirmation({
           {/* Middle - Success messaging */}
           <div className="space-y-8">
             <div className="flex items-center gap-4 mb-6">
-              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/20">
-                <PartyPopper className="h-8 w-8 text-emerald-400" />
+              <div className="flex items-center justify-center w-16 h-16 rounded-full bg-success/20">
+                <PartyPopper className="h-8 w-8 text-success" />
               </div>
             </div>
             <div>
@@ -95,16 +95,14 @@ export function LeadSubmissionConfirmation({
                 className="text-4xl xl:text-5xl font-bold leading-tight mb-4"
                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}
               >
-                <span className="text-white dark:text-black">You&apos;re </span>
+                <span className="text-white">You&apos;re </span>
                 <span className="bg-gradient-to-r from-emerald-400 via-emerald-500 to-emerald-400 bg-clip-text text-transparent">
                   In!
                 </span>
                 <br />
-                <span className="text-white/70 dark:text-black/70">
-                  We&apos;ll Be In Touch
-                </span>
+                <span className="text-white/70">We&apos;ll Be In Touch</span>
               </h1>
-              <p className="text-white/70 dark:text-black/60 text-lg max-w-md">
+              <p className="text-white/70 text-lg max-w-md">
                 Thank you for expressing your interest in joining The Standard
                 team. A member of our team will reach out within 24-48 hours to
                 discuss the next steps.
@@ -112,18 +110,16 @@ export function LeadSubmissionConfirmation({
             </div>
 
             {/* Reference number */}
-            <div className="inline-block px-4 py-2 bg-white/10 dark:bg-black/10 rounded-lg">
-              <p className="text-xs text-white/50 dark:text-black/50">
-                Reference Number
-              </p>
-              <p className="text-sm font-mono text-white/80 dark:text-black/80">
+            <div className="inline-block px-4 py-2 bg-white/10 dark:bg-white/10 rounded-lg">
+              <p className="text-xs text-white/50">Reference Number</p>
+              <p className="text-sm font-mono text-white/80">
                 {leadId.slice(0, 8).toUpperCase()}
               </p>
             </div>
           </div>
 
           {/* Bottom */}
-          <div className="text-white/50 dark:text-black/50 text-sm">
+          <div className="text-white/50 text-sm">
             &copy; {new Date().getFullYear()} The Standard Financial Group
           </div>
         </div>
@@ -151,8 +147,8 @@ export function LeadSubmissionConfirmation({
 
           {/* Mobile success icon */}
           <div className="lg:hidden flex justify-center mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/50">
-              <CheckCircle2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success/20 dark:bg-success/10/50">
+              <CheckCircle2 className="h-8 w-8 text-success" />
             </div>
           </div>
 
@@ -173,10 +169,8 @@ export function LeadSubmissionConfirmation({
             </h3>
             <div className="space-y-4">
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center">
-                  <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
-                    1
-                  </span>
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-warning/20 dark:bg-warning/10/50 flex items-center justify-center">
+                  <span className="text-xs font-bold text-warning">1</span>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">
@@ -188,10 +182,8 @@ export function LeadSubmissionConfirmation({
                 </div>
               </div>
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center">
-                  <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
-                    2
-                  </span>
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-warning/20 dark:bg-warning/10/50 flex items-center justify-center">
+                  <span className="text-xs font-bold text-warning">2</span>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">
@@ -204,10 +196,8 @@ export function LeadSubmissionConfirmation({
                 </div>
               </div>
               <div className="flex gap-4">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-950/50 flex items-center justify-center">
-                  <span className="text-xs font-bold text-amber-700 dark:text-amber-400">
-                    3
-                  </span>
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-warning/20 dark:bg-warning/10/50 flex items-center justify-center">
+                  <span className="text-xs font-bold text-warning">3</span>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">
@@ -234,7 +224,7 @@ export function LeadSubmissionConfirmation({
               </p>
               <Button
                 onClick={() => setShowCalendly(true)}
-                className="bg-amber-500 hover:bg-amber-600 text-black font-semibold"
+                className="bg-warning hover:bg-warning text-black font-semibold"
               >
                 Schedule a Call
                 <ArrowRight className="h-4 w-4 ml-2" />

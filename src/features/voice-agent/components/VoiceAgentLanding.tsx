@@ -77,7 +77,7 @@ export function VoiceAgentLanding({
   return (
     <div className="space-y-3">
       {showServiceWarning && (
-        <div className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
+        <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-[11px] text-destructive dark:border-destructive/60 dark:bg-destructive/10 dark:text-destructive">
           <WifiOff className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>
             {localDevWarning ??
@@ -93,18 +93,18 @@ export function VoiceAgentLanding({
           className={cn(
             "relative rounded-lg border p-4 transition-all",
             voiceAccessActive
-              ? "border-emerald-500 bg-emerald-50/50 ring-1 ring-emerald-500/30 dark:bg-emerald-950/20"
+              ? "border-success bg-success/10/50 ring-1 ring-success/30 dark:bg-success/10"
               : "border-v2-ring dark:border-v2-ring-strong",
           )}
         >
           <div className="absolute -top-2 left-1/2 -translate-x-1/2">
             {voiceAccessActive ? (
-              <Badge className="h-4 whitespace-nowrap bg-emerald-500 px-1.5 text-[9px] text-white">
+              <Badge className="h-4 whitespace-nowrap bg-success px-1.5 text-[9px] text-white">
                 <Check className="mr-0.5 h-2.5 w-2.5" />
                 Active
               </Badge>
             ) : (
-              <Badge className="h-4 whitespace-nowrap bg-amber-500 px-1.5 text-[9px] text-white">
+              <Badge className="h-4 whitespace-nowrap bg-warning px-1.5 text-[9px] text-white">
                 Free Trial
               </Badge>
             )}
@@ -138,7 +138,7 @@ export function VoiceAgentLanding({
                 key={feature}
                 className="flex items-center gap-1.5 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
               >
-                <Check className="h-3 w-3 shrink-0 text-emerald-500" />
+                <Check className="h-3 w-3 shrink-0 text-success" />
                 <span>{feature}</span>
               </div>
             ))}
@@ -146,7 +146,7 @@ export function VoiceAgentLanding({
 
           <div className="mt-4">
             {voiceAccessActive ? (
-              <Badge className="bg-emerald-100 text-[10px] text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+              <Badge className="bg-success/20 text-[10px] text-success dark:bg-success dark:text-success">
                 Current Plan
               </Badge>
             ) : showServiceWarning ? (
@@ -199,14 +199,14 @@ export function VoiceAgentLanding({
 
           <Progress
             value={progressPercent}
-            className="mt-3 h-2 bg-v2-card-tinted dark:bg-v2-card-tinted [&>div]:bg-emerald-500"
+            className="mt-3 h-2 bg-v2-card-tinted dark:bg-v2-card-tinted [&>div]:bg-success"
           />
 
           {setupComplete ? (
-            <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50/50 p-3 dark:border-emerald-900/40 dark:bg-emerald-950/20">
+            <div className="mt-4 rounded-lg border border-success/30 bg-success/10/50 p-3 dark:border-success/40 dark:bg-success/10">
               <div className="flex items-center gap-1.5">
-                <Check className="h-3 w-3 text-emerald-500" />
-                <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                <Check className="h-3 w-3 text-success" />
+                <p className="text-[11px] font-semibold text-success">
                   Setup complete
                 </p>
               </div>
@@ -218,7 +218,7 @@ export function VoiceAgentLanding({
             <>
               <div className="mt-4 rounded-lg border border-v2-ring bg-v2-canvas p-3 dark:border-v2-ring dark:bg-v2-canvas/40">
                 <div className="flex items-center gap-1.5">
-                  <ArrowRight className="h-3 w-3 text-emerald-500" />
+                  <ArrowRight className="h-3 w-3 text-success" />
                   <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
                     {nextStepTitle}
                   </p>
@@ -314,7 +314,7 @@ function OverviewCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="flex items-center gap-2">
         {icon ? <div className="shrink-0">{icon}</div> : null}
         <p className="text-[10px] uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">

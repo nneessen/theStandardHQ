@@ -117,8 +117,8 @@ export function AllBotsTab({
             All Bots · Last 30 days
           </span>
           <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success/70 opacity-75" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-success" />
           </span>
         </div>
         <p className="text-[9px] text-muted-foreground mb-2">

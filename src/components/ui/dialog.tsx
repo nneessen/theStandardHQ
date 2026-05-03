@@ -1,6 +1,3 @@
-// src/components/ui/dialog.tsx
-// Modern dialog with zinc palette and refined styling
-
 import * as React from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -22,7 +19,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      "fixed inset-0 z-50 bg-zinc-950/80 backdrop-blur-sm",
+      "fixed inset-0 z-50 bg-foreground/40 backdrop-blur-sm",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className,
@@ -44,20 +41,12 @@ const dialogContentVariants = cva(
   {
     variants: {
       variant: {
-        default: [
-          "bg-white border border-zinc-200 shadow-2xl rounded-xl",
-          "dark:bg-zinc-900 dark:border-zinc-800",
-        ].join(" "),
+        default: "bg-card border border-border shadow-2xl rounded-lg",
 
-        elevated: [
-          "bg-white border border-zinc-200 shadow-2xl shadow-zinc-900/20 rounded-xl",
-          "dark:bg-zinc-900 dark:border-zinc-700 dark:shadow-zinc-950/50",
-        ].join(" "),
+        elevated:
+          "bg-card border border-border shadow-2xl shadow-foreground/20 rounded-lg",
 
-        minimal: [
-          "bg-zinc-50 border border-zinc-100 shadow-lg rounded-lg",
-          "dark:bg-zinc-950 dark:border-zinc-800",
-        ].join(" "),
+        minimal: "bg-muted border border-border shadow-lg rounded-md",
       },
       size: {
         sm: "max-w-sm",
@@ -96,12 +85,10 @@ const DialogContent = React.forwardRef<
       {!hideCloseButton && (
         <DialogPrimitive.Close
           className={cn(
-            "absolute right-4 top-4 rounded-md p-1",
-            "text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100",
-            "dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-zinc-800",
-            "transition-all duration-200",
-            "focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2",
-            "dark:focus:ring-zinc-100",
+            "absolute right-4 top-4 rounded-sm p-1",
+            "text-muted-foreground hover:text-foreground hover:bg-accent",
+            "transition-colors duration-150",
+            "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background",
             "disabled:pointer-events-none",
           )}
         >
@@ -149,7 +136,7 @@ const DialogTitle = React.forwardRef<
   <DialogPrimitive.Title
     ref={ref}
     className={cn(
-      "text-lg font-semibold leading-none tracking-tight text-zinc-900 dark:text-zinc-100",
+      "text-lg font-semibold leading-none tracking-tight text-foreground",
       className,
     )}
     {...props}
@@ -163,7 +150,7 @@ const DialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <DialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm text-zinc-500 dark:text-zinc-400", className)}
+    className={cn("text-sm text-muted-foreground", className)}
     {...props}
   />
 ));

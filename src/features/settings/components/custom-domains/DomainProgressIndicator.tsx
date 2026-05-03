@@ -63,7 +63,7 @@ const STEPS: Step[] = [
 function StepDot({ state }: { state: StepState }) {
   if (state === "completed") {
     return (
-      <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-green-500">
+      <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-success">
         <Check className="h-2 w-2 text-white" strokeWidth={3} />
       </div>
     );
@@ -71,8 +71,8 @@ function StepDot({ state }: { state: StepState }) {
 
   if (state === "current") {
     return (
-      <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-purple-500 bg-purple-100">
-        <div className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+      <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-info bg-info/20">
+        <div className="h-1.5 w-1.5 rounded-full bg-info" />
       </div>
     );
   }
@@ -83,7 +83,7 @@ function StepDot({ state }: { state: StepState }) {
 }
 
 function StepConnector({ fromState }: { fromState: StepState }) {
-  const color = fromState === "completed" ? "bg-green-500" : "bg-v2-ring";
+  const color = fromState === "completed" ? "bg-success" : "bg-v2-ring";
   return <div className={`h-[2px] w-3 ${color}`} />;
 }
 
@@ -106,9 +106,9 @@ export function DomainProgressIndicator({
               <span
                 className={`text-[9px] font-medium ${
                   state === "current"
-                    ? "text-purple-700"
+                    ? "text-info"
                     : state === "completed"
-                      ? "text-green-700"
+                      ? "text-success"
                       : "text-v2-ink-subtle"
                 }`}
               >

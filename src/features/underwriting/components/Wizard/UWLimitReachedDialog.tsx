@@ -59,8 +59,8 @@ export function UWLimitReachedDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-              <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-warning/20 dark:bg-warning/30">
+              <AlertTriangle className="h-5 w-5 text-warning" />
             </div>
             <DialogTitle className="text-lg">Monthly Limit Reached</DialogTitle>
           </div>
@@ -75,7 +75,7 @@ export function UWLimitReachedDialog({
           {/* Current Usage */}
           <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
             <div className="flex items-center gap-2">
-              <Zap className="h-4 w-4 text-amber-500" />
+              <Zap className="h-4 w-4 text-warning" />
               <span className="text-sm font-medium">Usage This Month</span>
             </div>
             <Badge variant="destructive" className="text-xs">
@@ -86,7 +86,7 @@ export function UWLimitReachedDialog({
           {/* Days Until Reset */}
           <div className="flex items-center justify-between p-3 rounded-lg bg-muted/50 border">
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-v2-ink-muted" />
+              <Calendar className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium">Resets In</span>
             </div>
             <span className="text-sm text-muted-foreground">
@@ -104,7 +104,7 @@ export function UWLimitReachedDialog({
                 {upgradeTiers.map((tier) => (
                   <div
                     key={tier.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20"
+                    className="flex items-center justify-between p-3 rounded-lg border border-warning/30 bg-warning/10/50 dark:bg-warning/10"
                   >
                     <div>
                       <p className="text-sm font-medium">{tier.name}</p>
@@ -136,7 +136,7 @@ export function UWLimitReachedDialog({
           {upgradeTiers.length > 0 && (
             <Button
               onClick={handleUpgrade}
-              className="flex-1 bg-amber-600 hover:bg-amber-700 text-white"
+              className="flex-1 bg-warning hover:bg-warning text-white"
             >
               Upgrade Plan
               <ArrowUpRight className="h-4 w-4 ml-1" />

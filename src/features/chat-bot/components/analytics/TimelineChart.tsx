@@ -33,14 +33,14 @@ export function TimelineChart({ data }: { data: TimelineEntry[] }) {
   return (
     <div className="p-2.5 border border-v2-ring dark:border-v2-ring bg-v2-card rounded-lg">
       <div className="flex items-center gap-1.5 mb-2">
-        <BarChart3 className="h-3 w-3 text-blue-500" />
+        <BarChart3 className="h-3 w-3 text-info" />
         <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
           Daily Trend
         </h4>
         <div className="ml-auto flex items-center gap-2">
-          <Legend color="bg-blue-400" label="Conversations" />
-          <Legend color="bg-violet-400" label="Appointments" />
-          <Legend color="bg-emerald-400" label="Conversions" />
+          <Legend color="bg-info/70" label="Conversations" />
+          <Legend color="bg-info" label="Appointments" />
+          <Legend color="bg-success/70" label="Conversions" />
         </div>
       </div>
 
@@ -62,15 +62,15 @@ export function TimelineChart({ data }: { data: TimelineEntry[] }) {
             >
               <div className="flex items-end gap-px w-full h-16">
                 <div
-                  className="flex-1 bg-blue-400/70 rounded-t-sm transition-all"
+                  className="flex-1 bg-info/70/70 rounded-t-sm transition-all"
                   style={{ height: `${Math.max(convoH, 2)}%` }}
                 />
                 <div
-                  className="flex-1 bg-violet-400/70 rounded-t-sm transition-all"
+                  className="flex-1 bg-info/70 rounded-t-sm transition-all"
                   style={{ height: `${Math.max(apptH, 0)}%` }}
                 />
                 <div
-                  className="flex-1 bg-emerald-400/70 rounded-t-sm transition-all"
+                  className="flex-1 bg-success/70/70 rounded-t-sm transition-all"
                   style={{ height: `${Math.max(convH, 0)}%` }}
                 />
               </div>

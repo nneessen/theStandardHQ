@@ -95,7 +95,7 @@ export function VideoEmbedItem({
   // Handle null/missing platform or video_id
   if (!metadata?.platform || !metadata?.video_id) {
     return (
-      <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
+      <div className="flex items-center gap-2 text-xs text-destructive">
         <AlertCircle className="h-3.5 w-3.5" />
         <span>Video configuration error: Missing platform or video ID</span>
       </div>
@@ -120,7 +120,7 @@ export function VideoEmbedItem({
         )}
         {/* Completed state */}
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+          <span className="inline-flex items-center gap-1 text-xs text-success">
             <CheckCircle2 className="h-3.5 w-3.5" />
             Video watched
           </span>
@@ -165,9 +165,7 @@ export function VideoEmbedItem({
       {/* Requirement note and button inline */}
       <div className="flex items-center gap-2 flex-wrap">
         {metadata.require_full_watch && (
-          <p className="text-[10px] text-amber-600 dark:text-amber-400">
-            Watch entire video
-          </p>
+          <p className="text-[10px] text-warning">Watch entire video</p>
         )}
 
         {/* Mark as Watched Button */}
@@ -175,7 +173,7 @@ export function VideoEmbedItem({
           onClick={handleMarkWatched}
           disabled={isSubmitting || isDisabled || !embedUrl}
           size="sm"
-          className="h-7 text-xs px-3 gap-1.5 bg-emerald-600 hover:bg-emerald-700"
+          className="h-7 text-xs px-3 gap-1.5 bg-success hover:bg-success"
         >
           {isSubmitting ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" />

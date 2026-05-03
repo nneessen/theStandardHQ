@@ -238,28 +238,28 @@ export function RuleCard({
   const isFromDocument = rule.source_type === "carrier_document";
 
   return (
-    <div className="border border-v2-ring dark:border-v2-ring-strong rounded-lg bg-v2-card hover:border-v2-ring-strong dark:hover:border-v2-ring-strong transition-colors group">
+    <div className="border border-border dark:border-border rounded-lg bg-card hover:border-border dark:hover:border-border transition-colors group">
       {/* Header */}
-      <div className="flex items-start gap-2 p-2 border-b border-v2-ring dark:border-v2-ring">
+      <div className="flex items-start gap-2 p-2 border-b border-border dark:border-border">
         {/* Priority & Move Controls */}
         <div className="flex flex-col items-center gap-0.5 pt-0.5">
           <button
             type="button"
             onClick={onMoveUp}
             disabled={index === 0 || isLoading}
-            className="text-v2-ink-subtle hover:text-v2-ink-muted disabled:opacity-30 disabled:cursor-not-allowed"
+            className="text-muted-foreground hover:text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed"
             title="Move up"
           >
             <ChevronUp className="h-3 w-3" />
           </button>
-          <span className="text-[10px] font-bold text-v2-ink-subtle w-4 text-center">
+          <span className="text-[10px] font-bold text-muted-foreground w-4 text-center">
             {index + 1}
           </span>
           <button
             type="button"
             onClick={onMoveDown}
             disabled={index === totalRules - 1 || isLoading}
-            className="text-v2-ink-subtle hover:text-v2-ink-muted disabled:opacity-30 disabled:cursor-not-allowed"
+            className="text-muted-foreground hover:text-muted-foreground disabled:opacity-30 disabled:cursor-not-allowed"
             title="Move down"
           >
             <ChevronDown className="h-3 w-3" />
@@ -275,13 +275,13 @@ export function RuleCard({
             >
               {getOutcomeLabel(rule.outcome_eligibility)}
             </Badge>
-            <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink truncate">
+            <span className="text-[11px] font-medium text-foreground dark:text-foreground truncate">
               {rule.name}
             </span>
             {isFromDocument && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <FileText className="h-3 w-3 text-green-500 flex-shrink-0" />
+                  <FileText className="h-3 w-3 text-success flex-shrink-0" />
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-[9px]">
                   Extracted from carrier document
@@ -291,7 +291,7 @@ export function RuleCard({
             {rule.extraction_confidence !== null &&
               rule.extraction_confidence !== undefined && (
                 <span
-                  className="text-[9px] text-v2-ink-subtle"
+                  className="text-[9px] text-muted-foreground"
                   title={`AI extraction confidence: ${Math.round(rule.extraction_confidence * 100)}%`}
                 >
                   {Math.round(rule.extraction_confidence * 100)}%
@@ -299,7 +299,7 @@ export function RuleCard({
               )}
           </div>
           {rule.description && (
-            <p className="text-[10px] text-v2-ink-subtle truncate">
+            <p className="text-[10px] text-muted-foreground truncate">
               {rule.description}
             </p>
           )}
@@ -324,7 +324,7 @@ export function RuleCard({
             size="sm"
             onClick={onDelete}
             disabled={isLoading}
-            className="h-6 w-6 p-0 text-red-500 hover:text-red-600"
+            className="h-6 w-6 p-0 text-destructive hover:text-destructive"
             title="Delete rule"
           >
             <Trash2 className="h-3 w-3" />
@@ -336,10 +336,10 @@ export function RuleCard({
       <div className="p-2 space-y-1.5">
         {/* Condition Summary */}
         <div className="flex items-start gap-1.5">
-          <span className="text-[10px] text-v2-ink-subtle uppercase tracking-wide flex-shrink-0 w-8 pt-0.5">
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wide flex-shrink-0 w-8 pt-0.5">
             IF
           </span>
-          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-muted leading-relaxed">
+          <p className="text-[10px] text-muted-foreground dark:text-muted-foreground leading-relaxed">
             {conditionSummary}
           </p>
         </div>
@@ -347,26 +347,26 @@ export function RuleCard({
         {/* Filters */}
         {hasFilters && filterSummary && (
           <div className="flex items-start gap-1.5">
-            <span className="text-[10px] text-v2-ink-subtle uppercase tracking-wide flex-shrink-0 w-8 pt-0.5">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wide flex-shrink-0 w-8 pt-0.5">
               FOR
             </span>
-            <p className="text-[10px] text-v2-ink-muted">{filterSummary}</p>
+            <p className="text-[10px] text-muted-foreground">{filterSummary}</p>
           </div>
         )}
 
         {/* Outcome Summary */}
         <div className="flex items-start gap-1.5">
-          <span className="text-[10px] text-v2-ink-subtle uppercase tracking-wide flex-shrink-0 w-8 pt-0.5">
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wide flex-shrink-0 w-8 pt-0.5">
             →
           </span>
           <div className="flex-1">
             {outcomeSummary && (
-              <span className="text-[10px] font-medium text-v2-ink dark:text-v2-ink-muted">
+              <span className="text-[10px] font-medium text-foreground dark:text-muted-foreground">
                 {outcomeSummary}
               </span>
             )}
             {rule.outcome_reason && (
-              <p className="text-[10px] text-v2-ink-subtle mt-0.5 italic">
+              <p className="text-[10px] text-muted-foreground mt-0.5 italic">
                 "{rule.outcome_reason}"
               </p>
             )}

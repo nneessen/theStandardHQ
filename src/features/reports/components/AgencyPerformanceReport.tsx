@@ -165,7 +165,7 @@ function AgencyPerformanceReportContent({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8 bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
-        <Loader2 className="w-5 h-5 animate-spin text-blue-600 dark:text-blue-400" />
+        <Loader2 className="w-5 h-5 animate-spin text-info" />
         <span className="ml-2 text-[11px] text-v2-ink-muted">
           Loading agency performance data...
         </span>
@@ -221,7 +221,7 @@ function AgencyPerformanceReportContent({
         {/* Active Policies */}
         <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
           <div className="flex items-center gap-2 mb-1">
-            <FileText className="w-3.5 h-3.5 text-blue-500" />
+            <FileText className="w-3.5 h-3.5 text-info" />
             <span className="text-[9px] font-medium text-v2-ink-muted uppercase tracking-[0.18em]">
               Active Policies
             </span>
@@ -234,7 +234,7 @@ function AgencyPerformanceReportContent({
         {/* Total Premium */}
         <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
           <div className="flex items-center gap-2 mb-1">
-            <DollarSign className="w-3.5 h-3.5 text-emerald-500" />
+            <DollarSign className="w-3.5 h-3.5 text-success" />
             <span className="text-[9px] font-medium text-v2-ink-muted uppercase tracking-[0.18em]">
               Total Premium
             </span>
@@ -247,19 +247,19 @@ function AgencyPerformanceReportContent({
         {/* Total AP (YTD) */}
         <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
           <div className="flex items-center gap-2 mb-1">
-            <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+            <TrendingUp className="w-3.5 h-3.5 text-success" />
             <span className="text-[9px] font-medium text-v2-ink-muted uppercase tracking-[0.18em]">
               Total AP (YTD)
             </span>
           </div>
-          <p className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
+          <p className="text-xl font-bold font-mono text-success">
             {formatCurrency(dashboardMetrics?.total_commissions_ytd || 0)}
           </p>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-[9px] text-blue-600 dark:text-blue-400">
+            <span className="text-[9px] text-info">
               Earned: {formatCurrency(dashboardMetrics?.total_earned_ytd || 0)}
             </span>
-            <span className="text-[9px] text-amber-600 dark:text-amber-400">
+            <span className="text-[9px] text-warning">
               Pending: {formatCurrency(dashboardMetrics?.total_unearned || 0)}
             </span>
           </div>
@@ -268,7 +268,7 @@ function AgencyPerformanceReportContent({
         {/* Agents */}
         <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
           <div className="flex items-center gap-2 mb-1">
-            <Users className="w-3.5 h-3.5 text-violet-500" />
+            <Users className="w-3.5 h-3.5 text-info" />
             <span className="text-[9px] font-medium text-v2-ink-muted uppercase tracking-[0.18em]">
               Agents
             </span>
@@ -416,8 +416,8 @@ function AgencyPerformanceReportContent({
               className={cn(
                 "px-1.5 py-0.5 rounded text-[9px] font-medium",
                 netGrowthPositive
-                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                  : "bg-red-500/10 text-red-600 dark:text-red-400",
+                  ? "bg-success/10 text-success"
+                  : "bg-destructive/10 text-destructive",
               )}
             >
               {netGrowthPositive ? "GROWTH" : "DECLINE"}
@@ -438,7 +438,7 @@ function AgencyPerformanceReportContent({
             </div>
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-v2-ink-muted">Commissions</span>
-              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="font-mono font-bold text-success">
                 {formatCurrency(summary.total_commissions)}
               </span>
             </div>
@@ -447,16 +447,14 @@ function AgencyPerformanceReportContent({
               <span className="text-v2-ink-muted">Net Growth</span>
               <div className="flex items-center gap-1">
                 {netGrowthPositive ? (
-                  <TrendingUp className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                  <TrendingUp className="w-3 h-3 text-success" />
                 ) : (
-                  <TrendingDown className="w-3 h-3 text-red-600 dark:text-red-400" />
+                  <TrendingDown className="w-3 h-3 text-destructive" />
                 )}
                 <span
                   className={cn(
                     "font-mono font-bold",
-                    netGrowthPositive
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-red-600 dark:text-red-400",
+                    netGrowthPositive ? "text-success" : "text-destructive",
                   )}
                 >
                   {netGrowthPositive ? "+" : ""}
@@ -558,19 +556,13 @@ function AgencyPerformanceReportContent({
                     Premium
                   </TableHead>
                   <TableHead className="text-[10px] py-1.5 h-auto text-right">
-                    <span className="text-emerald-600 dark:text-emerald-400">
-                      Total AP
-                    </span>
+                    <span className="text-success">Total AP</span>
                   </TableHead>
                   <TableHead className="text-[10px] py-1.5 h-auto text-right">
-                    <span className="text-blue-600 dark:text-blue-400">
-                      Earned
-                    </span>
+                    <span className="text-info">Earned</span>
                   </TableHead>
                   <TableHead className="text-[10px] py-1.5 h-auto text-right">
-                    <span className="text-amber-600 dark:text-amber-400">
-                      Pending
-                    </span>
+                    <span className="text-warning">Pending</span>
                   </TableHead>
                   <TableHead className="text-[10px] text-v2-ink-muted py-1.5 h-auto text-right">
                     Share
@@ -585,11 +577,11 @@ function AgencyPerformanceReportContent({
                         className={cn(
                           "w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold",
                           index === 0
-                            ? "bg-amber-500/20 text-amber-600 dark:text-amber-400"
+                            ? "bg-warning/20 text-warning"
                             : index === 1
                               ? "bg-v2-ring text-v2-ink-muted"
                               : index === 2
-                                ? "bg-orange-500/20 text-orange-600 dark:text-orange-400"
+                                ? "bg-warning/20 text-warning"
                                 : "bg-v2-ring text-v2-ink-muted",
                         )}
                       >
@@ -612,13 +604,13 @@ function AgencyPerformanceReportContent({
                     <TableCell className="text-[11px] py-1.5 text-right font-mono font-bold text-v2-ink">
                       {formatCurrency(agent.total_annual_premium)}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono font-bold text-success">
                       {formatCurrency(agent.commissions_ytd)}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-blue-600 dark:text-blue-400">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-info">
                       {formatCurrency(agent.earned_ytd)}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-amber-600 dark:text-amber-400">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-warning">
                       {formatCurrency(agent.unearned_amount)}
                     </TableCell>
                     <TableCell className="text-[11px] py-1.5 text-right font-mono text-v2-ink-muted">
@@ -688,15 +680,15 @@ function AgencyPerformanceReportContent({
                     <TableCell className="text-[11px] py-1.5 text-right font-mono text-v2-ink">
                       {formatCurrency(row.new_premium)}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-red-600 dark:text-red-400">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-destructive">
                       {row.policies_lapsed}
                     </TableCell>
                     <TableCell className="text-[11px] py-1.5 text-right font-mono">
                       <span
                         className={cn(
                           row.net_premium_change >= 0
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-red-600 dark:text-red-400",
+                            ? "text-success"
+                            : "text-destructive",
                         )}
                       >
                         {row.net_premium_change >= 0 ? "+" : ""}

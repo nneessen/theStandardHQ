@@ -193,7 +193,7 @@ export function RoadmapListPage() {
   if (!agencyId) {
     return (
       <div className="h-[calc(100vh-4rem)] flex items-center justify-center">
-        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -205,13 +205,13 @@ export function RoadmapListPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
       {/* ── Header bar ─────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring dark:border-v2-ring">
+      <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border dark:border-border">
         <div className="flex items-center gap-2">
-          <ListChecks className="h-4 w-4 text-v2-ink dark:text-v2-ink" />
-          <h1 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
+          <ListChecks className="h-4 w-4 text-foreground dark:text-foreground" />
+          <h1 className="text-sm font-semibold text-foreground dark:text-foreground">
             Manage Roadmaps
           </h1>
-          <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hidden sm:inline">
+          <span className="text-[10px] text-muted-foreground dark:text-muted-foreground hidden sm:inline">
             Build and manage onboarding checklists
           </span>
         </div>
@@ -220,24 +220,24 @@ export function RoadmapListPage() {
           {(roadmaps ?? []).length > 0 && (
             <div className="flex items-center gap-3 text-[11px] mr-2">
               <span>
-                <span className="font-medium text-v2-ink dark:text-v2-ink">
+                <span className="font-medium text-foreground dark:text-foreground">
                   {publishedCount}
                 </span>{" "}
-                <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+                <span className="text-muted-foreground dark:text-muted-foreground">
                   published
                 </span>
               </span>
               {draftCount > 0 && (
                 <span>
-                  <span className="font-medium text-v2-ink dark:text-v2-ink">
+                  <span className="font-medium text-foreground dark:text-foreground">
                     {draftCount}
                   </span>{" "}
-                  <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <span className="text-muted-foreground dark:text-muted-foreground">
                     draft
                   </span>
                 </span>
               )}
-              <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
+              <div className="h-3 w-px bg-muted dark:bg-muted" />
             </div>
           )}
 
@@ -279,7 +279,7 @@ export function RoadmapListPage() {
             {[1, 2, 3].map((n) => (
               <div
                 key={n}
-                className="h-20 rounded-lg bg-v2-card border border-v2-ring dark:border-v2-ring animate-pulse"
+                className="h-20 rounded-lg bg-card border border-border dark:border-border animate-pulse"
               />
             ))}
           </div>
@@ -288,7 +288,7 @@ export function RoadmapListPage() {
             <Empty>
               <EmptyHeader>
                 <EmptyMedia variant="icon">
-                  <ListChecks className="h-5 w-5 text-v2-ink-subtle" />
+                  <ListChecks className="h-5 w-5 text-muted-foreground" />
                 </EmptyMedia>
                 <EmptyTitle>No roadmaps yet</EmptyTitle>
                 <EmptyDescription>
@@ -311,7 +311,7 @@ export function RoadmapListPage() {
               <AdminRoadmapCard
                 roadmap={defaultRoadmap}
                 leftSlot={
-                  <div className="flex items-center justify-center h-6 w-6 text-amber-500 shrink-0">
+                  <div className="flex items-center justify-center h-6 w-6 text-warning shrink-0">
                     <Star className="h-4 w-4 fill-current" />
                   </div>
                 }
@@ -484,7 +484,7 @@ function AdminRoadmapCard({
   onDelete,
 }: AdminRoadmapCardProps) {
   return (
-    <div className="flex items-center gap-3 bg-v2-card rounded-lg px-3 py-3 border border-v2-ring dark:border-v2-ring hover:border-v2-ring-strong dark:hover:border-v2-ring-strong transition-colors group">
+    <div className="flex items-center gap-3 bg-card rounded-lg px-3 py-3 border border-border dark:border-border hover:border-border dark:hover:border-border transition-colors group">
       {leftSlot}
 
       {/* Info section */}
@@ -499,13 +499,13 @@ function AdminRoadmapCard({
           <button
             type="button"
             onClick={onEdit}
-            className="text-sm font-semibold text-v2-ink dark:text-v2-ink hover:underline underline-offset-2 truncate text-left"
+            className="text-sm font-semibold text-foreground dark:text-foreground hover:underline underline-offset-2 truncate text-left"
           >
             {roadmap.title}
           </button>
         </div>
         {roadmap.description && (
-          <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
+          <p className="text-[11px] text-muted-foreground dark:text-muted-foreground truncate">
             {roadmap.description}
           </p>
         )}
@@ -514,13 +514,13 @@ function AdminRoadmapCard({
       {/* Status */}
       <div className="shrink-0">
         {roadmap.is_published ? (
-          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
-            <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-success">
+            <div className="h-1.5 w-1.5 rounded-full bg-success" />
             Published
           </span>
         ) : (
-          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-v2-ink-subtle dark:text-v2-ink-muted">
-            <div className="h-1.5 w-1.5 rounded-full bg-v2-ring-strong dark:bg-v2-ring-strong" />
+          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground dark:text-muted-foreground">
+            <div className="h-1.5 w-1.5 rounded-full bg-muted dark:bg-muted" />
             Draft
           </span>
         )}
@@ -635,7 +635,7 @@ function SortableAdminRoadmapCard({
       style={style}
       className={
         isDragging
-          ? "rounded-lg ring-2 ring-blue-400/40 shadow-xl z-10 relative"
+          ? "rounded-lg ring-2 ring-info/40 shadow-xl z-10 relative"
           : ""
       }
     >
@@ -646,7 +646,7 @@ function SortableAdminRoadmapCard({
             type="button"
             {...attributes}
             {...listeners}
-            className="flex items-center justify-center h-6 w-6 rounded text-v2-ink-subtle dark:text-v2-ink-muted hover:text-v2-ink-muted dark:hover:text-v2-ink-subtle cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+            className="flex items-center justify-center h-6 w-6 rounded text-muted-foreground dark:text-muted-foreground hover:text-muted-foreground dark:hover:text-muted-foreground cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
             aria-label={`Drag ${roadmap.title} to reorder`}
           >
             <GripVertical className="h-3.5 w-3.5" />

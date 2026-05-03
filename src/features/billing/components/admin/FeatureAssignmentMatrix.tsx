@@ -338,7 +338,7 @@ export function FeatureAssignmentMatrix({
           </div>
           {hasAnyPendingChanges && (
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="text-[10px] text-amber-600">
+              <Badge variant="outline" className="text-[10px] text-warning">
                 Unsaved changes
               </Badge>
               <Button
@@ -399,7 +399,7 @@ export function FeatureAssignmentMatrix({
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-5 w-5 p-0 text-emerald-600"
+                        className="h-5 w-5 p-0 text-success"
                         onClick={() => saveChanges(plan.id)}
                         disabled={isSaving}
                       >
@@ -541,9 +541,9 @@ export function FeatureAssignmentMatrix({
                                   }
                                   className={`${
                                     isPending
-                                      ? "border-amber-500"
+                                      ? "border-warning"
                                       : isEnabled
-                                        ? "border-emerald-500 data-[state=checked]:bg-emerald-500"
+                                        ? "border-success data-[state=checked]:bg-success"
                                         : ""
                                   }`}
                                 />
@@ -576,12 +576,12 @@ export function FeatureAssignmentMatrix({
             >
               {/* Analytics Header Row */}
               <div
-                className="grid items-center rounded-md bg-rose-50/50 dark:bg-rose-950/20 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                className="grid items-center rounded-md bg-destructive/10/50 dark:bg-destructive/20 hover:bg-destructive/10 dark:hover:bg-destructive/30"
                 style={{ gridTemplateColumns: gridCols }}
               >
                 <CollapsibleTrigger asChild>
                   <button className="flex items-center gap-2 py-2 px-2 text-left w-full group">
-                    <span className="h-2 w-2 rounded-full shrink-0 bg-rose-500" />
+                    <span className="h-2 w-2 rounded-full shrink-0 bg-destructive" />
                     <BarChart3 className="h-3.5 w-3.5 text-v2-ink-muted shrink-0" />
                     <div className="flex flex-col min-w-0">
                       <span className="text-xs font-semibold text-v2-ink dark:text-v2-ink-subtle truncate">
@@ -666,9 +666,9 @@ export function FeatureAssignmentMatrix({
                             }
                             className={`${
                               isPending
-                                ? "border-amber-500"
+                                ? "border-warning"
                                 : isEnabled
-                                  ? "border-emerald-500 data-[state=checked]:bg-emerald-500"
+                                  ? "border-success data-[state=checked]:bg-success"
                                   : ""
                             }`}
                           />

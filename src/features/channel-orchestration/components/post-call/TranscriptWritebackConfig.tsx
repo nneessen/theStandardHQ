@@ -67,7 +67,7 @@ export function TranscriptWritebackConfig({ config, onChange }: Props) {
               className={cn(
                 "w-full text-left px-2 py-1 rounded border text-[10px] transition-colors",
                 config.format === f.value
-                  ? "border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30"
+                  ? "border-info/40 bg-info/10"
                   : "border-v2-ring dark:border-v2-ring-strong hover:border-v2-ring-strong",
               )}
             >

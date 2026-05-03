@@ -95,7 +95,7 @@ export function TemplatePreviewSheet({
                     {getCategoryLabel(template.category, customCategories)}
                   </Badge>
                 )}
-                <span className="text-[10px] text-v2-ink-subtle ml-auto">
+                <span className="text-[10px] text-muted-foreground ml-auto">
                   Used {template.use_count || 0}× · Last used{" "}
                   {formatRelative(template.last_used_at)}
                 </span>
@@ -103,16 +103,16 @@ export function TemplatePreviewSheet({
 
               {/* Full content */}
               <div>
-                <div className="text-[11px] font-medium text-v2-ink-muted mb-1.5">
+                <div className="text-[11px] font-medium text-muted-foreground mb-1.5">
                   Content
                 </div>
-                <pre className="text-[11px] text-v2-ink-muted whitespace-pre-wrap break-words bg-v2-canvas border border-v2-ring rounded-v2-sm p-3 font-sans leading-relaxed">
+                <pre className="text-[11px] text-muted-foreground whitespace-pre-wrap break-words bg-background border border-border rounded-v2-sm p-3 font-sans leading-relaxed">
                   {template.content}
                 </pre>
               </div>
 
               {/* Created */}
-              <div className="text-[10px] text-v2-ink-subtle">
+              <div className="text-[10px] text-muted-foreground">
                 Created {formatRelative(template.created_at)}
               </div>
             </div>

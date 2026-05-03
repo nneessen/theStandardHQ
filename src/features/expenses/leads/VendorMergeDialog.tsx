@@ -109,7 +109,7 @@ export function VendorMergeDialog({
               {vendors.map((vendor) => (
                 <div
                   key={vendor.id}
-                  className="flex items-center justify-between py-1.5 px-2 rounded bg-v2-canvas text-xs"
+                  className="flex items-center justify-between py-1.5 px-2 rounded bg-background text-xs"
                 >
                   <span className="font-medium">{vendor.name}</span>
                   <span className="text-muted-foreground">
@@ -142,14 +142,12 @@ export function VendorMergeDialog({
 
           {/* Preview */}
           {keepVendorId && (
-            <div className="p-3 rounded bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+            <div className="p-3 rounded bg-warning/10 border border-warning/30">
               <div className="flex items-start gap-2">
-                <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+                <AlertTriangle className="h-4 w-4 text-warning mt-0.5 shrink-0" />
                 <div className="text-xs">
-                  <p className="font-medium text-amber-800 dark:text-amber-200">
-                    Merge Preview
-                  </p>
-                  <ul className="mt-1 space-y-0.5 text-amber-700 dark:text-amber-300">
+                  <p className="font-medium text-warning">Merge Preview</p>
+                  <ul className="mt-1 space-y-0.5 text-warning">
                     <li>
                       • {mergeVendorIds.length} vendor(s) will be deactivated
                     </li>
@@ -162,7 +160,7 @@ export function VendorMergeDialog({
                       {formatCurrency(totalSpent)}
                     </li>
                   </ul>
-                  <p className="mt-2 text-[10px] text-amber-600 dark:text-amber-400">
+                  <p className="mt-2 text-[10px] text-warning">
                     This action cannot be undone.
                   </p>
                 </div>

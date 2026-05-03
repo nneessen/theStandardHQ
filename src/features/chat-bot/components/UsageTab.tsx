@@ -22,10 +22,10 @@ function getVoiceStatusClasses(status: string) {
   switch (status) {
     case "active":
     case "trialing":
-      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300";
+      return "bg-success/20 text-success dark:bg-success/15 dark:text-success";
     case "past_due":
     case "suspended":
-      return "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300";
+      return "bg-warning/20 text-warning dark:bg-warning/15 dark:text-warning";
     case "canceled":
       return "bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted";
     default:
@@ -114,7 +114,7 @@ export function UsageTab() {
                 Lead Usage
               </span>
             </div>
-            <Badge className="text-[9px] h-4 px-1.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+            <Badge className="text-[9px] h-4 px-1.5 bg-info/20 text-info dark:bg-info dark:text-info">
               <Shield className="h-2.5 w-2.5 mr-0.5" />
               {unlimitedBadgeLabel}
             </Badge>
@@ -129,7 +129,7 @@ export function UsageTab() {
             </span>
           </div>
 
-          <div className="flex items-center gap-2 p-2 bg-indigo-50 dark:bg-indigo-950/20 rounded text-[10px] text-indigo-700 dark:text-indigo-300">
+          <div className="flex items-center gap-2 p-2 bg-info/10 dark:bg-info/10 rounded text-[10px] text-info">
             <Shield className="h-3 w-3 flex-shrink-0" />
             <span>{unlimitedMessage}</span>
           </div>
@@ -167,7 +167,7 @@ export function UsageTab() {
               <div
                 className={cn(
                   "h-full rounded-full transition-all",
-                  voiceNeedsAttention ? "bg-amber-500" : "bg-sky-500",
+                  voiceNeedsAttention ? "bg-warning" : "bg-info",
                 )}
                 style={{ width: `${voicePercentUsed}%` }}
               />
@@ -197,7 +197,7 @@ export function UsageTab() {
               )}
 
             {voiceNeedsAttention && (
-              <div className="flex items-center gap-1 mt-2 text-[10px] text-amber-600 dark:text-amber-400">
+              <div className="flex items-center gap-1 mt-2 text-[10px] text-warning">
                 <AlertTriangle className="h-2.5 w-2.5" />
                 <span>
                   {voiceStatus === "past_due" || voiceStatus === "suspended"
@@ -227,9 +227,9 @@ export function UsageTab() {
       case "starter":
         return "bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted";
       case "growth":
-        return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300";
+        return "bg-info/20 text-info dark:bg-info dark:text-info";
       case "scale":
-        return "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300";
+        return "bg-info/20 text-info dark:bg-info dark:text-info";
       default:
         return "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-muted";
     }
@@ -258,9 +258,7 @@ export function UsageTab() {
           <span
             className={cn(
               "text-lg font-bold",
-              isOverLimit
-                ? "text-red-600 dark:text-red-400"
-                : "text-v2-ink dark:text-v2-ink",
+              isOverLimit ? "text-destructive" : "text-v2-ink dark:text-v2-ink",
             )}
           >
             {usage.leadsUsed.toLocaleString()}
@@ -276,10 +274,10 @@ export function UsageTab() {
             className={cn(
               "h-full rounded-full transition-all",
               isOverLimit
-                ? "bg-red-500"
+                ? "bg-destructive"
                 : isWarning
-                  ? "bg-amber-500"
-                  : "bg-emerald-500",
+                  ? "bg-warning"
+                  : "bg-success",
             )}
             style={{ width: `${percentUsed}%` }}
           />
@@ -294,9 +292,9 @@ export function UsageTab() {
             className={cn(
               "text-[10px] font-medium",
               isOverLimit
-                ? "text-red-600 dark:text-red-400"
+                ? "text-destructive"
                 : isWarning
-                  ? "text-amber-600 dark:text-amber-400"
+                  ? "text-warning"
                   : "text-v2-ink-muted dark:text-v2-ink-subtle",
             )}
           >
@@ -306,14 +304,14 @@ export function UsageTab() {
 
         {/* Warning */}
         {isWarning && !isOverLimit && (
-          <div className="flex items-center gap-1 mt-2 text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1 mt-2 text-[10px] text-warning">
             <AlertTriangle className="h-2.5 w-2.5" />
             <span>Approaching your lead limit for this period.</span>
           </div>
         )}
 
         {isOverLimit && (
-          <div className="flex items-center gap-1 mt-2 p-1.5 bg-red-50 dark:bg-red-950/30 rounded text-[10px] text-red-600 dark:text-red-400">
+          <div className="flex items-center gap-1 mt-2 p-1.5 bg-destructive/10 rounded text-[10px] text-destructive">
             <AlertTriangle className="h-2.5 w-2.5" />
             <span>
               You have reached your lead limit. New leads will not be processed
@@ -375,7 +373,7 @@ export function UsageTab() {
                 <div
                   className={cn(
                     "h-full rounded-full transition-all",
-                    voiceNeedsAttention ? "bg-amber-500" : "bg-sky-500",
+                    voiceNeedsAttention ? "bg-warning" : "bg-info",
                   )}
                   style={{ width: `${voicePercentUsed}%` }}
                 />
@@ -426,7 +424,7 @@ export function UsageTab() {
               )}
 
               {voiceNeedsAttention && (
-                <div className="flex items-center gap-1 mt-2 text-[10px] text-amber-600 dark:text-amber-400">
+                <div className="flex items-center gap-1 mt-2 text-[10px] text-warning">
                   <AlertTriangle className="h-2.5 w-2.5" />
                   <span>
                     {voiceStatus === "past_due" || voiceStatus === "suspended"

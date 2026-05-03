@@ -222,22 +222,22 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                   className={cn(
                     "flex items-center gap-1.5 px-2 py-1 rounded-md transition-all text-[10px] font-medium w-full",
                     isCurrent
-                      ? "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400"
+                      ? "bg-info/10 text-info"
                       : isComplete
-                        ? "text-emerald-600 dark:text-emerald-400 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted"
+                        ? "text-success hover:bg-v2-canvas dark:hover:bg-v2-card-tinted"
                         : "text-v2-ink-subtle dark:text-v2-ink-muted hover:bg-v2-canvas dark:hover:bg-v2-card-tinted",
                   )}
                 >
                   {isComplete ? (
-                    <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center flex-shrink-0">
-                      <Check className="h-2.5 w-2.5 text-emerald-600 dark:text-emerald-400" />
+                    <div className="w-4 h-4 rounded-full bg-success/20 dark:bg-success flex items-center justify-center flex-shrink-0">
+                      <Check className="h-2.5 w-2.5 text-success" />
                     </div>
                   ) : (
                     <div
                       className={cn(
                         "w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0 text-[9px] font-bold",
                         isCurrent
-                          ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400"
+                          ? "bg-info/20 dark:bg-info text-info"
                           : "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink-subtle dark:text-v2-ink-muted",
                       )}
                     >
@@ -318,7 +318,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                 <ConnectionCard
                   title="Calendly"
                   icon={
-                    <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded bg-info flex items-center justify-center">
                       <span className="text-[8px] font-bold text-white">
                         CAL
                       </span>
@@ -337,7 +337,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                 <ConnectionCard
                   title="Google Calendar"
                   icon={
-                    <div className="w-6 h-6 rounded bg-red-500 flex items-center justify-center">
+                    <div className="w-6 h-6 rounded bg-destructive flex items-center justify-center">
                       <Calendar className="h-3 w-3 text-white" />
                     </div>
                   }
@@ -356,7 +356,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
               <ConnectionCard
                 title="Calendly"
                 icon={
-                  <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center">
+                  <div className="w-6 h-6 rounded bg-info flex items-center justify-center">
                     <span className="text-[8px] font-bold text-white">CAL</span>
                   </div>
                 }
@@ -379,7 +379,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
               <ConnectionCard
                 title="Google Calendar"
                 icon={
-                  <div className="w-6 h-6 rounded bg-red-500 flex items-center justify-center">
+                  <div className="w-6 h-6 rounded bg-destructive flex items-center justify-center">
                     <Calendar className="h-3 w-3 text-white" />
                   </div>
                 }
@@ -437,7 +437,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                 {sourcesSaved ? "Saved" : "Save Lead Sources"}
               </Button>
               {sourcesSaved && (
-                <Badge className="text-[9px] h-4 px-1.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                <Badge className="text-[9px] h-4 px-1.5 bg-success/20 text-success dark:bg-success dark:text-success">
                   <Check className="h-2 w-2 mr-0.5" />
                   Saved
                 </Badge>
@@ -482,7 +482,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                 {statusesSaved ? "Saved" : "Save Outbound Statuses"}
               </Button>
               {statusesSaved && (
-                <Badge className="text-[9px] h-4 px-1.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                <Badge className="text-[9px] h-4 px-1.5 bg-success/20 text-success dark:bg-success dark:text-success">
                   <Check className="h-2 w-2 mr-0.5" />
                   Saved
                 </Badge>
@@ -494,8 +494,8 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
         {/* Step 5: Done */}
         {currentStep === 5 && (
           <div className="space-y-3 text-center py-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center mx-auto">
-              <Rocket className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+            <div className="w-12 h-12 rounded-full bg-success/20 dark:bg-success flex items-center justify-center mx-auto">
+              <Rocket className="h-6 w-6 text-success" />
             </div>
             <div>
               <h3 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink">
@@ -512,7 +512,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
             {/* Summary */}
             <div className="text-left max-w-sm mx-auto space-y-1.5 pt-2">
               <div className="flex items-center gap-2 text-[10px]">
-                <Check className="h-3 w-3 text-emerald-500" />
+                <Check className="h-3 w-3 text-success" />
                 <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                   Close CRM:{" "}
                   {getConnectionStateLabel(closeConnectionState, {
@@ -523,7 +523,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                 </span>
               </div>
               <div className="flex items-center gap-2 text-[10px]">
-                <Check className="h-3 w-3 text-emerald-500" />
+                <Check className="h-3 w-3 text-success" />
                 <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                   Calendar:{" "}
                   {calendarProvider === "calendly"
@@ -537,14 +537,14 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
                 </span>
               </div>
               <div className="flex items-center gap-2 text-[10px]">
-                <Check className="h-3 w-3 text-emerald-500" />
+                <Check className="h-3 w-3 text-success" />
                 <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                   Lead Sources:{" "}
                   {leadSources.length > 0 ? leadSources.join(", ") : "None"}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-[10px]">
-                <Check className="h-3 w-3 text-emerald-500" />
+                <Check className="h-3 w-3 text-success" />
                 <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                   Outbound Statuses: {leadStatuses.length} selected
                 </span>
@@ -552,7 +552,7 @@ export function SetupWizard({ agent, onComplete }: SetupWizardProps) {
             </div>
 
             <Button
-              className="h-8 text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white mt-3"
+              className="h-8 text-[11px] bg-success hover:bg-success text-white mt-3"
               disabled={updateConfig.isPending}
               onClick={handleFinish}
             >

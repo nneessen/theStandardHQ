@@ -47,7 +47,7 @@ export function RuleEditor({ rule, onSave, onCancel, saving }: Props) {
   };
 
   return (
-    <div className="border border-blue-200 dark:border-blue-800 rounded-md bg-blue-50/30 dark:bg-blue-950/20 p-2.5 space-y-2.5">
+    <div className="border border-info/30 rounded-md bg-info/10/30 dark:bg-info/10 p-2.5 space-y-2.5">
       {/* Rule Name */}
       <div>
         <Label className="text-[10px] text-v2-ink-muted font-medium">

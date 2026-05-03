@@ -29,7 +29,7 @@ export const FollowUpGapsWidget: React.FC<FollowUpGapsWidgetProps> = ({
             Follow-up Gaps
           </span>
         </div>
-        <p className="mt-2 text-[11px] text-emerald-600 dark:text-emerald-400">
+        <p className="mt-2 text-[11px] text-success">
           All leads have recent activity. No gaps detected.
         </p>
       </div>
@@ -58,9 +58,9 @@ export const FollowUpGapsWidget: React.FC<FollowUpGapsWidgetProps> = ({
 
       {/* Alert summary */}
       {totalNeedingAttention > 0 && (
-        <div className="flex items-center gap-2 rounded bg-amber-50/50 px-1.5 py-0.5 dark:bg-amber-950/20">
-          <AlertTriangle className="h-2.5 w-2.5 shrink-0 text-amber-600 dark:text-amber-400" />
-          <span className="text-[10px] text-amber-700 dark:text-amber-300">
+        <div className="flex items-center gap-2 rounded bg-warning/10/50 px-1.5 py-0.5 dark:bg-warning/10">
+          <AlertTriangle className="h-2.5 w-2.5 shrink-0 text-warning" />
+          <span className="text-[10px] text-warning">
             <span className="font-mono font-semibold">
               {totalNeedingAttention}
             </span>{" "}
@@ -96,9 +96,7 @@ export const FollowUpGapsWidget: React.FC<FollowUpGapsWidgetProps> = ({
               <div className="relative h-3.5 flex-1 overflow-hidden rounded-sm bg-muted/30">
                 <div
                   className={`absolute inset-y-0 left-0 rounded-sm transition-all ${
-                    isUrgent
-                      ? "bg-amber-200 dark:bg-amber-800/40"
-                      : "bg-v2-ring"
+                    isUrgent ? "bg-warning/30 dark:bg-warning/40" : "bg-v2-ring"
                   }`}
                   style={{
                     width: `${Math.max(barWidth, needsAttention > 0 ? 4 : 0)}%`,

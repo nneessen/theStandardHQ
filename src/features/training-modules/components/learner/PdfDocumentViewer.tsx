@@ -41,7 +41,7 @@ export function PdfDocumentViewer({ url }: PdfDocumentViewerProps) {
           </div>
         }
         error={
-          <p className="text-xs text-red-500 py-10 text-center">
+          <p className="text-xs text-destructive py-10 text-center">
             Failed to load PDF
           </p>
         }

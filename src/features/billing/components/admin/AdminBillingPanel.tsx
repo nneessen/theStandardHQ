@@ -41,12 +41,12 @@ export function AdminBillingPanel() {
 
   return (
     <Collapsible.Root open={isOpen} onOpenChange={setIsOpen}>
-      <div className="bg-v2-card rounded-lg border border-amber-200 dark:border-amber-800/50">
+      <div className="bg-v2-card rounded-lg border border-warning/30/50">
         {/* Trigger */}
         <Collapsible.Trigger asChild>
-          <button className="flex items-center justify-between w-full px-3 py-2 hover:bg-amber-50/50 dark:hover:bg-amber-950/20 transition-colors rounded-lg">
+          <button className="flex items-center justify-between w-full px-3 py-2 hover:bg-warning/10/50 dark:hover:bg-warning/10 transition-colors rounded-lg">
             <div className="flex items-center gap-1.5">
-              <Shield className="h-3.5 w-3.5 text-amber-500" />
+              <Shield className="h-3.5 w-3.5 text-warning" />
               <span className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
                 Admin: Plan Management
               </span>
@@ -62,7 +62,7 @@ export function AdminBillingPanel() {
 
         {/* Content */}
         <Collapsible.Content>
-          <div className="border-t border-amber-200 dark:border-amber-800/50">
+          <div className="border-t border-warning/30/50">
             {/* Sub-tabs */}
             <div className="flex items-center gap-0.5 bg-v2-canvas rounded-md p-0.5 mx-3 mt-3">
               {tabs.map((tab) => {

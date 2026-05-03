@@ -75,7 +75,7 @@ function AgentRow({ agent }: { agent: TeamAgentAppointments }) {
           {agent.name}
         </span>
         {hasFetchError && (
-          <AlertTriangle className="h-2.5 w-2.5 text-amber-500 inline ml-1" />
+          <AlertTriangle className="h-2.5 w-2.5 text-warning inline ml-1" />
         )}
       </TableCell>
 
@@ -116,14 +116,14 @@ function AgentRow({ agent }: { agent: TeamAgentAppointments }) {
       {/* Next appointment — the most actionable column */}
       <TableCell className="py-1.5">
         {hasFetchError ? (
-          <span className="text-[10px] text-amber-500 truncate block max-w-[200px]">
+          <span className="text-[10px] text-warning truncate block max-w-[200px]">
             {agent.fetchError}
           </span>
         ) : nextAppt ? (
           <div className="flex items-center gap-2">
             <Badge
               variant="outline"
-              className="text-[9px] h-4 px-1 font-mono tabular-nums border-blue-200 text-blue-700 bg-blue-50/50 dark:border-blue-800 dark:text-blue-300 dark:bg-blue-950/30 flex-shrink-0"
+              className="text-[9px] h-4 px-1 font-mono tabular-nums border-info/30 text-info bg-info/10/50 dark:border-info dark:text-info dark:bg-info/15 flex-shrink-0"
             >
               {formatTime(nextAppt.scheduledAt)}
             </Badge>
@@ -149,13 +149,13 @@ function AgentRow({ agent }: { agent: TeamAgentAppointments }) {
         ) : agent.thisWeek > 0 ? (
           <div className="flex items-center gap-1.5 text-[10px] tabular-nums">
             {agent.byStatus.completed > 0 && (
-              <span className="text-emerald-600 dark:text-emerald-400">
+              <span className="text-success">
                 {agent.byStatus.completed}
                 <span className="text-[8px] ml-px">done</span>
               </span>
             )}
             {agent.byStatus.scheduled > 0 && (
-              <span className="text-blue-600 dark:text-blue-400">
+              <span className="text-info">
                 {agent.byStatus.scheduled}
                 <span className="text-[8px] ml-px">sched</span>
               </span>
@@ -167,7 +167,7 @@ function AgentRow({ agent }: { agent: TeamAgentAppointments }) {
               </span>
             )}
             {agent.byStatus.noShow > 0 && (
-              <span className="text-red-500">
+              <span className="text-destructive">
                 {agent.byStatus.noShow}
                 <span className="text-[8px] ml-px">ns</span>
               </span>
@@ -230,7 +230,7 @@ export function TeamAppointmentsTab() {
           </Button>
         </div>
         {error && (
-          <pre className="mt-2 text-[9px] text-red-500 bg-v2-card-tinted dark:bg-v2-card rounded p-2 overflow-auto max-h-40">
+          <pre className="mt-2 text-[9px] text-destructive bg-v2-card-tinted dark:bg-v2-card rounded p-2 overflow-auto max-h-40">
             {String(error)}
           </pre>
         )}
@@ -273,7 +273,7 @@ export function TeamAppointmentsTab() {
         {fetchErrors && fetchErrors.length > 0 && (
           <Badge
             variant="outline"
-            className="text-[8px] h-3.5 px-1 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400 ml-1"
+            className="text-[8px] h-3.5 px-1 border-warning/40 text-warning dark:border-warning dark:text-warning ml-1"
           >
             {fetchErrors.length} error{fetchErrors.length > 1 ? "s" : ""}
           </Badge>

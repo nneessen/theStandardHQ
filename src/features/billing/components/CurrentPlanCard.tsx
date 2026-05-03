@@ -91,8 +91,8 @@ export function CurrentPlanCard() {
             className={cn(
               "flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-medium",
               isActive
-                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+                ? "bg-success/20 text-success dark:bg-success/30 dark:text-success"
+                : "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive",
             )}
           >
             {isActive ? (
@@ -144,9 +144,9 @@ export function CurrentPlanCard() {
 
       {/* Grandfathered notice */}
       {isGrandfathered && (
-        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 border-t border-amber-200 dark:border-amber-800/50">
-          <Gift className="h-3 w-3 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-          <p className="text-[10px] text-amber-700 dark:text-amber-400">
+        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-warning/10 border-t border-warning/30/50">
+          <Gift className="h-3 w-3 text-warning flex-shrink-0" />
+          <p className="text-[10px] text-warning">
             Grandfathered {displayTierName} access —{" "}
             <span className="font-semibold">
               {grandfatherDaysRemaining} days remaining

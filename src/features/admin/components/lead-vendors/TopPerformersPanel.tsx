@@ -13,11 +13,7 @@ interface TopPerformersPanelProps {
 }
 
 const roiColor = (roi: number) =>
-  roi > 0
-    ? "text-emerald-600 dark:text-emerald-400"
-    : roi < 0
-      ? "text-red-600 dark:text-red-400"
-      : "text-v2-ink-muted";
+  roi > 0 ? "text-success" : roi < 0 ? "text-destructive" : "text-v2-ink-muted";
 
 export function TopPerformersPanel({
   filteredPacks,
@@ -90,10 +86,10 @@ export function TopPerformersPanel({
     <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       {/* Best Converting Vendor Callout */}
       {bestVendor && (
-        <div className="mb-3 rounded-md bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 px-3 py-2">
+        <div className="mb-3 rounded-md bg-success/10 border border-success/30 px-3 py-2">
           <div className="flex items-center gap-1.5 mb-0.5">
-            <Trophy className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-            <span className="text-[9px] uppercase text-emerald-600 dark:text-emerald-400 font-semibold tracking-wider">
+            <Trophy className="h-3 w-3 text-success" />
+            <span className="text-[9px] uppercase text-success font-semibold tracking-wider">
               Best Converting Vendor
             </span>
           </div>
@@ -102,7 +98,7 @@ export function TopPerformersPanel({
               {bestVendor.vendorName}
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+              <span className="text-[11px] font-semibold text-success">
                 {formatPercent(bestVendor.conversionRate)} conv
               </span>
               <span className="text-[10px] text-v2-ink-subtle">
@@ -119,7 +115,7 @@ export function TopPerformersPanel({
         {/* Top Agents */}
         <div>
           <div className="flex items-center gap-1 mb-1.5">
-            <Award className="h-3 w-3 text-blue-500" />
+            <Award className="h-3 w-3 text-info" />
             <span className="text-[9px] uppercase text-v2-ink-subtle font-semibold tracking-wider">
               Top Agents
             </span>
@@ -144,7 +140,7 @@ export function TopPerformersPanel({
         {/* Top Vendors by ROI */}
         <div>
           <div className="flex items-center gap-1 mb-1.5">
-            <Star className="h-3 w-3 text-amber-500" />
+            <Star className="h-3 w-3 text-warning" />
             <span className="text-[9px] uppercase text-v2-ink-subtle font-semibold tracking-wider">
               Top Vendors (ROI)
             </span>
@@ -170,7 +166,7 @@ export function TopPerformersPanel({
         {/* Top Packs by ROI */}
         <div>
           <div className="flex items-center gap-1 mb-1.5">
-            <Star className="h-3 w-3 text-violet-500" />
+            <Star className="h-3 w-3 text-info" />
             <span className="text-[9px] uppercase text-v2-ink-subtle font-semibold tracking-wider">
               Top Packs (ROI)
             </span>

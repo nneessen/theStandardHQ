@@ -18,31 +18,32 @@ interface PipelineAttentionRowProps {
 
 const COUNT_TONE: Record<NonNullable<AttentionItem["tone"]>, string> = {
   default: "text-v2-ink ",
-  warn: "text-amber-700 dark:text-amber-400",
-  error: "text-red-700 dark:text-red-400",
-  success: "text-emerald-700 dark:text-emerald-400",
-  progress: "text-sky-700 dark:text-sky-400",
+  warn: "text-warning",
+  error: "text-destructive",
+  success: "text-success",
+  progress: "text-info dark:text-info",
 };
 
 const PILL_TONE: Record<NonNullable<AttentionItem["tone"]>, string> = {
   default:
     "bg-v2-canvas dark:bg-v2-ring ring-v2-ring  hover:bg-v2-ring dark:hover:bg-v2-card-dark",
-  warn: "bg-amber-50 dark:bg-amber-950/40 ring-amber-200 dark:ring-amber-900 hover:bg-amber-100 dark:hover:bg-amber-950/60",
+  warn: "bg-warning/10 dark:bg-warning/20 ring-warning/30 dark:ring-warning hover:bg-warning/20 dark:hover:bg-warning/10/60",
   error:
-    "bg-red-50 dark:bg-red-950/40 ring-red-200 dark:ring-red-900 hover:bg-red-100 dark:hover:bg-red-950/60",
+    "bg-destructive/10 dark:bg-destructive/20 ring-destructive/30 dark:ring-destructive hover:bg-destructive/20 dark:hover:bg-destructive/10/60",
   success:
-    "bg-emerald-50 dark:bg-emerald-950/40 ring-emerald-200 dark:ring-emerald-900 hover:bg-emerald-100 dark:hover:bg-emerald-950/60",
+    "bg-success/10 dark:bg-success/20 ring-success/30 dark:ring-success hover:bg-success/20 dark:hover:bg-success/10/60",
   progress:
-    "bg-sky-50 dark:bg-sky-950/40 ring-sky-200 dark:ring-sky-900 hover:bg-sky-100 dark:hover:bg-sky-950/60",
+    "bg-info/10 dark:bg-info/40 ring-info dark:ring-info hover:bg-info/20 dark:hover:bg-info/60",
 };
 
 const PILL_ACTIVE: Record<NonNullable<AttentionItem["tone"]>, string> = {
   default: "bg-v2-ring  ring-v2-ring ",
-  warn: "bg-amber-100 dark:bg-amber-950/60 ring-amber-300 dark:ring-amber-800",
-  error: "bg-red-100 dark:bg-red-950/60 ring-red-300 dark:ring-red-800",
+  warn: "bg-warning/20 dark:bg-warning/10/60 ring-warning/40 dark:ring-warning",
+  error:
+    "bg-destructive/20 dark:bg-destructive/10/60 ring-destructive/40 dark:ring-destructive",
   success:
-    "bg-emerald-100 dark:bg-emerald-950/60 ring-emerald-300 dark:ring-emerald-800",
-  progress: "bg-sky-100 dark:bg-sky-950/60 ring-sky-300 dark:ring-sky-800",
+    "bg-success/20 dark:bg-success/10/60 ring-success/40 dark:ring-success",
+  progress: "bg-info/20 dark:bg-info/60 ring-info dark:ring-info",
 };
 
 export const PipelineAttentionRow: React.FC<PipelineAttentionRowProps> = ({
@@ -60,7 +61,7 @@ export const PipelineAttentionRow: React.FC<PipelineAttentionRowProps> = ({
       )}
     >
       <div className="flex items-center gap-2 mb-3">
-        <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+        <AlertCircle className="h-3.5 w-3.5 text-warning" />
         <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-v2-ink dark:text-v2-ink-subtle">
           Needs your attention
         </span>

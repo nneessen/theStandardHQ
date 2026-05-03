@@ -144,14 +144,14 @@ export function ChatBotLanding({
   return (
     <div className="space-y-6">
       {/* ═══════════ HERO BANNER ═══════════ */}
-      <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 border border-v2-ring-strong/50">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(59,130,246,0.15),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(139,92,246,0.1),transparent_50%)]" />
+      <div className="relative overflow-hidden rounded-lg bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 border border-v2-ring-strong/50">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(226, 255, 204, 0.18),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,rgba(132, 144, 127, 0.18),transparent_50%)]" />
         <div className="relative px-6 py-5">
           <div className="grid grid-cols-[1fr_auto] items-center gap-8">
             {/* Left column — text content */}
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-blue-500/20">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-info/30">
                 <Bot className="h-5 w-5 text-white" />
               </div>
               <div>
@@ -169,7 +169,7 @@ export function ChatBotLanding({
             {/* Right column — integration logos */}
             <div className="flex items-center gap-5">
               <div className="flex flex-col items-center gap-1.5">
-                <div className="w-14 h-14 rounded-xl bg-v2-ink/80 border border-v2-ring-strong/50 flex items-center justify-center shadow-md shadow-black/20">
+                <div className="w-14 h-14 rounded-lg bg-v2-ink/80 border border-v2-ring-strong/50 flex items-center justify-center shadow-md shadow-black/20">
                   <CloseLogo className="h-5 w-auto text-white" />
                 </div>
                 <span className="text-[9px] text-v2-ink-subtle font-medium">
@@ -178,7 +178,7 @@ export function ChatBotLanding({
               </div>
               <span className="text-xs text-v2-ink-muted font-medium">+</span>
               <div className="flex flex-col items-center gap-1.5">
-                <div className="w-14 h-14 rounded-xl bg-v2-ink/80 border border-v2-ring-strong/50 flex items-center justify-center shadow-md shadow-black/20">
+                <div className="w-14 h-14 rounded-lg bg-v2-ink/80 border border-v2-ring-strong/50 flex items-center justify-center shadow-md shadow-black/20">
                   <CalendlyLogo className="h-8 w-8" />
                 </div>
                 <span className="text-[9px] text-v2-ink-subtle font-medium">
@@ -187,7 +187,7 @@ export function ChatBotLanding({
               </div>
               <span className="text-xs text-v2-ink-muted font-medium">/</span>
               <div className="flex flex-col items-center gap-1.5">
-                <div className="w-14 h-14 rounded-xl bg-v2-ink/80 border border-v2-ring-strong/50 flex items-center justify-center shadow-md shadow-black/20">
+                <div className="w-14 h-14 rounded-lg bg-v2-ink/80 border border-v2-ring-strong/50 flex items-center justify-center shadow-md shadow-black/20">
                   <GoogleCalendarLogo className="h-8 w-8" />
                 </div>
                 <span className="text-[9px] text-v2-ink-subtle font-medium">
@@ -208,12 +208,12 @@ export function ChatBotLanding({
             </h2>
             <div className="flex-1 h-px bg-v2-ring dark:bg-v2-card-tinted" />
           </div>
-          <div className="rounded-lg border border-indigo-200 dark:border-indigo-800 overflow-hidden bg-v2-card">
+          <div className="rounded-lg border border-info/30 overflow-hidden bg-v2-card">
             <div className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
-                    <Shield className="h-5 w-5 text-indigo-500" />
+                  <div className="w-10 h-10 rounded-lg bg-info/10 dark:bg-info/30 flex items-center justify-center">
+                    <Shield className="h-5 w-5 text-info" />
                   </div>
                   <div>
                     <h3 className="text-sm font-bold text-v2-ink dark:text-v2-ink">
@@ -226,14 +226,14 @@ export function ChatBotLanding({
                   </div>
                 </div>
                 {isBillingExempt ? (
-                  <Badge className="text-[9px] h-6 px-3 bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+                  <Badge className="text-[9px] h-6 px-3 bg-info/20 text-info dark:bg-info dark:text-info">
                     <Check className="h-2.5 w-2.5 mr-1" />
                     Active
                   </Badge>
                 ) : (
                   <Button
                     size="sm"
-                    className="h-7 text-[10px] px-4 bg-indigo-600 hover:bg-indigo-700 text-white"
+                    className="h-7 text-[10px] px-4 bg-info hover:bg-info text-white"
                     disabled={provisionTeamBot.isPending}
                     onClick={() =>
                       provisionTeamBot.mutate(undefined, {
@@ -291,7 +291,7 @@ export function ChatBotLanding({
                           className={cn(
                             "relative flex flex-col rounded-lg border p-3 text-left transition-all",
                             isSelected
-                              ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 ring-1 ring-emerald-500/30"
+                              ? "border-success bg-success/10/50 dark:bg-success/10 ring-1 ring-success/30"
                               : isPopular
                                 ? "border-v2-ink dark:border-v2-ring"
                                 : "border-v2-ring dark:border-v2-ring-strong hover:border-v2-ring-strong dark:hover:border-v2-ring-strong",
@@ -300,7 +300,7 @@ export function ChatBotLanding({
                           {/* Current plan badge — takes priority */}
                           {isCurrent && (
                             <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                              <span className="inline-flex items-center gap-0.5 bg-blue-600 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center gap-0.5 bg-info text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
                                 <Check className="h-2.5 w-2.5" />
                                 Current
                               </span>
@@ -320,7 +320,7 @@ export function ChatBotLanding({
                           {/* Selected badge */}
                           {isSelected && !isCurrent && (
                             <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                              <span className="inline-flex items-center gap-0.5 bg-emerald-500 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center gap-0.5 bg-success text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
                                 <Check className="h-2.5 w-2.5" />
                                 Selected
                               </span>
@@ -330,7 +330,7 @@ export function ChatBotLanding({
                           {/* Free test badge */}
                           {isFree && !isSelected && !isCurrent && (
                             <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                              <span className="inline-flex items-center gap-0.5 bg-amber-500 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center gap-0.5 bg-warning text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
                                 Test
                               </span>
                             </div>
@@ -361,45 +361,45 @@ export function ChatBotLanding({
                           {/* Features */}
                           <div className="flex-1 space-y-1.5 mb-3">
                             <div className="flex items-start gap-1.5">
-                              <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                               <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                                 {tier.runs_per_month.toLocaleString()}{" "}
                                 leads/month
                               </span>
                             </div>
                             <div className="flex items-start gap-1.5">
-                              <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                               <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                                 ~{(tier.runs_per_month * 8).toLocaleString()}{" "}
                                 SMS/month
                               </span>
                             </div>
                             <div className="flex items-start gap-1.5">
-                              <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                               <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                                 AI responses (compliant hours)
                               </span>
                             </div>
                             <div className="flex items-start gap-1.5">
-                              <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                               <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                                 Auto appointment booking
                               </span>
                             </div>
                             <div className="flex items-start gap-1.5">
-                              <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                               <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                                 Proactive new-lead outreach
                               </span>
                             </div>
                             <div className="flex items-start gap-1.5">
-                              <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                               <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                                 Objection handling &amp; rebuttals
                               </span>
                             </div>
                             <div className="flex items-start gap-1.5">
-                              <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                               <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                                 Scheduled follow-ups
                               </span>
@@ -425,7 +425,7 @@ export function ChatBotLanding({
                         </p>
                       </div>
                       {isCurrentTier ? (
-                        <Badge className="text-[9px] h-7 px-4 flex-shrink-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                        <Badge className="text-[9px] h-7 px-4 flex-shrink-0 bg-success/20 text-success dark:bg-success dark:text-success">
                           <Check className="h-3 w-3 mr-1" />
                           Current Plan
                         </Badge>
@@ -434,7 +434,7 @@ export function ChatBotLanding({
                           size="sm"
                           className={cn(
                             "h-7 text-[10px] px-4 flex-shrink-0",
-                            "bg-zinc-900 hover:bg-v2-ink-muted dark:bg-v2-card-tinted dark:hover:bg-v2-ring dark:text-v2-ink text-white",
+                            "bg-card hover:bg-v2-ink-muted dark:bg-v2-card-tinted dark:hover:bg-v2-ring dark:text-v2-ink text-white",
                           )}
                           disabled={purchaseLoading || !canPurchase}
                           onClick={handlePurchase}
@@ -517,43 +517,43 @@ export function ChatBotLanding({
                         </div>
                         <div className="flex-1 space-y-1.5">
                           <div className="flex items-start gap-1.5">
-                            <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                            <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                             <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                               {tier.leads} leads/month
                             </span>
                           </div>
                           <div className="flex items-start gap-1.5">
-                            <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                            <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                             <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                               ~{parseInt(tier.leads) * 8} SMS/month
                             </span>
                           </div>
                           <div className="flex items-start gap-1.5">
-                            <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                            <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                             <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                               AI responses (compliant hours)
                             </span>
                           </div>
                           <div className="flex items-start gap-1.5">
-                            <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                            <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                             <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                               Auto appointment booking
                             </span>
                           </div>
                           <div className="flex items-start gap-1.5">
-                            <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                            <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                             <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                               Proactive new-lead outreach
                             </span>
                           </div>
                           <div className="flex items-start gap-1.5">
-                            <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                            <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                             <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                               Objection handling &amp; rebuttals
                             </span>
                           </div>
                           <div className="flex items-start gap-1.5">
-                            <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                            <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                             <span className="text-[10px] text-v2-ink dark:text-v2-ink-muted">
                               Scheduled follow-ups
                             </span>
@@ -661,14 +661,14 @@ export function ChatBotLanding({
       {/* ═══════════ REQUIREMENTS ═══════════ */}
       <section>
         <div className="flex items-center gap-2 mb-3">
-          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+          <AlertTriangle className="h-3.5 w-3.5 text-warning" />
           <h2 className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
             Before You Get Started
           </h2>
           <div className="flex-1 h-px bg-v2-ring dark:bg-v2-card-tinted" />
         </div>
 
-        <div className="rounded-lg border border-amber-200 dark:border-amber-800/50 bg-amber-50/30 dark:bg-amber-950/10 p-4">
+        <div className="rounded-lg border border-warning/30/50 bg-warning/10/30 dark:bg-warning/10/10 p-4">
           <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mb-3">
             This bot currently works exclusively with{" "}
             <span className="font-semibold text-v2-ink dark:text-v2-ink">
@@ -750,7 +750,7 @@ export function ChatBotLanding({
                   <p className="text-[10px] font-medium text-v2-ink dark:text-v2-ink">
                     Close CRM
                   </p>
-                  <Badge className="text-[7px] h-3 px-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                  <Badge className="text-[7px] h-3 px-1 bg-success/20 text-success dark:bg-success dark:text-success">
                     Required
                   </Badge>
                 </div>
@@ -766,7 +766,7 @@ export function ChatBotLanding({
                   <p className="text-[10px] font-medium text-v2-ink dark:text-v2-ink">
                     Calendly
                   </p>
-                  <Badge className="text-[7px] h-3 px-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                  <Badge className="text-[7px] h-3 px-1 bg-success/20 text-success dark:bg-success dark:text-success">
                     Option A
                   </Badge>
                 </div>
@@ -782,7 +782,7 @@ export function ChatBotLanding({
                   <p className="text-[10px] font-medium text-v2-ink dark:text-v2-ink">
                     Google Calendar
                   </p>
-                  <Badge className="text-[7px] h-3 px-1 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+                  <Badge className="text-[7px] h-3 px-1 bg-success/20 text-success dark:bg-success dark:text-success">
                     Option B
                   </Badge>
                 </div>

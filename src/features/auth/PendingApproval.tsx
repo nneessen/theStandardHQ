@@ -56,7 +56,7 @@ export const PendingApproval: React.FC<PendingApprovalProps> = ({ email }) => {
   return (
     <div className="theme-v2 v2-canvas font-display text-v2-ink min-h-screen flex">
       {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] bg-foreground relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 xl:w-[55%] bg-v2-card-dark relative overflow-hidden">
         {/* Geometric background pattern */}
         <div className="absolute inset-0 opacity-[0.04]">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -80,9 +80,9 @@ export const PendingApproval: React.FC<PendingApprovalProps> = ({ email }) => {
         </div>
 
         {/* Animated glow orbs */}
-        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute top-1/4 -left-20 w-96 h-96 bg-accent/40 rounded-full blur-3xl animate-pulse" />
         <div
-          className="absolute bottom-1/4 -right-20 w-80 h-80 bg-amber-400/5 rounded-full blur-3xl animate-pulse"
+          className="absolute bottom-1/4 -right-20 w-80 h-80 bg-accent/20 rounded-full blur-3xl animate-pulse"
           style={{ animationDelay: "1s" }}
         />
 
@@ -91,7 +91,7 @@ export const PendingApproval: React.FC<PendingApprovalProps> = ({ email }) => {
           {/* Enhanced logo with glow and subtitle */}
           <div className="flex items-center gap-4 group">
             <div className="relative">
-              <div className="absolute inset-0 bg-amber-500/20 rounded-xl blur-xl group-hover:bg-amber-500/30 transition-all duration-500" />
+              <div className="absolute inset-0 bg-accent/40 rounded-xl blur-xl group-hover:bg-accent/60 transition-all duration-500" />
               <img
                 src="/logos/Light Letter Logo .png"
                 alt="The Standard"
@@ -105,12 +105,12 @@ export const PendingApproval: React.FC<PendingApprovalProps> = ({ email }) => {
             </div>
             <div className="flex flex-col">
               <span
-                className="text-white dark:text-black text-2xl font-bold tracking-wide"
+                className="text-white text-2xl font-bold tracking-wide"
                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}
               >
                 THE STANDARD
               </span>
-              <span className="text-amber-400 text-[10px] uppercase tracking-[0.3em] font-medium">
+              <span className="text-accent text-[10px] uppercase tracking-[0.3em] font-medium">
                 Financial Group
               </span>
             </div>
@@ -118,25 +118,23 @@ export const PendingApproval: React.FC<PendingApprovalProps> = ({ email }) => {
 
           {/* Middle - Main messaging */}
           <div className="space-y-4">
-            <div className="w-7 h-7 rounded bg-white/10 dark:bg-black/10 flex items-center justify-center">
-              <UserPlus className="h-3.5 w-3.5 text-white dark:text-black" />
+            <div className="w-7 h-7 rounded bg-white/10 dark:bg-white/10 flex items-center justify-center">
+              <UserPlus className="h-3.5 w-3.5 text-white" />
             </div>
             <h1
               className="text-4xl xl:text-5xl font-bold leading-tight"
               style={{ fontFamily: "'Space Grotesk', sans-serif" }}
             >
-              <span className="text-white dark:text-black">
-                Join your team.
-              </span>
+              <span className="text-white">Join your team.</span>
             </h1>
-            <p className="text-white/80 dark:text-black/70 text-sm max-w-md leading-relaxed">
+            <p className="text-white/80 text-sm max-w-md leading-relaxed">
               Request access to your organization and start tracking
               commissions, managing recruits, and growing your business.
             </p>
           </div>
 
           {/* Bottom */}
-          <div className="text-white/50 dark:text-black/50 text-xs">
+          <div className="text-white/50 text-xs">
             © {new Date().getFullYear()} The Standard Financial Group
           </div>
         </div>
@@ -165,7 +163,7 @@ export const PendingApproval: React.FC<PendingApprovalProps> = ({ email }) => {
                 >
                   THE STANDARD
                 </span>
-                <span className="text-amber-500 text-[9px] uppercase tracking-[0.25em] font-medium">
+                <span className="text-muted-foreground text-[9px] uppercase tracking-[0.25em] font-medium">
                   Financial Group
                 </span>
               </div>
@@ -204,7 +202,7 @@ export const PendingApproval: React.FC<PendingApprovalProps> = ({ email }) => {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-amber-500" />
+                    <Clock className="h-4 w-4 text-warning" />
                     Request Pending
                   </CardTitle>
                   <Badge variant="outline" className="text-xs">
@@ -312,11 +310,9 @@ export const PendingApproval: React.FC<PendingApprovalProps> = ({ email }) => {
             eligibility?.reason?.includes("already approved") && (
               <Card className="border-muted">
                 <CardContent className="py-6 text-center space-y-3">
-                  <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto" />
+                  <CheckCircle2 className="h-10 w-10 text-success mx-auto" />
                   <div>
-                    <p className="font-medium text-emerald-600">
-                      You're Approved!
-                    </p>
+                    <p className="font-medium text-success">You're Approved!</p>
                     <p className="text-sm text-muted-foreground mt-1">
                       Your account is ready. Redirecting...
                     </p>

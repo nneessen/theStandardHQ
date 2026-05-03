@@ -65,7 +65,7 @@ export function TestRegistration() {
         </div>
 
         {error && (
-          <div className="p-4 bg-red-100 rounded">
+          <div className="p-4 bg-destructive/20 rounded">
             <strong>Error:</strong>
             <pre className="text-sm mt-2">
               {JSON.stringify(error as object, null, 2)}
@@ -74,7 +74,7 @@ export function TestRegistration() {
         )}
 
         {result && (
-          <div className="p-4 bg-green-100 rounded">
+          <div className="p-4 bg-success/20 rounded">
             <strong>Result:</strong>
             <pre className="text-sm mt-2">
               {JSON.stringify(result as object, null, 2)}
@@ -82,7 +82,7 @@ export function TestRegistration() {
           </div>
         )}
 
-        <div className="text-sm text-gray-500 mt-8">
+        <div className="text-sm text-muted-foreground mt-8">
           Check browser console for detailed logs.
         </div>
       </div>

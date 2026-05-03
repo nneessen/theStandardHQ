@@ -149,13 +149,13 @@ export function AcceptanceRuleForm({
   const getAcceptanceIcon = (acc: string) => {
     switch (acc) {
       case "approved":
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-success" />;
       case "table_rated":
-        return <AlertCircle className="h-4 w-4 text-yellow-500" />;
+        return <AlertCircle className="h-4 w-4 text-warning" />;
       case "case_by_case":
-        return <HelpCircle className="h-4 w-4 text-orange-500" />;
+        return <HelpCircle className="h-4 w-4 text-warning" />;
       case "declined":
-        return <XCircle className="h-4 w-4 text-red-500" />;
+        return <XCircle className="h-4 w-4 text-destructive" />;
       default:
         return null;
     }

@@ -71,7 +71,7 @@ export function ScriptSidebar({
         {/* Segment progress bar */}
         <div className="mt-1.5 h-1.5 rounded-full bg-v2-ring dark:bg-v2-ring-strong">
           <div
-            className="h-full rounded-full bg-amber-500 transition-all"
+            className="h-full rounded-full bg-warning transition-all"
             style={{ width: `${progressPct}%` }}
           />
         </div>
@@ -80,7 +80,7 @@ export function ScriptSidebar({
           <div
             className={cn(
               "h-full rounded-full transition-all",
-              audioPct >= 100 ? "bg-emerald-500" : "bg-v2-ink-subtle",
+              audioPct >= 100 ? "bg-success" : "bg-v2-ink-subtle",
             )}
             style={{ width: `${audioPct}%` }}
           />
@@ -107,19 +107,19 @@ export function ScriptSidebar({
                   className={cn(
                     "flex w-full items-center gap-2 px-3 py-1.5 text-left transition-colors",
                     isActive
-                      ? "bg-indigo-50 dark:bg-indigo-950/30"
+                      ? "bg-info/10"
                       : "hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted/50",
                   )}
                 >
                   {/* Status indicator */}
                   {isCompleted ? (
-                    <Check className="h-3 w-3 flex-shrink-0 text-emerald-500" />
+                    <Check className="h-3 w-3 flex-shrink-0 text-success" />
                   ) : (
                     <div
                       className={cn(
                         "h-2 w-2 flex-shrink-0 rounded-full",
                         isActive
-                          ? "bg-indigo-500"
+                          ? "bg-info"
                           : "bg-v2-ring-strong dark:bg-v2-ring-strong",
                       )}
                     />
@@ -128,7 +128,7 @@ export function ScriptSidebar({
                     className={cn(
                       "flex-1 truncate text-[11px]",
                       isActive
-                        ? "font-medium text-indigo-700 dark:text-indigo-300"
+                        ? "font-medium text-info"
                         : isCompleted
                           ? "text-v2-ink-muted dark:text-v2-ink-subtle"
                           : "text-v2-ink dark:text-v2-ink-muted",

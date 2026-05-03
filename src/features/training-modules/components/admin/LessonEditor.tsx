@@ -430,7 +430,7 @@ function SortableContentBlock({
         )}
         <div className="flex-1" />
         <button onClick={onDelete}>
-          <Trash2 className="h-3 w-3 text-v2-ink-subtle hover:text-red-500" />
+          <Trash2 className="h-3 w-3 text-v2-ink-subtle hover:text-destructive" />
         </button>
       </div>
       <div className="p-2">

@@ -569,7 +569,7 @@ export function RateImportDialog({
               onChange={(e) => setCsvContent(e.target.value)}
             />
             <div className="flex justify-between items-center">
-              <p className="text-[10px] text-v2-ink-muted">
+              <p className="text-[10px] text-muted-foreground">
                 Expected columns: face_amount, company, plan_name, tier_name,
                 monthly, yearly, state, gender, age, term_years, tobacco
               </p>
@@ -598,16 +598,16 @@ export function RateImportDialog({
                 </Badge>
               </div>
               <div className="flex items-center gap-2 text-[10px]">
-                <span className="text-green-600">
+                <span className="text-success">
                   {mappingStats.mapped} mapped
                 </span>
                 {mappingStats.skipped > 0 && (
-                  <span className="text-v2-ink-muted">
+                  <span className="text-muted-foreground">
                     {mappingStats.skipped} skipped
                   </span>
                 )}
                 {mappingStats.unmapped > 0 && (
-                  <span className="text-amber-600">
+                  <span className="text-warning">
                     {mappingStats.unmapped} unmapped
                   </span>
                 )}
@@ -621,8 +621,8 @@ export function RateImportDialog({
                     key={`${group.carrierName}-${group.productName}`}
                     className={`border rounded p-2 space-y-2 ${
                       group.skipped
-                        ? "bg-v2-card-tinted dark:bg-v2-card-tinted opacity-60"
-                        : "bg-v2-canvas dark:bg-v2-card"
+                        ? "bg-card-tinted dark:bg-card-tinted opacity-60"
+                        : "bg-background dark:bg-card"
                     }`}
                   >
                     {/* Row 1: Carrier, Product, Badge, Skip button - always visible */}
@@ -634,7 +634,7 @@ export function RateImportDialog({
                           {group.carrierName}
                         </span>
                         <span
-                          className={`text-[10px] text-v2-ink-muted truncate ${group.skipped ? "line-through" : ""}`}
+                          className={`text-[10px] text-muted-foreground truncate ${group.skipped ? "line-through" : ""}`}
                         >
                           {group.productName}
                         </span>
@@ -673,7 +673,7 @@ export function RateImportDialog({
                     {/* Row 2: Plans list - separate row, truncated */}
                     {group.uniquePlanNames.length > 0 && (
                       <div
-                        className="text-[9px] text-blue-600 dark:text-blue-400 truncate max-w-full"
+                        className="text-[9px] text-info truncate max-w-full"
                         title={group.uniquePlanNames.join(", ")}
                       >
                         Plans: {group.uniquePlanNames.slice(0, 3).join(", ")}
@@ -737,9 +737,9 @@ export function RateImportDialog({
 
                         {/* Status Icon */}
                         {group.mappedProductId ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                          <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
                         ) : (
-                          <AlertCircle className="h-4 w-4 text-amber-500 shrink-0" />
+                          <AlertCircle className="h-4 w-4 text-warning shrink-0" />
                         )}
                       </div>
                     )}
@@ -758,7 +758,7 @@ export function RateImportDialog({
               </Button>
               <div className="flex items-center gap-3">
                 {(mappingStats.skipped > 0 || mappingStats.unmapped > 0) && (
-                  <span className="text-[10px] text-v2-ink-muted">
+                  <span className="text-[10px] text-muted-foreground">
                     {mappingStats.skipped + mappingStats.unmapped} will be
                     skipped
                   </span>
@@ -780,9 +780,9 @@ export function RateImportDialog({
         {step === "importing" && (
           <div className="flex-1 flex items-center justify-center py-12">
             <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-500" />
+              <Loader2 className="h-8 w-8 animate-spin mx-auto text-info" />
               <p className="text-sm mt-3">Importing rates...</p>
-              <p className="text-xs text-v2-ink-muted mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 This may take a moment
               </p>
             </div>
@@ -794,26 +794,26 @@ export function RateImportDialog({
           <div className="flex-1 space-y-4 py-4">
             <div className="text-center">
               {importResults.success > 0 ? (
-                <CheckCircle2 className="h-12 w-12 mx-auto text-green-500" />
+                <CheckCircle2 className="h-12 w-12 mx-auto text-success" />
               ) : (
-                <AlertCircle className="h-12 w-12 mx-auto text-amber-500" />
+                <AlertCircle className="h-12 w-12 mx-auto text-warning" />
               )}
               <p className="text-lg font-medium mt-3">Import Complete</p>
-              <p className="text-sm text-v2-ink-muted">
+              <p className="text-sm text-muted-foreground">
                 {importResults.success} rate entries imported
               </p>
             </div>
 
             {/* Skipped items (not errors, just unmapped) */}
             {importResults.skipped.length > 0 && (
-              <div className="border rounded-md p-2 bg-v2-canvas dark:bg-v2-card">
-                <p className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-1">
+              <div className="border rounded-md p-2 bg-background dark:bg-card">
+                <p className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground mb-1">
                   Skipped ({importResults.skipped.length} unmapped):
                 </p>
                 <ScrollArea className="h-20">
                   <div className="space-y-0.5">
                     {importResults.skipped.map((item, i) => (
-                      <p key={i} className="text-[10px] text-v2-ink-muted">
+                      <p key={i} className="text-[10px] text-muted-foreground">
                         {item}
                       </p>
                     ))}
@@ -824,17 +824,14 @@ export function RateImportDialog({
 
             {/* Actual errors */}
             {importResults.errors.length > 0 && (
-              <div className="border border-red-200 dark:border-red-900 rounded-md p-2 bg-red-50 dark:bg-red-950">
-                <p className="text-[10px] font-medium text-red-600 dark:text-red-400 mb-1">
+              <div className="border border-destructive/30 dark:border-destructive rounded-md p-2 bg-destructive/10 dark:bg-destructive/10">
+                <p className="text-[10px] font-medium text-destructive mb-1">
                   Errors ({importResults.errors.length}):
                 </p>
                 <ScrollArea className="h-24">
                   <div className="space-y-0.5">
                     {importResults.errors.map((err, i) => (
-                      <p
-                        key={i}
-                        className="text-[10px] text-red-600 dark:text-red-400"
-                      >
+                      <p key={i} className="text-[10px] text-destructive">
                         {err}
                       </p>
                     ))}

@@ -79,15 +79,15 @@ export function GraduateToAgentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md p-3 bg-v2-card border-v2-ring">
+      <DialogContent className="max-w-md p-3 bg-card border-border">
         <DialogHeader className="space-y-1">
           <div className="flex items-center gap-1.5">
-            <GraduationCap className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-            <DialogTitle className="text-sm font-semibold text-v2-ink">
+            <GraduationCap className="h-4 w-4 text-success" />
+            <DialogTitle className="text-sm font-semibold text-foreground">
               Graduate to Agent
             </DialogTitle>
           </div>
-          <DialogDescription className="text-[10px] text-v2-ink-muted">
+          <DialogDescription className="text-[10px] text-muted-foreground">
             Promote {recruit.first_name} {recruit.last_name} from recruit to
             licensed agent.
           </DialogDescription>
@@ -95,10 +95,10 @@ export function GraduateToAgentDialog({
 
         <div className="space-y-3 py-2">
           {/* What will happen - compact info box */}
-          <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded p-2">
+          <div className="bg-warning/10 border border-warning/30/50 rounded p-2">
             <div className="flex items-start gap-1.5">
-              <AlertCircle className="h-3 w-3 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
-              <div className="text-[10px] text-amber-800 dark:text-amber-200">
+              <AlertCircle className="h-3 w-3 text-warning mt-0.5 shrink-0" />
+              <div className="text-[10px] text-warning">
                 <span className="font-medium">This action will:</span>
                 <ul className="mt-1 space-y-0.5 ml-3 list-disc">
                   <li>Change role from Recruit to Agent</li>
@@ -116,14 +116,14 @@ export function GraduateToAgentDialog({
           <div className="space-y-1">
             <Label
               htmlFor="contract-level"
-              className="text-[11px] text-v2-ink-muted"
+              className="text-[11px] text-muted-foreground"
             >
               Initial Contract Level
             </Label>
             <Select value={contractLevel} onValueChange={setContractLevel}>
               <SelectTrigger
                 id="contract-level"
-                className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                className="h-7 text-[11px] bg-card border-border"
               >
                 <SelectValue />
               </SelectTrigger>
@@ -139,14 +139,17 @@ export function GraduateToAgentDialog({
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-[10px] text-v2-ink-muted">
+            <p className="text-[10px] text-muted-foreground">
               Determines commission percentage on new business
             </p>
           </div>
 
           {/* Graduation Notes */}
           <div className="space-y-1">
-            <Label htmlFor="notes" className="text-[11px] text-v2-ink-muted">
+            <Label
+              htmlFor="notes"
+              className="text-[11px] text-muted-foreground"
+            >
               Graduation Notes (Optional)
             </Label>
             <Textarea
@@ -155,22 +158,22 @@ export function GraduateToAgentDialog({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="text-[11px] bg-v2-card border-v2-ring resize-none"
+              className="text-[11px] bg-card border-border resize-none"
             />
           </div>
 
           {/* Recruit Info - compact */}
-          <div className="bg-v2-canvas rounded p-2 border border-v2-ring/50">
+          <div className="bg-background rounded p-2 border border-border/50">
             <div className="flex items-center gap-1.5 mb-1.5">
-              <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-              <span className="text-[11px] font-medium text-v2-ink">
+              <CheckCircle2 className="h-3 w-3 text-success" />
+              <span className="text-[11px] font-medium text-foreground">
                 Recruit Information
               </span>
             </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[10px]">
               <div>
-                <span className="text-v2-ink-muted">Started: </span>
-                <span className="text-v2-ink-muted">
+                <span className="text-muted-foreground">Started: </span>
+                <span className="text-muted-foreground">
                   {format(
                     new Date(recruit.created_at || new Date()),
                     "MMM d, yyyy",
@@ -178,14 +181,14 @@ export function GraduateToAgentDialog({
                 </span>
               </div>
               <div>
-                <span className="text-v2-ink-muted">Phase: </span>
-                <span className="text-v2-ink-muted">
+                <span className="text-muted-foreground">Phase: </span>
+                <span className="text-muted-foreground">
                   {recruit.current_onboarding_phase?.replace(/_/g, " ") || "-"}
                 </span>
               </div>
               <div className="col-span-2">
-                <span className="text-v2-ink-muted">Email: </span>
-                <span className="text-v2-ink-muted">{recruit.email}</span>
+                <span className="text-muted-foreground">Email: </span>
+                <span className="text-muted-foreground">{recruit.email}</span>
               </div>
             </div>
           </div>
@@ -204,7 +207,7 @@ export function GraduateToAgentDialog({
             onClick={handleGraduate}
             disabled={graduateMutation.isPending}
             size="sm"
-            className="h-6 px-2 text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white"
+            className="h-6 px-2 text-[10px] bg-success hover:bg-success text-white"
           >
             {graduateMutation.isPending ? "Graduating..." : "Graduate to Agent"}
           </Button>

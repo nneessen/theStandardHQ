@@ -43,10 +43,10 @@ function getEntitlementStatusClass(status: string | null | undefined) {
   switch (status) {
     case "active":
     case "trialing":
-      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300";
+      return "bg-success/20 text-success dark:bg-success/20 dark:text-success";
     case "past_due":
     case "suspended":
-      return "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
+      return "bg-warning/20 text-warning dark:bg-warning/20 dark:text-warning";
     case "canceled":
       return "bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted";
     default:
@@ -57,11 +57,11 @@ function getEntitlementStatusClass(status: string | null | undefined) {
 function getSyncStatusClass(syncStatus: string | null | undefined) {
   switch (syncStatus) {
     case "synced":
-      return "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300";
+      return "bg-success/20 text-success dark:bg-success/20 dark:text-success";
     case "degraded":
-      return "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300";
+      return "bg-destructive/20 text-destructive dark:bg-destructive/20 dark:text-destructive";
     default:
-      return "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
+      return "bg-warning/20 text-warning dark:bg-warning/20 dark:text-warning";
   }
 }
 
@@ -248,7 +248,7 @@ export function VoiceAgentStatusCard({
       )}
 
       {showServiceWarning && (
-        <div className="mt-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
+        <div className="mt-4 flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-[11px] text-destructive dark:border-destructive/60 dark:bg-destructive/10 dark:text-destructive">
           <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>
             Live entitlement reads are temporarily unavailable. Managed sync
@@ -258,7 +258,7 @@ export function VoiceAgentStatusCard({
       )}
 
       {!showServiceWarning && hasSyncAttention && (
-        <div className="mt-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-300">
+        <div className="mt-4 flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-[11px] text-warning dark:border-warning/60 dark:bg-warning/10 dark:text-warning">
           <RefreshCw className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>
             The latest managed sync needs attention. Support may need to rerun
@@ -278,7 +278,7 @@ export function VoiceAgentStatusCard({
       )}
 
       {hasVoiceAddon && syncStatus === "synced" && (
-        <div className="mt-4 flex items-start gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/20 dark:text-emerald-300">
+        <div className="mt-4 flex items-start gap-2 rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-[11px] text-success dark:border-success/60 dark:bg-success/10 dark:text-success">
           <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>
             The Standard HQ is showing the current voice state and can manage

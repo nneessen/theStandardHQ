@@ -92,10 +92,10 @@ export default function ReviewStep({
         className={cn(
           "p-3 rounded-lg border",
           riskFactorCount === 0
-            ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800"
+            ? "bg-success/10 border-success/30"
             : riskFactorCount <= 2
-              ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800"
-              : "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800",
+              ? "bg-warning/10 dark:bg-warning/20 border-warning/30"
+              : "bg-warning/10 dark:bg-warning/20 border-warning/30",
         )}
       >
         <div className="flex items-center gap-2">
@@ -103,20 +103,20 @@ export default function ReviewStep({
             className={cn(
               "h-4 w-4",
               riskFactorCount === 0
-                ? "text-emerald-600"
+                ? "text-success"
                 : riskFactorCount <= 2
-                  ? "text-yellow-600"
-                  : "text-orange-600",
+                  ? "text-warning"
+                  : "text-warning",
             )}
           />
           <span
             className={cn(
               "text-xs font-medium",
               riskFactorCount === 0
-                ? "text-emerald-700 dark:text-emerald-300"
+                ? "text-success"
                 : riskFactorCount <= 2
-                  ? "text-yellow-700 dark:text-yellow-300"
-                  : "text-orange-700 dark:text-orange-300",
+                  ? "text-warning"
+                  : "text-warning",
             )}
           >
             {riskFactorCount === 0
@@ -167,10 +167,10 @@ export default function ReviewStep({
           <span
             className={cn(
               bmi >= 30
-                ? "text-orange-600 dark:text-orange-400"
+                ? "text-warning"
                 : bmi >= 25
-                  ? "text-yellow-600 dark:text-yellow-400"
-                  : "text-emerald-600 dark:text-emerald-400",
+                  ? "text-warning"
+                  : "text-success",
             )}
           >
             {bmi} ({bmiCategory})
@@ -197,14 +197,14 @@ export default function ReviewStep({
                 {healthInfo.conditions.map((c) => (
                   <span
                     key={c.conditionCode}
-                    className="inline-flex px-2 py-0.5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-[10px] text-red-700 dark:text-red-300"
+                    className="inline-flex px-2 py-0.5 bg-destructive/10 border border-destructive/30 rounded text-[10px] text-destructive"
                   >
                     {c.conditionName}
                   </span>
                 ))}
               </div>
             ) : (
-              <p className="mt-1 text-xs text-emerald-600 dark:text-emerald-400">
+              <p className="mt-1 text-xs text-success">
                 No health conditions reported
               </p>
             )}
@@ -217,9 +217,7 @@ export default function ReviewStep({
             <span
               className={cn(
                 "text-xs",
-                healthInfo.tobacco.currentUse
-                  ? "text-orange-600 dark:text-orange-400"
-                  : "text-emerald-600 dark:text-emerald-400",
+                healthInfo.tobacco.currentUse ? "text-warning" : "text-success",
               )}
             >
               {healthInfo.tobacco.currentUse
@@ -242,7 +240,7 @@ export default function ReviewStep({
                 <span
                   className={cn(
                     healthInfo.medications.bpMedCount >= 2
-                      ? "text-orange-600"
+                      ? "text-warning"
                       : "text-v2-ink dark:text-v2-ink-muted",
                   )}
                 >
@@ -254,7 +252,7 @@ export default function ReviewStep({
                 <span
                   className={cn(
                     healthInfo.medications.cholesterolMedCount >= 2
-                      ? "text-orange-600"
+                      ? "text-warning"
                       : "text-v2-ink dark:text-v2-ink-muted",
                   )}
                 >
@@ -262,22 +260,22 @@ export default function ReviewStep({
                 </span>
               </span>
               {healthInfo.medications.insulinUse && (
-                <span className="text-orange-600">Insulin</span>
+                <span className="text-warning">Insulin</span>
               )}
               {healthInfo.medications.bloodThinners && (
-                <span className="text-orange-600">Blood Thinners</span>
+                <span className="text-warning">Blood Thinners</span>
               )}
               {healthInfo.medications.antidepressants && (
-                <span className="text-amber-600">Antidepressants</span>
+                <span className="text-warning">Antidepressants</span>
               )}
               {healthInfo.medications.painMedications !== "none" && (
                 <span
                   className={cn(
                     healthInfo.medications.painMedications === "opioid"
-                      ? "text-red-600"
+                      ? "text-destructive"
                       : healthInfo.medications.painMedications ===
                           "prescribed_non_opioid"
-                        ? "text-amber-600"
+                        ? "text-warning"
                         : "text-v2-ink-muted",
                   )}
                 >
@@ -312,7 +310,7 @@ export default function ReviewStep({
                 .map((amount, idx) => (
                   <span
                     key={idx}
-                    className="px-1.5 py-0.5 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded text-[10px] text-emerald-700 dark:text-emerald-300 font-medium"
+                    className="px-1.5 py-0.5 bg-success/10 border border-success/30 rounded text-[10px] text-success font-medium"
                   >
                     {formatCurrency(amount)}
                   </span>
@@ -325,7 +323,7 @@ export default function ReviewStep({
               {coverageRequest.productTypes.map((type) => (
                 <span
                   key={type}
-                  className="px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded text-[10px] text-blue-700 dark:text-blue-300"
+                  className="px-1.5 py-0.5 bg-info/10 border border-info/30 rounded text-[10px] text-info"
                 >
                   {PRODUCT_LABELS[type] || type}
                 </span>
@@ -336,8 +334,8 @@ export default function ReviewStep({
       </div>
 
       {/* Submit Notice */}
-      <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-        <p className="text-xs text-blue-700 dark:text-blue-300">
+      <div className="p-3 bg-info/10 border border-info/30 rounded-lg">
+        <p className="text-xs text-info">
           Click <span className="font-medium">"Get Recommendations"</span> to
           analyze this client profile and receive carrier/product
           recommendations with expected rating classes.

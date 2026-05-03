@@ -79,10 +79,10 @@ export function ConditionInfoPanel({
   }
 
   return (
-    <div className="border border-blue-200 dark:border-blue-800/50 rounded-lg p-3 bg-blue-50/50 dark:bg-blue-900/10">
+    <div className="border border-info/30/50 rounded-lg p-3 bg-info/10/50 dark:bg-info/10">
       <div className="flex items-center gap-2 mb-2">
-        <Info className="h-3.5 w-3.5 text-blue-500" />
-        <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
+        <Info className="h-3.5 w-3.5 text-info" />
+        <span className="text-[11px] font-semibold text-info uppercase tracking-wider">
           Follow-Up Questions
         </span>
       </div>
@@ -97,7 +97,7 @@ export function ConditionInfoPanel({
       <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
         {fieldEntries.map(([key, field]) => (
           <div key={key} className="flex items-center gap-2 text-[10px]">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-info/70 flex-shrink-0" />
             <span className="text-v2-ink dark:text-v2-ink-muted font-medium">
               {field.label}
             </span>
@@ -110,7 +110,7 @@ export function ConditionInfoPanel({
 
       {/* Show options for set/array fields */}
       {fieldEntries.some(([_, f]) => f.options && f.options.length > 0) && (
-        <div className="mt-3 pt-2 border-t border-blue-200/50 dark:border-blue-800/30">
+        <div className="mt-3 pt-2 border-t border-info/30/50 dark:border-info/30">
           <p className="text-[9px] text-v2-ink-subtle uppercase tracking-wide mb-1.5">
             Available Options
           </p>
@@ -125,7 +125,7 @@ export function ConditionInfoPanel({
                   {field.options!.map((opt) => (
                     <span
                       key={opt.value}
-                      className="px-1.5 py-0.5 text-[9px] bg-v2-card-tinted border border-blue-200 dark:border-blue-800/50 rounded text-v2-ink-muted dark:text-v2-ink-muted"
+                      className="px-1.5 py-0.5 text-[9px] bg-v2-card-tinted border border-info/30/50 rounded text-v2-ink-muted dark:text-v2-ink-muted"
                     >
                       {opt.label}
                     </span>

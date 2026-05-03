@@ -84,7 +84,7 @@ export function UploadTab({ onSwitchTab }: UploadTabProps) {
             className={cn(
               "relative border-2 border-dashed rounded-lg p-6 text-center transition-colors",
               dragOver
-                ? "border-teal-500 bg-teal-50/50 dark:bg-teal-900/20"
+                ? "border-success bg-success/10/50 dark:bg-success/20"
                 : "border-v2-ring  hover:border-v2-ring-strong dark:hover:border-v2-ring",
               isProcessing && "opacity-50 pointer-events-none",
             )}
@@ -165,7 +165,7 @@ export function UploadTab({ onSwitchTab }: UploadTabProps) {
           {/* Submit */}
           <Button
             size="sm"
-            className="h-8 text-xs w-full bg-teal-600 hover:bg-teal-700 text-white"
+            className="h-8 text-xs w-full bg-success hover:bg-success text-white"
             disabled={
               files.length === 0 ||
               !filingMonth ||
@@ -186,14 +186,14 @@ export function UploadTab({ onSwitchTab }: UploadTabProps) {
           {isProcessing && job && (
             <div className="rounded-lg border border-v2-ring bg-v2-card p-4 space-y-3">
               <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin text-teal-500" />
+                <Loader2 className="h-4 w-4 animate-spin text-success" />
                 <span className="text-xs font-medium text-v2-ink dark:text-v2-ink-subtle">
                   Processing...
                 </span>
               </div>
               <div className="w-full bg-v2-ring rounded-full h-1.5">
                 <div
-                  className="h-1.5 rounded-full transition-all bg-teal-500"
+                  className="h-1.5 rounded-full transition-all bg-success"
                   style={{
                     width: `${job.progress_total > 0 ? (job.progress_stage / job.progress_total) * 100 : 0}%`,
                   }}

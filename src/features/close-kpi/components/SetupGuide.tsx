@@ -133,14 +133,14 @@ export const SetupGuide: React.FC<SetupGuideProps> = ({
                 <div
                   className={`flex items-center justify-center w-8 h-8 rounded-full border-2 flex-shrink-0 transition-colors ${
                     status === "complete"
-                      ? "bg-emerald-100 border-emerald-500 dark:bg-emerald-900/30 dark:border-emerald-500"
+                      ? "bg-success/20 border-success dark:bg-success/30 dark:border-success"
                       : status === "current"
                         ? "bg-primary/10 border-primary"
                         : "bg-v2-ring border-v2-ring dark:bg-v2-ring "
                   }`}
                 >
                   {status === "complete" ? (
-                    <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <Check className="h-4 w-4 text-success" />
                   ) : (
                     <Icon
                       className={`h-4 w-4 ${
@@ -155,7 +155,7 @@ export const SetupGuide: React.FC<SetupGuideProps> = ({
                   <div
                     className={`w-0.5 flex-1 min-h-[2rem] ${
                       status === "complete"
-                        ? "bg-emerald-300 dark:bg-emerald-700"
+                        ? "bg-success/40 dark:bg-success"
                         : "bg-v2-ring"
                     }`}
                   />
@@ -175,7 +175,7 @@ export const SetupGuide: React.FC<SetupGuideProps> = ({
                     {step.title}
                   </h3>
                   {status === "complete" && (
-                    <span className="text-[9px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-1.5 py-0.5 rounded">
+                    <span className="text-[9px] font-medium text-success bg-success/10 px-1.5 py-0.5 rounded">
                       Done
                     </span>
                   )}

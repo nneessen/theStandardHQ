@@ -46,29 +46,29 @@ type StatusConfig = {
 const STATUS_CONFIG: Record<SubmissionStatus, StatusConfig> = {
   pending: {
     label: "Pending Signatures",
-    color:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+    color: "bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning",
     icon: Clock,
   },
   in_progress: {
     label: "In Progress",
-    color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+    color: "bg-info/20 text-info dark:bg-info/30 dark:text-info",
     icon: Send,
   },
   completed: {
     label: "Completed",
-    color:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+    color: "bg-success/20 text-success dark:bg-success/30 dark:text-success",
     icon: CheckCircle2,
   },
   declined: {
     label: "Declined",
-    color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    color:
+      "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive",
     icon: XCircle,
   },
   expired: {
     label: "Expired",
-    color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    color:
+      "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive",
     icon: AlertCircle,
   },
   voided: {
@@ -231,7 +231,7 @@ export function SignatureRequiredItem({
   if (currentStatus === "completed") {
     return (
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+        <span className="inline-flex items-center gap-1 text-xs text-success">
           <CheckCircle2 className="h-3.5 w-3.5" />
           All signatures complete ({signersTotal}/{signersTotal})
         </span>
@@ -279,7 +279,7 @@ export function SignatureRequiredItem({
             onClick={handleInitiateSignature}
             disabled={isInitiating || createSubmission.isPending}
             size="sm"
-            className="h-7 text-xs px-3 gap-1.5 bg-emerald-600 hover:bg-emerald-700"
+            className="h-7 text-xs px-3 gap-1.5 bg-success hover:bg-success"
           >
             {isInitiating || createSubmission.isPending ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -345,7 +345,7 @@ export function SignatureRequiredItem({
                 {SIGNER_ROLE_LABELS[role]}
               </span>
               {hasSigned ? (
-                <span className="inline-flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400">
+                <span className="inline-flex items-center gap-0.5 text-success">
                   <CheckCircle2 className="h-2.5 w-2.5" />
                   Signed
                 </span>

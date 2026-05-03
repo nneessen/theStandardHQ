@@ -42,9 +42,7 @@ function Callout({
     <div
       className={cn(
         "flex gap-1.5 p-2 rounded text-[10px] leading-relaxed",
-        isWarning
-          ? "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400"
-          : "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400",
+        isWarning ? "bg-warning/10 text-warning" : "bg-info/10 text-info",
       )}
     >
       {isWarning ? (
@@ -60,7 +58,7 @@ function Callout({
 function BulletCheck({ children }: { children: React.ReactNode }) {
   return (
     <li className="flex items-start gap-1.5">
-      <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0 mt-0.5" />
+      <CheckCircle2 className="h-3 w-3 text-success shrink-0 mt-0.5" />
       <span>{children}</span>
     </li>
   );
@@ -91,7 +89,7 @@ function StepIndicator({
                   className={cn(
                     "w-4 sm:w-6 h-px",
                     visited.has(step.id) || isActive
-                      ? "bg-blue-400 dark:bg-blue-500"
+                      ? "bg-info/70 dark:bg-info"
                       : "bg-v2-ring dark:bg-v2-ring-strong",
                   )}
                 />
@@ -102,15 +100,15 @@ function StepIndicator({
                 onClick={() => onNavigate(step.id)}
                 className={cn(
                   "flex flex-col items-center gap-0.5 group",
-                  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 rounded",
+                  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-info rounded",
                 )}
               >
                 <div
                   className={cn(
                     "w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold transition-colors",
                     isActive &&
-                      "bg-blue-600 text-white ring-2 ring-blue-300 dark:ring-blue-800",
-                    isCompleted && "bg-emerald-500 text-white",
+                      "bg-info text-white ring-2 ring-info/40 dark:ring-info",
+                    isCompleted && "bg-success text-white",
                     !isActive &&
                       !isCompleted &&
                       "bg-v2-ring dark:bg-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-subtle",
@@ -122,7 +120,7 @@ function StepIndicator({
                   className={cn(
                     "text-[8px] sm:text-[9px] leading-tight whitespace-nowrap transition-colors",
                     isActive
-                      ? "text-blue-600 dark:text-blue-400 font-semibold"
+                      ? "text-info font-semibold"
                       : "text-v2-ink-subtle dark:text-v2-ink-muted group-hover:text-v2-ink-muted dark:group-hover:text-v2-ink-subtle",
                   )}
                 >
@@ -154,11 +152,11 @@ function StepOverview() {
           Lead Texts In
         </div>
         <ArrowRight className="h-3 w-3 text-v2-ink-subtle" />
-        <div className="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 rounded text-[9px] font-medium text-blue-700 dark:text-blue-300">
+        <div className="px-2 py-1 bg-info/10 dark:bg-info/30 rounded text-[9px] font-medium text-info">
           AI Responds
         </div>
         <ArrowRight className="h-3 w-3 text-v2-ink-subtle" />
-        <div className="px-2 py-1 bg-emerald-50 dark:bg-emerald-900/30 rounded text-[9px] font-medium text-emerald-700 dark:text-emerald-300">
+        <div className="px-2 py-1 bg-success/10 dark:bg-success/30 rounded text-[9px] font-medium text-success">
           Appointment Booked
         </div>
       </div>
@@ -264,10 +262,8 @@ function StepConnectCRM() {
     <div className="space-y-3">
       {/* Step 1 */}
       <div className="flex gap-2">
-        <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shrink-0">
-          <span className="text-[9px] font-bold text-blue-700 dark:text-blue-300">
-            1
-          </span>
+        <div className="w-5 h-5 rounded-full bg-info/20 dark:bg-info/40 flex items-center justify-center shrink-0">
+          <span className="text-[9px] font-bold text-info">1</span>
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink mb-0.5">
@@ -284,10 +280,8 @@ function StepConnectCRM() {
 
       {/* Step 2 */}
       <div className="flex gap-2">
-        <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shrink-0">
-          <span className="text-[9px] font-bold text-blue-700 dark:text-blue-300">
-            2
-          </span>
+        <div className="w-5 h-5 rounded-full bg-info/20 dark:bg-info/40 flex items-center justify-center shrink-0">
+          <span className="text-[9px] font-bold text-info">2</span>
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink mb-0.5">
@@ -349,10 +343,8 @@ function StepAudience() {
     <div className="space-y-3">
       {/* Lead Sources */}
       <div className="flex gap-2">
-        <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shrink-0">
-          <span className="text-[9px] font-bold text-blue-700 dark:text-blue-300">
-            4
-          </span>
+        <div className="w-5 h-5 rounded-full bg-info/20 dark:bg-info/40 flex items-center justify-center shrink-0">
+          <span className="text-[9px] font-bold text-info">4</span>
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink mb-0.5">
@@ -369,10 +361,8 @@ function StepAudience() {
 
       {/* Lead Statuses */}
       <div className="flex gap-2">
-        <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shrink-0">
-          <span className="text-[9px] font-bold text-blue-700 dark:text-blue-300">
-            5
-          </span>
+        <div className="w-5 h-5 rounded-full bg-info/20 dark:bg-info/40 flex items-center justify-center shrink-0">
+          <span className="text-[9px] font-bold text-info">5</span>
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink mb-0.5">
@@ -408,7 +398,7 @@ function StepAgentProfile() {
         ].map(([field, desc]) => (
           <div
             key={field}
-            className="p-1.5 border-l-2 border-blue-300 dark:border-blue-700 bg-v2-card rounded-r"
+            className="p-1.5 border-l-2 border-info/40 bg-v2-card rounded-r"
           >
             <span className="text-[10px] font-semibold text-v2-ink dark:text-v2-ink">
               {field}
@@ -434,10 +424,8 @@ function StepFinalSetup() {
     <div className="space-y-3">
       {/* Event Mappings */}
       <div className="flex gap-2">
-        <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shrink-0">
-          <span className="text-[9px] font-bold text-blue-700 dark:text-blue-300">
-            7
-          </span>
+        <div className="w-5 h-5 rounded-full bg-info/20 dark:bg-info/40 flex items-center justify-center shrink-0">
+          <span className="text-[9px] font-bold text-info">7</span>
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink mb-0.5">
@@ -454,10 +442,8 @@ function StepFinalSetup() {
 
       {/* Enable */}
       <div className="flex gap-2">
-        <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center shrink-0">
-          <span className="text-[9px] font-bold text-blue-700 dark:text-blue-300">
-            8
-          </span>
+        <div className="w-5 h-5 rounded-full bg-info/20 dark:bg-info/40 flex items-center justify-center shrink-0">
+          <span className="text-[9px] font-bold text-info">8</span>
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink mb-0.5">
@@ -709,7 +695,7 @@ export function SetupGuideTab() {
       {/* Step header */}
       <div className="pt-2.5 pb-2">
         <div className="flex items-baseline gap-2">
-          <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+          <span className="text-[9px] font-bold text-info uppercase tracking-wider">
             Step {currentStep} of {STEPS.length}
           </span>
         </div>
@@ -755,7 +741,7 @@ export function SetupGuideTab() {
             "flex items-center gap-1 px-2.5 py-1.5 rounded text-[10px] font-medium transition-colors",
             currentStep === 8
               ? "text-v2-ink-subtle dark:text-v2-ink-muted cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-700",
+              : "bg-info text-white hover:bg-info",
           )}
         >
           Next

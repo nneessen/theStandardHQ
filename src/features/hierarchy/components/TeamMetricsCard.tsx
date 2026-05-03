@@ -46,13 +46,13 @@ export function TeamMetricsCard({
     return (
       <div className="bg-v2-card rounded-lg border border-v2-ring">
         <div className="p-3">
-          <div className="flex items-center justify-center gap-2 text-[11px] text-red-500 dark:text-red-400 py-4">
+          <div className="flex items-center justify-center gap-2 text-[11px] text-destructive py-4">
             <AlertCircle className="h-4 w-4" />
             <span>Failed to load team metrics.</span>
             {onRetry && (
               <button
                 onClick={() => onRetry()}
-                className="underline hover:text-red-700 dark:hover:text-red-300"
+                className="underline hover:text-destructive dark:hover:text-destructive"
               >
                 Retry
               </button>
@@ -155,9 +155,7 @@ export function TeamMetricsCard({
                 <span
                   className={cn(
                     "font-mono",
-                    agentCount > 0
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-v2-ink-muted",
+                    agentCount > 0 ? "text-success" : "text-v2-ink-muted",
                   )}
                 >
                   {agentCount}
@@ -170,9 +168,9 @@ export function TeamMetricsCard({
                   className={cn(
                     "font-mono font-semibold",
                     momGrowth > 0
-                      ? "text-emerald-600 dark:text-emerald-400"
+                      ? "text-success"
                       : momGrowth < 0
-                        ? "text-red-600 dark:text-red-400"
+                        ? "text-destructive"
                         : "text-v2-ink-muted",
                   )}
                 >
@@ -190,7 +188,7 @@ export function TeamMetricsCard({
                 <span className="text-v2-ink-muted">
                   Override {periodSuffix}
                 </span>
-                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                <span className="font-mono font-bold text-success">
                   {formatCurrency(mtdOverride)}
                 </span>
               </div>
@@ -219,9 +217,9 @@ export function TeamMetricsCard({
                   className={cn(
                     "font-mono text-[10px]",
                     momGrowth > 0
-                      ? "text-emerald-600 dark:text-emerald-400"
+                      ? "text-success"
                       : momGrowth < 0
-                        ? "text-red-600 dark:text-red-400"
+                        ? "text-destructive"
                         : "text-v2-ink-muted",
                   )}
                 >
@@ -243,7 +241,7 @@ export function TeamMetricsCard({
               </div>
               <div className="flex justify-between text-[11px]">
                 <span className="text-v2-ink-muted">Team IP Total</span>
-                <span className="font-mono font-semibold text-blue-600 dark:text-blue-400">
+                <span className="font-mono font-semibold text-info">
                   {formatCurrency(teamIPTotal)}
                 </span>
               </div>
@@ -263,20 +261,20 @@ export function TeamMetricsCard({
               </div>
               <div className="flex justify-between text-[11px]">
                 <span className="text-v2-ink-muted">Pending AP</span>
-                <span className="font-mono font-semibold text-amber-600 dark:text-amber-400">
+                <span className="font-mono font-semibold text-warning">
                   {formatCurrency(teamPendingAP)}
                 </span>
               </div>
               <div className="flex justify-between text-[11px]">
                 <span className="text-v2-ink-muted">Pending Policies</span>
-                <span className="font-mono text-amber-600 dark:text-amber-400">
+                <span className="font-mono text-warning">
                   {teamPendingCount}
                 </span>
               </div>
               <div className="h-px bg-v2-ring my-1" />
               <div className="flex justify-between text-[11px]">
                 <span className="text-v2-ink-muted">Top Performer</span>
-                <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400 truncate max-w-[100px]">
+                <span className="font-mono text-[10px] text-success truncate max-w-[100px]">
                   {topPerformerName}
                 </span>
               </div>
@@ -298,10 +296,10 @@ export function TeamMetricsCard({
                   className={cn(
                     "font-mono font-semibold",
                     recruitmentRate > 20
-                      ? "text-emerald-600 dark:text-emerald-400"
+                      ? "text-success"
                       : recruitmentRate > 10
-                        ? "text-amber-600 dark:text-amber-400"
-                        : "text-red-600 dark:text-red-400",
+                        ? "text-warning"
+                        : "text-destructive",
                   )}
                 >
                   {formatPercent(recruitmentRate)}
@@ -313,10 +311,10 @@ export function TeamMetricsCard({
                   className={cn(
                     "font-mono font-semibold",
                     retentionRate > 90
-                      ? "text-emerald-600 dark:text-emerald-400"
+                      ? "text-success"
                       : retentionRate > 80
-                        ? "text-amber-600 dark:text-amber-400"
-                        : "text-red-600 dark:text-red-400",
+                        ? "text-warning"
+                        : "text-destructive",
                   )}
                 >
                   {formatPercent(retentionRate)}
@@ -334,9 +332,7 @@ export function TeamMetricsCard({
                 <span
                   className={cn(
                     "font-mono",
-                    pendingInvitations > 0
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-v2-ink-muted",
+                    pendingInvitations > 0 ? "text-info" : "text-v2-ink-muted",
                   )}
                 >
                   {pendingInvitations}
@@ -387,10 +383,10 @@ export function TeamMetricsCard({
                     className={cn(
                       "px-2 py-0.5 rounded text-[10px] font-semibold",
                       teamMonthlyPaceStatus === "ahead"
-                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                        ? "bg-success/20 text-success dark:bg-success/30 dark:text-success"
                         : teamMonthlyPaceStatus === "on_pace"
-                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+                          ? "bg-info/20 text-info dark:bg-info/30 dark:text-info"
+                          : "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive",
                     )}
                   >
                     {teamMonthlyPaceStatus === "ahead"
@@ -440,10 +436,10 @@ export function TeamMetricsCard({
                     className={cn(
                       "px-2 py-0.5 rounded text-[10px] font-semibold",
                       teamYearlyPaceStatus === "ahead"
-                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                        ? "bg-success/20 text-success dark:bg-success/30 dark:text-success"
                         : teamYearlyPaceStatus === "on_pace"
-                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                          : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+                          ? "bg-info/20 text-info dark:bg-info/30 dark:text-info"
+                          : "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive",
                     )}
                   >
                     {teamYearlyPaceStatus === "ahead"

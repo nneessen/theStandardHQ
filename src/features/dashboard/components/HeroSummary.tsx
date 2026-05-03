@@ -47,9 +47,7 @@ export const HeroSummary: React.FC<HeroSummaryProps> = ({
   isAboveBreakeven,
 }) => {
   const TrendIcon = isAboveBreakeven ? ArrowUpRight : ArrowDownRight;
-  const netToneClass = isAboveBreakeven
-    ? "text-emerald-700 dark:text-emerald-400"
-    : "text-red-700 dark:text-red-400";
+  const netToneClass = isAboveBreakeven ? "text-success" : "text-destructive";
 
   // Editorial caption is composed inline so the status fragment can carry
   // its own color while the surrounding prose stays muted.
@@ -113,8 +111,7 @@ export const HeroSummary: React.FC<HeroSummaryProps> = ({
         <span
           className={cn(
             "not-italic font-mono tabular-nums",
-            alertsCount > 0 &&
-              "text-amber-700 dark:text-amber-400 font-semibold",
+            alertsCount > 0 && "text-warning font-semibold",
           )}
         >
           {alertsStatement}

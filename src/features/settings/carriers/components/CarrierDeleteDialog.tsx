@@ -35,24 +35,24 @@ export function CarrierDeleteDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-sm p-3 bg-v2-card border-v2-ring">
+      <AlertDialogContent className="max-w-sm p-3 bg-card border-border">
         <AlertDialogHeader className="space-y-1">
-          <AlertDialogTitle className="text-sm font-semibold text-v2-ink">
+          <AlertDialogTitle className="text-sm font-semibold text-foreground">
             Delete Carrier?
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-2 text-[11px]">
-            <p className="text-v2-ink-muted dark:text-v2-ink-subtle">
+            <p className="text-muted-foreground dark:text-muted-foreground">
               Are you sure you want to delete{" "}
-              <strong className="text-v2-ink">{carrier.name}</strong>?
+              <strong className="text-foreground">{carrier.name}</strong>?
             </p>
             {productCount > 0 && (
-              <p className="text-red-600 dark:text-red-400 font-medium">
+              <p className="text-destructive font-medium">
                 Warning: This carrier has {productCount} associated product
                 {productCount !== 1 ? "s" : ""}. Deleting this carrier may
                 affect those products.
               </p>
             )}
-            <p className="text-[10px] text-v2-ink-muted">
+            <p className="text-[10px] text-muted-foreground">
               This action cannot be undone.
             </p>
           </AlertDialogDescription>
@@ -60,7 +60,7 @@ export function CarrierDeleteDialog({
         <AlertDialogFooter className="gap-1 pt-3">
           <AlertDialogCancel
             disabled={isDeleting}
-            className="h-7 px-2 text-[10px] border-v2-ring bg-v2-card"
+            className="h-7 px-2 text-[10px] border-border bg-card"
           >
             Cancel
           </AlertDialogCancel>
@@ -70,7 +70,7 @@ export function CarrierDeleteDialog({
               onConfirm();
             }}
             disabled={isDeleting}
-            className="h-7 px-2 text-[10px] bg-red-600 text-white hover:bg-red-700"
+            className="h-7 px-2 text-[10px] bg-destructive text-white hover:bg-destructive"
           >
             {isDeleting ? "Deleting..." : "Delete Carrier"}
           </AlertDialogAction>

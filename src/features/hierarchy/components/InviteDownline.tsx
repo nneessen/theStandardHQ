@@ -131,16 +131,14 @@ export function InviteDownline() {
                 className="shrink-0"
               >
                 {copied ? (
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  <CheckCircle2 className="h-4 w-4 text-success" />
                 ) : (
                   <Copy className="h-4 w-4" />
                 )}
               </Button>
             </div>
             {copied && (
-              <p className="text-sm text-green-600 mt-2">
-                Copied to clipboard!
-              </p>
+              <p className="text-sm text-success mt-2">Copied to clipboard!</p>
             )}
           </div>
 
@@ -188,7 +186,7 @@ export function InviteDownline() {
             )}
 
             {success && (
-              <div className="flex items-center gap-2 text-sm text-green-600">
+              <div className="flex items-center gap-2 text-sm text-success">
                 <CheckCircle2 className="h-4 w-4" />
                 Downline added successfully!
               </div>

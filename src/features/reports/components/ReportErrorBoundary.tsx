@@ -50,9 +50,9 @@ export class ReportErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="p-6 bg-v2-card rounded-lg border border-red-200 dark:border-red-800">
+        <div className="p-6 bg-v2-card rounded-lg border border-destructive/30">
           <div className="flex flex-col items-center text-center">
-            <AlertTriangle className="w-8 h-8 text-red-500 mb-3" />
+            <AlertTriangle className="w-8 h-8 text-destructive mb-3" />
             <h3 className="text-sm font-semibold text-v2-ink mb-1">
               Report Error
             </h3>
@@ -101,14 +101,12 @@ export function QueryErrorAlert({
   if (failedQueries.length === 0) return null;
 
   return (
-    <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800 mb-4">
+    <div className="p-4 bg-warning/10 rounded-lg border border-warning/30 mb-4">
       <div className="flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+        <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-medium text-amber-800 dark:text-amber-200">
-            {title}
-          </h4>
-          <ul className="mt-1 text-xs text-amber-700 dark:text-amber-300 space-y-0.5">
+          <h4 className="text-sm font-medium text-warning">{title}</h4>
+          <ul className="mt-1 text-xs text-warning space-y-0.5">
             {failedQueries.map(({ name, error }) => (
               <li key={name}>
                 <span className="font-medium">{name}:</span>{" "}
@@ -121,7 +119,7 @@ export function QueryErrorAlert({
               variant="ghost"
               size="sm"
               onClick={onRetry}
-              className="mt-2 h-7 text-xs text-amber-700 hover:text-amber-800 hover:bg-amber-100 dark:text-amber-300"
+              className="mt-2 h-7 text-xs text-warning hover:text-warning hover:bg-warning/20 dark:text-warning"
             >
               <RefreshCw className="w-3 h-3 mr-1" />
               Retry
@@ -148,8 +146,8 @@ export function ReportQueryError({ message, onRetry }: ReportQueryErrorProps) {
   return (
     <div className="p-8 bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
       <div className="flex flex-col items-center text-center">
-        <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-full mb-4">
-          <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
+        <div className="p-3 bg-destructive/20 dark:bg-destructive/30 rounded-full mb-4">
+          <AlertTriangle className="w-6 h-6 text-destructive" />
         </div>
         <h3 className="text-sm font-semibold text-v2-ink mb-1">
           Failed to Load Report

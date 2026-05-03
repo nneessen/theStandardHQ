@@ -62,8 +62,8 @@ export const ResizablePanel = React.forwardRef<
             className={cn(
               "absolute inset-y-0 right-0 w-0.5 transition-all",
               isResizing
-                ? "bg-blue-500 opacity-100 w-0.5"
-                : "bg-zinc-200 dark:bg-zinc-800 opacity-0 group-hover:opacity-100 group-hover:bg-blue-500",
+                ? "bg-ring opacity-100 w-0.5"
+                : "bg-border opacity-0 group-hover:opacity-100 group-hover:bg-ring",
             )}
           />
         </div>

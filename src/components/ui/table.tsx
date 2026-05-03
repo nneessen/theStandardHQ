@@ -1,6 +1,3 @@
-// src/components/ui/table.tsx
-// Modern table with clean styling and hover effects
-
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
@@ -25,8 +22,8 @@ const TableHeader = React.forwardRef<
   <thead
     ref={ref}
     className={cn(
-      "bg-zinc-50 dark:bg-zinc-800/50",
-      "[&_tr]:border-b [&_tr]:border-zinc-200 dark:[&_tr]:border-zinc-800",
+      "bg-secondary dark:bg-muted",
+      "[&_tr]:border-b [&_tr]:border-border",
       className,
     )}
     {...props}
@@ -53,7 +50,7 @@ const TableFooter = React.forwardRef<
   <tfoot
     ref={ref}
     className={cn(
-      "border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 font-medium",
+      "border-t border-border bg-secondary dark:bg-muted font-medium",
       className,
     )}
     {...props}
@@ -68,9 +65,9 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b border-zinc-100 dark:border-zinc-800/50 transition-colors duration-150",
-      "hover:bg-zinc-50 dark:hover:bg-zinc-800/30",
-      "data-[state=selected]:bg-zinc-100 dark:data-[state=selected]:bg-zinc-800",
+      "border-b border-[color:var(--border-soft)] transition-colors duration-150",
+      "hover:bg-muted/40 dark:hover:bg-muted/60",
+      "data-[state=selected]:bg-accent/30 dark:data-[state=selected]:bg-muted",
       className,
     )}
     {...props}
@@ -85,7 +82,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "h-11 px-3 text-left align-middle font-semibold text-zinc-600 dark:text-zinc-400 text-xs uppercase tracking-wider",
+      "h-10 px-3 text-left align-middle font-mono font-semibold text-foreground/80 text-[11px] uppercase tracking-wider",
       "[&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className,
     )}
@@ -101,7 +98,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={cn(
-      "px-3 py-3 align-middle text-zinc-700 dark:text-zinc-300",
+      "px-3 py-3 align-middle text-foreground",
       "[&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
       className,
     )}
@@ -116,7 +113,7 @@ const TableCaption = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <caption
     ref={ref}
-    className={cn("mt-4 text-sm text-zinc-500", className)}
+    className={cn("mt-4 text-sm text-muted-foreground", className)}
     {...props}
   />
 ));

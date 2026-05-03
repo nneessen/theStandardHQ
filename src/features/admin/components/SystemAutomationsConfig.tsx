@@ -114,10 +114,10 @@ export function SystemAutomationsConfig() {
   // If no IMO context, show warning
   if (!imoId && !isLoading) {
     return (
-      <div className="bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800 p-4">
+      <div className="bg-warning/10 rounded-lg border border-warning/30 p-4">
         <div className="flex items-center gap-2">
-          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-          <p className="text-sm text-amber-700 dark:text-amber-300">
+          <AlertCircle className="h-4 w-4 text-warning" />
+          <p className="text-sm text-warning">
             IMO context not available. Cannot configure system automations.
           </p>
         </div>
@@ -128,7 +128,7 @@ export function SystemAutomationsConfig() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4">
-        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -136,17 +136,17 @@ export function SystemAutomationsConfig() {
   return (
     <div className="space-y-4">
       {/* Password Reminder Automations Section */}
-      <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
+      <div className="bg-card rounded-v2-md border border-border shadow-v2-soft p-4">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 rounded-md bg-amber-50 dark:bg-amber-900/20">
-              <Key className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <div className="p-1.5 rounded-md bg-warning/10">
+              <Key className="h-4 w-4 text-warning" />
             </div>
             <div>
-              <h3 className="text-sm font-medium text-v2-ink">
+              <h3 className="text-sm font-medium text-foreground">
                 Password Setup Reminders
               </h3>
-              <p className="text-[10px] text-v2-ink-muted">
+              <p className="text-[10px] text-muted-foreground">
                 Remind users to set their password before the invite link
                 expires
               </p>
@@ -175,31 +175,31 @@ export function SystemAutomationsConfig() {
                 key={automation.id}
                 className={`flex items-center gap-3 p-2.5 rounded-md border ${
                   automation.is_active
-                    ? "bg-v2-canvas border-v2-ring"
-                    : "bg-v2-ring/50 dark:bg-v2-card-dark border-v2-ring opacity-60"
+                    ? "bg-background border-border"
+                    : "bg-muted/50 dark:bg-card-dark border-border opacity-60"
                 }`}
               >
-                <div className="text-v2-ink-subtle">
+                <div className="text-muted-foreground">
                   {getCommunicationIcon(automation.communication_type)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <Badge
                       variant="outline"
-                      className="text-[10px] px-1.5 py-0.5 border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300"
+                      className="text-[10px] px-1.5 py-0.5 border-warning/30 bg-warning/10 text-warning"
                     >
                       {TRIGGER_SHORT_LABELS[automation.trigger_type] ||
                         automation.trigger_type}
                     </Badge>
-                    <span className="text-[10px] text-v2-ink-muted">
+                    <span className="text-[10px] text-muted-foreground">
                       {automation.trigger_type === "password_not_set_24h"
                         ? "24h before expiration"
                         : "12h before expiration"}
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 mt-1">
-                    <Zap className="h-2.5 w-2.5 text-v2-ink-subtle" />
-                    <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
+                    <Zap className="h-2.5 w-2.5 text-muted-foreground" />
+                    <span className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate">
                       Recipients:{" "}
                       {automation.recipients.map((r) => r.type).join(", ")}
                     </span>
@@ -220,12 +220,12 @@ export function SystemAutomationsConfig() {
                       setDialogOpen(true);
                     }}
                   >
-                    <Edit2 className="h-3 w-3 text-v2-ink-muted" />
+                    <Edit2 className="h-3 w-3 text-muted-foreground" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-6 w-6 p-0 text-red-500 hover:text-red-600 dark:text-red-400"
+                    className="h-6 w-6 p-0 text-destructive hover:text-destructive"
                     onClick={() => setDeleteConfirmId(automation.id)}
                   >
                     <Trash2 className="h-3 w-3" />
@@ -235,12 +235,12 @@ export function SystemAutomationsConfig() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-6 bg-v2-canvas/30 rounded-md border border-dashed border-v2-ring">
-            <Key className="h-6 w-6 mx-auto mb-2 text-v2-ink-subtle" />
-            <p className="text-[11px] text-v2-ink-muted">
+          <div className="text-center py-6 bg-background/30 rounded-md border border-dashed border-border">
+            <Key className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+            <p className="text-[11px] text-muted-foreground">
               No password reminder automations configured
             </p>
-            <p className="text-[10px] text-v2-ink-subtle mt-1">
+            <p className="text-[10px] text-muted-foreground mt-1">
               Add an automation to remind users to set their password before the
               72-hour invite link expires
             </p>
@@ -266,7 +266,7 @@ export function SystemAutomationsConfig() {
           <DialogHeader>
             <DialogTitle className="text-sm">Delete Automation?</DialogTitle>
           </DialogHeader>
-          <p className="text-[11px] text-v2-ink-muted">
+          <p className="text-[11px] text-muted-foreground">
             This will permanently delete this automation. No future
             communications will be sent for this trigger.
           </p>

@@ -28,7 +28,7 @@ export function ResultStep({
   if (status === "ready") {
     return (
       <div className="mx-auto flex max-w-md flex-col items-center py-16 text-center">
-        <CheckCircle2 className="mb-4 h-10 w-10 text-emerald-500" />
+        <CheckCircle2 className="mb-4 h-10 w-10 text-success" />
         <h3 className="text-[14px] font-semibold text-v2-ink dark:text-v2-ink">
           Your Voice Clone is Ready
         </h3>
@@ -44,7 +44,7 @@ export function ResultStep({
           {activateMutation.isPending ? "Activating..." : "Activate Voice"}
         </Button>
         {activateMutation.isError && (
-          <p className="mt-3 text-[11px] text-red-600 dark:text-red-400">
+          <p className="mt-3 text-[11px] text-destructive">
             {activateMutation.error.message}
           </p>
         )}
@@ -55,7 +55,7 @@ export function ResultStep({
   // Failed state
   return (
     <div className="mx-auto flex max-w-md flex-col items-center py-16 text-center">
-      <XCircle className="mb-4 h-10 w-10 text-red-500" />
+      <XCircle className="mb-4 h-10 w-10 text-destructive" />
       <h3 className="text-[14px] font-semibold text-v2-ink dark:text-v2-ink">
         Voice Clone Processing Failed
       </h3>

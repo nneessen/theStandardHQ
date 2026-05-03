@@ -212,24 +212,24 @@ export function FirstSellerNamingDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="theme-v2 font-display sm:max-w-lg w-[calc(100vw-1.5rem)] sm:w-auto max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] p-0 overflow-hidden bg-v2-card text-v2-ink border border-v2-ring rounded-v2-lg shadow-v2-lift flex flex-col">
+      <DialogContent className="theme-v2 font-display sm:max-w-lg w-[calc(100vw-1.5rem)] sm:w-auto max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] p-0 overflow-hidden bg-card text-foreground border border-border rounded-v2-lg shadow-v2-lift flex flex-col">
         {/* Hero header — dark v2 card with subtle yellow glow */}
-        <div className="relative bg-v2-bg-card-dark text-white px-6 py-6 overflow-hidden flex-shrink-0">
-          <div className="absolute -top-10 -right-10 w-40 h-40 bg-v2-accent/20 rounded-full blur-3xl" />
-          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-v2-accent/10 rounded-full blur-2xl" />
+        <div className="relative bg-foreground text-white px-6 py-6 overflow-hidden flex-shrink-0">
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-accent/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-accent/10 rounded-full blur-2xl" />
 
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-3">
-              <span className="inline-flex items-center justify-center h-9 w-9 rounded-v2-pill bg-v2-accent text-v2-ink">
+              <span className="inline-flex items-center justify-center h-9 w-9 rounded-v2-pill bg-accent text-foreground">
                 <Trophy className="h-5 w-5" />
               </span>
-              <span className="inline-flex items-center justify-center h-9 w-9 rounded-v2-pill bg-white/10 text-v2-accent">
+              <span className="inline-flex items-center justify-center h-9 w-9 rounded-v2-pill bg-white/10 text-warning">
                 <Sparkles className="h-5 w-5" />
               </span>
             </div>
 
             <DialogHeader className="text-left space-y-1.5">
-              <div className="text-[10px] font-semibold text-v2-accent uppercase tracking-[0.18em]">
+              <div className="text-[10px] font-semibold text-warning uppercase tracking-[0.18em]">
                 First sale today
               </div>
               <DialogTitle className="text-2xl font-semibold tracking-tight text-white">
@@ -273,7 +273,7 @@ export function FirstSellerNamingDialog({
           <div className="space-y-1.5">
             <Label
               htmlFor="leaderboard-title"
-              className="text-[11px] font-semibold uppercase tracking-[0.14em] text-v2-ink-subtle"
+              className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
             >
               Leaderboard title · {agencyName}
             </Label>
@@ -289,16 +289,16 @@ export function FirstSellerNamingDialog({
                 }
               }}
               autoFocus
-              className="h-10 text-sm bg-v2-card border-v2-ring focus-visible:ring-v2-accent"
+              className="h-10 text-sm bg-card border-border focus-visible:ring-accent"
             />
-            <p className="text-[11px] text-v2-ink-muted">
+            <p className="text-[11px] text-muted-foreground">
               Will appear on the Slack leaderboard for everyone to see.
             </p>
           </div>
 
           {/* Quick emoji picker */}
           <div className="space-y-1.5">
-            <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-v2-ink-subtle">
+            <Label className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               Quick add emoji
             </Label>
             <div className="flex flex-wrap gap-1.5">
@@ -307,7 +307,7 @@ export function FirstSellerNamingDialog({
                   key={emoji}
                   type="button"
                   onClick={() => insertEmoji(emoji)}
-                  className="w-9 h-9 flex items-center justify-center text-lg rounded-v2-pill border border-v2-ring bg-v2-card hover:bg-v2-accent-soft transition-colors disabled:opacity-50"
+                  className="w-9 h-9 flex items-center justify-center text-lg rounded-v2-pill border border-border bg-card hover:bg-accent/40 transition-colors disabled:opacity-50"
                   disabled={isSubmitting}
                 >
                   {emoji}
@@ -318,7 +318,7 @@ export function FirstSellerNamingDialog({
         </div>
 
         {/* Footer */}
-        <DialogFooter className="px-5 py-3 bg-v2-card-tinted border-t border-v2-ring flex gap-2 flex-shrink-0">
+        <DialogFooter className="px-5 py-3 bg-card-tinted border-t border-border flex gap-2 flex-shrink-0">
           <PillButton
             type="button"
             tone="ghost"

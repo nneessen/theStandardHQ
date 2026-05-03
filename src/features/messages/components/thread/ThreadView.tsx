@@ -145,11 +145,11 @@ export function ThreadView({ threadId, onClose }: ThreadViewProps) {
 
   if (error || !thread) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-4 bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
-        <p className="text-[11px] text-v2-ink-muted">
+      <div className="h-full flex flex-col items-center justify-center p-4 bg-card rounded-v2-md border border-border shadow-v2-soft">
+        <p className="text-[11px] text-muted-foreground">
           Failed to load conversation
         </p>
-        <p className="text-[10px] mt-1 text-v2-ink-subtle">
+        <p className="text-[10px] mt-1 text-muted-foreground">
           {error?.message || "Thread not found"}
         </p>
       </div>
@@ -187,20 +187,20 @@ export function ThreadView({ threadId, onClose }: ThreadViewProps) {
       : 0;
 
   return (
-    <div className="h-full flex flex-col overflow-hidden bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
+    <div className="h-full flex flex-col overflow-hidden bg-card rounded-v2-md border border-border shadow-v2-soft">
       {/* Header */}
-      <div className="flex-shrink-0 border-b border-v2-ring px-3 py-2">
+      <div className="flex-shrink-0 border-b border-border px-3 py-2">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-semibold text-v2-ink leading-tight truncate">
+            <h2 className="text-sm font-semibold text-foreground leading-tight truncate">
               {thread.subject}
             </h2>
             <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[10px] text-v2-ink-muted">
+              <span className="text-[10px] text-muted-foreground">
                 {totalMessages} message{totalMessages !== 1 ? "s" : ""}
               </span>
               {thread.isStarred && (
-                <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
+                <Star className="h-3 w-3 text-warning fill-yellow-500" />
               )}
             </div>
           </div>
@@ -212,8 +212,8 @@ export function ThreadView({ threadId, onClose }: ThreadViewProps) {
               className={cn(
                 "h-6 w-6 p-0",
                 thread.isArchived
-                  ? "bg-v2-ring text-v2-ink-muted"
-                  : "text-v2-ink-muted hover:text-v2-ink",
+                  ? "bg-muted text-muted-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
               onClick={handleArchiveToggle}
               disabled={isArchiving || isUnarchiving}
@@ -227,8 +227,8 @@ export function ThreadView({ threadId, onClose }: ThreadViewProps) {
               className={cn(
                 "h-6 w-6 p-0",
                 thread.isStarred
-                  ? "text-yellow-500 hover:text-yellow-600"
-                  : "text-v2-ink-muted hover:text-v2-ink",
+                  ? "text-warning hover:text-warning"
+                  : "text-muted-foreground hover:text-foreground",
               )}
               onClick={handleToggleStar}
               disabled={isStarring}
@@ -243,7 +243,7 @@ export function ThreadView({ threadId, onClose }: ThreadViewProps) {
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
+                  className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
                 >
                   <MoreVertical className="h-3 w-3" />
                 </Button>
@@ -260,7 +260,7 @@ export function ThreadView({ threadId, onClose }: ThreadViewProps) {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  className="text-[11px] text-red-600 dark:text-red-400"
+                  className="text-[11px] text-destructive"
                   onClick={handleDelete}
                   disabled={isDeleting}
                 >
@@ -271,7 +271,7 @@ export function ThreadView({ threadId, onClose }: ThreadViewProps) {
             <Button
               size="sm"
               variant="ghost"
-              className="h-6 w-6 p-0 text-v2-ink-muted hover:text-red-600 dark:hover:text-red-400"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive dark:hover:text-destructive"
               onClick={onClose}
             >
               <X className="h-3 w-3" />
@@ -289,7 +289,7 @@ export function ThreadView({ threadId, onClose }: ThreadViewProps) {
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-6 text-[10px] gap-1 text-v2-ink-muted hover:text-v2-ink"
+                className="h-6 text-[10px] gap-1 text-muted-foreground hover:text-foreground"
                 onClick={loadMoreMessages}
                 disabled={isLoadingMore}
               >
@@ -311,7 +311,7 @@ export function ThreadView({ threadId, onClose }: ThreadViewProps) {
           {/* Collapsed messages indicator */}
           {collapsedCount > 0 && !hasMore && (
             <div className="flex items-center justify-center py-1.5">
-              <span className="text-[10px] text-v2-ink-muted">
+              <span className="text-[10px] text-muted-foreground">
                 {collapsedCount} earlier message
                 {collapsedCount !== 1 ? "s" : ""} collapsed
               </span>
@@ -336,7 +336,7 @@ export function ThreadView({ threadId, onClose }: ThreadViewProps) {
       </ScrollArea>
 
       {/* Quick Reply Footer */}
-      <div className="flex-shrink-0 border-t border-v2-ring p-1.5">
+      <div className="flex-shrink-0 border-t border-border p-1.5">
         <div className="flex items-center gap-1">
           <Button
             size="sm"
@@ -349,7 +349,7 @@ export function ThreadView({ threadId, onClose }: ThreadViewProps) {
           <Button
             size="sm"
             variant="ghost"
-            className="h-6 text-[10px] gap-1 px-2 text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
+            className="h-6 text-[10px] gap-1 px-2 text-muted-foreground dark:text-muted-foreground hover:text-foreground"
             onClick={handleReply}
           >
             <ReplyAll className="h-3 w-3" />
@@ -358,7 +358,7 @@ export function ThreadView({ threadId, onClose }: ThreadViewProps) {
           <Button
             size="sm"
             variant="ghost"
-            className="h-6 text-[10px] gap-1 px-2 text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
+            className="h-6 text-[10px] gap-1 px-2 text-muted-foreground dark:text-muted-foreground hover:text-foreground"
             onClick={handleForward}
           >
             <Forward className="h-3 w-3" />
@@ -430,16 +430,16 @@ function MessageCard({
       className={cn(
         "rounded-md overflow-hidden transition-all",
         isSent
-          ? "bg-blue-50/50 dark:bg-blue-900/10 border border-blue-200/50 dark:border-blue-800/30"
-          : "bg-v2-canvas border border-v2-ring",
+          ? "bg-info/10/50 dark:bg-info/10 border border-info/30/50 dark:border-info/30"
+          : "bg-background border border-border",
       )}
     >
       {/* Header */}
       <button
         className={cn(
           "w-full text-left px-2.5 py-1.5 transition-colors",
-          isExpanded ? "border-b border-v2-ring/50 /50" : "",
-          "hover:bg-v2-ring/50 dark:hover:bg-v2-card-dark/30",
+          isExpanded ? "border-b border-border/50 /50" : "",
+          "hover:bg-muted/50 dark:hover:bg-card-dark/30",
         )}
         onClick={onToggle}
       >
@@ -447,15 +447,15 @@ function MessageCard({
           <Avatar
             className={cn(
               "h-6 w-6 flex-shrink-0",
-              isSent ? "ring-1 ring-blue-300 dark:ring-blue-700" : "",
+              isSent ? "ring-1 ring-info/40 dark:ring-info" : "",
             )}
           >
             <AvatarFallback
               className={cn(
                 "text-[9px] font-medium",
                 isSent
-                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300"
-                  : "bg-v2-ring text-v2-ink-muted",
+                  ? "bg-info/20 dark:bg-info/50 text-info"
+                  : "bg-muted text-muted-foreground",
               )}
             >
               {initials}
@@ -464,13 +464,13 @@ function MessageCard({
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1">
-              <span className="text-[11px] font-medium text-v2-ink truncate">
+              <span className="text-[11px] font-medium text-foreground truncate">
                 {displayName}
               </span>
               {isSent && (
                 <Badge
                   variant="outline"
-                  className="h-4 px-1 text-[9px] border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400"
+                  className="h-4 px-1 text-[9px] border-info/40 text-info"
                 >
                   <Send className="h-2.5 w-2.5 mr-0.5" />
                   Sent
@@ -479,7 +479,7 @@ function MessageCard({
               {isAutomated && (
                 <Badge
                   variant="secondary"
-                  className="h-4 px-1 text-[9px] bg-v2-ring"
+                  className="h-4 px-1 text-[9px] bg-muted"
                 >
                   <Bot className="h-2.5 w-2.5 mr-0.5" />
                   Auto
@@ -487,7 +487,7 @@ function MessageCard({
               )}
             </div>
             {!isExpanded && (
-              <div className="text-[10px] text-v2-ink-muted truncate mt-0.5">
+              <div className="text-[10px] text-muted-foreground truncate mt-0.5">
                 {message.bodyText?.slice(0, 80)}...
               </div>
             )}
@@ -496,7 +496,7 @@ function MessageCard({
           <div className="flex items-center gap-1.5 flex-shrink-0">
             {isSent && (message.openCount || 0) > 0 && (
               <span
-                className="text-[9px] text-v2-ink-muted flex items-center gap-0.5"
+                className="text-[9px] text-muted-foreground flex items-center gap-0.5"
                 title="Opens"
               >
                 <Eye className="h-3 w-3" />
@@ -505,7 +505,7 @@ function MessageCard({
             )}
             {isSent && (message.clickCount || 0) > 0 && (
               <span
-                className="text-[9px] text-v2-ink-muted flex items-center gap-0.5"
+                className="text-[9px] text-muted-foreground flex items-center gap-0.5"
                 title="Clicks"
               >
                 <MousePointer className="h-3 w-3" />
@@ -513,13 +513,13 @@ function MessageCard({
               </span>
             )}
 
-            <span className="text-[10px] text-v2-ink-muted">
+            <span className="text-[10px] text-muted-foreground">
               {formatMessageDate(message.createdAt)}
             </span>
             {isExpanded ? (
-              <ChevronUp className="h-3 w-3 text-v2-ink-subtle" />
+              <ChevronUp className="h-3 w-3 text-muted-foreground" />
             ) : (
-              <ChevronDown className="h-3 w-3 text-v2-ink-subtle" />
+              <ChevronDown className="h-3 w-3 text-muted-foreground" />
             )}
           </div>
         </div>
@@ -529,7 +529,7 @@ function MessageCard({
       {isExpanded && (
         <div>
           {/* Email metadata */}
-          <div className="px-2.5 py-1.5 bg-v2-ring/50 dark:bg-v2-ring/30 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle space-y-0.5">
+          <div className="px-2.5 py-1.5 bg-muted/50 dark:bg-muted/30 text-[10px] text-muted-foreground dark:text-muted-foreground space-y-0.5">
             <div className="flex items-start gap-1">
               <span className="font-medium w-8">From:</span>
               <span className="truncate">{message.fromAddress}</span>
@@ -557,16 +557,16 @@ function MessageCard({
           {/* Email body */}
           <div
             className={cn(
-              "px-3 py-2 text-[11px] leading-relaxed text-v2-ink-muted",
+              "px-3 py-2 text-[11px] leading-relaxed text-muted-foreground",
               "prose prose-sm max-w-none",
               "prose-p:my-1.5 prose-p:leading-relaxed",
               "prose-headings:my-2 prose-headings:font-semibold",
               "prose-ul:my-1.5 prose-ol:my-1.5",
               "prose-li:my-0.5",
-              "prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-a:no-underline hover:prose-a:underline",
-              "prose-blockquote:border-l-2 prose-blockquote:border-v2-ring  prose-blockquote:pl-2.5 prose-blockquote:italic prose-blockquote:text-v2-ink-muted prose-blockquote:dark:text-v2-ink-subtle",
-              "prose-pre:bg-v2-ring dark:prose-pre:bg-v2-ring prose-pre:text-[10px]",
-              "prose-code:text-[10px] prose-code:bg-v2-ring dark:prose-code:bg-v2-ring prose-code:px-1 prose-code:rounded",
+              "prose-a:text-info dark:prose-a:text-info prose-a:no-underline hover:prose-a:underline",
+              "prose-blockquote:border-l-2 prose-blockquote:border-border  prose-blockquote:pl-2.5 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-blockquote:dark:text-muted-foreground",
+              "prose-pre:bg-muted dark:prose-pre:bg-muted prose-pre:text-[10px]",
+              "prose-code:text-[10px] prose-code:bg-muted dark:prose-code:bg-muted prose-code:px-1 prose-code:rounded",
               "dark:prose-invert",
             )}
             dangerouslySetInnerHTML={{
@@ -580,8 +580,8 @@ function MessageCard({
           {message.hasAttachments &&
             message.attachments &&
             message.attachments.length > 0 && (
-              <div className="px-2.5 py-1.5 border-t border-v2-ring/50 /50 bg-v2-canvas/50 dark:bg-v2-ring/30">
-                <div className="flex items-center gap-1 text-[10px] text-v2-ink-muted mb-1.5">
+              <div className="px-2.5 py-1.5 border-t border-border/50 /50 bg-background/50 dark:bg-muted/30">
+                <div className="flex items-center gap-1 text-[10px] text-muted-foreground mb-1.5">
                   <Paperclip className="h-3 w-3" />
                   <span>
                     {message.attachments.length} attachment
@@ -594,11 +594,11 @@ function MessageCard({
                       key={i}
                       size="sm"
                       variant="ghost"
-                      className="h-5 text-[9px] gap-0.5 px-1.5 bg-v2-ring text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
+                      className="h-5 text-[9px] gap-0.5 px-1.5 bg-muted text-muted-foreground dark:text-muted-foreground hover:text-foreground"
                     >
                       <Paperclip className="h-2.5 w-2.5" />
                       <span className="max-w-[100px] truncate">{att.name}</span>
-                      <span className="text-v2-ink-subtle">
+                      <span className="text-muted-foreground">
                         ({formatFileSize(att.size)})
                       </span>
                       <ExternalLink className="h-2.5 w-2.5" />
@@ -615,27 +615,27 @@ function MessageCard({
 
 function ThreadViewSkeleton() {
   return (
-    <div className="h-full flex flex-col bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
-      <div className="p-3 border-b border-v2-ring">
-        <Skeleton className="h-4 w-48 mb-1.5 bg-v2-ring" />
-        <Skeleton className="h-3 w-24 bg-v2-ring" />
+    <div className="h-full flex flex-col bg-card rounded-v2-md border border-border shadow-v2-soft">
+      <div className="p-3 border-b border-border">
+        <Skeleton className="h-4 w-48 mb-1.5 bg-muted" />
+        <Skeleton className="h-3 w-24 bg-muted" />
       </div>
       <div className="flex-1 p-2 space-y-1.5">
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="border border-v2-ring rounded-md p-2.5 bg-v2-canvas"
+            className="border border-border rounded-md p-2.5 bg-background"
           >
             <div className="flex items-center gap-2 mb-2">
-              <Skeleton className="h-6 w-6 rounded-full bg-v2-ring" />
+              <Skeleton className="h-6 w-6 rounded-full bg-muted" />
               <div className="flex-1">
-                <Skeleton className="h-3 w-28 mb-1 bg-v2-ring" />
-                <Skeleton className="h-2 w-40 bg-v2-ring" />
+                <Skeleton className="h-3 w-28 mb-1 bg-muted" />
+                <Skeleton className="h-2 w-40 bg-muted" />
               </div>
-              <Skeleton className="h-3 w-16 bg-v2-ring" />
+              <Skeleton className="h-3 w-16 bg-muted" />
             </div>
-            <Skeleton className="h-3 w-full mb-1.5 bg-v2-ring" />
-            <Skeleton className="h-3 w-3/4 bg-v2-ring" />
+            <Skeleton className="h-3 w-full mb-1.5 bg-muted" />
+            <Skeleton className="h-3 w-3/4 bg-muted" />
           </div>
         ))}
       </div>

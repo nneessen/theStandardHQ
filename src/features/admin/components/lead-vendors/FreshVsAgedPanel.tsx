@@ -62,11 +62,11 @@ export function FreshVsAgedPanel({ aggregates }: FreshVsAgedPanelProps) {
         </span>
         <div className="flex items-center gap-2 text-[9px]">
           <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-blue-500" />
+            <span className="h-2 w-2 rounded-full bg-info" />
             <span className="text-v2-ink-muted">Fresh ({fresh.count})</span>
           </span>
           <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-amber-500" />
+            <span className="h-2 w-2 rounded-full bg-warning" />
             <span className="text-v2-ink-muted">Aged ({aged.count})</span>
           </span>
         </div>
@@ -104,20 +104,18 @@ function ComparisonBar({ row }: { row: ComparisonRow }) {
       <span
         className={cn(
           "text-[10px] font-medium w-[52px] text-right flex-shrink-0",
-          freshBetter
-            ? "text-blue-600 dark:text-blue-400"
-            : "text-v2-ink-muted",
+          freshBetter ? "text-info" : "text-v2-ink-muted",
         )}
       >
         {row.format(row.freshValue)}
       </span>
       <div className="flex-1 flex h-[6px] rounded-full overflow-hidden bg-v2-ring">
         <div
-          className="bg-blue-500 transition-all duration-300"
+          className="bg-info transition-all duration-300"
           style={{ width: `${freshPct}%` }}
         />
         <div
-          className="bg-amber-500 transition-all duration-300"
+          className="bg-warning transition-all duration-300"
           style={{ width: `${agedPct}%` }}
         />
       </div>
@@ -125,7 +123,7 @@ function ComparisonBar({ row }: { row: ComparisonRow }) {
         className={cn(
           "text-[10px] font-medium w-[52px] flex-shrink-0",
           !freshBetter && row.freshValue !== row.agedValue
-            ? "text-amber-600 dark:text-amber-400"
+            ? "text-warning"
             : "text-v2-ink-muted",
         )}
       >

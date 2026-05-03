@@ -70,7 +70,7 @@ export function TeamAnalyticsDashboard({
   if (isError) {
     return (
       <div className="bg-v2-card rounded-lg border border-v2-ring p-3">
-        <div className="text-center text-[11px] text-red-500 dark:text-red-400">
+        <div className="text-center text-[11px] text-destructive">
           Failed to load team analytics. Please try again.
         </div>
       </div>

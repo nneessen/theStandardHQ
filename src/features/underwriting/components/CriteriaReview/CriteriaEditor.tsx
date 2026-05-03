@@ -158,7 +158,7 @@ export function CriteriaEditor({
                 size="sm"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="h-7 px-2 text-[10px] bg-green-600 hover:bg-green-700"
+                className="h-7 px-2 text-[10px] bg-success hover:bg-success"
               >
                 <Save className="h-3 w-3 mr-1" />
                 {isSaving ? "Saving..." : "Save Changes"}
@@ -219,11 +219,11 @@ export function CriteriaEditor({
 
       {/* Validation Warning */}
       {hasValidationErrors && (
-        <div className="flex items-start gap-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
-          <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-          <div className="text-[10px] text-amber-800 dark:text-amber-200">
+        <div className="flex items-start gap-2 p-2 bg-warning/10 border border-warning/30 rounded-md">
+          <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
+          <div className="text-[10px] text-warning">
             <p className="font-medium">Data validation warning</p>
-            <p className="text-amber-700 dark:text-amber-300 mt-0.5">
+            <p className="text-warning mt-0.5">
               Some criteria fields failed validation and may not be displayed
               correctly. Consider re-extracting the criteria from the source
               guide.
@@ -573,7 +573,7 @@ function KnockoutConditionsSection({
     }
     if (lower === "medium" || lower === "table") {
       return (
-        <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 text-[8px] px-1 py-0 uppercase">
+        <Badge className="bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning text-[8px] px-1 py-0 uppercase">
           {severity}
         </Badge>
       );

@@ -37,32 +37,32 @@ const STATUS_CONFIG: Record<
   draft: {
     label: "Draft",
     className:
-      "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle border-v2-ring dark:border-v2-ring-strong",
+      "bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground border-border dark:border-border",
   },
   sending: {
     label: "Sending",
     className:
-      "bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border-blue-200 dark:border-blue-800",
+      "bg-info/10 text-info dark:bg-info/10 dark:text-info border-info/30",
   },
   sent: {
     label: "Sent",
     className:
-      "bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300 border-green-200 dark:border-green-800",
+      "bg-success/10 text-success dark:bg-success/10 dark:text-success border-success/30",
   },
   scheduled: {
     label: "Scheduled",
     className:
-      "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border-amber-200 dark:border-amber-800",
+      "bg-warning/10 text-warning dark:bg-warning/10 dark:text-warning border-warning/30",
   },
   paused: {
     label: "Paused",
     className:
-      "bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800",
+      "bg-warning/10 text-warning dark:bg-warning dark:text-warning border-warning/30",
   },
   failed: {
     label: "Failed",
     className:
-      "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300 border-red-200 dark:border-red-800",
+      "bg-destructive/10 text-destructive dark:bg-destructive/10 dark:text-destructive border-destructive/30",
   },
 };
 
@@ -151,10 +151,10 @@ export function CampaignListTab({
       </div>
 
       {/* Table */}
-      <div className="rounded-md border border-border bg-v2-canvas dark:bg-v2-card overflow-hidden">
+      <div className="rounded-md border border-border bg-background dark:bg-card overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="h-8 bg-v2-card-tinted dark:bg-v2-card-tinted hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted">
+            <TableRow className="h-8 bg-card-tinted dark:bg-card-tinted hover:bg-card-tinted dark:hover:bg-card-tinted">
               <TableHead className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide py-0 pl-3 w-[220px]">
                 Name
               </TableHead>
@@ -197,7 +197,7 @@ export function CampaignListTab({
               <TableRow>
                 <TableCell
                   colSpan={9}
-                  className="py-6 text-center text-[11px] text-red-500"
+                  className="py-6 text-center text-[11px] text-destructive"
                 >
                   Failed to load campaigns.
                 </TableCell>
@@ -244,7 +244,7 @@ export function CampaignListTab({
                 return (
                   <TableRow
                     key={campaign.id}
-                    className="py-1.5 hover:bg-v2-card-tinted/60 dark:hover:bg-v2-card-tinted/60 border-b border-border/60 last:border-0 cursor-pointer"
+                    className="py-1.5 hover:bg-card-tinted/60 dark:hover:bg-card-tinted/60 border-b border-border/60 last:border-0 cursor-pointer"
                     onClick={() => handleRowClick(campaign.id, campaign.status)}
                   >
                     {/* Name */}
@@ -340,7 +340,7 @@ export function CampaignListTab({
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-5 w-5 p-0 text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
+                        className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/10"
                         onClick={(e) => {
                           e.stopPropagation();
                           setDeleteId(campaign.id);
@@ -395,7 +395,7 @@ export function CampaignListTab({
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="h-7 text-[11px] bg-red-600 hover:bg-red-700 text-white"
+              className="h-7 text-[11px] bg-destructive hover:bg-destructive text-white"
               onClick={handleDeleteConfirm}
               disabled={deleteMutation.isPending}
             >

@@ -1,6 +1,6 @@
 // src/components/custom_ui/EmailIcon.tsx
 
-import React from 'react';
+import React from "react";
 
 /**
  * Email icon component for verification screen
@@ -8,9 +8,9 @@ import React from 'react';
 export const EmailIcon: React.FC = () => {
   return (
     <div className="flex justify-center">
-      <div className="rounded-full bg-blue-100 p-4">
+      <div className="rounded-full bg-accent p-4">
         <svg
-          className="h-12 w-12 text-blue-600"
+          className="h-12 w-12 text-accent-foreground"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"

@@ -66,7 +66,7 @@ export function PresentationWeekPicker({
       <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted min-w-[140px] text-center">
         {formatWeekRange(weekStart)}
         {isCurrentWeek && (
-          <span className="ml-1 text-[10px] text-blue-500">(this week)</span>
+          <span className="ml-1 text-[10px] text-info">(this week)</span>
         )}
       </span>
 

@@ -58,9 +58,9 @@ export const StatCardWidget: React.FC<StatCardWidgetProps> = ({
             <span
               className={`inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] font-bold ${
                 trend === "up"
-                  ? "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300"
+                  ? "bg-success/10 text-success"
                   : trend === "down"
-                    ? "bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400"
+                    ? "bg-destructive/10 text-destructive"
                     : "bg-v2-ring text-muted-foreground"
               }`}
             >

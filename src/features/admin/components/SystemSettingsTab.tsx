@@ -10,8 +10,8 @@ export function SystemSettingsTab() {
         {/* System Automations Section */}
         <section>
           <div className="flex items-center gap-2 mb-3">
-            <div className="p-1.5 rounded-md bg-blue-50 dark:bg-blue-900/20">
-              <Zap className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <div className="p-1.5 rounded-md bg-info/10">
+              <Zap className="h-4 w-4 text-info" />
             </div>
             <div>
               <h2 className="text-sm font-semibold text-v2-ink">

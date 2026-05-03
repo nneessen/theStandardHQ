@@ -127,7 +127,7 @@ export function NotificationPreferencesSection() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -136,14 +136,14 @@ export function NotificationPreferencesSection() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
         {/* In-App Notifications */}
-        <div className="border border-v2-ring rounded-lg p-3">
+        <div className="border border-border rounded-lg p-3">
           <div className="flex items-center gap-2 mb-3">
-            <Bell className="h-3.5 w-3.5 text-v2-ink-subtle" />
+            <Bell className="h-3.5 w-3.5 text-muted-foreground" />
             <div>
-              <h4 className="text-[11px] font-semibold text-v2-ink">
+              <h4 className="text-[11px] font-semibold text-foreground">
                 In-App Notifications
               </h4>
-              <p className="text-[10px] text-v2-ink-muted">
+              <p className="text-[10px] text-muted-foreground">
                 Notifications shown in the app
               </p>
             </div>
@@ -153,12 +153,12 @@ export function NotificationPreferencesSection() {
             control={form.control}
             name="in_app_enabled"
             render={({ field }) => (
-              <FormItem className="flex items-center justify-between rounded-lg border border-v2-ring p-2.5">
+              <FormItem className="flex items-center justify-between rounded-lg border border-border p-2.5">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-[11px] text-v2-ink">
+                  <FormLabel className="text-[11px] text-foreground">
                     Enable in-app notifications
                   </FormLabel>
-                  <FormDescription className="text-[10px] text-v2-ink-muted">
+                  <FormDescription className="text-[10px] text-muted-foreground">
                     Show notification bell and dropdown
                   </FormDescription>
                 </div>
@@ -174,14 +174,14 @@ export function NotificationPreferencesSection() {
         </div>
 
         {/* Email Digest */}
-        <div className="border border-v2-ring rounded-lg p-3">
+        <div className="border border-border rounded-lg p-3">
           <div className="flex items-center gap-2 mb-3">
-            <Mail className="h-3.5 w-3.5 text-v2-ink-subtle" />
+            <Mail className="h-3.5 w-3.5 text-muted-foreground" />
             <div>
-              <h4 className="text-[11px] font-semibold text-v2-ink">
+              <h4 className="text-[11px] font-semibold text-foreground">
                 Email Digest
               </h4>
-              <p className="text-[10px] text-v2-ink-muted">
+              <p className="text-[10px] text-muted-foreground">
                 Receive a summary of notifications via email
               </p>
             </div>
@@ -191,12 +191,12 @@ export function NotificationPreferencesSection() {
             control={form.control}
             name="email_digest_enabled"
             render={({ field }) => (
-              <FormItem className="flex items-center justify-between rounded-lg border border-v2-ring p-2.5">
+              <FormItem className="flex items-center justify-between rounded-lg border border-border p-2.5">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-[11px] text-v2-ink">
+                  <FormLabel className="text-[11px] text-foreground">
                     Enable email digest
                   </FormLabel>
-                  <FormDescription className="text-[10px] text-v2-ink-muted">
+                  <FormDescription className="text-[10px] text-muted-foreground">
                     Get unread notifications sent to your email
                   </FormDescription>
                 </div>
@@ -219,7 +219,7 @@ export function NotificationPreferencesSection() {
                   name="email_digest_frequency"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] text-v2-ink-muted">
+                      <FormLabel className="text-[10px] text-muted-foreground">
                         Frequency
                       </FormLabel>
                       <Select
@@ -252,7 +252,7 @@ export function NotificationPreferencesSection() {
                   name="email_digest_time"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] text-v2-ink-muted">
+                      <FormLabel className="text-[10px] text-muted-foreground">
                         Delivery Time
                       </FormLabel>
                       <Select
@@ -285,7 +285,7 @@ export function NotificationPreferencesSection() {
                   name="email_digest_timezone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] text-v2-ink-muted">
+                      <FormLabel className="text-[10px] text-muted-foreground">
                         Timezone
                       </FormLabel>
                       <Select
@@ -318,14 +318,14 @@ export function NotificationPreferencesSection() {
         </div>
 
         {/* Quiet Hours */}
-        <div className="border border-v2-ring rounded-lg p-3">
+        <div className="border border-border rounded-lg p-3">
           <div className="flex items-center gap-2 mb-3">
-            <Clock className="h-3.5 w-3.5 text-v2-ink-subtle" />
+            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
             <div>
-              <h4 className="text-[11px] font-semibold text-v2-ink">
+              <h4 className="text-[11px] font-semibold text-foreground">
                 Quiet Hours
               </h4>
-              <p className="text-[10px] text-v2-ink-muted">
+              <p className="text-[10px] text-muted-foreground">
                 Pause notifications during specified hours
               </p>
             </div>
@@ -335,12 +335,12 @@ export function NotificationPreferencesSection() {
             control={form.control}
             name="quiet_hours_enabled"
             render={({ field }) => (
-              <FormItem className="flex items-center justify-between rounded-lg border border-v2-ring p-2.5">
+              <FormItem className="flex items-center justify-between rounded-lg border border-border p-2.5">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-[11px] text-v2-ink">
+                  <FormLabel className="text-[11px] text-foreground">
                     Enable quiet hours
                   </FormLabel>
-                  <FormDescription className="text-[10px] text-v2-ink-muted">
+                  <FormDescription className="text-[10px] text-muted-foreground">
                     Suppress notifications during these hours
                   </FormDescription>
                 </div>
@@ -363,7 +363,7 @@ export function NotificationPreferencesSection() {
                   name="quiet_hours_start"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] text-v2-ink-muted">
+                      <FormLabel className="text-[10px] text-muted-foreground">
                         Start Time
                       </FormLabel>
                       <Select
@@ -396,7 +396,7 @@ export function NotificationPreferencesSection() {
                   name="quiet_hours_end"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-[10px] text-v2-ink-muted">
+                      <FormLabel className="text-[10px] text-muted-foreground">
                         End Time
                       </FormLabel>
                       <Select

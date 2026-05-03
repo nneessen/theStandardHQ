@@ -171,7 +171,7 @@ export function ElevenLabsIntegrationCard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
+          <div className="p-1.5 rounded bg-info/20 dark:bg-info/15 text-info">
             <Volume2 className="h-4 w-4" />
           </div>
           <div>
@@ -264,7 +264,7 @@ export function ElevenLabsIntegrationCard() {
         <div className="space-y-2 pt-1">
           <div className="space-y-1">
             <label className="text-[10px] text-v2-ink-muted">
-              API Key <span className="text-red-500">*</span>
+              API Key <span className="text-destructive">*</span>
             </label>
             <div className="relative">
               <Input

@@ -21,26 +21,18 @@ interface ConversionPanelProps {
 
 const conversionColor = (rate: number) =>
   rate > 10
-    ? "text-emerald-600 dark:text-emerald-400"
+    ? "text-success"
     : rate > 5
-      ? "text-blue-600 dark:text-blue-400"
+      ? "text-info"
       : rate > 1
-        ? "text-amber-600 dark:text-amber-400"
-        : "text-red-600 dark:text-red-400";
+        ? "text-warning"
+        : "text-destructive";
 
 const zeroSaleColor = (pct: number) =>
-  pct < 10
-    ? "text-emerald-600 dark:text-emerald-400"
-    : pct < 30
-      ? "text-amber-600 dark:text-amber-400"
-      : "text-red-600 dark:text-red-400";
+  pct < 10 ? "text-success" : pct < 30 ? "text-warning" : "text-destructive";
 
 const roiColor = (roi: number) =>
-  roi > 0
-    ? "text-emerald-600 dark:text-emerald-400"
-    : roi < 0
-      ? "text-red-600 dark:text-red-400"
-      : "text-v2-ink-muted";
+  roi > 0 ? "text-success" : roi < 0 ? "text-destructive" : "text-v2-ink-muted";
 
 export function ConversionPanel({
   filteredPacks,
@@ -100,19 +92,19 @@ export function ConversionPanel({
             icon={Package}
             label="Total Leads"
             value={formatNumber(metrics.totalLeads)}
-            iconColor="text-indigo-500"
+            iconColor="text-info"
           />
           <MetricRow
             icon={Target}
             label="Policies Sold"
             value={formatNumber(metrics.totalPolicies)}
-            iconColor="text-violet-500"
+            iconColor="text-info"
           />
           <MetricRow
             icon={Filter}
             label="Conversion Rate"
             value={formatPercent(metrics.conversionRate)}
-            iconColor="text-blue-500"
+            iconColor="text-info"
             valueColor={conversionColor(metrics.conversionRate)}
           />
           <MetricRow
@@ -133,19 +125,19 @@ export function ConversionPanel({
             icon={DollarSign}
             label="Cost / Conversion"
             value={formatCurrency(metrics.costPerConversion)}
-            iconColor="text-amber-500"
+            iconColor="text-warning"
           />
           <MetricRow
             icon={DollarSign}
             label="Premium / Lead"
             value={formatCurrency(metrics.premiumPerLead)}
-            iconColor="text-emerald-500"
+            iconColor="text-success"
           />
           <MetricRow
             icon={Target}
             label="Avg Policies/Pack"
             value={metrics.avgPoliciesPerPack.toFixed(1)}
-            iconColor="text-violet-500"
+            iconColor="text-info"
           />
           <MetricRow
             icon={TrendingUp}
@@ -167,13 +159,11 @@ export function ConversionPanel({
             <div
               className={cn(
                 "flex-1 rounded px-2 py-1",
-                freshWins
-                  ? "bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800"
-                  : "bg-v2-canvas",
+                freshWins ? "bg-info/10 border border-info/30" : "bg-v2-canvas",
               )}
             >
               <div className="flex items-center gap-1 mb-0.5">
-                <span className="h-2 w-2 rounded-full bg-blue-500" />
+                <span className="h-2 w-2 rounded-full bg-info" />
                 <span className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                   Fresh
                 </span>
@@ -183,7 +173,7 @@ export function ConversionPanel({
                   className={cn(
                     "text-[11px] font-semibold",
                     freshWins
-                      ? "text-blue-600 dark:text-blue-400"
+                      ? "text-info"
                       : "text-v2-ink-muted dark:text-v2-ink-subtle",
                   )}
                 >
@@ -198,12 +188,12 @@ export function ConversionPanel({
               className={cn(
                 "flex-1 rounded px-2 py-1",
                 !freshWins && fresh.count > 0 && aged.count > 0
-                  ? "bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800"
+                  ? "bg-warning/10 border border-warning/30"
                   : "bg-v2-canvas",
               )}
             >
               <div className="flex items-center gap-1 mb-0.5">
-                <span className="h-2 w-2 rounded-full bg-amber-500" />
+                <span className="h-2 w-2 rounded-full bg-warning" />
                 <span className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
                   Aged
                 </span>
@@ -213,7 +203,7 @@ export function ConversionPanel({
                   className={cn(
                     "text-[11px] font-semibold",
                     !freshWins && fresh.count > 0 && aged.count > 0
-                      ? "text-amber-600 dark:text-amber-400"
+                      ? "text-warning"
                       : "text-v2-ink-muted dark:text-v2-ink-subtle",
                   )}
                 >

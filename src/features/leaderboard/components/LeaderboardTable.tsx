@@ -40,7 +40,10 @@ function TableSkeleton({
   return (
     <>
       {Array.from({ length: rows }).map((_, i) => (
-        <tr key={i} className="border-b border-v2-ring/60 last:border-0">
+        <tr
+          key={i}
+          className="border-b border-[color:var(--border-soft)] last:border-0"
+        >
           <td className="px-2 py-1.5 w-10">
             <Skeleton className="h-5 w-5 rounded-full" />
           </td>
@@ -116,7 +119,7 @@ function ErrorState({
     <tr>
       <td
         colSpan={isSubmit ? 4 : 7}
-        className="px-4 py-8 text-center text-red-500 dark:text-red-400"
+        className="px-4 py-8 text-center text-destructive"
       >
         <p className="text-xs font-medium">Error loading leaderboard</p>
         <p className="text-[10px] mt-1">{message}</p>
@@ -139,9 +142,9 @@ function AgentRow({
   return (
     <tr
       className={cn(
-        "border-b border-v2-ring/60 last:border-0 transition-colors",
-        isTop3 && "bg-amber-50/50 dark:bg-amber-950/20",
-        !isTop3 && isTop10 && "bg-amber-50/30 dark:bg-amber-950/10",
+        "border-b border-[color:var(--border-soft)] last:border-0 transition-colors",
+        isTop3 && "bg-accent/20",
+        !isTop3 && isTop10 && "bg-accent/10",
         "hover:bg-v2-canvas",
       )}
     >
@@ -163,7 +166,7 @@ function AgentRow({
             <p
               className={cn(
                 "text-xs font-medium truncate",
-                isTop3 ? "text-amber-700 dark:text-amber-300" : "text-v2-ink",
+                isTop3 ? "text-warning" : "text-v2-ink",
               )}
             >
               {entry.agentName}
@@ -178,9 +181,7 @@ function AgentRow({
         <span
           className={cn(
             "font-mono text-xs font-semibold",
-            entry.ipTotal > 0
-              ? "text-amber-600 dark:text-amber-400"
-              : "text-v2-ink-subtle",
+            entry.ipTotal > 0 ? "text-warning" : "text-v2-ink-subtle",
           )}
         >
           {formatCurrency(entry.ipTotal)}
@@ -229,9 +230,9 @@ function AgencyRow({
   return (
     <tr
       className={cn(
-        "border-b border-v2-ring/60 last:border-0 transition-colors",
-        isTop3 && "bg-amber-50/50 dark:bg-amber-950/20",
-        !isTop3 && isTop10 && "bg-amber-50/30 dark:bg-amber-950/10",
+        "border-b border-[color:var(--border-soft)] last:border-0 transition-colors",
+        isTop3 && "bg-accent/20",
+        !isTop3 && isTop10 && "bg-accent/10",
         "hover:bg-v2-canvas",
       )}
     >
@@ -247,7 +248,7 @@ function AgencyRow({
             <p
               className={cn(
                 "text-xs font-medium truncate",
-                isTop3 ? "text-amber-700 dark:text-amber-300" : "text-v2-ink",
+                isTop3 ? "text-warning" : "text-v2-ink",
               )}
             >
               {entry.agencyName}
@@ -263,9 +264,7 @@ function AgencyRow({
         <span
           className={cn(
             "font-mono text-xs font-semibold",
-            entry.ipTotal > 0
-              ? "text-amber-600 dark:text-amber-400"
-              : "text-v2-ink-subtle",
+            entry.ipTotal > 0 ? "text-warning" : "text-v2-ink-subtle",
           )}
         >
           {formatCurrency(entry.ipTotal)}
@@ -314,9 +313,9 @@ function SubmitRow({
   return (
     <tr
       className={cn(
-        "border-b border-v2-ring/60 last:border-0 transition-colors",
-        isTop3 && "bg-amber-50/50 dark:bg-amber-950/20",
-        !isTop3 && isTop10 && "bg-amber-50/30 dark:bg-amber-950/10",
+        "border-b border-[color:var(--border-soft)] last:border-0 transition-colors",
+        isTop3 && "bg-accent/20",
+        !isTop3 && isTop10 && "bg-accent/10",
         "hover:bg-v2-canvas",
       )}
     >
@@ -338,7 +337,7 @@ function SubmitRow({
             <p
               className={cn(
                 "text-xs font-medium truncate",
-                isTop3 ? "text-amber-700 dark:text-amber-300" : "text-v2-ink",
+                isTop3 ? "text-warning" : "text-v2-ink",
               )}
             >
               {entry.agentName}
@@ -353,9 +352,7 @@ function SubmitRow({
         <span
           className={cn(
             "font-mono text-xs font-semibold",
-            entry.apTotal > 0
-              ? "text-amber-600 dark:text-amber-400"
-              : "text-v2-ink-subtle",
+            entry.apTotal > 0 ? "text-warning" : "text-v2-ink-subtle",
           )}
         >
           {formatCurrency(entry.apTotal)}
@@ -384,9 +381,9 @@ function TeamRow({
   return (
     <tr
       className={cn(
-        "border-b border-v2-ring/60 last:border-0 transition-colors",
-        isTop3 && "bg-amber-50/50 dark:bg-amber-950/20",
-        !isTop3 && isTop10 && "bg-amber-50/30 dark:bg-amber-950/10",
+        "border-b border-[color:var(--border-soft)] last:border-0 transition-colors",
+        isTop3 && "bg-accent/20",
+        !isTop3 && isTop10 && "bg-accent/10",
         "hover:bg-v2-canvas",
       )}
     >
@@ -405,7 +402,7 @@ function TeamRow({
                 {getInitials(entry.leaderName)}
               </AvatarFallback>
             </Avatar>
-            <div className="absolute -bottom-0.5 -right-0.5 flex items-center justify-center h-3.5 w-3.5 rounded-full bg-blue-500 border border-v2-card">
+            <div className="absolute -bottom-0.5 -right-0.5 flex items-center justify-center h-3.5 w-3.5 rounded-full bg-info border border-v2-card">
               <Users className="h-2 w-2 text-white" />
             </div>
           </div>
@@ -413,7 +410,7 @@ function TeamRow({
             <p
               className={cn(
                 "text-xs font-medium truncate",
-                isTop3 ? "text-amber-700 dark:text-amber-300" : "text-v2-ink",
+                isTop3 ? "text-warning" : "text-v2-ink",
               )}
             >
               {entry.leaderName}'s Team
@@ -429,9 +426,7 @@ function TeamRow({
         <span
           className={cn(
             "font-mono text-xs font-semibold",
-            entry.ipTotal > 0
-              ? "text-amber-600 dark:text-amber-400"
-              : "text-v2-ink-subtle",
+            entry.ipTotal > 0 ? "text-warning" : "text-v2-ink-subtle",
           )}
         >
           {formatCurrency(entry.ipTotal)}
@@ -491,7 +486,7 @@ export function LeaderboardTable({
               <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider">
                 Agent
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider text-right">
+              <th className="px-2 py-2 text-[10px] font-semibold text-warning uppercase tracking-wider text-right">
                 AP
               </th>
               <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider text-center">
@@ -507,7 +502,7 @@ export function LeaderboardTable({
               <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider">
                 {nameHeader}
               </th>
-              <th className="px-2 py-2 text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider text-right">
+              <th className="px-2 py-2 text-[10px] font-semibold text-warning uppercase tracking-wider text-right">
                 IP
               </th>
               <th className="px-2 py-2 text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider text-right">

@@ -37,7 +37,7 @@ export function MyAgencyRequestStatus({ request }: MyAgencyRequestStatusProps) {
         return (
           <Badge
             variant="outline"
-            className="text-[10px] h-4 px-1 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800"
+            className="text-[10px] h-4 px-1 bg-warning/10 text-warning border-warning/30 dark:bg-warning/20 dark:text-warning dark:border-warning"
           >
             <Clock className="mr-0.5 h-2.5 w-2.5" />
             Pending
@@ -47,7 +47,7 @@ export function MyAgencyRequestStatus({ request }: MyAgencyRequestStatusProps) {
         return (
           <Badge
             variant="outline"
-            className="text-[10px] h-4 px-1 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+            className="text-[10px] h-4 px-1 bg-success/10 text-success border-success/30 dark:bg-success/20 dark:text-success dark:border-success"
           >
             <CheckCircle2 className="mr-0.5 h-2.5 w-2.5" />
             Approved
@@ -57,7 +57,7 @@ export function MyAgencyRequestStatus({ request }: MyAgencyRequestStatusProps) {
         return (
           <Badge
             variant="outline"
-            className="text-[10px] h-4 px-1 bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
+            className="text-[10px] h-4 px-1 bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/20 dark:text-destructive dark:border-destructive"
           >
             <XCircle className="mr-0.5 h-2.5 w-2.5" />
             Rejected
@@ -147,11 +147,11 @@ export function MyAgencyRequestStatus({ request }: MyAgencyRequestStatusProps) {
 
       {/* Rejection reason */}
       {request.status === "rejected" && request.rejection_reason && (
-        <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded text-[10px]">
-          <span className="text-red-700 dark:text-red-400 font-medium">
+        <div className="p-2 bg-destructive/10 rounded text-[10px]">
+          <span className="text-destructive font-medium">
             Rejection Reason:
           </span>
-          <p className="text-red-600 dark:text-red-300 mt-0.5">
+          <p className="text-destructive dark:text-destructive mt-0.5">
             {request.rejection_reason}
           </p>
         </div>
@@ -165,7 +165,7 @@ export function MyAgencyRequestStatus({ request }: MyAgencyRequestStatusProps) {
             size="sm"
             onClick={handleCancel}
             disabled={cancelRequest.isPending}
-            className="h-6 px-2 text-[10px] text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+            className="h-6 px-2 text-[10px] text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20"
           >
             {cancelRequest.isPending ? (
               <>

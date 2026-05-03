@@ -18,7 +18,7 @@ function StepChecklistItem({
       className={cn(
         "rounded-lg border px-3 py-3",
         complete
-          ? "border-emerald-300 bg-emerald-50 dark:border-emerald-800/40 dark:bg-emerald-950/20"
+          ? "border-success/40 bg-success/10 dark:border-success/40 dark:bg-success/10"
           : "border-border/50 bg-card shadow-sm",
       )}
     >
@@ -30,7 +30,7 @@ function StepChecklistItem({
           className={cn(
             "text-[9px] flex-shrink-0",
             complete
-              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+              ? "bg-success/20 text-success dark:bg-success/20 dark:text-success"
               : "bg-v2-ring text-v2-ink-muted dark:bg-v2-ring-strong dark:text-v2-ink-muted",
           )}
         >
@@ -170,7 +170,7 @@ export function LaunchView({
           </div>
         </BuilderSection>
 
-        <div className="rounded-xl border border-border/50 bg-card px-4 py-3 shadow-sm">
+        <div className="rounded-lg border border-border/50 bg-card px-4 py-3 shadow-sm">
           <p className="text-[11px] font-bold text-foreground">Publish flow</p>
           <p className="mt-1.5 text-[10px] leading-4 text-muted-foreground">
             Publishing makes your latest saved draft the live version that

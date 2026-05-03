@@ -114,9 +114,9 @@ export function PipelineTemplateEditor({
     <div className="space-y-2.5">
       {/* Read-only warning for non-owners */}
       {!canModify && (
-        <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-950/30 rounded-lg px-3 py-2 border border-amber-200 dark:border-amber-800">
-          <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-          <span className="text-[11px] text-amber-700 dark:text-amber-300">
+        <div className="flex items-center gap-2 bg-warning/10 rounded-lg px-3 py-2 border border-warning/30">
+          <AlertCircle className="h-3.5 w-3.5 text-warning flex-shrink-0" />
+          <span className="text-[11px] text-warning">
             You can only view this template. Only the creator, an admin, or
             staff with access to DEFAULT templates can make changes.
           </span>
@@ -142,7 +142,7 @@ export function PipelineTemplateEditor({
           {template.is_default && (
             <Badge
               variant="secondary"
-              className="text-[9px] h-4 px-1.5 bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300"
+              className="text-[9px] h-4 px-1.5 bg-warning/20 text-warning dark:bg-warning dark:text-warning"
             >
               Default
             </Badge>

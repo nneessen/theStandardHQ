@@ -144,8 +144,8 @@ export function PaceMetrics() {
           className={cn(
             "px-3 py-1 rounded-v2-pill text-[10px] font-semibold tracking-wide uppercase",
             isProfitable
-              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-              : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+              ? "bg-success/20 text-success dark:bg-success/40 dark:text-success"
+              : "bg-destructive/20 text-destructive dark:bg-destructive/40 dark:text-destructive",
           )}
         >
           {isProfitable ? "Profitable" : "Deficit"}
@@ -203,9 +203,7 @@ export function PaceMetrics() {
           <div
             className={cn(
               "text-lg font-semibold leading-tight mt-0.5",
-              isProfitable
-                ? "text-emerald-600 dark:text-emerald-400"
-                : "text-red-600 dark:text-red-400",
+              isProfitable ? "text-success" : "text-destructive",
             )}
           >
             {formatCurrency(Math.abs(netIncome))}

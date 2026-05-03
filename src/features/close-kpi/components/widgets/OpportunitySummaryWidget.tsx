@@ -28,13 +28,13 @@ const TYPE_STYLES: Record<
     icon: <Circle className="h-2 w-2 fill-current" />,
   },
   won: {
-    bg: "bg-emerald-50 dark:bg-emerald-950/30",
-    text: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-success/10",
+    text: "text-success",
     icon: <Trophy className="h-2 w-2" />,
   },
   lost: {
-    bg: "bg-red-50 dark:bg-red-950/30",
-    text: "text-red-500 dark:text-red-400",
+    bg: "bg-destructive/10",
+    text: "text-destructive",
     icon: <XCircle className="h-2 w-2" />,
   },
 };
@@ -125,7 +125,7 @@ export const OpportunitySummaryWidget: React.FC<
                   )}
                   {hasWarning && (
                     <span
-                      className="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500"
+                      className="h-1.5 w-1.5 shrink-0 rounded-full bg-warning"
                       title={`${status.staleCount > 0 ? `${status.staleCount} stale` : ""}${status.staleCount > 0 && status.untouchedCount > 0 ? ", " : ""}${status.untouchedCount > 0 ? `${status.untouchedCount} untouched` : ""}`}
                     />
                   )}
@@ -141,13 +141,13 @@ export const OpportunitySummaryWidget: React.FC<
 
       {/* Pipeline Health signals */}
       {pipelineHealth && hasHealthWarnings && (
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 rounded bg-amber-50/50 px-1.5 py-0.5 dark:bg-amber-950/20">
-          <span className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-amber-600 dark:text-amber-400">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 rounded bg-warning/10/50 px-1.5 py-0.5 dark:bg-warning/10">
+          <span className="flex items-center gap-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-warning">
             <AlertTriangle className="h-2.5 w-2.5" />
             Signals
           </span>
           {pipelineHealth.revenueAtRisk > 0 && (
-            <span className="text-[10px] text-amber-700 dark:text-amber-300">
+            <span className="text-[10px] text-warning">
               At risk:{" "}
               <span className="font-mono font-semibold">
                 {formatCurrency(pipelineHealth.revenueAtRisk)}
@@ -155,7 +155,7 @@ export const OpportunitySummaryWidget: React.FC<
             </span>
           )}
           {pipelineHealth.untouchedActive.count > 0 && (
-            <span className="text-[10px] text-amber-700 dark:text-amber-300">
+            <span className="text-[10px] text-warning">
               Untouched:{" "}
               <span className="font-mono font-semibold">
                 {pipelineHealth.untouchedActive.count}
@@ -170,7 +170,7 @@ export const OpportunitySummaryWidget: React.FC<
             </span>
           )}
           {pipelineHealth.staleActive.count > 0 && (
-            <span className="text-[10px] text-amber-700 dark:text-amber-300">
+            <span className="text-[10px] text-warning">
               Stale:{" "}
               <span className="font-mono font-semibold">
                 {pipelineHealth.staleActive.count}
@@ -185,11 +185,9 @@ export const OpportunitySummaryWidget: React.FC<
       <div className="mt-auto flex items-center gap-2 border-t border-border/50 pt-1">
         <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-[10px] text-muted-foreground">
           <span>
-            <span className="text-emerald-600 dark:text-emerald-400">
-              {wonCount}W
-            </span>
+            <span className="text-success">{wonCount}W</span>
             {" / "}
-            <span className="text-red-500 dark:text-red-400">{lostCount}L</span>
+            <span className="text-destructive">{lostCount}L</span>
             {" / "}
             <span>{activeCount}A</span>
           </span>
@@ -216,9 +214,7 @@ export const OpportunitySummaryWidget: React.FC<
         </div>
         <div className="ml-auto flex gap-2 text-[10px] text-muted-foreground">
           {wonValue > 0 && (
-            <span className="text-emerald-600 dark:text-emerald-400">
-              {formatCurrency(wonValue)} won
-            </span>
+            <span className="text-success">{formatCurrency(wonValue)} won</span>
           )}
           {avgTimeToClose != null && avgTimeToClose > 0 && (
             <span>{avgTimeToClose}d avg</span>

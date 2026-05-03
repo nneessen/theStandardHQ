@@ -167,9 +167,9 @@ export function TeamProductMatrix({ data, isLoading }: TeamProductMatrixProps) {
                       className={cn(
                         "font-mono",
                         mixPercent >= 20
-                          ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                          ? "text-success font-bold"
                           : mixPercent >= 10
-                            ? "text-amber-600 dark:text-amber-400"
+                            ? "text-warning"
                             : "text-v2-ink-muted",
                       )}
                     >

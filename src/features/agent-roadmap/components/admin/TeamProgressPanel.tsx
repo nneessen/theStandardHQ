@@ -144,7 +144,7 @@ export function TeamProgressPanel({ roadmapId }: TeamProgressPanelProps) {
               <>
                 <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
                 <div className="flex items-center gap-1">
-                  <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                  <CheckCircle2 className="h-3 w-3 text-success" />
                   <span className="font-medium">{summary.completed}</span>
                   <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                     done
@@ -156,7 +156,7 @@ export function TeamProgressPanel({ roadmapId }: TeamProgressPanelProps) {
               <>
                 <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
                 <div className="flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3 text-amber-500" />
+                  <AlertTriangle className="h-3 w-3 text-warning" />
                   <span className="font-medium">{summary.stuck}</span>
                   <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
                     stuck
@@ -255,7 +255,7 @@ export function TeamProgressPanel({ roadmapId }: TeamProgressPanelProps) {
                       </TableCell>
                       <TableCell className="text-right">
                         <span className="inline-flex items-center gap-1 text-[11px]">
-                          <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                          <CheckCircle2 className="h-3 w-3 text-success" />
                           <span className="font-medium text-v2-ink dark:text-v2-ink">
                             {row.completed_count}
                           </span>

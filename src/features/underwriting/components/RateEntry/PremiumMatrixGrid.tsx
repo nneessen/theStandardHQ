@@ -351,21 +351,21 @@ export function PremiumMatrixGrid({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="border border-v2-ring dark:border-v2-ring rounded-md">
+    <div className="border border-border dark:border-border rounded-md">
       {/* Header */}
-      <div className="px-3 py-2 border-b border-v2-ring dark:border-v2-ring bg-v2-canvas dark:bg-v2-card-tinted/50">
+      <div className="px-3 py-2 border-b border-border dark:border-border bg-background dark:bg-card-tinted/50">
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
+            <div className="text-[11px] font-medium text-foreground dark:text-foreground">
               {productName}
             </div>
-            <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <div className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               {carrierName}
               {isTermProduct && selectedTerm && (
                 <span className="ml-1">• {selectedTerm} Year Term</span>
@@ -377,7 +377,7 @@ export function PremiumMatrixGrid({
               {stats.filledCells}/{stats.totalCells}
             </Badge>
             {stats.pendingChanges > 0 && (
-              <Badge className="text-[9px] px-1.5 py-0 h-4 bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+              <Badge className="text-[9px] px-1.5 py-0 h-4 bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning">
                 {stats.pendingChanges} unsaved
               </Badge>
             )}
@@ -391,7 +391,7 @@ export function PremiumMatrixGrid({
           {/* Term Selector - Only for term products */}
           {isTermProduct && (
             <div>
-              <label className="text-[9px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5 block">
+              <label className="text-[9px] font-medium text-muted-foreground dark:text-muted-foreground mb-0.5 block">
                 Term
               </label>
               <Select
@@ -418,7 +418,7 @@ export function PremiumMatrixGrid({
 
           {/* Increment Selector */}
           <div>
-            <label className="text-[9px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5 block">
+            <label className="text-[9px] font-medium text-muted-foreground dark:text-muted-foreground mb-0.5 block">
               Increment
             </label>
             <Select
@@ -443,7 +443,7 @@ export function PremiumMatrixGrid({
           </div>
 
           <div>
-            <label className="text-[9px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5 block">
+            <label className="text-[9px] font-medium text-muted-foreground dark:text-muted-foreground mb-0.5 block">
               Gender
             </label>
             <Select
@@ -468,7 +468,7 @@ export function PremiumMatrixGrid({
           </div>
 
           <div>
-            <label className="text-[9px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5 block">
+            <label className="text-[9px] font-medium text-muted-foreground dark:text-muted-foreground mb-0.5 block">
               Tobacco
             </label>
             <Select
@@ -493,7 +493,7 @@ export function PremiumMatrixGrid({
           </div>
 
           <div>
-            <label className="text-[9px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5 block">
+            <label className="text-[9px] font-medium text-muted-foreground dark:text-muted-foreground mb-0.5 block">
               Health Class
             </label>
             <Select
@@ -536,7 +536,7 @@ export function PremiumMatrixGrid({
         </div>
 
         {/* Premium Grid - Virtualized */}
-        <div className="border border-v2-ring dark:border-v2-ring-strong rounded">
+        <div className="border border-border dark:border-border rounded">
           {/* Scrollable container */}
           <div ref={scrollContainerRef} className="overflow-x-auto">
             {/* Virtual scroll area */}
@@ -547,9 +547,9 @@ export function PremiumMatrixGrid({
               }}
             >
               {/* Header row */}
-              <div className="flex bg-v2-card-tinted dark:bg-v2-card-tinted">
+              <div className="flex bg-card-tinted dark:bg-card-tinted">
                 {/* Age header - sticky */}
-                <div className="sticky left-0 z-20 bg-v2-card-tinted dark:bg-v2-card-tinted px-1.5 py-1 text-[9px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-left w-10 flex-shrink-0">
+                <div className="sticky left-0 z-20 bg-card-tinted dark:bg-card-tinted px-1.5 py-1 text-[9px] font-semibold text-muted-foreground dark:text-muted-foreground text-left w-10 flex-shrink-0">
                   Age
                 </div>
                 {/* Virtualized column headers */}
@@ -565,7 +565,7 @@ export function PremiumMatrixGrid({
                     return (
                       <div
                         key={faceAmount}
-                        className="absolute top-0 h-full px-1 py-1 text-[9px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-center"
+                        className="absolute top-0 h-full px-1 py-1 text-[9px] font-semibold text-muted-foreground dark:text-muted-foreground text-center"
                         style={{
                           left: virtualColumn.start,
                           width: virtualColumn.size,
@@ -582,10 +582,10 @@ export function PremiumMatrixGrid({
               {gridAges.map((age, ageIndex) => (
                 <div
                   key={age}
-                  className="flex border-t border-v2-ring dark:border-v2-ring"
+                  className="flex border-t border-border dark:border-border"
                 >
                   {/* Age cell - sticky */}
-                  <div className="sticky left-0 z-10 bg-v2-card px-1.5 py-0.5 text-[10px] font-medium text-v2-ink dark:text-v2-ink-muted w-10 flex-shrink-0 flex items-center">
+                  <div className="sticky left-0 z-10 bg-card px-1.5 py-0.5 text-[10px] font-medium text-foreground dark:text-muted-foreground w-10 flex-shrink-0 flex items-center">
                     {age}
                   </div>
                   {/* Virtualized data cells */}
@@ -649,13 +649,13 @@ export function PremiumMatrixGrid({
                                   "h-6 w-full text-center text-[10px] px-1 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
                                   hasData &&
                                     !hasChanges &&
-                                    "bg-green-50 dark:bg-green-950/20",
+                                    "bg-success/10 dark:bg-success/10",
                                   hasChanges &&
-                                    "bg-yellow-50 dark:bg-yellow-950/20",
+                                    "bg-warning/10 dark:bg-warning/20",
                                 )}
                               />
                               {hasData && !hasChanges && (
-                                <Check className="absolute right-0.5 top-1/2 -translate-y-1/2 h-2.5 w-2.5 text-green-500 pointer-events-none" />
+                                <Check className="absolute right-0.5 top-1/2 -translate-y-1/2 h-2.5 w-2.5 text-success pointer-events-none" />
                               )}
                             </div>
                           </div>
@@ -669,14 +669,14 @@ export function PremiumMatrixGrid({
         </div>
 
         {/* Legend & Help */}
-        <div className="flex items-center justify-between text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
+        <div className="flex items-center justify-between text-[9px] text-muted-foreground dark:text-muted-foreground">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
-              <div className="w-2.5 h-2.5 bg-green-50 dark:bg-green-950/20 rounded border border-v2-ring dark:border-v2-ring-strong" />
+              <div className="w-2.5 h-2.5 bg-success/10 dark:bg-success/10 rounded border border-border dark:border-border" />
               <span>Saved</span>
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2.5 h-2.5 bg-yellow-50 dark:bg-yellow-950/20 rounded border border-v2-ring dark:border-v2-ring-strong" />
+              <div className="w-2.5 h-2.5 bg-warning/10 dark:bg-warning/20 rounded border border-border dark:border-border" />
               <span>Unsaved</span>
             </div>
           </div>

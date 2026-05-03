@@ -45,7 +45,7 @@ export function ReviewQueue({ transactions, onSwitchTab }: ReviewQueueProps) {
         <Button
           size="sm"
           variant="ghost"
-          className="h-5 text-[10px] text-teal-600 dark:text-teal-400"
+          className="h-5 text-[10px] text-success"
           onClick={() => onSwitchTab("transactions")}
         >
           View All
@@ -73,7 +73,7 @@ export function ReviewQueue({ transactions, onSwitchTab }: ReviewQueueProps) {
                 className={cn(
                   "px-2 py-1.5 text-right tabular-nums whitespace-nowrap",
                   txn.direction === "income"
-                    ? "text-emerald-600 dark:text-emerald-400"
+                    ? "text-success"
                     : "text-v2-ink dark:text-v2-ink-subtle",
                 )}
               >
@@ -87,7 +87,7 @@ export function ReviewQueue({ transactions, onSwitchTab }: ReviewQueueProps) {
                 <div className="flex items-center gap-1 justify-end">
                   <button
                     onClick={() => approve.mutate({ id: txn.id })}
-                    className="p-0.5 rounded hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-emerald-600"
+                    className="p-0.5 rounded hover:bg-success/20 dark:hover:bg-success/30 text-success"
                     title="Approve"
                   >
                     <Check className="h-3 w-3" />

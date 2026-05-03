@@ -17,9 +17,9 @@ interface SecondaryMetricsRowProps {
 
 const TONE_CLASS: Record<NonNullable<SecondaryMetric["tone"]>, string> = {
   default: "text-v2-ink dark:text-v2-ink",
-  good: "text-emerald-700 dark:text-emerald-400",
-  warn: "text-amber-700 dark:text-amber-400",
-  bad: "text-red-700 dark:text-red-400",
+  good: "text-success",
+  warn: "text-warning",
+  bad: "text-destructive",
 };
 
 export const SecondaryMetricsRow: React.FC<SecondaryMetricsRowProps> = ({

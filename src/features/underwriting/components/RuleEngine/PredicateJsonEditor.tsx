@@ -81,7 +81,7 @@ export function PredicateJsonEditor({
     <div className="space-y-2">
       {/* JSON Editor */}
       <Textarea
-        className="font-mono text-[11px] h-48 resize-y bg-zinc-900 text-v2-canvas dark:bg-v2-canvas"
+        className="font-mono text-[11px] h-48 resize-y bg-card text-v2-canvas dark:bg-v2-canvas"
         value={jsonText}
         onChange={(e) => handleChange(e.target.value)}
         disabled={disabled}
@@ -93,15 +93,13 @@ export function PredicateJsonEditor({
         <div className="flex items-center gap-1.5">
           {validation.valid ? (
             <>
-              <Check className="h-3 w-3 text-green-500" />
-              <span className="text-[10px] text-green-600 dark:text-green-400">
-                Valid predicate
-              </span>
+              <Check className="h-3 w-3 text-success" />
+              <span className="text-[10px] text-success">Valid predicate</span>
             </>
           ) : (
             <>
-              <AlertCircle className="h-3 w-3 text-red-500" />
-              <span className="text-[10px] text-red-600 dark:text-red-400">
+              <AlertCircle className="h-3 w-3 text-destructive" />
+              <span className="text-[10px] text-destructive">
                 {validation.errors[0]}
               </span>
             </>
@@ -137,7 +135,7 @@ export function PredicateJsonEditor({
 
       {/* Validation Errors (if more than one) */}
       {!validation.valid && validation.errors.length > 1 && (
-        <div className="text-[10px] text-red-600 dark:text-red-400 space-y-0.5 max-h-20 overflow-y-auto">
+        <div className="text-[10px] text-destructive space-y-0.5 max-h-20 overflow-y-auto">
           {validation.errors.map((error, i) => (
             <div key={i}>• {error}</div>
           ))}
@@ -150,7 +148,7 @@ export function PredicateJsonEditor({
           <summary className="cursor-pointer hover:text-v2-ink-subtle">
             JSON Schema Reference
           </summary>
-          <pre className="mt-1 p-2 bg-zinc-800 rounded text-[9px] overflow-x-auto">
+          <pre className="mt-1 p-2 bg-muted rounded text-[9px] overflow-x-auto">
             {`// Example predicate:
 {
   "all": [

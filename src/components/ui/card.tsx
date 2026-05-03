@@ -1,35 +1,27 @@
-// src/components/ui/card.tsx
-// Modern card with subtle glass effect and optional hover states
-
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const cardVariants = cva(
-  "rounded-xl text-card-foreground transition-all duration-300 ease-out",
+  "rounded-lg text-card-foreground transition-colors duration-150",
   {
     variants: {
       variant: {
-        // Default: Clean with subtle shadow
-        default: "bg-card shadow-lg shadow-black/5 dark:shadow-black/20",
+        default:
+          "bg-card border border-border shadow-[0_1px_2px_rgba(22,27,19,0.05),0_4px_12px_-2px_rgba(22,27,19,0.08)] dark:shadow-[0_1px_0_rgba(0,0,0,0.4),0_8px_24px_-4px_rgba(0,0,0,0.4)]",
 
-        // Glass: Frosted glass effect
         glass:
-          "bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl shadow-lg shadow-black/5 dark:shadow-black/30",
+          "bg-card/80 backdrop-blur-xl border border-border shadow-[0_1px_2px_rgba(22,27,19,0.05),0_4px_12px_-2px_rgba(22,27,19,0.08)]",
 
-        // Elevated: More prominent shadow
-        elevated: "bg-card shadow-xl shadow-black/10 dark:shadow-black/40",
+        elevated:
+          "bg-card border border-border shadow-[0_2px_4px_rgba(22,27,19,0.08),0_12px_32px_-6px_rgba(22,27,19,0.14)] dark:shadow-[0_2px_0_rgba(0,0,0,0.5),0_16px_40px_-8px_rgba(0,0,0,0.5)]",
 
-        // Interactive: Hover lift effect
         interactive:
-          "bg-card shadow-lg shadow-black/5 dark:shadow-black/20 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-black/40 hover:-translate-y-1 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 cursor-pointer",
+          "bg-card border border-border shadow-[0_1px_2px_rgba(22,27,19,0.05),0_4px_12px_-2px_rgba(22,27,19,0.08)] hover:border-foreground/20 hover:shadow-[0_2px_4px_rgba(22,27,19,0.08),0_12px_32px_-6px_rgba(22,27,19,0.14)] cursor-pointer",
 
-        // Outlined: Subtle border instead of shadow
-        outlined:
-          "bg-card border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700",
+        outlined: "bg-card border border-border hover:border-foreground/30",
 
-        // Ghost: Minimal, transparent
-        ghost: "bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800/50",
+        ghost: "bg-transparent hover:bg-accent/50",
       },
     },
     defaultVariants: {

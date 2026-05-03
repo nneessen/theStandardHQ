@@ -114,9 +114,9 @@ export function TeamGeographicAnalysis({
                       className={cn(
                         "font-mono",
                         row.percentage >= 20
-                          ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                          ? "text-success font-bold"
                           : row.percentage >= 10
-                            ? "text-amber-600 dark:text-amber-400"
+                            ? "text-warning"
                             : "text-v2-ink-muted",
                       )}
                     >

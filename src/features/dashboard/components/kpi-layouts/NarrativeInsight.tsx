@@ -57,9 +57,9 @@ export const NarrativeInsight: React.FC<NarrativeInsightProps> = ({
     trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
   const trendColor =
     trend === "up"
-      ? "text-emerald-600 dark:text-emerald-400"
+      ? "text-success"
       : trend === "down"
-        ? "text-red-600 dark:text-red-400"
+        ? "text-destructive"
         : "text-v2-ink-muted dark:text-v2-ink-subtle";
 
   return (

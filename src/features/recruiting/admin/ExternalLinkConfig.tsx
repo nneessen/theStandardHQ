@@ -103,18 +103,18 @@ export function ExternalLinkConfig({
   };
 
   return (
-    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-background rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <ExternalLink className="h-3.5 w-3.5 text-v2-ink-muted" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
+        <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
           External Link Configuration
         </span>
       </div>
 
       {/* URL */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
-          External URL <span className="text-red-500">*</span>
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+          External URL <span className="text-destructive">*</span>
         </Label>
         <Input
           type="url"
@@ -124,7 +124,7 @@ export function ExternalLinkConfig({
           className="h-7 text-[11px]"
         />
         {!url.trim() && (
-          <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1 text-[10px] text-warning">
             <AlertCircle className="h-3 w-3" />
             URL is required
           </div>
@@ -133,8 +133,8 @@ export function ExternalLinkConfig({
 
       {/* Link Text */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
-          Button/Link Text <span className="text-red-500">*</span>
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+          Button/Link Text <span className="text-destructive">*</span>
         </Label>
         <Input
           type="text"
@@ -144,7 +144,7 @@ export function ExternalLinkConfig({
           className="h-7 text-[11px]"
         />
         {!linkText.trim() && (
-          <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1 text-[10px] text-warning">
             <AlertCircle className="h-3 w-3" />
             Link text is required
           </div>
@@ -153,7 +153,7 @@ export function ExternalLinkConfig({
 
       {/* Description */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Instructions for Recruit (Optional)
         </Label>
         <Textarea
@@ -167,10 +167,10 @@ export function ExternalLinkConfig({
       {/* Open in New Tab */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Open in New Tab
           </Label>
-          <p className="text-[9px] text-v2-ink-muted">
+          <p className="text-[9px] text-muted-foreground">
             Open link in a new browser tab
           </p>
         </div>
@@ -183,7 +183,7 @@ export function ExternalLinkConfig({
 
       {/* Completion Method */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Completion Method
         </Label>
         <Select
@@ -205,7 +205,7 @@ export function ExternalLinkConfig({
             )}
           </SelectContent>
         </Select>
-        <p className="text-[9px] text-v2-ink-muted">
+        <p className="text-[9px] text-muted-foreground">
           {completionMethod === "manual" &&
             "Recruit clicks a button to mark complete after visiting the link"}
           {completionMethod === "webhook" &&
@@ -217,7 +217,7 @@ export function ExternalLinkConfig({
 
       {/* Expected Duration */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Expected Duration (minutes)
         </Label>
         <Input
@@ -230,7 +230,7 @@ export function ExternalLinkConfig({
           placeholder="Optional (e.g., 15)"
           className="h-7 text-[11px]"
         />
-        <p className="text-[9px] text-v2-ink-muted">
+        <p className="text-[9px] text-muted-foreground">
           Shown to recruit to set expectations
         </p>
       </div>
@@ -238,7 +238,7 @@ export function ExternalLinkConfig({
       {/* Verification Instructions (for manual) */}
       {completionMethod === "manual" && (
         <div className="space-y-1">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Verification Instructions (for Admin)
           </Label>
           <Textarea
@@ -247,15 +247,15 @@ export function ExternalLinkConfig({
             placeholder="e.g., Check the background check portal to verify completion. Look for status 'Completed' in the candidate's profile."
             className="min-h-[50px] text-[11px] resize-none"
           />
-          <p className="text-[9px] text-v2-ink-muted">
+          <p className="text-[9px] text-muted-foreground">
             Notes for admin/upline on how to verify this was completed
           </p>
         </div>
       )}
 
       {/* Info */}
-      <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-800">
-        <p className="text-[9px] text-blue-700 dark:text-blue-400">
+      <div className="p-2 bg-info/10 rounded border border-info/30">
+        <p className="text-[9px] text-info">
           <strong>Note:</strong> Recruit will see a "{linkText || "link"}"
           button.
           {expectedDuration && ` Expected time: ~${expectedDuration} minutes.`}

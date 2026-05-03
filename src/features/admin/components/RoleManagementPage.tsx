@@ -191,8 +191,8 @@ export function RoleManagementPage() {
   if (rolesError) {
     return (
       <div className="p-3 min-h-screen">
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-3">
-          <p className="text-[11px] text-red-600 dark:text-red-400">
+        <div className="bg-destructive/10 border border-destructive/30 rounded p-3">
+          <p className="text-[11px] text-destructive">
             Failed to load roles:{" "}
             {rolesError instanceof Error ? rolesError.message : "Unknown error"}
           </p>
@@ -204,11 +204,11 @@ export function RoleManagementPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5">
       {/* Compact Header with inline stats */}
-      <div className="flex items-center justify-between bg-v2-card rounded-lg px-3 py-2 border border-v2-ring">
+      <div className="flex items-center justify-between bg-card rounded-lg px-3 py-2 border border-border">
         <div className="flex items-center gap-5">
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-v2-ink" />
-            <h1 className="text-sm font-semibold text-v2-ink">
+            <Shield className="h-4 w-4 text-foreground" />
+            <h1 className="text-sm font-semibold text-foreground">
               Role Management
             </h1>
           </div>
@@ -216,25 +216,25 @@ export function RoleManagementPage() {
           {/* Inline compact stats */}
           <div className="flex items-center gap-3 text-[11px]">
             <div className="flex items-center gap-1">
-              <span className="font-medium text-v2-ink">
+              <span className="font-medium text-foreground">
                 {roles?.length || 0}
               </span>
-              <span className="text-v2-ink-muted">total roles</span>
+              <span className="text-muted-foreground">total roles</span>
             </div>
-            <div className="h-3 w-px bg-v2-ring" />
+            <div className="h-3 w-px bg-muted" />
             <div className="flex items-center gap-1">
-              <Lock className="h-3 w-3 text-v2-ink-subtle" />
-              <span className="font-medium text-v2-ink">
+              <Lock className="h-3 w-3 text-muted-foreground" />
+              <span className="font-medium text-foreground">
                 {systemRolesCount}
               </span>
-              <span className="text-v2-ink-muted">system</span>
+              <span className="text-muted-foreground">system</span>
             </div>
-            <div className="h-3 w-px bg-v2-ring" />
+            <div className="h-3 w-px bg-muted" />
             <div className="flex items-center gap-1">
-              <span className="font-medium text-v2-ink">
+              <span className="font-medium text-foreground">
                 {customRolesCount}
               </span>
-              <span className="text-v2-ink-muted">custom</span>
+              <span className="text-muted-foreground">custom</span>
             </div>
           </div>
         </div>
@@ -252,37 +252,37 @@ export function RoleManagementPage() {
       {/* Search */}
       <div className="flex items-center gap-2">
         <div className="relative w-64">
-          <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-v2-ink-subtle" />
+          <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search roles..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-7 h-7 text-[11px] bg-v2-card border-v2-ring"
+            className="pl-7 h-7 text-[11px] bg-card border-border"
           />
         </div>
       </div>
 
       {/* Roles Table */}
-      <div className="flex-1 overflow-auto rounded-lg bg-v2-card border border-v2-ring">
+      <div className="flex-1 overflow-auto rounded-lg bg-card border border-border">
         <Table>
-          <TableHeader className="sticky top-0 bg-v2-canvas z-10">
-            <TableRow className="border-b border-v2-ring hover:bg-transparent">
-              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[200px]">
+          <TableHeader className="sticky top-0 bg-background z-10">
+            <TableRow className="border-b border-border hover:bg-transparent">
+              <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[200px]">
                 Role
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+              <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                 Description
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px]">
+              <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[100px]">
                 Permissions
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px]">
+              <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[100px]">
                 Type
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px]">
+              <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[100px]">
                 Hierarchy
               </TableHead>
-              <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[120px] text-right">
+              <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[120px] text-right">
                 Actions
               </TableHead>
             </TableRow>
@@ -291,25 +291,25 @@ export function RoleManagementPage() {
             {filteredRoles?.map((role) => (
               <TableRow
                 key={role.id}
-                className="hover:bg-v2-canvas border-b border-v2-ring/60"
+                className="hover:bg-background border-b border-border/60"
               >
                 <TableCell className="py-1.5">
                   <div>
-                    <div className="font-medium text-[11px] text-v2-ink">
+                    <div className="font-medium text-[11px] text-foreground">
                       {role.display_name}
                     </div>
-                    <div className="text-[10px] text-v2-ink-muted font-mono">
+                    <div className="text-[10px] text-muted-foreground font-mono">
                       {role.name}
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className="py-1.5">
-                  <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle truncate max-w-xs">
+                  <div className="text-[11px] text-muted-foreground dark:text-muted-foreground truncate max-w-xs">
                     {role.description || "-"}
                   </div>
                 </TableCell>
                 <TableCell className="py-1.5">
-                  <span className="text-[11px] text-v2-ink-muted">
+                  <span className="text-[11px] text-muted-foreground">
                     {role.permissions?.length || 0}
                   </span>
                 </TableCell>
@@ -317,7 +317,7 @@ export function RoleManagementPage() {
                   {role.is_system_role ? (
                     <Badge
                       variant="outline"
-                      className="text-[10px] h-4 px-1 border-v2-ring "
+                      className="text-[10px] h-4 px-1 border-border "
                     >
                       <Lock className="h-2.5 w-2.5 mr-0.5" />
                       System
@@ -325,7 +325,7 @@ export function RoleManagementPage() {
                   ) : (
                     <Badge
                       variant="outline"
-                      className="text-[10px] h-4 px-1 border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400"
+                      className="text-[10px] h-4 px-1 border-info/40 text-info"
                     >
                       Custom
                     </Badge>
@@ -333,7 +333,7 @@ export function RoleManagementPage() {
                 </TableCell>
                 <TableCell className="py-1.5">
                   <span
-                    className={`text-[10px] ${role.respects_hierarchy ? "text-emerald-600 dark:text-emerald-400" : "text-v2-ink-muted"}`}
+                    className={`text-[10px] ${role.respects_hierarchy ? "text-success" : "text-muted-foreground"}`}
                   >
                     {role.respects_hierarchy ? "Yes" : "No"}
                   </span>
@@ -343,7 +343,7 @@ export function RoleManagementPage() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-5 px-1.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
+                      className="h-5 px-1.5 text-[10px] text-muted-foreground dark:text-muted-foreground hover:text-foreground"
                       onClick={() => openPermissionsDialog(role)}
                     >
                       <Shield className="h-2.5 w-2.5 mr-0.5" />
@@ -354,7 +354,7 @@ export function RoleManagementPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-5 px-1.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
+                          className="h-5 px-1.5 text-[10px] text-muted-foreground dark:text-muted-foreground hover:text-foreground"
                           onClick={() => openEditDialog(role)}
                         >
                           <Edit className="h-2.5 w-2.5" />
@@ -362,7 +362,7 @@ export function RoleManagementPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-5 px-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                          className="h-5 px-1.5 text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20"
                           onClick={() => openDeleteDialog(role)}
                         >
                           <Trash2 className="h-2.5 w-2.5" />
@@ -377,7 +377,7 @@ export function RoleManagementPage() {
               <TableRow>
                 <TableCell
                   colSpan={6}
-                  className="text-center text-[11px] text-v2-ink-muted py-6"
+                  className="text-center text-[11px] text-muted-foreground py-6"
                 >
                   No roles found
                 </TableCell>
@@ -389,19 +389,20 @@ export function RoleManagementPage() {
 
       {/* Create Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-md p-3 bg-v2-card border-v2-ring">
+        <DialogContent className="max-w-md p-3 bg-card border-border">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-sm font-semibold text-v2-ink">
+            <DialogTitle className="text-sm font-semibold text-foreground">
               Create New Role
             </DialogTitle>
-            <DialogDescription className="text-[10px] text-v2-ink-muted">
+            <DialogDescription className="text-[10px] text-muted-foreground">
               Create a custom role with specific permissions
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1">
-              <Label className="text-[11px] text-v2-ink-muted">
-                Role Name (snake_case) <span className="text-red-500">*</span>
+              <Label className="text-[11px] text-muted-foreground">
+                Role Name (snake_case){" "}
+                <span className="text-destructive">*</span>
               </Label>
               <Input
                 placeholder="regional_manager"
@@ -409,12 +410,12 @@ export function RoleManagementPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                className="h-7 text-[11px] bg-card border-border"
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[11px] text-v2-ink-muted">
-                Display Name <span className="text-red-500">*</span>
+              <Label className="text-[11px] text-muted-foreground">
+                Display Name <span className="text-destructive">*</span>
               </Label>
               <Input
                 placeholder="Regional Manager"
@@ -422,11 +423,11 @@ export function RoleManagementPage() {
                 onChange={(e) =>
                   setFormData({ ...formData, display_name: e.target.value })
                 }
-                className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                className="h-7 text-[11px] bg-card border-border"
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[11px] text-v2-ink-muted">
+              <Label className="text-[11px] text-muted-foreground">
                 Description
               </Label>
               <Textarea
@@ -436,11 +437,11 @@ export function RoleManagementPage() {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 rows={2}
-                className="text-[11px] bg-v2-card border-v2-ring resize-none"
+                className="text-[11px] bg-card border-border resize-none"
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[11px] text-v2-ink-muted">
+              <Label className="text-[11px] text-muted-foreground">
                 Parent Role
               </Label>
               <Select
@@ -452,7 +453,7 @@ export function RoleManagementPage() {
                   })
                 }
               >
-                <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
+                <SelectTrigger className="h-7 text-[11px] bg-card border-border">
                   <SelectValue placeholder="No parent role" />
                 </SelectTrigger>
                 <SelectContent>
@@ -485,7 +486,7 @@ export function RoleManagementPage() {
               />
               <Label
                 htmlFor="respects_hierarchy"
-                className="cursor-pointer text-[11px] text-v2-ink-muted"
+                className="cursor-pointer text-[11px] text-muted-foreground"
               >
                 Respects upline/downline hierarchy
               </Label>
@@ -514,30 +515,30 @@ export function RoleManagementPage() {
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md p-3 bg-v2-card border-v2-ring">
+        <DialogContent className="max-w-md p-3 bg-card border-border">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-sm font-semibold text-v2-ink">
+            <DialogTitle className="text-sm font-semibold text-foreground">
               Edit Role
             </DialogTitle>
-            <DialogDescription className="text-[10px] text-v2-ink-muted">
+            <DialogDescription className="text-[10px] text-muted-foreground">
               Editing: {selectedRole?.display_name}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 py-2">
             <div className="space-y-1">
-              <Label className="text-[11px] text-v2-ink-muted">
-                Display Name <span className="text-red-500">*</span>
+              <Label className="text-[11px] text-muted-foreground">
+                Display Name <span className="text-destructive">*</span>
               </Label>
               <Input
                 value={formData.display_name}
                 onChange={(e) =>
                   setFormData({ ...formData, display_name: e.target.value })
                 }
-                className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                className="h-7 text-[11px] bg-card border-border"
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[11px] text-v2-ink-muted">
+              <Label className="text-[11px] text-muted-foreground">
                 Description
               </Label>
               <Textarea
@@ -546,11 +547,11 @@ export function RoleManagementPage() {
                   setFormData({ ...formData, description: e.target.value })
                 }
                 rows={2}
-                className="text-[11px] bg-v2-card border-v2-ring resize-none"
+                className="text-[11px] bg-card border-border resize-none"
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-[11px] text-v2-ink-muted">
+              <Label className="text-[11px] text-muted-foreground">
                 Parent Role
               </Label>
               <Select
@@ -562,7 +563,7 @@ export function RoleManagementPage() {
                   })
                 }
               >
-                <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
+                <SelectTrigger className="h-7 text-[11px] bg-card border-border">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -597,7 +598,7 @@ export function RoleManagementPage() {
               />
               <Label
                 htmlFor="edit_respects_hierarchy"
-                className="cursor-pointer text-[11px] text-v2-ink-muted"
+                className="cursor-pointer text-[11px] text-muted-foreground"
               >
                 Respects upline/downline hierarchy
               </Label>
@@ -626,12 +627,12 @@ export function RoleManagementPage() {
 
       {/* Delete Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="max-w-sm p-3 bg-v2-card border-v2-ring">
+        <DialogContent className="max-w-sm p-3 bg-card border-border">
           <DialogHeader className="space-y-1">
-            <DialogTitle className="text-sm font-semibold text-v2-ink">
+            <DialogTitle className="text-sm font-semibold text-foreground">
               Delete Role
             </DialogTitle>
-            <DialogDescription className="text-[10px] text-v2-ink-muted">
+            <DialogDescription className="text-[10px] text-muted-foreground">
               Are you sure you want to delete "{selectedRole?.display_name}"?
               This cannot be undone.
             </DialogDescription>
@@ -729,21 +730,21 @@ function PermissionsEditorDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] p-3 bg-v2-card border-v2-ring">
+      <DialogContent className="max-w-2xl max-h-[80vh] p-3 bg-card border-border">
         <DialogHeader className="space-y-1">
-          <DialogTitle className="text-sm font-semibold text-v2-ink flex items-center gap-2">
+          <DialogTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
             Permissions for {role.display_name}
             {role.is_system_role && (
               <Badge
                 variant="outline"
-                className="text-[10px] h-4 px-1 border-v2-ring "
+                className="text-[10px] h-4 px-1 border-border "
               >
                 <Lock className="h-2.5 w-2.5 mr-0.5" />
                 Read Only
               </Badge>
             )}
           </DialogTitle>
-          <DialogDescription className="text-[10px] text-v2-ink-muted">
+          <DialogDescription className="text-[10px] text-muted-foreground">
             Manage permissions assigned to this role
             {role.parent_role_id &&
               ". Inherited permissions are shown in gray."}
@@ -751,12 +752,12 @@ function PermissionsEditorDialog({
         </DialogHeader>
         <div className="space-y-2 py-2">
           <div className="relative">
-            <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-v2-ink-subtle" />
+            <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search permissions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-7 h-7 text-[11px] bg-v2-card border-v2-ring"
+              className="pl-7 h-7 text-[11px] bg-card border-border"
             />
           </div>
           {isLoading ? (
@@ -777,8 +778,8 @@ function PermissionsEditorDialog({
                     key={permission.id}
                     className={`flex items-start space-x-2 p-2 border rounded ${
                       isInherited
-                        ? "bg-v2-ring/50 dark:bg-v2-ring/30 border-v2-ring/50"
-                        : "border-v2-ring"
+                        ? "bg-muted/50 dark:bg-muted/30 border-border/50"
+                        : "border-border"
                     }`}
                   >
                     <Checkbox
@@ -791,38 +792,38 @@ function PermissionsEditorDialog({
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-mono text-[10px] font-medium text-v2-ink">
+                        <span className="font-mono text-[10px] font-medium text-foreground">
                           {permission.code}
                         </span>
                         {isInherited && (
                           <Badge
                             variant="outline"
-                            className="text-[9px] h-3 px-1 border-v2-ring "
+                            className="text-[9px] h-3 px-1 border-border "
                           >
                             Inherited
                           </Badge>
                         )}
                       </div>
-                      <div className="text-[10px] text-v2-ink-muted">
+                      <div className="text-[10px] text-muted-foreground">
                         {permission.description ||
                           `${permission.action} ${permission.resource}`}
                       </div>
                       <div className="flex gap-1 mt-0.5">
                         <Badge
                           variant="secondary"
-                          className="text-[9px] h-3.5 px-1 bg-v2-ring"
+                          className="text-[9px] h-3.5 px-1 bg-muted"
                         >
                           {permission.resource}
                         </Badge>
                         <Badge
                           variant="secondary"
-                          className="text-[9px] h-3.5 px-1 bg-v2-ring"
+                          className="text-[9px] h-3.5 px-1 bg-muted"
                         >
                           {permission.action}
                         </Badge>
                         <Badge
                           variant="secondary"
-                          className="text-[9px] h-3.5 px-1 bg-v2-ring"
+                          className="text-[9px] h-3.5 px-1 bg-muted"
                         >
                           {permission.scope}
                         </Badge>

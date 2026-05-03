@@ -175,14 +175,14 @@ export function TemporaryAccessSettings() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-6 w-6 animate-spin text-v2-ink-subtle" />
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (!settings) {
     return (
-      <div className="text-center py-8 text-v2-ink-muted">
+      <div className="text-center py-8 text-muted-foreground">
         <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
         <p>Failed to load settings</p>
       </div>
@@ -205,14 +205,14 @@ export function TemporaryAccessSettings() {
         className={cn(
           "border-2",
           enabled && !isExpired
-            ? "border-emerald-500/50 bg-emerald-50/50 dark:bg-emerald-950/20"
-            : "border-v2-ring",
+            ? "border-success/50 bg-success/10/50 dark:bg-success/10"
+            : "border-border",
         )}
       >
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-v2-ink-muted" />
+              <Clock className="h-4 w-4 text-muted-foreground" />
               <CardTitle className="text-sm">Temporary Free Access</CardTitle>
             </div>
             <div className="flex items-center gap-3">
@@ -220,7 +220,7 @@ export function TemporaryAccessSettings() {
                 variant={enabled && !isExpired ? "default" : "secondary"}
                 className={cn(
                   "text-[10px]",
-                  enabled && !isExpired && "bg-emerald-500",
+                  enabled && !isExpired && "bg-success",
                 )}
               >
                 {enabled ? (isExpired ? "Expired" : "Active") : "Disabled"}
@@ -240,18 +240,18 @@ export function TemporaryAccessSettings() {
         </CardHeader>
         <CardContent className="pt-0">
           {enabled && !isExpired && (
-            <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400">
+            <div className="flex items-center gap-2 text-xs text-success">
               <CalendarDays className="h-3.5 w-3.5" />
               <span className="font-medium">
                 {daysRemaining} days remaining
               </span>
-              <span className="text-v2-ink-subtle">
+              <span className="text-muted-foreground">
                 (ends {new Date(settings.endDate).toLocaleDateString()})
               </span>
             </div>
           )}
           {isExpired && enabled && (
-            <div className="flex items-center gap-2 text-xs text-amber-600">
+            <div className="flex items-center gap-2 text-xs text-warning">
               <AlertTriangle className="h-3.5 w-3.5" />
               <span>
                 Access period has expired. Users now see tier-based gating.
@@ -282,7 +282,7 @@ export function TemporaryAccessSettings() {
                 className="h-8 text-xs"
                 disabled={updateSettings.isPending}
               />
-              <p className="text-[10px] text-v2-ink-muted">
+              <p className="text-[10px] text-muted-foreground">
                 Temporary access ends at midnight UTC on this date
               </p>
             </div>
@@ -293,7 +293,7 @@ export function TemporaryAccessSettings() {
                 <Lock className="h-3 w-3" />
                 Excluded Features
               </Label>
-              <p className="text-[10px] text-v2-ink-muted mb-2">
+              <p className="text-[10px] text-muted-foreground mb-2">
                 These features still require a paid subscription during the
                 temporary access period
               </p>
@@ -305,8 +305,8 @@ export function TemporaryAccessSettings() {
                     <label
                       key={key}
                       className={cn(
-                        "flex items-center gap-2 p-1.5 rounded text-xs cursor-pointer hover:bg-v2-ring dark:hover:bg-v2-ring",
-                        isExcluded && "bg-amber-50 dark:bg-amber-950/30",
+                        "flex items-center gap-2 p-1.5 rounded text-xs cursor-pointer hover:bg-muted dark:hover:bg-muted",
+                        isExcluded && "bg-warning/10",
                       )}
                     >
                       <Checkbox
@@ -314,15 +314,11 @@ export function TemporaryAccessSettings() {
                         onCheckedChange={() => handleFeatureToggle(key)}
                         disabled={updateSettings.isPending}
                       />
-                      <span
-                        className={cn(
-                          isExcluded && "text-amber-700 dark:text-amber-400",
-                        )}
-                      >
+                      <span className={cn(isExcluded && "text-warning")}>
                         {feature.displayName}
                       </span>
                       {isExcluded && (
-                        <Lock className="h-3 w-3 ml-auto text-amber-500" />
+                        <Lock className="h-3 w-3 ml-auto text-warning" />
                       )}
                     </label>
                   );
@@ -370,14 +366,14 @@ export function TemporaryAccessSettings() {
             {/* Email List */}
             <div className="space-y-1.5 max-h-64 overflow-y-auto">
               {testEmails.length === 0 ? (
-                <p className="text-xs text-v2-ink-subtle text-center py-4">
+                <p className="text-xs text-muted-foreground text-center py-4">
                   No test accounts configured
                 </p>
               ) : (
                 testEmails.map((email) => (
                   <div
                     key={email}
-                    className="flex items-center justify-between p-2 bg-v2-canvas rounded text-xs"
+                    className="flex items-center justify-between p-2 bg-background rounded text-xs"
                   >
                     <span className="font-mono">{email}</span>
                     <Button
@@ -385,7 +381,7 @@ export function TemporaryAccessSettings() {
                       size="sm"
                       onClick={() => handleRemoveEmail(email)}
                       disabled={updateSettings.isPending}
-                      className="h-6 w-6 p-0 text-v2-ink-subtle hover:text-red-500"
+                      className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
                     >
                       {updateSettings.isPending ? (
                         <Loader2 className="h-3 w-3 animate-spin" />
@@ -398,7 +394,7 @@ export function TemporaryAccessSettings() {
               )}
             </div>
 
-            <p className="text-[10px] text-v2-ink-muted">
+            <p className="text-[10px] text-muted-foreground">
               {testEmails.length} test account{testEmails.length !== 1 && "s"}{" "}
               configured
             </p>
@@ -408,10 +404,10 @@ export function TemporaryAccessSettings() {
 
       {/* Action Buttons */}
       {hasChanges && (
-        <Card className="border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20">
+        <Card className="border-warning/50 bg-warning/10/50 dark:bg-warning/10">
           <CardContent className="py-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400">
+              <div className="flex items-center gap-2 text-xs text-warning">
                 <AlertTriangle className="h-4 w-4" />
                 <span>You have unsaved changes</span>
               </div>
@@ -465,7 +461,7 @@ export function TemporaryAccessSettings() {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDisable}
-              className="bg-red-500 hover:bg-red-600"
+              className="bg-destructive hover:bg-destructive"
             >
               Disable Access
             </AlertDialogAction>

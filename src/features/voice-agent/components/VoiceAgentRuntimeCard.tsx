@@ -87,16 +87,16 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-v2-ring p-4 dark:border-v2-ring">
+    <section className="rounded-lg border border-border p-4 dark:border-border">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-card-tinted text-foreground dark:bg-card-tinted dark:text-foreground">
           {icon}
         </div>
         <div>
-          <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
+          <p className="text-[12px] font-semibold text-foreground dark:text-foreground">
             {title}
           </p>
-          <p className="mt-1 text-[10px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
+          <p className="mt-1 text-[10px] leading-5 text-muted-foreground dark:text-muted-foreground">
             {description}
           </p>
         </div>
@@ -118,12 +118,12 @@ function ToggleRow({
   onCheckedChange: (checked: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border border-v2-ring px-3 py-2.5 dark:border-v2-ring">
+    <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2.5 dark:border-border">
       <div className="pr-4">
-        <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
+        <p className="text-[12px] font-semibold text-foreground dark:text-foreground">
           {title}
         </p>
-        <p className="text-[10px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
+        <p className="text-[10px] leading-5 text-muted-foreground dark:text-muted-foreground">
           {description}
         </p>
       </div>
@@ -209,13 +209,13 @@ export function VoiceAgentRuntimeCard({ agent }: VoiceAgentRuntimeCardProps) {
   const mutationError = updateBotConfig.error;
 
   return (
-    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-border bg-white p-4 dark:border-border dark:bg-card">
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-foreground dark:text-foreground">
             Call Flow & Availability
           </p>
-          <p className="mt-1 max-w-2xl text-[11px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
+          <p className="mt-1 max-w-2xl text-[11px] leading-5 text-muted-foreground dark:text-muted-foreground">
             Choose when your AI Voice Agent should answer, how it should route
             calls, and what happens when a caller needs a human.
           </p>
@@ -240,22 +240,22 @@ export function VoiceAgentRuntimeCard({ agent }: VoiceAgentRuntimeCardProps) {
       </div>
 
       {mutationError && (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-3 dark:border-red-950/60 dark:bg-red-950/20">
-          <p className="text-[11px] font-semibold text-red-700 dark:text-red-300">
+        <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-3 dark:border-destructive/60 dark:bg-destructive/10">
+          <p className="text-[11px] font-semibold text-destructive">
             Failed to save call settings
           </p>
-          <p className="mt-1 text-[11px] text-red-600 dark:text-red-400">
+          <p className="mt-1 text-[11px] text-destructive">
             {mutationError.message || "An unexpected error occurred."}
           </p>
         </div>
       )}
 
       {validationErrors.length > 0 && (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-3 dark:border-red-950/60 dark:bg-red-950/20">
-          <p className="text-[11px] font-semibold text-red-700 dark:text-red-300">
+        <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-3 dark:border-destructive/60 dark:bg-destructive/10">
+          <p className="text-[11px] font-semibold text-destructive">
             Fix these fields before saving
           </p>
-          <ul className="mt-2 space-y-1 text-[11px] text-red-700 dark:text-red-300">
+          <ul className="mt-2 space-y-1 text-[11px] text-destructive">
             {validationErrors.map((error) => (
               <li key={error}>{error}</li>
             ))}
@@ -396,7 +396,7 @@ export function VoiceAgentRuntimeCard({ agent }: VoiceAgentRuntimeCardProps) {
                   className="font-mono text-xs"
                   placeholder="+15551234567"
                 />
-                <p className="text-[10px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
+                <p className="text-[10px] leading-5 text-muted-foreground dark:text-muted-foreground">
                   Use the direct number your team wants live callers sent to.
                 </p>
               </div>
@@ -412,7 +412,7 @@ export function VoiceAgentRuntimeCard({ agent }: VoiceAgentRuntimeCardProps) {
                   className="font-mono text-xs"
                   placeholder="+15551234567"
                 />
-                <p className="text-[10px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
+                <p className="text-[10px] leading-5 text-muted-foreground dark:text-muted-foreground">
                   The number the AI tells leads to expect your call from.
                 </p>
               </div>
@@ -443,7 +443,7 @@ export function VoiceAgentRuntimeCard({ agent }: VoiceAgentRuntimeCardProps) {
                     )
                   }
                 />
-                <p className="text-[10px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
+                <p className="text-[10px] leading-5 text-muted-foreground dark:text-muted-foreground">
                   Keep this short for quick qualification calls, or raise it for
                   more involved conversations.
                 </p>
@@ -451,11 +451,11 @@ export function VoiceAgentRuntimeCard({ agent }: VoiceAgentRuntimeCardProps) {
             </div>
           </Section>
 
-          <div className="rounded-xl border border-v2-ring bg-v2-canvas px-4 py-4 dark:border-v2-ring dark:bg-v2-canvas/40">
-            <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
+          <div className="rounded-lg border border-border bg-background px-4 py-4 dark:border-border dark:bg-background/40">
+            <p className="text-[12px] font-semibold text-foreground dark:text-foreground">
               Keep the experience simple
             </p>
-            <p className="mt-2 text-[11px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
+            <p className="mt-2 text-[11px] leading-5 text-muted-foreground dark:text-muted-foreground">
               Voice selection, greeting, and prompt live in the build section
               above. This card is only for when the agent should answer and how
               it should route the call.

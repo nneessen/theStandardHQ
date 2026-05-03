@@ -335,13 +335,13 @@ function ScheduleCard({
                 <div className="text-xs text-muted-foreground">Total Sent</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-semibold text-green-600">
+                <div className="text-lg font-semibold text-success">
                   {schedule.successful_deliveries}
                 </div>
                 <div className="text-xs text-muted-foreground">Successful</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-semibold text-red-600">
+                <div className="text-lg font-semibold text-destructive">
                   {schedule.failed_deliveries}
                 </div>
                 <div className="text-xs text-muted-foreground">Failed</div>
@@ -414,10 +414,10 @@ function DeliveryHistory({ scheduleId }: { scheduleId: string }) {
 
 function DeliveryRow({ delivery }: { delivery: ScheduleDelivery }) {
   const statusIcon = {
-    sent: <CheckCircle className="w-4 h-4 text-green-600" />,
-    failed: <XCircle className="w-4 h-4 text-red-600" />,
-    processing: <Loader2 className="w-4 h-4 text-yellow-600 animate-spin" />,
-    pending: <Clock className="w-4 h-4 text-gray-400" />,
+    sent: <CheckCircle className="w-4 h-4 text-success" />,
+    failed: <XCircle className="w-4 h-4 text-destructive" />,
+    processing: <Loader2 className="w-4 h-4 text-warning animate-spin" />,
+    pending: <Clock className="w-4 h-4 text-muted-foreground" />,
   }[delivery.status];
 
   return (
@@ -442,7 +442,7 @@ function DeliveryRow({ delivery }: { delivery: ScheduleDelivery }) {
           </span>
         </div>
         {delivery.error_message && (
-          <div className="text-red-600 mt-0.5 truncate">
+          <div className="text-destructive mt-0.5 truncate">
             {delivery.error_message}
           </div>
         )}

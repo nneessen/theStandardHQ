@@ -179,53 +179,50 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
 
   const getPhaseColor = (status: string | null | undefined): string => {
     if (!status)
-      return "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle";
+      return "bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground";
     // Use terminal status colors for completed/dropped, else default to blue for pipeline phases
-    const colorClass =
-      TERMINAL_STATUS_COLORS[status] || "bg-blue-100 text-blue-800";
+    const colorClass = TERMINAL_STATUS_COLORS[status] || "bg-info/20 text-info";
     return (
       colorClass ||
-      "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle"
+      "bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground"
     );
   };
 
   return (
     <div className="flex flex-col h-full">
       {/* Header with stats and actions */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring dark:border-v2-ring">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-border dark:border-border">
         <div className="flex items-center gap-4 text-[11px]">
           <div className="flex items-center gap-1">
-            <span className="font-medium text-v2-ink dark:text-v2-ink">
+            <span className="font-medium text-foreground dark:text-foreground">
               {stats.total}
             </span>
-            <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+            <span className="text-muted-foreground dark:text-muted-foreground">
               total
             </span>
           </div>
-          <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
+          <div className="h-3 w-px bg-muted dark:bg-muted" />
           <div className="flex items-center gap-1">
-            <span className="font-medium text-v2-ink dark:text-v2-ink">
+            <span className="font-medium text-foreground dark:text-foreground">
               {stats.active}
             </span>
-            <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+            <span className="text-muted-foreground dark:text-muted-foreground">
               active
             </span>
           </div>
-          <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
+          <div className="h-3 w-px bg-muted dark:bg-muted" />
           <div className="flex items-center gap-1">
-            <span className="font-medium text-emerald-600 dark:text-emerald-400">
-              {stats.completed}
-            </span>
-            <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+            <span className="font-medium text-success">{stats.completed}</span>
+            <span className="text-muted-foreground dark:text-muted-foreground">
               complete
             </span>
           </div>
-          <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
+          <div className="h-3 w-px bg-muted dark:bg-muted" />
           <div className="flex items-center gap-1">
-            <span className="font-medium text-red-600 dark:text-red-400">
+            <span className="font-medium text-destructive">
               {stats.dropped}
             </span>
-            <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+            <span className="text-muted-foreground dark:text-muted-foreground">
               dropped
             </span>
           </div>
@@ -236,7 +233,7 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
             size="sm"
             variant="ghost"
             onClick={handleExportCSV}
-            className="h-6 text-[10px] px-2 text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-canvas"
+            className="h-6 text-[10px] px-2 text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-background"
           >
             <Download className="h-3 w-3 mr-1" />
             Export
@@ -253,9 +250,9 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-v2-ring dark:border-v2-ring/50">
+      <div className="flex items-center gap-2 px-3 py-1.5 border-b border-border dark:border-border/50">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="h-6 w-24 text-[10px] border-v2-ring dark:border-v2-ring-strong">
+          <SelectTrigger className="h-6 w-24 text-[10px] border-border dark:border-border">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -275,7 +272,7 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
         </Select>
 
         <Select value={phaseFilter} onValueChange={setPhaseFilter}>
-          <SelectTrigger className="h-6 w-28 text-[10px] border-v2-ring dark:border-v2-ring-strong">
+          <SelectTrigger className="h-6 w-28 text-[10px] border-border dark:border-border">
             <SelectValue placeholder="Phase" />
           </SelectTrigger>
           <SelectContent>
@@ -296,7 +293,7 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
 
         <div className="flex-1" />
 
-        <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           {filteredRecruits.length} results
         </span>
       </div>
@@ -312,20 +309,20 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
         ) : (
           <Table>
             <TableHeader className="sticky top-0 z-10">
-              <TableRow className="h-7 bg-v2-canvas dark:bg-v2-card-tinted/50 border-b border-v2-ring dark:border-v2-ring-strong">
-                <TableHead className="h-7 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted w-[200px]">
+              <TableRow className="h-7 bg-background dark:bg-card-tinted/50 border-b border-border dark:border-border">
+                <TableHead className="h-7 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground w-[200px]">
                   Recruit
                 </TableHead>
-                <TableHead className="h-7 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted w-[140px]">
+                <TableHead className="h-7 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground w-[140px]">
                   Upline
                 </TableHead>
-                <TableHead className="h-7 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted w-[80px]">
+                <TableHead className="h-7 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground w-[80px]">
                   State
                 </TableHead>
-                <TableHead className="h-7 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted w-[100px]">
+                <TableHead className="h-7 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground w-[100px]">
                   Phase
                 </TableHead>
-                <TableHead className="h-7 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted w-[90px]">
+                <TableHead className="h-7 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground w-[90px]">
                   Updated
                 </TableHead>
               </TableRow>
@@ -354,22 +351,22 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
                   <TableRow
                     key={recruit.id}
                     onClick={() => handleSelectRecruit(recruit)}
-                    className={`h-9 border-b border-v2-ring dark:border-v2-ring cursor-pointer transition-colors ${
+                    className={`h-9 border-b border-border dark:border-border cursor-pointer transition-colors ${
                       isSelected
-                        ? "bg-blue-50 dark:bg-blue-900/20"
-                        : "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50"
+                        ? "bg-info/10"
+                        : "hover:bg-background dark:hover:bg-card-tinted/50"
                     }`}
                   >
                     <TableCell className="py-1.5">
                       <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-[10px] font-semibold text-amber-700 dark:text-amber-400 shrink-0">
+                        <div className="h-6 w-6 rounded-full bg-warning/20 dark:bg-warning/30 flex items-center justify-center text-[10px] font-semibold text-warning shrink-0">
                           {recruitName.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <div className="font-medium text-[11px] text-v2-ink dark:text-v2-ink truncate">
+                          <div className="font-medium text-[11px] text-foreground dark:text-foreground truncate">
                             {recruitName}
                           </div>
-                          <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
+                          <div className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate">
                             {recruit.email}
                           </div>
                         </div>
@@ -377,17 +374,17 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
                     </TableCell>
                     <TableCell className="py-1.5">
                       {uplineName ? (
-                        <span className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle truncate">
+                        <span className="text-[11px] text-muted-foreground dark:text-muted-foreground truncate">
                           {uplineName}
                         </span>
                       ) : (
-                        <span className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted">
+                        <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                           -
                         </span>
                       )}
                     </TableCell>
                     <TableCell className="py-1.5">
-                      <span className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                      <span className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                         {recruit.resident_state || "-"}
                       </span>
                     </TableCell>
@@ -400,7 +397,7 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
                       </Badge>
                     </TableCell>
                     <TableCell className="py-1.5">
-                      <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                      <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                         {recruit.updated_at
                           ? formatDistanceToNow(new Date(recruit.updated_at), {
                               addSuffix: true,
@@ -415,7 +412,7 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
                 <TableRow>
                   <TableCell
                     colSpan={5}
-                    className="text-center text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle py-8"
+                    className="text-center text-[11px] text-muted-foreground dark:text-muted-foreground py-8"
                   >
                     {searchQuery
                       ? "No recruits match your search"
@@ -430,9 +427,9 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-3 py-2 border-t border-v2-ring dark:border-v2-ring">
+        <div className="flex items-center justify-between px-3 py-2 border-t border-border dark:border-border">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               Rows:
             </span>
             <Select
@@ -442,7 +439,7 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
                 setCurrentPage(1);
               }}
             >
-              <SelectTrigger className="h-6 w-14 text-[10px] border-v2-ring dark:border-v2-ring-strong">
+              <SelectTrigger className="h-6 w-14 text-[10px] border-border dark:border-border">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -463,19 +460,19 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
             <Button
               size="sm"
               variant="outline"
-              className="h-6 w-6 p-0 border-v2-ring dark:border-v2-ring-strong"
+              className="h-6 w-6 p-0 border-border dark:border-border"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
             >
               <ChevronLeft className="h-3 w-3" />
             </Button>
-            <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle px-2">
+            <span className="text-[10px] text-muted-foreground dark:text-muted-foreground px-2">
               {currentPage} / {totalPages}
             </span>
             <Button
               size="sm"
               variant="outline"
-              className="h-6 w-6 p-0 border-v2-ring dark:border-v2-ring-strong"
+              className="h-6 w-6 p-0 border-border dark:border-border"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
             >

@@ -151,7 +151,7 @@ export function ConfigureStep({
                     </p>
                   </div>
                   {recipient?.id === r.id && (
-                    <div className="h-2 w-2 rounded-full bg-green-500 shrink-0" />
+                    <div className="h-2 w-2 rounded-full bg-success shrink-0" />
                   )}
                 </button>
               ))}
@@ -227,7 +227,7 @@ export function ConfigureStep({
                 className={[
                   "flex h-3.5 w-3.5 shrink-0 rounded-full border-2",
                   sequence === null
-                    ? "border-green-500 bg-green-500"
+                    ? "border-success bg-success"
                     : "border-border",
                 ].join(" ")}
               />
@@ -253,7 +253,7 @@ export function ConfigureStep({
                   className={[
                     "flex h-3.5 w-3.5 shrink-0 rounded-full border-2",
                     sequence?.id === s.id
-                      ? "border-green-500 bg-green-500"
+                      ? "border-success bg-success"
                       : "border-border",
                   ].join(" ")}
                 />
@@ -273,8 +273,8 @@ export function ConfigureStep({
 
       {/* Smart View note */}
       {recipient && recipientSmartViewName.trim() && (
-        <div className="flex items-start gap-2 rounded-md border border-blue-500/20 bg-blue-500/5 px-3 py-2">
-          <Info className="h-3.5 w-3.5 text-blue-500 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2 rounded-md border border-info/20 bg-info/5 px-3 py-2">
+          <Info className="h-3.5 w-3.5 text-info shrink-0 mt-0.5" />
           <p className="text-xs text-muted-foreground">
             A Smart View named{" "}
             <span className="font-medium text-foreground">

@@ -134,20 +134,20 @@ export function LeadSourceDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={handleDismiss}>
-        <DialogContent className="theme-v2 font-display max-w-sm w-[calc(100vw-1.5rem)] sm:w-auto max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] p-0 gap-0 overflow-hidden bg-v2-card text-v2-ink border border-v2-ring rounded-v2-lg shadow-v2-lift flex flex-col">
-          <DialogHeader className="px-5 py-3 border-b border-v2-ring bg-v2-card-tinted flex-shrink-0">
+        <DialogContent className="theme-v2 font-display max-w-sm w-[calc(100vw-1.5rem)] sm:w-auto max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] p-0 gap-0 overflow-hidden bg-card text-foreground border border-border rounded-v2-lg shadow-v2-lift flex flex-col">
+          <DialogHeader className="px-5 py-3 border-b border-border bg-card-tinted flex-shrink-0">
             <div className="flex items-center gap-2.5">
-              <span className="h-2 w-2 rounded-full bg-v2-accent" />
+              <span className="h-2 w-2 rounded-full bg-accent" />
               <div className="flex flex-col leading-tight">
-                <span className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">
                   Lead source
                 </span>
-                <DialogTitle className="text-base font-semibold tracking-tight text-v2-ink text-left">
+                <DialogTitle className="text-base font-semibold tracking-tight text-foreground text-left">
                   Track lead source
                 </DialogTitle>
               </div>
             </div>
-            <DialogDescription className="text-[11px] text-v2-ink-muted text-left">
+            <DialogDescription className="text-[11px] text-muted-foreground text-left">
               {policyNumber
                 ? `Link policy ${policyNumber} to its lead source`
                 : "Link this policy to its lead source"}
@@ -166,7 +166,7 @@ export function LeadSourceDialog({
 
             {/* Expanded section for lead purchase selection */}
             {sourceOption === "lead_purchase" && (
-              <div className="ml-6 pl-3 border-l-2 border-v2-accent">
+              <div className="ml-6 pl-3 border-l-2 border-accent">
                 <LeadPurchaseSelector
                   selectedId={selectedPurchase?.id}
                   onSelect={setSelectedPurchase}
@@ -204,7 +204,7 @@ export function LeadSourceDialog({
             />
           </div>
 
-          <DialogFooter className="px-5 py-3 border-t border-v2-ring bg-v2-card-tinted flex-row justify-between sm:justify-between flex-shrink-0">
+          <DialogFooter className="px-5 py-3 border-t border-border bg-card-tinted flex-row justify-between sm:justify-between flex-shrink-0">
             <PillButton
               type="button"
               tone="ghost"
@@ -271,8 +271,8 @@ function OptionButton({
       className={cn(
         "w-full flex items-center gap-2.5 px-3 py-2 rounded-v2-md text-left border transition-colors duration-150",
         selected
-          ? "bg-v2-accent-soft border-v2-accent text-v2-ink"
-          : "bg-v2-card border-v2-ring text-v2-ink hover:bg-v2-canvas",
+          ? "bg-accent/40 border-accent text-foreground"
+          : "bg-card border-border text-foreground hover:bg-background",
       )}
     >
       {/* Selection indicator */}
@@ -280,8 +280,8 @@ function OptionButton({
         className={cn(
           "flex-shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors",
           selected
-            ? "bg-v2-ink border-v2-ink text-white"
-            : "bg-transparent border-v2-ring",
+            ? "bg-foreground border-foreground text-white"
+            : "bg-transparent border-border",
         )}
       >
         {selected && <Check className="h-2.5 w-2.5" />}
@@ -292,8 +292,8 @@ function OptionButton({
         className={cn(
           "flex-shrink-0 w-7 h-7 rounded-v2-pill flex items-center justify-center",
           selected
-            ? "bg-v2-accent text-v2-ink"
-            : "bg-v2-canvas text-v2-ink-muted",
+            ? "bg-accent text-foreground"
+            : "bg-background text-muted-foreground",
         )}
       >
         <Icon className="h-3.5 w-3.5" />
@@ -301,8 +301,8 @@ function OptionButton({
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <div className="text-xs font-semibold text-v2-ink">{label}</div>
-        <div className="text-[10px] text-v2-ink-muted truncate">
+        <div className="text-xs font-semibold text-foreground">{label}</div>
+        <div className="text-[10px] text-muted-foreground truncate">
           {description}
         </div>
       </div>

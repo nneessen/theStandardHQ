@@ -20,13 +20,13 @@ const ICON_TONE: Record<
   stone:
     "bg-v2-ring dark:bg-v2-ring ring-v2-ring  text-v2-ink dark:text-v2-ink-subtle",
   brand:
-    "bg-amber-50 dark:bg-amber-950/40 ring-amber-200 dark:ring-amber-900 text-amber-700 dark:text-amber-400",
+    "bg-warning/10 dark:bg-warning/20 ring-warning/30 dark:ring-warning text-warning",
   success:
-    "bg-emerald-50 dark:bg-emerald-950/40 ring-emerald-200 dark:ring-emerald-900 text-emerald-700 dark:text-emerald-400",
+    "bg-success/10 dark:bg-success/20 ring-success/30 dark:ring-success text-success",
   progress:
-    "bg-sky-50 dark:bg-sky-950/40 ring-sky-200 dark:ring-sky-900 text-sky-700 dark:text-sky-400",
+    "bg-info/10 dark:bg-info/40 ring-info dark:ring-info text-info dark:text-info",
   error:
-    "bg-red-50 dark:bg-red-950/40 ring-red-200 dark:ring-red-900 text-red-700 dark:text-red-400",
+    "bg-destructive/10 dark:bg-destructive/20 ring-destructive/30 dark:ring-destructive text-destructive",
 };
 
 export const EditorialSection: React.FC<EditorialSectionProps> = ({

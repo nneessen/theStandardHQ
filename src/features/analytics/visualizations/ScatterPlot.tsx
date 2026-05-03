@@ -1,6 +1,6 @@
 // src/features/analytics/visualizations/ScatterPlot.tsx
 
-import React from 'react';
+import React from "react";
 
 export interface ScatterDataPoint {
   x: number;
@@ -31,19 +31,23 @@ export function ScatterPlot({
   yLabel,
   title,
   width = 500,
-  height = 300
+  height = 300,
 }: ScatterPlotProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="p-10 text-center text-gray-400 text-xs">
+      <div className="p-10 text-center text-muted-foreground text-xs">
         No data available
       </div>
     );
   }
 
   // Calculate bounds with null safety
-  const xValues = data.map(d => d.x || 0).filter(v => !isNaN(v) && isFinite(v));
-  const yValues = data.map(d => d.y || 0).filter(v => !isNaN(v) && isFinite(v));
+  const xValues = data
+    .map((d) => d.x || 0)
+    .filter((v) => !isNaN(v) && isFinite(v));
+  const yValues = data
+    .map((d) => d.y || 0)
+    .filter((v) => !isNaN(v) && isFinite(v));
   const xMin = Math.min(...xValues, 0);
   const xMax = Math.max(...xValues, 1);
   const yMin = Math.min(...yValues, 0);
@@ -67,7 +71,10 @@ export function ScatterPlot({
 
   const scaleY = (value: number) => {
     if (isNaN(value) || !isFinite(value)) return chartHeight / 2;
-    return chartHeight - ((value - (yMin - yPadding)) / (yRange + 2 * xPadding)) * chartHeight;
+    return (
+      chartHeight -
+      ((value - (yMin - yPadding)) / (yRange + 2 * xPadding)) * chartHeight
+    );
   };
 
   // Format numbers
@@ -95,7 +102,7 @@ export function ScatterPlot({
     <div>
       {/* Title */}
       {title && (
-        <div className="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wide">
+        <div className="text-sm font-semibold text-foreground mb-4 uppercase tracking-wide">
           {title}
         </div>
       )}
@@ -197,10 +204,11 @@ export function ScatterPlot({
             const cx = scaleX(point.x || 0);
             const cy = scaleY(point.y || 0);
             const radius = point.size || 6;
-            const color = point.color || 'rgb(59, 130, 246)';
+            const color = point.color || "rgb(59, 130, 246)";
 
             // Skip if coordinates are invalid
-            if (isNaN(cx) || isNaN(cy) || !isFinite(cx) || !isFinite(cy)) return null;
+            if (isNaN(cx) || isNaN(cy) || !isFinite(cx) || !isFinite(cy))
+              return null;
 
             return (
               <g key={i}>

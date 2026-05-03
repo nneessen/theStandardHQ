@@ -154,12 +154,12 @@ export function RateEditDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg p-3 bg-v2-card border-v2-ring">
-        <DialogHeader className="space-y-1 pb-2 border-b border-v2-ring/60">
-          <DialogTitle className="text-sm font-semibold text-v2-ink">
+      <DialogContent className="sm:max-w-lg p-3 bg-card border-border">
+        <DialogHeader className="space-y-1 pb-2 border-b border-border/60">
+          <DialogTitle className="text-sm font-semibold text-foreground">
             Edit Commission Rates
           </DialogTitle>
-          <DialogDescription className="text-[10px] text-v2-ink-muted">
+          <DialogDescription className="text-[10px] text-muted-foreground">
             Set commission percentages for each contract level
           </DialogDescription>
         </DialogHeader>
@@ -168,20 +168,20 @@ export function RateEditDialog({
           {/* Product Info */}
           <div className="flex items-center justify-between px-1">
             <div className="flex items-center gap-2">
-              <span className="font-medium text-[11px] text-v2-ink">
+              <span className="font-medium text-[11px] text-foreground">
                 {product.productName}
               </span>
-              <span className="text-[10px] text-v2-ink-muted">
+              <span className="text-[10px] text-muted-foreground">
                 {product.carrierName}
               </span>
               <Badge
                 variant="outline"
-                className="text-[9px] h-4 px-1 border-v2-ring dark:border-v2-ring"
+                className="text-[9px] h-4 px-1 border-border dark:border-border"
               >
                 {capitalizeWords(product.productType)}
               </Badge>
             </div>
-            <div className="text-[10px] text-v2-ink-muted">
+            <div className="text-[10px] text-muted-foreground">
               {filledCount}/{CONTRACT_LEVELS.length} set
             </div>
           </div>
@@ -193,7 +193,7 @@ export function RateEditDialog({
               variant="outline"
               size="sm"
               onClick={handleFillAll}
-              className="h-6 px-2 text-[10px] border-v2-ring"
+              className="h-6 px-2 text-[10px] border-border"
             >
               Fill All
             </Button>
@@ -202,28 +202,28 @@ export function RateEditDialog({
               variant="outline"
               size="sm"
               onClick={handleClearAll}
-              className="h-6 px-2 text-[10px] border-v2-ring"
+              className="h-6 px-2 text-[10px] border-border"
             >
               Clear All
             </Button>
           </div>
 
-          <Separator className="bg-v2-ring" />
+          <Separator className="bg-muted" />
 
           {/* Rates Table */}
           {isLoadingDetails ? (
-            <div className="text-center py-6 text-[11px] text-v2-ink-muted">
+            <div className="text-center py-6 text-[11px] text-muted-foreground">
               Loading rates...
             </div>
           ) : (
-            <div className="rounded-lg overflow-hidden border border-v2-ring max-h-[300px] overflow-y-auto">
+            <div className="rounded-lg overflow-hidden border border-border max-h-[300px] overflow-y-auto">
               <Table>
-                <TableHeader className="sticky top-0 bg-v2-canvas z-10">
-                  <TableRow className="border-b border-v2-ring hover:bg-transparent">
-                    <TableHead className="h-7 text-[10px] font-semibold text-v2-ink-muted w-[140px]">
+                <TableHeader className="sticky top-0 bg-background z-10">
+                  <TableRow className="border-b border-border hover:bg-transparent">
+                    <TableHead className="h-7 text-[10px] font-semibold text-muted-foreground w-[140px]">
                       Contract Level
                     </TableHead>
-                    <TableHead className="h-7 text-[10px] font-semibold text-v2-ink-muted text-right">
+                    <TableHead className="h-7 text-[10px] font-semibold text-muted-foreground text-right">
                       Commission Rate (%)
                     </TableHead>
                   </TableRow>
@@ -236,9 +236,9 @@ export function RateEditDialog({
                     return (
                       <TableRow
                         key={level}
-                        className="h-8 hover:bg-v2-canvas border-b border-v2-ring/60"
+                        className="h-8 hover:bg-background border-b border-border/60"
                       >
-                        <TableCell className="py-1 text-[11px] font-medium text-v2-ink">
+                        <TableCell className="py-1 text-[11px] font-medium text-foreground">
                           {level}%
                         </TableCell>
                         <TableCell className="py-1 text-right">
@@ -253,13 +253,13 @@ export function RateEditDialog({
                               step="0.01"
                               min="0"
                               max="200"
-                              className={`h-6 w-16 text-right text-[11px] rounded-md border bg-v2-card px-2 py-0.5 transition-colors placeholder:text-v2-ink-subtle focus:outline-none focus:ring-1 focus:ring-v2-accent ${
+                              className={`h-6 w-16 text-right text-[11px] rounded-md border bg-card px-2 py-0.5 transition-colors placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent ${
                                 hasValue
-                                  ? "border-v2-ring dark:border-v2-ring"
-                                  : "border-v2-ring"
+                                  ? "border-border dark:border-border"
+                                  : "border-border"
                               }`}
                             />
-                            <span className="text-[10px] text-v2-ink-muted w-3">
+                            <span className="text-[10px] text-muted-foreground w-3">
                               %
                             </span>
                           </div>
@@ -273,14 +273,14 @@ export function RateEditDialog({
           )}
         </div>
 
-        <DialogFooter className="gap-1 pt-2 border-t border-v2-ring/60">
+        <DialogFooter className="gap-1 pt-2 border-t border-border/60">
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={() => onOpenChange(false)}
             disabled={isSaving}
-            className="h-7 px-2 text-[10px] border-v2-ring"
+            className="h-7 px-2 text-[10px] border-border"
           >
             Cancel
           </Button>

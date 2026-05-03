@@ -84,7 +84,7 @@ export function SentInvitationsCard() {
                 key={invitation.id}
                 className={`flex items-center justify-between p-3 rounded-md transition-colors border ${
                   isInvalid
-                    ? "bg-amber-50/50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800"
+                    ? "bg-warning/10/50 border-warning/30 dark:bg-warning/10 dark:border-warning"
                     : "bg-muted/30 hover:bg-muted/50 border-transparent hover:border-border"
                 }`}
               >
@@ -100,7 +100,7 @@ export function SentInvitationsCard() {
                       </span>
                     )}
                     {isStale && (
-                      <span className="text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <span className="text-xs bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning px-2 py-0.5 rounded-full flex items-center gap-1">
                         <AlertTriangle className="h-2.5 w-2.5" />
                         Stale
                       </span>
@@ -114,7 +114,7 @@ export function SentInvitationsCard() {
                   )}
 
                   {isInvalid && invalidReason && (
-                    <p className="text-xs text-amber-600 dark:text-amber-400 pl-5 flex items-center gap-1">
+                    <p className="text-xs text-warning pl-5 flex items-center gap-1">
                       <AlertTriangle className="h-3 w-3" />
                       {invalidReason}
                     </p>

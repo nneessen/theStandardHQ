@@ -233,23 +233,23 @@ export function AddRecruitDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-v2-card text-v2-ink border border-v2-ring shadow-v2-lift w-[calc(100vw-1.5rem)] sm:w-auto max-w-2xl max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
+        className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-card text-foreground border border-border shadow-v2-lift w-[calc(100vw-1.5rem)] sm:w-auto max-w-2xl max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
         hideCloseButton
       >
-        <DialogHeader className="px-5 py-3 border-b border-v2-ring bg-v2-card-tinted flex-shrink-0">
+        <DialogHeader className="px-5 py-3 border-b border-border bg-card-tinted flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <span className="h-2 w-2 rounded-full bg-v2-accent" />
+            <span className="h-2 w-2 rounded-full bg-accent" />
             <div className="flex flex-col leading-tight">
-              <span className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">
                 New recruit
               </span>
-              <DialogTitle className="text-base font-semibold tracking-tight text-v2-ink text-left flex items-center gap-1.5">
+              <DialogTitle className="text-base font-semibold tracking-tight text-foreground text-left flex items-center gap-1.5">
                 <UserPlus className="h-4 w-4" />
                 Add new recruit
               </DialogTitle>
             </div>
           </div>
-          <DialogDescription className="text-[11px] text-v2-ink-muted text-left mt-1">
+          <DialogDescription className="text-[11px] text-muted-foreground text-left mt-1">
             Enter recruit details to begin onboarding. Only basic info required
             initially.
           </DialogDescription>
@@ -884,7 +884,7 @@ export function AddRecruitDialog({
             </Tabs>
           </div>
 
-          <DialogFooter className="px-5 py-3 border-t border-v2-ring bg-v2-card-tinted flex-shrink-0 gap-2 sm:justify-end">
+          <DialogFooter className="px-5 py-3 border-t border-border bg-card-tinted flex-shrink-0 gap-2 sm:justify-end">
             <PillButton
               type="button"
               tone="ghost"

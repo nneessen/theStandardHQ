@@ -142,11 +142,11 @@ export function BillingPage() {
           {/* Header */}
           <div className="px-4 py-3 bg-gradient-to-r from-v2-card-dark to-v2-card-dark ">
             <div className="flex items-center gap-2 mb-1">
-              <FlaskConical className="h-3.5 w-3.5 text-amber-400" />
+              <FlaskConical className="h-3.5 w-3.5 text-warning" />
               <span className="text-[11px] font-bold text-white uppercase tracking-[0.18em]">
                 What's Coming
               </span>
-              <span className="text-[9px] font-medium bg-amber-400 text-v2-ink rounded-full px-2 py-0.5 ml-1">
+              <span className="text-[9px] font-medium bg-warning/70 text-v2-ink rounded-full px-2 py-0.5 ml-1">
                 Team gets early access
               </span>
             </div>
@@ -162,7 +162,7 @@ export function BillingPage() {
             {/* AI Suite */}
             <div className="px-4 py-3 space-y-2">
               <div className="flex items-center gap-1.5 mb-2">
-                <Brain className="h-3.5 w-3.5 text-indigo-500" />
+                <Brain className="h-3.5 w-3.5 text-info" />
                 <p className="text-[10px] font-bold text-v2-ink dark:text-v2-ink-subtle uppercase tracking-wide">
                   AI Suite
                 </p>
@@ -175,7 +175,7 @@ export function BillingPage() {
                 "Conversational AI for client objection handling",
               ].map((item) => (
                 <div key={item} className="flex items-start gap-1.5">
-                  <Sparkles className="h-3 w-3 text-indigo-400 mt-0.5 flex-shrink-0" />
+                  <Sparkles className="h-3 w-3 text-info mt-0.5 flex-shrink-0" />
                   <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-tight">
                     {item}
                   </p>
@@ -186,7 +186,7 @@ export function BillingPage() {
             {/* CRM Integrations */}
             <div className="px-4 py-3 space-y-2">
               <div className="flex items-center gap-1.5 mb-2">
-                <Plug2 className="h-3.5 w-3.5 text-emerald-500" />
+                <Plug2 className="h-3.5 w-3.5 text-success" />
                 <p className="text-[10px] font-bold text-v2-ink dark:text-v2-ink-subtle uppercase tracking-wide">
                   CRM Integrations
                 </p>
@@ -199,7 +199,7 @@ export function BillingPage() {
                 "Native dialer & SMS log import",
               ].map((item) => (
                 <div key={item} className="flex items-start gap-1.5">
-                  <Sparkles className="h-3 w-3 text-emerald-400 mt-0.5 flex-shrink-0" />
+                  <Sparkles className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                   <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-tight">
                     {item}
                   </p>
@@ -210,7 +210,7 @@ export function BillingPage() {
             {/* Power Tools */}
             <div className="px-4 py-3 space-y-2">
               <div className="flex items-center gap-1.5 mb-2">
-                <BarChart3 className="h-3.5 w-3.5 text-amber-500" />
+                <BarChart3 className="h-3.5 w-3.5 text-warning" />
                 <p className="text-[10px] font-bold text-v2-ink dark:text-v2-ink-subtle uppercase tracking-wide">
                   Power Tools
                 </p>
@@ -223,7 +223,7 @@ export function BillingPage() {
                 "Open API access for custom integrations",
               ].map((item) => (
                 <div key={item} className="flex items-start gap-1.5">
-                  <Sparkles className="h-3 w-3 text-amber-400 mt-0.5 flex-shrink-0" />
+                  <Sparkles className="h-3 w-3 text-warning mt-0.5 flex-shrink-0" />
                   <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle leading-tight">
                     {item}
                   </p>
@@ -236,11 +236,8 @@ export function BillingPage() {
           <div className="px-4 py-2 bg-v2-canvas border-t border-v2-ring/60">
             <p className="text-[10px] text-v2-ink-muted text-center">
               Features roll out to{" "}
-              <span className="font-semibold text-violet-600 dark:text-violet-400">
-                Team
-              </span>{" "}
-              first — then down to other tiers over time. Upgrade once, stay
-              ahead always.
+              <span className="font-semibold text-info">Team</span> first — then
+              down to other tiers over time. Upgrade once, stay ahead always.
             </p>
           </div>
         </div>
@@ -249,15 +246,15 @@ export function BillingPage() {
         <CurrentPlanCard />
 
         {/* Team Early Access Strip */}
-        <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-950/30 dark:to-indigo-950/20 border border-violet-200 dark:border-violet-800">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900/50 flex-shrink-0">
-            <Rocket className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
+        <div className="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-950/30 dark:to-indigo-950/20 border border-info/30">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-info/20 dark:bg-info/50 flex-shrink-0">
+            <Rocket className="h-3.5 w-3.5 text-info" />
           </div>
           <div>
-            <p className="text-[11px] font-semibold text-violet-900 dark:text-violet-100">
+            <p className="text-[11px] font-semibold text-info dark:text-info">
               Team subscribers are first in line for every new feature
             </p>
-            <p className="text-[10px] text-violet-600 dark:text-violet-400">
+            <p className="text-[10px] text-info">
               Every major addition ships to Team before any other tier — no
               waiting, no extra cost.
             </p>
@@ -275,7 +272,7 @@ export function BillingPage() {
                   <h2 className="text-sm font-semibold text-v2-ink">
                     Premium Voice
                   </h2>
-                  <span className="inline-flex items-center rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-amber-700 dark:border-amber-700 dark:bg-amber-950/30 dark:text-amber-300">
+                  <span className="inline-flex items-center rounded-full border border-warning/40 bg-warning/10 px-2 py-0.5 text-[9px] font-medium uppercase tracking-wide text-warning dark:border-warning dark:bg-warning/15 dark:text-warning">
                     Coming Soon
                   </span>
                 </div>

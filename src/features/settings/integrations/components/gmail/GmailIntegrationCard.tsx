@@ -101,7 +101,7 @@ export function GmailIntegrationCard() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4">
-        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -109,21 +109,21 @@ export function GmailIntegrationCard() {
   return (
     <div className="space-y-3">
       {/* Header Card */}
-      <div className="bg-v2-card rounded-lg border border-v2-ring p-3">
+      <div className="bg-card rounded-lg border border-border p-3">
         <div className="flex items-start gap-3">
           {/* Icon */}
           <div className="p-2 rounded-lg bg-gradient-to-br from-red-500/20 to-orange-500/20 dark:from-red-900/30 dark:to-orange-900/30">
-            <Mail className="h-5 w-5 text-red-600 dark:text-red-400" />
+            <Mail className="h-5 w-5 text-destructive" />
           </div>
 
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-v2-ink">Gmail</h3>
+              <h3 className="text-sm font-semibold text-foreground">Gmail</h3>
               {isConnected ? (
                 <Badge
                   variant="default"
-                  className="text-[9px] h-4 px-1.5 bg-green-600"
+                  className="text-[9px] h-4 px-1.5 bg-success"
                 >
                   <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
                   Connected
@@ -131,7 +131,7 @@ export function GmailIntegrationCard() {
               ) : isExpired ? (
                 <Badge
                   variant="secondary"
-                  className="text-[9px] h-4 px-1.5 bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
+                  className="text-[9px] h-4 px-1.5 bg-warning/20 text-warning dark:bg-warning/50 dark:text-warning"
                 >
                   <AlertCircle className="h-2.5 w-2.5 mr-0.5" />
                   Expired
@@ -139,7 +139,7 @@ export function GmailIntegrationCard() {
               ) : hasError ? (
                 <Badge
                   variant="secondary"
-                  className="text-[9px] h-4 px-1.5 bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300"
+                  className="text-[9px] h-4 px-1.5 bg-destructive/20 text-destructive dark:bg-destructive/50 dark:text-destructive"
                 >
                   <XCircle className="h-2.5 w-2.5 mr-0.5" />
                   Error
@@ -152,7 +152,7 @@ export function GmailIntegrationCard() {
               )}
             </div>
 
-            <p className="text-[10px] text-v2-ink-muted mt-1">
+            <p className="text-[10px] text-muted-foreground mt-1">
               {hasIntegration
                 ? "Send and receive emails from your personal Gmail account."
                 : "Connect your Gmail to send and receive emails from your own account."}
@@ -180,12 +180,12 @@ export function GmailIntegrationCard() {
 
       {/* Connected Account Card */}
       {hasIntegration && (
-        <div className="bg-v2-card rounded-lg border border-v2-ring p-3 space-y-3">
-          <h4 className="text-[11px] font-semibold text-v2-ink">
+        <div className="bg-card rounded-lg border border-border p-3 space-y-3">
+          <h4 className="text-[11px] font-semibold text-foreground">
             Connected Account
           </h4>
 
-          <div className="flex items-center gap-3 p-2.5 bg-v2-canvas rounded-lg">
+          <div className="flex items-center gap-3 p-2.5 bg-background rounded-lg">
             <Avatar className="h-10 w-10">
               <AvatarImage
                 src={integration.gmail_picture_url || undefined}
@@ -197,10 +197,10 @@ export function GmailIntegrationCard() {
             </Avatar>
 
             <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-medium text-v2-ink">
+              <p className="text-[11px] font-medium text-foreground">
                 {integration.gmail_name || integration.gmail_address}
               </p>
-              <p className="text-[10px] text-v2-ink-muted truncate">
+              <p className="text-[10px] text-muted-foreground truncate">
                 {integration.gmail_address}
               </p>
             </div>
@@ -244,7 +244,7 @@ export function GmailIntegrationCard() {
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-7 w-7 p-0 text-v2-ink-subtle hover:text-red-500"
+                className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
                 onClick={() => setShowDisconnectDialog(true)}
                 title="Disconnect Gmail"
               >
@@ -254,13 +254,13 @@ export function GmailIntegrationCard() {
           </div>
 
           {/* Sync Status */}
-          <div className="flex items-center justify-between text-[10px] text-v2-ink-muted">
+          <div className="flex items-center justify-between text-[10px] text-muted-foreground">
             <span>
               Last synced: {formatLastSynced(integration.last_synced_at)}
             </span>
             {integration.last_error && (
               <span
-                className="text-red-500 truncate max-w-[200px]"
+                className="text-destructive truncate max-w-[200px]"
                 title={integration.last_error}
               >
                 Error: {integration.last_error}
@@ -272,14 +272,14 @@ export function GmailIntegrationCard() {
 
       {/* Token Expiry Warning */}
       {isExpired && (
-        <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800 p-3">
+        <div className="bg-warning/10 rounded-lg border border-warning/30 p-3">
           <div className="flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="h-4 w-4 text-warning flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-[11px] font-medium text-amber-700 dark:text-amber-300">
+              <p className="text-[11px] font-medium text-warning">
                 Gmail Connection Expired
               </p>
-              <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">
+              <p className="text-[10px] text-warning mt-0.5">
                 Your Gmail connection has expired. Please reconnect to continue
                 sending and receiving emails.
               </p>
@@ -290,14 +290,14 @@ export function GmailIntegrationCard() {
 
       {/* Error Warning */}
       {hasError && integration?.last_error && (
-        <div className="bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800 p-3">
+        <div className="bg-destructive/10 rounded-lg border border-destructive/30 p-3">
           <div className="flex items-start gap-2">
-            <XCircle className="h-4 w-4 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+            <XCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-[11px] font-medium text-red-700 dark:text-red-300">
+              <p className="text-[11px] font-medium text-destructive">
                 Connection Error
               </p>
-              <p className="text-[10px] text-red-600 dark:text-red-400 mt-0.5">
+              <p className="text-[10px] text-destructive mt-0.5">
                 {integration.last_error}
               </p>
             </div>

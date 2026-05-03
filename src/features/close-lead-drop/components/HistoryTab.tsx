@@ -13,8 +13,8 @@ const CLOSE_SMART_VIEW_BASE = "https://app.close.com/search/";
 
 const STATUS_BADGE: Record<string, string> = {
   pending: "bg-muted text-muted-foreground",
-  running: "bg-blue-500/15 text-blue-500",
-  completed: "bg-green-500/15 text-green-600 dark:text-green-400",
+  running: "bg-info/15 text-info",
+  completed: "bg-success/15 text-success",
   failed: "bg-destructive/15 text-destructive",
 };
 
@@ -167,7 +167,7 @@ function HistoryRow({ job }: { job: DropJob }) {
                           className={cn(
                             "text-[10px] rounded-full px-1.5 py-0.5 font-medium",
                             r.status === "created"
-                              ? "bg-green-500/15 text-green-600"
+                              ? "bg-success/15 text-success"
                               : "bg-destructive/15 text-destructive",
                           )}
                         >

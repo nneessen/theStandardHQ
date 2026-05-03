@@ -42,20 +42,18 @@ const statusConfig: Record<
 > = {
   green: {
     label: "All Systems Operational",
-    dotClass: "bg-emerald-500",
-    bgClass:
-      "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300",
+    dotClass: "bg-success",
+    bgClass: "bg-success/10 text-success",
   },
   yellow: {
     label: "Partial Connection",
-    dotClass: "bg-amber-500",
-    bgClass:
-      "bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300",
+    dotClass: "bg-warning",
+    bgClass: "bg-warning/10 text-warning",
   },
   red: {
     label: "Bot Inactive",
-    dotClass: "bg-red-500",
-    bgClass: "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300",
+    dotClass: "bg-destructive",
+    bgClass: "bg-destructive/10 text-destructive",
   },
 };
 
@@ -259,8 +257,8 @@ export function MonitoringTab() {
           Error Indicators
         </h2>
         {!hasErrors ? (
-          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+          <div className="text-[11px] text-success flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-success" />
             No issues detected
           </div>
         ) : (
@@ -351,7 +349,7 @@ export function MonitoringTab() {
               className={cn(
                 "text-sm font-medium",
                 monitoring.jobHealth.failedJobs24h > 0
-                  ? "text-red-600 dark:text-red-400"
+                  ? "text-destructive"
                   : "text-v2-ink dark:text-v2-ink",
               )}
             >
@@ -375,7 +373,7 @@ function StatusPill({ label, active }: { label: string; active: boolean }) {
       className={cn(
         "text-center px-1.5 py-1 rounded text-[10px] font-medium",
         active
-          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300"
+          ? "bg-success/10 text-success dark:bg-success/20 dark:text-success"
           : "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle",
       )}
     >
@@ -399,11 +397,11 @@ function MetricCard({
 }) {
   const accentClass =
     accent === "green"
-      ? "text-emerald-600 dark:text-emerald-400"
+      ? "text-success"
       : accent === "amber"
-        ? "text-amber-600 dark:text-amber-400"
+        ? "text-warning"
         : accent === "red"
-          ? "text-red-600 dark:text-red-400"
+          ? "text-destructive"
           : "text-v2-ink dark:text-v2-ink";
 
   return (
@@ -444,18 +442,18 @@ function ErrorBadge({
   detail: string;
 }) {
   return (
-    <div className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 rounded px-2.5 py-1.5">
-      <Icon className="h-3.5 w-3.5 text-red-500 mt-0.5 shrink-0" />
+    <div className="flex items-start gap-2 bg-destructive/10 rounded px-2.5 py-1.5">
+      <Icon className="h-3.5 w-3.5 text-destructive mt-0.5 shrink-0" />
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-medium text-red-700 dark:text-red-300">
+          <span className="text-[11px] font-medium text-destructive">
             {label}
           </span>
-          <span className="text-[11px] font-semibold text-red-700 dark:text-red-300">
+          <span className="text-[11px] font-semibold text-destructive">
             {value}
           </span>
         </div>
-        <div className="text-[9px] text-red-600/70 dark:text-red-400/70">
+        <div className="text-[9px] text-destructive/70 dark:text-destructive/70">
           {detail}
         </div>
       </div>

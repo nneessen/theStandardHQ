@@ -44,24 +44,18 @@ export default function WorkflowReview({ data, onEdit }: WorkflowReviewProps) {
   };
 
   const TRIGGER_COLORS = {
-    manual:
-      "bg-blue-500/10 text-blue-600 border-blue-500/30 dark:text-blue-400",
-    schedule:
-      "bg-emerald-500/10 text-emerald-600 border-emerald-500/30 dark:text-emerald-400",
-    event:
-      "bg-amber-500/10 text-amber-600 border-amber-500/30 dark:text-amber-400",
-    webhook:
-      "bg-violet-500/10 text-violet-600 border-violet-500/30 dark:text-violet-400",
+    manual: "bg-info/10 text-info border-info/30 dark:text-info",
+    schedule: "bg-success/10 text-success border-success/30 dark:text-success",
+    event: "bg-warning/10 text-warning border-warning/30 dark:text-warning",
+    webhook: "bg-info/10 text-info border-info/30 dark:text-info",
   };
 
   const ACTION_COLORS = {
-    send_email:
-      "bg-blue-500/10 text-blue-600 border-blue-500/30 dark:text-blue-400",
+    send_email: "bg-info/10 text-info border-info/30 dark:text-info",
     create_notification:
-      "bg-amber-500/10 text-amber-600 border-amber-500/30 dark:text-amber-400",
-    wait: "bg-gray-500/10 text-gray-600 border-gray-500/30 dark:text-gray-400",
-    webhook:
-      "bg-violet-500/10 text-violet-600 border-violet-500/30 dark:text-violet-400",
+      "bg-warning/10 text-warning border-warning/30 dark:text-warning",
+    wait: "bg-muted/10 text-muted-foreground border-input/30 dark:text-muted-foreground",
+    webhook: "bg-info/10 text-info border-info/30 dark:text-info",
   };
 
   return (
@@ -177,8 +171,8 @@ export default function WorkflowReview({ data, onEdit }: WorkflowReviewProps) {
           </Button>
         </div>
         {data.actions.length === 0 ? (
-          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
-            <p className="text-sm text-amber-600 dark:text-amber-400">
+          <div className="p-3 rounded-lg bg-warning/10 border border-warning/20">
+            <p className="text-sm text-warning">
               No actions configured. Add at least one action to define workflow
               behavior.
             </p>
@@ -244,7 +238,7 @@ export default function WorkflowReview({ data, onEdit }: WorkflowReviewProps) {
         </p>
         <div className="space-y-3">
           <div className="flex items-start gap-2">
-            <div className="w-2 h-2 rounded-full bg-blue-500 mt-1"></div>
+            <div className="w-2 h-2 rounded-full bg-info mt-1"></div>
             <div>
               <span className="text-sm">
                 Max runs per day:{" "}
@@ -260,7 +254,7 @@ export default function WorkflowReview({ data, onEdit }: WorkflowReviewProps) {
           </div>
 
           <div className="flex items-start gap-2">
-            <div className="w-2 h-2 rounded-full bg-amber-500 mt-1"></div>
+            <div className="w-2 h-2 rounded-full bg-warning mt-1"></div>
             <div>
               <span className="text-sm">
                 Priority:{" "}
@@ -294,7 +288,7 @@ export default function WorkflowReview({ data, onEdit }: WorkflowReviewProps) {
 
           {data.settings?.cooldownMinutes && (
             <div className="flex items-start gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-500 mt-1"></div>
+              <div className="w-2 h-2 rounded-full bg-success mt-1"></div>
               <div>
                 <span className="text-sm">
                   Cooldown:{" "}
@@ -311,7 +305,7 @@ export default function WorkflowReview({ data, onEdit }: WorkflowReviewProps) {
 
           {data.settings?.maxRunsPerRecipient && (
             <div className="flex items-start gap-2">
-              <div className="w-2 h-2 rounded-full bg-purple-500 mt-1"></div>
+              <div className="w-2 h-2 rounded-full bg-info mt-1"></div>
               <div>
                 <span className="text-sm">
                   Max per recipient:{" "}
@@ -328,7 +322,7 @@ export default function WorkflowReview({ data, onEdit }: WorkflowReviewProps) {
 
           {data.settings?.continueOnError && (
             <div className="flex items-start gap-2">
-              <div className="w-2 h-2 rounded-full bg-orange-500 mt-1"></div>
+              <div className="w-2 h-2 rounded-full bg-warning mt-1"></div>
               <div>
                 <span className="text-sm">
                   Continue on error:{" "}

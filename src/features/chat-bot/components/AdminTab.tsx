@@ -52,17 +52,16 @@ function StatusBadge({ status }: { status: string }) {
     { className: string; icon: React.ElementType; label?: string }
   > = {
     active: {
-      className:
-        "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
+      className: "bg-success/20 text-success dark:bg-success dark:text-success",
       icon: CheckCircle2,
     },
     failed: {
-      className: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+      className:
+        "bg-destructive/20 text-destructive dark:bg-destructive dark:text-destructive",
       icon: XCircle,
     },
     pending: {
-      className:
-        "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
+      className: "bg-warning/20 text-warning dark:bg-warning dark:text-warning",
       icon: Clock,
     },
     not_provisioned: {
@@ -72,8 +71,7 @@ function StatusBadge({ status }: { status: string }) {
       label: "Has Addon",
     },
     override_only: {
-      className:
-        "bg-indigo-100 text-indigo-600 dark:bg-indigo-900 dark:text-indigo-400",
+      className: "bg-info/20 text-info dark:bg-info dark:text-info",
       icon: ShieldCheck,
       label: "Override Only",
     },
@@ -141,7 +139,7 @@ function AgentListView({
 
   if (error) {
     return (
-      <div className="text-center py-12 text-[11px] text-red-500">
+      <div className="text-center py-12 text-[11px] text-destructive">
         Failed to load agents: {error.message}
       </div>
     );
@@ -197,8 +195,8 @@ function AgentListView({
 
       {/* Grant Team Access Form */}
       {showGrantForm && (
-        <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded text-[11px] space-y-1.5">
-          <div className="font-medium text-indigo-700 dark:text-indigo-300">
+        <div className="p-2 bg-info/10 dark:bg-info/20 border border-info/30 rounded text-[11px] space-y-1.5">
+          <div className="font-medium text-info">
             Grant Team Access Override
           </div>
           <div className="flex items-center gap-2">
@@ -218,7 +216,7 @@ function AgentListView({
             />
             <Button
               size="sm"
-              className="h-6 text-[10px] bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="h-6 text-[10px] bg-info hover:bg-info text-white"
               disabled={!grantUserId.trim() || grantAccess.isPending}
               onClick={() => {
                 grantAccess.mutate(
@@ -349,7 +347,7 @@ function AgentRow({
       </td>
       <td className="px-2 py-1.5 text-center">
         {agent.billing_exempt ? (
-          <Badge className="text-[9px] h-4 px-1.5 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+          <Badge className="text-[9px] h-4 px-1.5 bg-info/20 text-info dark:bg-info dark:text-info">
             Yes
           </Badge>
         ) : (
@@ -359,7 +357,7 @@ function AgentRow({
       <td className="px-2 py-1.5 text-center">
         {override ? (
           <div className="flex items-center justify-center gap-1">
-            <Badge className="text-[9px] h-4 px-1.5 bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
+            <Badge className="text-[9px] h-4 px-1.5 bg-info/20 text-info dark:bg-info dark:text-info">
               <ShieldCheck className="h-2.5 w-2.5 mr-0.5" />
               Granted
             </Badge>
@@ -369,7 +367,7 @@ function AgentRow({
                 onRevokeAccess();
               }}
               disabled={isRevoking}
-              className="text-[9px] text-red-500 hover:text-red-700 disabled:opacity-50"
+              className="text-[9px] text-destructive hover:text-destructive disabled:opacity-50"
               title="Revoke"
             >
               <ShieldOff className="h-3 w-3" />
@@ -382,7 +380,7 @@ function AgentRow({
               onGrantAccess();
             }}
             disabled={isGranting}
-            className="text-[9px] text-indigo-500 hover:text-indigo-700 disabled:opacity-50"
+            className="text-[9px] text-info hover:text-info disabled:opacity-50"
             title="Grant team access"
           >
             <ShieldCheck className="h-3 w-3" />
@@ -543,7 +541,7 @@ function SmsConfigPanel({
           className={cn(
             "px-3 py-1 rounded text-[10px] font-medium transition-colors",
             agent.botEnabled
-              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
+              ? "bg-success/20 text-success dark:bg-success dark:text-success"
               : "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle",
           )}
         >
@@ -753,7 +751,7 @@ function EditableField({
             }
           }}
           autoFocus
-          className="w-full px-1.5 py-0.5 text-[11px] bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded outline-none focus:ring-1 focus:ring-blue-400"
+          className="w-full px-1.5 py-0.5 text-[11px] bg-info/10 border border-info/40 rounded outline-none focus:ring-1 focus:ring-info"
         />
       </div>
     );
@@ -770,9 +768,9 @@ function EditableField({
       <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
         {label}
       </div>
-      <div className="text-v2-ink dark:text-v2-ink-muted truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+      <div className="text-v2-ink dark:text-v2-ink-muted truncate group-hover:text-info dark:group-hover:text-info transition-colors">
         {value || "\u2014"}
-        <span className="invisible group-hover:visible text-[9px] text-blue-400 ml-1">
+        <span className="invisible group-hover:visible text-[9px] text-info ml-1">
           edit
         </span>
       </div>
@@ -819,7 +817,7 @@ function EditableTextArea({
           }}
           autoFocus
           rows={4}
-          className="w-full px-1.5 py-1 text-[10px] bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded outline-none focus:ring-1 focus:ring-blue-400 resize-y"
+          className="w-full px-1.5 py-1 text-[10px] bg-info/10 border border-info/40 rounded outline-none focus:ring-1 focus:ring-info resize-y"
         />
         <div className="flex justify-end mt-0.5">
           <Button size="sm" className="h-5 px-2 text-[9px]" onClick={save}>
@@ -841,9 +839,9 @@ function EditableTextArea({
       <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-0.5">
         {label}
       </div>
-      <div className="text-v2-ink dark:text-v2-ink-muted bg-v2-canvas dark:bg-v2-card-tinted p-1.5 rounded text-[10px] whitespace-pre-wrap group-hover:border group-hover:border-blue-300 dark:group-hover:border-blue-700 transition-colors">
+      <div className="text-v2-ink dark:text-v2-ink-muted bg-v2-canvas dark:bg-v2-card-tinted p-1.5 rounded text-[10px] whitespace-pre-wrap group-hover:border group-hover:border-info/40 dark:group-hover:border-info transition-colors">
         {value || <span className="text-v2-ink-subtle">Click to add...</span>}
-        <span className="invisible group-hover:visible text-[9px] text-blue-400 ml-1">
+        <span className="invisible group-hover:visible text-[9px] text-info ml-1">
           edit
         </span>
       </div>
@@ -895,7 +893,7 @@ function EditableList({
           }}
           autoFocus
           rows={2}
-          className="w-full px-1.5 py-1 text-[10px] bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded outline-none focus:ring-1 focus:ring-blue-400 resize-y"
+          className="w-full px-1.5 py-1 text-[10px] bg-info/10 border border-info/40 rounded outline-none focus:ring-1 focus:ring-info resize-y"
         />
         <div className="flex justify-end mt-0.5">
           <Button size="sm" className="h-5 px-2 text-[9px]" onClick={save}>
@@ -926,7 +924,7 @@ function EditableList({
         {values.length === 0 && (
           <span className="text-v2-ink-subtle">Click to add...</span>
         )}
-        <span className="invisible group-hover:visible text-[9px] text-blue-400">
+        <span className="invisible group-hover:visible text-[9px] text-info">
           edit
         </span>
       </div>
@@ -954,7 +952,7 @@ function ToggleField({
         className={cn(
           "px-2 py-0.5 rounded text-[9px] font-medium transition-colors",
           value
-            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
+            ? "bg-success/20 text-success dark:bg-success dark:text-success"
             : "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle",
         )}
       >
@@ -1214,7 +1212,7 @@ function ConnectionRow({
         className={cn(
           "text-[9px] h-4 px-1.5",
           connected
-            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
+            ? "bg-success/20 text-success dark:bg-success dark:text-success"
             : "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle",
         )}
       >
@@ -1307,12 +1305,10 @@ function TeamAccessPanel({
       </div>
 
       {override ? (
-        <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded p-2 space-y-1">
+        <div className="bg-info/10 dark:bg-info/20 border border-info/30 rounded p-2 space-y-1">
           <div className="flex items-center gap-1.5">
-            <ShieldCheck className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-            <span className="font-medium text-indigo-700 dark:text-indigo-300">
-              Override Active
-            </span>
+            <ShieldCheck className="h-3.5 w-3.5 text-info" />
+            <span className="font-medium text-info">Override Active</span>
           </div>
           <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle space-y-0.5">
             <div>Granted by: {override.granted_by || "System"}</div>
@@ -1324,7 +1320,7 @@ function TeamAccessPanel({
           <Button
             variant="outline"
             size="sm"
-            className="h-6 text-[10px] mt-1 text-red-600 border-red-200 hover:bg-red-50"
+            className="h-6 text-[10px] mt-1 text-destructive border-destructive/30 hover:bg-destructive/10"
             disabled={revokeAccess.isPending}
             onClick={() => revokeAccess.mutate({ userId })}
           >
@@ -1351,7 +1347,7 @@ function TeamAccessPanel({
             />
             <Button
               size="sm"
-              className="h-6 text-[10px] bg-indigo-600 hover:bg-indigo-700 text-white"
+              className="h-6 text-[10px] bg-info hover:bg-info text-white"
               disabled={grantAccess.isPending}
               onClick={() =>
                 grantAccess.mutate(

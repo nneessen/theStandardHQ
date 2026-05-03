@@ -41,7 +41,7 @@ export function InstagramConversationItem({
       onClick={onClick}
       className={cn(
         "w-full flex items-start gap-2 p-2 rounded-md text-left transition-colors",
-        isSelected ? "bg-blue-100 dark:bg-blue-900/30" : "hover:bg-v2-canvas",
+        isSelected ? "bg-info/15" : "hover:bg-v2-canvas",
       )}
     >
       {/* Avatar */}
@@ -90,13 +90,13 @@ export function InstagramConversationItem({
 
           {/* Priority star */}
           {conversation.is_priority && (
-            <Star className="h-3 w-3 flex-shrink-0 text-amber-500 fill-amber-500" />
+            <Star className="h-3 w-3 flex-shrink-0 text-warning fill-amber-500" />
           )}
 
           {/* Linked lead badge */}
           {conversation.hasLinkedLead && (
-            <div className="flex-shrink-0 w-3.5 h-3.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-              <User className="h-2 w-2 text-emerald-600 dark:text-emerald-400" />
+            <div className="flex-shrink-0 w-3.5 h-3.5 rounded-full bg-success/20 dark:bg-success/30 flex items-center justify-center">
+              <User className="h-2 w-2 text-success" />
             </div>
           )}
         </div>
@@ -122,7 +122,7 @@ export function InstagramConversationItem({
             </span>
           )}
           {hasUnread && (
-            <span className="ml-auto flex-shrink-0 min-w-[16px] h-4 px-1 rounded-full bg-blue-500 text-white text-[9px] font-medium flex items-center justify-center">
+            <span className="ml-auto flex-shrink-0 min-w-[16px] h-4 px-1 rounded-full bg-info text-white text-[9px] font-medium flex items-center justify-center">
               {conversation.unread_count > 99
                 ? "99+"
                 : conversation.unread_count}

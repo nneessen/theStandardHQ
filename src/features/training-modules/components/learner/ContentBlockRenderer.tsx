@@ -98,7 +98,7 @@ export function ContentBlockRenderer({ block }: ContentBlockRendererProps) {
       if (!block.video_url) return null;
       const metadata = parseVideoUrl(block.video_url);
       if (!metadata)
-        return <p className="text-xs text-red-500">Invalid video URL</p>;
+        return <p className="text-xs text-destructive">Invalid video URL</p>;
 
       const embedUrl = getEmbedUrl(metadata.video_id, metadata.platform);
       return (
@@ -135,9 +135,9 @@ export function ContentBlockRenderer({ block }: ContentBlockRendererProps) {
           rel="noopener noreferrer"
           className="flex items-center gap-2 p-2.5 rounded-lg border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50 hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted transition-colors"
         >
-          <ExternalLink className="h-4 w-4 text-blue-500 flex-shrink-0" />
+          <ExternalLink className="h-4 w-4 text-info flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-blue-600 dark:text-blue-400">
+            <p className="text-xs font-medium text-info">
               {block.external_url_label || block.external_url}
             </p>
             {block.external_url_label && (
@@ -168,7 +168,7 @@ function PdfBlockRenderer({ block }: { block: TrainingLessonContent }) {
   if (!block.document_id || !doc) {
     return (
       <div className="flex items-center gap-2 p-2.5 rounded-lg border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
-        <FileText className="h-4 w-4 text-red-500 flex-shrink-0" />
+        <FileText className="h-4 w-4 text-destructive flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium truncate">
             {block.title || "Document"}
@@ -184,7 +184,7 @@ function PdfBlockRenderer({ block }: { block: TrainingLessonContent }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 p-2.5 rounded-lg border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
-        <FileText className="h-4 w-4 text-red-500 flex-shrink-0" />
+        <FileText className="h-4 w-4 text-destructive flex-shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium truncate">{doc.name}</p>
           <p className="text-[10px] text-v2-ink-muted">
@@ -233,7 +233,7 @@ function SlidesBlockRenderer({ block }: { block: TrainingLessonContent }) {
   if (!block.document_id || !doc) {
     return (
       <div className="flex items-center gap-2 p-2.5 rounded-lg border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
-        <Presentation className="h-4 w-4 text-blue-500 flex-shrink-0" />
+        <Presentation className="h-4 w-4 text-info flex-shrink-0" />
         <p className="text-xs text-v2-ink-muted">Slides not available</p>
       </div>
     );
@@ -242,7 +242,7 @@ function SlidesBlockRenderer({ block }: { block: TrainingLessonContent }) {
   if (!signedUrl) {
     return (
       <div className="flex items-center gap-2 p-2.5 rounded-lg border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
-        <Presentation className="h-4 w-4 text-blue-500 flex-shrink-0" />
+        <Presentation className="h-4 w-4 text-info flex-shrink-0" />
         <p className="text-xs text-v2-ink-subtle">Loading slides...</p>
       </div>
     );
@@ -252,7 +252,7 @@ function SlidesBlockRenderer({ block }: { block: TrainingLessonContent }) {
     <div className="space-y-2">
       {block.title && (
         <div className="flex items-center gap-1.5">
-          <Presentation className="h-3.5 w-3.5 text-blue-500" />
+          <Presentation className="h-3.5 w-3.5 text-info" />
           <span className="text-[11px] font-medium">{block.title}</span>
         </div>
       )}
@@ -269,11 +269,11 @@ function ScriptPromptRenderer({ block }: { block: TrainingLessonContent }) {
   const tts = useTextToSpeech(block.script_prompt_text || "");
 
   return (
-    <div className="rounded-lg border-2 border-violet-200 dark:border-violet-800 bg-violet-50 dark:bg-violet-900/20 p-3 space-y-2">
+    <div className="rounded-lg border-2 border-info/30 bg-info/10 dark:bg-info/20 p-3 space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <MessageSquare className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
-          <span className="text-[11px] font-medium text-violet-700 dark:text-violet-300 uppercase">
+          <MessageSquare className="h-3.5 w-3.5 text-info" />
+          <span className="text-[11px] font-medium text-info uppercase">
             Script Practice
           </span>
         </div>
@@ -293,11 +293,11 @@ function ScriptPromptRenderer({ block }: { block: TrainingLessonContent }) {
         </div>
       )}
       {block.script_prompt_instructions && (
-        <div className="text-[11px] text-violet-600 dark:text-violet-400 italic border-t border-violet-200 dark:border-violet-800 pt-2">
+        <div className="text-[11px] text-info italic border-t border-info/30 pt-2">
           {block.script_prompt_instructions}
         </div>
       )}
-      {tts.error && <p className="text-[10px] text-red-500">{tts.error}</p>}
+      {tts.error && <p className="text-[10px] text-destructive">{tts.error}</p>}
     </div>
   );
 }
@@ -321,7 +321,7 @@ function TtsButton({
         <Button
           variant="ghost"
           size="sm"
-          className="h-6 text-[10px] px-2 text-violet-600 dark:text-violet-400"
+          className="h-6 text-[10px] px-2 text-info"
           onClick={onPlay}
         >
           <Volume2 className="h-3 w-3 mr-1" />
@@ -367,7 +367,7 @@ function TtsButton({
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 text-[10px] px-2 text-violet-600 dark:text-violet-400"
+            className="h-6 text-[10px] px-2 text-info"
             onClick={onResume}
           >
             <Volume2 className="h-3 w-3 mr-1" />

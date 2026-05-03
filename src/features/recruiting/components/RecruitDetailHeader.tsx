@@ -64,7 +64,7 @@ export function RecruitDetailHeader({
               "text-[10px] px-1.5 py-0 h-4",
               recruit.onboarding_status
                 ? TERMINAL_STATUS_COLORS[recruit.onboarding_status] ||
-                    "bg-blue-100 text-blue-800"
+                    "bg-info/20 text-info"
                 : "",
             )}
           >
@@ -124,15 +124,13 @@ export function RecruitDetailHeader({
                   }}
                   className={cn(
                     "flex items-center gap-0.5 hover:text-v2-ink dark:hover:text-v2-ink-subtle",
-                    recruit.npn
-                      ? "text-v2-ink-muted"
-                      : "text-amber-500 dark:text-amber-400",
+                    recruit.npn ? "text-v2-ink-muted" : "text-warning",
                   )}
                   title={recruit.npn ? "Edit NPN" : "Set NPN"}
                 >
                   {recruit.npn ? (
                     <>
-                      <Check className="h-3 w-3 text-emerald-500" />
+                      <Check className="h-3 w-3 text-success" />
                       NPN: {recruit.npn}
                     </>
                   ) : (

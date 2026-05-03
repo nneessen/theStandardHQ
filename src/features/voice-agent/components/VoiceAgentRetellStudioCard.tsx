@@ -145,11 +145,11 @@ function ValidationList({ errors }: { errors: string[] }) {
   if (errors.length === 0) return null;
 
   return (
-    <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-3 dark:border-red-950/60 dark:bg-red-950/20">
-      <p className="text-[11px] font-semibold text-red-700 dark:text-red-300">
+    <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-3 dark:border-destructive/60 dark:bg-destructive/10">
+      <p className="text-[11px] font-semibold text-destructive">
         Fix these fields before saving
       </p>
-      <ul className="mt-2 space-y-1 text-[11px] text-red-700 dark:text-red-300">
+      <ul className="mt-2 space-y-1 text-[11px] text-destructive">
         {errors.map((error) => (
           <li key={error}>{error}</li>
         ))}
@@ -505,14 +505,14 @@ export function VoiceAgentRetellStudioCard({
 
   const renderUnavailableRuntime = () => (
     <div className="p-4">
-      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/40 dark:bg-amber-950/20">
+      <div className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 dark:border-warning/40 dark:bg-warning/10">
         <div className="flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-          <p className="text-[12px] font-bold text-amber-900 dark:text-amber-100">
+          <AlertTriangle className="h-4 w-4 text-warning" />
+          <p className="text-[12px] font-bold text-warning dark:text-warning">
             Live voice data is temporarily unavailable
           </p>
         </div>
-        <p className="mt-1.5 text-[11px] leading-5 text-amber-700 dark:text-amber-300">
+        <p className="mt-1.5 text-[11px] leading-5 text-warning">
           The workspace is connected, but the system could not load the current
           voice draft right now. This is likely a backend sync issue, not
           something that needs to be fixed from this screen.
@@ -534,9 +534,9 @@ export function VoiceAgentRetellStudioCard({
   );
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm">
+    <div className="overflow-hidden rounded-lg border border-border/60 bg-card shadow-sm">
       {/* ── Dark header bar — matches overview hero ── */}
-      <div className="relative overflow-hidden bg-foreground px-4 py-3">
+      <div className="relative overflow-hidden bg-v2-card-dark px-4 py-3">
         {/* Grid pattern */}
         <div className="absolute inset-0 opacity-[0.04]">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -561,29 +561,29 @@ export function VoiceAgentRetellStudioCard({
         {/* Glow orb */}
         <div
           className="absolute top-1/2 -left-16 w-48 h-48 -translate-y-1/2 rounded-full blur-3xl"
-          style={{ backgroundColor: "rgba(99,102,241,0.12)" }}
+          style={{ backgroundColor: "rgba(226, 255, 204, 0.15)" }}
         />
         <div className="relative flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <div
               className="flex h-8 w-8 items-center justify-center rounded-lg flex-shrink-0"
-              style={{ backgroundColor: "rgba(99,102,241,0.2)" }}
+              style={{ backgroundColor: "rgba(226, 255, 204, 0.22)" }}
             >
               <Sparkles className="h-4 w-4" style={{ color: "#6366f1" }} />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <p
-                  className="text-[13px] font-bold text-white dark:text-black tracking-tight"
+                  className="text-[13px] font-bold text-white tracking-tight"
                   style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                 >
                   {viewCopy.title}
                 </p>
-                <span className="text-[9px] font-medium uppercase tracking-widest text-white/40 dark:text-black/30">
+                <span className="text-[9px] font-medium uppercase tracking-widest text-white/50">
                   {viewCopy.eyebrow}
                 </span>
               </div>
-              <p className="text-[10px] leading-4 text-white/50 dark:text-black/40 max-w-xl">
+              <p className="text-[10px] leading-4 text-white/60 max-w-xl">
                 {viewCopy.description}
               </p>
             </div>
@@ -591,7 +591,7 @@ export function VoiceAgentRetellStudioCard({
 
           <div className="flex flex-wrap items-center gap-1.5 flex-shrink-0">
             {isLive ? (
-              <Badge className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px]">
+              <Badge className="bg-success/20 text-success border border-success/30 text-[9px]">
                 {inPublishGrace
                   ? "Live \u00b7 Just published"
                   : typeof runtime?.agent?.last_modification_timestamp ===
@@ -600,12 +600,12 @@ export function VoiceAgentRetellStudioCard({
                     : "Live"}
               </Badge>
             ) : runtime?.agent?.is_published === false ? (
-              <Badge className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px]">
+              <Badge className="bg-warning/20 text-warning border border-warning/30 text-[9px]">
                 Draft needs publishing
               </Badge>
             ) : null}
             {hasUnsavedChanges && (
-              <Badge className="bg-white/10 text-white border border-white/20 dark:bg-black/10 dark:text-black dark:border-black/20 text-[9px]">
+              <Badge className="bg-white/10 text-white border border-white/20 dark:bg-white/15 dark:text-white dark:border-white/30 text-[9px]">
                 Unsaved changes
               </Badge>
             )}
@@ -789,7 +789,7 @@ export function VoiceAgentRetellStudioCard({
               <Collapsible
                 open={advancedOpen}
                 onOpenChange={setAdvancedOpen}
-                className="rounded-xl border border-v2-ring dark:border-v2-ring"
+                className="rounded-lg border border-v2-ring dark:border-v2-ring"
               >
                 <div className="flex items-center justify-between gap-3 px-4 py-3">
                   <div>
@@ -881,7 +881,7 @@ export function VoiceAgentRetellStudioCard({
                         spellCheck={false}
                       />
                       {agentJsonError && (
-                        <p className="text-[11px] text-red-600 dark:text-red-400">
+                        <p className="text-[11px] text-destructive">
                           {agentJsonError}
                         </p>
                       )}
@@ -919,7 +919,7 @@ export function VoiceAgentRetellStudioCard({
                         spellCheck={false}
                       />
                       {llmJsonError && (
-                        <p className="text-[11px] text-red-600 dark:text-red-400">
+                        <p className="text-[11px] text-destructive">
                           {llmJsonError}
                         </p>
                       )}

@@ -103,11 +103,11 @@ export function AdvancedView({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-border/50 bg-card px-4 py-3 shadow-sm">
-        <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
+      <div className="rounded-lg border border-border/50 bg-card px-4 py-3 shadow-sm">
+        <p className="text-[11px] font-semibold text-foreground dark:text-foreground">
           These settings are optional
         </p>
-        <p className="mt-1 text-[10px] leading-4 text-v2-ink-muted dark:text-v2-ink-subtle">
+        <p className="mt-1 text-[10px] leading-4 text-muted-foreground dark:text-muted-foreground">
           Most agents work great with the defaults. Only adjust these if you
           need to fine-tune how your agent thinks, listens, or handles calls.
         </p>
@@ -121,7 +121,7 @@ export function AdvancedView({
           description="Choose how smart and creative your agent should be."
         >
           {!llmAvailable && !llmLoading ? (
-            <div className="rounded-lg border border-v2-ring bg-v2-canvas px-3 py-3 text-[11px] leading-5 text-v2-ink-muted dark:border-v2-ring dark:bg-v2-canvas/40 dark:text-v2-ink-subtle">
+            <div className="rounded-lg border border-border bg-background px-3 py-3 text-[11px] leading-5 text-muted-foreground dark:border-border dark:bg-background/40 dark:text-muted-foreground">
               These controls become available when using the managed voice model
               setup.
             </div>
@@ -152,7 +152,7 @@ export function AdvancedView({
                         >
                           <div>
                             <span className="font-medium">{m.label}</span>
-                            <span className="ml-1.5 text-v2-ink-muted">
+                            <span className="ml-1.5 text-muted-foreground">
                               — {m.description}
                             </span>
                           </div>
@@ -160,7 +160,7 @@ export function AdvancedView({
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                     Standard is faster. Enhanced is better with complex
                     conversations.
                   </p>
@@ -195,7 +195,7 @@ export function AdvancedView({
                         >
                           <div>
                             <span className="font-medium">{t.label}</span>
-                            <span className="ml-1.5 text-v2-ink-muted">
+                            <span className="ml-1.5 text-muted-foreground">
                               — {t.description}
                             </span>
                           </div>
@@ -203,7 +203,7 @@ export function AdvancedView({
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                     "Natural" works best for most agents.
                   </p>
                 </div>
@@ -211,10 +211,10 @@ export function AdvancedView({
 
               <div className="flex items-center justify-between rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
                 <div className="pr-4">
-                  <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
+                  <p className="text-[11px] font-semibold text-foreground dark:text-foreground">
                     Strict connected actions
                   </p>
-                  <p className="text-[10px] leading-4 text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <p className="text-[10px] leading-4 text-muted-foreground dark:text-muted-foreground">
                     {LLM_FIELD_HINTS.toolCallStrictMode}
                   </p>
                 </div>
@@ -227,28 +227,28 @@ export function AdvancedView({
               </div>
 
               {/* Developer options — collapsed by default */}
-              <div className="rounded-lg border border-v2-ring dark:border-v2-ring">
+              <div className="rounded-lg border border-border dark:border-border">
                 <button
                   type="button"
                   className="flex w-full items-center justify-between px-3 py-2.5 text-left"
                   onClick={() => setDevMode(!devMode)}
                 >
                   <div className="flex items-center gap-2">
-                    <Code2 className="h-3.5 w-3.5 text-v2-ink-subtle" />
-                    <span className="text-[11px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
+                    <Code2 className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-[11px] font-medium text-muted-foreground dark:text-muted-foreground">
                       Developer options
                     </span>
                   </div>
                   <ChevronDown
                     className={cn(
-                      "h-3.5 w-3.5 text-v2-ink-subtle transition-transform",
+                      "h-3.5 w-3.5 text-muted-foreground transition-transform",
                       devMode && "rotate-180",
                     )}
                   />
                 </button>
                 {devMode && (
-                  <div className="space-y-3 border-t border-v2-ring px-3 py-3 dark:border-v2-ring">
-                    <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <div className="space-y-3 border-t border-border px-3 py-3 dark:border-border">
+                    <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                       These are advanced integrations. Most users don't need to
                       touch them.
                     </p>
@@ -385,7 +385,7 @@ export function AdvancedView({
                   placeholder="15"
                   className="h-8 text-xs"
                 />
-                <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                   How long to ring before hanging up. 15 seconds is typical.
                 </p>
               </div>
@@ -426,7 +426,7 @@ export function AdvancedView({
                   placeholder="30"
                   className="h-8 text-xs"
                 />
-                <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                   The longest a single call can last. 30 minutes is typical.
                 </p>
               </div>
@@ -434,10 +434,10 @@ export function AdvancedView({
 
             <div className="flex items-center justify-between rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
               <div className="pr-4">
-                <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
+                <p className="text-[11px] font-semibold text-foreground dark:text-foreground">
                   Allow keypad input
                 </p>
-                <p className="text-[10px] leading-4 text-v2-ink-muted dark:text-v2-ink-subtle">
+                <p className="text-[10px] leading-4 text-muted-foreground dark:text-muted-foreground">
                   {AGENT_FIELD_HINTS.allowUserDtmf}
                 </p>
               </div>
@@ -451,10 +451,10 @@ export function AdvancedView({
 
             <div className="flex items-center justify-between rounded-lg border border-border/50 bg-card px-3 py-2.5 shadow-sm">
               <div className="pr-4">
-                <p className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
+                <p className="text-[11px] font-semibold text-foreground dark:text-foreground">
                   Speak numbers naturally
                 </p>
-                <p className="text-[10px] leading-4 text-v2-ink-muted dark:text-v2-ink-subtle">
+                <p className="text-[10px] leading-4 text-muted-foreground dark:text-muted-foreground">
                   Converts "$150" to "one hundred fifty dollars" and similar.
                 </p>
               </div>

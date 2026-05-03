@@ -63,7 +63,7 @@ export function OverrideDashboard({ className }: OverrideDashboardProps) {
         <div className="space-y-2">
           <div className="flex justify-between items-baseline">
             <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <DollarSign className="h-3.5 w-3.5 text-blue-600" />
+              <DollarSign className="h-3.5 w-3.5 text-info" />
               Total Override Amount
             </span>
             <span className="text-lg font-bold font-mono">
@@ -72,7 +72,7 @@ export function OverrideDashboard({ className }: OverrideDashboardProps) {
           </div>
           <div className="flex justify-between items-baseline">
             <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5 text-amber-600" />
+              <Clock className="h-3.5 w-3.5 text-warning" />
               Pending
             </span>
             <span className="text-lg font-bold font-mono">
@@ -81,7 +81,7 @@ export function OverrideDashboard({ className }: OverrideDashboardProps) {
           </div>
           <div className="flex justify-between items-baseline">
             <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
+              <TrendingUp className="h-3.5 w-3.5 text-success" />
               Earned
             </span>
             <span className="text-lg font-bold font-mono">
@@ -90,7 +90,7 @@ export function OverrideDashboard({ className }: OverrideDashboardProps) {
           </div>
           <div className="flex justify-between items-baseline">
             <span className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <CheckCircle className="h-3.5 w-3.5 text-violet-600" />
+              <CheckCircle className="h-3.5 w-3.5 text-info" />
               Paid
             </span>
             <span className="text-lg font-bold font-mono">

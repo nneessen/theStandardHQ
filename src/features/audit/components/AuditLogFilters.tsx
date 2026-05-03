@@ -99,7 +99,7 @@ export function AuditLogFilters({
             variant="ghost"
             size="sm"
             onClick={handleClearAll}
-            className="gap-1 text-xs text-v2-ink-muted"
+            className="gap-1 text-xs text-muted-foreground"
           >
             <X className="h-3 w-3" />
             Clear All
@@ -111,9 +111,9 @@ export function AuditLogFilters({
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {/* Search */}
           <div className="space-y-1.5 col-span-2 lg:col-span-1">
-            <Label className="text-[11px] text-v2-ink-muted">Search</Label>
+            <Label className="text-[11px] text-muted-foreground">Search</Label>
             <div className="relative">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-v2-ink-subtle" />
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
                 placeholder="Search..."
                 value={filters.search || ""}
@@ -130,7 +130,7 @@ export function AuditLogFilters({
 
           {/* Table */}
           <div className="space-y-1.5">
-            <Label className="text-[11px] text-v2-ink-muted">Table</Label>
+            <Label className="text-[11px] text-muted-foreground">Table</Label>
             <Select
               value={filters.tableName || "all"}
               onValueChange={(value) =>
@@ -162,7 +162,7 @@ export function AuditLogFilters({
 
           {/* Action */}
           <div className="space-y-1.5">
-            <Label className="text-[11px] text-v2-ink-muted">Action</Label>
+            <Label className="text-[11px] text-muted-foreground">Action</Label>
             <Select
               value={filters.action || "all"}
               onValueChange={(value) =>
@@ -194,7 +194,9 @@ export function AuditLogFilters({
 
           {/* Action Type */}
           <div className="space-y-1.5">
-            <Label className="text-[11px] text-v2-ink-muted">Action Type</Label>
+            <Label className="text-[11px] text-muted-foreground">
+              Action Type
+            </Label>
             <Select
               value={filters.actionType || "all"}
               onValueChange={(value) =>
@@ -226,7 +228,7 @@ export function AuditLogFilters({
 
           {/* Performed By */}
           <div className="space-y-1.5">
-            <Label className="text-[11px] text-v2-ink-muted">
+            <Label className="text-[11px] text-muted-foreground">
               Performed By
             </Label>
             <Select
@@ -260,7 +262,9 @@ export function AuditLogFilters({
 
           {/* Date Range */}
           <div className="space-y-1.5 col-span-2 lg:col-span-1">
-            <Label className="text-[11px] text-v2-ink-muted">Date Range</Label>
+            <Label className="text-[11px] text-muted-foreground">
+              Date Range
+            </Label>
             <DateRangePicker
               value={{
                 from: filters.startDate,

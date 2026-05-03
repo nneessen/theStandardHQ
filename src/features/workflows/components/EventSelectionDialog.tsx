@@ -34,36 +34,33 @@ interface EventSelectionDialogProps {
 const CATEGORY_CONFIG = {
   recruit: {
     icon: Users,
-    color: "text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/20",
+    color: "text-info bg-info/10 border-info/20",
     label: "Recruiting",
   },
   policy: {
     icon: FileText,
-    color:
-      "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+    color: "text-success bg-success/10 border-success/20",
     label: "Policies",
   },
   commission: {
     icon: DollarSign,
-    color:
-      "text-green-600 dark:text-green-400 bg-green-500/10 border-green-500/20",
+    color: "text-success bg-success/10 border-success/20",
     label: "Commissions",
   },
   email: {
     icon: Mail,
-    color:
-      "text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/20",
+    color: "text-info bg-info/10 border-info/20",
     label: "Emails",
   },
   user: {
     icon: User,
-    color:
-      "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/20",
+    color: "text-warning bg-warning/10 border-warning/20",
     label: "Users",
   },
   general: {
     icon: Zap,
-    color: "text-gray-600 dark:text-gray-400 bg-gray-500/10 border-gray-500/20",
+    color:
+      "text-muted-foreground dark:text-muted-foreground bg-muted/10 border-input/20",
     label: "General",
   },
 } as const;

@@ -145,9 +145,7 @@ export function TrendComparison() {
           <div
             className={cn(
               "text-2xl font-semibold tracking-tight leading-none inline-flex items-center gap-1",
-              apTrend
-                ? "text-emerald-600 dark:text-emerald-400"
-                : "text-red-600 dark:text-red-400",
+              apTrend ? "text-success" : "text-destructive",
             )}
           >
             {apTrend ? (
@@ -193,9 +191,8 @@ export function TrendComparison() {
                 <span
                   className={cn(
                     "inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px] font-medium min-w-[42px] justify-center",
-                    isUp &&
-                      "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-                    isDown && "bg-red-500/10 text-red-600 dark:text-red-400",
+                    isUp && "bg-success/10 text-success",
+                    isDown && "bg-destructive/10 text-destructive",
                     isNeutral && "bg-v2-ring text-v2-ink-muted",
                   )}
                 >

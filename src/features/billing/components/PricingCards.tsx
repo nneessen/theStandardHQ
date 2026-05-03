@@ -155,7 +155,7 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
               Pick the plan that fits your agency size and goals.
             </p>
             {isGrandfathered && (
-              <p className="text-[10px] text-amber-400 mt-1 font-medium">
+              <p className="text-[10px] text-warning mt-1 font-medium">
                 ⚠ Subscribe before your free access expires to keep your
                 features.
               </p>
@@ -189,8 +189,8 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
                 className={cn(
                   "font-semibold",
                   billingInterval === "annual"
-                    ? "text-emerald-600"
-                    : "text-emerald-400",
+                    ? "text-success"
+                    : "text-success",
                 )}
               >
                 Save 17%
@@ -221,7 +221,7 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
                 className={cn(
                   "relative flex flex-col rounded-lg border p-3 transition-all",
                   isCurrent
-                    ? "border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20"
+                    ? "border-success bg-success/10/50 dark:bg-success/10"
                     : isPopular
                       ? "border-v2-ink"
                       : "border-v2-ring",
@@ -240,7 +240,7 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
                 {/* Current badge */}
                 {isCurrent && (
                   <div className="absolute -top-2 left-1/2 -translate-x-1/2">
-                    <span className="inline-flex items-center gap-0.5 bg-emerald-500 text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
+                    <span className="inline-flex items-center gap-0.5 bg-success text-white text-[9px] font-semibold px-2 py-0.5 rounded-full">
                       <Check className="h-2.5 w-2.5" />
                       Current Plan
                     </span>
@@ -281,7 +281,7 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
                   )}
                   {features.map((feature) => (
                     <div key={feature} className="flex items-start gap-1.5">
-                      <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                      <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                       <span className="text-[10px] text-v2-ink-muted">
                         {feature}
                       </span>
@@ -291,7 +291,7 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
                   {/* Team size note */}
                   {plan.team_size_limit === null && plan.name === "team" && (
                     <div className="flex items-start gap-1.5">
-                      <Check className="h-3 w-3 text-emerald-500 mt-0.5 flex-shrink-0" />
+                      <Check className="h-3 w-3 text-success mt-0.5 flex-shrink-0" />
                       <span className="text-[10px] text-v2-ink-muted">
                         Unlimited team size
                       </span>
@@ -305,7 +305,7 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
                   className={cn(
                     "h-7 text-[10px] w-full",
                     isCurrent
-                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 hover:bg-emerald-100 cursor-default"
+                      ? "bg-success/20 text-success dark:bg-success/30 dark:text-success hover:bg-success/20 cursor-default"
                       : isPaid
                         ? "bg-v2-card-dark hover:bg-v2-ring dark:bg-v2-ring dark:hover:bg-v2-ring dark:text-v2-ink"
                         : "bg-v2-ring text-v2-ink hover:bg-v2-ring dark:text-v2-ink-subtle dark:hover:bg-v2-card-dark",

@@ -67,16 +67,16 @@ function Section({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-v2-ring p-4 dark:border-v2-ring">
+    <section className="rounded-lg border border-border p-4 dark:border-border">
       <div className="flex items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-card-tinted text-foreground dark:bg-card-tinted dark:text-foreground">
           {icon}
         </div>
         <div>
-          <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
+          <p className="text-[12px] font-semibold text-foreground dark:text-foreground">
             {title}
           </p>
-          <p className="mt-1 text-[10px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
+          <p className="mt-1 text-[10px] leading-5 text-muted-foreground dark:text-muted-foreground">
             {description}
           </p>
         </div>
@@ -99,7 +99,7 @@ function SaveButton({
 }) {
   if (!dirty) return null;
   return (
-    <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
+    <div className="mt-3 flex items-center gap-2 border-t border-border pt-3 dark:border-border">
       <Button
         size="sm"
         className="h-7 text-[10px]"
@@ -229,11 +229,11 @@ export function VoiceCallRulesCard({
   );
 
   return (
-    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
+    <div className="rounded-lg border border-border bg-white p-4 dark:border-border dark:bg-card">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-foreground dark:text-foreground">
         Call Rules
       </p>
-      <p className="mt-1 text-[12px] text-v2-ink-muted dark:text-v2-ink-subtle">
+      <p className="mt-1 text-[12px] text-muted-foreground dark:text-muted-foreground">
         Control which leads the voice agent can call and receive calls from.
         Empty status lists mean all leads are allowed.
       </p>
@@ -271,12 +271,12 @@ export function VoiceCallRulesCard({
         >
           <div className="space-y-3">
             {/* Outbound enabled toggle */}
-            <div className="flex items-center justify-between rounded-lg border border-v2-ring px-3 py-2.5 dark:border-v2-ring">
+            <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2.5 dark:border-border">
               <div className="pr-4">
-                <p className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
+                <p className="text-[12px] font-semibold text-foreground dark:text-foreground">
                   Outbound calling
                 </p>
-                <p className="text-[10px] leading-5 text-v2-ink-muted dark:text-v2-ink-subtle">
+                <p className="text-[10px] leading-5 text-muted-foreground dark:text-muted-foreground">
                   Allow the agent to place outbound calls.
                 </p>
               </div>
@@ -374,30 +374,30 @@ export function VoiceCallRulesCard({
                   <Label className="text-[11px]">
                     Outbound Dialer Smart Views
                   </Label>
-                  <p className="text-[10px] leading-4 text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <p className="text-[10px] leading-4 text-muted-foreground dark:text-muted-foreground">
                     The automated dialer only calls leads from selected Smart
                     Views.
                   </p>
                   {!closeConnected ? (
-                    <p className="text-[10px] text-amber-600 dark:text-amber-400">
+                    <p className="text-[10px] text-warning">
                       Connect Close CRM to select Smart Views.
                     </p>
                   ) : smartViewsLoading ? (
-                    <div className="flex items-center gap-1.5 py-2 text-[10px] text-v2-ink-subtle">
+                    <div className="flex items-center gap-1.5 py-2 text-[10px] text-muted-foreground">
                       <Loader2 className="h-3 w-3 animate-spin" />
                       Loading Smart Views…
                     </div>
                   ) : !smartViews || smartViews.length === 0 ? (
-                    <p className="text-[10px] text-v2-ink-subtle">
+                    <p className="text-[10px] text-muted-foreground">
                       No Smart Views found in your Close account.
                     </p>
                   ) : (
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between border-b border-v2-ring pb-1 dark:border-v2-ring">
+                      <div className="flex items-center justify-between border-b border-border pb-1 dark:border-border">
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-5 px-1.5 text-[10px] text-blue-600 dark:text-blue-400"
+                          className="h-5 px-1.5 text-[10px] text-info"
                           onClick={() => {
                             const allIds = smartViews.map((sv) => sv.id);
                             const allSelected = allIds.every((id) =>
@@ -416,7 +416,7 @@ export function VoiceCallRulesCard({
                             ? "Deselect All"
                             : "Select All"}
                         </Button>
-                        <span className="text-[10px] text-v2-ink-subtle">
+                        <span className="text-[10px] text-muted-foreground">
                           {outbound.smartViewIds.length} / {smartViews.length}
                         </span>
                       </div>
@@ -440,7 +440,7 @@ export function VoiceCallRulesCard({
                               }}
                               disabled={updateOutbound.isPending}
                             />
-                            <span className="truncate text-[11px] text-v2-ink dark:text-v2-ink-muted">
+                            <span className="truncate text-[11px] text-foreground dark:text-muted-foreground">
                               {sv.label}
                             </span>
                           </label>
@@ -454,9 +454,9 @@ export function VoiceCallRulesCard({
                     outbound.enabled &&
                     outbound.smartViewIds.length === 0 &&
                     !smartViewsLoading && (
-                      <div className="flex items-start gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-900/60 dark:bg-amber-950/20">
-                        <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 text-amber-600 dark:text-amber-400" />
-                        <p className="text-[10px] leading-4 text-amber-700 dark:text-amber-300">
+                      <div className="flex items-start gap-1.5 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 dark:border-warning/60 dark:bg-warning/10">
+                        <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 text-warning" />
+                        <p className="text-[10px] leading-4 text-warning">
                           No Smart Views selected. The voice agent will not make
                           any outbound calls.
                         </p>
@@ -468,7 +468,7 @@ export function VoiceCallRulesCard({
 
             {/* Outbound validation errors */}
             {outboundErrors.length > 0 && (
-              <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-[10px] text-red-700 dark:border-red-900/60 dark:bg-red-950/20 dark:text-red-300">
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-[10px] text-destructive dark:border-destructive/60 dark:bg-destructive/10 dark:text-destructive">
                 {outboundErrors.map((err) => (
                   <p key={err}>{err}</p>
                 ))}

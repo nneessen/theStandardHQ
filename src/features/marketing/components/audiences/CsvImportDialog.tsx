@@ -138,7 +138,7 @@ export function CsvImportDialog({ open, onOpenChange }: CsvImportDialogProps) {
                 {errors.length > 0 && (
                   <Badge
                     variant="outline"
-                    className="text-[10px] h-5 px-1.5 text-amber-600 border-amber-200 bg-amber-50"
+                    className="text-[10px] h-5 px-1.5 text-warning border-warning/30 bg-warning/10"
                   >
                     {errors.length} issues
                   </Badge>
@@ -196,17 +196,14 @@ export function CsvImportDialog({ open, onOpenChange }: CsvImportDialogProps) {
 
               {/* Errors */}
               {errors.length > 0 && (
-                <div className="rounded border border-amber-200 bg-amber-50 dark:bg-amber-950 dark:border-amber-800 p-2 max-h-[80px] overflow-auto">
+                <div className="rounded border border-warning/30 bg-warning/10 dark:bg-warning/10 dark:border-warning p-2 max-h-[80px] overflow-auto">
                   {errors.slice(0, 5).map((err, i) => (
-                    <p
-                      key={i}
-                      className="text-[10px] text-amber-700 dark:text-amber-300"
-                    >
+                    <p key={i} className="text-[10px] text-warning">
                       {err}
                     </p>
                   ))}
                   {errors.length > 5 && (
-                    <p className="text-[10px] text-amber-600">
+                    <p className="text-[10px] text-warning">
                       ...and {errors.length - 5} more warnings
                     </p>
                   )}
@@ -226,18 +223,18 @@ export function CsvImportDialog({ open, onOpenChange }: CsvImportDialogProps) {
 
           {stage === "done" && result && (
             <div className="flex flex-col items-center justify-center gap-3 py-8">
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <CheckCircle className="h-8 w-8 text-success" />
               <div className="text-center">
                 <p className="text-sm font-medium">Import Complete</p>
                 <p className="text-[11px] text-muted-foreground mt-1">
-                  <span className="font-medium text-green-600">
+                  <span className="font-medium text-success">
                     {result.imported}
                   </span>{" "}
                   imported
                   {result.skipped > 0 && (
                     <>
                       {" / "}
-                      <span className="font-medium text-amber-600">
+                      <span className="font-medium text-warning">
                         {result.skipped}
                       </span>{" "}
                       skipped (duplicates)
@@ -246,7 +243,7 @@ export function CsvImportDialog({ open, onOpenChange }: CsvImportDialogProps) {
                 </p>
                 {errors.length > 0 && (
                   <p className="text-[10px] text-muted-foreground mt-0.5">
-                    <AlertCircle className="h-3 w-3 inline mr-0.5 text-amber-500" />
+                    <AlertCircle className="h-3 w-3 inline mr-0.5 text-warning" />
                     {errors.length} parse warnings
                   </p>
                 )}

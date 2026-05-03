@@ -174,7 +174,7 @@ export function LeadDropPage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="rounded-lg bg-gradient-to-br from-green-500/10 to-emerald-500/10 p-2">
-          <Zap className="h-5 w-5 text-green-500" />
+          <Zap className="h-5 w-5 text-success" />
         </div>
         <div>
           <h1 className="text-xl font-semibold">Lead Drop</h1>
@@ -190,7 +190,7 @@ export function LeadDropPage() {
 
       {connection?.connected && (
         <Tabs defaultValue="drop" className="space-y-4">
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-xl bg-v2-ring/70 p-1 dark:bg-v2-ring/70">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-lg bg-v2-ring/70 p-1 dark:bg-v2-ring/70">
             <TabsTrigger value="drop" className="text-xs">
               Drop
             </TabsTrigger>
@@ -201,7 +201,7 @@ export function LeadDropPage() {
 
           {/* ── Drop tab (wizard) ────────────────────────────────────── */}
           <TabsContent value="drop">
-            <div className="border rounded-xl p-5 space-y-5 bg-card">
+            <div className="border rounded-lg p-5 space-y-5 bg-card">
               {/* Step breadcrumb */}
               {step !== "progress" && step !== "results" && (
                 <div className="flex items-center gap-1">
@@ -213,7 +213,7 @@ export function LeadDropPage() {
                           s === step
                             ? "text-foreground"
                             : WIZARD_STEPS.indexOf(step) > i
-                              ? "text-green-500"
+                              ? "text-success"
                               : "text-muted-foreground",
                         ].join(" ")}
                       >
@@ -315,7 +315,7 @@ export function LeadDropPage() {
 
           {/* ── History tab ───────────────────────────────────────────── */}
           <TabsContent value="history">
-            <div className="border rounded-xl p-4 bg-card">
+            <div className="border rounded-lg p-4 bg-card">
               <HistoryTab />
             </div>
           </TabsContent>

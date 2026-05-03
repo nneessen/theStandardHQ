@@ -74,19 +74,19 @@ export const PolicyFormClientSection: React.FC<
   const selectedProduct = products.find((p) => p.id === formData.productId);
 
   return (
-    <div className="bg-v2-card-tinted rounded-lg border border-v2-ring/80 dark:border-v2-ring-strong/60 shadow-sm">
+    <div className="bg-card-tinted rounded-lg border border-border/80 dark:border-border/60 shadow-sm">
       {/* Section header strip */}
-      <div className="flex items-center gap-2 px-3 py-2 rounded-t-lg bg-gradient-to-r from-amber-50 to-transparent dark:from-amber-950/30 dark:to-transparent border-b border-v2-ring/60 dark:border-v2-ring-strong/40">
-        <User className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-        <span className="text-[10px] font-semibold text-amber-800 dark:text-amber-300 uppercase tracking-wider">
+      <div className="flex items-center gap-2 px-3 py-2 rounded-t-lg bg-gradient-to-r from-amber-50 to-transparent dark:from-amber-950/30 dark:to-transparent border-b border-border/60 dark:border-border/40">
+        <User className="h-3 w-3 text-warning" />
+        <span className="text-[10px] font-semibold text-warning uppercase tracking-wider">
           Client Information
         </span>
       </div>
 
       <div className="p-3 space-y-3">
         {/* Client Details Group */}
-        <div className="space-y-2.5 p-2.5 rounded-md bg-v2-canvas/80 dark:bg-v2-card/40 border border-v2-ring dark:border-v2-ring-strong/30">
-          <p className="text-[9px] font-medium text-v2-ink-subtle dark:text-v2-ink-muted uppercase tracking-wider">
+        <div className="space-y-2.5 p-2.5 rounded-md bg-background/80 dark:bg-card/40 border border-border dark:border-border/30">
+          <p className="text-[9px] font-medium text-muted-foreground dark:text-muted-foreground uppercase tracking-wider">
             Client Details
           </p>
 
@@ -104,7 +104,7 @@ export const PolicyFormClientSection: React.FC<
               name="clientName"
               value={formData.clientName}
               onChange={onInputChange}
-              className={`h-8 text-xs bg-v2-card-tinted border-v2-ring dark:border-v2-ring-strong ${displayErrors.clientName ? "border-destructive" : ""}`}
+              className={`h-8 text-xs bg-card-tinted border-border dark:border-border ${displayErrors.clientName ? "border-destructive" : ""}`}
               placeholder="John Smith"
             />
             {displayErrors.clientName && (
@@ -179,7 +179,7 @@ export const PolicyFormClientSection: React.FC<
           <CollapsibleTrigger asChild>
             <button
               type="button"
-              className="flex items-center gap-1.5 text-[10px] text-amber-700 dark:text-amber-400 hover:text-amber-900 dark:hover:text-amber-300 font-medium transition-colors"
+              className="flex items-center gap-1.5 text-[10px] text-warning hover:text-warning/80 font-medium transition-colors"
             >
               <ChevronDown
                 className={`h-3 w-3 transition-transform ${showContactDetails ? "rotate-180" : ""}`}
@@ -188,8 +188,8 @@ export const PolicyFormClientSection: React.FC<
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-2">
-            <div className="space-y-2.5 p-2.5 rounded-md bg-v2-canvas/80 dark:bg-v2-card/40 border border-v2-ring dark:border-v2-ring-strong/30">
-              <p className="text-[9px] font-medium text-v2-ink-subtle dark:text-v2-ink-muted uppercase tracking-wider">
+            <div className="space-y-2.5 p-2.5 rounded-md bg-background/80 dark:bg-card/40 border border-border dark:border-border/30">
+              <p className="text-[9px] font-medium text-muted-foreground dark:text-muted-foreground uppercase tracking-wider">
                 Contact & Address
               </p>
               <div className="grid grid-cols-2 gap-2">
@@ -206,7 +206,7 @@ export const PolicyFormClientSection: React.FC<
                     name="clientEmail"
                     value={formData.clientEmail || ""}
                     onChange={onInputChange}
-                    className="h-8 text-[11px] bg-v2-card-tinted border-v2-ring dark:border-v2-ring-strong"
+                    className="h-8 text-[11px] bg-card-tinted border-border dark:border-border"
                     placeholder="client@email.com"
                   />
                 </div>
@@ -224,7 +224,7 @@ export const PolicyFormClientSection: React.FC<
                     name="clientPhone"
                     value={formData.clientPhone || ""}
                     onChange={(e) => onPhoneChange(e.target.value)}
-                    className="h-8 text-[11px] bg-v2-card-tinted border-v2-ring dark:border-v2-ring-strong"
+                    className="h-8 text-[11px] bg-card-tinted border-border dark:border-border"
                     placeholder="(555) 123-4567"
                   />
                 </div>
@@ -242,7 +242,7 @@ export const PolicyFormClientSection: React.FC<
                   name="clientStreet"
                   value={formData.clientStreet || ""}
                   onChange={onInputChange}
-                  className="h-8 text-[11px] bg-v2-card-tinted border-v2-ring dark:border-v2-ring-strong"
+                  className="h-8 text-[11px] bg-card-tinted border-border dark:border-border"
                   placeholder="123 Main St"
                 />
               </div>
@@ -260,7 +260,7 @@ export const PolicyFormClientSection: React.FC<
                     name="clientCity"
                     value={formData.clientCity || ""}
                     onChange={onInputChange}
-                    className="h-8 text-[11px] bg-v2-card-tinted border-v2-ring dark:border-v2-ring-strong"
+                    className="h-8 text-[11px] bg-card-tinted border-border dark:border-border"
                     placeholder="Anytown"
                   />
                 </div>
@@ -279,7 +279,7 @@ export const PolicyFormClientSection: React.FC<
                     name="clientZipCode"
                     value={formData.clientZipCode || ""}
                     onChange={onInputChange}
-                    className="h-8 text-[11px] bg-v2-card-tinted border-v2-ring dark:border-v2-ring-strong"
+                    className="h-8 text-[11px] bg-card-tinted border-border dark:border-border"
                     placeholder="12345"
                   />
                 </div>
@@ -289,8 +289,8 @@ export const PolicyFormClientSection: React.FC<
         </Collapsible>
 
         {/* Product Selection Group */}
-        <div className="space-y-2.5 p-2.5 rounded-md bg-v2-canvas/80 dark:bg-v2-card/40 border border-v2-ring dark:border-v2-ring-strong/30">
-          <p className="text-[9px] font-medium text-v2-ink-subtle dark:text-v2-ink-muted uppercase tracking-wider">
+        <div className="space-y-2.5 p-2.5 rounded-md bg-background/80 dark:bg-card/40 border border-border dark:border-border/30">
+          <p className="text-[9px] font-medium text-muted-foreground dark:text-muted-foreground uppercase tracking-wider">
             Product Selection
           </p>
 
@@ -437,7 +437,7 @@ export const PolicyFormClientSection: React.FC<
             onChange={onInputChange}
             rows={2}
             placeholder="Optional notes..."
-            className="text-[11px] resize-vertical min-h-[50px] bg-v2-card-tinted border-v2-ring dark:border-v2-ring-strong"
+            className="text-[11px] resize-vertical min-h-[50px] bg-card-tinted border-border dark:border-border"
           />
         </div>
       </div>

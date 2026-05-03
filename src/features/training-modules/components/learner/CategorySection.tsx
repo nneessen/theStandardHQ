@@ -13,14 +13,14 @@ import {
 import { AssignmentRow } from "./AssignmentRow";
 
 const CATEGORY_DOT_COLORS: Record<ModuleCategory, string> = {
-  script_training: "bg-violet-500",
-  objections_rebuttals: "bg-rose-500",
-  product_knowledge: "bg-blue-500",
-  carrier_training: "bg-amber-500",
-  compliance: "bg-red-500",
-  sales_techniques: "bg-emerald-500",
-  onboarding: "bg-cyan-500",
-  custom: "bg-zinc-400",
+  script_training: "bg-info",
+  objections_rebuttals: "bg-destructive",
+  product_knowledge: "bg-info",
+  carrier_training: "bg-warning",
+  compliance: "bg-destructive",
+  sales_techniques: "bg-success",
+  onboarding: "bg-info",
+  custom: "bg-muted",
 };
 
 interface CategorySectionProps {

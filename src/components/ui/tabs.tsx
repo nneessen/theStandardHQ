@@ -1,6 +1,3 @@
-// src/components/ui/tabs.tsx
-// Modern tabs with prominent visual grouping and zinc palette
-
 import * as React from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -9,28 +6,20 @@ import { cn } from "@/lib/utils";
 const Tabs = TabsPrimitive.Root;
 
 const tabsListVariants = cva(
-  "inline-flex items-center gap-1 p-1 transition-all duration-200",
+  "inline-flex items-center gap-1 p-1 transition-colors duration-150",
   {
     variants: {
       variant: {
-        // Default: Strong container background with border
-        default:
-          "rounded-lg bg-zinc-200 border border-zinc-300 shadow-inner dark:bg-zinc-800 dark:border-zinc-700",
+        default: "rounded-md bg-muted border border-border",
 
-        // Pill: Rounded pill style with prominent container
-        pill: "rounded-full bg-zinc-200 border border-zinc-300 shadow-inner dark:bg-zinc-800 dark:border-zinc-700",
+        pill: "rounded-full bg-muted border border-border",
 
-        // Underline: Bottom border style (no container)
         underline:
-          "bg-transparent border-b-2 border-zinc-200 dark:border-zinc-700 rounded-none p-0 gap-0",
+          "bg-transparent border-b border-border rounded-none p-0 gap-0",
 
-        // Boxed: Card-like container
-        boxed:
-          "rounded-lg bg-zinc-100 border-2 border-zinc-300 shadow-md dark:bg-zinc-900 dark:border-zinc-700",
+        boxed: "rounded-md bg-muted border border-border",
 
-        // Segment: iOS-style segmented control
-        segment:
-          "rounded-lg bg-zinc-200/80 border border-zinc-300 shadow-sm backdrop-blur-sm dark:bg-zinc-800/80 dark:border-zinc-700",
+        segment: "rounded-md bg-muted/80 border border-border backdrop-blur-sm",
       },
       size: {
         sm: "h-8 text-xs",
@@ -46,48 +35,43 @@ const tabsListVariants = cva(
 );
 
 const tabsTriggerVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap font-medium transition-all duration-200 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:focus-visible:ring-zinc-100 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap font-medium transition-colors duration-150 select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         default: [
-          "rounded-md px-4 py-1.5",
-          "text-zinc-600 dark:text-zinc-400",
-          "hover:text-zinc-900 hover:bg-zinc-300/50 dark:hover:text-zinc-100 dark:hover:bg-zinc-700/50",
-          "data-[state=active]:bg-white data-[state=active]:text-zinc-900 data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-zinc-200",
-          "dark:data-[state=active]:bg-zinc-900 dark:data-[state=active]:text-zinc-100 dark:data-[state=active]:border-zinc-700",
+          "rounded-sm px-4 py-1.5",
+          "text-muted-foreground",
+          "hover:text-foreground hover:bg-accent/40",
+          "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:border data-[state=active]:border-border",
         ].join(" "),
 
         pill: [
           "rounded-full px-4 py-1.5",
-          "text-zinc-600 dark:text-zinc-400",
-          "hover:text-zinc-900 hover:bg-zinc-300/50 dark:hover:text-zinc-100 dark:hover:bg-zinc-700/50",
-          "data-[state=active]:bg-white data-[state=active]:text-zinc-900 data-[state=active]:shadow-md",
-          "dark:data-[state=active]:bg-zinc-900 dark:data-[state=active]:text-zinc-100",
+          "text-muted-foreground",
+          "hover:text-foreground hover:bg-accent/40",
+          "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
         ].join(" "),
 
         underline: [
-          "px-4 py-2 -mb-[2px] rounded-none border-b-2 border-transparent",
-          "text-zinc-500 dark:text-zinc-400",
-          "hover:text-zinc-900 hover:border-zinc-300 dark:hover:text-zinc-100 dark:hover:border-zinc-600",
-          "data-[state=active]:text-zinc-900 data-[state=active]:border-zinc-900",
-          "dark:data-[state=active]:text-zinc-100 dark:data-[state=active]:border-zinc-100",
+          "px-4 py-2 -mb-[1px] rounded-none border-b-2 border-transparent",
+          "text-muted-foreground",
+          "hover:text-foreground hover:border-foreground/30",
+          "data-[state=active]:text-foreground data-[state=active]:border-foreground",
         ].join(" "),
 
         boxed: [
-          "rounded-md px-4 py-1.5",
-          "text-zinc-600 dark:text-zinc-400",
-          "hover:text-zinc-900 hover:bg-zinc-200 dark:hover:text-zinc-100 dark:hover:bg-zinc-800",
-          "data-[state=active]:bg-zinc-900 data-[state=active]:text-white data-[state=active]:shadow-lg",
-          "dark:data-[state=active]:bg-zinc-100 dark:data-[state=active]:text-zinc-900",
+          "rounded-sm px-4 py-1.5",
+          "text-muted-foreground",
+          "hover:text-foreground hover:bg-accent/40",
+          "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
         ].join(" "),
 
         segment: [
-          "rounded-md px-4 py-1.5 flex-1",
-          "text-zinc-600 dark:text-zinc-400",
-          "hover:text-zinc-900 dark:hover:text-zinc-100",
-          "data-[state=active]:bg-white data-[state=active]:text-zinc-900 data-[state=active]:shadow-md data-[state=active]:font-semibold",
-          "dark:data-[state=active]:bg-zinc-800 dark:data-[state=active]:text-zinc-100",
+          "rounded-sm px-4 py-1.5 flex-1",
+          "text-muted-foreground",
+          "hover:text-foreground",
+          "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm data-[state=active]:font-semibold",
         ].join(" "),
       },
       size: {
@@ -145,7 +129,7 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      "mt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-2 dark:focus-visible:ring-zinc-100",
+      "mt-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
       "data-[state=inactive]:animate-out data-[state=inactive]:fade-out-0 data-[state=active]:animate-in data-[state=active]:fade-in-0",
       className,
     )}

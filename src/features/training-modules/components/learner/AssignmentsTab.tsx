@@ -107,7 +107,7 @@ export function AssignmentsTab({ assignments }: AssignmentsTabProps) {
             placeholder="Search assignments..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-7 pl-7 pr-2 text-[11px] bg-v2-card border border-v2-ring dark:border-v2-ring rounded-md text-v2-ink dark:text-v2-ink placeholder:text-v2-ink-subtle focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700"
+            className="w-full h-7 pl-7 pr-2 text-[11px] bg-v2-card border border-v2-ring dark:border-v2-ring rounded-md text-v2-ink dark:text-v2-ink placeholder:text-v2-ink-subtle focus:outline-none focus:ring-1 focus:ring-muted dark:focus:ring-muted"
           />
         </div>
 
@@ -117,7 +117,7 @@ export function AssignmentsTab({ assignments }: AssignmentsTabProps) {
           onChange={(e) =>
             setDifficultyFilter(e.target.value as DifficultyLevel | "")
           }
-          className="h-7 px-2 text-[11px] bg-v2-card border border-v2-ring dark:border-v2-ring rounded-md text-v2-ink dark:text-v2-ink-muted focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700"
+          className="h-7 px-2 text-[11px] bg-v2-card border border-v2-ring dark:border-v2-ring rounded-md text-v2-ink dark:text-v2-ink-muted focus:outline-none focus:ring-1 focus:ring-muted dark:focus:ring-muted"
         >
           <option value="">All Levels</option>
           {DIFFICULTY_LEVELS.map((d) => (
@@ -133,7 +133,7 @@ export function AssignmentsTab({ assignments }: AssignmentsTabProps) {
           onChange={(e) =>
             setPriorityFilter(e.target.value as PriorityLevel | "")
           }
-          className="h-7 px-2 text-[11px] bg-v2-card border border-v2-ring dark:border-v2-ring rounded-md text-v2-ink dark:text-v2-ink-muted focus:outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700"
+          className="h-7 px-2 text-[11px] bg-v2-card border border-v2-ring dark:border-v2-ring rounded-md text-v2-ink dark:text-v2-ink-muted focus:outline-none focus:ring-1 focus:ring-muted dark:focus:ring-muted"
         >
           <option value="">All Priorities</option>
           {PRIORITY_LEVELS.map((p) => (
@@ -156,7 +156,7 @@ export function AssignmentsTab({ assignments }: AssignmentsTabProps) {
 
       {/* Alert banner */}
       {(overdueCount > 0 || urgentCount > 0) && (
-        <div className="flex items-center gap-2 px-2.5 py-1.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-md text-[11px] text-amber-700 dark:text-amber-400">
+        <div className="flex items-center gap-2 px-2.5 py-1.5 bg-warning/10 border border-warning/30 dark:border-warning/50 rounded-md text-[11px] text-warning">
           <AlertTriangle className="h-3 w-3 flex-shrink-0" />
           <span>
             {overdueCount > 0 && <>{overdueCount} overdue</>}

@@ -29,19 +29,16 @@ export const KPIGrid: React.FC<DetailedKPIGridProps> = ({ sections }) => {
 
   const getCategoryColor = (category: string) => {
     const lowerCategory = category.toLowerCase();
-    if (lowerCategory.includes("financial"))
-      return "text-violet-600 dark:text-violet-400 bg-violet-50/50 dark:bg-violet-950/20";
-    if (lowerCategory.includes("production"))
-      return "text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-950/20";
+    if (lowerCategory.includes("financial")) return "text-info bg-info/10";
+    if (lowerCategory.includes("production")) return "text-info bg-info/10";
     if (
       lowerCategory.includes("commission") ||
       lowerCategory.includes("metric")
     )
-      return "text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20";
-    if (lowerCategory.includes("client"))
-      return "text-cyan-600 dark:text-cyan-400 bg-cyan-50/50 dark:bg-cyan-950/20";
+      return "text-success bg-success/10";
+    if (lowerCategory.includes("client")) return "text-info bg-info/10";
     if (lowerCategory.includes("performance"))
-      return "text-amber-600 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/20";
+      return "text-warning bg-warning/10";
     return "text-v2-ink-muted dark:text-v2-ink-subtle bg-v2-canvas/50 dark:bg-v2-canvas/20";
   };
 

@@ -132,7 +132,7 @@ export const LeadHeatSummaryWidget: React.FC<LeadHeatSummaryWidgetProps> = ({
         {/* Stats */}
         <div className="flex flex-col gap-0.5">
           <div className="flex items-center gap-1">
-            <Flame className="h-3 w-3 text-red-500" />
+            <Flame className="h-3 w-3 text-destructive" />
             <span className="text-xs font-semibold">
               {totalScored} leads scored
             </span>
@@ -156,7 +156,7 @@ export const LeadHeatSummaryWidget: React.FC<LeadHeatSummaryWidgetProps> = ({
           <span className="text-[10px] text-muted-foreground">
             {formatTimeAgo(lastScoredAt, { nullFallback: "Not scored yet" })}
             {isPersonalized && (
-              <span className="ml-1 rounded bg-emerald-100 px-1 py-px text-[9px] font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+              <span className="ml-1 rounded bg-success/20 px-1 py-px text-[9px] font-medium text-success dark:bg-success/30 dark:text-success">
                 Personalized
               </span>
             )}

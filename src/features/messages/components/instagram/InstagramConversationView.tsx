@@ -212,7 +212,7 @@ export function InstagramConversationView({
     return (
       <div className="h-full flex items-center justify-center bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
         <div className="text-center max-w-sm px-4">
-          <AlertCircle className="h-8 w-8 mx-auto mb-2 text-red-400" />
+          <AlertCircle className="h-8 w-8 mx-auto mb-2 text-destructive" />
           <p className="text-[11px] text-v2-ink-muted mb-2">
             Failed to load conversation
           </p>
@@ -294,7 +294,7 @@ export function InstagramConversationView({
                 : displayName}
             </span>
             {conversation.hasLinkedLead && (
-              <div className="flex-shrink-0 flex items-center gap-0.5 px-1 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 rounded text-[9px] text-emerald-700 dark:text-emerald-400">
+              <div className="flex-shrink-0 flex items-center gap-0.5 px-1 py-0.5 bg-success/20 dark:bg-success/30 rounded text-[9px] text-success">
                 <User className="h-2.5 w-2.5" />
                 Lead
               </div>

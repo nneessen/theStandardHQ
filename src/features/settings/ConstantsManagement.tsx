@@ -108,7 +108,7 @@ export const ConstantsManagement: React.FC = () => {
         <div className="p-3">
           {/* Success Message */}
           {successMessage && (
-            <div className="flex items-center gap-2 p-2 mb-3 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded text-[10px] text-emerald-700 dark:text-emerald-300">
+            <div className="flex items-center gap-2 p-2 mb-3 bg-success/10 border border-success/30 rounded text-[10px] text-success">
               <CheckCircle className="h-3 w-3 flex-shrink-0" />
               {successMessage}
             </div>
@@ -134,10 +134,10 @@ export const ConstantsManagement: React.FC = () => {
                     onBlur={() => validateAndSave("avgAP")}
                     min={0}
                     step={100}
-                    className={`h-7 text-[11px] bg-v2-card border-v2-ring ${errors.avgAP ? "border-red-500" : ""}`}
+                    className={`h-7 text-[11px] bg-v2-card border-v2-ring ${errors.avgAP ? "border-destructive" : ""}`}
                   />
                   {errors.avgAP && (
-                    <div className="flex items-center gap-1 mt-1 text-[10px] text-red-600 dark:text-red-400">
+                    <div className="flex items-center gap-1 mt-1 text-[10px] text-destructive">
                       <AlertCircle className="h-3 w-3" />
                       {errors.avgAP}
                     </div>
@@ -158,21 +158,21 @@ export const ConstantsManagement: React.FC = () => {
       </div>
 
       {/* Info Box */}
-      <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800 p-3">
+      <div className="bg-warning/10 rounded-lg border border-warning/30 p-3">
         <div className="flex items-start gap-2">
-          <AlertCircle className="h-3.5 w-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
+          <AlertCircle className="h-3.5 w-3.5 text-warning mt-0.5 flex-shrink-0" />
           <div className="text-[10px]">
-            <p className="font-medium text-amber-700 dark:text-amber-300 mb-0.5">
+            <p className="font-medium text-warning mb-0.5">
               About Premium Override
             </p>
-            <p className="text-amber-600 dark:text-amber-400">
+            <p className="text-warning">
               By default, your targets are calculated using your actual
               historical average policy premium. Set a value here only if you
               want to override the automatic calculation. This is useful if
               you're planning to focus on different policy types or expect your
               average premium to change significantly.
             </p>
-            <p className="text-amber-600 dark:text-amber-400 mt-1">
+            <p className="text-warning mt-1">
               Leave at 0 to use your actual historical average from your policy
               data.
             </p>

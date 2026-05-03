@@ -117,7 +117,7 @@ export function WritingNumbersTable({
           widthClass,
           !isEditing &&
             "cursor-pointer hover:bg-v2-card-tinted dark:hover:bg-v2-ring-strong/50",
-          agentId === selectedAgentId && "bg-blue-50/70 dark:bg-blue-950/15",
+          agentId === selectedAgentId && "bg-info/10/70 dark:bg-info/10/15",
         )}
         onClick={() => !isEditing && handleCellClick(agentId, carrierId)}
       >
@@ -135,18 +135,18 @@ export function WritingNumbersTable({
                 e.stopPropagation();
                 handleSave();
               }}
-              className="p-0.5 rounded hover:bg-emerald-100 dark:hover:bg-emerald-900/50"
+              className="p-0.5 rounded hover:bg-success/20 dark:hover:bg-success/50"
             >
-              <Check className="h-3.5 w-3.5 text-emerald-600" />
+              <Check className="h-3.5 w-3.5 text-success" />
             </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 handleCancel();
               }}
-              className="p-0.5 rounded hover:bg-red-100 dark:hover:bg-red-900/50"
+              className="p-0.5 rounded hover:bg-destructive/20 dark:hover:bg-destructive/50"
             >
-              <X className="h-3.5 w-3.5 text-red-600" />
+              <X className="h-3.5 w-3.5 text-destructive" />
             </button>
           </div>
         ) : (
@@ -200,14 +200,13 @@ export function WritingNumbersTable({
                       ? "bg-v2-card"
                       : "bg-v2-canvas/50 dark:bg-v2-card/50",
                     agent.id === selectedAgentId &&
-                      "bg-blue-50 dark:bg-blue-950/20 hover:bg-blue-100/70 dark:hover:bg-blue-950/30",
+                      "bg-info/10 hover:bg-info/20/70 dark:hover:bg-info/15",
                   )}
                 >
                   <td
                     className={cn(
                       "sticky left-0 z-10 bg-inherit text-[11px] font-medium text-v2-ink dark:text-v2-ink px-3 py-1.5 border-b border-v2-ring dark:border-v2-ring",
-                      agent.id === selectedAgentId &&
-                        "text-blue-700 dark:text-blue-300",
+                      agent.id === selectedAgentId && "text-info",
                     )}
                   >
                     {agent.first_name} {agent.last_name}
@@ -249,7 +248,7 @@ export function WritingNumbersTable({
                   className={cn(
                     "text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wide text-center px-2 py-2 border-b border-v2-ring dark:border-v2-ring-strong min-w-[92px] w-[92px] whitespace-nowrap",
                     agent.id === selectedAgentId &&
-                      "bg-blue-100/70 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300",
+                      "bg-info/20/70 dark:bg-info/20 text-info",
                   )}
                   title={`${agent.first_name} ${agent.last_name}`}
                 >

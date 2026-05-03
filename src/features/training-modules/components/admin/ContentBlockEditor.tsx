@@ -216,7 +216,7 @@ function PdfBlock({
 
       {existingDoc ? (
         <div className="flex items-center gap-2 p-2 rounded border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
-          <FileText className="h-4 w-4 text-red-500 flex-shrink-0" />
+          <FileText className="h-4 w-4 text-destructive flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium truncate">{existingDoc.name}</p>
             <p className="text-[10px] text-v2-ink-muted">
@@ -319,7 +319,7 @@ function SlidesBlock({
 
       {existingDoc ? (
         <div className="flex items-center gap-2 p-2 rounded border border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
-          <Presentation className="h-4 w-4 text-blue-500 flex-shrink-0" />
+          <Presentation className="h-4 w-4 text-info flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <p className="text-xs font-medium truncate">{existingDoc.name}</p>
             <p className="text-[10px] text-v2-ink-muted">

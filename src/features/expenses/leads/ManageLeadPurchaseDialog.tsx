@@ -215,9 +215,9 @@ export function ManageLeadPurchaseDialog({
                 </div>
 
                 {/* Animated glow orbs */}
-                <div className="absolute top-1/4 -left-16 w-64 h-64 bg-v2-accent-soft rounded-full blur-3xl animate-pulse" />
+                <div className="absolute top-1/4 -left-16 w-64 h-64 bg-accent/40 rounded-full blur-3xl animate-pulse" />
                 <div
-                  className="absolute bottom-1/4 -right-16 w-56 h-56 bg-amber-400/5 rounded-full blur-3xl animate-pulse"
+                  className="absolute bottom-1/4 -right-16 w-56 h-56 bg-warning/5 rounded-full blur-3xl animate-pulse"
                   style={{ animationDelay: "1s" }}
                 />
 
@@ -226,7 +226,7 @@ export function ManageLeadPurchaseDialog({
                   {/* Logo */}
                   <div className="flex items-center gap-3 group">
                     <div className="relative">
-                      <div className="absolute inset-0 bg-amber-500/20 rounded-lg blur-lg group-hover:bg-amber-500/30 transition-all duration-500" />
+                      <div className="absolute inset-0 bg-warning/20 rounded-lg blur-lg group-hover:bg-warning/30 transition-all duration-500" />
                       <img
                         src="/logos/Light Letter Logo .png"
                         alt="The Standard"
@@ -240,12 +240,12 @@ export function ManageLeadPurchaseDialog({
                     </div>
                     <div className="flex flex-col">
                       <span
-                        className="text-white dark:text-black text-lg font-bold tracking-wide"
+                        className="text-white text-lg font-bold tracking-wide"
                         style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                       >
                         Lead ROI
                       </span>
-                      <span className="text-amber-400 text-[9px] uppercase tracking-[0.2em] font-medium">
+                      <span className="text-warning text-[9px] uppercase tracking-[0.2em] font-medium">
                         Track & Optimize
                       </span>
                     </div>
@@ -255,18 +255,18 @@ export function ManageLeadPurchaseDialog({
                   <div className="flex-1 flex flex-col justify-center space-y-4 py-8">
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-white/60 dark:text-black/60">
+                        <span className="text-xs text-white/60">
                           Policies Sold
                         </span>
-                        <span className="text-lg font-bold text-white dark:text-black">
+                        <span className="text-lg font-bold text-white">
                           {policiesSold}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-white/60 dark:text-black/60">
+                        <span className="text-xs text-white/60">
                           Commission
                         </span>
-                        <span className="text-lg font-bold text-emerald-400">
+                        <span className="text-lg font-bold text-success">
                           $
                           {commissionEarned.toLocaleString("en-US", {
                             maximumFractionDigits: 0,
@@ -274,15 +274,15 @@ export function ManageLeadPurchaseDialog({
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-white/60 dark:text-black/60">
+                        <span className="text-xs text-white/60">
                           Net Profit
                         </span>
                         <span
                           className={cn(
                             "text-lg font-bold",
                             netProfit >= 0
-                              ? "text-emerald-400"
-                              : "text-red-400",
+                              ? "text-success"
+                              : "text-destructive",
                           )}
                         >
                           {netProfit >= 0 ? "+" : ""}$
@@ -293,13 +293,11 @@ export function ManageLeadPurchaseDialog({
                       </div>
                       <div className="pt-2 border-t border-white/10 dark:border-black/10">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-white/60 dark:text-black/60">
-                            ROI
-                          </span>
+                          <span className="text-xs text-white/60">ROI</span>
                           <span
                             className={cn(
                               "text-xl font-bold",
-                              roi >= 0 ? "text-emerald-400" : "text-red-400",
+                              roi >= 0 ? "text-success" : "text-destructive",
                             )}
                           >
                             {roi >= 0 ? "+" : ""}
@@ -311,7 +309,7 @@ export function ManageLeadPurchaseDialog({
                   </div>
 
                   {/* Footer */}
-                  <div className="text-[10px] text-white/30 dark:text-black/30">
+                  <div className="text-[10px] text-white/30">
                     {avgLeadAge !== null
                       ? `Avg. ${avgLeadAge} days from purchase to sale`
                       : "Link policies to track conversion time"}
@@ -325,7 +323,7 @@ export function ManageLeadPurchaseDialog({
               {/* Header */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
                 <div className="flex items-center gap-2">
-                  <Package className="h-4 w-4 text-amber-500" />
+                  <Package className="h-4 w-4 text-warning" />
                   <span className="text-sm font-semibold">
                     {purchase ? "Manage Lead Purchase" : "Add Lead Purchase"}
                   </span>
@@ -347,7 +345,7 @@ export function ManageLeadPurchaseDialog({
               >
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   {/* Purchase Details Section */}
-                  <div className="p-3 bg-v2-canvas rounded-lg border border-v2-ring/60">
+                  <div className="p-3 bg-background rounded-lg border border-border/60">
                     <div className="flex items-center gap-2 mb-3">
                       <Target className="h-3.5 w-3.5 text-muted-foreground" />
                       <span className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.18em]">
@@ -385,7 +383,7 @@ export function ManageLeadPurchaseDialog({
                                 purchaseName: e.target.value,
                               })
                             }
-                            className="h-8 text-xs bg-v2-canvas border-v2-ring"
+                            className="h-8 text-xs bg-background border-border"
                             placeholder="e.g., March 2024 Pack"
                           />
                         </div>
@@ -400,7 +398,7 @@ export function ManageLeadPurchaseDialog({
                               setFormData({ ...formData, leadFreshness: value })
                             }
                           >
-                            <SelectTrigger className="h-8 text-xs bg-v2-canvas border-v2-ring">
+                            <SelectTrigger className="h-8 text-xs bg-background border-border">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -431,7 +429,7 @@ export function ManageLeadPurchaseDialog({
                               })
                             }
                             required
-                            className="h-8 text-xs bg-v2-canvas border-v2-ring"
+                            className="h-8 text-xs bg-background border-border"
                             placeholder="50"
                           />
                         </div>
@@ -454,7 +452,7 @@ export function ManageLeadPurchaseDialog({
                                 })
                               }
                               required
-                              className="h-8 text-xs pl-6 bg-v2-canvas border-v2-ring"
+                              className="h-8 text-xs pl-6 bg-background border-border"
                               placeholder="500.00"
                             />
                           </div>
@@ -463,7 +461,7 @@ export function ManageLeadPurchaseDialog({
                           <Label className="text-[10px] text-muted-foreground">
                             Cost/Lead
                           </Label>
-                          <div className="h-8 flex items-center px-2 bg-v2-ring border border-v2-ring rounded-md text-xs font-mono text-muted-foreground">
+                          <div className="h-8 flex items-center px-2 bg-muted border border-border rounded-md text-xs font-mono text-muted-foreground">
                             ${costPerLead.toFixed(2)}
                           </div>
                         </div>
@@ -486,7 +484,7 @@ export function ManageLeadPurchaseDialog({
                               })
                             }
                             required
-                            className="h-8 text-xs bg-v2-canvas border-v2-ring"
+                            className="h-8 text-xs bg-background border-border"
                           />
                         </div>
                         <div className="space-y-1">
@@ -501,7 +499,7 @@ export function ManageLeadPurchaseDialog({
                                 notes: e.target.value,
                               })
                             }
-                            className="h-8 text-xs bg-v2-canvas border-v2-ring"
+                            className="h-8 text-xs bg-background border-border"
                             placeholder="Optional notes..."
                           />
                         </div>
@@ -513,7 +511,7 @@ export function ManageLeadPurchaseDialog({
                   {isEditing && (
                     <div className="grid grid-cols-2 gap-4">
                       {/* Linked Policies */}
-                      <div className="p-3 bg-v2-canvas rounded-lg border border-v2-ring/60">
+                      <div className="p-3 bg-background rounded-lg border border-border/60">
                         <div className="flex items-center gap-2 mb-3">
                           <User className="h-3.5 w-3.5 text-muted-foreground" />
                           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.18em]">
@@ -521,7 +519,7 @@ export function ManageLeadPurchaseDialog({
                           </span>
                         </div>
 
-                        <div className="border border-v2-ring rounded-md overflow-hidden bg-v2-card">
+                        <div className="border border-border rounded-md overflow-hidden bg-card">
                           {isLoadingPolicies ? (
                             <div className="p-3 space-y-2">
                               {[1, 2].map((i) => (
@@ -530,7 +528,7 @@ export function ManageLeadPurchaseDialog({
                             </div>
                           ) : linkedPolicies.length > 0 ? (
                             <ScrollArea className="h-[180px]">
-                              <div className="divide-y divide-v2-ring/60">
+                              <div className="divide-y divide-border/60">
                                 {linkedPolicies.map((policy) => {
                                   const purchaseDate = new Date(
                                     purchase.purchaseDate,
@@ -550,7 +548,7 @@ export function ManageLeadPurchaseDialog({
                                   return (
                                     <div
                                       key={policy.id}
-                                      className="flex items-center justify-between gap-2 px-3 py-2 hover:bg-v2-canvas transition-colors"
+                                      className="flex items-center justify-between gap-2 px-3 py-2 hover:bg-background transition-colors"
                                     >
                                       <div className="min-w-0 flex-1">
                                         <div className="font-medium text-xs truncate">
@@ -569,7 +567,7 @@ export function ManageLeadPurchaseDialog({
                                           )}
                                         </div>
                                       </div>
-                                      <div className="text-right font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                      <div className="text-right font-mono text-xs font-semibold text-success">
                                         $
                                         {policyCommission.toLocaleString(
                                           "en-US",
@@ -593,7 +591,7 @@ export function ManageLeadPurchaseDialog({
                       </div>
 
                       {/* Link Policy */}
-                      <div className="p-3 bg-v2-canvas rounded-lg border border-v2-ring/60">
+                      <div className="p-3 bg-background rounded-lg border border-border/60">
                         <div className="flex items-center gap-2 mb-3">
                           <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
                           <span className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.18em]">
@@ -610,7 +608,7 @@ export function ManageLeadPurchaseDialog({
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-border/50 bg-v2-canvas">
+                <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-border/50 bg-background">
                   <Button
                     type="button"
                     variant="ghost"
@@ -625,7 +623,7 @@ export function ManageLeadPurchaseDialog({
                     type="submit"
                     size="sm"
                     disabled={isLoading}
-                    className="h-8 text-xs bg-amber-500 hover:bg-amber-600 text-white"
+                    className="h-8 text-xs bg-warning hover:bg-warning text-white"
                   >
                     {isLoading && (
                       <Loader2 className="h-3 w-3 mr-1 animate-spin" />

@@ -406,7 +406,7 @@ export function AcceptanceRulesTab() {
   if (loadingCarriers) {
     return (
       <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -426,14 +426,14 @@ export function AcceptanceRulesTab() {
   return (
     <div className="space-y-3">
       {/* Header */}
-      <div className="bg-v2-card rounded-lg px-3 py-2 shadow-sm">
+      <div className="bg-card rounded-lg px-3 py-2 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-v2-ink-muted" />
-            <span className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
+            <Shield className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-semibold text-foreground dark:text-foreground">
               Carrier Acceptance Rules
             </span>
-            <span className="text-[10px] text-v2-ink-subtle hidden sm:inline">
+            <span className="text-[10px] text-muted-foreground hidden sm:inline">
               Define carrier acceptance criteria with compound rules
             </span>
           </div>
@@ -453,7 +453,7 @@ export function AcceptanceRulesTab() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="text-[10px] text-v2-ink-subtle">
+                <DropdownMenuLabel className="text-[10px] text-muted-foreground">
                   Auto-Generate Draft Rules
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
@@ -461,10 +461,10 @@ export function AcceptanceRulesTab() {
                   onClick={() => setKnockoutDialogOpen(true)}
                   className="text-[11px]"
                 >
-                  <AlertTriangle className="h-3 w-3 mr-2 text-red-500" />
+                  <AlertTriangle className="h-3 w-3 mr-2 text-destructive" />
                   <div>
                     <div>Knockout Rules</div>
-                    <div className="text-[9px] text-v2-ink-subtle">
+                    <div className="text-[9px] text-muted-foreground">
                       {knockoutCodes?.length ?? 0} conditions available
                     </div>
                   </div>
@@ -473,10 +473,10 @@ export function AcceptanceRulesTab() {
                   onClick={() => setAgeRulesDialogOpen(true)}
                   className="text-[11px]"
                 >
-                  <Calendar className="h-3 w-3 mr-2 text-blue-500" />
+                  <Calendar className="h-3 w-3 mr-2 text-info" />
                   <div>
                     <div>Age Rules from Products</div>
-                    <div className="text-[9px] text-v2-ink-subtle">
+                    <div className="text-[9px] text-muted-foreground">
                       Based on product min/max age
                     </div>
                   </div>
@@ -485,10 +485,10 @@ export function AcceptanceRulesTab() {
                   onClick={() => setGuaranteedIssueDialogOpen(true)}
                   className="text-[11px]"
                 >
-                  <ShieldCheck className="h-3 w-3 mr-2 text-emerald-500" />
+                  <ShieldCheck className="h-3 w-3 mr-2 text-success" />
                   <div>
                     <div>Guaranteed Issue Drafts</div>
-                    <div className="text-[9px] text-v2-ink-subtle">
+                    <div className="text-[9px] text-muted-foreground">
                       For explicitly selected accept-all products
                     </div>
                   </div>
@@ -526,7 +526,7 @@ export function AcceptanceRulesTab() {
 
       {/* Rule Sets List */}
       {selectedCarrierId ? (
-        <div className="bg-v2-card rounded-lg p-3 shadow-sm">
+        <div className="bg-card rounded-lg p-3 shadow-sm">
           <RuleSetList
             ruleSets={ruleSets || []}
             isLoading={loadingRuleSets}
@@ -537,12 +537,12 @@ export function AcceptanceRulesTab() {
           />
         </div>
       ) : (
-        <div className="bg-v2-card rounded-lg p-8 text-center shadow-sm">
-          <Shield className="h-10 w-10 mx-auto mb-3 text-v2-canvas dark:text-v2-ink" />
-          <p className="text-[11px] font-medium text-v2-ink-muted">
+        <div className="bg-card rounded-lg p-8 text-center shadow-sm">
+          <Shield className="h-10 w-10 mx-auto mb-3 text-background dark:text-foreground" />
+          <p className="text-[11px] font-medium text-muted-foreground">
             Select a carrier to manage acceptance rules
           </p>
-          <p className="text-[10px] text-v2-ink-subtle mt-1">
+          <p className="text-[10px] text-muted-foreground mt-1">
             Start with your most-used carriers: Mutual of Omaha, Baltimore Life,
             Transamerica
           </p>
@@ -571,7 +571,7 @@ export function AcceptanceRulesTab() {
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-sm font-semibold flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-500" />
+              <AlertTriangle className="h-4 w-4 text-destructive" />
               Generate Knockout Rules
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
@@ -590,7 +590,7 @@ export function AcceptanceRulesTab() {
           </AlertDialogHeader>
 
           <div className="space-y-2 py-2">
-            <Label className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
+            <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
               If rule set already exists:
             </Label>
             <Select
@@ -614,7 +614,7 @@ export function AcceptanceRulesTab() {
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-[10px] text-v2-ink-subtle">
+            <p className="text-[10px] text-muted-foreground">
               Note: Approved rule sets are never modified.
             </p>
           </div>
@@ -649,7 +649,7 @@ export function AcceptanceRulesTab() {
         <AlertDialogContent className="max-w-lg">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-sm font-semibold flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-emerald-500" />
+              <ShieldCheck className="h-4 w-4 text-success" />
               Generate Guaranteed-Issue Draft Rules
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
@@ -671,7 +671,7 @@ export function AcceptanceRulesTab() {
           <div className="space-y-3 py-2">
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-2">
-                <Label className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
+                <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
                   Products
                 </Label>
                 <div className="flex items-center gap-1">
@@ -701,11 +701,11 @@ export function AcceptanceRulesTab() {
               </div>
 
               {!selectedCarrierProducts.length ? (
-                <div className="rounded border border-v2-ring px-3 py-2 text-[10px] text-muted-foreground dark:border-v2-ring">
+                <div className="rounded border border-border px-3 py-2 text-[10px] text-muted-foreground dark:border-border">
                   No active products found for this carrier.
                 </div>
               ) : (
-                <div className="max-h-52 space-y-1 overflow-y-auto rounded border border-v2-ring p-2 dark:border-v2-ring">
+                <div className="max-h-52 space-y-1 overflow-y-auto rounded border border-border p-2 dark:border-border">
                   {selectedCarrierProducts.map((product) => {
                     const checked = selectedGuaranteedIssueProductIds.includes(
                       product.id,
@@ -714,7 +714,7 @@ export function AcceptanceRulesTab() {
                     return (
                       <label
                         key={product.id}
-                        className="flex cursor-pointer items-start gap-2 rounded px-2 py-1.5 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted"
+                        className="flex cursor-pointer items-start gap-2 rounded px-2 py-1.5 hover:bg-background dark:hover:bg-card-tinted"
                       >
                         <Checkbox
                           checked={checked}
@@ -739,7 +739,7 @@ export function AcceptanceRulesTab() {
             </div>
 
             <div className="space-y-2">
-              <Label className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
+              <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
                 If draft rule set already exists:
               </Label>
               <Select
@@ -799,7 +799,7 @@ export function AcceptanceRulesTab() {
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-sm font-semibold flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-blue-500" />
+              <Calendar className="h-4 w-4 text-info" />
               Generate Age Rules from Products
             </AlertDialogTitle>
             <AlertDialogDescription asChild>
@@ -817,7 +817,7 @@ export function AcceptanceRulesTab() {
           </AlertDialogHeader>
 
           <div className="space-y-2 py-2">
-            <Label className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
+            <Label className="text-[10px] text-muted-foreground uppercase tracking-wider">
               If rule set already exists:
             </Label>
             <Select
@@ -841,7 +841,7 @@ export function AcceptanceRulesTab() {
                 </SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-[10px] text-v2-ink-subtle">
+            <p className="text-[10px] text-muted-foreground">
               Note: Approved rule sets are never modified.
             </p>
           </div>

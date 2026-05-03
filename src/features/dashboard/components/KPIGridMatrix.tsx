@@ -143,8 +143,8 @@ export const KPIGridMatrix: React.FC<DetailedKPIGridProps> = ({ sections }) => {
                   {quadrant.title}
                 </h3>
                 <div className="flex gap-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <div className="w-1.5 h-1.5 rounded-full bg-amber-500/50" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-warning/50" />
                 </div>
               </div>
 
@@ -156,10 +156,10 @@ export const KPIGridMatrix: React.FC<DetailedKPIGridProps> = ({ sections }) => {
                     const gaugeValue = getGaugeValue(kpi.label, kpi.value);
                     const statusColor =
                       status === "good"
-                        ? "bg-emerald-500"
+                        ? "bg-success"
                         : status === "warning"
-                          ? "bg-amber-500"
-                          : "bg-red-500";
+                          ? "bg-warning"
+                          : "bg-destructive";
 
                     return (
                       <div
@@ -219,7 +219,7 @@ export const KPIGridMatrix: React.FC<DetailedKPIGridProps> = ({ sections }) => {
           <div>SYSTEM: ACTIVE</div>
           <div className="flex items-center gap-2">
             <span>REFRESH: LIVE</span>
-            <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="w-1 h-1 rounded-full bg-success animate-pulse" />
           </div>
         </div>
       </div>

@@ -162,9 +162,9 @@ export function CommunicationPanel({
                 const statusIcon =
                   message.status === "sent" ||
                   message.status === "delivered" ? (
-                    <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-500" />
+                    <CheckCircle2 className="h-3 w-3 text-success dark:text-success" />
                   ) : message.status === "failed" ? (
-                    <AlertCircle className="h-3 w-3 text-red-600 dark:text-red-500" />
+                    <AlertCircle className="h-3 w-3 text-destructive dark:text-destructive" />
                   ) : (
                     <Clock className="h-3 w-3 text-v2-ink-subtle" />
                   );
@@ -271,9 +271,9 @@ export function CommunicationPanel({
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 p-1.5 bg-red-50 dark:bg-red-950/30 rounded-md">
-            <AlertCircle className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
-            <p className="text-[10px] text-red-700 dark:text-red-400">
+          <div className="flex items-center gap-1.5 p-1.5 bg-destructive/10 rounded-md">
+            <AlertCircle className="h-3.5 w-3.5 text-destructive" />
+            <p className="text-[10px] text-destructive">
               No recruiter assigned
             </p>
           </div>

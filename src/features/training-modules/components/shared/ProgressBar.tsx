@@ -18,11 +18,7 @@ export function ProgressBar({
     >
       <div
         className={`${height} rounded-full transition-all duration-300 ${
-          pct === 100
-            ? "bg-emerald-500"
-            : pct > 50
-              ? "bg-blue-500"
-              : "bg-amber-500"
+          pct === 100 ? "bg-success" : pct > 50 ? "bg-info" : "bg-warning"
         }`}
         style={{ width: `${pct}%` }}
       />

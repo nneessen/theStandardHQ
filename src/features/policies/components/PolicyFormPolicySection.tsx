@@ -50,19 +50,19 @@ export const PolicyFormPolicySection: React.FC<
   const { hasAccess: canViewCommissions } = useFeatureAccess("dashboard");
 
   return (
-    <div className="bg-v2-card-tinted rounded-lg border border-v2-ring/80 dark:border-v2-ring-strong/60 shadow-sm">
+    <div className="bg-card-tinted rounded-lg border border-border/80 dark:border-border/60 shadow-sm">
       {/* Section header strip */}
-      <div className="flex items-center gap-2 px-3 py-2 rounded-t-lg bg-gradient-to-r from-amber-50 to-transparent dark:from-amber-950/30 dark:to-transparent border-b border-v2-ring/60 dark:border-v2-ring-strong/40">
-        <FileText className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-        <span className="text-[10px] font-semibold text-amber-800 dark:text-amber-300 uppercase tracking-wider">
+      <div className="flex items-center gap-2 px-3 py-2 rounded-t-lg bg-gradient-to-r from-amber-50 to-transparent dark:from-amber-950/30 dark:to-transparent border-b border-border/60 dark:border-border/40">
+        <FileText className="h-3 w-3 text-warning" />
+        <span className="text-[10px] font-semibold text-warning uppercase tracking-wider">
           Policy Details
         </span>
       </div>
 
       <div className="p-3 space-y-3">
         {/* Identification Group */}
-        <div className="space-y-2.5 p-2.5 rounded-md bg-v2-canvas/80 dark:bg-v2-card/40 border border-v2-ring dark:border-v2-ring-strong/30">
-          <p className="text-[9px] font-medium text-v2-ink-subtle dark:text-v2-ink-muted uppercase tracking-wider">
+        <div className="space-y-2.5 p-2.5 rounded-md bg-background/80 dark:bg-card/40 border border-border dark:border-border/30">
+          <p className="text-[9px] font-medium text-muted-foreground dark:text-muted-foreground uppercase tracking-wider">
             Identification
           </p>
 
@@ -80,7 +80,7 @@ export const PolicyFormPolicySection: React.FC<
               name="policyNumber"
               value={formData.policyNumber}
               onChange={onInputChange}
-              className={`h-8 text-[11px] bg-v2-card-tinted ${displayErrors.policyNumber ? "border-destructive" : "border-input"}`}
+              className={`h-8 text-[11px] bg-card-tinted ${displayErrors.policyNumber ? "border-destructive" : "border-input"}`}
               placeholder="POL-123456"
             />
             <span className="text-[10px] text-muted-foreground">
@@ -108,7 +108,7 @@ export const PolicyFormPolicySection: React.FC<
                 name="submitDate"
                 value={formData.submitDate}
                 onChange={onInputChange}
-                className={`h-8 text-[11px] bg-v2-card-tinted ${displayErrors.submitDate ? "border-destructive" : "border-input"}`}
+                className={`h-8 text-[11px] bg-card-tinted ${displayErrors.submitDate ? "border-destructive" : "border-input"}`}
               />
               {displayErrors.submitDate && (
                 <span className="text-[10px] text-destructive">
@@ -118,7 +118,7 @@ export const PolicyFormPolicySection: React.FC<
               {!policyId &&
                 isToday(formData.submitDate) &&
                 !displayErrors.submitDate && (
-                  <span className="text-[10px] text-amber-600 dark:text-amber-400">
+                  <span className="text-[10px] text-warning">
                     Defaulted to today — change if entering an older policy
                   </span>
                 )}
@@ -137,7 +137,7 @@ export const PolicyFormPolicySection: React.FC<
                 name="effectiveDate"
                 value={formData.effectiveDate}
                 onChange={onInputChange}
-                className={`h-8 text-[11px] bg-v2-card-tinted ${displayErrors.effectiveDate ? "border-destructive" : "border-input"}`}
+                className={`h-8 text-[11px] bg-card-tinted ${displayErrors.effectiveDate ? "border-destructive" : "border-input"}`}
               />
               {displayErrors.effectiveDate && (
                 <span className="text-[10px] text-destructive">
@@ -149,8 +149,8 @@ export const PolicyFormPolicySection: React.FC<
         </div>
 
         {/* Premium & Payment Group */}
-        <div className="space-y-2.5 p-2.5 rounded-md bg-v2-canvas/80 dark:bg-v2-card/40 border border-v2-ring dark:border-v2-ring-strong/30">
-          <p className="text-[9px] font-medium text-v2-ink-subtle dark:text-v2-ink-muted uppercase tracking-wider">
+        <div className="space-y-2.5 p-2.5 rounded-md bg-background/80 dark:bg-card/40 border border-border dark:border-border/30">
+          <p className="text-[9px] font-medium text-muted-foreground dark:text-muted-foreground uppercase tracking-wider">
             Premium & Payment
           </p>
 
@@ -169,7 +169,7 @@ export const PolicyFormPolicySection: React.FC<
                 name="premium"
                 value={formData.premium || ""}
                 onChange={onInputChange}
-                className={`h-8 text-[11px] bg-v2-card-tinted ${displayErrors.premium ? "border-destructive" : "border-input"}`}
+                className={`h-8 text-[11px] bg-card-tinted ${displayErrors.premium ? "border-destructive" : "border-input"}`}
                 placeholder="250.00"
                 step="0.01"
                 min="0"
@@ -211,8 +211,8 @@ export const PolicyFormPolicySection: React.FC<
         </div>
 
         {/* Status Group */}
-        <div className="space-y-2.5 p-2.5 rounded-md bg-v2-canvas/80 dark:bg-v2-card/40 border border-v2-ring dark:border-v2-ring-strong/30">
-          <p className="text-[9px] font-medium text-v2-ink-subtle dark:text-v2-ink-muted uppercase tracking-wider">
+        <div className="space-y-2.5 p-2.5 rounded-md bg-background/80 dark:bg-card/40 border border-border dark:border-border/30">
+          <p className="text-[9px] font-medium text-muted-foreground dark:text-muted-foreground uppercase tracking-wider">
             Status
           </p>
 
@@ -292,9 +292,9 @@ export const PolicyFormPolicySection: React.FC<
 
         {/* Financial Summary Card — Pro feature */}
         {canViewCommissions ? (
-          <div className="rounded-lg border border-v2-ring/60 dark:border-v2-ring-strong/60 border-l-[3px] border-l-amber-500 dark:border-l-amber-400 bg-gradient-to-r from-amber-50/50 via-white to-white dark:from-amber-950/20 dark:via-zinc-800 dark:to-zinc-800 shadow-sm overflow-hidden">
-            <div className="px-3 py-1.5 border-b border-v2-ring dark:border-v2-ring-strong/40">
-              <p className="text-[9px] font-medium text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+          <div className="rounded-lg border border-border/60 dark:border-border/60 border-l-[3px] border-l-amber-500 dark:border-l-amber-400 bg-gradient-to-r from-amber-50/50 via-white to-white dark:from-amber-950/20 dark:via-zinc-800 dark:to-zinc-800 shadow-sm overflow-hidden">
+            <div className="px-3 py-1.5 border-b border-border dark:border-border/40">
+              <p className="text-[9px] font-medium text-warning uppercase tracking-wider">
                 Financial Summary
               </p>
             </div>
@@ -330,7 +330,7 @@ export const PolicyFormPolicySection: React.FC<
                         <span className="text-muted-foreground text-[10px]">
                           Effective Rate (term-adjusted)
                         </span>
-                        <strong className="text-amber-600 dark:text-amber-400 font-semibold">
+                        <strong className="text-warning font-semibold">
                           {effectiveRate.toFixed(2)}%
                         </strong>
                       </div>
@@ -349,20 +349,20 @@ export const PolicyFormPolicySection: React.FC<
                   </div>
                 );
               })()}
-              <div className="flex justify-between items-center text-[11px] pt-1.5 border-t border-v2-ring dark:border-v2-ring-strong/40">
+              <div className="flex justify-between items-center text-[11px] pt-1.5 border-t border-border dark:border-border/40">
                 <span className="text-muted-foreground">
                   Expected Advance (9 mo)
                 </span>
-                <strong className="text-emerald-600 dark:text-emerald-400 font-semibold font-mono">
+                <strong className="text-success font-semibold font-mono">
                   ${expectedCommission.toFixed(2)}
                 </strong>
               </div>
             </div>
           </div>
         ) : (
-          <div className="rounded-lg border border-v2-ring/60 dark:border-v2-ring-strong/60 border-l-[3px] border-l-zinc-300 dark:border-l-zinc-600 bg-v2-canvas/50 dark:bg-v2-card-tinted/50 shadow-sm overflow-hidden">
-            <div className="px-3 py-1.5 border-b border-v2-ring dark:border-v2-ring-strong/40">
-              <p className="text-[9px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider">
+          <div className="rounded-lg border border-border/60 dark:border-border/60 border-l-[3px] border-l-zinc-300 dark:border-l-zinc-600 bg-background/50 dark:bg-card-tinted/50 shadow-sm overflow-hidden">
+            <div className="px-3 py-1.5 border-b border-border dark:border-border/40">
+              <p className="text-[9px] font-medium text-muted-foreground dark:text-muted-foreground uppercase tracking-wider">
                 Financial Summary
               </p>
             </div>
@@ -373,7 +373,7 @@ export const PolicyFormPolicySection: React.FC<
                   ${annualPremium.toFixed(2)}
                 </strong>
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] text-v2-ink-subtle dark:text-v2-ink-muted pt-1.5 border-t border-v2-ring dark:border-v2-ring-strong/40">
+              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground dark:text-muted-foreground pt-1.5 border-t border-border dark:border-border/40">
                 <Lock className="h-3 w-3" />
                 <span>Commission details available on Pro plan</span>
               </div>

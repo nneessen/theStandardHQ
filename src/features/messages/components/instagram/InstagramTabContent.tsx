@@ -51,16 +51,16 @@ function TokenExpiringSoonBanner({
   isReconnecting: boolean;
 }): ReactNode {
   return (
-    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-3">
+    <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 mb-3">
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-warning/20 dark:bg-warning/30 flex items-center justify-center">
+          <AlertTriangle className="h-4 w-4 text-warning" />
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 mb-0.5">
+          <h4 className="text-[11px] font-semibold text-warning mb-0.5">
             Instagram token expiring soon
           </h4>
-          <p className="text-[10px] text-amber-700 dark:text-amber-400 mb-2">
+          <p className="text-[10px] text-warning mb-2">
             Your Instagram access token will expire in {daysRemaining} day
             {daysRemaining !== 1 ? "s" : ""}. Reconnect now to avoid
             interruption.
@@ -69,7 +69,7 @@ function TokenExpiringSoonBanner({
             onClick={onReconnect}
             disabled={isReconnecting}
             size="sm"
-            className="h-7 text-[10px] bg-amber-600 hover:bg-amber-700 text-white"
+            className="h-7 text-[10px] bg-warning hover:bg-warning text-white"
           >
             {isReconnecting ? (
               <>
@@ -100,16 +100,16 @@ function TokenExpiredBanner({
   isReconnecting: boolean;
 }): ReactNode {
   return (
-    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-3">
+    <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 mb-3">
       <div className="flex items-start gap-3">
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-          <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-warning/20 dark:bg-warning/30 flex items-center justify-center">
+          <AlertTriangle className="h-4 w-4 text-warning" />
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-[11px] font-semibold text-amber-800 dark:text-amber-300 mb-0.5">
+          <h4 className="text-[11px] font-semibold text-warning mb-0.5">
             Instagram connection expired
           </h4>
-          <p className="text-[10px] text-amber-700 dark:text-amber-400 mb-2">
+          <p className="text-[10px] text-warning mb-2">
             Your Instagram access token has expired. Reconnect to continue
             sending and receiving messages.
           </p>
@@ -117,7 +117,7 @@ function TokenExpiredBanner({
             onClick={onReconnect}
             disabled={isReconnecting}
             size="sm"
-            className="h-7 text-[10px] bg-amber-600 hover:bg-amber-700 text-white"
+            className="h-7 text-[10px] bg-warning hover:bg-warning text-white"
           >
             {isReconnecting ? (
               <>
@@ -240,8 +240,8 @@ function InstagramTabContentInner({
     return (
       <div className="h-full flex items-center justify-center bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
         <div className="text-center max-w-sm px-4">
-          <div className="mx-auto w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mb-3">
-            <Instagram className="h-5 w-5 text-red-600 dark:text-red-400" />
+          <div className="mx-auto w-10 h-10 rounded-full bg-destructive/20 dark:bg-destructive/30 flex items-center justify-center mb-3">
+            <Instagram className="h-5 w-5 text-destructive" />
           </div>
           <p className="text-[11px] text-v2-ink-muted mb-2">
             Failed to load Instagram integration
@@ -376,16 +376,16 @@ function InstagramTabContentInner({
 
           {/* Connection status badge */}
           {isTokenExpired ? (
-            <div className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 dark:bg-amber-900/30 rounded-full mb-4">
-              <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-              <span className="text-[10px] font-medium text-amber-700 dark:text-amber-400">
+            <div className="inline-flex items-center gap-1 px-2 py-1 bg-warning/20 dark:bg-warning/30 rounded-full mb-4">
+              <div className="w-1.5 h-1.5 rounded-full bg-warning" />
+              <span className="text-[10px] font-medium text-warning">
                 Reconnection Required
               </span>
             </div>
           ) : (
-            <div className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 rounded-full mb-4">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span className="text-[10px] font-medium text-emerald-700 dark:text-emerald-400">
+            <div className="inline-flex items-center gap-1 px-2 py-1 bg-success/20 dark:bg-success/30 rounded-full mb-4">
+              <div className="w-1.5 h-1.5 rounded-full bg-success" />
+              <span className="text-[10px] font-medium text-success">
                 Connected
               </span>
             </div>

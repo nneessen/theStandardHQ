@@ -208,7 +208,7 @@ export function PresentationRecorder({
       {(state === "recording" || state === "done") && (
         <div className="text-center">
           <span
-            className={`text-sm font-mono font-medium ${state === "recording" ? "text-red-500" : "text-v2-ink-muted dark:text-v2-ink-subtle"}`}
+            className={`text-sm font-mono font-medium ${state === "recording" ? "text-destructive" : "text-v2-ink-muted dark:text-v2-ink-subtle"}`}
           >
             {formatTime(elapsed)} / {formatTime(MAX_RECORDING_MS)}
           </span>
@@ -225,7 +225,7 @@ export function PresentationRecorder({
         {state === "previewing" && (
           <Button
             size="sm"
-            className="h-8 text-xs bg-red-600 hover:bg-red-700"
+            className="h-8 text-xs bg-destructive hover:bg-destructive"
             onClick={startRecording}
           >
             <Circle className="h-3 w-3 mr-1 fill-current" />
@@ -256,7 +256,7 @@ export function PresentationRecorder({
             </Button>
             <Button
               size="sm"
-              className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700"
+              className="h-8 text-xs bg-success hover:bg-success"
               onClick={confirmRecording}
             >
               Use This Recording
@@ -265,7 +265,9 @@ export function PresentationRecorder({
         )}
       </div>
 
-      {error && <p className="text-[10px] text-red-500 text-center">{error}</p>}
+      {error && (
+        <p className="text-[10px] text-destructive text-center">{error}</p>
+      )}
     </div>
   );
 }

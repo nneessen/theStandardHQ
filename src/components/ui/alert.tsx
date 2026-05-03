@@ -1,65 +1,48 @@
-// src/components/ui/alert.tsx
-// Modern alert with zinc palette and multiple semantic variants
-
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const alertVariants = cva(
   [
-    "relative w-full rounded-lg border px-4 py-3 text-sm",
+    "relative w-full rounded-md border px-4 py-3 text-sm",
     "[&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg~*]:pl-7",
   ].join(" "),
   {
     variants: {
       variant: {
         default: [
-          "bg-white border-zinc-200 text-zinc-900",
-          "[&>svg]:text-zinc-600",
-          "dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-100",
-          "dark:[&>svg]:text-zinc-400",
+          "bg-card border-border text-foreground",
+          "[&>svg]:text-muted-foreground",
         ].join(" "),
 
         muted: [
-          "bg-zinc-100 border-zinc-200 text-zinc-700",
-          "[&>svg]:text-zinc-500",
-          "dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300",
-          "dark:[&>svg]:text-zinc-400",
+          "bg-muted border-border text-foreground",
+          "[&>svg]:text-muted-foreground",
         ].join(" "),
 
         info: [
-          "bg-blue-50 border-blue-200 text-blue-900",
-          "[&>svg]:text-blue-600",
-          "dark:bg-blue-950/30 dark:border-blue-800 dark:text-blue-100",
-          "dark:[&>svg]:text-blue-400",
+          "bg-card border-border border-l-4 border-l-info text-foreground",
+          "[&>svg]:text-info",
         ].join(" "),
 
         success: [
-          "bg-emerald-50 border-emerald-200 text-emerald-900",
-          "[&>svg]:text-emerald-600",
-          "dark:bg-emerald-950/30 dark:border-emerald-800 dark:text-emerald-100",
-          "dark:[&>svg]:text-emerald-400",
+          "bg-card border-border border-l-4 border-l-success text-foreground",
+          "[&>svg]:text-success",
         ].join(" "),
 
         warning: [
-          "bg-amber-50 border-amber-200 text-amber-900",
-          "[&>svg]:text-amber-600",
-          "dark:bg-amber-950/30 dark:border-amber-800 dark:text-amber-100",
-          "dark:[&>svg]:text-amber-400",
+          "bg-card border-border border-l-4 border-l-warning text-foreground",
+          "[&>svg]:text-warning",
         ].join(" "),
 
         destructive: [
-          "bg-red-50 border-red-200 text-red-900",
-          "[&>svg]:text-red-600",
-          "dark:bg-red-950/30 dark:border-red-800 dark:text-red-100",
-          "dark:[&>svg]:text-red-400",
+          "bg-card border-border border-l-4 border-l-destructive text-foreground",
+          "[&>svg]:text-destructive",
         ].join(" "),
 
         outline: [
-          "bg-transparent border-zinc-300 text-zinc-900",
-          "[&>svg]:text-zinc-600",
-          "dark:border-zinc-700 dark:text-zinc-100",
-          "dark:[&>svg]:text-zinc-400",
+          "bg-transparent border-border text-foreground",
+          "[&>svg]:text-muted-foreground",
         ].join(" "),
       },
     },

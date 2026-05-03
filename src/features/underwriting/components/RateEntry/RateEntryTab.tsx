@@ -74,7 +74,7 @@ export function RateEntryTab() {
   if (loadingCarriers) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -84,11 +84,11 @@ export function RateEntryTab() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-[11px] font-medium text-v2-ink dark:text-v2-ink flex items-center gap-1.5">
+          <h3 className="text-[11px] font-medium text-foreground dark:text-foreground flex items-center gap-1.5">
             <DollarSign className="h-3.5 w-3.5" />
             Premium Rate Entry
           </h3>
-          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-0.5">
+          <p className="text-[10px] text-muted-foreground dark:text-muted-foreground mt-0.5">
             Enter monthly premium amounts for each age and face amount
             combination
           </p>
@@ -108,7 +108,7 @@ export function RateEntryTab() {
       <div className="flex items-end gap-3">
         {/* Carrier */}
         <div className="flex-1 max-w-[200px]">
-          <label className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-1 block">
+          <label className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground mb-1 block">
             Carrier
           </label>
           <Select value={selectedCarrierId} onValueChange={handleCarrierChange}>
@@ -144,7 +144,7 @@ export function RateEntryTab() {
 
         {/* Product */}
         <div className="flex-1 max-w-[250px]">
-          <label className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle mb-1 block">
+          <label className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground mb-1 block">
             Product
           </label>
           <Select
@@ -179,7 +179,7 @@ export function RateEntryTab() {
                         {product.product_type.replace("_", " ")}
                       </Badge>
                       {hasPremiums && (
-                        <CheckCircle2 className="h-3 w-3 text-green-500" />
+                        <CheckCircle2 className="h-3 w-3 text-success" />
                       )}
                     </div>
                   </SelectItem>
@@ -191,8 +191,8 @@ export function RateEntryTab() {
 
         {/* Progress Badge */}
         {productsWithPremiums && productsWithPremiums.length > 0 && (
-          <div className="flex items-center gap-1.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle pb-0.5">
-            <span className="font-medium text-v2-ink dark:text-v2-ink-muted">
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground dark:text-muted-foreground pb-0.5">
+            <span className="font-medium text-foreground dark:text-muted-foreground">
               {productsWithPremiums.length}
             </span>
             products with rates
@@ -209,16 +209,16 @@ export function RateEntryTab() {
           carrierName={selectedCarrier.name}
         />
       ) : (
-        <div className="border border-v2-ring dark:border-v2-ring rounded-md py-8 text-center">
-          <DollarSign className="h-8 w-8 mx-auto mb-2 text-v2-ink-subtle dark:text-v2-ink" />
-          <p className="text-[11px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
+        <div className="border border-border dark:border-border rounded-md py-8 text-center">
+          <DollarSign className="h-8 w-8 mx-auto mb-2 text-muted-foreground dark:text-foreground" />
+          <p className="text-[11px] font-medium text-muted-foreground dark:text-muted-foreground">
             Select a carrier and product to enter rates
           </p>
-          <p className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted mt-1">
+          <p className="text-[10px] text-muted-foreground dark:text-muted-foreground mt-1">
             Or use{" "}
             <button
               onClick={() => setImportDialogOpen(true)}
-              className="text-blue-500 hover:underline"
+              className="text-info hover:underline"
             >
               Import CSV
             </button>{" "}

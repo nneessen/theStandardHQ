@@ -74,7 +74,7 @@ export function AgentCarrierContractsCard({
           <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle mx-auto" />
         </div>
       ) : error ? (
-        <div className="p-3 flex items-center gap-2 text-red-500">
+        <div className="p-3 flex items-center gap-2 text-destructive">
           <AlertCircle className="h-3.5 w-3.5" />
           <p className="text-[10px]">Failed to load carrier contracts</p>
         </div>

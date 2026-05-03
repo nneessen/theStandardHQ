@@ -27,7 +27,7 @@ export function DocumentsSection({
       <span
         className={
           allUploaded
-            ? "inline-flex items-center font-mono tabular-nums text-[11px] uppercase tracking-[0.16em] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 ring-1 ring-emerald-200 dark:ring-emerald-900 rounded-full px-2.5 py-1"
+            ? "inline-flex items-center font-mono tabular-nums text-[11px] uppercase tracking-[0.16em] font-bold text-success bg-success/10 dark:bg-success/20 ring-1 ring-success/30 dark:ring-success rounded-full px-2.5 py-1"
             : "inline-flex items-center font-mono tabular-nums text-[11px] uppercase tracking-[0.16em] font-bold text-v2-ink dark:text-v2-ink-subtle bg-v2-ring dark:bg-v2-ring ring-1 ring-v2-ring  rounded-full px-2.5 py-1"
         }
       >

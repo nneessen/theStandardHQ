@@ -132,14 +132,14 @@ export default function WorkflowBasicInfo({
       </div>
 
       {/* Advanced Settings - Priority */}
-      <div className="p-3 rounded-md bg-gradient-to-r from-amber-500/5 to-amber-500/10 border border-amber-500/20">
+      <div className="p-3 rounded-md bg-gradient-to-r from-amber-500/5 to-amber-500/10 border border-warning/20">
         <div className="flex items-start gap-2 mb-3">
-          <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5" />
+          <AlertCircle className="h-4 w-4 text-warning mt-0.5" />
           <div className="flex-1">
-            <Label className="text-xs font-medium text-amber-700 dark:text-amber-300">
+            <Label className="text-xs font-medium text-warning">
               Execution Priority
             </Label>
-            <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">
+            <p className="text-[10px] text-warning mt-0.5">
               Controls the order of execution when multiple workflows are
               triggered simultaneously
             </p>
@@ -150,7 +150,7 @@ export default function WorkflowBasicInfo({
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-[10px] text-muted-foreground">Low</span>
-            <span className="text-sm font-bold text-amber-700 dark:text-amber-300">
+            <span className="text-sm font-bold text-warning">
               {(() => {
                 const priority = data.settings?.priority || 50;
                 if (priority >= 80) return "High Priority";
@@ -191,12 +191,12 @@ export default function WorkflowBasicInfo({
           <div
             className={cn(
               "p-2 rounded text-[10px] mt-2",
-              "bg-amber-50 dark:bg-amber-950/20 border",
+              "bg-warning/10 border",
               data.settings?.priority && data.settings.priority >= 80
-                ? "border-amber-600 text-amber-700 dark:text-amber-300"
+                ? "border-warning text-warning"
                 : data.settings?.priority && data.settings.priority <= 20
-                  ? "border-amber-400 text-amber-600 dark:text-amber-400"
-                  : "border-amber-500/30 text-amber-600 dark:text-amber-400",
+                  ? "border-warning/70 text-warning"
+                  : "border-warning/30 text-warning",
             )}
           >
             <p className="font-medium mb-0.5">

@@ -34,10 +34,10 @@ const ALERT_ICON: Record<AlertConfig["type"], React.ElementType> = {
 };
 
 const ALERT_TONE: Record<AlertConfig["type"], string> = {
-  info: "text-blue-700 dark:text-blue-400",
-  warning: "text-amber-700 dark:text-amber-400",
-  danger: "text-red-700 dark:text-red-400",
-  error: "text-red-700 dark:text-red-400",
+  info: "text-info",
+  warning: "text-warning",
+  danger: "text-destructive",
+  error: "text-destructive",
 };
 
 const ACTION_ICON: Record<string, React.ElementType> = {
@@ -56,22 +56,22 @@ export const EditorialAlertsActions: React.FC<EditorialAlertsActionsProps> = ({
   const activeAlerts = alerts.filter((a) => a.condition);
 
   return (
-    <section className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 py-6 border-t border-v2-ring">
+    <section className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 py-6 border-t border-border">
       {/* ALERTS column */}
       <div>
         <div className="flex items-baseline justify-between mb-3">
-          <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted">
+          <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-muted-foreground">
             Alerts
           </h2>
           {activeAlerts.length > 0 && (
-            <span className="font-mono tabular-nums text-[11px] font-semibold text-amber-700 dark:text-amber-400">
+            <span className="font-mono tabular-nums text-[11px] font-semibold text-warning">
               {activeAlerts.length} flagged
             </span>
           )}
         </div>
 
         {activeAlerts.length === 0 ? (
-          <p className="text-[12px] italic text-v2-ink-muted">
+          <p className="text-[12px] italic text-muted-foreground">
             All clear — nothing flagged this period.
           </p>
         ) : (
@@ -95,7 +95,7 @@ export const EditorialAlertsActions: React.FC<EditorialAlertsActionsProps> = ({
                     >
                       {alert.title}
                     </span>
-                    <span className="text-[12px] text-v2-ink-muted">
+                    <span className="text-[12px] text-muted-foreground">
                       {" — "}
                       <span className="italic">{alert.message}</span>
                     </span>
@@ -109,7 +109,7 @@ export const EditorialAlertsActions: React.FC<EditorialAlertsActionsProps> = ({
 
       {/* QUICK ACTIONS column */}
       <div>
-        <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted mb-3">
+        <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-muted-foreground mb-3">
           Quick Actions
         </h2>
         <div className="flex flex-col gap-1.5">
@@ -125,11 +125,11 @@ export const EditorialAlertsActions: React.FC<EditorialAlertsActionsProps> = ({
                       <button
                         type="button"
                         onClick={() => navigate({ to: "/billing" })}
-                        className="group flex items-center gap-2 text-[12px] text-v2-ink-subtle hover:text-v2-ink transition-colors text-left w-fit"
+                        className="group flex items-center gap-2 text-[12px] text-muted-foreground hover:text-foreground transition-colors text-left w-fit"
                       >
                         <Lock className="h-3 w-3 shrink-0" />
                         <span>{action.label}</span>
-                        <span className="text-[9px] uppercase tracking-[0.18em] italic text-amber-600 dark:text-amber-500">
+                        <span className="text-[9px] uppercase tracking-[0.18em] italic text-warning">
                           Upgrade
                         </span>
                       </button>
@@ -139,13 +139,13 @@ export const EditorialAlertsActions: React.FC<EditorialAlertsActionsProps> = ({
                       className="text-xs max-w-[220px]"
                     >
                       <div className="flex items-start gap-1.5">
-                        <Crown className="h-3 w-3 text-amber-500 mt-0.5 shrink-0" />
+                        <Crown className="h-3 w-3 text-warning mt-0.5 shrink-0" />
                         <div>
                           <p className="font-medium">
                             {action.lockedTooltip ??
                               `Upgrade to ${action.requiredTier ?? "Starter"} to unlock`}
                           </p>
-                          <p className="text-v2-ink-subtle mt-0.5">
+                          <p className="text-muted-foreground mt-0.5">
                             Click to view plans
                           </p>
                         </div>
@@ -163,11 +163,11 @@ export const EditorialAlertsActions: React.FC<EditorialAlertsActionsProps> = ({
                 onClick={() => onActionClick(action.action)}
                 disabled={isCreating}
                 className={cn(
-                  "group flex items-center gap-2 text-[12px] text-v2-ink-muted hover:text-v2-ink transition-colors text-left w-fit",
+                  "group flex items-center gap-2 text-[12px] text-muted-foreground hover:text-foreground transition-colors text-left w-fit",
                   isCreating && "opacity-60 cursor-not-allowed",
                 )}
               >
-                <Icon className="h-3 w-3 shrink-0 text-v2-ink-subtle group-hover:text-v2-ink transition-colors" />
+                <Icon className="h-3 w-3 shrink-0 text-muted-foreground group-hover:text-foreground transition-colors" />
                 <span className="border-b border-transparent group-hover:border-current">
                   {isCreating && action.label !== "View Reports"
                     ? `${action.label}...`

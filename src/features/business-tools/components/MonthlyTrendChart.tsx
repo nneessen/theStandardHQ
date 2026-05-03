@@ -105,16 +105,16 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
             return (
               <div className="bg-v2-card-dark border border-v2-ring rounded-md px-2.5 py-1.5 text-[11px] text-v2-canvas space-y-0.5">
                 <p className="font-medium">{row.month}</p>
-                <p className="text-emerald-400">
+                <p className="text-success">
                   Income: {formatDollars(row.income)}
                 </p>
-                <p className="text-blue-400">
+                <p className="text-info">
                   Biz Expenses: {formatDollars(row.business)}
                 </p>
                 <p className="text-v2-ink-subtle">
                   Personal: {formatDollars(row.personal)}
                 </p>
-                <p className="text-amber-400">
+                <p className="text-warning">
                   Net 1099: {formatDollars(row.net)}
                 </p>
               </div>

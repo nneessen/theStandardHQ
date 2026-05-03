@@ -169,37 +169,37 @@ export function ContactBrowser({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-[320px] sm:w-[380px] p-0 flex flex-col bg-v2-canvas "
+        className="w-[320px] sm:w-[380px] p-0 flex flex-col bg-background "
       >
         {/* Header - Zinc styled */}
-        <SheetHeader className="px-3 py-2 bg-v2-card border-b border-v2-ring">
+        <SheetHeader className="px-3 py-2 bg-card border-b border-border">
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-v2-ink" />
-            <SheetTitle className="text-sm font-semibold text-v2-ink">
+            <Users className="h-4 w-4 text-foreground" />
+            <SheetTitle className="text-sm font-semibold text-foreground">
               Team Contacts
             </SheetTitle>
           </div>
-          <p className="text-[10px] text-v2-ink-muted">
+          <p className="text-[10px] text-muted-foreground">
             {total} contact{total !== 1 ? "s" : ""} available
           </p>
         </SheetHeader>
 
         {/* Search - Compact */}
-        <div className="px-3 py-2 bg-v2-card border-b border-v2-ring">
+        <div className="px-3 py-2 bg-card border-b border-border">
           <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
             <Input
               ref={searchInputRef}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name or email..."
-              className="pl-7 h-7 text-[11px] bg-v2-canvas border-v2-ring"
+              className="pl-7 h-7 text-[11px] bg-background border-border"
             />
           </div>
         </div>
 
         {/* Tabs - Compact zinc style */}
-        <div className="flex gap-0.5 p-1.5 bg-v2-ring/50 dark:bg-v2-ring/50 mx-2 mt-2 rounded-md">
+        <div className="flex gap-0.5 p-1.5 bg-muted/50 dark:bg-muted/50 mx-2 mt-2 rounded-md">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -210,8 +210,8 @@ export function ContactBrowser({
                 className={cn(
                   "flex-1 flex items-center justify-center gap-1 py-1.5 px-2 text-[10px] font-medium rounded transition-all",
                   isActive
-                    ? "bg-v2-card shadow-sm text-v2-ink"
-                    : "text-v2-ink-muted hover:text-v2-ink",
+                    ? "bg-card shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <Icon className="h-3 w-3" />
@@ -223,12 +223,12 @@ export function ContactBrowser({
 
         {/* Filters - Only when relevant */}
         {(activeTab === "all" || activeTab === "team") && roles.length > 0 && (
-          <div className="px-3 py-2 border-b border-v2-ring">
+          <div className="px-3 py-2 border-b border-border">
             <Select
               value={roleFilter || "all"}
               onValueChange={(v) => setRoleFilter(v === "all" ? undefined : v)}
             >
-              <SelectTrigger className="h-6 text-[10px] bg-v2-card border-v2-ring">
+              <SelectTrigger className="h-6 text-[10px] bg-card border-border">
                 <SelectValue placeholder="Filter by role" />
               </SelectTrigger>
               <SelectContent>
@@ -251,15 +251,15 @@ export function ContactBrowser({
 
         {/* Add Entire Team button - only on My Team tab */}
         {activeTab === "team" && total > 0 && (
-          <div className="px-3 py-1.5 border-b border-v2-ring bg-v2-card">
+          <div className="px-3 py-1.5 border-b border-border bg-card">
             <button
               onClick={handleAddAll}
               disabled={isAddingAll}
               className={cn(
                 "flex items-center gap-1.5 px-2 py-1 text-[10px] font-medium rounded transition-colors w-full justify-center",
                 isAddingAll
-                  ? "bg-v2-ring text-v2-ink-subtle cursor-not-allowed"
-                  : "bg-v2-ring hover:bg-v2-ring dark:hover:bg-v2-card-dark text-v2-ink-muted",
+                  ? "bg-muted text-muted-foreground cursor-not-allowed"
+                  : "bg-muted hover:bg-muted dark:hover:bg-card-dark text-muted-foreground",
               )}
             >
               {isAddingAll ? (
@@ -279,15 +279,15 @@ export function ContactBrowser({
 
         {/* Add All Users button - only on All Users tab (super-admin only) */}
         {activeTab === "all_users" && total > 0 && (
-          <div className="px-3 py-1.5 border-b border-v2-ring bg-v2-card">
+          <div className="px-3 py-1.5 border-b border-border bg-card">
             <button
               onClick={handleAddAllUsersClick}
               disabled={isAddingAll}
               className={cn(
                 "flex items-center gap-1.5 px-2 py-1 text-[10px] font-medium rounded transition-colors w-full justify-center",
                 isAddingAll
-                  ? "bg-v2-ring text-v2-ink-subtle cursor-not-allowed"
-                  : "bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-700",
+                  ? "bg-muted text-muted-foreground cursor-not-allowed"
+                  : "bg-warning/20 dark:bg-warning/30 hover:bg-warning/30 dark:hover:bg-warning/50 text-warning border border-warning/40",
               )}
             >
               {isAddingAll ? (
@@ -327,7 +327,7 @@ export function ContactBrowser({
         </ScrollArea>
 
         {/* Pagination - ALWAYS visible */}
-        <div className="px-3 py-2 bg-v2-card border-t border-v2-ring">
+        <div className="px-3 py-2 bg-card border-t border-border">
           <div className="flex items-center justify-between text-[10px]">
             <button
               onClick={prevPage}
@@ -335,14 +335,14 @@ export function ContactBrowser({
               className={cn(
                 "flex items-center gap-1 px-2 py-1 rounded transition-colors",
                 page === 1
-                  ? "text-v2-ink-subtle cursor-not-allowed"
-                  : "text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-ring dark:hover:bg-v2-ring",
+                  ? "text-muted-foreground cursor-not-allowed"
+                  : "text-muted-foreground dark:text-muted-foreground hover:bg-muted dark:hover:bg-muted",
               )}
             >
               <ChevronLeft className="h-3 w-3" />
               Prev
             </button>
-            <span className="text-v2-ink-muted">
+            <span className="text-muted-foreground">
               {total > 0 ? (
                 <>
                   {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, total)}{" "}
@@ -358,8 +358,8 @@ export function ContactBrowser({
               className={cn(
                 "flex items-center gap-1 px-2 py-1 rounded transition-colors",
                 !hasMore
-                  ? "text-v2-ink-subtle cursor-not-allowed"
-                  : "text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-ring dark:hover:bg-v2-ring",
+                  ? "text-muted-foreground cursor-not-allowed"
+                  : "text-muted-foreground dark:text-muted-foreground hover:bg-muted dark:hover:bg-muted",
               )}
             >
               Next
@@ -370,8 +370,8 @@ export function ContactBrowser({
 
         {/* Loading overlay for fetching */}
         {isFetching && !isLoading && (
-          <div className="absolute inset-0 bg-v2-canvas/50 /50 flex items-center justify-center pointer-events-none">
-            <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
+          <div className="absolute inset-0 bg-background/50 /50 flex items-center justify-center pointer-events-none">
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           </div>
         )}
       </SheetContent>
@@ -388,7 +388,7 @@ export function ContactBrowser({
               <div>
                 <p>
                   You are about to add{" "}
-                  <span className="font-semibold text-v2-ink">
+                  <span className="font-semibold text-foreground">
                     {total} users
                   </span>{" "}
                   as recipients.
@@ -396,7 +396,7 @@ export function ContactBrowser({
                 <p className="mt-2">
                   This will send an email to every user in the system.
                 </p>
-                <p className="mt-3 text-amber-600 dark:text-amber-400 font-medium">
+                <p className="mt-3 text-warning font-medium">
                   This action is intended for system-wide announcements only.
                 </p>
               </div>
@@ -406,7 +406,7 @@ export function ContactBrowser({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleAddAllUsersConfirmed}
-              className="bg-amber-600 hover:bg-amber-700 text-white"
+              className="bg-warning hover:bg-warning text-white"
             >
               Add All {total} Users
             </AlertDialogAction>
@@ -424,14 +424,14 @@ function LoadingSkeleton() {
       {[...Array(5)].map((_, i) => (
         <div
           key={i}
-          className="flex items-center gap-2 px-2 py-1.5 rounded bg-v2-card border border-v2-ring/60"
+          className="flex items-center gap-2 px-2 py-1.5 rounded bg-card border border-border/60"
         >
-          <div className="h-5 w-5 rounded bg-v2-ring animate-pulse" />
+          <div className="h-5 w-5 rounded bg-muted animate-pulse" />
           <div className="flex-1 space-y-1">
-            <div className="h-3 w-24 rounded bg-v2-ring animate-pulse" />
-            <div className="h-2.5 w-32 rounded bg-v2-ring animate-pulse" />
+            <div className="h-3 w-24 rounded bg-muted animate-pulse" />
+            <div className="h-2.5 w-32 rounded bg-muted animate-pulse" />
           </div>
-          <div className="h-4 w-12 rounded bg-v2-ring animate-pulse" />
+          <div className="h-4 w-12 rounded bg-muted animate-pulse" />
         </div>
       ))}
     </div>
@@ -463,7 +463,7 @@ function EmptyState({
   const getIcon = () => {
     switch (activeTab) {
       case "all_users":
-        return <Globe className="h-8 w-8 text-v2-ink-subtle mb-2 mx-auto" />;
+        return <Globe className="h-8 w-8 text-muted-foreground mb-2 mx-auto" />;
       default:
         return null;
     }
@@ -472,14 +472,14 @@ function EmptyState({
   return (
     <div className="text-center py-8">
       {getIcon()}
-      <p className="text-[11px] text-v2-ink-muted">{getMessage()}</p>
+      <p className="text-[11px] text-muted-foreground">{getMessage()}</p>
       {activeTab === "favorites" && search.length < 2 && (
-        <p className="text-[10px] text-v2-ink-subtle mt-1">
+        <p className="text-[10px] text-muted-foreground mt-1">
           Click the star icon on any contact to add favorites
         </p>
       )}
       {activeTab === "team" && search.length < 2 && (
-        <p className="text-[10px] text-v2-ink-subtle mt-1">
+        <p className="text-[10px] text-muted-foreground mt-1">
           Your downlines will appear here
         </p>
       )}
@@ -506,8 +506,8 @@ function ContactRow({
       onClick={onClick}
       className={cn(
         "flex items-center gap-2 px-2 py-1.5 rounded cursor-pointer group",
-        "bg-v2-card hover:bg-v2-canvas",
-        "border border-v2-ring/60 hover:border-v2-ring ",
+        "bg-card hover:bg-background",
+        "border border-border/60 hover:border-border ",
         "transition-all",
       )}
     >
@@ -517,24 +517,24 @@ function ContactRow({
           e.stopPropagation();
           onClick();
         }}
-        className="p-1 rounded bg-v2-ring hover:bg-v2-ring dark:hover:bg-v2-card-dark text-v2-ink-muted dark:text-v2-ink-subtle shrink-0 transition-colors"
+        className="p-1 rounded bg-muted hover:bg-muted dark:hover:bg-card-dark text-muted-foreground dark:text-muted-foreground shrink-0 transition-colors"
       >
         <Plus className="h-3 w-3" />
       </button>
 
       {/* Name and email */}
       <div className="flex-1 min-w-0">
-        <span className="text-[11px] font-medium text-v2-ink truncate block">
+        <span className="text-[11px] font-medium text-foreground truncate block">
           {contact.name}
         </span>
-        <span className="text-[10px] text-v2-ink-muted truncate block">
+        <span className="text-[10px] text-muted-foreground truncate block">
           {contact.email}
         </span>
       </div>
 
       {/* Role badge */}
       {contact.role && (
-        <Badge className="h-4 text-[9px] px-1 shrink-0 bg-v2-ring text-v2-ink-muted dark:text-v2-ink-subtle border-0">
+        <Badge className="h-4 text-[9px] px-1 shrink-0 bg-muted text-muted-foreground dark:text-muted-foreground border-0">
           {contact.role.slice(0, 8)}
         </Badge>
       )}
@@ -546,8 +546,8 @@ function ContactRow({
         className={cn(
           "p-1 rounded shrink-0 transition-all",
           contact.isFavorite
-            ? "text-amber-500 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50"
-            : "text-v2-ink-subtle hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/30",
+            ? "text-warning bg-warning/10 dark:bg-warning/30 hover:bg-warning/20 dark:hover:bg-warning/50"
+            : "text-muted-foreground hover:text-warning hover:bg-warning/10 dark:hover:bg-warning/30",
         )}
         title={
           contact.isFavorite ? "Remove from favorites" : "Add to favorites"

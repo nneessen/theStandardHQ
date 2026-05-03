@@ -17,17 +17,16 @@ const TRUST_BADGE: Record<
 > = {
   trusted: {
     label: "Trusted",
-    className:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
+    className: "bg-success/20 text-success dark:bg-success dark:text-success",
   },
   needs_review: {
     label: "Review",
-    className:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
+    className: "bg-warning/20 text-warning dark:bg-warning dark:text-warning",
   },
   rejected: {
     label: "Rejected",
-    className: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+    className:
+      "bg-destructive/20 text-destructive dark:bg-destructive dark:text-destructive",
   },
 };
 
@@ -77,7 +76,7 @@ export function StatementsTab() {
   if (error) {
     return (
       <div className="text-center py-12 space-y-2">
-        <p className="text-xs font-medium text-red-600 dark:text-red-400">
+        <p className="text-xs font-medium text-destructive">
           Failed to load statements
         </p>
         <p className="text-[10px] text-v2-ink-muted">

@@ -108,15 +108,15 @@ export function BlockedLeadStatusSelector({
     <div className="space-y-2">
       {/* Orphaned status warning */}
       {orphaned.length > 0 && (
-        <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-800 dark:bg-amber-950/30">
-          <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 text-amber-500" />
+        <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 dark:border-warning dark:bg-warning/15">
+          <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 text-warning" />
           <div>
-            <p className="text-[10px] font-medium text-amber-800 dark:text-amber-200">
+            <p className="text-[10px] font-medium text-warning">
               {orphaned.length === 1
                 ? "1 blocked status no longer exists in your CRM"
                 : `${orphaned.length} blocked statuses no longer exist in your CRM`}
             </p>
-            <p className="mt-0.5 text-[10px] text-amber-600 dark:text-amber-400">
+            <p className="mt-0.5 text-[10px] text-warning">
               These are not being enforced. Remove them to clear this warning.
             </p>
           </div>
@@ -147,7 +147,7 @@ export function BlockedLeadStatusSelector({
             <Badge
               key={status}
               variant="outline"
-              className="gap-1 border-amber-300 py-0.5 pl-2 pr-1 text-[10px] text-amber-700 dark:border-amber-700 dark:text-amber-400"
+              className="gap-1 border-warning/40 py-0.5 pl-2 pr-1 text-[10px] text-warning dark:border-warning dark:text-warning"
             >
               <AlertTriangle className="h-2.5 w-2.5" />
               {status}
@@ -155,7 +155,7 @@ export function BlockedLeadStatusSelector({
                 type="button"
                 onClick={() => remove(status)}
                 disabled={disabled}
-                className="ml-0.5 rounded-sm hover:bg-amber-200 dark:hover:bg-amber-900"
+                className="ml-0.5 rounded-sm hover:bg-warning/30 dark:hover:bg-warning"
               >
                 <X className="h-3 w-3" />
               </button>

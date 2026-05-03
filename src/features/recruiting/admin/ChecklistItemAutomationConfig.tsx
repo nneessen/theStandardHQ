@@ -101,17 +101,17 @@ export function ChecklistItemAutomationConfig({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-2">
-        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-2 mt-2 pt-2 border-t border-v2-ring/60">
+    <div className="space-y-2 mt-2 pt-2 border-t border-border/60">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Zap className="h-3 w-3 text-amber-500" />
-          <span className="text-[10px] text-v2-ink-muted">
+          <Zap className="h-3 w-3 text-warning" />
+          <span className="text-[10px] text-muted-foreground">
             Automations ({automations?.length || 0})
           </span>
         </div>
@@ -136,21 +136,21 @@ export function ChecklistItemAutomationConfig({
               key={automation.id}
               className={`flex items-center gap-1.5 p-1 rounded-sm border ${
                 automation.is_active
-                  ? "bg-v2-canvas border-v2-ring/60"
-                  : "bg-v2-ring/50  border-v2-ring opacity-60"
+                  ? "bg-background border-border/60"
+                  : "bg-muted/50  border-border opacity-60"
               }`}
             >
-              <div className="text-v2-ink-subtle">
+              <div className="text-muted-foreground">
                 {getCommunicationIcon(automation.communication_type)}
               </div>
               <Badge
                 variant="outline"
-                className="text-[8px] px-1 py-0 border-v2-ring"
+                className="text-[8px] px-1 py-0 border-border"
               >
                 {TRIGGER_SHORT_LABELS[automation.trigger_type] ||
                   automation.trigger_type}
               </Badge>
-              <span className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle flex-1 truncate">
+              <span className="text-[9px] text-muted-foreground dark:text-muted-foreground flex-1 truncate">
                 → {automation.recipients.map((r) => r.type).join(", ")}
               </span>
               <Switch
@@ -167,12 +167,12 @@ export function ChecklistItemAutomationConfig({
                   setDialogOpen(true);
                 }}
               >
-                <Edit2 className="h-2.5 w-2.5 text-v2-ink-muted" />
+                <Edit2 className="h-2.5 w-2.5 text-muted-foreground" />
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-4 w-4 p-0 text-red-500 hover:text-red-600 dark:text-red-400"
+                className="h-4 w-4 p-0 text-destructive hover:text-destructive"
                 onClick={() => setDeleteConfirmId(automation.id)}
               >
                 <Trash2 className="h-2.5 w-2.5" />
@@ -181,7 +181,7 @@ export function ChecklistItemAutomationConfig({
           ))}
         </div>
       ) : (
-        <div className="text-[9px] text-v2-ink-muted text-center py-1">
+        <div className="text-[9px] text-muted-foreground text-center py-1">
           No automations
         </div>
       )}
@@ -203,7 +203,7 @@ export function ChecklistItemAutomationConfig({
           <DialogHeader>
             <DialogTitle className="text-sm">Delete Automation?</DialogTitle>
           </DialogHeader>
-          <p className="text-[11px] text-v2-ink-muted">
+          <p className="text-[11px] text-muted-foreground">
             This will permanently delete this automation.
           </p>
           <DialogFooter>

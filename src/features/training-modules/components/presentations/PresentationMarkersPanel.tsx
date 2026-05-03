@@ -267,7 +267,7 @@ function MarkerRow({
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 hover:text-red-500"
+            className="h-6 w-6 hover:text-destructive"
             onClick={(e) => {
               e.stopPropagation();
               onDelete();

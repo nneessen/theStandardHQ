@@ -331,19 +331,19 @@ function WorkspaceCard({
     <div
       className={`border rounded-lg overflow-hidden ${
         !isActive
-          ? "border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-900/10"
-          : "border-v2-ring"
+          ? "border-warning/40 bg-warning/10/50 dark:bg-warning/10"
+          : "border-border"
       }`}
     >
       {/* Workspace Header */}
       <div
-        className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-v2-canvas ${
-          isExpanded ? "border-b border-v2-ring" : ""
+        className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-background ${
+          isExpanded ? "border-b border-border" : ""
         }`}
         onClick={() => setIsExpanded(!isExpanded)}
       >
         {/* Expand Icon */}
-        <div className="text-v2-ink-subtle">
+        <div className="text-muted-foreground">
           {isExpanded ? (
             <ChevronDown className="h-4 w-4" />
           ) : (
@@ -353,7 +353,7 @@ function WorkspaceCard({
 
         {/* Workspace Icon/Logo */}
         {integration.workspace_logo_url ? (
-          <div className="w-7 h-7 rounded overflow-hidden border border-v2-ring flex-shrink-0">
+          <div className="w-7 h-7 rounded overflow-hidden border border-border flex-shrink-0">
             <img
               src={integration.workspace_logo_url}
               alt={integration.display_name || integration.team_name}
@@ -362,10 +362,10 @@ function WorkspaceCard({
           </div>
         ) : (
           <div
-            className={`p-1.5 rounded ${!isActive ? "bg-amber-100 dark:bg-amber-900/30" : "bg-purple-100 dark:bg-purple-900/30"}`}
+            className={`p-1.5 rounded ${!isActive ? "bg-warning/20 dark:bg-warning/30" : "bg-info/20 dark:bg-info/15"}`}
           >
             <Building2
-              className={`h-4 w-4 ${!isActive ? "text-amber-600 dark:text-amber-400" : "text-purple-600 dark:text-purple-400"}`}
+              className={`h-4 w-4 ${!isActive ? "text-warning" : "text-info"}`}
             />
           </div>
         )}
@@ -373,13 +373,13 @@ function WorkspaceCard({
         {/* Workspace Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-v2-ink truncate">
+            <span className="text-sm font-medium text-foreground truncate">
               {integration.display_name || integration.team_name}
             </span>
             {!isActive ? (
               <Badge
                 variant="secondary"
-                className="text-[8px] h-4 px-1 bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
+                className="text-[8px] h-4 px-1 bg-warning/20 text-warning dark:bg-warning/50 dark:text-warning"
               >
                 <XCircle className="h-2 w-2 mr-0.5" />
                 Paused
@@ -387,7 +387,7 @@ function WorkspaceCard({
             ) : isConnected ? (
               <Badge
                 variant="default"
-                className="text-[8px] h-4 px-1 bg-green-600"
+                className="text-[8px] h-4 px-1 bg-success"
               >
                 <CheckCircle2 className="h-2 w-2 mr-0.5" />
                 Connected
@@ -401,7 +401,7 @@ function WorkspaceCard({
           </div>
           <div className="flex items-center gap-2 mt-0.5">
             {integration.policy_channel_name && (
-              <p className="text-[10px] text-v2-ink-muted flex items-center gap-1">
+              <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                 <Hash className="h-2.5 w-2.5" />
                 {integration.policy_channel_name}
               </p>
@@ -409,7 +409,7 @@ function WorkspaceCard({
             {/* Agency context indicator */}
             <Badge
               variant="outline"
-              className="text-[8px] h-3.5 px-1 border-v2-ring dark:border-v2-ring"
+              className="text-[8px] h-3.5 px-1 border-border dark:border-border"
             >
               {integration.agency_id ? "Agency" : "IMO-Level"}
             </Badge>
@@ -423,7 +423,7 @@ function WorkspaceCard({
         >
           {/* Active Toggle - Admin Only */}
           {isAdmin && (
-            <div className="flex items-center gap-1.5 mr-2 pr-2 border-r border-v2-ring">
+            <div className="flex items-center gap-1.5 mr-2 pr-2 border-r border-border">
               <Switch
                 checked={isActive}
                 onCheckedChange={handleToggleActive}
@@ -431,7 +431,7 @@ function WorkspaceCard({
                 className="scale-75"
               />
               <span
-                className={`text-[9px] font-medium ${isActive ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"}`}
+                className={`text-[9px] font-medium ${isActive ? "text-success" : "text-warning"}`}
               >
                 {isActive ? "ON" : "OFF"}
               </span>
@@ -456,7 +456,7 @@ function WorkspaceCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-[9px] text-purple-500 hover:text-purple-600"
+                className="h-6 px-2 text-[9px] text-info hover:text-info"
                 onClick={handleReauthorize}
                 disabled={reauthorize.isPending}
                 title="Re-authorize with updated permissions"
@@ -470,7 +470,7 @@ function WorkspaceCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-[9px] text-amber-500 hover:text-amber-600"
+                className="h-6 px-2 text-[9px] text-warning hover:text-warning"
                 onClick={handleDisconnect}
                 disabled={disconnectSlack.isPending}
               >
@@ -479,7 +479,7 @@ function WorkspaceCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-[9px] text-red-600 hover:text-red-700 font-medium"
+                className="h-6 px-2 text-[9px] text-destructive hover:text-destructive font-medium"
                 onClick={handleDelete}
                 disabled={deleteSlack.isPending}
               >
@@ -492,13 +492,13 @@ function WorkspaceCard({
 
       {/* Expanded Settings */}
       {isExpanded && isConnected && (
-        <div className="p-3 bg-v2-canvas dark:bg-v2-card-tinted/30 space-y-4">
+        <div className="p-3 bg-background dark:bg-card-tinted/30 space-y-4">
           {/* Channel Settings - Admin Only for Editing */}
           <div className="space-y-3">
-            <h5 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
+            <h5 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
               Channel Settings
               {!isAdmin && (
-                <span className="ml-2 text-[8px] font-normal text-v2-ink-subtle">
+                <span className="ml-2 text-[8px] font-normal text-muted-foreground">
                   (Admin only)
                 </span>
               )}
@@ -506,8 +506,8 @@ function WorkspaceCard({
 
             {channelsLoading ? (
               <div className="flex items-center gap-2 py-2">
-                <Loader2 className="h-3 w-3 animate-spin text-v2-ink-subtle" />
-                <span className="text-[10px] text-v2-ink-muted">
+                <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+                <span className="text-[10px] text-muted-foreground">
                   Loading channels...
                 </span>
               </div>
@@ -515,60 +515,66 @@ function WorkspaceCard({
               /* Read-only view for non-admins */
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <Label className="text-[9px] text-muted-foreground dark:text-muted-foreground">
                     Policy Sales
                   </Label>
-                  <div className="h-7 px-2 flex items-center text-[10px] bg-v2-ring rounded border border-v2-ring">
+                  <div className="h-7 px-2 flex items-center text-[10px] bg-muted rounded border border-border">
                     {integration.policy_channel_name ? (
                       <span className="flex items-center gap-1">
                         <Hash className="h-2.5 w-2.5" />
                         {integration.policy_channel_name}
                       </span>
                     ) : (
-                      <span className="text-v2-ink-subtle">Not configured</span>
+                      <span className="text-muted-foreground">
+                        Not configured
+                      </span>
                     )}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <Label className="text-[9px] text-muted-foreground dark:text-muted-foreground">
                     Leaderboard
                   </Label>
-                  <div className="h-7 px-2 flex items-center text-[10px] bg-v2-ring rounded border border-v2-ring">
+                  <div className="h-7 px-2 flex items-center text-[10px] bg-muted rounded border border-border">
                     {integration.leaderboard_channel_name ? (
                       <span className="flex items-center gap-1">
                         <Hash className="h-2.5 w-2.5" />
                         {integration.leaderboard_channel_name}
                       </span>
                     ) : (
-                      <span className="text-v2-ink-subtle">Not configured</span>
+                      <span className="text-muted-foreground">
+                        Not configured
+                      </span>
                     )}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <Label className="text-[9px] text-muted-foreground dark:text-muted-foreground">
                     Recruit Notifications
                   </Label>
-                  <div className="h-7 px-2 flex items-center text-[10px] bg-v2-ring rounded border border-v2-ring">
+                  <div className="h-7 px-2 flex items-center text-[10px] bg-muted rounded border border-border">
                     {integration.recruit_channel_name ? (
                       <span className="flex items-center gap-1">
                         <Hash className="h-2.5 w-2.5" />
                         {integration.recruit_channel_name}
                       </span>
                     ) : (
-                      <span className="text-v2-ink-subtle">Not configured</span>
+                      <span className="text-muted-foreground">
+                        Not configured
+                      </span>
                     )}
                   </div>
                 </div>
               </div>
             ) : availableChannels.length === 0 ? (
-              <div className="text-[10px] text-v2-ink-muted py-2">
+              <div className="text-[10px] text-muted-foreground py-2">
                 No channels available. Invite the bot to channels first.
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-3">
                 {/* Policy Sales Channel */}
                 <div className="space-y-1">
-                  <Label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <Label className="text-[9px] text-muted-foreground dark:text-muted-foreground">
                     Policy Sales
                   </Label>
                   <Select
@@ -608,7 +614,7 @@ function WorkspaceCard({
 
                 {/* Leaderboard Channel */}
                 <div className="space-y-1">
-                  <Label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <Label className="text-[9px] text-muted-foreground dark:text-muted-foreground">
                     Leaderboard
                   </Label>
                   <Select
@@ -648,7 +654,7 @@ function WorkspaceCard({
 
                 {/* Recruit Notifications Channel */}
                 <div className="space-y-1">
-                  <Label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <Label className="text-[9px] text-muted-foreground dark:text-muted-foreground">
                     Recruit Notifications
                   </Label>
                   <Select
@@ -691,7 +697,7 @@ function WorkspaceCard({
             {/* Toggle Options - Admin Only */}
             {isAdmin && (
               <div className="flex flex-wrap gap-x-6 gap-y-2 pt-2">
-                <label className="flex items-center gap-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                <label className="flex items-center gap-2 text-[10px] text-muted-foreground dark:text-muted-foreground">
                   <Switch
                     checked={integration.include_client_info || false}
                     onCheckedChange={(checked) =>
@@ -702,7 +708,7 @@ function WorkspaceCard({
                   />
                   Include client name
                 </label>
-                <label className="flex items-center gap-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                <label className="flex items-center gap-2 text-[10px] text-muted-foreground dark:text-muted-foreground">
                   <Switch
                     checked={
                       integration.include_leaderboard_with_policy ?? true
@@ -724,8 +730,8 @@ function WorkspaceCard({
 
           {/* Workspace Branding - Admin Only */}
           {isAdmin && (
-            <div className="space-y-3 pt-3 border-t border-v2-ring">
-              <h5 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
+            <div className="space-y-3 pt-3 border-t border-border">
+              <h5 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
                 Workspace Branding
               </h5>
               <WorkspaceLogoUpload
@@ -738,14 +744,14 @@ function WorkspaceCard({
 
           {/* Your Preferences for this Workspace */}
           {!channelsLoading && availableChannels.length > 0 && (
-            <div className="space-y-3 pt-3 border-t border-v2-ring">
-              <h5 className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wide">
+            <div className="space-y-3 pt-3 border-t border-border">
+              <h5 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
                 Your Preferences
               </h5>
 
               {/* Default View Channel */}
               <div className="space-y-1">
-                <Label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                <Label className="text-[9px] text-muted-foreground dark:text-muted-foreground">
                   Default Channel (Messages Tab)
                 </Label>
                 <Select
@@ -789,7 +795,7 @@ function WorkspaceCard({
 
               {/* Additional Channels */}
               <div className="space-y-1">
-                <Label className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                <Label className="text-[9px] text-muted-foreground dark:text-muted-foreground">
                   Additional Channels for My Sales
                 </Label>
                 <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto">
@@ -811,8 +817,8 @@ function WorkspaceCard({
                           key={channel.id}
                           className={`flex items-center gap-1.5 px-2 py-1 rounded text-[9px] cursor-pointer border transition-colors ${
                             isSelected
-                              ? "bg-purple-100 dark:bg-purple-900/30 border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300"
-                              : "bg-v2-card border-v2-ring text-v2-ink-muted dark:text-v2-ink-subtle hover:border-purple-300 dark:hover:border-purple-700"
+                              ? "bg-info/20 dark:bg-info/15 border-info/40 dark:border-info text-info"
+                              : "bg-card border-border text-muted-foreground dark:text-muted-foreground hover:border-info/40 dark:hover:border-info"
                           }`}
                         >
                           <input
@@ -842,8 +848,8 @@ function WorkspaceCard({
 
       {/* Disconnected State */}
       {isExpanded && !isConnected && (
-        <div className="p-3 bg-v2-canvas dark:bg-v2-card-tinted/30">
-          <p className="text-[10px] text-v2-ink-muted">
+        <div className="p-3 bg-background dark:bg-card-tinted/30">
+          <p className="text-[10px] text-muted-foreground">
             This workspace is disconnected. Remove it or reconnect by adding it
             again.
           </p>
@@ -873,16 +879,16 @@ function WebhookCard({
   isUpdating,
 }: WebhookCardProps) {
   return (
-    <div className="flex items-center justify-between py-2 px-3 bg-v2-canvas rounded-lg">
+    <div className="flex items-center justify-between py-2 px-3 bg-background rounded-lg">
       <div className="flex items-center gap-2 min-w-0">
-        <Link2 className="h-3.5 w-3.5 text-purple-500 flex-shrink-0" />
+        <Link2 className="h-3.5 w-3.5 text-info flex-shrink-0" />
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-medium text-v2-ink truncate">
+            <span className="text-[11px] font-medium text-foreground truncate">
               {webhook.channel_name}
             </span>
             {webhook.workspace_name && (
-              <span className="text-[9px] text-v2-ink-subtle truncate">
+              <span className="text-[9px] text-muted-foreground truncate">
                 ({webhook.workspace_name})
               </span>
             )}
@@ -899,7 +905,7 @@ function WebhookCard({
         <Button
           variant="ghost"
           size="sm"
-          className="h-6 w-6 p-0 text-v2-ink-subtle hover:text-red-500"
+          className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
           onClick={() => onDelete(webhook.id)}
           disabled={isDeleting}
         >
@@ -984,11 +990,11 @@ function AddWebhookDialog({
 
         <div className="space-y-3 py-2">
           {/* Instructions */}
-          <div className="bg-v2-canvas rounded-lg p-3 space-y-2">
-            <p className="text-[10px] font-medium text-v2-ink-muted">
+          <div className="bg-background rounded-lg p-3 space-y-2">
+            <p className="text-[10px] font-medium text-muted-foreground">
               How to get a webhook URL:
             </p>
-            <ol className="text-[9px] text-v2-ink-muted space-y-1 list-decimal list-inside">
+            <ol className="text-[9px] text-muted-foreground space-y-1 list-decimal list-inside">
               <li>Go to your Slack workspace</li>
               <li>Open Apps → Incoming Webhooks</li>
               <li>Click "Add New Webhook to Workspace"</li>
@@ -998,7 +1004,7 @@ function AddWebhookDialog({
               href="https://api.slack.com/messaging/webhooks"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[9px] text-purple-600 hover:text-purple-700"
+              className="inline-flex items-center gap-1 text-[9px] text-info hover:text-info"
             >
               Learn more <ExternalLink className="h-2.5 w-2.5" />
             </a>
@@ -1007,7 +1013,7 @@ function AddWebhookDialog({
           {/* Form fields */}
           <div className="space-y-2">
             <div>
-              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+              <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                 Webhook URL *
               </Label>
               <Input
@@ -1018,7 +1024,7 @@ function AddWebhookDialog({
               />
             </div>
             <div>
-              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+              <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                 Channel Name *
               </Label>
               <Input
@@ -1029,7 +1035,7 @@ function AddWebhookDialog({
               />
             </div>
             <div>
-              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+              <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                 Workspace Name (optional)
               </Label>
               <Input
@@ -1041,7 +1047,7 @@ function AddWebhookDialog({
             </div>
           </div>
 
-          {error && <p className="text-[10px] text-red-500">{error}</p>}
+          {error && <p className="text-[10px] text-destructive">{error}</p>}
         </div>
 
         <DialogFooter>
@@ -1217,7 +1223,7 @@ function AgencySlackCredentialsDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="text-sm flex items-center gap-2">
-            <Key className="h-4 w-4 text-purple-500" />
+            <Key className="h-4 w-4 text-info" />
             {existingCredentials ? "Update" : "Add"} Slack App Credentials
           </DialogTitle>
           <DialogDescription className="text-[11px]">
@@ -1228,11 +1234,11 @@ function AgencySlackCredentialsDialog({
 
         <div className="space-y-3 py-2">
           {/* Instructions */}
-          <div className="bg-v2-canvas rounded-lg p-3 space-y-2">
-            <p className="text-[10px] font-medium text-v2-ink-muted">
+          <div className="bg-background rounded-lg p-3 space-y-2">
+            <p className="text-[10px] font-medium text-muted-foreground">
               How to get Slack app credentials:
             </p>
-            <ol className="text-[9px] text-v2-ink-muted space-y-1 list-decimal list-inside">
+            <ol className="text-[9px] text-muted-foreground space-y-1 list-decimal list-inside">
               <li>Go to api.slack.com/apps and create or select your app</li>
               <li>Find Client ID & Client Secret in "Basic Information"</li>
               <li>Enable OAuth & add redirect URL</li>
@@ -1245,7 +1251,7 @@ function AgencySlackCredentialsDialog({
               href="https://api.slack.com/apps"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[9px] text-purple-600 hover:text-purple-700"
+              className="inline-flex items-center gap-1 text-[9px] text-info hover:text-info"
             >
               Open Slack App Dashboard <ExternalLink className="h-2.5 w-2.5" />
             </a>
@@ -1255,7 +1261,7 @@ function AgencySlackCredentialsDialog({
           <div className="space-y-3">
             {/* Agency Selector */}
             <div>
-              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+              <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                 Agency *
               </Label>
               <Select
@@ -1282,13 +1288,13 @@ function AgencySlackCredentialsDialog({
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-[8px] text-v2-ink-subtle mt-0.5">
+              <p className="text-[8px] text-muted-foreground mt-0.5">
                 Choose a specific agency or set as IMO-wide default
               </p>
             </div>
 
             <div>
-              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+              <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                 App Name (optional)
               </Label>
               <Input
@@ -1300,7 +1306,7 @@ function AgencySlackCredentialsDialog({
             </div>
 
             <div>
-              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+              <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                 Client ID *
               </Label>
               <Input
@@ -1312,7 +1318,7 @@ function AgencySlackCredentialsDialog({
             </div>
 
             <div>
-              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle flex items-center gap-1">
+              <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground flex items-center gap-1">
                 Client Secret{" "}
                 {existingCredentials ? "(leave blank to keep existing)" : "*"}
               </Label>
@@ -1329,7 +1335,7 @@ function AgencySlackCredentialsDialog({
                 <button
                   type="button"
                   onClick={() => setShowSecrets(!showSecrets)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-v2-ink-subtle hover:text-v2-ink-muted"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-muted-foreground"
                 >
                   {showSecrets ? (
                     <EyeOff className="h-3.5 w-3.5" />
@@ -1341,7 +1347,7 @@ function AgencySlackCredentialsDialog({
             </div>
 
             <div>
-              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+              <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                 Signing Secret (optional)
               </Label>
               <div className="relative">
@@ -1357,23 +1363,23 @@ function AgencySlackCredentialsDialog({
                   className="h-8 text-[11px] mt-1 font-mono pr-8"
                 />
               </div>
-              <p className="text-[8px] text-v2-ink-subtle mt-0.5">
+              <p className="text-[8px] text-muted-foreground mt-0.5">
                 Used for verifying Slack webhooks (optional)
               </p>
             </div>
           </div>
 
           {error && (
-            <div className="flex items-center gap-2 text-[10px] text-red-500 bg-red-50 dark:bg-red-900/20 rounded p-2">
+            <div className="flex items-center gap-2 text-[10px] text-destructive bg-destructive/10 rounded p-2">
               <XCircle className="h-3 w-3" />
               {error}
             </div>
           )}
 
           {/* Security note */}
-          <div className="flex items-start gap-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg p-2">
-            <Shield className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
-            <p className="text-[9px] text-amber-700 dark:text-amber-300">
+          <div className="flex items-start gap-2 bg-warning/10 rounded-lg p-2">
+            <Shield className="h-3.5 w-3.5 text-warning flex-shrink-0 mt-0.5" />
+            <p className="text-[9px] text-warning">
               Secrets are encrypted before storage and never displayed after
               saving.
             </p>
@@ -1545,7 +1551,7 @@ export function SlackIntegrationCard() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-4">
-        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -1553,21 +1559,21 @@ export function SlackIntegrationCard() {
   return (
     <div className="space-y-3">
       {/* Header Card */}
-      <div className="bg-v2-card rounded-lg border border-v2-ring p-3">
+      <div className="bg-card rounded-lg border border-border p-3">
         <div className="flex items-start gap-3">
           {/* Icon */}
-          <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30">
-            <MessageSquare className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+          <div className="p-2 rounded-lg bg-info/20 dark:bg-info/15">
+            <MessageSquare className="h-5 w-5 text-info" />
           </div>
 
           {/* Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-v2-ink">Slack</h3>
+              <h3 className="text-sm font-semibold text-foreground">Slack</h3>
               {hasConnections ? (
                 <Badge
                   variant="default"
-                  className="text-[9px] h-4 px-1.5 bg-green-600"
+                  className="text-[9px] h-4 px-1.5 bg-success"
                 >
                   <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />
                   {connectedIntegrations.length} Workspace
@@ -1581,7 +1587,7 @@ export function SlackIntegrationCard() {
               )}
             </div>
 
-            <p className="text-[10px] text-v2-ink-muted mt-1">
+            <p className="text-[10px] text-muted-foreground mt-1">
               {hasConnections
                 ? "Post policy sales and leaderboards to your Slack workspaces."
                 : "Connect Slack workspaces to enable automated notifications."}
@@ -1610,8 +1616,8 @@ export function SlackIntegrationCard() {
 
       {/* Connected Workspaces List */}
       {integrations.length > 0 && (
-        <div className="bg-v2-card rounded-lg border border-v2-ring p-3 space-y-2">
-          <h4 className="text-[11px] font-semibold text-v2-ink mb-2">
+        <div className="bg-card rounded-lg border border-border p-3 space-y-2">
+          <h4 className="text-[11px] font-semibold text-foreground mb-2">
             Connected Workspaces
           </h4>
 
@@ -1632,14 +1638,14 @@ export function SlackIntegrationCard() {
 
       {/* Slack App Credentials Section - Admin Only */}
       {canManageSlack && (
-        <div className="bg-v2-card rounded-lg border border-v2-ring p-3 space-y-2">
+        <div className="bg-card rounded-lg border border-border p-3 space-y-2">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-[11px] font-semibold text-v2-ink flex items-center gap-1.5">
-                <Key className="h-3.5 w-3.5 text-purple-500" />
+              <h4 className="text-[11px] font-semibold text-foreground flex items-center gap-1.5">
+                <Key className="h-3.5 w-3.5 text-info" />
                 Slack App Credentials
               </h4>
-              <p className="text-[9px] text-v2-ink-subtle">
+              <p className="text-[9px] text-muted-foreground">
                 Configure Slack app credentials for OAuth connections
               </p>
             </div>
@@ -1656,15 +1662,15 @@ export function SlackIntegrationCard() {
 
           {credentialsLoading ? (
             <div className="flex items-center gap-2 py-2">
-              <Loader2 className="h-3 w-3 animate-spin text-v2-ink-subtle" />
-              <span className="text-[10px] text-v2-ink-muted">
+              <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground">
                 Loading credentials...
               </span>
             </div>
           ) : !slackCredentials || slackCredentials.length === 0 ? (
             <div className="py-3 text-center">
-              <Shield className="h-5 w-5 text-v2-ink-subtle mx-auto mb-1" />
-              <p className="text-[10px] text-v2-ink-muted">
+              <Shield className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
+              <p className="text-[10px] text-muted-foreground">
                 No Slack app credentials configured. Add credentials to enable
                 OAuth for your agencies.
               </p>
@@ -1674,23 +1680,23 @@ export function SlackIntegrationCard() {
               {slackCredentials.map((cred) => (
                 <div
                   key={cred.id}
-                  className="flex items-center justify-between py-2 px-3 bg-v2-canvas rounded-lg"
+                  className="flex items-center justify-between py-2 px-3 bg-background rounded-lg"
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <Key className="h-3.5 w-3.5 text-purple-500 flex-shrink-0" />
+                    <Key className="h-3.5 w-3.5 text-info flex-shrink-0" />
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[11px] font-medium text-v2-ink truncate">
+                        <span className="text-[11px] font-medium text-foreground truncate">
                           {cred.app_name || "Slack App"}
                         </span>
                         <Badge
                           variant="outline"
-                          className="text-[8px] h-3.5 px-1 border-v2-ring dark:border-v2-ring"
+                          className="text-[8px] h-3.5 px-1 border-border dark:border-border"
                         >
                           {cred.agencies?.name || "IMO Default"}
                         </Badge>
                       </div>
-                      <span className="text-[9px] text-v2-ink-subtle font-mono">
+                      <span className="text-[9px] text-muted-foreground font-mono">
                         {cred.client_id.slice(0, 12)}...
                       </span>
                     </div>
@@ -1725,13 +1731,13 @@ export function SlackIntegrationCard() {
 
       {/* Notification Webhooks Section - Admin Only */}
       {canManageSlack && (
-        <div className="bg-v2-card rounded-lg border border-v2-ring p-3 space-y-2">
+        <div className="bg-card rounded-lg border border-border p-3 space-y-2">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-[11px] font-semibold text-v2-ink">
+              <h4 className="text-[11px] font-semibold text-foreground">
                 Notification Webhooks
               </h4>
-              <p className="text-[9px] text-v2-ink-subtle">
+              <p className="text-[9px] text-muted-foreground">
                 Post notifications to any workspace without OAuth
               </p>
             </div>
@@ -1748,15 +1754,15 @@ export function SlackIntegrationCard() {
 
           {webhooksLoading ? (
             <div className="flex items-center gap-2 py-2">
-              <Loader2 className="h-3 w-3 animate-spin text-v2-ink-subtle" />
-              <span className="text-[10px] text-v2-ink-muted">
+              <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+              <span className="text-[10px] text-muted-foreground">
                 Loading webhooks...
               </span>
             </div>
           ) : webhooks.length === 0 ? (
             <div className="py-3 text-center">
-              <Link2 className="h-5 w-5 text-v2-ink-subtle mx-auto mb-1" />
-              <p className="text-[10px] text-v2-ink-muted">
+              <Link2 className="h-5 w-5 text-muted-foreground mx-auto mb-1" />
+              <p className="text-[10px] text-muted-foreground">
                 No webhooks configured. Add one to post notifications to other
                 workspaces.
               </p>
@@ -1788,34 +1794,34 @@ export function SlackIntegrationCard() {
 
       {/* Global User Preferences */}
       {hasConnections && (
-        <div className="bg-v2-card rounded-lg border border-v2-ring p-3">
+        <div className="bg-card rounded-lg border border-border p-3">
           <div
             className="flex items-center justify-between cursor-pointer"
             onClick={() => setShowUserPrefs(!showUserPrefs)}
           >
             <div>
-              <h4 className="text-[11px] font-semibold text-v2-ink">
+              <h4 className="text-[11px] font-semibold text-foreground">
                 Global Preferences
               </h4>
-              <p className="text-[9px] text-v2-ink-subtle">
+              <p className="text-[9px] text-muted-foreground">
                 Settings that apply across all workspaces
               </p>
             </div>
             <ChevronDown
-              className={`h-4 w-4 text-v2-ink-subtle transition-transform ${
+              className={`h-4 w-4 text-muted-foreground transition-transform ${
                 showUserPrefs ? "rotate-180" : ""
               }`}
             />
           </div>
 
           {showUserPrefs && (
-            <div className="mt-3 pt-3 border-t border-v2-ring/60">
+            <div className="mt-3 pt-3 border-t border-border/60">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                     Auto-post my sales to Slack
                   </Label>
-                  <p className="text-[9px] text-v2-ink-subtle">
+                  <p className="text-[9px] text-muted-foreground">
                     Automatically post when you create a policy
                   </p>
                 </div>

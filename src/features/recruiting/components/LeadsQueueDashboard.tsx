@@ -148,17 +148,17 @@ export function LeadsQueueDashboard() {
               </div>
               <div className="h-3 w-px bg-v2-ring" />
               <div className="flex items-center gap-1.5">
-                <Clock className="h-3.5 w-3.5 text-amber-500" />
+                <Clock className="h-3.5 w-3.5 text-warning" />
                 <span className="text-v2-ink-muted">Pending:</span>
-                <span className="font-medium text-amber-600">
+                <span className="font-medium text-warning">
                   {stats.pending}
                 </span>
               </div>
               <div className="h-3 w-px bg-v2-ring" />
               <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                <CheckCircle2 className="h-3.5 w-3.5 text-success" />
                 <span className="text-v2-ink-muted">Accepted:</span>
-                <span className="font-medium text-emerald-600">
+                <span className="font-medium text-success">
                   {stats.accepted}
                 </span>
               </div>
@@ -168,9 +168,9 @@ export function LeadsQueueDashboard() {
           {/* Share Link */}
           {shareableUrl ? (
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 dark:bg-emerald-950/30 rounded-md border border-emerald-200 dark:border-emerald-800">
-                <Link2 className="h-3 w-3 text-emerald-500" />
-                <span className="text-[10px] text-emerald-700 dark:text-emerald-300 max-w-[200px] truncate">
+              <div className="flex items-center gap-1.5 px-2 py-1 bg-success/10 rounded-md border border-success/30">
+                <Link2 className="h-3 w-3 text-success" />
+                <span className="text-[10px] text-success max-w-[200px] truncate">
                   www.thestandardhq.com/join-{recruiterSlug}
                 </span>
               </div>
@@ -178,10 +178,10 @@ export function LeadsQueueDashboard() {
                 variant="outline"
                 size="sm"
                 onClick={handleCopyLink}
-                className="h-7 px-2 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/50"
+                className="h-7 px-2 border-success/40 text-success hover:bg-success/10 dark:hover:bg-success/10/50"
               >
                 {copiedSlug ? (
-                  <Check className="h-3.5 w-3.5 text-emerald-500" />
+                  <Check className="h-3.5 w-3.5 text-success" />
                 ) : (
                   <Copy className="h-3.5 w-3.5" />
                 )}
@@ -192,7 +192,7 @@ export function LeadsQueueDashboard() {
               variant="outline"
               size="sm"
               asChild
-              className="h-7 px-2 text-[10px] border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/50"
+              className="h-7 px-2 text-[10px] border-warning/40 text-warning hover:bg-warning/10 dark:hover:bg-warning/10/50"
             >
               <Link to="/settings">
                 <Link2 className="h-3 w-3 mr-1" />
@@ -272,7 +272,7 @@ export function LeadsQueueDashboard() {
                 : "No leads match your current filters."}
             </p>
             {!shareableUrl && (
-              <p className="text-[11px] text-amber-600 mt-3">
+              <p className="text-[11px] text-warning mt-3">
                 Set up your recruiter slug in settings to get your shareable
                 link.
               </p>
@@ -379,7 +379,7 @@ export function LeadsQueueDashboard() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 px-2 text-[10px] text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                          className="h-6 px-2 text-[10px] text-success hover:text-success hover:bg-success/10"
                           onClick={() => handleAccept(lead)}
                           disabled={acceptMutation.isPending}
                         >
@@ -389,7 +389,7 @@ export function LeadsQueueDashboard() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="h-6 px-2 text-[10px] text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="h-6 px-2 text-[10px] text-destructive hover:text-destructive hover:bg-destructive/10"
                           onClick={() => handleReject(lead)}
                           disabled={rejectMutation.isPending}
                         >

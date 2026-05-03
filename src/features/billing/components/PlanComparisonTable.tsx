@@ -126,7 +126,7 @@ export function PlanComparisonTable() {
                       >
                         <div className="flex flex-col items-center gap-0.5">
                           {plan.name === currentPlanName && (
-                            <span className="text-[9px] font-medium text-emerald-600 dark:text-emerald-400">
+                            <span className="text-[9px] font-medium text-success">
                               CURRENT
                             </span>
                           )}
@@ -178,7 +178,7 @@ export function PlanComparisonTable() {
                       >
                         {plan.name === "team" ? (
                           <div className="flex flex-col items-center">
-                            <Check className="h-3.5 w-3.5 text-emerald-500" />
+                            <Check className="h-3.5 w-3.5 text-success" />
                             <span className="text-[9px] text-v2-ink-muted">
                               500 runs/mo
                             </span>
@@ -211,7 +211,7 @@ export function PlanComparisonTable() {
                       >
                         {plan.name === "team" ? (
                           <div className="flex flex-col items-center">
-                            <Check className="h-3.5 w-3.5 text-emerald-500" />
+                            <Check className="h-3.5 w-3.5 text-success" />
                             <span className="text-[9px] text-v2-ink-muted">
                               5 included
                             </span>
@@ -264,7 +264,7 @@ export function PlanComparisonTable() {
                               >
                                 {hasFeature ? (
                                   <div className="flex flex-col items-center">
-                                    <Check className="h-3.5 w-3.5 text-emerald-500" />
+                                    <Check className="h-3.5 w-3.5 text-success" />
                                     {emailLimit && (
                                       <span className="text-[9px] text-v2-ink-muted">
                                         {emailLimit}/mo

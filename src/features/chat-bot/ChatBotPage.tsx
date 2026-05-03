@@ -269,7 +269,7 @@ export function ChatBotPage() {
   const statusBadge = !hasAccess ? null : !agent ? null : setupComplete ||
     wizardDone ? (
     agent.botEnabled ? (
-      <Badge className="text-[9px] h-4 px-1.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">
+      <Badge className="text-[9px] h-4 px-1.5 bg-success/20 text-success dark:bg-success dark:text-success">
         Active
       </Badge>
     ) : (
@@ -281,7 +281,7 @@ export function ChatBotPage() {
       </Badge>
     )
   ) : (
-    <Badge className="text-[9px] h-4 px-1.5 bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
+    <Badge className="text-[9px] h-4 px-1.5 bg-warning/20 text-warning dark:bg-warning dark:text-warning">
       Setup Required
     </Badge>
   );
@@ -300,7 +300,7 @@ export function ChatBotPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5 bg-v2-canvas dark:bg-v2-canvas">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-xl bg-foreground">
+      <div className="relative overflow-hidden rounded-lg bg-v2-card-dark">
         <div className="absolute inset-0 opacity-[0.03]">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -323,25 +323,25 @@ export function ChatBotPage() {
         </div>
         <div
           className="absolute top-1/3 -left-16 w-64 h-64 rounded-full blur-3xl"
-          style={{ backgroundColor: "rgba(59,130,246,0.12)" }}
+          style={{ backgroundColor: "rgba(226, 255, 204, 0.15)" }}
         />
         <div
           className="absolute bottom-0 -right-16 w-48 h-48 rounded-full blur-3xl"
-          style={{ backgroundColor: "rgba(139,92,246,0.08)" }}
+          style={{ backgroundColor: "rgba(132, 144, 127, 0.14)" }}
         />
         <div className="relative px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
               className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
-              style={{ backgroundColor: "rgba(59,130,246,0.2)" }}
+              style={{ backgroundColor: "rgba(226, 255, 204, 0.25)" }}
             >
-              <Bot className="h-4 w-4 text-white dark:text-black" />
+              <Bot className="h-4 w-4 text-white" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-white dark:text-black tracking-tight">
+              <h1 className="text-sm font-bold text-white tracking-tight">
                 AI Chat Bot
               </h1>
-              <p className="text-[10px] text-white/50 dark:text-black/40">
+              <p className="text-[10px] text-white/60">
                 SMS appointment setter powered by AI
               </p>
             </div>
@@ -354,7 +354,7 @@ export function ChatBotPage() {
               !agent.botEnabled && (
                 <Button
                   size="sm"
-                  className="h-7 px-4 text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all animate-pulse"
+                  className="h-7 px-4 text-[11px] font-bold bg-success hover:bg-success text-white shadow-md shadow-success/30 hover:shadow-success/30 transition-all animate-pulse"
                   disabled={updateConfig.isPending}
                   onClick={() => updateConfig.mutate({ botEnabled: true })}
                 >
@@ -441,7 +441,7 @@ export function ChatBotPage() {
               </p>
               <button
                 onClick={() => setActiveTab("plans")}
-                className="text-[11px] font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-[11px] font-medium text-info hover:underline"
               >
                 Go to Plans
               </button>
@@ -450,8 +450,8 @@ export function ChatBotPage() {
             isTeamMember && !hasAddon ? (
               /* Team member who hasn't provisioned yet */
               <div className="flex flex-col items-center justify-center py-16 px-4">
-                <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center mb-3">
-                  <Bot className="h-5 w-5 text-indigo-500" />
+                <div className="w-12 h-12 rounded-full bg-info/10 dark:bg-info/30 flex items-center justify-center mb-3">
+                  <Bot className="h-5 w-5 text-info" />
                 </div>
                 <h3 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink mb-1">
                   Load Your Team Bot
@@ -463,7 +463,7 @@ export function ChatBotPage() {
                 </p>
                 <Button
                   size="sm"
-                  className="h-8 px-4 text-[11px] font-semibold bg-indigo-600 hover:bg-indigo-700 text-white"
+                  className="h-8 px-4 text-[11px] font-semibold bg-info hover:bg-info text-white"
                   disabled={provisionTeamBot.isPending}
                   onClick={() =>
                     provisionTeamBot.mutate(undefined, {
@@ -486,8 +486,8 @@ export function ChatBotPage() {
             ) : isServiceError ? (
               /* External bot service is down — show service unavailable */
               <div className="flex flex-col items-center justify-center py-16 px-4">
-                <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-900/30 flex items-center justify-center mb-3">
-                  <WifiOff className="h-5 w-5 text-red-500" />
+                <div className="w-12 h-12 rounded-full bg-destructive/10 dark:bg-destructive/30 flex items-center justify-center mb-3">
+                  <WifiOff className="h-5 w-5 text-destructive" />
                 </div>
                 <h3 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink mb-1">
                   Service Temporarily Unavailable
@@ -499,7 +499,7 @@ export function ChatBotPage() {
                 <button
                   onClick={() => refetchAgent()}
                   disabled={agentLoading}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded bg-info text-white hover:bg-info disabled:opacity-50"
                 >
                   {agentLoading ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
@@ -512,8 +512,8 @@ export function ChatBotPage() {
             ) : (
               /* Addon active but agent provisioning failed — show retry */
               <div className="flex flex-col items-center justify-center py-16 px-4">
-                <div className="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-900/30 flex items-center justify-center mb-3">
-                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                <div className="w-12 h-12 rounded-full bg-warning/10 dark:bg-warning/30 flex items-center justify-center mb-3">
+                  <AlertTriangle className="h-5 w-5 text-warning" />
                 </div>
                 <h3 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink mb-1">
                   Bot Setup Incomplete
@@ -525,7 +525,7 @@ export function ChatBotPage() {
                 <button
                   onClick={handleRetryProvision}
                   disabled={retrying}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium rounded bg-info text-white hover:bg-info disabled:opacity-50"
                 >
                   {retrying ? (
                     <Loader2 className="h-3 w-3 animate-spin" />

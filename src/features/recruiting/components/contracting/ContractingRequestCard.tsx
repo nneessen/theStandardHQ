@@ -32,12 +32,12 @@ interface ContractingRequestCardProps {
 }
 
 const statusColors: Record<string, string> = {
-  requested: "bg-gray-100 text-gray-700",
-  in_progress: "bg-blue-100 text-blue-700",
-  writing_received: "bg-green-100 text-green-700",
-  completed: "bg-emerald-100 text-emerald-700",
-  rejected: "bg-red-100 text-red-700",
-  cancelled: "bg-gray-100 text-gray-500",
+  requested: "bg-muted text-foreground",
+  in_progress: "bg-info/20 text-info",
+  writing_received: "bg-success/20 text-success",
+  completed: "bg-success/20 text-success",
+  rejected: "bg-destructive/20 text-destructive",
+  cancelled: "bg-muted text-muted-foreground",
 };
 
 export function ContractingRequestCard({
@@ -86,7 +86,7 @@ export function ContractingRequestCard({
   return (
     <>
       {/* Single row - everything inline */}
-      <div className="py-1.5 px-2 border-l-2 border-l-blue-500 hover:bg-v2-canvas transition-colors">
+      <div className="py-1.5 px-2 border-l-2 border-l-blue-500 hover:bg-background transition-colors">
         <div className="flex items-center gap-2 text-xs">
           {/* Carrier Name */}
           <div className="w-32 flex-shrink-0">
@@ -102,7 +102,7 @@ export function ContractingRequestCard({
                 value={writingNumber}
                 onChange={(e) => setWritingNumber(e.target.value)}
                 placeholder="Writing #"
-                className="h-6 text-xs px-2 w-full bg-v2-card"
+                className="h-6 text-xs px-2 w-full bg-card"
                 onFocus={() => setIsEditing(true)}
                 onBlur={() => {
                   if (writingNumber !== (request.writing_number || "")) {
@@ -135,14 +135,14 @@ export function ContractingRequestCard({
 
           {/* Status Badge */}
           <Badge
-            className={`text-[10px] px-2 py-0.5 h-5 whitespace-nowrap ${statusColors[request.status] || "bg-gray-100 text-gray-700"}`}
+            className={`text-[10px] px-2 py-0.5 h-5 whitespace-nowrap ${statusColors[request.status] || "bg-muted text-foreground"}`}
           >
             {request.status.replace(/_/g, " ")}
           </Badge>
 
           {/* Received Date */}
           {request.writing_received_date && (
-            <span className="text-[10px] text-green-600 whitespace-nowrap">
+            <span className="text-[10px] text-success whitespace-nowrap">
               ✓{" "}
               {new Date(request.writing_received_date).toLocaleDateString(
                 "en-US",
@@ -156,7 +156,7 @@ export function ContractingRequestCard({
             <Button
               size="sm"
               variant="ghost"
-              className="h-6 w-6 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
+              className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
               onClick={() => setShowDeleteDialog(true)}
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -167,7 +167,7 @@ export function ContractingRequestCard({
         {/* Carrier Instructions - collapsed by default */}
         {request.carrier_instructions && (
           <details className="mt-1">
-            <summary className="text-[10px] text-blue-600 cursor-pointer hover:underline flex items-center gap-0.5">
+            <summary className="text-[10px] text-info cursor-pointer hover:underline flex items-center gap-0.5">
               <AlertCircle className="h-2.5 w-2.5" />
               Instructions
             </summary>
@@ -193,7 +193,7 @@ export function ContractingRequestCard({
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
+              className="bg-destructive hover:bg-destructive"
             >
               Delete
             </AlertDialogAction>

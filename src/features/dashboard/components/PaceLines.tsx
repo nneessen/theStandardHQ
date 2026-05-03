@@ -64,29 +64,29 @@ export const PaceLines: React.FC<PaceLinesProps> = ({
           const isOver = pct > 1;
 
           const fillClass = !hasTarget
-            ? "bg-zinc-300 dark:bg-v2-ring-strong"
+            ? "bg-muted"
             : line.invert
               ? pct > 1
-                ? "bg-red-600 dark:bg-red-500"
+                ? "bg-destructive"
                 : pct >= 0.85
-                  ? "bg-amber-500"
-                  : "bg-emerald-600 dark:bg-emerald-500"
+                  ? "bg-warning"
+                  : "bg-success"
               : isOver
-                ? "bg-emerald-600 dark:bg-emerald-500"
+                ? "bg-success"
                 : isAhead
                   ? "bg-v2-ink dark:bg-v2-card-tinted"
                   : pct >= 0.6
-                    ? "bg-v2-ring-strong dark:bg-zinc-300"
+                    ? "bg-muted"
                     : "bg-v2-ink-subtle";
 
           const valueClass = !hasTarget
             ? "text-v2-ink-muted dark:text-v2-ink-subtle"
             : line.invert
               ? pct > 1
-                ? "text-red-700 dark:text-red-400 font-semibold"
+                ? "text-destructive font-semibold"
                 : "text-v2-ink dark:text-v2-ink-muted"
               : isOver
-                ? "text-emerald-700 dark:text-emerald-400 font-semibold"
+                ? "text-success font-semibold"
                 : isAhead
                   ? "text-v2-ink dark:text-v2-ink font-semibold"
                   : "text-v2-ink-muted dark:text-v2-ink-subtle";

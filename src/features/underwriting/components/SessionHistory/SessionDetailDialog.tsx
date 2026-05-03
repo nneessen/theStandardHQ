@@ -78,20 +78,20 @@ export function SessionDetailDialog({
             Session Details
           </DialogTitle>
           {session && (
-            <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <div className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               {formatSessionDateLong(session.created_at)}
             </div>
           )}
         </DialogHeader>
 
         {isLoading && (
-          <div className="py-6 text-center text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <div className="py-6 text-center text-[11px] text-muted-foreground dark:text-muted-foreground">
             Loading session details...
           </div>
         )}
 
         {error && (
-          <div className="py-6 text-center text-[11px] text-red-500 dark:text-red-400">
+          <div className="py-6 text-center text-[11px] text-destructive">
             Failed to load session details: {error.message}
           </div>
         )}
@@ -131,11 +131,7 @@ export function SessionDetailDialog({
                 <InfoRow
                   label="Tobacco Use"
                   value={session.tobacco_use ? "Yes" : "No"}
-                  valueClassName={
-                    session.tobacco_use
-                      ? "text-amber-600 dark:text-amber-400"
-                      : ""
-                  }
+                  valueClassName={session.tobacco_use ? "text-warning" : ""}
                 />
               </div>
             </Section>
@@ -149,7 +145,7 @@ export function SessionDetailDialog({
             >
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                     Health Tier:
                   </span>
                   <Badge
@@ -163,7 +159,7 @@ export function SessionDetailDialog({
 
                 {conditionsReported.length > 0 && (
                   <div>
-                    <div className="text-[10px] font-medium text-v2-ink dark:text-v2-ink-muted mb-1">
+                    <div className="text-[10px] font-medium text-foreground dark:text-muted-foreground mb-1">
                       Conditions Reported ({conditionsReported.length})
                     </div>
                     <div className="flex flex-wrap gap-1">
@@ -183,17 +179,17 @@ export function SessionDetailDialog({
 
                 {riskFactors.length > 0 && (
                   <div>
-                    <div className="text-[10px] font-medium text-v2-ink dark:text-v2-ink-muted mb-1 flex items-center gap-1">
-                      <AlertTriangle className="h-3 w-3 text-amber-500" />
+                    <div className="text-[10px] font-medium text-foreground dark:text-muted-foreground mb-1 flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3 text-warning" />
                       Risk Factors ({riskFactors.length})
                     </div>
                     <ul className="space-y-0.5">
                       {riskFactors.map((factor, i) => (
                         <li
                           key={i}
-                          className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle flex items-start gap-1.5"
+                          className="text-[10px] text-muted-foreground dark:text-muted-foreground flex items-start gap-1.5"
                         >
-                          <span className="text-amber-500 mt-0.5">•</span>
+                          <span className="text-warning mt-0.5">•</span>
                           {factor}
                         </li>
                       ))}
@@ -242,14 +238,14 @@ export function SessionDetailDialog({
                       .map((rec, i) => (
                         <div
                           key={i}
-                          className="bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-md p-2 border border-v2-ring dark:border-v2-ring-strong"
+                          className="bg-background dark:bg-card-tinted/50 rounded-md p-2 border border-border dark:border-border"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div>
-                              <div className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
+                              <div className="text-[11px] font-medium text-foreground dark:text-foreground">
                                 {rec.carrierName}
                               </div>
-                              <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                              <div className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                                 {rec.productName}
                               </div>
                             </div>
@@ -260,7 +256,7 @@ export function SessionDetailDialog({
                               >
                                 {rec.expectedRating}
                               </Badge>
-                              <span className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                              <span className="text-[9px] text-muted-foreground dark:text-muted-foreground">
                                 {(rec.confidence * 100).toFixed(0)}% confidence
                               </span>
                             </div>
@@ -270,7 +266,7 @@ export function SessionDetailDialog({
                               {rec.keyFactors.map((factor, j) => (
                                 <span
                                   key={j}
-                                  className="text-[9px] text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-1 rounded"
+                                  className="text-[9px] text-success bg-success/10 px-1 rounded"
                                 >
                                   + {factor}
                                 </span>
@@ -282,7 +278,7 @@ export function SessionDetailDialog({
                               {rec.concerns.map((concern, j) => (
                                 <span
                                   key={j}
-                                  className="text-[9px] text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-1 rounded"
+                                  className="text-[9px] text-warning bg-warning/10 px-1 rounded"
                                 >
                                   ! {concern}
                                 </span>
@@ -290,7 +286,7 @@ export function SessionDetailDialog({
                             </div>
                           )}
                           {rec.notes && (
-                            <div className="mt-1.5 text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle italic">
+                            <div className="mt-1.5 text-[9px] text-muted-foreground dark:text-muted-foreground italic">
                               {rec.notes}
                             </div>
                           )}
@@ -308,7 +304,7 @@ export function SessionDetailDialog({
                   title="Notes"
                   icon={<FileText className="h-3.5 w-3.5" />}
                 >
-                  <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <p className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                     {session.notes}
                   </p>
                 </Section>
@@ -335,11 +331,11 @@ function Section({
     <div>
       <div className="flex items-center gap-1.5 mb-2">
         {icon && (
-          <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+          <span className="text-muted-foreground dark:text-muted-foreground">
             {icon}
           </span>
         )}
-        <h3 className="text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
+        <h3 className="text-[11px] font-semibold text-foreground dark:text-foreground">
           {title}
         </h3>
       </div>
@@ -359,11 +355,11 @@ function InfoRow({
 }) {
   return (
     <div className="flex justify-between items-baseline">
-      <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+      <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
         {label}
       </span>
       <span
-        className={`text-[11px] text-v2-ink dark:text-v2-ink ${valueClassName}`}
+        className={`text-[11px] text-foreground dark:text-foreground ${valueClassName}`}
       >
         {value}
       </span>

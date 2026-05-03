@@ -125,7 +125,7 @@ export function InstagramSidebar({
               @{integration.instagram_username}
             </span>
             {unreadCount > 0 && (
-              <span className="flex-shrink-0 min-w-[16px] h-4 px-1 rounded-full bg-blue-500 text-white text-[9px] font-medium flex items-center justify-center">
+              <span className="flex-shrink-0 min-w-[16px] h-4 px-1 rounded-full bg-info text-white text-[9px] font-medium flex items-center justify-center">
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
@@ -186,7 +186,7 @@ export function InstagramSidebar({
           className={cn(
             "flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium transition-colors",
             filterPriority
-              ? "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300"
+              ? "bg-warning/20 dark:bg-warning/30 text-warning"
               : "text-v2-ink-muted hover:text-v2-ink",
           )}
         >

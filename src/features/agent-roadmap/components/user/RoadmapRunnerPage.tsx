@@ -131,17 +131,17 @@ export function RoadmapRunnerPage({ roadmapId }: RoadmapRunnerPageProps) {
         <RoadmapProgressHeader roadmap={roadmap} stats={stats} />
 
         {allDone && (
-          <div className="rounded-lg border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/30 px-3 py-2.5">
+          <div className="rounded-lg border border-success/30 bg-success/10 px-3 py-2.5">
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50">
-                <Trophy className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-success/20 dark:bg-success/50">
+                <Trophy className="h-4 w-4 text-success" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-semibold text-v2-ink dark:text-v2-ink">
                     Roadmap complete
                   </span>
-                  <Sparkles className="h-3 w-3 text-emerald-500" />
+                  <Sparkles className="h-3 w-3 text-success" />
                 </div>
                 <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   All required items done. Your progress is visible to your

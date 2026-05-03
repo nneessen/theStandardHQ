@@ -120,7 +120,7 @@ export default function MedicationsStep({
 
   return (
     <div className="space-y-3 p-1">
-      <div className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle">
+      <div className="text-xs text-muted-foreground dark:text-muted-foreground">
         Select current medications. All fields optional but impacts product
         eligibility.
       </div>
@@ -130,9 +130,9 @@ export default function MedicationsStep({
         {MEDICATION_CATEGORIES.map((category) => (
           <div
             key={category.id}
-            className="space-y-1.5 p-2 bg-v2-canvas dark:bg-v2-card-tinted/30 rounded border border-v2-ring dark:border-v2-ring-strong"
+            className="space-y-1.5 p-2 bg-background dark:bg-card-tinted/30 rounded border border-border dark:border-border"
           >
-            <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide">
+            <div className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground uppercase tracking-wide">
               {category.label}
             </div>
             <div className="space-y-1">
@@ -151,11 +151,11 @@ export default function MedicationsStep({
 
       {/* High-risk warnings */}
       {highRiskMeds.length > 0 && (
-        <div className="p-2 rounded border bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
-          <div className="text-[10px] font-medium text-amber-700 dark:text-amber-300 mb-1">
+        <div className="p-2 rounded border bg-warning/10 border-warning/30">
+          <div className="text-[10px] font-medium text-warning mb-1">
             ⚠️ High-impact medications detected:
           </div>
-          <div className="text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="text-[10px] text-warning">
             {highRiskMeds.join(", ")}
           </div>
         </div>
@@ -166,8 +166,8 @@ export default function MedicationsStep({
         className={cn(
           "p-2 rounded border text-xs",
           selectedCount === 0
-            ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300"
-            : "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300",
+            ? "bg-success/10 border-success/30 text-success"
+            : "bg-info/10 border-info/30 text-info",
         )}
       >
         {selectedCount === 0
@@ -203,8 +203,8 @@ function MedicationField({ item, data, onChange }: MedicationFieldProps) {
           className={cn(
             "text-[11px] cursor-pointer",
             checked
-              ? "text-blue-700 dark:text-blue-300 font-medium"
-              : "text-v2-ink-muted dark:text-v2-ink-subtle",
+              ? "text-info font-medium"
+              : "text-muted-foreground dark:text-muted-foreground",
           )}
         >
           {item.label}
@@ -218,7 +218,7 @@ function MedicationField({ item, data, onChange }: MedicationFieldProps) {
     const maxValue = item.max || 3;
     return (
       <div className="flex items-center gap-2">
-        <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle min-w-[80px]">
+        <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground min-w-[80px]">
           {item.label}
         </Label>
         <Select
@@ -245,7 +245,7 @@ function MedicationField({ item, data, onChange }: MedicationFieldProps) {
     const value = data.painMedications;
     return (
       <div className="space-y-1">
-        <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
           {item.label}
         </Label>
         <Select

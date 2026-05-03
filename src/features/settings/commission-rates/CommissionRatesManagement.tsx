@@ -301,8 +301,8 @@ export function CommissionRatesManagement() {
 
   if (isLoading) {
     return (
-      <div className="bg-v2-card rounded-lg border border-v2-ring p-6">
-        <div className="flex items-center justify-center text-[11px] text-v2-ink-muted">
+      <div className="bg-card rounded-lg border border-border p-6">
+        <div className="flex items-center justify-center text-[11px] text-muted-foreground">
           Loading commission rates...
         </div>
       </div>
@@ -311,16 +311,16 @@ export function CommissionRatesManagement() {
 
   return (
     <>
-      <div className="bg-v2-card rounded-lg border border-v2-ring">
+      <div className="bg-card rounded-lg border border-border">
         {/* Header */}
-        <div className="flex items-center justify-between px-3 py-2 border-b border-v2-ring/60">
+        <div className="flex items-center justify-between px-3 py-2 border-b border-border/60">
           <div className="flex items-center gap-2">
-            <Percent className="h-3.5 w-3.5 text-v2-ink-subtle" />
+            <Percent className="h-3.5 w-3.5 text-muted-foreground" />
             <div>
-              <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
+              <h3 className="text-[11px] font-semibold text-foreground uppercase tracking-wide">
                 Commission Rates
               </h3>
-              <p className="text-[10px] text-v2-ink-muted">
+              <p className="text-[10px] text-muted-foreground">
                 Configure contract level commission percentages for each product
               </p>
             </div>
@@ -344,7 +344,7 @@ export function CommissionRatesManagement() {
                 value={filterImoId || "all"}
                 onValueChange={(v) => setFilterImoId(v === "all" ? "" : v)}
               >
-                <SelectTrigger className="w-48 h-7 text-[11px] bg-v2-card border-v2-ring">
+                <SelectTrigger className="w-48 h-7 text-[11px] bg-card border-border">
                   <SelectValue placeholder="All IMOs" />
                 </SelectTrigger>
                 <SelectContent>
@@ -358,20 +358,20 @@ export function CommissionRatesManagement() {
               </Select>
             )}
             <div className="relative flex-1 min-w-[180px] max-w-xs">
-              <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-v2-ink-subtle" />
+              <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-7 h-7 text-[11px] bg-v2-card border-v2-ring"
+                className="pl-7 h-7 text-[11px] bg-card border-border"
               />
             </div>
             <Select
               value={filterCarrierId || "all"}
               onValueChange={(v) => setFilterCarrierId(v === "all" ? "" : v)}
             >
-              <SelectTrigger className="w-36 h-7 text-[11px] bg-v2-card border-v2-ring">
+              <SelectTrigger className="w-36 h-7 text-[11px] bg-card border-border">
                 <SelectValue placeholder="All Carriers" />
               </SelectTrigger>
               <SelectContent>
@@ -389,7 +389,7 @@ export function CommissionRatesManagement() {
                 setFilterProductType(v === "all" ? "" : (v as ProductType))
               }
             >
-              <SelectTrigger className="w-36 h-7 text-[11px] bg-v2-card border-v2-ring">
+              <SelectTrigger className="w-36 h-7 text-[11px] bg-card border-border">
                 <SelectValue placeholder="All Types" />
               </SelectTrigger>
               <SelectContent>
@@ -401,7 +401,7 @@ export function CommissionRatesManagement() {
                 ))}
               </SelectContent>
             </Select>
-            <label className="flex items-center gap-1.5 px-2 h-7 border border-v2-ring rounded bg-v2-card">
+            <label className="flex items-center gap-1.5 px-2 h-7 border border-border rounded bg-card">
               <Checkbox
                 checked={showEmptyOnly}
                 onCheckedChange={(checked) =>
@@ -409,30 +409,30 @@ export function CommissionRatesManagement() {
                 }
                 className="h-3 w-3"
               />
-              <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+              <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                 Empty only
               </span>
             </label>
           </div>
 
           {/* Table */}
-          <div className="rounded-lg overflow-hidden border border-v2-ring">
+          <div className="rounded-lg overflow-hidden border border-border">
             <Table>
-              <TableHeader className="sticky top-0 bg-v2-canvas z-10">
-                <TableRow className="border-b border-v2-ring hover:bg-transparent">
-                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+              <TableHeader className="sticky top-0 bg-background z-10">
+                <TableRow className="border-b border-border hover:bg-transparent">
+                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                     Carrier
                   </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted">
+                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground">
                     Product
                   </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px]">
+                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[100px]">
                     Type
                   </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[100px] text-center">
+                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[100px] text-center">
                     Rate Coverage
                   </TableHead>
-                  <TableHead className="h-8 text-[11px] font-semibold text-v2-ink-muted w-[60px] text-right">
+                  <TableHead className="h-8 text-[11px] font-semibold text-muted-foreground w-[60px] text-right">
                     Actions
                   </TableHead>
                 </TableRow>
@@ -442,7 +442,7 @@ export function CommissionRatesManagement() {
                   <TableRow>
                     <TableCell
                       colSpan={5}
-                      className="text-center text-[11px] text-v2-ink-muted py-6"
+                      className="text-center text-[11px] text-muted-foreground py-6"
                     >
                       {showEmptyOnly
                         ? "No products without rates found."
@@ -462,22 +462,22 @@ export function CommissionRatesManagement() {
                     return (
                       <TableRow
                         key={product.productId}
-                        className="hover:bg-v2-canvas border-b border-v2-ring/60"
+                        className="hover:bg-background border-b border-border/60"
                       >
                         <TableCell className="py-1.5">
-                          <span className="font-medium text-[11px] text-v2-ink">
+                          <span className="font-medium text-[11px] text-foreground">
                             {product.carrierName}
                           </span>
                         </TableCell>
                         <TableCell className="py-1.5">
-                          <span className="text-[11px] text-v2-ink-muted">
+                          <span className="text-[11px] text-muted-foreground">
                             {product.productName}
                           </span>
                         </TableCell>
                         <TableCell className="py-1.5">
                           <Badge
                             variant="outline"
-                            className="text-[10px] h-4 px-1 border-v2-ring dark:border-v2-ring"
+                            className="text-[10px] h-4 px-1 border-border dark:border-border"
                           >
                             {product.productType.replace("_", " ")}
                           </Badge>
@@ -500,7 +500,7 @@ export function CommissionRatesManagement() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-5 px-1.5 text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink"
+                            className="h-5 px-1.5 text-muted-foreground dark:text-muted-foreground hover:text-foreground"
                             onClick={() => handleEditRates(product)}
                           >
                             <Edit className="h-2.5 w-2.5 mr-0.5" />

@@ -17,7 +17,7 @@ export function InstagramKpiCard({ data }: InstagramKpiCardProps) {
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
             <div className="h-6 w-6 rounded bg-gradient-to-br from-purple-500/10 to-pink-500/10 dark:from-purple-500/20 dark:to-pink-500/20 flex items-center justify-center">
-              <Instagram className="h-3 w-3 text-pink-500" />
+              <Instagram className="h-3 w-3 text-info" />
             </div>
             <span className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
               Instagram

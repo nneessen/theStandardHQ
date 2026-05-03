@@ -46,7 +46,7 @@ export function SlackSettingsPanel() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-40">
-        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -81,10 +81,10 @@ export function SlackSettingsPanel() {
   return (
     <div className="space-y-4 max-w-2xl">
       {/* Connection Status */}
-      <Card className="border-v2-ring">
+      <Card className="border-border">
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-v2-ink-muted" />
+            <MessageSquare className="h-4 w-4 text-muted-foreground" />
             Connected Workspaces
           </CardTitle>
         </CardHeader>
@@ -96,24 +96,24 @@ export function SlackSettingsPanel() {
               {connectedIntegrations.map((integration) => (
                 <div
                   key={integration.id}
-                  className="flex items-center justify-between p-3 rounded-lg border border-v2-ring"
+                  className="flex items-center justify-between p-3 rounded-lg border border-border"
                 >
                   <div className="flex items-center gap-2">
-                    <div className="h-8 w-8 rounded bg-v2-ring flex items-center justify-center">
-                      <MessageSquare className="h-4 w-4 text-v2-ink-muted" />
+                    <div className="h-8 w-8 rounded bg-muted flex items-center justify-center">
+                      <MessageSquare className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="text-[11px] font-medium text-v2-ink">
+                      <p className="text-[11px] font-medium text-foreground">
                         {integration.team_name || "Slack Workspace"}
                       </p>
-                      <p className="text-[10px] text-v2-ink-muted">
+                      <p className="text-[10px] text-muted-foreground">
                         {integration.team_id}
                       </p>
                     </div>
                   </div>
                   <Badge
                     variant="outline"
-                    className="text-[10px] h-5 bg-green-50 dark:bg-green-950/20 text-green-600 dark:text-green-400 border-green-200 dark:border-green-800"
+                    className="text-[10px] h-5 bg-success/10 dark:bg-success/10 text-success border-success/30"
                   >
                     <Check className="h-2.5 w-2.5 mr-1" />
                     Connected
@@ -127,21 +127,21 @@ export function SlackSettingsPanel() {
 
       {/* Auto-Post Settings */}
       {hasConnectedWorkspaces && (
-        <Card className="border-v2-ring">
+        <Card className="border-border">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Zap className="h-4 w-4 text-v2-ink-muted" />
+              <Zap className="h-4 w-4 text-muted-foreground" />
               Auto-Post Settings
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Auto-post toggle */}
-            <div className="flex items-center justify-between rounded-lg border border-v2-ring p-3">
+            <div className="flex items-center justify-between rounded-lg border border-border p-3">
               <div>
                 <Label className="text-[11px] font-medium">
                   Auto-post Policy Sales
                 </Label>
-                <p className="text-[10px] text-v2-ink-muted">
+                <p className="text-[10px] text-muted-foreground">
                   Automatically post new policies to Slack
                 </p>
               </div>
@@ -180,7 +180,7 @@ export function SlackSettingsPanel() {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-[10px] text-v2-ink-muted">
+              <p className="text-[10px] text-muted-foreground">
                 The channel shown by default in the Messages → Slack tab
               </p>
             </div>

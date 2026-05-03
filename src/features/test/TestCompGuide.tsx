@@ -84,7 +84,7 @@ export const TestCompGuide: React.FC = () => {
     <div className="p-6 max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Comp Guide Debug Panel</h1>
 
-      <div className="bg-yellow-50 border border-yellow-200 p-4 rounded mb-4">
+      <div className="bg-warning/10 border border-warning/30 p-4 rounded mb-4">
         <p className="font-semibold">User Info:</p>
         <p>User ID: {user?.id}</p>
         <p>Contract Level: {userContractLevel}</p>
@@ -135,21 +135,23 @@ export const TestCompGuide: React.FC = () => {
 
       {selectedProductId && (
         <div className="grid grid-cols-2 gap-4 mb-6">
-          <div className="bg-blue-50 border border-blue-200 p-4 rounded">
+          <div className="bg-info/10 border border-info/30 p-4 rounded">
             <h3 className="font-semibold mb-2">useCompGuide Hook Result:</h3>
             {hookError ? (
-              <p className="text-red-500">Error: {JSON.stringify(hookError)}</p>
+              <p className="text-destructive">
+                Error: {JSON.stringify(hookError)}
+              </p>
             ) : hookData ? (
               <pre className="text-sm">{JSON.stringify(hookData, null, 2)}</pre>
             ) : (
-              <p className="text-gray-500">No data from hook</p>
+              <p className="text-muted-foreground">No data from hook</p>
             )}
           </div>
 
-          <div className="bg-green-50 border border-green-200 p-4 rounded">
+          <div className="bg-success/10 border border-success/30 p-4 rounded">
             <h3 className="font-semibold mb-2">Direct Query Result:</h3>
             {directQuery?.error ? (
-              <p className="text-red-500">
+              <p className="text-destructive">
                 Error: {JSON.stringify(directQuery.error)}
               </p>
             ) : directQuery?.data ? (
@@ -157,13 +159,13 @@ export const TestCompGuide: React.FC = () => {
                 {JSON.stringify(directQuery.data, null, 2)}
               </pre>
             ) : (
-              <p className="text-gray-500">No data from direct query</p>
+              <p className="text-muted-foreground">No data from direct query</p>
             )}
           </div>
         </div>
       )}
 
-      <div className="bg-gray-50 border border-gray-200 p-4 rounded">
+      <div className="bg-muted border border-border p-4 rounded">
         <h3 className="font-semibold mb-2">
           All Comp Guide Entries ({compGuideData.length}):
         </h3>
@@ -182,7 +184,10 @@ export const TestCompGuide: React.FC = () => {
             <tbody>
               {compGuideData.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-4 text-center text-gray-500">
+                  <td
+                    colSpan={6}
+                    className="p-4 text-center text-muted-foreground"
+                  >
                     No comp_guide entries found. The FIX_COMP_GUIDE_DATA.sql
                     script needs to be run in Supabase!
                   </td>

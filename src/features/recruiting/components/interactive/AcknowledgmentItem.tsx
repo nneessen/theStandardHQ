@@ -98,7 +98,7 @@ export function AcknowledgmentItem({
   // If already acknowledged and completed
   if (existingResponse?.acknowledged) {
     return (
-      <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+      <span className="inline-flex items-center gap-1 text-xs text-success">
         <CheckCircle2 className="h-3.5 w-3.5" />
         Acknowledged
       </span>
@@ -124,7 +124,7 @@ export function AcknowledgmentItem({
 
       {/* Scroll requirement notice */}
       {metadata.require_scroll && !scrollCompleted && (
-        <p className="text-[10px] text-amber-600 dark:text-amber-400">
+        <p className="text-[10px] text-warning">
           Scroll through entire content before acknowledging
         </p>
       )}
@@ -155,7 +155,7 @@ export function AcknowledgmentItem({
             onClick={handleSubmit}
             disabled={isSubmitting}
             size="sm"
-            className="h-7 text-xs px-3 gap-1.5 bg-emerald-600 hover:bg-emerald-700"
+            className="h-7 text-xs px-3 gap-1.5 bg-success hover:bg-success"
           >
             {isSubmitting ? (
               <Loader2 className="h-3.5 w-3.5 animate-spin" />

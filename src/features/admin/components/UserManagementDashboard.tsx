@@ -207,17 +207,17 @@ export const UserManagementDashboard: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                    <div className="w-2 h-2 rounded-full bg-warning" />
                     <span className="font-medium">{metrics.pendingUsers}</span>
                     <span className="text-muted-foreground">pending</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                    <div className="w-2 h-2 rounded-full bg-success" />
                     <span className="font-medium">{metrics.approvedUsers}</span>
                     <span className="text-muted-foreground">approved</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <div className="w-2 h-2 rounded-full bg-red-500" />
+                    <div className="w-2 h-2 rounded-full bg-destructive" />
                     <span className="font-medium">{metrics.deniedUsers}</span>
                     <span className="text-muted-foreground">denied</span>
                   </div>
@@ -440,11 +440,11 @@ export const UserManagementDashboard: React.FC = () => {
                       className={cn(
                         "capitalize",
                         user.approval_status === "pending" &&
-                          "bg-yellow-100 text-yellow-800 border-yellow-300",
+                          "bg-warning/20 text-warning border-warning",
                         user.approval_status === "approved" &&
-                          "bg-green-100 text-green-800 border-green-300",
+                          "bg-success/20 text-success border-success/40",
                         user.approval_status === "denied" &&
-                          "bg-red-100 text-red-800 border-red-300",
+                          "bg-destructive/20 text-destructive border-destructive/40",
                       )}
                     >
                       {user.approval_status === "pending" && (
@@ -549,16 +549,16 @@ export const UserManagementDashboard: React.FC = () => {
                           className={cn(
                             "h-7 text-xs w-[110px] !px-2 !gap-1 font-medium border-2",
                             user.approval_status === "approved" &&
-                              "!bg-green-100 !text-green-800 !border-green-300 hover:!bg-green-200",
+                              "!bg-success/20 !text-success !border-success/40 hover:!bg-success",
                             user.approval_status === "pending" &&
-                              "!bg-yellow-100 !text-yellow-800 !border-yellow-300 hover:!bg-yellow-200",
+                              "!bg-warning/20 !text-warning !border-warning hover:!bg-warning/30",
                             user.approval_status === "denied" &&
-                              "!bg-red-100 !text-red-800 !border-red-300 hover:!bg-red-200",
+                              "!bg-destructive/20 !text-destructive !border-destructive/40 hover:!bg-destructive/30",
                           )}
                         >
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="!bg-white dark:!bg-gray-800 border-2">
+                        <SelectContent className="!bg-white dark:!bg-muted border-2">
                           <SelectItem value="approved">Approved</SelectItem>
                           <SelectItem value="pending">Pending</SelectItem>
                           <SelectItem value="denied">Denied</SelectItem>

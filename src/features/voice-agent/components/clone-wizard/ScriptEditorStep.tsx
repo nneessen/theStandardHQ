@@ -170,7 +170,7 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
               Review and customize the scripts you'll read aloud during
               recording.
               {isCustom && (
-                <Badge className="ml-2 bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300">
+                <Badge className="ml-2 bg-info/20 text-info dark:bg-info/10/40 dark:text-info">
                   Custom
                 </Badge>
               )}
@@ -234,8 +234,8 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
 
       {/* Validation errors */}
       {hasLocalEdits && validationErrors.length > 0 && (
-        <div className="border-b border-red-200 bg-red-50 px-4 py-2 dark:border-red-900/50 dark:bg-red-950/20">
-          <p className="text-[10px] text-red-600 dark:text-red-400">
+        <div className="border-b border-destructive/30 bg-destructive/10 px-4 py-2 dark:border-destructive/50 dark:bg-destructive/10">
+          <p className="text-[10px] text-destructive">
             {validationErrors.slice(0, 3).join(" · ")}
             {validationErrors.length > 3 &&
               ` + ${validationErrors.length - 3} more`}
@@ -259,7 +259,7 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
               className={cn(
                 "rounded-lg border",
                 hasError
-                  ? "border-red-200 dark:border-red-900/50"
+                  ? "border-destructive/30 dark:border-destructive/50"
                   : "border-v2-ring dark:border-v2-ring",
               )}
             >
@@ -405,7 +405,7 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-6 text-[10px] text-v2-ink-subtle hover:text-red-500 gap-1"
+                      className="h-6 text-[10px] text-v2-ink-subtle hover:text-destructive gap-1"
                       onClick={() => removeScript(i)}
                       disabled={scripts.length <= 15}
                     >
@@ -439,9 +439,7 @@ export function ScriptEditorStep({ onContinue }: ScriptEditorStepProps) {
           <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
             {scripts.length} scripts ·{" "}
             {hasLocalEdits ? (
-              <span className="text-amber-600 dark:text-amber-400">
-                Unsaved changes
-              </span>
+              <span className="text-warning">Unsaved changes</span>
             ) : (
               "Ready to record"
             )}

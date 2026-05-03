@@ -64,7 +64,7 @@ export const GatedAction: React.FC<GatedActionProps> = ({
         variant="outline"
         size="sm"
         className={cn(
-          "h-6 text-[10px] font-medium justify-start w-full border-v2-ring dark:border-v2-ring-strong hover:bg-v2-canvas dark:hover:bg-v2-card-tinted",
+          "h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted",
           isLoading && "opacity-60 cursor-not-allowed",
           className,
         )}
@@ -86,9 +86,9 @@ export const GatedAction: React.FC<GatedActionProps> = ({
             variant="outline"
             size="sm"
             className={cn(
-              "h-6 text-[10px] font-medium justify-start w-full border-v2-ring dark:border-v2-ring-strong",
-              "text-v2-ink-subtle dark:text-v2-ink-muted hover:text-v2-ink-muted dark:hover:text-v2-ink-subtle",
-              "hover:bg-v2-canvas dark:hover:bg-v2-card-tinted",
+              "h-6 text-[10px] font-medium justify-start w-full border-border dark:border-border",
+              "text-muted-foreground dark:text-muted-foreground hover:text-muted-foreground dark:hover:text-muted-foreground",
+              "hover:bg-background dark:hover:bg-card-tinted",
               className,
             )}
           >
@@ -98,10 +98,10 @@ export const GatedAction: React.FC<GatedActionProps> = ({
         </TooltipTrigger>
         <TooltipContent side="left" className="text-xs max-w-[200px]">
           <div className="flex items-start gap-1.5">
-            <Crown className="h-3 w-3 text-amber-500 mt-0.5 flex-shrink-0" />
+            <Crown className="h-3 w-3 text-warning mt-0.5 flex-shrink-0" />
             <div>
               <p className="font-medium">{tooltipMessage}</p>
-              <p className="text-v2-ink-subtle dark:text-v2-ink-muted mt-0.5">
+              <p className="text-muted-foreground dark:text-muted-foreground mt-0.5">
                 Click to view plans
               </p>
             </div>

@@ -8,10 +8,10 @@ import { Link } from "@tanstack/react-router";
 
 export function NotConnectedPrompt() {
   return (
-    <Card className="mx-auto max-w-xl border-amber-200 bg-amber-50/40 dark:border-amber-900/50 dark:bg-amber-950/20">
+    <Card className="mx-auto max-w-xl border-warning/30 bg-warning/10/40 dark:border-warning/50 dark:bg-warning/10">
       <CardContent className="flex flex-col items-center gap-4 p-8 text-center">
-        <div className="rounded-full bg-amber-100 p-3 dark:bg-amber-900/40">
-          <AlertTriangle className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+        <div className="rounded-full bg-warning/20 p-3 dark:bg-warning/40">
+          <AlertTriangle className="h-6 w-6 text-warning" />
         </div>
         <div className="space-y-1">
           <h3 className="text-base font-semibold">Close CRM not connected</h3>

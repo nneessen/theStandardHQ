@@ -113,17 +113,17 @@ export function VideoItemConfig({ metadata, onChange }: VideoItemConfigProps) {
   };
 
   return (
-    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-background rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <PlayCircle className="h-3.5 w-3.5 text-v2-ink-muted" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
+        <PlayCircle className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
           Video Configuration
         </span>
       </div>
 
       {/* Platform Selector */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Platform
         </Label>
         <Select
@@ -149,7 +149,7 @@ export function VideoItemConfig({ metadata, onChange }: VideoItemConfigProps) {
 
       {/* Video URL */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Video URL
         </Label>
         <Input
@@ -160,19 +160,19 @@ export function VideoItemConfig({ metadata, onChange }: VideoItemConfigProps) {
           className="h-7 text-[11px]"
         />
         {urlError && (
-          <div className="flex items-center gap-1 text-[10px] text-red-600 dark:text-red-400">
+          <div className="flex items-center gap-1 text-[10px] text-destructive">
             <AlertCircle className="h-3 w-3" />
             {urlError}
           </div>
         )}
-        <p className="text-[9px] text-v2-ink-muted">
+        <p className="text-[9px] text-muted-foreground">
           Platform will be auto-detected from URL
         </p>
       </div>
 
       {/* Optional Title */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Video Title (Optional)
         </Label>
         <Input
@@ -187,10 +187,10 @@ export function VideoItemConfig({ metadata, onChange }: VideoItemConfigProps) {
       {/* Require Full Watch */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Require Full Watch
           </Label>
-          <p className="text-[9px] text-v2-ink-muted">
+          <p className="text-[9px] text-muted-foreground">
             Track progress and require 95%+ completion
           </p>
         </div>
@@ -204,10 +204,10 @@ export function VideoItemConfig({ metadata, onChange }: VideoItemConfigProps) {
       {/* Auto Complete */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Auto-Complete on Finish
           </Label>
-          <p className="text-[9px] text-v2-ink-muted">
+          <p className="text-[9px] text-muted-foreground">
             Automatically mark item as complete when video ends
           </p>
         </div>
@@ -219,8 +219,8 @@ export function VideoItemConfig({ metadata, onChange }: VideoItemConfigProps) {
       </div>
 
       {/* Note about platforms */}
-      <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-800">
-        <p className="text-[9px] text-blue-700 dark:text-blue-400">
+      <div className="p-2 bg-info/10 rounded border border-info/30">
+        <p className="text-[9px] text-info">
           <strong>Note:</strong> YouTube and Vimeo support progress tracking.
           Loom requires manual completion.
         </p>

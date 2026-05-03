@@ -102,15 +102,15 @@ function getSortValue(
 
 function daysToSaleColor(days: number | null): string {
   if (days === null) return "text-v2-ink-subtle";
-  if (days <= 7) return "text-emerald-600 dark:text-emerald-400";
-  if (days <= 30) return "text-blue-600 dark:text-blue-400";
-  if (days <= 60) return "text-amber-600 dark:text-amber-400";
-  return "text-red-600 dark:text-red-400";
+  if (days <= 7) return "text-success";
+  if (days <= 30) return "text-info";
+  if (days <= 60) return "text-warning";
+  return "text-destructive";
 }
 
 function roiColor(roi: number): string {
-  if (roi > 0) return "text-emerald-600 dark:text-emerald-400";
-  if (roi < 0) return "text-red-600 dark:text-red-400";
+  if (roi > 0) return "text-success";
+  if (roi < 0) return "text-destructive";
   return "text-v2-ink-muted";
 }
 
@@ -401,7 +401,7 @@ export function LeadPoliciesTable({
                           prev === row.policy.packId ? null : row.policy.packId,
                         )
                       }
-                      className="text-blue-600 dark:text-blue-400 hover:underline cursor-pointer truncate"
+                      className="text-info hover:underline cursor-pointer truncate"
                       title={`Click to expand pack: ${row.policy.vendorName}`}
                     >
                       {row.policy.vendorName}
@@ -424,8 +424,8 @@ export function LeadPoliciesTable({
                       className={cn(
                         "font-semibold",
                         row.policy.leadFreshness === "fresh"
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : "text-amber-600 dark:text-amber-400",
+                          ? "text-success"
+                          : "text-warning",
                       )}
                     >
                       {row.policy.leadFreshness === "fresh" ? "F" : "A"}
@@ -736,9 +736,7 @@ function MetricLine({
       <span
         className={cn(
           "font-medium",
-          highlight
-            ? "text-emerald-600 dark:text-emerald-400"
-            : "text-v2-ink-muted",
+          highlight ? "text-success" : "text-v2-ink-muted",
         )}
       >
         {value}
@@ -749,15 +747,12 @@ function MetricLine({
 
 function StatusBadge({ status }: { status: string }) {
   const colorMap: Record<string, string> = {
-    submitted:
-      "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-    approved:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-    active:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-    pending:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-    declined: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    submitted: "bg-info/20 text-info dark:bg-info/30 dark:text-info",
+    approved: "bg-success/20 text-success dark:bg-success/30 dark:text-success",
+    active: "bg-success/20 text-success dark:bg-success/30 dark:text-success",
+    pending: "bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning",
+    declined:
+      "bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive",
     lapsed:
       "bg-v2-ring text-v2-ink-muted dark:bg-v2-ring dark:text-v2-ink-subtle",
   };

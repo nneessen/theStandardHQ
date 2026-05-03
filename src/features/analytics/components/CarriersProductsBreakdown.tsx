@@ -252,7 +252,7 @@ export function CarriersProductsBreakdown() {
                 <TableCell className="p-1.5 text-right font-mono text-v2-ink">
                   {formatCurrency(row.premium)}
                 </TableCell>
-                <TableCell className="p-1.5 text-right font-mono text-emerald-600 dark:text-emerald-400">
+                <TableCell className="p-1.5 text-right font-mono text-success">
                   {row.avgRate.toFixed(1)}%
                 </TableCell>
                 <TableCell className="p-1.5 text-right font-mono font-semibold text-v2-ink">

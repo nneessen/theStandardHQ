@@ -22,15 +22,15 @@ interface LeadHeatAiInsightsWidgetProps {
 }
 
 const PRIORITY_STYLES: Record<string, string> = {
-  high: "border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-950/20",
+  high: "border-destructive/30 bg-destructive/10/50 dark:border-destructive dark:bg-destructive/10",
   medium:
-    "border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20",
+    "border-warning/30 bg-warning/10/50 dark:border-warning dark:bg-warning/10",
   low: "border-v2-ring bg-v2-canvas/50  dark:bg-v2-ring/20",
 };
 
 const URGENCY_DOT: Record<string, string> = {
-  high: "bg-red-500",
-  medium: "bg-amber-500",
+  high: "bg-destructive",
+  medium: "bg-warning",
   low: "bg-v2-ring-strong",
 };
 

@@ -1,8 +1,13 @@
 // src/components/ui/MetricTooltip.tsx
 
 import * as React from "react";
-import {HelpCircle} from "lucide-react";
-import {Tooltip, TooltipContent, TooltipTrigger, TooltipProvider} from "@/components/ui/tooltip";
+import { HelpCircle } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 
 interface MetricTooltipProps {
   title: string;
@@ -55,7 +60,7 @@ export const MetricTooltip: React.FC<MetricTooltipProps> = ({
             </div>
           )}
           {note && (
-            <div className="text-xs text-amber-500 dark:text-amber-400 border-t border-border pt-2 mt-2">
+            <div className="text-xs text-warning border-t border-border pt-2 mt-2">
               <span className="mr-1">⚠️</span>
               {note}
             </div>

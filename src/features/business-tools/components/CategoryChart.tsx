@@ -98,12 +98,12 @@ export function CategoryChart({ data }: CategoryChartProps) {
               <div className="bg-v2-card-dark border border-v2-ring rounded-md px-2.5 py-1.5 text-[11px] text-v2-canvas space-y-0.5">
                 <p className="font-medium">{label}</p>
                 {row.income > 0 && (
-                  <p className="text-emerald-400">
+                  <p className="text-success">
                     Income: {formatDollars(row.income)}
                   </p>
                 )}
                 {row.expense > 0 && (
-                  <p className="text-blue-400">
+                  <p className="text-info">
                     Expenses: {formatDollars(row.expense)}
                   </p>
                 )}

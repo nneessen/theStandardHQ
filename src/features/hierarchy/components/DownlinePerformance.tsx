@@ -384,7 +384,7 @@ export function DownlinePerformance({ className }: DownlinePerformanceProps) {
                                 handleDeleteAgent(agent.agent_email)
                               }
                               aria-label="Delete agent"
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -496,7 +496,7 @@ function DeleteAgentDialog({
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
-            className="bg-red-600 hover:bg-red-700 text-white"
+            className="bg-destructive hover:bg-destructive text-white"
             onClick={handleDelete}
             disabled={deleteUser.isPending}
           >

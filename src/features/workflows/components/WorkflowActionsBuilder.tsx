@@ -63,27 +63,26 @@ const ACTION_TYPES = [
     type: "send_email",
     label: "Send Email",
     icon: Mail,
-    color: "bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400",
+    color: "bg-info/10 border-info/20 text-info",
   },
   {
     type: "create_notification",
     label: "Notification",
     icon: Bell,
-    color:
-      "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400",
+    color: "bg-warning/10 border-warning/20 text-warning",
   },
   {
     type: "wait",
     label: "Wait/Delay",
     icon: Clock,
-    color: "bg-gray-500/10 border-gray-500/20 text-gray-600 dark:text-gray-400",
+    color:
+      "bg-muted/10 border-input/20 text-muted-foreground dark:text-muted-foreground",
   },
   {
     type: "webhook",
     label: "Webhook",
     icon: Webhook,
-    color:
-      "bg-violet-500/10 border-violet-500/20 text-violet-600 dark:text-violet-400",
+    color: "bg-info/10 border-info/20 text-info",
   },
 ] as const;
 
@@ -324,7 +323,7 @@ export default function WorkflowActionsBuilder({
                                 updateActionConfig(index, { templateId: v })
                               }
                             >
-                              <SelectTrigger className="h-7 text-xs bg-background border-blue-500/30 focus:border-blue-500">
+                              <SelectTrigger className="h-7 text-xs bg-background border-info/30 focus:border-info">
                                 <SelectValue placeholder="Select template..." />
                               </SelectTrigger>
                               <SelectContent>
@@ -344,14 +343,14 @@ export default function WorkflowActionsBuilder({
                                 type="button"
                                 variant="outline"
                                 size="icon"
-                                className="h-7 w-7 border-blue-500/30 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20"
+                                className="h-7 w-7 border-info/30 hover:border-info hover:bg-info/10/50 dark:hover:bg-info/10"
                                 onClick={() =>
                                   setPreviewTemplate(
                                     action.config.templateId || null,
                                   )
                                 }
                               >
-                                <Eye className="h-3 w-3 text-blue-600 dark:text-blue-400" />
+                                <Eye className="h-3 w-3 text-info" />
                               </Button>
                             )}
                           </div>
@@ -363,7 +362,7 @@ export default function WorkflowActionsBuilder({
                         <Label className="text-[10px] text-muted-foreground">
                           Send To
                           {selectedEvent && (
-                            <span className="ml-1 text-amber-600 dark:text-amber-400">
+                            <span className="ml-1 text-warning">
                               (⭐ = recommended for {selectedEvent})
                             </span>
                           )}
@@ -374,7 +373,7 @@ export default function WorkflowActionsBuilder({
                             updateRecipientType(index, v as RecipientType)
                           }
                         >
-                          <SelectTrigger className="h-7 text-xs bg-background border-blue-500/30 focus:border-blue-500">
+                          <SelectTrigger className="h-7 text-xs bg-background border-info/30 focus:border-info">
                             <SelectValue>
                               {isRecommendedRecipient(
                                 selectedEvent,
@@ -390,7 +389,7 @@ export default function WorkflowActionsBuilder({
                               getRecommendedRecipients(selectedEvent).length >
                                 0 && (
                                 <SelectGroup>
-                                  <SelectLabel className="flex items-center gap-1.5 text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
+                                  <SelectLabel className="flex items-center gap-1.5 text-[10px] text-warning font-semibold">
                                     <span>
                                       ⭐ Recommended for {selectedEvent}
                                     </span>
@@ -498,7 +497,7 @@ export default function WorkflowActionsBuilder({
                                   className={cn(
                                     "flex items-center gap-1.5 px-2 py-1 rounded border text-xs cursor-pointer transition-colors",
                                     isChecked
-                                      ? "bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700"
+                                      ? "bg-info/15 border-info/40"
                                       : "bg-background border-input hover:bg-muted/50",
                                   )}
                                 >
@@ -549,7 +548,7 @@ export default function WorkflowActionsBuilder({
                                   className={cn(
                                     "flex items-center gap-1.5 px-2 py-1 rounded border text-xs cursor-pointer transition-colors",
                                     isChecked
-                                      ? "bg-blue-100 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700"
+                                      ? "bg-info/15 border-info/40"
                                       : "bg-background border-input hover:bg-muted/50",
                                   )}
                                 >
@@ -612,7 +611,7 @@ export default function WorkflowActionsBuilder({
                             })
                           }
                           placeholder="email@example.com"
-                          className="h-7 text-xs bg-background border-blue-500/30 focus:border-blue-500"
+                          className="h-7 text-xs bg-background border-info/30 focus:border-info"
                         />
                       )}
 
@@ -637,7 +636,7 @@ export default function WorkflowActionsBuilder({
                               });
                             }}
                             placeholder="email1@example.com, email2@example.com"
-                            className="h-7 text-xs bg-background border-blue-500/30 focus:border-blue-500"
+                            className="h-7 text-xs bg-background border-info/30 focus:border-info"
                           />
                           <p className="text-[10px] text-muted-foreground mt-1">
                             Separate multiple emails with commas (max 50)
@@ -650,7 +649,7 @@ export default function WorkflowActionsBuilder({
                   {action.type === "wait" && (
                     <div className="flex items-center gap-2">
                       <div className="w-24">
-                        <Label className="text-[10px] text-gray-600 dark:text-gray-400">
+                        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                           Wait Duration
                         </Label>
                         <Input
@@ -661,12 +660,12 @@ export default function WorkflowActionsBuilder({
                               waitMinutes: parseInt(e.target.value) || 0,
                             })
                           }
-                          className="h-7 text-xs bg-background border-gray-500/30 focus:border-gray-500"
+                          className="h-7 text-xs bg-background border-input/30 focus:border-input"
                           placeholder="0"
                           min={0}
                         />
                       </div>
-                      <span className="text-xs text-gray-600 dark:text-gray-400 mt-4">
+                      <span className="text-xs text-muted-foreground dark:text-muted-foreground mt-4">
                         minutes
                       </span>
                     </div>
@@ -674,7 +673,7 @@ export default function WorkflowActionsBuilder({
 
                   {action.type === "webhook" && (
                     <div>
-                      <Label className="text-[10px] text-violet-600 dark:text-violet-400">
+                      <Label className="text-[10px] text-info">
                         Webhook URL
                       </Label>
                       <Input
@@ -684,7 +683,7 @@ export default function WorkflowActionsBuilder({
                             webhookUrl: e.target.value,
                           })
                         }
-                        className="h-7 text-xs bg-background border-violet-500/30 focus:border-violet-500"
+                        className="h-7 text-xs bg-background border-info/30 focus:border-info"
                         placeholder="https://api.example.com/webhook"
                       />
                     </div>
@@ -693,7 +692,7 @@ export default function WorkflowActionsBuilder({
                   {action.type === "create_notification" && (
                     <div className="space-y-2">
                       <div>
-                        <Label className="text-[10px] text-amber-600 dark:text-amber-400">
+                        <Label className="text-[10px] text-warning">
                           Notification Title
                         </Label>
                         <Input
@@ -701,12 +700,12 @@ export default function WorkflowActionsBuilder({
                           onChange={(e) =>
                             updateActionConfig(index, { title: e.target.value })
                           }
-                          className="h-7 text-xs bg-background border-amber-500/30 focus:border-amber-500"
+                          className="h-7 text-xs bg-background border-warning/30 focus:border-warning"
                           placeholder="Notification title..."
                         />
                       </div>
                       <div>
-                        <Label className="text-[10px] text-amber-600 dark:text-amber-400">
+                        <Label className="text-[10px] text-warning">
                           Message
                         </Label>
                         <Input
@@ -716,7 +715,7 @@ export default function WorkflowActionsBuilder({
                               message: e.target.value,
                             })
                           }
-                          className="h-7 text-xs bg-background border-amber-500/30 focus:border-amber-500"
+                          className="h-7 text-xs bg-background border-warning/30 focus:border-warning"
                           placeholder="Notification message..."
                         />
                       </div>
@@ -790,21 +789,21 @@ export default function WorkflowActionsBuilder({
 
               return (
                 <div className="space-y-4">
-                  <div className="p-3 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
+                  <div className="p-3 rounded-lg bg-info/10/50 dark:bg-info/10 border border-info/30">
                     <div className="space-y-2">
                       <div>
-                        <Label className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+                        <Label className="text-xs font-semibold text-info">
                           Template Name
                         </Label>
-                        <p className="text-sm text-blue-900 dark:text-blue-100">
+                        <p className="text-sm text-info dark:text-info">
                           {template.name}
                         </p>
                       </div>
                       <div>
-                        <Label className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+                        <Label className="text-xs font-semibold text-info">
                           Subject
                         </Label>
-                        <p className="text-sm text-blue-900 dark:text-blue-100">
+                        <p className="text-sm text-info dark:text-info">
                           {template.subject}
                         </p>
                       </div>
@@ -815,13 +814,13 @@ export default function WorkflowActionsBuilder({
                     <Label className="text-xs font-semibold text-muted-foreground">
                       Preview
                     </Label>
-                    <div className="p-4 rounded-lg border bg-white dark:bg-gray-950">
+                    <div className="p-4 rounded-lg border bg-white dark:bg-muted">
                       <div className="prose prose-sm dark:prose-invert max-w-none">
                         <div
                           dangerouslySetInnerHTML={{
                             __html: template.body_html.replace(
                               /{{(.*?)}}/g,
-                              '<span class="px-1 py-0.5 bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 rounded text-xs font-mono">{{$1}}</span>',
+                              '<span class="px-1 py-0.5 bg-warning/20 dark:bg-warning text-warning rounded text-xs font-mono">{{$1}}</span>',
                             ),
                           }}
                         />
@@ -830,15 +829,15 @@ export default function WorkflowActionsBuilder({
                   </div>
 
                   {template.variables && template.variables.length > 0 && (
-                    <div className="p-3 rounded-lg bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800">
-                      <Label className="text-xs font-semibold text-amber-700 dark:text-amber-300 mb-2 block">
+                    <div className="p-3 rounded-lg bg-warning/10/50 dark:bg-warning/10 border border-warning/30">
+                      <Label className="text-xs font-semibold text-warning mb-2 block">
                         Dynamic Variables
                       </Label>
                       <div className="flex flex-wrap gap-2">
                         {template.variables.map((v: string, i: number) => (
                           <code
                             key={i}
-                            className="text-xs px-2 py-1 bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 rounded"
+                            className="text-xs px-2 py-1 bg-warning/20 dark:bg-warning text-warning rounded"
                           >
                             {`{{${v}}}`}
                           </code>

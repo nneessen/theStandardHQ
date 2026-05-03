@@ -65,7 +65,7 @@ export function ModuleCard({ assignment }: ModuleCardProps) {
         </div>
 
         {isOverdue && (
-          <div className="flex items-center gap-1 mt-1.5 text-[10px] text-red-500">
+          <div className="flex items-center gap-1 mt-1.5 text-[10px] text-destructive">
             <AlertCircle className="h-2.5 w-2.5" />
             Overdue
           </div>

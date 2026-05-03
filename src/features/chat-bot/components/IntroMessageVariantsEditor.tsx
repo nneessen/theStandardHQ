@@ -46,7 +46,7 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="mb-3 flex items-start gap-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink">
           {icon}
@@ -101,7 +101,7 @@ function VariantRow({
         className={cn(
           "rounded-lg border bg-v2-card",
           errors.length > 0
-            ? "border-red-300 dark:border-red-900"
+            ? "border-destructive/40 dark:border-destructive"
             : "border-v2-ring dark:border-v2-ring",
         )}
       >
@@ -128,7 +128,7 @@ function VariantRow({
               <Badge
                 variant="ghost"
                 size="sm"
-                className="shrink-0 bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300"
+                className="shrink-0 bg-success/20 text-success dark:bg-success/50 dark:text-success"
               >
                 Active
               </Badge>
@@ -146,7 +146,7 @@ function VariantRow({
               <Badge
                 variant="ghost"
                 size="sm"
-                className="shrink-0 gap-0.5 bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300"
+                className="shrink-0 gap-0.5 bg-warning/20 text-warning dark:bg-warning/50 dark:text-warning"
               >
                 <Star className="h-2.5 w-2.5 fill-current" />
                 Winner
@@ -174,7 +174,7 @@ function VariantRow({
                 disabled={disabled}
               />
               {labelErrors.map((err, i) => (
-                <p key={i} className="mt-0.5 text-[9px] text-red-500">
+                <p key={i} className="mt-0.5 text-[9px] text-destructive">
                   {err.message}
                 </p>
               ))}
@@ -203,7 +203,7 @@ function VariantRow({
                   className={cn(
                     "shrink-0 text-[9px]",
                     variant.template.length > INTRO_VARIANT_LIMITS.TEMPLATE_MAX
-                      ? "text-red-500"
+                      ? "text-destructive"
                       : "text-v2-ink-subtle dark:text-v2-ink-muted",
                   )}
                 >
@@ -211,7 +211,7 @@ function VariantRow({
                 </p>
               </div>
               {templateErrors.map((err, i) => (
-                <p key={i} className="mt-0.5 text-[9px] text-red-500">
+                <p key={i} className="mt-0.5 text-[9px] text-destructive">
                   {err.message}
                 </p>
               ))}
@@ -244,7 +244,7 @@ function VariantRow({
                   className={cn(
                     "h-3 w-3",
                     variant.isWinner
-                      ? "fill-amber-500 text-amber-500"
+                      ? "fill-amber-500 text-warning"
                       : "text-v2-ink-subtle",
                   )}
                 />
@@ -252,12 +252,12 @@ function VariantRow({
               </label>
             </div>
             {winnerErrors.map((err, i) => (
-              <p key={i} className="text-[9px] text-red-500">
+              <p key={i} className="text-[9px] text-destructive">
                 {err.message}
               </p>
             ))}
             {idErrors.map((err, i) => (
-              <p key={`id-${i}`} className="text-[9px] text-red-500">
+              <p key={`id-${i}`} className="text-[9px] text-destructive">
                 {err.message}
               </p>
             ))}
@@ -267,7 +267,7 @@ function VariantRow({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 gap-1 text-[10px] text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+                className="h-6 gap-1 text-[10px] text-destructive hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/15"
                 onClick={onDelete}
                 disabled={disabled}
               >
@@ -456,7 +456,7 @@ export function IntroMessageVariantsEditor() {
             Discard
           </Button>
           {errors.length > 0 && (
-            <p className="text-[9px] text-red-500">
+            <p className="text-[9px] text-destructive">
               Fix validation errors above to save.
             </p>
           )}

@@ -300,8 +300,8 @@ export function SequenceBuilderTab() {
   return (
     <div className="space-y-4">
       {/* "Triggers" clarification banner */}
-      <div className="flex items-start gap-2 rounded-md border border-blue-200 bg-blue-50/50 p-3 text-xs dark:border-blue-900/50 dark:bg-blue-950/20">
-        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-blue-600 dark:text-blue-400" />
+      <div className="flex items-start gap-2 rounded-md border border-info/30 bg-info/10/50 p-3 text-xs dark:border-info/50 dark:bg-info/10">
+        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-info" />
         <p className="text-muted-foreground">
           <span className="font-medium text-foreground">
             How enrollment works:
@@ -316,7 +316,7 @@ export function SequenceBuilderTab() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
-              <GitBranch className="h-4 w-4 text-violet-500" />
+              <GitBranch className="h-4 w-4 text-info" />
               Describe the workflow
             </CardTitle>
           </CardHeader>
@@ -443,7 +443,7 @@ export function SequenceBuilderTab() {
                   className="flex items-center gap-1.5 text-xs"
                 >
                   Run mode
-                  <span className="rounded bg-v2-card-tinted px-1 py-[1px] text-[9px] font-medium uppercase tracking-wide text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-subtle">
+                  <span className="rounded bg-card-tinted px-1 py-[1px] text-[9px] font-medium uppercase tracking-wide text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground">
                     copy hint
                   </span>
                 </Label>
@@ -514,9 +514,9 @@ export function SequenceBuilderTab() {
             </div>
 
             {!includeStop && channels.includes("sms") && (
-              <div className="flex items-start gap-2 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-[11px] dark:border-red-900/60 dark:bg-red-950/30">
-                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-600 dark:text-red-400" />
-                <p className="text-red-800 dark:text-red-200">
+              <div className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-[11px] dark:border-destructive/60 dark:bg-destructive/15">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
+                <p className="text-destructive dark:text-destructive">
                   <span className="font-semibold">
                     TCPA / CTIA compliance warning.
                   </span>{" "}
@@ -583,7 +583,7 @@ export function SequenceBuilderTab() {
               {savedSeqId && (
                 <Badge
                   variant="outline"
-                  className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                  className="border-success/40 text-success"
                 >
                   <Check className="mr-1 h-3 w-3" />
                   Saved
@@ -615,11 +615,11 @@ export function SequenceBuilderTab() {
                 </div>
 
                 {draft.rationale && (
-                  <div className="rounded-md border-l-2 border-emerald-500 bg-v2-canvas px-3 py-2 dark:border-emerald-400 dark:bg-v2-card/60">
-                    <div className="mb-0.5 text-[9px] font-semibold uppercase tracking-wider text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <div className="rounded-md border-l-2 border-success bg-background px-3 py-2 dark:border-success/70 dark:bg-card/60">
+                    <div className="mb-0.5 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                       Strategy
                     </div>
-                    <div className="text-xs leading-relaxed text-v2-ink dark:text-v2-ink">
+                    <div className="text-xs leading-relaxed text-foreground dark:text-foreground">
                       {draft.rationale}
                     </div>
                   </div>
@@ -627,7 +627,7 @@ export function SequenceBuilderTab() {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
+                    <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground dark:text-muted-foreground">
                       Timeline · {draft.steps.length} step
                       {draft.steps.length !== 1 ? "s" : ""}
                     </Label>
@@ -676,40 +676,40 @@ export function SequenceBuilderTab() {
                     Run mode + pause-on-meeting-booked both require manual steps
                     in Close's UI because the public API doesn't expose them. */}
                 <div className="space-y-2">
-                  <div className="rounded-md border border-v2-ring bg-v2-canvas p-3 text-xs dark:border-v2-ring dark:bg-v2-card/60">
-                    <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                  <div className="rounded-md border border-border bg-background p-3 text-xs dark:border-border dark:bg-card/60">
+                    <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-success">
                       <Check className="h-3 w-3" />
                       Auto-configured on save
                     </div>
-                    <ul className="space-y-1 text-v2-ink dark:text-v2-ink">
+                    <ul className="space-y-1 text-foreground dark:text-foreground">
                       <li className="flex gap-2">
-                        <span className="text-v2-ink-subtle">→</span>
+                        <span className="text-muted-foreground">→</span>
                         <span>
                           {stepCounts.emailCount} email template
                           {stepCounts.emailCount !== 1 ? "s" : ""} +{" "}
                           {stepCounts.smsCount} SMS template
                           {stepCounts.smsCount !== 1 ? "s" : ""}, all prefixed
                           with{" "}
-                          <code className="rounded bg-v2-ring px-1 text-[10px] dark:bg-v2-card-tinted">
+                          <code className="rounded bg-muted px-1 text-[10px] dark:bg-card-tinted">
                             [{draft.name || "workflow"}]
                           </code>
                         </span>
                       </li>
                       <li className="flex gap-2">
-                        <span className="text-v2-ink-subtle">→</span>
+                        <span className="text-muted-foreground">→</span>
                         <span>1 workflow · {FIXED_SCHEDULE_LABEL}</span>
                       </li>
                     </ul>
                   </div>
 
-                  <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs dark:border-amber-900/60 dark:bg-amber-950/30">
-                    <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                  <div className="rounded-md border border-warning/40 bg-warning/10 p-3 text-xs dark:border-warning/60 dark:bg-warning/15">
+                    <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-warning">
                       <AlertTriangle className="h-3 w-3" />
                       Manual setup in Close after save
                     </div>
-                    <ul className="space-y-1.5 text-amber-900 dark:text-amber-200">
+                    <ul className="space-y-1.5 text-warning dark:text-warning">
                       <li className="flex gap-2">
-                        <span className="text-amber-500">•</span>
+                        <span className="text-warning">•</span>
                         <span>
                           <strong className="font-semibold">Run mode</strong> (
                           {runMode === "once" ? "Run once" : "Run multiple"}) —
@@ -723,7 +723,7 @@ export function SequenceBuilderTab() {
                         </span>
                       </li>
                       <li className="flex gap-2">
-                        <span className="text-amber-500">•</span>
+                        <span className="text-warning">•</span>
                         <span>
                           <strong className="font-semibold">
                             Pause on meeting booked
@@ -741,7 +741,7 @@ export function SequenceBuilderTab() {
                       href="https://app.close.com/sequences/"
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-between rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800 transition-colors hover:bg-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300 dark:hover:bg-emerald-950/50"
+                      className="flex items-center justify-between rounded-md border border-success/40 bg-success/10 px-3 py-2 text-xs font-medium text-success transition-colors hover:bg-success/20 dark:border-success/60 dark:bg-success/15 dark:text-success dark:hover:bg-success/10/50"
                     >
                       <span>
                         Open workflow in Close to finish Run mode setup
@@ -816,16 +816,12 @@ function StepCard({
 
   // Channel-specific color accents (kept within the muted zinc aesthetic —
   // just a single hue per channel for quick visual scanning).
-  const accentBar = isEmail ? "bg-emerald-500" : "bg-sky-500";
-  const iconColor = isEmail
-    ? "text-emerald-600 dark:text-emerald-400"
-    : "text-sky-600 dark:text-sky-400";
-  const channelLabelColor = isEmail
-    ? "text-emerald-700 dark:text-emerald-300"
-    : "text-sky-700 dark:text-sky-300";
+  const accentBar = isEmail ? "bg-success" : "bg-info";
+  const iconColor = isEmail ? "text-success" : "text-info";
+  const channelLabelColor = isEmail ? "text-success" : "text-info";
 
   return (
-    <div className="relative overflow-hidden rounded-md border border-v2-ring bg-card shadow-sm dark:border-v2-ring">
+    <div className="relative overflow-hidden rounded-md border border-border bg-card shadow-sm dark:border-border">
       {/* Channel accent bar */}
       <div
         className={cn("absolute left-0 top-0 h-full w-[3px]", accentBar)}
@@ -834,7 +830,7 @@ function StepCard({
 
       <div className="flex gap-3 p-3 pl-4">
         {/* Step number badge */}
-        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-v2-card-tinted text-xs font-semibold tabular-nums text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink">
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-card-tinted text-xs font-semibold tabular-nums text-foreground dark:bg-card-tinted dark:text-foreground">
           {index + 1}
         </div>
 
@@ -855,7 +851,9 @@ function StepCard({
               >
                 {isEmail ? "Email" : "SMS"}
               </span>
-              <span className="text-v2-ink-subtle dark:text-v2-ink">·</span>
+              <span className="text-muted-foreground dark:text-foreground">
+                ·
+              </span>
               <div className="flex items-center gap-1">
                 <span className="text-[11px] text-muted-foreground">Day</span>
                 <Input
@@ -872,14 +870,14 @@ function StepCard({
                   title="Day from sequence start (Day 1 = immediate)"
                 />
               </div>
-              <span className="truncate text-[11px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle">
+              <span className="truncate text-[11px] font-medium text-muted-foreground dark:text-muted-foreground">
                 {gapLabel}
               </span>
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 w-7 shrink-0 p-0 text-muted-foreground hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30"
+              className="h-7 w-7 shrink-0 p-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive dark:hover:bg-destructive/15"
               onClick={onRemove}
               title="Remove step"
             >
@@ -889,7 +887,7 @@ function StepCard({
 
           {/* Body */}
           {isEmail && step.generated_email && (
-            <div className="space-y-1.5 border-t border-v2-ring pt-2 dark:border-v2-ring/80">
+            <div className="space-y-1.5 border-t border-border pt-2 dark:border-border/80">
               <div className="space-y-0.5">
                 <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Template name
@@ -948,7 +946,7 @@ function StepCard({
           )}
 
           {!isEmail && step.generated_sms && (
-            <div className="space-y-1.5 border-t border-v2-ring pt-2 dark:border-v2-ring/80">
+            <div className="space-y-1.5 border-t border-border pt-2 dark:border-border/80">
               <div className="space-y-0.5">
                 <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
                   Template name
@@ -976,7 +974,7 @@ function StepCard({
                     className={cn(
                       "text-[10px] tabular-nums",
                       step.generated_sms.text.length > 320
-                        ? "font-semibold text-red-600 dark:text-red-400"
+                        ? "font-semibold text-destructive"
                         : "text-muted-foreground",
                     )}
                   >

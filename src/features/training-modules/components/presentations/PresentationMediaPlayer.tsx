@@ -222,7 +222,7 @@ export const PresentationMediaPlayer = forwardRef<
       {activeMarker && (
         <div className="px-4 pt-3 flex items-center gap-2">
           <span
-            className={`h-1.5 w-1.5 rounded-full ${MARKER_TYPE_COLORS[activeMarker.marker_type as keyof typeof MARKER_TYPE_COLORS]?.dot || "bg-zinc-400"}`}
+            className={`h-1.5 w-1.5 rounded-full ${MARKER_TYPE_COLORS[activeMarker.marker_type as keyof typeof MARKER_TYPE_COLORS]?.dot || "bg-muted"}`}
           />
           <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted truncate">
             {activeMarker.label}
@@ -237,11 +237,11 @@ export const PresentationMediaPlayer = forwardRef<
           onClick={handleScrubberClick}
           onMouseMove={handleScrubberHover}
           onMouseLeave={() => setHoverTime(null)}
-          className="relative h-2 bg-zinc-200 dark:bg-v2-card-tinted rounded-full cursor-pointer group"
+          className="relative h-2 bg-muted dark:bg-v2-card-tinted rounded-full cursor-pointer group"
         >
           {/* Progress fill */}
           <div
-            className="absolute top-0 left-0 h-full bg-zinc-900 dark:bg-zinc-200 rounded-full transition-[width] duration-150 ease-linear"
+            className="absolute top-0 left-0 h-full bg-card dark:bg-muted rounded-full transition-[width] duration-150 ease-linear"
             style={{ width: `${progressPct}%` }}
           />
 
@@ -264,7 +264,7 @@ export const PresentationMediaPlayer = forwardRef<
                       setCurrentTime(marker.timestamp_seconds);
                     }
                   }}
-                  className={`absolute top-1/2 -translate-x-1/2 -translate-y-1/2 h-3 w-3 rounded-full ${colors?.dot || "bg-zinc-400"} ring-2 ${colors?.ring || "ring-zinc-300"} hover:scale-125 transition-transform z-10`}
+                  className={`absolute top-1/2 -translate-x-1/2 -translate-y-1/2 h-3 w-3 rounded-full ${colors?.dot || "bg-muted"} ring-2 ${colors?.ring || "ring-muted"} hover:scale-125 transition-transform z-10`}
                   style={{ left: `${left}%` }}
                   title={`${formatTimestamp(marker.timestamp_seconds)} — ${marker.label}`}
                 />
@@ -274,7 +274,7 @@ export const PresentationMediaPlayer = forwardRef<
           {/* Hover preview tooltip */}
           {hoverTime !== null && duration > 0 && (
             <div
-              className="absolute -top-7 -translate-x-1/2 px-1.5 py-0.5 rounded text-[10px] font-medium bg-zinc-900 text-white dark:bg-v2-card-tinted dark:text-v2-ink pointer-events-none whitespace-nowrap"
+              className="absolute -top-7 -translate-x-1/2 px-1.5 py-0.5 rounded text-[10px] font-medium bg-card text-white dark:bg-v2-card-tinted dark:text-v2-ink pointer-events-none whitespace-nowrap"
               style={{ left: `${(hoverTime / duration) * 100}%` }}
             >
               {formatTimestamp(hoverTime)}

@@ -15,11 +15,11 @@ import type { HeatLevel } from "@/types/lead-purchase.types";
 import type { IntelligenceFilterState } from "./LeadIntelligenceDashboard";
 
 const HEAT_LEVELS: { key: HeatLevel; label: string; color: string }[] = [
-  { key: "hot", label: "Hot", color: "bg-red-500" },
-  { key: "warming", label: "Warm", color: "bg-orange-400" },
-  { key: "neutral", label: "Neutral", color: "bg-v2-ring-strong" },
-  { key: "cooling", label: "Cool", color: "bg-blue-400" },
-  { key: "cold", label: "Cold", color: "bg-blue-600" },
+  { key: "hot", label: "Hot", color: "bg-destructive" },
+  { key: "warming", label: "Warm", color: "bg-warning/70" },
+  { key: "neutral", label: "Neutral", color: "bg-muted" },
+  { key: "cooling", label: "Cool", color: "bg-info/70" },
+  { key: "cold", label: "Cold", color: "bg-info" },
 ];
 
 interface IntelligenceCommandBarProps {
@@ -51,13 +51,13 @@ export function IntelligenceCommandBar({
   };
 
   return (
-    <div className="sticky top-0 z-10 bg-white/95 dark:bg-v2-card-dark/95 backdrop-blur-sm border border-v2-ring rounded-lg px-3 py-2">
+    <div className="sticky top-0 z-10 bg-card/95 dark:bg-card/95 backdrop-blur-sm border border-border rounded-lg shadow-sm px-3 py-2">
       <div className="flex items-center gap-2 flex-wrap">
         {/* Filter icon + count badge */}
         <div className="flex items-center gap-1 mr-1">
-          <SlidersHorizontal className="h-3.5 w-3.5 text-v2-ink-subtle" />
+          <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
           {activeFilterCount > 0 && (
-            <Badge className="h-4 min-w-[16px] px-1 text-[9px] bg-blue-600 text-white">
+            <Badge className="h-4 min-w-[16px] px-1 text-[9px] bg-info text-white">
               {activeFilterCount}
             </Badge>
           )}
@@ -65,7 +65,7 @@ export function IntelligenceCommandBar({
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
+          <Search className="absolute left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <Input
             placeholder="Search packs..."
             value={filters.search}
@@ -82,7 +82,7 @@ export function IntelligenceCommandBar({
             onChange={(e) => updateFilter("startDate", e.target.value)}
             className="h-7 text-[11px] w-[120px] px-1.5"
           />
-          <span className="text-[10px] text-v2-ink-subtle">&ndash;</span>
+          <span className="text-[10px] text-muted-foreground">&ndash;</span>
           <Input
             type="date"
             value={filters.endDate}
@@ -115,7 +115,7 @@ export function IntelligenceCommandBar({
         </Select>
 
         {/* Heat level multi-toggle */}
-        <div className="flex items-center gap-0.5 border border-v2-ring rounded-md overflow-hidden">
+        <div className="flex items-center gap-0.5 border border-border rounded-md overflow-hidden">
           {HEAT_LEVELS.map((h) => (
             <button
               key={h.key}
@@ -123,8 +123,8 @@ export function IntelligenceCommandBar({
               className={cn(
                 "px-1.5 py-1 text-[10px] font-medium transition-colors flex items-center gap-0.5",
                 filters.heatLevels.includes(h.key)
-                  ? "bg-v2-ring text-white dark:bg-v2-ring dark:text-v2-ink"
-                  : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
+                  ? "bg-muted text-white dark:bg-muted dark:text-foreground"
+                  : "text-muted-foreground hover:bg-muted dark:hover:bg-muted",
               )}
             >
               <span className={cn("h-1.5 w-1.5 rounded-full", h.color)} />
@@ -208,7 +208,7 @@ export function IntelligenceCommandBar({
         {activeFilterCount > 0 && (
           <button
             onClick={clearFilters}
-            className="flex items-center gap-0.5 text-[10px] text-v2-ink-muted hover:text-v2-ink transition-colors ml-auto"
+            className="flex items-center gap-0.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors ml-auto"
           >
             <X className="h-3 w-3" />
             Clear all

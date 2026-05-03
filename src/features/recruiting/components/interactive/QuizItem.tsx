@@ -167,7 +167,7 @@ export function QuizItem({
   // If already passed
   if (existingResponse?.passed) {
     return (
-      <span className="inline-flex items-center gap-1 text-xs text-emerald-600 dark:text-emerald-400">
+      <span className="inline-flex items-center gap-1 text-xs text-success">
         <CheckCircle2 className="h-3.5 w-3.5" />
         Quiz passed {existingResponse.best_score_percent}% (
         {existingResponse.total_attempts} attempt
@@ -179,7 +179,7 @@ export function QuizItem({
   // Error state - no questions
   if (questions.length === 0) {
     return (
-      <div className="flex items-center gap-2 text-xs text-red-600 dark:text-red-400">
+      <div className="flex items-center gap-2 text-xs text-destructive">
         <AlertCircle className="h-3.5 w-3.5" />
         <span>Quiz configuration error: No questions available</span>
       </div>
@@ -192,9 +192,9 @@ export function QuizItem({
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           {lastAttemptResult.passed ? (
-            <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+            <CheckCircle2 className="h-5 w-5 text-success" />
           ) : (
-            <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+            <XCircle className="h-5 w-5 text-destructive" />
           )}
           <div>
             <p className="text-xs font-medium text-v2-ink">
@@ -227,7 +227,7 @@ export function QuizItem({
         )}
 
         {!lastAttemptResult.passed && !lastAttemptResult.canRetry && (
-          <p className="text-[10px] text-red-600 dark:text-red-400">
+          <p className="text-[10px] text-destructive">
             No more attempts. Contact your recruiter.
           </p>
         )}
@@ -332,7 +332,7 @@ export function QuizItem({
 
         <div className="flex items-center gap-2">
           {metadata.time_limit_minutes && (
-            <span className="text-[10px] text-amber-600 dark:text-amber-400">
+            <span className="text-[10px] text-warning">
               {metadata.time_limit_minutes}min limit
             </span>
           )}
@@ -344,7 +344,7 @@ export function QuizItem({
                 isSubmitting || Object.keys(answers).length < totalQuestions
               }
               size="sm"
-              className="h-7 text-xs px-3 gap-1.5 bg-emerald-600 hover:bg-emerald-700"
+              className="h-7 text-xs px-3 gap-1.5 bg-success hover:bg-success"
             >
               {isSubmitting ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />

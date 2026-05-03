@@ -96,7 +96,7 @@ export function EmailBuilderTab() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Sparkles className="h-4 w-4 text-amber-500" />
+            <Sparkles className="h-4 w-4 text-warning" />
             Describe the email
           </CardTitle>
         </CardHeader>
@@ -220,7 +220,7 @@ export function EmailBuilderTab() {
             {savedCloseId && (
               <Badge
                 variant="outline"
-                className="border-emerald-500/40 text-emerald-600 dark:text-emerald-400"
+                className="border-success/40 text-success"
               >
                 <Check className="mr-1 h-3 w-3" />
                 Saved to Close

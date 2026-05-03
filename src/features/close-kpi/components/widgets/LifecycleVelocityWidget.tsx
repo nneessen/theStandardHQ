@@ -95,7 +95,7 @@ export const LifecycleVelocityWidget: React.FC<
 
       {/* Truncation warning */}
       {isTruncated && (
-        <div className="flex items-center gap-1 text-[9px] text-amber-600 dark:text-amber-400">
+        <div className="flex items-center gap-1 text-[9px] text-warning">
           <AlertTriangle className="h-2.5 w-2.5" />
           <span>Data truncated at 2,000 status changes</span>
         </div>

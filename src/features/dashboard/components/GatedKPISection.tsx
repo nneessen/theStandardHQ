@@ -68,7 +68,7 @@ export const GatedKPISection: React.FC<GatedKPISectionProps> = ({
               variant="outline"
               className="h-6 text-[10px] mt-1"
             >
-              <Crown className="h-3 w-3 mr-1 text-amber-500" />
+              <Crown className="h-3 w-3 mr-1 text-warning" />
               View Plans
             </Button>
           </Link>

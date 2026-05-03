@@ -54,12 +54,12 @@ interface RequestRowProps {
 
 function RequestRow({ request, onApprove, onReject }: RequestRowProps) {
   return (
-    <div className="border border-v2-ring rounded-lg p-2.5 space-y-2 hover:bg-v2-canvas">
+    <div className="border border-border rounded-lg p-2.5 space-y-2 hover:bg-background">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <User className="h-3.5 w-3.5 text-v2-ink-subtle" />
-          <span className="font-medium text-[11px] text-v2-ink">
+          <User className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="font-medium text-[11px] text-foreground">
             {formatUserName(request.requester)}
           </span>
         </div>
@@ -70,7 +70,7 @@ function RequestRow({ request, onApprove, onReject }: RequestRowProps) {
       </div>
 
       {/* Details */}
-      <div className="grid grid-cols-2 gap-2 text-[10px] text-v2-ink-muted">
+      <div className="grid grid-cols-2 gap-2 text-[10px] text-muted-foreground">
         <div className="flex items-center gap-1">
           <Building2 className="h-3 w-3" />
           <span>{request.imo?.name || "Unknown IMO"}</span>
@@ -85,9 +85,11 @@ function RequestRow({ request, onApprove, onReject }: RequestRowProps) {
 
       {/* Message */}
       {request.message && (
-        <div className="flex items-start gap-1 text-[10px] bg-v2-canvas p-2 rounded">
-          <MessageSquare className="h-3 w-3 mt-0.5 shrink-0 text-v2-ink-subtle" />
-          <span className="italic text-v2-ink-muted">"{request.message}"</span>
+        <div className="flex items-start gap-1 text-[10px] bg-background p-2 rounded">
+          <MessageSquare className="h-3 w-3 mt-0.5 shrink-0 text-muted-foreground" />
+          <span className="italic text-muted-foreground">
+            "{request.message}"
+          </span>
         </div>
       )}
 
@@ -166,8 +168,8 @@ export function PendingJoinApprovalsList() {
 
   if (isLoading) {
     return (
-      <div className="border border-v2-ring rounded-lg p-4">
-        <div className="flex items-center justify-center text-[11px] text-v2-ink-muted">
+      <div className="border border-border rounded-lg p-4">
+        <div className="flex items-center justify-center text-[11px] text-muted-foreground">
           <Loader2 className="h-3.5 w-3.5 animate-spin mr-2" />
           Loading pending approvals...
         </div>
@@ -177,14 +179,14 @@ export function PendingJoinApprovalsList() {
 
   if (!requests?.length) {
     return (
-      <div className="border border-v2-ring rounded-lg p-3">
+      <div className="border border-border rounded-lg p-3">
         <div className="flex items-center gap-2 mb-2">
-          <Users className="h-3.5 w-3.5 text-v2-ink-subtle" />
-          <span className="text-[11px] font-semibold text-v2-ink">
+          <Users className="h-3.5 w-3.5 text-muted-foreground" />
+          <span className="text-[11px] font-semibold text-foreground">
             Pending Join Requests
           </span>
         </div>
-        <p className="text-center text-[11px] text-v2-ink-muted py-2">
+        <p className="text-center text-[11px] text-muted-foreground py-2">
           No pending requests to review
         </p>
       </div>
@@ -193,14 +195,14 @@ export function PendingJoinApprovalsList() {
 
   return (
     <>
-      <div className="border border-v2-ring rounded-lg p-3">
+      <div className="border border-border rounded-lg p-3">
         <div className="flex items-center gap-2 mb-3">
-          <Users className="h-3.5 w-3.5 text-v2-ink-subtle" />
+          <Users className="h-3.5 w-3.5 text-muted-foreground" />
           <div className="flex-1">
-            <span className="text-[11px] font-semibold text-v2-ink">
+            <span className="text-[11px] font-semibold text-foreground">
               Pending Join Requests
             </span>
-            <p className="text-[10px] text-v2-ink-muted">
+            <p className="text-[10px] text-muted-foreground">
               Review and approve new user requests
             </p>
           </div>

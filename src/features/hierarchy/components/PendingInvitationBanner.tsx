@@ -1,21 +1,35 @@
 // src/features/hierarchy/components/PendingInvitationBanner.tsx
 // Banner to display pending invitations received by the user
 
-import {useState} from 'react';
-import {useReceivedInvitations, useAcceptInvitation, useDenyInvitation} from '../../../hooks/hierarchy/useInvitations';
-import {Button} from '../../../components/ui/button';
-import {AlertCircle, Check, X, Mail, Clock, User} from 'lucide-react';
-import {formatDistanceToNow} from 'date-fns';
-import {Alert, AlertDescription, AlertTitle} from '../../../components/ui/alert';
+import { useState } from "react";
+import {
+  useReceivedInvitations,
+  useAcceptInvitation,
+  useDenyInvitation,
+} from "../../../hooks/hierarchy/useInvitations";
+import { Button } from "../../../components/ui/button";
+import { AlertCircle, Check, X, Mail, Clock, User } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "../../../components/ui/alert";
 
 export function PendingInvitationBanner() {
-  const { data: receivedInvitations, isLoading } = useReceivedInvitations('pending');
+  const { data: receivedInvitations, isLoading } =
+    useReceivedInvitations("pending");
   const acceptMutation = useAcceptInvitation();
   const denyMutation = useDenyInvitation();
   const [dismissed, setDismissed] = useState(false);
 
   // Don't show if loading, no invitations, or dismissed
-  if (isLoading || !receivedInvitations || receivedInvitations.length === 0 || dismissed) {
+  if (
+    isLoading ||
+    !receivedInvitations ||
+    receivedInvitations.length === 0 ||
+    dismissed
+  ) {
     return null;
   }
 
@@ -37,10 +51,10 @@ export function PendingInvitationBanner() {
   const canAccept = invitation.can_accept || false;
 
   return (
-    <Alert className="bg-gradient-to-r from-blue-50 to-cyan-50 border-blue-200">
-      <Mail className="h-5 w-5 text-blue-600" />
+    <Alert className="bg-gradient-to-r from-blue-50 to-cyan-50 border-info/30">
+      <Mail className="h-5 w-5 text-info" />
       <AlertTitle className="flex items-center justify-between">
-        <span className="font-semibold text-blue-900">
+        <span className="font-semibold text-info">
           Hierarchy Invitation Received
         </span>
         <Button
@@ -57,13 +71,19 @@ export function PendingInvitationBanner() {
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-2 text-sm">
               <User className="h-4 w-4 text-muted-foreground" />
-              <span className="font-medium">{invitation.inviter_email || 'Unknown'}</span>
-              <span className="text-muted-foreground">invited you to join their downline</span>
+              <span className="font-medium">
+                {invitation.inviter_email || "Unknown"}
+              </span>
+              <span className="text-muted-foreground">
+                invited you to join their downline
+              </span>
             </div>
 
             {invitation.message && (
-              <div className="text-sm bg-white/60 rounded px-3 py-2 border border-blue-100">
-                <p className="text-muted-foreground italic">"{invitation.message}"</p>
+              <div className="text-sm bg-white/60 rounded px-3 py-2 border border-info/20">
+                <p className="text-muted-foreground italic">
+                  "{invitation.message}"
+                </p>
               </div>
             )}
 
@@ -71,7 +91,10 @@ export function PendingInvitationBanner() {
               <div className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 <span>
-                  Sent {formatDistanceToNow(new Date(invitation.created_at), { addSuffix: true })}
+                  Sent{" "}
+                  {formatDistanceToNow(new Date(invitation.created_at), {
+                    addSuffix: true,
+                  })}
                 </span>
               </div>
               <div className="flex items-center gap-1">
@@ -79,7 +102,10 @@ export function PendingInvitationBanner() {
                   <span className="text-destructive font-medium">Expired</span>
                 ) : (
                   <span>
-                    Expires {formatDistanceToNow(new Date(invitation.expires_at), { addSuffix: true })}
+                    Expires{" "}
+                    {formatDistanceToNow(new Date(invitation.expires_at), {
+                      addSuffix: true,
+                    })}
                   </span>
                 )}
               </div>
@@ -87,14 +113,17 @@ export function PendingInvitationBanner() {
 
             {/* Warnings if cannot accept */}
             {!canAccept && !isExpired && (
-              <div className="flex items-start gap-2 text-sm text-amber-700 bg-amber-50 rounded px-3 py-2 border border-amber-200">
+              <div className="flex items-start gap-2 text-sm text-warning bg-warning/10 rounded px-3 py-2 border border-warning/30">
                 <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
                 <div className="space-y-1">
                   {invitation.invitee_has_upline && (
                     <p>You are already in a hierarchy</p>
                   )}
                   {invitation.invitee_has_downlines && (
-                    <p>You have existing downlines (must have zero downlines to accept)</p>
+                    <p>
+                      You have existing downlines (must have zero downlines to
+                      accept)
+                    </p>
                   )}
                 </div>
               </div>
@@ -106,8 +135,13 @@ export function PendingInvitationBanner() {
             <Button
               size="sm"
               onClick={handleAccept}
-              disabled={!canAccept || isExpired || acceptMutation.isPending || denyMutation.isPending}
-              className="bg-green-600 hover:bg-green-700"
+              disabled={
+                !canAccept ||
+                isExpired ||
+                acceptMutation.isPending ||
+                denyMutation.isPending
+              }
+              className="bg-success hover:bg-success"
             >
               <Check className="h-4 w-4 mr-1" />
               Accept
@@ -116,8 +150,10 @@ export function PendingInvitationBanner() {
               size="sm"
               variant="outline"
               onClick={handleDeny}
-              disabled={isExpired || acceptMutation.isPending || denyMutation.isPending}
-              className="border-red-200 text-red-700 hover:bg-red-50"
+              disabled={
+                isExpired || acceptMutation.isPending || denyMutation.isPending
+              }
+              className="border-destructive/30 text-destructive hover:bg-destructive/10"
             >
               <X className="h-4 w-4 mr-1" />
               Deny

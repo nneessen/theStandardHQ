@@ -227,7 +227,7 @@ export function RolesPermissionsTab({
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="h-5 px-1.5 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        className="h-5 px-1.5 text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/20"
                         onClick={() => openDeleteRoleDialog(role)}
                         title="Delete role"
                       >

@@ -116,18 +116,18 @@ export function BooleanQuestionConfig({
   const defaults = BOOLEAN_QUESTION_DEFAULT_LABELS[questionStyle];
 
   return (
-    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-background rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <HelpCircle className="h-3.5 w-3.5 text-v2-ink-muted" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
+        <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
           Boolean Question Configuration
         </span>
       </div>
 
       {/* Question Text */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
-          Question Text <span className="text-red-500">*</span>
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+          Question Text <span className="text-destructive">*</span>
         </Label>
         <Textarea
           value={questionText}
@@ -136,7 +136,7 @@ export function BooleanQuestionConfig({
           className="min-h-[60px] text-[11px] resize-none"
         />
         {!questionText.trim() && (
-          <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1 text-[10px] text-warning">
             <AlertCircle className="h-3 w-3" />
             Question text is required
           </div>
@@ -145,7 +145,7 @@ export function BooleanQuestionConfig({
 
       {/* Question Style */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Answer Style
         </Label>
         <Select
@@ -167,7 +167,7 @@ export function BooleanQuestionConfig({
             )}
           </SelectContent>
         </Select>
-        <p className="text-[9px] text-v2-ink-muted">
+        <p className="text-[9px] text-muted-foreground">
           Preview: {defaults.positive} / {defaults.negative}
         </p>
       </div>
@@ -176,7 +176,7 @@ export function BooleanQuestionConfig({
       {questionStyle === "custom" && (
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
-            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               Positive Label
             </Label>
             <Input
@@ -188,7 +188,7 @@ export function BooleanQuestionConfig({
             />
           </div>
           <div className="space-y-1">
-            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               Negative Label
             </Label>
             <Input
@@ -205,10 +205,10 @@ export function BooleanQuestionConfig({
       {/* Require Positive Answer */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Require Positive Answer
           </Label>
-          <p className="text-[9px] text-v2-ink-muted">
+          <p className="text-[9px] text-muted-foreground">
             Must select "{defaults.positive}" to complete this item
           </p>
         </div>
@@ -222,10 +222,10 @@ export function BooleanQuestionConfig({
       {/* Require Explanation */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Require Explanation
           </Label>
-          <p className="text-[9px] text-v2-ink-muted">
+          <p className="text-[9px] text-muted-foreground">
             Ask recruit to explain their answer
           </p>
         </div>
@@ -239,7 +239,7 @@ export function BooleanQuestionConfig({
       {/* Explanation Prompt (only shown if explanation required) */}
       {explanationRequired && (
         <div className="space-y-1">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Explanation Prompt (Optional)
           </Label>
           <Input
@@ -253,8 +253,8 @@ export function BooleanQuestionConfig({
       )}
 
       {/* Preview */}
-      <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-800">
-        <p className="text-[9px] text-blue-700 dark:text-blue-400">
+      <div className="p-2 bg-info/10 rounded border border-info/30">
+        <p className="text-[9px] text-info">
           <strong>Preview:</strong> Recruit will see the question and select
           either "{defaults.positive}" or "{defaults.negative}"
           {requirePositive && ` (must select "${defaults.positive}")`}

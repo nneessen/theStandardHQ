@@ -210,12 +210,12 @@ export function ProductForm({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl p-4 bg-v2-card border-v2-ring">
-        <DialogHeader className="space-y-1 pb-3 border-b border-v2-ring/60">
-          <DialogTitle className="text-sm font-semibold text-v2-ink">
+      <DialogContent className="sm:max-w-3xl p-4 bg-card border-border">
+        <DialogHeader className="space-y-1 pb-3 border-b border-border/60">
+          <DialogTitle className="text-sm font-semibold text-foreground">
             {product ? "Edit Product" : "Add New Product"}
           </DialogTitle>
-          <DialogDescription className="text-[10px] text-v2-ink-muted">
+          <DialogDescription className="text-[10px] text-muted-foreground">
             {product
               ? "Update product information. Changes will affect commission calculations."
               : "Create a new insurance product under a carrier."}
@@ -234,7 +234,7 @@ export function ProductForm({
                     name="carrier_id"
                     render={({ field }) => (
                       <FormItem className="flex flex-col space-y-1">
-                        <FormLabel className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
+                        <FormLabel className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
                           Carrier *
                         </FormLabel>
                         <div className="relative">
@@ -243,7 +243,7 @@ export function ProductForm({
                             variant="outline"
                             role="combobox"
                             aria-expanded={carrierSearchOpen}
-                            className="w-full justify-between h-7 text-[11px] bg-v2-card border-v2-ring"
+                            className="w-full justify-between h-7 text-[11px] bg-card border-border"
                             onClick={() =>
                               setCarrierSearchOpen(!carrierSearchOpen)
                             }
@@ -254,7 +254,7 @@ export function ProductForm({
                             <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
                           </Button>
                           {carrierSearchOpen && (
-                            <div className="absolute z-50 mt-1 w-full rounded-md border border-v2-ring bg-v2-card p-0 shadow-md">
+                            <div className="absolute z-50 mt-1 w-full rounded-md border border-border bg-card p-0 shadow-md">
                               <Command>
                                 <CommandInput
                                   placeholder="Search carriers..."
@@ -294,7 +294,7 @@ export function ProductForm({
                             </div>
                           )}
                         </div>
-                        <FormDescription className="text-[10px] text-v2-ink-subtle">
+                        <FormDescription className="text-[10px] text-muted-foreground">
                           The insurance carrier for this product
                         </FormDescription>
                         <FormMessage className="text-[10px]" />
@@ -307,7 +307,7 @@ export function ProductForm({
                     name="name"
                     render={({ field }) => (
                       <FormItem className="space-y-1">
-                        <FormLabel className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
+                        <FormLabel className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
                           Product Name *
                         </FormLabel>
                         <FormControl>
@@ -315,10 +315,10 @@ export function ProductForm({
                             placeholder="e.g., Whole Life 0-75"
                             {...field}
                             value={field.value || ""}
-                            className="h-7 text-[11px] bg-v2-card border-v2-ring"
+                            className="h-7 text-[11px] bg-card border-border"
                           />
                         </FormControl>
-                        <FormDescription className="text-[10px] text-v2-ink-subtle">
+                        <FormDescription className="text-[10px] text-muted-foreground">
                           The specific product name
                         </FormDescription>
                         <FormMessage className="text-[10px]" />
@@ -331,7 +331,7 @@ export function ProductForm({
                     name="product_type"
                     render={({ field }) => (
                       <FormItem className="space-y-1">
-                        <FormLabel className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
+                        <FormLabel className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
                           Product Type *
                         </FormLabel>
                         <div className="flex flex-wrap gap-1">
@@ -348,7 +348,7 @@ export function ProductForm({
                             </Badge>
                           ))}
                         </div>
-                        <FormDescription className="text-[10px] text-v2-ink-subtle">
+                        <FormDescription className="text-[10px] text-muted-foreground">
                           Select the insurance product type
                         </FormDescription>
                         <FormMessage className="text-[10px]" />
@@ -366,7 +366,7 @@ export function ProductForm({
                       name="imo_id"
                       render={({ field }) => (
                         <FormItem className="space-y-1">
-                          <FormLabel className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
+                          <FormLabel className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
                             IMO *
                           </FormLabel>
                           <Select
@@ -374,7 +374,7 @@ export function ProductForm({
                             value={field.value || ""}
                           >
                             <FormControl>
-                              <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
+                              <SelectTrigger className="h-7 text-[11px] bg-card border-border">
                                 <SelectValue placeholder="Select IMO" />
                               </SelectTrigger>
                             </FormControl>
@@ -390,7 +390,7 @@ export function ProductForm({
                               ))}
                             </SelectContent>
                           </Select>
-                          <FormDescription className="text-[10px] text-v2-ink-subtle">
+                          <FormDescription className="text-[10px] text-muted-foreground">
                             Which IMO this product belongs to
                           </FormDescription>
                           <FormMessage className="text-[10px]" />
@@ -403,12 +403,12 @@ export function ProductForm({
                     control={form.control}
                     name="is_active"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-center justify-between rounded-lg border border-v2-ring p-2">
+                      <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border p-2">
                         <div className="space-y-0.5">
-                          <FormLabel className="text-[11px] font-medium text-v2-ink">
+                          <FormLabel className="text-[11px] font-medium text-foreground">
                             Active Status
                           </FormLabel>
-                          <FormDescription className="text-[10px] text-v2-ink-muted">
+                          <FormDescription className="text-[10px] text-muted-foreground">
                             Inactive products won't appear in dropdowns
                           </FormDescription>
                         </div>
@@ -451,20 +451,20 @@ export function ProductForm({
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="text-[11px] font-semibold text-v2-ink">
+                        <h4 className="text-[11px] font-semibold text-foreground">
                           Term Commission Modifiers
                         </h4>
-                        <p className="text-[10px] text-v2-ink-muted">
+                        <p className="text-[10px] text-muted-foreground">
                           Adjust commission rates based on term length (e.g.,
                           -0.10 for 10% reduction)
                         </p>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-5 gap-2 p-3 bg-v2-canvas rounded-lg border border-v2-ring">
+                    <div className="grid grid-cols-5 gap-2 p-3 bg-background rounded-lg border border-border">
                       {VALID_TERM_LENGTHS.map((term) => (
                         <div key={term} className="flex flex-col gap-1">
-                          <label className="text-[10px] font-medium text-v2-ink-muted text-center">
+                          <label className="text-[10px] font-medium text-muted-foreground text-center">
                             {term} yr
                           </label>
                           <Input
@@ -474,7 +474,7 @@ export function ProductForm({
                             max="1"
                             placeholder="0"
                             disabled={isSubmitting}
-                            className="h-7 text-[11px] text-center bg-v2-card border-v2-ring"
+                            className="h-7 text-[11px] text-center bg-card border-border"
                             value={termModifiers?.[term] ?? ""}
                             onChange={(e) => {
                               const value = e.target.value;
@@ -490,7 +490,7 @@ export function ProductForm({
                       ))}
                     </div>
 
-                    <p className="text-[10px] text-v2-ink-subtle italic">
+                    <p className="text-[10px] text-muted-foreground italic">
                       Formula: Final Rate = Comp Guide Rate × (1 + modifier).
                       Example: -0.10 modifier with 95% rate = 85.5%
                     </p>
@@ -499,14 +499,14 @@ export function ProductForm({
               )}
             </div>
 
-            <DialogFooter className="gap-1 pt-3 border-t border-v2-ring/60 mt-3">
+            <DialogFooter className="gap-1 pt-3 border-t border-border/60 mt-3">
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => onOpenChange(false)}
                 disabled={isSubmitting}
-                className="h-7 px-2 text-[10px] border-v2-ring"
+                className="h-7 px-2 text-[10px] border-border"
               >
                 Cancel
               </Button>

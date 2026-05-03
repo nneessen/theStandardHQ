@@ -109,7 +109,7 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8 bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
-        <Loader2 className="w-5 h-5 animate-spin text-blue-600 dark:text-blue-400" />
+        <Loader2 className="w-5 h-5 animate-spin text-info" />
         <span className="ml-2 text-[11px] text-v2-ink-muted">
           Loading IMO performance data...
         </span>
@@ -172,8 +172,8 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
               className={cn(
                 "px-1.5 py-0.5 rounded text-[9px] font-medium",
                 netGrowthPositive
-                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                  : "bg-red-500/10 text-red-600 dark:text-red-400",
+                  ? "bg-success/10 text-success"
+                  : "bg-destructive/10 text-destructive",
               )}
             >
               {netGrowthPositive ? "GROWTH" : "DECLINE"}
@@ -189,7 +189,7 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
             </div>
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-v2-ink-muted">Commissions</span>
-              <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="font-mono font-bold text-success">
                 {formatCurrency(summary.total_commissions)}
               </span>
             </div>
@@ -208,7 +208,7 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
             </div>
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-v2-ink-muted">Lapsed</span>
-              <span className="font-mono font-bold text-red-600 dark:text-red-400">
+              <span className="font-mono font-bold text-destructive">
                 {summary.total_lapsed.toLocaleString()}
               </span>
             </div>
@@ -217,16 +217,14 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
               <span className="text-v2-ink-muted uppercase">Net Growth</span>
               <div className="flex items-center gap-1">
                 {netGrowthPositive ? (
-                  <TrendingUp className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                  <TrendingUp className="w-3 h-3 text-success" />
                 ) : (
-                  <TrendingDown className="w-3 h-3 text-red-600 dark:text-red-400" />
+                  <TrendingDown className="w-3 h-3 text-destructive" />
                 )}
                 <span
                   className={cn(
                     "font-mono font-bold",
-                    netGrowthPositive
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-red-600 dark:text-red-400",
+                    netGrowthPositive ? "text-success" : "text-destructive",
                   )}
                 >
                   {netGrowthPositive ? "+" : ""}
@@ -311,11 +309,11 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
                         className={cn(
                           "w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold",
                           index === 0
-                            ? "bg-amber-500/20 text-amber-600 dark:text-amber-400"
+                            ? "bg-warning/20 text-warning"
                             : index === 1
                               ? "bg-v2-ring text-v2-ink-muted"
                               : index === 2
-                                ? "bg-orange-500/20 text-orange-600 dark:text-orange-400"
+                                ? "bg-warning/20 text-warning"
                                 : "bg-v2-ring text-v2-ink-muted",
                         )}
                       >
@@ -346,10 +344,10 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
                         className={cn(
                           "font-mono",
                           agency.retention_rate >= 80
-                            ? "text-emerald-600 dark:text-emerald-400"
+                            ? "text-success"
                             : agency.retention_rate >= 60
-                              ? "text-amber-600 dark:text-amber-400"
-                              : "text-red-600 dark:text-red-400",
+                              ? "text-warning"
+                              : "text-destructive",
                         )}
                       >
                         {agency.retention_rate}%
@@ -405,11 +403,11 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
                         className={cn(
                           "w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold",
                           index === 0
-                            ? "bg-amber-500/20 text-amber-600 dark:text-amber-400"
+                            ? "bg-warning/20 text-warning"
                             : index === 1
                               ? "bg-v2-ring text-v2-ink-muted"
                               : index === 2
-                                ? "bg-orange-500/20 text-orange-600 dark:text-orange-400"
+                                ? "bg-warning/20 text-warning"
                                 : "bg-v2-ring text-v2-ink-muted",
                         )}
                       >
@@ -428,7 +426,7 @@ function ImoPerformanceReportContent({ dateRange }: ImoPerformanceReportProps) {
                     <TableCell className="text-[11px] py-1.5 text-right font-mono font-bold text-v2-ink">
                       {formatCurrency(performer.new_premium)}
                     </TableCell>
-                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-emerald-600 dark:text-emerald-400">
+                    <TableCell className="text-[11px] py-1.5 text-right font-mono text-success">
                       {formatCurrency(performer.commissions_earned)}
                     </TableCell>
                   </TableRow>

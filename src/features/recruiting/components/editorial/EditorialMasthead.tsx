@@ -27,16 +27,16 @@ export const EditorialMasthead: React.FC<EditorialMastheadProps> = ({
     >
       <div
         aria-hidden
-        className="absolute top-0 left-0 right-0 h-1 bg-amber-500"
+        className="absolute top-0 left-0 right-0 h-1 bg-warning"
       />
       <div className="px-6 md:px-8 pt-7 pb-7 md:pt-8 md:pb-8">
         <div className="flex items-center gap-3 mb-3">
           {Icon && (
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-950/40 ring-1 ring-amber-200 dark:ring-amber-900">
-              <Icon className="h-4 w-4 text-amber-700 dark:text-amber-400" />
+            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warning/10 dark:bg-warning/20 ring-1 ring-warning/30 dark:ring-warning">
+              <Icon className="h-4 w-4 text-warning" />
             </span>
           )}
-          <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-amber-700 dark:text-amber-400">
+          <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-warning">
             {eyebrow}
           </span>
         </div>

@@ -33,7 +33,7 @@ export function GoogleCalendarEmbed({
       <div
         className={`flex flex-col items-center justify-center p-6 bg-v2-canvas rounded-lg ${className}`}
       >
-        <AlertCircle className="h-8 w-8 text-amber-500 mb-3" />
+        <AlertCircle className="h-8 w-8 text-warning mb-3" />
         <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle text-center mb-3">
           {error}
         </p>

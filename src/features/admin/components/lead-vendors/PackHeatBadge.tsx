@@ -44,7 +44,7 @@ function HeatIcon({
 
 export function PackHeatBadge({ heat }: { heat?: HeatScoreV2 }) {
   if (!heat)
-    return <span className="text-[10px] text-v2-ink-subtle">&mdash;</span>;
+    return <span className="text-[10px] text-muted-foreground">&mdash;</span>;
 
   return (
     <TooltipProvider delayDuration={200}>
@@ -67,7 +67,7 @@ export function PackHeatBadge({ heat }: { heat?: HeatScoreV2 }) {
           className="text-[10px] space-y-1 max-w-[220px]"
         >
           <div className="font-semibold">Heat Score: {heat.score}/100</div>
-          <div className="space-y-0.5 text-v2-ink-muted">
+          <div className="space-y-0.5 text-muted-foreground">
             <div>Conversion: {heat.breakdown.conversionRate}/25</div>
             <div>ROI: {heat.breakdown.roi}/20</div>
             <div>Premium/Lead: {heat.breakdown.premiumPerLead}/15</div>

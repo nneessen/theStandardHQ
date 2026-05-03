@@ -79,7 +79,7 @@ export function QualificationSection({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 w-7 p-0 text-v2-ink-subtle hover:text-red-500"
+                className="h-7 w-7 p-0 text-v2-ink-subtle hover:text-destructive"
                 onClick={() => removeQuestion(i)}
               >
                 <X className="h-3 w-3" />

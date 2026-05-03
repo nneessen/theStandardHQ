@@ -112,7 +112,7 @@ export function AddCarrierDialog({
           <DialogTitle className="text-base font-semibold">
             Add Carrier Contracts
           </DialogTitle>
-          <p className="text-xs text-v2-ink-muted mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Select carriers to request contracts for this recruit
           </p>
         </DialogHeader>
@@ -121,20 +121,20 @@ export function AddCarrierDialog({
         {hasUpline && !isLoading && !queryError && (
           <div className="px-5 pt-3">
             {allBlocked ? (
-              <Alert className="py-2 border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/30">
-                <ShieldAlert className="h-4 w-4 text-amber-600" />
-                <AlertDescription className="text-xs text-amber-700 dark:text-amber-300">
+              <Alert className="py-2 border-warning/40 bg-warning/10">
+                <ShieldAlert className="h-4 w-4 text-warning" />
+                <AlertDescription className="text-xs text-warning">
                   <span className="font-medium">{uplineName || "Upline"}</span>{" "}
                   has no active carrier contracts configured. All carriers are
                   blocked until the upline adds contracts in their profile.
                 </AlertDescription>
               </Alert>
             ) : (
-              <div className="flex items-center gap-1.5 text-[10px] text-v2-ink-muted">
+              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                 <Info className="h-3 w-3 flex-shrink-0" />
                 <span>
                   Carriers available through{" "}
-                  <span className="font-medium text-v2-ink-muted">
+                  <span className="font-medium text-muted-foreground">
                     {uplineName || "upline"}
                   </span>
                   &apos;s contracts ({uplineContractedCount} active)
@@ -150,7 +150,7 @@ export function AddCarrierDialog({
           !queryError &&
           sortedCarriers.length > 0 && (
             <div className="px-5 pt-3">
-              <div className="flex items-center gap-1.5 text-[10px] text-v2-ink-muted">
+              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                 <Info className="h-3 w-3 flex-shrink-0" />
                 <span>No upline assigned — all carriers available</span>
               </div>
@@ -183,8 +183,10 @@ export function AddCarrierDialog({
         <div className="px-5 py-4">
           {isLoading && (
             <div className="py-12 text-center">
-              <Loader2 className="h-6 w-6 animate-spin text-v2-ink-subtle mx-auto mb-2" />
-              <p className="text-sm text-v2-ink-muted">Loading carriers...</p>
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">
+                Loading carriers...
+              </p>
             </div>
           )}
 
@@ -201,10 +203,10 @@ export function AddCarrierDialog({
                       flex items-center gap-3 px-3 py-2.5 rounded border-2 transition-all
                       ${
                         isBlocked
-                          ? "border-v2-ring/60 bg-v2-canvas /50 cursor-not-allowed opacity-60"
+                          ? "border-border/60 bg-background /50 cursor-not-allowed opacity-60"
                           : isSelected
-                            ? "border-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 cursor-pointer"
-                            : "border-v2-ring hover:border-v2-ring  bg-v2-card cursor-pointer"
+                            ? "border-success bg-success/10 cursor-pointer"
+                            : "border-border hover:border-border  bg-card cursor-pointer"
                       }
                       ${isAdding ? "opacity-50 cursor-not-allowed" : ""}
                     `}
@@ -223,16 +225,16 @@ export function AddCarrierDialog({
                       <span
                         className={`text-sm font-medium block truncate ${
                           isBlocked
-                            ? "text-v2-ink-subtle -muted"
+                            ? "text-muted-foreground -muted"
                             : isSelected
-                              ? "text-emerald-900 dark:text-emerald-100"
-                              : "text-v2-ink"
+                              ? "text-success dark:text-success"
+                              : "text-foreground"
                         }`}
                       >
                         {carrier.name}
                       </span>
                       {isBlocked && (
-                        <span className="text-[10px] text-amber-600 dark:text-amber-400">
+                        <span className="text-[10px] text-warning">
                           Upline not contracted
                         </span>
                       )}
@@ -245,13 +247,13 @@ export function AddCarrierDialog({
 
           {!isLoading && !queryError && sortedCarriers.length === 0 && (
             <div className="py-12 text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-v2-ring mb-3">
-                <AlertCircle className="h-5 w-5 text-v2-ink-subtle" />
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted mb-3">
+                <AlertCircle className="h-5 w-5 text-muted-foreground" />
               </div>
-              <p className="text-sm font-medium text-v2-ink mb-1">
+              <p className="text-sm font-medium text-foreground mb-1">
                 All Carriers Requested
               </p>
-              <p className="text-xs text-v2-ink-muted">
+              <p className="text-xs text-muted-foreground">
                 This recruit has already requested contracts for all available
                 carriers
               </p>
@@ -261,10 +263,10 @@ export function AddCarrierDialog({
 
         {/* Footer with Add Button */}
         {!isLoading && !queryError && sortedCarriers.length > 0 && (
-          <DialogFooter className="px-5 py-3.5 border-t bg-v2-canvas /50">
+          <DialogFooter className="px-5 py-3.5 border-t bg-background /50">
             <div className="flex items-center justify-between w-full gap-3">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-v2-ink-muted">
+                <span className="text-xs font-medium text-muted-foreground">
                   {selectedCarrierIds.length} carrier
                   {selectedCarrierIds.length !== 1 ? "s" : ""} selected
                 </span>
@@ -272,7 +274,7 @@ export function AddCarrierDialog({
                   <button
                     onClick={() => setSelectedCarrierIds([])}
                     disabled={isAdding}
-                    className="text-xs text-v2-ink-muted hover:text-v2-ink -subtle dark:hover:text-v2-ink-subtle underline"
+                    className="text-xs text-muted-foreground hover:text-foreground -subtle dark:hover:text-muted-foreground underline"
                   >
                     Clear
                   </button>
@@ -292,7 +294,7 @@ export function AddCarrierDialog({
                   onClick={handleAddSelectedCarriers}
                   disabled={selectedCarrierIds.length === 0 || isAdding}
                   size="sm"
-                  className="h-8 text-xs bg-emerald-600 hover:bg-emerald-700"
+                  className="h-8 text-xs bg-success hover:bg-success"
                 >
                   {isAdding ? (
                     <>

@@ -104,9 +104,9 @@ export default function PresentationRecordPage() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setMode("record")}
-                className="p-4 rounded-lg border-2 border-v2-ring dark:border-v2-ring-strong hover:border-blue-400 dark:hover:border-blue-600 transition-colors text-center space-y-2"
+                className="p-4 rounded-lg border-2 border-v2-ring dark:border-v2-ring-strong hover:border-info/70 dark:hover:border-info transition-colors text-center space-y-2"
               >
-                <Video className="h-6 w-6 mx-auto text-blue-500" />
+                <Video className="h-6 w-6 mx-auto text-info" />
                 <p className="text-xs font-medium text-v2-ink dark:text-v2-ink">
                   Record
                 </p>
@@ -116,9 +116,9 @@ export default function PresentationRecordPage() {
               </button>
               <button
                 onClick={() => setMode("upload")}
-                className="p-4 rounded-lg border-2 border-v2-ring dark:border-v2-ring-strong hover:border-blue-400 dark:hover:border-blue-600 transition-colors text-center space-y-2"
+                className="p-4 rounded-lg border-2 border-v2-ring dark:border-v2-ring-strong hover:border-info/70 dark:hover:border-info transition-colors text-center space-y-2"
               >
-                <Upload className="h-6 w-6 mx-auto text-emerald-500" />
+                <Upload className="h-6 w-6 mx-auto text-success" />
                 <p className="text-xs font-medium text-v2-ink dark:text-v2-ink">
                   Upload
                 </p>
@@ -176,7 +176,7 @@ export default function PresentationRecordPage() {
             <div className="space-y-3 bg-v2-card rounded-lg p-3 border border-v2-ring dark:border-v2-ring">
               <div className="space-y-1">
                 <label className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
-                  Title <span className="text-red-500">*</span>
+                  Title <span className="text-destructive">*</span>
                 </label>
                 <Input
                   value={title}

@@ -209,7 +209,7 @@ export function ExternalContactsPanel() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-5 w-5 text-muted-foreground hover:text-red-500"
+                      className="h-5 w-5 text-muted-foreground hover:text-destructive"
                       onClick={() => handleDelete(contact.id)}
                       disabled={deleteContact.isPending}
                     >

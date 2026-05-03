@@ -58,7 +58,7 @@ export function AddonsManagementPanel({ addons }: AddonsManagementPanelProps) {
         ))}
 
         {addons.length === 0 && (
-          <div className="col-span-2 text-center py-12 text-v2-ink-muted">
+          <div className="col-span-2 text-center py-12 text-muted-foreground">
             <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
             <p className="text-sm">No add-ons configured</p>
           </div>
@@ -123,15 +123,13 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
   return (
     <Card
       className={`${
-        !addon.is_active
-          ? "opacity-60 border-v2-ring "
-          : "border-purple-200 dark:border-purple-800"
+        !addon.is_active ? "opacity-60 border-border " : "border-info/30"
       }`}
     >
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Package className="h-4 w-4 text-purple-500" />
+            <Package className="h-4 w-4 text-info" />
             {addon.display_name}
           </CardTitle>
           {!addon.is_active && (
@@ -140,7 +138,7 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
             </Badge>
           )}
         </div>
-        <p className="text-[11px] text-v2-ink-muted">
+        <p className="text-[11px] text-muted-foreground">
           {addon.description || "No description"}
         </p>
       </CardHeader>
@@ -151,11 +149,11 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
             {formatPrice(addon.price_monthly)}
           </span>
           {addon.price_monthly > 0 && (
-            <span className="text-xs text-v2-ink-muted">/month</span>
+            <span className="text-xs text-muted-foreground">/month</span>
           )}
         </div>
         {addon.price_annual > 0 && (
-          <p className="text-[10px] text-v2-ink-muted">
+          <p className="text-[10px] text-muted-foreground">
             {formatPrice(addon.price_annual)}/year (
             {Math.round(
               (1 - addon.price_annual / (addon.price_monthly * 12)) * 100,
@@ -180,7 +178,7 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
                   `${users?.length || 0} users`
                 )}
               </span>
-              <span className="text-[10px] text-v2-ink-subtle">
+              <span className="text-[10px] text-muted-foreground">
                 {isUsersOpen ? "Hide" : "Show"}
               </span>
             </Button>
@@ -191,24 +189,24 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
                 {users.map((user) => (
                   <div
                     key={user.userId}
-                    className="rounded border border-v2-ring bg-v2-canvas px-2.5 py-2 text-[10px]  dark:bg-v2-card-dark"
+                    className="rounded border border-border bg-background px-2.5 py-2 text-[10px]  dark:bg-card-dark"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <div className="truncate font-medium text-v2-ink dark:text-v2-canvas">
+                        <div className="truncate font-medium text-foreground dark:text-background">
                           {user.fullName}
                         </div>
-                        <div className="truncate text-[9px] text-v2-ink-muted">
+                        <div className="truncate text-[9px] text-muted-foreground">
                           {user.email || user.userId}
                         </div>
                         {isPremiumVoice && (
                           <>
-                            <div className="truncate pt-1 font-mono text-[9px] text-v2-ink-muted">
+                            <div className="truncate pt-1 font-mono text-[9px] text-muted-foreground">
                               Agent: {user.standardChatBotAgentId || "Unmapped"}
                             </div>
                             {(user.voiceLastSyncedAt ||
                               user.voiceLastSyncAttemptAt) && (
-                              <div className="pt-0.5 text-[9px] text-v2-ink-muted">
+                              <div className="pt-0.5 text-[9px] text-muted-foreground">
                                 {user.voiceLastSyncedAt
                                   ? `Last synced ${formatSyncTime(user.voiceLastSyncedAt)}`
                                   : `Last attempt ${formatSyncTime(user.voiceLastSyncAttemptAt)}`}
@@ -220,7 +218,7 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
                               );
                               if (!snapshot) return null;
                               return (
-                                <div className="pt-0.5 text-[9px] text-v2-ink-muted">
+                                <div className="pt-0.5 text-[9px] text-muted-foreground">
                                   Entitlement: {snapshot.status || "unknown"}
                                   {typeof snapshot.includedMinutes === "number"
                                     ? ` • ${snapshot.includedMinutes} min`
@@ -237,7 +235,7 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
                               );
                             })()}
                             {user.voiceLastSyncError && (
-                              <div className="pt-1 text-[9px] text-red-600 dark:text-red-400">
+                              <div className="pt-1 text-[9px] text-destructive">
                                 {user.voiceLastSyncError}
                               </div>
                             )}
@@ -269,7 +267,7 @@ function AddonCard({ addon, onEdit }: AddonCardProps) {
                 ))}
               </div>
             ) : (
-              <p className="text-[10px] text-v2-ink-muted text-center py-2">
+              <p className="text-[10px] text-muted-foreground text-center py-2">
                 No users with this add-on
               </p>
             )}
@@ -406,7 +404,7 @@ function AddonEditorDialog({
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-sm">
-            <Package className="h-4 w-4 text-purple-500" />
+            <Package className="h-4 w-4 text-info" />
             Configure: {addon.display_name}
             <Badge variant="outline" className="text-[10px] font-mono">
               {addon.name}
@@ -460,7 +458,7 @@ function AddonEditorDialog({
                     }
                     className="h-7 text-xs"
                   />
-                  <p className="text-[9px] text-v2-ink-muted">
+                  <p className="text-[9px] text-muted-foreground">
                     ${(priceMonthly / 100).toFixed(2)}/mo
                   </p>
                 </div>
@@ -477,7 +475,7 @@ function AddonEditorDialog({
                     }
                     className="h-7 text-xs"
                   />
-                  <p className="text-[9px] text-v2-ink-muted">
+                  <p className="text-[9px] text-muted-foreground">
                     ${(priceAnnual / 100).toFixed(2)}/yr
                   </p>
                 </div>
@@ -521,14 +519,14 @@ function AddonEditorDialog({
               />
 
               {hasMissingPriceIds && (
-                <div className="mt-2 px-3 py-2 bg-amber-50 dark:bg-amber-950/30 rounded border border-amber-200 dark:border-amber-800 flex items-center gap-3">
-                  <p className="text-[11px] text-amber-700 dark:text-amber-300 flex-1">
+                <div className="mt-2 px-3 py-2 bg-warning/10 rounded border border-warning/30 flex items-center gap-3">
+                  <p className="text-[11px] text-warning flex-1">
                     Paid tiers missing Stripe price IDs.
                   </p>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-xs h-7 shrink-0 border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-300"
+                    className="text-xs h-7 shrink-0 border-warning/40 text-warning hover:bg-warning/20 dark:border-warning dark:text-warning"
                     onClick={handleSetupStripeProducts}
                     disabled={isSettingUpStripe}
                   >

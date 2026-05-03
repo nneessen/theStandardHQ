@@ -459,11 +459,11 @@ export function UserProfile() {
 
   return (
     <div className="space-y-2">
-      <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 p-3">
+      <div className="rounded-md border border-border border-l-4 border-l-warning bg-card p-3">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <div className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-300">
+              <div className="inline-flex items-center gap-1 text-warning">
                 <Sparkles className="h-3.5 w-3.5" />
                 <span className="text-[10px] font-semibold uppercase tracking-wide">
                   New Workspace
@@ -548,7 +548,7 @@ export function UserProfile() {
                 JPG, PNG, or GIF · Max 5MB · Used in Slack leaderboard posts
               </p>
               {photoError && (
-                <div className="mt-1 flex items-center gap-1 text-[10px] text-red-600 dark:text-red-400">
+                <div className="mt-1 flex items-center gap-1 text-[10px] text-destructive">
                   <AlertCircle className="h-3 w-3" />
                   {photoError}
                 </div>
@@ -605,7 +605,7 @@ export function UserProfile() {
         </div>
         <div className="p-3">
           {emailChangeStatus === "sent" ? (
-            <div className="flex items-start gap-2 text-[11px] text-emerald-700 dark:text-emerald-400">
+            <div className="flex items-start gap-2 text-[11px] text-success">
               <CheckCircle2 className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
               <span>
                 Confirmation email sent to your new address. Click the link to
@@ -678,7 +678,7 @@ export function UserProfile() {
                   </div>
                 </div>
                 {emailChangeStatus === "error" && emailChangeError && (
-                  <div className="mt-1.5 flex items-center gap-1 text-[10px] text-red-600 dark:text-red-400">
+                  <div className="mt-1.5 flex items-center gap-1 text-[10px] text-destructive">
                     <AlertCircle className="h-3 w-3" />
                     {emailChangeError}
                   </div>
@@ -708,13 +708,13 @@ export function UserProfile() {
 
               {/* Show current link if set */}
               {currentSlug && (
-                <div className="mb-3 p-2 bg-emerald-50 dark:bg-emerald-950/30 rounded border border-emerald-200 dark:border-emerald-800">
+                <div className="mb-3 p-2 bg-card border border-border border-l-4 border-l-success rounded-sm">
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium mb-0.5">
+                      <p className="text-[10px] text-success font-medium mb-0.5">
                         Your recruiting link:
                       </p>
-                      <p className="text-[11px] text-emerald-700 dark:text-emerald-300 font-mono truncate">
+                      <p className="text-[11px] text-success font-mono truncate">
                         www.thestandardhq.com/join-{currentSlug}
                       </p>
                     </div>
@@ -723,7 +723,7 @@ export function UserProfile() {
                       size="sm"
                       variant="outline"
                       onClick={handleCopyLink}
-                      className="h-7 px-2 text-[10px] border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 flex-shrink-0"
+                      className="h-7 px-2 text-[10px] border-success text-success hover:bg-accent/40 flex-shrink-0"
                     >
                       {slugCopied ? (
                         <>
@@ -760,7 +760,7 @@ export function UserProfile() {
                       onChange={handleSlugChange}
                       placeholder="john-smith"
                       className={`h-7 text-[11px] bg-v2-card border-v2-ring ${
-                        slugError ? "border-red-500" : ""
+                        slugError ? "border-destructive" : ""
                       }`}
                     />
                     <Button
@@ -775,13 +775,13 @@ export function UserProfile() {
                     </Button>
                   </div>
                   {slugError && (
-                    <div className="mt-1.5 flex items-center gap-1 text-[10px] text-red-600 dark:text-red-400">
+                    <div className="mt-1.5 flex items-center gap-1 text-[10px] text-destructive">
                       <AlertCircle className="h-3 w-3" />
                       {slugError}
                     </div>
                   )}
                   {showSlugSuccess && (
-                    <div className="mt-1.5 flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400">
+                    <div className="mt-1.5 flex items-center gap-1 text-[10px] text-success">
                       <CheckCircle2 className="h-3 w-3" />
                       Recruiting link saved successfully!
                     </div>
@@ -843,7 +843,7 @@ export function UserProfile() {
                     onChange={handleUplineEmailChange}
                     placeholder="upline@example.com"
                     className={`h-7 text-[11px] bg-v2-card border-v2-ring ${
-                      uplineError ? "border-red-500" : ""
+                      uplineError ? "border-destructive" : ""
                     }`}
                   />
                   <Button
@@ -858,13 +858,13 @@ export function UserProfile() {
                   </Button>
                 </div>
                 {uplineError && (
-                  <div className="mt-1.5 flex items-center gap-1 text-[10px] text-red-600 dark:text-red-400">
+                  <div className="mt-1.5 flex items-center gap-1 text-[10px] text-destructive">
                     <AlertCircle className="h-3 w-3" />
                     {uplineError}
                   </div>
                 )}
                 {showUplineSuccess && (
-                  <div className="mt-1.5 flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400">
+                  <div className="mt-1.5 flex items-center gap-1 text-[10px] text-success">
                     <CheckCircle2 className="h-3 w-3" />
                     Upline updated successfully!
                   </div>
@@ -908,7 +908,7 @@ export function UserProfile() {
                       value={contractLevel}
                       onChange={handleContractLevelChange}
                       className={`h-7 text-[11px] bg-v2-card border-v2-ring w-24 ${
-                        validationError ? "border-red-500" : ""
+                        validationError ? "border-destructive" : ""
                       }`}
                     />
                     <Button
@@ -922,19 +922,19 @@ export function UserProfile() {
                     </Button>
                   </div>
                   {validationError && (
-                    <div className="mt-1.5 flex items-center gap-1 text-[10px] text-red-600 dark:text-red-400">
+                    <div className="mt-1.5 flex items-center gap-1 text-[10px] text-destructive">
                       <AlertCircle className="h-3 w-3" />
                       {validationError}
                     </div>
                   )}
                   {showSuccess && (
-                    <div className="mt-1.5 flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400">
+                    <div className="mt-1.5 flex items-center gap-1 text-[10px] text-success">
                       <CheckCircle2 className="h-3 w-3" />
                       Contract level updated successfully!
                     </div>
                   )}
                   {updateProfile.isError && (
-                    <div className="mt-1.5 flex items-center gap-1 text-[10px] text-red-600 dark:text-red-400">
+                    <div className="mt-1.5 flex items-center gap-1 text-[10px] text-destructive">
                       <AlertCircle className="h-3 w-3" />
                       Failed to update contract level
                     </div>
@@ -945,14 +945,14 @@ export function UserProfile() {
           </div>
 
           {/* Info Box */}
-          <div className="bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800 p-3">
+          <div className="bg-card rounded-md border border-border border-l-4 border-l-info p-3">
             <div className="flex items-start gap-2">
-              <AlertCircle className="h-3.5 w-3.5 text-blue-500 mt-0.5 flex-shrink-0" />
+              <AlertCircle className="h-3.5 w-3.5 text-info mt-0.5 flex-shrink-0" />
               <div className="text-[10px]">
-                <p className="font-medium text-blue-700 dark:text-blue-300 mb-0.5">
+                <p className="font-medium text-foreground mb-0.5">
                   About Contract Levels
                 </p>
-                <p className="text-blue-600 dark:text-blue-400">
+                <p className="text-muted-foreground">
                   Your contract level represents your commission tier with
                   insurance carriers. Higher levels typically earn higher
                   commission percentages. When you create new policies or

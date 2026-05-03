@@ -560,17 +560,17 @@ export function ContractingDashboard() {
             </div>
             <div className="h-3 w-px bg-border" />
             <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3 text-gray-500" />
+              <Clock className="h-3 w-3 text-muted-foreground" />
               <span className="font-medium">{stats.requested}</span>
             </div>
             <div className="h-3 w-px bg-border" />
             <div className="flex items-center gap-1">
-              <AlertCircle className="h-3 w-3 text-blue-500" />
+              <AlertCircle className="h-3 w-3 text-info" />
               <span className="font-medium">{stats.in_progress}</span>
             </div>
             <div className="h-3 w-px bg-border" />
             <div className="flex items-center gap-1">
-              <CheckCircle2 className="h-3 w-3 text-green-500" />
+              <CheckCircle2 className="h-3 w-3 text-success" />
               <span className="font-medium">{stats.writing_received}</span>
             </div>
           </div>

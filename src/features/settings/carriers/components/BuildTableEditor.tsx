@@ -420,15 +420,15 @@ export function BuildChartsManager({
   if (!editingChart && !isCreating) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent className="sm:max-w-lg p-0 bg-v2-card border-v2-ring flex flex-col">
-          <SheetHeader className="px-4 py-3 border-b border-v2-ring/60">
+        <SheetContent className="sm:max-w-lg p-0 bg-card border-border flex flex-col">
+          <SheetHeader className="px-4 py-3 border-b border-border/60">
             <div className="flex items-center gap-2">
-              <Ruler className="h-4 w-4 text-v2-ink-subtle" />
+              <Ruler className="h-4 w-4 text-muted-foreground" />
               <div>
-                <SheetTitle className="text-sm font-semibold text-v2-ink">
+                <SheetTitle className="text-sm font-semibold text-foreground">
                   Build Charts: {carrier?.name}
                 </SheetTitle>
-                <SheetDescription className="text-[10px] text-v2-ink-muted">
+                <SheetDescription className="text-[10px] text-muted-foreground">
                   Manage height/weight and BMI charts for this carrier
                 </SheetDescription>
               </div>
@@ -437,13 +437,13 @@ export function BuildChartsManager({
 
           <div className="flex-1 overflow-auto px-4 py-3">
             {isLoading ? (
-              <div className="text-center py-8 text-[11px] text-v2-ink-muted">
+              <div className="text-center py-8 text-[11px] text-muted-foreground">
                 Loading charts...
               </div>
             ) : charts.length === 0 ? (
               <div className="text-center py-8">
-                <Ruler className="h-8 w-8 mx-auto mb-2 text-v2-ink-subtle" />
-                <p className="text-[11px] text-v2-ink-muted mb-3">
+                <Ruler className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-[11px] text-muted-foreground mb-3">
                   No build charts configured for this carrier.
                 </p>
                 <Button
@@ -460,12 +460,12 @@ export function BuildChartsManager({
                 {charts.map((chart) => (
                   <div
                     key={chart.id}
-                    className="border border-v2-ring rounded-lg p-3"
+                    className="border border-border rounded-lg p-3"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-medium text-v2-ink truncate">
+                          <span className="text-[11px] font-medium text-foreground truncate">
                             {chart.name}
                           </span>
                           <Badge
@@ -485,7 +485,7 @@ export function BuildChartsManager({
                           )}
                         </div>
                         {chart.notes && (
-                          <p className="text-[10px] text-v2-ink-muted mt-1 truncate">
+                          <p className="text-[10px] text-muted-foreground mt-1 truncate">
                             {chart.notes}
                           </p>
                         )}
@@ -520,7 +520,7 @@ export function BuildChartsManager({
                             setShowDeleteConfirm(true);
                           }}
                           disabled={isPending}
-                          className="h-6 px-2 text-[10px] text-red-600 hover:text-red-700"
+                          className="h-6 px-2 text-[10px] text-destructive hover:text-destructive"
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -532,7 +532,7 @@ export function BuildChartsManager({
             )}
           </div>
 
-          <SheetFooter className="px-4 py-3 border-t border-v2-ring/60">
+          <SheetFooter className="px-4 py-3 border-t border-border/60">
             <Button
               variant="outline"
               size="sm"
@@ -575,7 +575,7 @@ export function BuildChartsManager({
               </AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDelete}
-                className="h-7 text-[10px] bg-red-600 hover:bg-red-700"
+                className="h-7 text-[10px] bg-destructive hover:bg-destructive"
               >
                 Delete
               </AlertDialogAction>
@@ -589,15 +589,15 @@ export function BuildChartsManager({
   // Render editor view
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="sm:max-w-4xl p-0 bg-v2-card border-v2-ring flex flex-col">
-        <SheetHeader className="px-4 py-3 border-b border-v2-ring/60">
+      <SheetContent className="sm:max-w-4xl p-0 bg-card border-border flex flex-col">
+        <SheetHeader className="px-4 py-3 border-b border-border/60">
           <div className="flex items-center gap-2">
-            <Ruler className="h-4 w-4 text-v2-ink-subtle" />
+            <Ruler className="h-4 w-4 text-muted-foreground" />
             <div>
-              <SheetTitle className="text-sm font-semibold text-v2-ink">
+              <SheetTitle className="text-sm font-semibold text-foreground">
                 {editingChart ? "Edit Build Chart" : "New Build Chart"}
               </SheetTitle>
-              <SheetDescription className="text-[10px] text-v2-ink-muted">
+              <SheetDescription className="text-[10px] text-muted-foreground">
                 {carrier?.name}
               </SheetDescription>
             </div>
@@ -607,7 +607,7 @@ export function BuildChartsManager({
         <div className="flex-1 overflow-auto px-4 py-3 space-y-4">
           {/* Chart Name */}
           <div className="space-y-1">
-            <Label className="text-[10px] font-medium text-v2-ink-muted uppercase">
+            <Label className="text-[10px] font-medium text-muted-foreground uppercase">
               Chart Name *
             </Label>
             <Input
@@ -623,7 +623,7 @@ export function BuildChartsManager({
 
           {/* Table Type */}
           <div className="space-y-1">
-            <Label className="text-[10px] font-medium text-v2-ink-muted uppercase">
+            <Label className="text-[10px] font-medium text-muted-foreground uppercase">
               Chart Type
             </Label>
             <Select
@@ -655,7 +655,7 @@ export function BuildChartsManager({
 
           {/* Rating Class Selection */}
           <div className="space-y-1">
-            <Label className="text-[10px] font-medium text-v2-ink-muted uppercase">
+            <Label className="text-[10px] font-medium text-muted-foreground uppercase">
               Rating Classes
             </Label>
             <div className="flex flex-wrap gap-4">
@@ -670,16 +670,16 @@ export function BuildChartsManager({
                     onChange={(e) =>
                       handleClassToggle(rc.key, e.target.checked)
                     }
-                    className="h-3.5 w-3.5 rounded border-v2-ring text-blue-600 focus:ring-blue-500"
+                    className="h-3.5 w-3.5 rounded border-border text-info focus:ring-info"
                   />
-                  <span className="text-[11px] text-v2-ink-muted">
+                  <span className="text-[11px] text-muted-foreground">
                     {rc.label}
                   </span>
                 </label>
               ))}
             </div>
-            <div className="flex flex-wrap gap-3 pt-1 border-t border-v2-ring/60 mt-1">
-              <span className="text-[10px] text-v2-ink-subtle self-center">
+            <div className="flex flex-wrap gap-3 pt-1 border-t border-border/60 mt-1">
+              <span className="text-[10px] text-muted-foreground self-center">
                 Substandard:
               </span>
               {ALL_RATING_CLASSES.slice(4).map((rc) => (
@@ -693,16 +693,16 @@ export function BuildChartsManager({
                     onChange={(e) =>
                       handleClassToggle(rc.key, e.target.checked)
                     }
-                    className="h-3 w-3 rounded border-v2-ring text-orange-600 focus:ring-orange-500"
+                    className="h-3 w-3 rounded border-border text-warning focus:ring-warning"
                   />
-                  <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                     {rc.shortLabel}
                   </span>
                 </label>
               ))}
             </div>
             {selectedClasses.size === 0 && (
-              <p className="text-[10px] text-amber-600 mt-1">
+              <p className="text-[10px] text-warning mt-1">
                 Select at least one rating class to configure weight ranges.
               </p>
             )}
@@ -753,10 +753,10 @@ export function BuildChartsManager({
 
           {/* CSV Errors */}
           {csvErrors.length > 0 && (
-            <div className="rounded-md bg-amber-50 dark:bg-amber-900/20 p-2">
+            <div className="rounded-md bg-warning/10 p-2">
               <div className="flex items-start gap-2">
-                <AlertCircle className="h-3.5 w-3.5 text-amber-600 mt-0.5" />
-                <div className="text-[10px] text-amber-800 dark:text-amber-200">
+                <AlertCircle className="h-3.5 w-3.5 text-warning mt-0.5" />
+                <div className="text-[10px] text-warning">
                   {csvErrors.map((err, i) => (
                     <p key={i}>{err}</p>
                   ))}
@@ -768,20 +768,20 @@ export function BuildChartsManager({
           {/* BMI Editor */}
           {tableType === "bmi" && selectedClasses.size > 0 && (
             <div className="space-y-2">
-              <p className="text-[10px] text-v2-ink-muted">
+              <p className="text-[10px] text-muted-foreground">
                 Enter min/max BMI values for each rating class.
               </p>
-              <div className="border border-v2-ring rounded-lg overflow-hidden">
+              <div className="border border-border rounded-lg overflow-hidden">
                 <table className="w-full">
                   <thead>
-                    <tr className="bg-v2-canvas border-b border-v2-ring">
-                      <th className="text-[10px] font-semibold text-v2-ink-muted text-left px-2 py-1.5 w-24">
+                    <tr className="bg-background border-b border-border">
+                      <th className="text-[10px] font-semibold text-muted-foreground text-left px-2 py-1.5 w-24">
                         Rating Class
                       </th>
-                      <th className="text-[10px] font-semibold text-v2-ink-muted text-center px-1 py-1.5">
+                      <th className="text-[10px] font-semibold text-muted-foreground text-center px-1 py-1.5">
                         Min BMI
                       </th>
-                      <th className="text-[10px] font-semibold text-v2-ink-muted text-center px-1 py-1.5">
+                      <th className="text-[10px] font-semibold text-muted-foreground text-center px-1 py-1.5">
                         Max BMI
                       </th>
                     </tr>
@@ -790,11 +790,11 @@ export function BuildChartsManager({
                     {orderedSelectedClasses.map((rc, idx) => (
                       <tr
                         key={rc.key}
-                        className={`border-b border-v2-ring/60 ${
-                          idx % 2 === 0 ? "bg-v2-card" : "bg-v2-canvas"
+                        className={`border-b border-border/60 ${
+                          idx % 2 === 0 ? "bg-card" : "bg-background"
                         }`}
                       >
-                        <td className="text-[11px] font-medium text-v2-ink-muted px-2 py-1.5">
+                        <td className="text-[11px] font-medium text-muted-foreground px-2 py-1.5">
                           {rc.shortLabel}
                         </td>
                         <td className="px-1 py-1">
@@ -836,17 +836,17 @@ export function BuildChartsManager({
           {/* Height/Weight Editor */}
           {tableType === "height_weight" && selectedClasses.size > 0 && (
             <div className="space-y-2">
-              <p className="text-[10px] text-v2-ink-muted">
+              <p className="text-[10px] text-muted-foreground">
                 Enter min/max weight (lbs) for each height and rating class.
               </p>
-              <div className="border border-v2-ring rounded-lg overflow-hidden">
+              <div className="border border-border rounded-lg overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="bg-v2-canvas border-b border-v2-ring">
+                      <tr className="bg-background border-b border-border">
                         <th
                           rowSpan={2}
-                          className="text-[10px] font-semibold text-v2-ink-muted text-left px-2 py-1.5 w-14 sticky left-0 bg-v2-canvas border-r border-v2-ring"
+                          className="text-[10px] font-semibold text-muted-foreground text-left px-2 py-1.5 w-14 sticky left-0 bg-background border-r border-border"
                         >
                           Height
                         </th>
@@ -854,19 +854,19 @@ export function BuildChartsManager({
                           <th
                             key={rc.key}
                             colSpan={2}
-                            className="text-[10px] font-semibold text-v2-ink-muted text-center px-1 py-1 border-l border-v2-ring"
+                            className="text-[10px] font-semibold text-muted-foreground text-center px-1 py-1 border-l border-border"
                           >
                             {rc.shortLabel}
                           </th>
                         ))}
                       </tr>
-                      <tr className="bg-v2-canvas border-b border-v2-ring">
+                      <tr className="bg-background border-b border-border">
                         {orderedSelectedClasses.map((rc) => (
                           <React.Fragment key={rc.key}>
-                            <th className="text-[9px] font-medium text-v2-ink-muted text-center px-0.5 py-0.5 border-l border-v2-ring">
+                            <th className="text-[9px] font-medium text-muted-foreground text-center px-0.5 py-0.5 border-l border-border">
                               Min
                             </th>
-                            <th className="text-[9px] font-medium text-v2-ink-muted text-center px-0.5 py-0.5">
+                            <th className="text-[9px] font-medium text-muted-foreground text-center px-0.5 py-0.5">
                               Max
                             </th>
                           </React.Fragment>
@@ -882,16 +882,16 @@ export function BuildChartsManager({
                         return (
                           <tr
                             key={height.inches}
-                            className={`border-b border-v2-ring/60 ${
-                              idx % 2 === 0 ? "bg-v2-card" : "bg-v2-canvas"
+                            className={`border-b border-border/60 ${
+                              idx % 2 === 0 ? "bg-card" : "bg-background"
                             }`}
                           >
-                            <td className="text-[11px] font-medium text-v2-ink-muted px-2 py-0.5 w-14 sticky left-0 bg-inherit border-r border-v2-ring">
+                            <td className="text-[11px] font-medium text-muted-foreground px-2 py-0.5 w-14 sticky left-0 bg-inherit border-r border-border">
                               {height.formatted}
                             </td>
                             {orderedSelectedClasses.map((rc) => (
                               <React.Fragment key={rc.key}>
-                                <td className="px-1 py-0.5 border-l border-v2-ring">
+                                <td className="px-1 py-0.5 border-l border-border">
                                   <Input
                                     type="number"
                                     step="any"
@@ -943,7 +943,7 @@ export function BuildChartsManager({
 
           {/* Notes */}
           <div className="space-y-1">
-            <Label className="text-[10px] font-medium text-v2-ink-muted uppercase">
+            <Label className="text-[10px] font-medium text-muted-foreground uppercase">
               Notes (optional)
             </Label>
             <Textarea
@@ -958,7 +958,7 @@ export function BuildChartsManager({
           </div>
         </div>
 
-        <SheetFooter className="px-4 py-3 border-t border-v2-ring/60 flex items-center justify-between">
+        <SheetFooter className="px-4 py-3 border-t border-border/60 flex items-center justify-between">
           <Button
             type="button"
             variant="ghost"

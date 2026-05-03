@@ -31,7 +31,7 @@ export function ResultsStep({ job, onNewDrop }: ResultsStepProps) {
         <div
           className={[
             "h-10 w-10 rounded-full flex items-center justify-center mx-auto text-xl",
-            isSuccess ? "bg-green-500/20" : "bg-destructive/20",
+            isSuccess ? "bg-success/20" : "bg-destructive/20",
           ].join(" ")}
         >
           {isSuccess ? "✓" : "✕"}
@@ -50,7 +50,7 @@ export function ResultsStep({ job, onNewDrop }: ResultsStepProps) {
         <StatCard
           label="Created"
           value={job.created_leads}
-          color="text-green-500"
+          color="text-success"
         />
         <StatCard
           label="Failed"

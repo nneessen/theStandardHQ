@@ -65,7 +65,7 @@ export function SmartViewStep({
                 className={[
                   "flex h-4 w-4 shrink-0 rounded-full border-2 transition-colors",
                   selected?.id === sv.id
-                    ? "border-green-500 bg-green-500"
+                    ? "border-success bg-success"
                     : "border-border",
                 ].join(" ")}
               />

@@ -80,11 +80,11 @@ export function ResponseScheduleSection() {
   };
 
   return (
-    <div className="rounded-xl border border-v2-ring dark:border-v2-ring bg-v2-card">
+    <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card">
       <div className="flex flex-col gap-3 border-b border-v2-ring dark:border-v2-ring px-4 py-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-info/20 text-info dark:bg-info/20 dark:text-info">
               <CalendarClock className="h-4 w-4" />
             </div>
             <div>
@@ -154,7 +154,7 @@ export function ResponseScheduleSection() {
           return (
             <div
               key={day.day}
-              className="rounded-xl border border-v2-ring bg-v2-canvas/70 p-3 dark:border-v2-ring dark:bg-v2-canvas/40"
+              className="rounded-lg border border-v2-ring bg-v2-canvas/70 p-3 dark:border-v2-ring dark:bg-v2-canvas/40"
             >
               <div className="grid gap-3 xl:grid-cols-[100px_80px_1fr_100px_1fr] xl:items-center">
                 <div className="flex items-center justify-between gap-3 xl:block">
@@ -322,7 +322,7 @@ export function ResponseScheduleSection() {
         })}
 
         {validationError && (
-          <p className="text-[10px] text-red-500">{validationError}</p>
+          <p className="text-[10px] text-destructive">{validationError}</p>
         )}
 
         {isDirty && (

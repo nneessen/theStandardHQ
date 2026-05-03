@@ -228,7 +228,7 @@ function ConditionRow({
               }
               disabled={disabled}
             />
-            <span className="text-[9px] text-v2-ink-subtle">to</span>
+            <span className="text-[9px] text-muted-foreground">to</span>
             <Input
               type="number"
               className="h-6 w-14 text-[10px]"
@@ -276,7 +276,7 @@ function ConditionRow({
             disabled={disabled}
             min={0}
           />
-          <span className="text-[9px] text-v2-ink-subtle">
+          <span className="text-[9px] text-muted-foreground">
             {condition.operator.includes("years") ? "years" : "months"}
           </span>
         </div>
@@ -294,7 +294,7 @@ function ConditionRow({
             disabled={disabled}
             className="h-3.5 w-3.5"
           />
-          <span className="text-[10px] text-v2-ink-muted">
+          <span className="text-[10px] text-muted-foreground">
             {condition.value ? "Yes" : "No"}
           </span>
         </div>
@@ -347,8 +347,8 @@ function ConditionRow({
                   disabled={disabled}
                   className={`px-1 py-0.5 text-[9px] rounded transition-colors ${
                     isSelected
-                      ? "bg-blue-500 text-white"
-                      : "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink-muted dark:text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring-strong"
+                      ? "bg-info text-white"
+                      : "bg-card-tinted dark:bg-card-tinted text-muted-foreground dark:text-muted-foreground hover:bg-muted dark:hover:bg-muted"
                   }`}
                 >
                   {opt.label}
@@ -380,14 +380,14 @@ function ConditionRow({
   };
 
   return (
-    <div className="flex items-center gap-1.5 py-1 px-2 bg-v2-card rounded border border-v2-ring dark:border-v2-ring-strong">
+    <div className="flex items-center gap-1.5 py-1 px-2 bg-card rounded border border-border dark:border-border">
       {/* Field */}
       <Select
         value={condition.field}
         onValueChange={handleFieldChange}
         disabled={disabled}
       >
-        <SelectTrigger className="h-6 w-32 text-[10px] border-0 bg-v2-canvas dark:bg-v2-card-tinted">
+        <SelectTrigger className="h-6 w-32 text-[10px] border-0 bg-background dark:bg-card-tinted">
           <SelectValue placeholder="Field" />
         </SelectTrigger>
         <SelectContent>
@@ -405,7 +405,7 @@ function ConditionRow({
         onValueChange={handleOperatorChange}
         disabled={disabled || operators.length === 0}
       >
-        <SelectTrigger className="h-6 w-28 text-[10px] border-0 bg-v2-canvas dark:bg-v2-card-tinted">
+        <SelectTrigger className="h-6 w-28 text-[10px] border-0 bg-background dark:bg-card-tinted">
           <SelectValue placeholder="Operator" />
         </SelectTrigger>
         <SelectContent>
@@ -422,7 +422,9 @@ function ConditionRow({
 
       {/* Unit */}
       {fieldDef?.unit && condition.type !== "date" && (
-        <span className="text-[9px] text-v2-ink-subtle">{fieldDef.unit}</span>
+        <span className="text-[9px] text-muted-foreground">
+          {fieldDef.unit}
+        </span>
       )}
 
       {/* If Unknown dropdown - only show for condition types that support it */}
@@ -442,7 +444,7 @@ function ConditionRow({
             }
             disabled={disabled}
           >
-            <SelectTrigger className="h-6 w-16 text-[9px] border-0 bg-transparent text-v2-ink-subtle">
+            <SelectTrigger className="h-6 w-16 text-[9px] border-0 bg-transparent text-muted-foreground">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -463,7 +465,7 @@ function ConditionRow({
         size="sm"
         onClick={onDelete}
         disabled={disabled}
-        className="h-5 w-5 p-0 text-v2-ink-subtle hover:text-red-500 ml-auto"
+        className="h-5 w-5 p-0 text-muted-foreground hover:text-destructive ml-auto"
       >
         <Trash2 className="h-3 w-3" />
       </Button>
@@ -621,7 +623,7 @@ export function RuleConditionBuilder({
     <div className="space-y-3">
       {/* Logic Selector */}
       <div className="flex items-center gap-2 text-[11px]">
-        <span className="text-v2-ink-muted">When</span>
+        <span className="text-muted-foreground">When</span>
         <Select
           value={logic}
           onValueChange={handleLogicChange}
@@ -639,20 +641,20 @@ export function RuleConditionBuilder({
             </SelectItem>
           </SelectContent>
         </Select>
-        <span className="text-v2-ink-muted">are met:</span>
+        <span className="text-muted-foreground">are met:</span>
       </div>
 
       {/* Condition-Specific Fields Section */}
       {Object.keys(conditionFields).length > 0 && (
-        <div className="border border-blue-200 dark:border-blue-800/50 rounded-lg overflow-hidden">
-          <div className="bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 border-b border-blue-200 dark:border-blue-800/50">
-            <span className="text-[10px] font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-wider">
+        <div className="border border-info/30/50 rounded-lg overflow-hidden">
+          <div className="bg-info/10 px-3 py-1.5 border-b border-info/30/50">
+            <span className="text-[10px] font-semibold text-info uppercase tracking-wider">
               {conditionName} Answers
             </span>
           </div>
           <div className="p-2 space-y-1.5">
             {conditionConditions.length === 0 ? (
-              <p className="text-[10px] text-v2-ink-subtle py-2 text-center">
+              <p className="text-[10px] text-muted-foreground py-2 text-center">
                 No conditions from {conditionName.toLowerCase()} answers yet
               </p>
             ) : (
@@ -674,7 +676,7 @@ export function RuleConditionBuilder({
               size="sm"
               onClick={addConditionField}
               disabled={disabled}
-              className="h-6 px-2 text-[10px] text-blue-600 dark:text-blue-400 w-full justify-start"
+              className="h-6 px-2 text-[10px] text-info w-full justify-start"
             >
               <Plus className="h-3 w-3 mr-1" />
               Add condition from {conditionName.toLowerCase()} answers
@@ -685,21 +687,21 @@ export function RuleConditionBuilder({
 
       {/* Client Demographics Section (Collapsible) */}
       <Collapsible open={clientSectionOpen} onOpenChange={setClientSectionOpen}>
-        <div className="border border-v2-ring dark:border-v2-ring-strong rounded-lg overflow-hidden">
-          <CollapsibleTrigger className="flex items-center gap-2 w-full bg-v2-canvas dark:bg-v2-card-tinted/50 px-3 py-1.5 border-b border-v2-ring dark:border-v2-ring-strong text-left">
+        <div className="border border-border dark:border-border rounded-lg overflow-hidden">
+          <CollapsibleTrigger className="flex items-center gap-2 w-full bg-background dark:bg-card-tinted/50 px-3 py-1.5 border-b border-border dark:border-border text-left">
             {clientSectionOpen ? (
-              <ChevronDown className="h-3 w-3 text-v2-ink-subtle" />
+              <ChevronDown className="h-3 w-3 text-muted-foreground" />
             ) : (
-              <ChevronRight className="h-3 w-3 text-v2-ink-subtle" />
+              <ChevronRight className="h-3 w-3 text-muted-foreground" />
             )}
-            <span className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider">
+            <span className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider">
               Client Demographics
             </span>
-            <span className="text-[9px] text-v2-ink-subtle ml-1">
+            <span className="text-[9px] text-muted-foreground ml-1">
               (optional)
             </span>
             {clientConditions.length > 0 && (
-              <span className="text-[9px] bg-v2-ring dark:bg-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-muted px-1.5 py-0.5 rounded ml-auto">
+              <span className="text-[9px] bg-muted dark:bg-muted text-muted-foreground dark:text-muted-foreground px-1.5 py-0.5 rounded ml-auto">
                 {clientConditions.length}
               </span>
             )}
@@ -707,7 +709,7 @@ export function RuleConditionBuilder({
           <CollapsibleContent>
             <div className="p-2 space-y-1.5">
               {clientConditions.length === 0 ? (
-                <p className="text-[10px] text-v2-ink-subtle py-2 text-center">
+                <p className="text-[10px] text-muted-foreground py-2 text-center">
                   No client demographic filters
                 </p>
               ) : (
@@ -731,7 +733,7 @@ export function RuleConditionBuilder({
                 size="sm"
                 onClick={addClientField}
                 disabled={disabled}
-                className="h-6 px-2 text-[10px] text-v2-ink-muted w-full justify-start"
+                className="h-6 px-2 text-[10px] text-muted-foreground w-full justify-start"
               >
                 <Plus className="h-3 w-3 mr-1" />
                 Add client filter (age, gender, BMI, etc.)
@@ -743,8 +745,8 @@ export function RuleConditionBuilder({
 
       {/* Empty State */}
       {Object.keys(conditionFields).length === 0 && conditions.length === 0 && (
-        <div className="border border-dashed border-v2-ring-strong dark:border-v2-ring-strong rounded-lg p-4 text-center">
-          <p className="text-[10px] text-v2-ink-subtle mb-2">
+        <div className="border border-dashed border-border dark:border-border rounded-lg p-4 text-center">
+          <p className="text-[10px] text-muted-foreground mb-2">
             No conditions defined. This rule will always match.
           </p>
           <Button

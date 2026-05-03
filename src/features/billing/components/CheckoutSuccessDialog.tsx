@@ -180,23 +180,23 @@ export function CheckoutSuccessDialog({
               className={cn(
                 "flex-shrink-0 rounded-full p-2",
                 activationStatus === "active"
-                  ? "bg-emerald-100 dark:bg-emerald-900/40"
-                  : "bg-amber-100 dark:bg-amber-900/40",
+                  ? "bg-success/20 dark:bg-success/40"
+                  : "bg-warning/20 dark:bg-warning/40",
               )}
             >
               {activationStatus === "active" ? (
-                <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                <CheckCircle2 className="h-5 w-5 text-success" />
               ) : activationStatus === "polling" ? (
-                <Loader2 className="h-5 w-5 text-amber-600 dark:text-amber-400 animate-spin" />
+                <Loader2 className="h-5 w-5 text-warning animate-spin" />
               ) : (
-                <RefreshCw className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                <RefreshCw className="h-5 w-5 text-warning" />
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <DialogTitle className="text-base font-semibold text-v2-ink">
+              <DialogTitle className="text-base font-semibold text-foreground">
                 Welcome to {displayName}!
               </DialogTitle>
-              <DialogDescription className="text-[11px] text-v2-ink-muted mt-0.5">
+              <DialogDescription className="text-[11px] text-muted-foreground mt-0.5">
                 {activationStatus === "active"
                   ? "Your subscription is active and ready to go."
                   : activationStatus === "polling"
@@ -209,13 +209,13 @@ export function CheckoutSuccessDialog({
               className={cn(
                 "flex-shrink-0 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
                 activationStatus === "active"
-                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
-                  : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
+                  ? "bg-success/20 text-success dark:bg-success/40 dark:text-success"
+                  : "bg-warning/20 text-warning dark:bg-warning/40 dark:text-warning",
               )}
             >
               {activationStatus === "active" ? (
                 <>
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-success" />
                   Active
                 </>
               ) : activationStatus === "polling" ? (
@@ -225,7 +225,7 @@ export function CheckoutSuccessDialog({
                 </>
               ) : (
                 <>
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-warning" />
                   Pending
                 </>
               )}
@@ -234,22 +234,22 @@ export function CheckoutSuccessDialog({
         </div>
 
         {/* Plan Details Card */}
-        <div className="mx-5 rounded-v2-md border border-v2-ring bg-v2-canvas dark:bg-v2-card-dark/50 p-3">
+        <div className="mx-5 rounded-v2-md border border-border bg-background dark:bg-card-dark/50 p-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Crown className="h-3.5 w-3.5 text-amber-500" />
-              <span className="text-xs font-semibold text-v2-ink">
+              <Crown className="h-3.5 w-3.5 text-warning" />
+              <span className="text-xs font-semibold text-foreground">
                 {displayName}
               </span>
             </div>
             {displayPrice !== null && (
               <div className="text-right">
-                <span className="text-sm font-bold text-v2-ink">
+                <span className="text-sm font-bold text-foreground">
                   ${(displayPrice / 100).toFixed(2)}
                 </span>
-                <span className="text-[10px] text-v2-ink-muted">/mo</span>
+                <span className="text-[10px] text-muted-foreground">/mo</span>
                 {billingInterval === "annual" && (
-                  <span className="ml-1.5 text-[9px] font-medium text-emerald-600 dark:text-emerald-400">
+                  <span className="ml-1.5 text-[9px] font-medium text-success">
                     billed annually
                   </span>
                 )}
@@ -258,7 +258,7 @@ export function CheckoutSuccessDialog({
           </div>
           {activationStatus === "active" &&
             subscription?.current_period_end && (
-              <p className="text-[10px] text-v2-ink-muted mt-1.5">
+              <p className="text-[10px] text-muted-foreground mt-1.5">
                 Next renewal:{" "}
                 {new Date(subscription.current_period_end).toLocaleDateString(
                   "en-US",
@@ -271,7 +271,7 @@ export function CheckoutSuccessDialog({
         {/* What's Included */}
         {enabledFeatures.length > 0 && (
           <div className="mx-5 mt-3">
-            <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide mb-2">
+            <h3 className="text-[11px] font-semibold text-foreground uppercase tracking-wide mb-2">
               What's Included
             </h3>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1">
@@ -282,8 +282,8 @@ export function CheckoutSuccessDialog({
                     key={featureKey}
                     className="flex items-center gap-1.5 py-0.5"
                   >
-                    <Zap className="h-2.5 w-2.5 text-emerald-500 flex-shrink-0" />
-                    <span className="text-[11px] text-v2-ink-muted truncate">
+                    <Zap className="h-2.5 w-2.5 text-success flex-shrink-0" />
+                    <span className="text-[11px] text-muted-foreground truncate">
                       {feature.displayName}
                     </span>
                   </div>
@@ -295,7 +295,7 @@ export function CheckoutSuccessDialog({
 
         {/* What's Next */}
         <div className="mx-5 mt-3">
-          <h3 className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide mb-2">
+          <h3 className="text-[11px] font-semibold text-foreground uppercase tracking-wide mb-2">
             What's Next
           </h3>
           <div className="space-y-2">
@@ -319,9 +319,9 @@ export function CheckoutSuccessDialog({
 
         {/* Timeout fallback */}
         {activationStatus === "timeout" && (
-          <div className="mx-5 mt-3 flex items-center gap-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 px-3 py-2">
-            <RefreshCw className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
-            <p className="text-[10px] text-amber-700 dark:text-amber-400">
+          <div className="mx-5 mt-3 flex items-center gap-2 rounded-lg bg-warning/10 border border-warning/30/50 px-3 py-2">
+            <RefreshCw className="h-3.5 w-3.5 text-warning flex-shrink-0" />
+            <p className="text-[10px] text-warning">
               Your payment was processed successfully. If your plan doesn't
               update shortly, try refreshing the page.
             </p>
@@ -337,7 +337,7 @@ export function CheckoutSuccessDialog({
         )}
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-2 px-5 pb-5 pt-3 border-t border-v2-ring/60 mt-3">
+        <div className="flex items-center justify-end gap-2 px-5 pb-5 pt-3 border-t border-border/60 mt-3">
           <Button variant="ghost" size="sm" onClick={handleStayOnBilling}>
             Stay on Billing
           </Button>
@@ -367,12 +367,12 @@ function NextStep({
 }) {
   return (
     <div className="flex items-start gap-2.5">
-      <span className="flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-v2-card-dark dark:bg-v2-ring text-white dark:text-v2-ink text-[10px] font-bold">
+      <span className="flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-card-dark dark:bg-muted text-white dark:text-foreground text-[10px] font-bold">
         {number}
       </span>
       <div className="min-w-0">
-        <p className="text-[11px] font-medium text-v2-ink">{title}</p>
-        <p className="text-[10px] text-v2-ink-muted">{description}</p>
+        <p className="text-[11px] font-medium text-foreground">{title}</p>
+        <p className="text-[10px] text-muted-foreground">{description}</p>
       </div>
     </div>
   );

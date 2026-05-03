@@ -86,7 +86,7 @@ export function AddDomainForm({ onCancel }: AddDomainFormProps) {
       <div className="rounded-md border border-v2-ring bg-v2-canvas p-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Globe className="h-4 w-4 text-green-500" />
+            <Globe className="h-4 w-4 text-success" />
             <span className="text-sm font-medium text-v2-ink">
               Domain Added: {createdDomain.hostname}
             </span>
@@ -162,7 +162,7 @@ export function AddDomainForm({ onCancel }: AddDomainFormProps) {
         </Button>
       </div>
 
-      {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+      {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
     </form>
   );
 }

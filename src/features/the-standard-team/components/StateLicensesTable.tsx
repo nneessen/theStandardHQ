@@ -33,11 +33,11 @@ const getClassificationBgClass = (
 ): string => {
   switch (classification) {
     case "green":
-      return "bg-emerald-50 dark:bg-emerald-950/30";
+      return "bg-success/10";
     case "yellow":
-      return "bg-amber-50 dark:bg-amber-950/30";
+      return "bg-warning/10";
     case "red":
-      return "bg-red-50 dark:bg-red-950/30";
+      return "bg-destructive/10";
     default:
       return "";
   }
@@ -130,7 +130,7 @@ export function StateLicensesTable({
                   className={cn(
                     "text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wide text-center px-2 py-2 border-b border-v2-ring dark:border-v2-ring-strong min-w-[80px] w-[80px]",
                     agent.id === selectedAgentId &&
-                      "bg-blue-100/70 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300",
+                      "bg-info/20/70 dark:bg-info/20 text-info",
                   )}
                   title={`${agent.first_name} ${agent.last_name}`}
                 >
@@ -195,13 +195,13 @@ export function StateLicensesTable({
                         className={cn(
                           "h-3 w-3 rounded-full border",
                           classification === "green" &&
-                            "bg-emerald-500 border-emerald-600",
+                            "bg-success border-success",
                           classification === "yellow" &&
-                            "bg-amber-500 border-amber-600",
+                            "bg-warning border-warning",
                           classification === "red" &&
-                            "bg-red-500 border-red-600",
+                            "bg-destructive border-destructive",
                           (!classification || classification === "neutral") &&
-                            "bg-zinc-300 border-zinc-400 dark:bg-v2-ring-strong dark:border-zinc-500",
+                            "bg-muted border-input dark:bg-v2-ring-strong dark:border-input",
                         )}
                       />
                     </button>
@@ -217,7 +217,7 @@ export function StateLicensesTable({
                           "text-center py-1 px-2 border-b border-v2-ring dark:border-v2-ring",
                           bgClass,
                           agent.id === selectedAgentId &&
-                            "bg-blue-50/70 dark:bg-blue-950/15",
+                            "bg-info/10/70 dark:bg-info/10/15",
                         )}
                       >
                         <Checkbox

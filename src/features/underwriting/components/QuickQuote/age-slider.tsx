@@ -93,7 +93,7 @@ export function AgeSlider({
           className="relative flex w-full touch-none select-none items-center h-5"
         >
           <SliderPrimitive.Track className="relative h-1.5 w-full grow overflow-hidden rounded-full bg-v2-ring dark:bg-v2-ring-strong">
-            <SliderPrimitive.Range className="absolute h-full bg-zinc-600 dark:bg-zinc-400" />
+            <SliderPrimitive.Range className="absolute h-full bg-muted dark:bg-muted" />
           </SliderPrimitive.Track>
           <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full border-2 border-v2-ring-strong dark:border-v2-ring-strong bg-v2-card-tinted shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-v2-ring-strong focus-visible:ring-offset-1 hover:border-v2-ink dark:hover:border-v2-ring cursor-grab active:cursor-grabbing" />
         </SliderPrimitive.Root>

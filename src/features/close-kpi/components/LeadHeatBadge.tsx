@@ -16,14 +16,14 @@ interface LeadHeatBadgeProps {
 }
 
 const HEAT_COLORS: Record<LeadHeatLevel, string> = {
-  hot: "bg-red-50 text-red-600 border-red-200 dark:bg-red-950/30 dark:text-red-400 dark:border-red-800",
+  hot: "bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15 dark:text-destructive dark:border-destructive",
   warming:
-    "bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-950/30 dark:text-orange-400 dark:border-orange-800",
+    "bg-warning/10 text-warning border-warning/30 dark:bg-warning/30 dark:text-warning dark:border-warning",
   neutral:
     "bg-v2-ring text-v2-ink-muted border-v2-ring dark:bg-v2-ring/30 dark:text-v2-ink-subtle ",
   cooling:
-    "bg-sky-50 text-sky-600 border-sky-200 dark:bg-sky-950/30 dark:text-sky-400 dark:border-sky-800",
-  cold: "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-950/30 dark:text-blue-400 dark:border-blue-800",
+    "bg-info/10 text-info border-info/30 dark:bg-info/30 dark:text-info dark:border-info",
+  cold: "bg-info/10 text-info border-info/30 dark:bg-info/15 dark:text-info dark:border-info",
 };
 
 const TREND_ARROWS: Record<LeadTrendDirection, string> = {

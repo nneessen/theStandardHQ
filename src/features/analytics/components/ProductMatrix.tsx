@@ -137,10 +137,10 @@ export function ProductMatrix() {
                     className={cn(
                       "font-mono",
                       row.percentage >= 40
-                        ? "text-emerald-600 dark:text-emerald-400"
+                        ? "text-success"
                         : row.percentage >= 20
-                          ? "text-amber-600 dark:text-amber-400"
-                          : "text-red-600 dark:text-red-400",
+                          ? "text-warning"
+                          : "text-destructive",
                     )}
                   >
                     {row.percentage.toFixed(1)}%

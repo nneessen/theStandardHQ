@@ -149,11 +149,11 @@ export function IncomeGoalTracker() {
               {formatCurrency(goalData.projectedYearEnd)}
             </div>
             {goalData.projectedShortfall > 0 ? (
-              <div className="text-xs text-red-600 dark:text-red-400">
+              <div className="text-xs text-destructive">
                 {formatCurrency(goalData.projectedShortfall)} short
               </div>
             ) : (
-              <div className="text-xs text-green-600 dark:text-green-400">
+              <div className="text-xs text-success">
                 On track to exceed goal
               </div>
             )}
@@ -213,7 +213,7 @@ export function IncomeGoalTracker() {
 
         {/* Pace Indicator */}
         {goalData.isAccelerating && (
-          <div className="flex items-center justify-center gap-2 text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950 p-2 rounded-lg">
+          <div className="flex items-center justify-center gap-2 text-sm text-success bg-success/10 dark:bg-success/10 p-2 rounded-lg">
             <TrendingUp className="h-4 w-4" />
             Your pace is accelerating! Last 30 days outperformed previous 30.
           </div>

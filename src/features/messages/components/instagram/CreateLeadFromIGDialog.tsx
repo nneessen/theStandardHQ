@@ -216,32 +216,36 @@ export function CreateLeadFromIGDialog({
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <Label className="text-[11px]">
-                  First Name <span className="text-red-500">*</span>
+                  First Name <span className="text-destructive">*</span>
                 </Label>
                 <Input
-                  className={`h-7 text-[11px] ${errors.firstName ? "border-red-500" : ""}`}
+                  className={`h-7 text-[11px] ${errors.firstName ? "border-destructive" : ""}`}
                   value={formData.firstName}
                   onChange={(e) => updateField("firstName", e.target.value)}
                   placeholder="First name"
                   maxLength={100}
                 />
                 {errors.firstName && (
-                  <p className="text-[10px] text-red-500">{errors.firstName}</p>
+                  <p className="text-[10px] text-destructive">
+                    {errors.firstName}
+                  </p>
                 )}
               </div>
               <div className="space-y-1">
                 <Label className="text-[11px]">
-                  Last Name <span className="text-red-500">*</span>
+                  Last Name <span className="text-destructive">*</span>
                 </Label>
                 <Input
-                  className={`h-7 text-[11px] ${errors.lastName ? "border-red-500" : ""}`}
+                  className={`h-7 text-[11px] ${errors.lastName ? "border-destructive" : ""}`}
                   value={formData.lastName}
                   onChange={(e) => updateField("lastName", e.target.value)}
                   placeholder="Last name"
                   maxLength={100}
                 />
                 {errors.lastName && (
-                  <p className="text-[10px] text-red-500">{errors.lastName}</p>
+                  <p className="text-[10px] text-destructive">
+                    {errors.lastName}
+                  </p>
                 )}
               </div>
             </div>
@@ -250,34 +254,34 @@ export function CreateLeadFromIGDialog({
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
                 <Label className="text-[11px]">
-                  Email <span className="text-red-500">*</span>
+                  Email <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   type="email"
-                  className={`h-7 text-[11px] ${errors.email ? "border-red-500" : ""}`}
+                  className={`h-7 text-[11px] ${errors.email ? "border-destructive" : ""}`}
                   value={formData.email}
                   onChange={(e) => updateField("email", e.target.value)}
                   placeholder="email@example.com"
                   maxLength={254}
                 />
                 {errors.email && (
-                  <p className="text-[10px] text-red-500">{errors.email}</p>
+                  <p className="text-[10px] text-destructive">{errors.email}</p>
                 )}
               </div>
               <div className="space-y-1">
                 <Label className="text-[11px]">
-                  Phone <span className="text-red-500">*</span>
+                  Phone <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   type="tel"
-                  className={`h-7 text-[11px] ${errors.phone ? "border-red-500" : ""}`}
+                  className={`h-7 text-[11px] ${errors.phone ? "border-destructive" : ""}`}
                   value={formData.phone}
                   onChange={(e) => updateField("phone", e.target.value)}
                   placeholder="+1 (555) 555-5555"
                   maxLength={20}
                 />
                 {errors.phone && (
-                  <p className="text-[10px] text-red-500">{errors.phone}</p>
+                  <p className="text-[10px] text-destructive">{errors.phone}</p>
                 )}
               </div>
             </div>

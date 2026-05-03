@@ -137,8 +137,8 @@ export function DrillDownDrawer({
 
           {/* Error State */}
           {error && (
-            <div className="p-4 bg-red-50 dark:bg-red-950/20 rounded border border-red-200 dark:border-red-900">
-              <p className="text-sm text-red-600 dark:text-red-400">
+            <div className="p-4 bg-destructive/10 rounded border border-destructive/30 dark:border-destructive">
+              <p className="text-sm text-destructive">
                 Error loading data: {error.message}
               </p>
             </div>

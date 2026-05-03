@@ -32,7 +32,7 @@ export function ReportNavigator({
                   onClick={() => onSelectType(report.type)}
                   className={`w-full text-left px-2 py-1.5 rounded-sm text-xs transition-colors ${
                     selectedType === report.type
-                      ? "bg-blue-600 text-white font-medium"
+                      ? "bg-info text-white font-medium"
                       : "hover:bg-v2-canvas text-v2-ink"
                   }`}
                 >

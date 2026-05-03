@@ -108,11 +108,11 @@ export function GamePlan() {
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
       case "high":
-        return "text-red-600 dark:text-red-400";
+        return "text-destructive";
       case "medium":
-        return "text-amber-600 dark:text-amber-400";
+        return "text-warning";
       default:
-        return "text-emerald-600 dark:text-emerald-400";
+        return "text-success";
     }
   };
 
@@ -149,10 +149,10 @@ export function GamePlan() {
             className={cn(
               "h-full transition-all duration-300",
               gamePlan.progressPercent >= 100
-                ? "bg-emerald-600 dark:bg-emerald-400"
+                ? "bg-success dark:bg-success/70"
                 : gamePlan.progressPercent >= 75
-                  ? "bg-amber-600 dark:bg-amber-400"
-                  : "bg-red-600 dark:bg-red-400",
+                  ? "bg-warning dark:bg-warning/70"
+                  : "bg-destructive dark:bg-destructive/70",
             )}
             style={{ width: `${Math.min(100, gamePlan.progressPercent)}%` }}
           />
@@ -178,9 +178,7 @@ export function GamePlan() {
           <div
             className={cn(
               "font-bold font-mono",
-              gamePlan.gap > 0
-                ? "text-red-600 dark:text-red-400"
-                : "text-emerald-600 dark:text-emerald-400",
+              gamePlan.gap > 0 ? "text-destructive" : "text-success",
             )}
           >
             {formatCurrency(Math.abs(gamePlan.gap))}
@@ -209,8 +207,8 @@ export function GamePlan() {
             className={cn(
               "h-full transition-all duration-300",
               annualProgress.onTrackForYear
-                ? "bg-emerald-600 dark:bg-emerald-400"
-                : "bg-amber-600 dark:bg-amber-400",
+                ? "bg-success dark:bg-success/70"
+                : "bg-warning dark:bg-warning/70",
             )}
             style={{
               width: `${Math.min(100, annualProgress.progressPercent)}%`,
@@ -223,7 +221,7 @@ export function GamePlan() {
       <div className="grid grid-cols-4 gap-1 mb-2 text-[11px]">
         <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
           <div className="text-v2-ink-subtle">YTD</div>
-          <div className="font-bold font-mono text-emerald-600 dark:text-emerald-400">
+          <div className="font-bold font-mono text-success">
             {formatCurrency(annualProgress.ytdCommissions)}
           </div>
         </div>
@@ -235,7 +233,7 @@ export function GamePlan() {
         </div>
         <div className="p-2 bg-v2-canvas border border-v2-ring rounded-v2-sm text-center">
           <div className="text-v2-ink-subtle">Need</div>
-          <div className="font-bold font-mono text-red-600 dark:text-red-400">
+          <div className="font-bold font-mono text-destructive">
             {formatCurrency(annualProgress.remainingNeeded)}
           </div>
         </div>
@@ -253,13 +251,13 @@ export function GamePlan() {
           <div className="text-[11px] text-v2-ink-muted">
             Monthly Avg Needed
           </div>
-          <div className="text-xs font-bold font-mono text-blue-600 dark:text-blue-400">
+          <div className="text-xs font-bold font-mono text-info">
             {formatCurrency(annualProgress.avgMonthlyNeeded)}
           </div>
         </div>
         <div className="text-center">
           <div className="text-[11px] text-v2-ink-muted">Policies/Month</div>
-          <div className="text-xs font-bold font-mono text-blue-600 dark:text-blue-400">
+          <div className="text-xs font-bold font-mono text-info">
             ~{annualProgress.policiesNeededPerMonth}
           </div>
         </div>
@@ -366,10 +364,10 @@ export function GamePlan() {
                         className={cn(
                           "font-mono font-bold text-[11px]",
                           isGood
-                            ? "text-emerald-600 dark:text-emerald-400"
+                            ? "text-success"
                             : isClose
-                              ? "text-amber-600 dark:text-amber-400"
-                              : "text-red-600 dark:text-red-400",
+                              ? "text-warning"
+                              : "text-destructive",
                         )}
                       >
                         {Math.round(row.goalPercent)}%
@@ -388,8 +386,8 @@ export function GamePlan() {
         className={cn(
           "p-1.5 rounded text-center text-[11px] font-medium",
           gamePlan.gap > 0
-            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-            : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+            ? "bg-warning/10 text-warning"
+            : "bg-success/10 text-success",
         )}
       >
         {gamePlan.gap > 0

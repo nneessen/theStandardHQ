@@ -193,7 +193,7 @@ export function InstagramContactInfoPanel({
       {/* Save button */}
       <div className="flex justify-end">
         {showSaved ? (
-          <div className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400">
+          <div className="flex items-center gap-1 text-[10px] text-success">
             <Check className="h-3 w-3" />
             Saved
           </div>

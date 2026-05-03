@@ -69,9 +69,9 @@ export function ConnectionCard({
       className={cn(
         "p-3 border rounded-lg",
         visualState === "connected"
-          ? "border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20"
+          ? "border-success/30 bg-success/10/50 dark:bg-success/10"
           : visualState === "unavailable"
-            ? "border-amber-200 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/20"
+            ? "border-warning/30 bg-warning/10/60 dark:bg-warning/10"
             : "border-v2-ring dark:border-v2-ring bg-v2-card",
       )}
     >
@@ -82,12 +82,12 @@ export function ConnectionCard({
           {title}
         </span>
         {visualState === "connected" ? (
-          <Badge className="text-[9px] h-4 px-1.5 bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 ml-auto">
+          <Badge className="text-[9px] h-4 px-1.5 bg-success/20 text-success dark:bg-success dark:text-success ml-auto">
             <CheckCircle2 className="h-2 w-2 mr-0.5" />
             Connected
           </Badge>
         ) : visualState === "unavailable" ? (
-          <Badge className="ml-auto h-4 bg-amber-100 px-1.5 text-[9px] text-amber-700 dark:bg-amber-900/60 dark:text-amber-300">
+          <Badge className="ml-auto h-4 bg-warning/20 px-1.5 text-[9px] text-warning dark:bg-warning/60 dark:text-warning">
             <Loader2 className="mr-0.5 h-2 w-2" />
             Unavailable
           </Badge>
@@ -110,9 +110,7 @@ export function ConnectionCard({
       )}
 
       {visualState === "unavailable" && unavailableLabel && (
-        <p className="mb-2 text-[10px] text-amber-700 dark:text-amber-300">
-          {unavailableLabel}
-        </p>
+        <p className="mb-2 text-[10px] text-warning">{unavailableLabel}</p>
       )}
 
       {/* Connected state: disconnect button */}
@@ -120,7 +118,7 @@ export function ConnectionCard({
         <Button
           variant="outline"
           size="sm"
-          className="h-6 px-2 text-[10px] text-red-600 dark:text-red-400 border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-950/30"
+          className="h-6 px-2 text-[10px] text-destructive border-destructive/30 hover:bg-destructive/10 dark:hover:bg-destructive/15"
           disabled={disconnectLoading}
           onClick={onDisconnect}
         >

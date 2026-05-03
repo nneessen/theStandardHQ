@@ -45,10 +45,10 @@ function ChatBubble({
     >
       <div
         className={cn(
-          "max-w-[80%] px-3 py-2 rounded-2xl text-[11px] leading-relaxed",
+          "max-w-[80%] px-3 py-2 rounded-lg text-[11px] leading-relaxed",
           isBot
             ? "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink dark:text-v2-ink rounded-bl-sm"
-            : "bg-blue-600 text-white rounded-br-sm",
+            : "bg-info text-white rounded-br-sm",
         )}
       >
         {message.text}
@@ -165,7 +165,7 @@ export function ConversationDemo() {
             className={cn(
               "px-3 py-2 text-[10px] font-medium whitespace-nowrap transition-colors border-b-2 -mb-px",
               activeScriptId === script.id
-                ? "border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400"
+                ? "border-info text-info dark:border-info/70"
                 : "border-transparent text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-ink-subtle",
             )}
           >
@@ -195,7 +195,7 @@ export function ConversationDemo() {
             <div className="h-full flex flex-col items-center justify-center gap-2">
               <button
                 onClick={playConversation}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-medium transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-info hover:bg-info text-white text-[11px] font-medium transition-colors"
               >
                 <Play className="h-3 w-3" />
                 Watch Demo
@@ -223,10 +223,10 @@ export function ConversationDemo() {
                 >
                   <div
                     className={cn(
-                      "rounded-2xl",
+                      "rounded-lg",
                       typingSide === "bot"
                         ? "bg-v2-card-tinted dark:bg-v2-card-tinted rounded-bl-sm"
-                        : "bg-blue-600/80 rounded-br-sm",
+                        : "bg-info/80 rounded-br-sm",
                     )}
                   >
                     <TypingIndicator />

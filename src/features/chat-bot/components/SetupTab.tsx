@@ -90,17 +90,17 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-border bg-white p-4 dark:border-border dark:bg-card">
       <div className="mb-3 flex items-start gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-card-tinted text-foreground dark:bg-card-tinted dark:text-foreground">
           {icon}
         </div>
         <div>
-          <h2 className="text-[12px] font-semibold text-v2-ink dark:text-v2-ink">
+          <h2 className="text-[12px] font-semibold text-foreground dark:text-foreground">
             {title}
           </h2>
           {description ? (
-            <p className="mt-0.5 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <p className="mt-0.5 text-[10px] text-muted-foreground dark:text-muted-foreground">
               {description}
             </p>
           ) : null}
@@ -113,11 +113,11 @@ function SectionCard({
 
 function SummaryTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-v2-ring bg-white px-3 py-2 dark:border-v2-ring dark:bg-v2-card">
-      <p className="text-[9px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
+    <div className="rounded-lg border border-border bg-white px-3 py-2 dark:border-border dark:bg-card">
+      <p className="text-[9px] font-medium uppercase tracking-wide text-muted-foreground dark:text-muted-foreground">
         {label}
       </p>
-      <p className="mt-1 text-[11px] font-semibold text-v2-ink dark:text-v2-ink">
+      <p className="mt-1 text-[11px] font-semibold text-foreground dark:text-foreground">
         {value}
       </p>
     </div>
@@ -388,12 +388,12 @@ export function SetupTab() {
           type="button"
           disabled={updateConfig.isPending}
           onClick={handleToggleBot}
-          className="group relative w-full overflow-hidden rounded-xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 p-5 text-left transition-all hover:border-amber-500 hover:shadow-lg hover:shadow-amber-200/40 disabled:opacity-70 dark:border-amber-500 dark:from-amber-950/50 dark:via-yellow-950/40 dark:to-orange-950/40 dark:hover:shadow-amber-900/30"
+          className="group relative w-full overflow-hidden rounded-lg border-2 border-warning/70 bg-gradient-to-r from-amber-50 via-yellow-50 to-orange-50 p-5 text-left transition-all hover:border-warning hover:shadow-lg hover:shadow-warning/30 disabled:opacity-70 dark:border-warning dark:from-amber-950/50 dark:via-yellow-950/40 dark:to-orange-950/40 dark:hover:shadow-warning/30"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(245,158,11,0.15),transparent_60%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(226, 255, 204, 0.20),transparent_60%)]" />
           <div className="absolute right-0 top-0 h-40 w-40 rounded-bl-full bg-gradient-to-bl from-amber-200/30 to-transparent dark:from-amber-700/20" />
           <div className="relative flex items-center gap-5">
-            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-xl shadow-amber-400/30 transition-transform group-hover:scale-105 dark:from-amber-500 dark:to-orange-600 dark:shadow-amber-600/30">
+            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 shadow-xl shadow-warning/30 transition-transform group-hover:scale-105 dark:from-amber-500 dark:to-orange-600 dark:shadow-warning/30">
               {updateConfig.isPending ? (
                 <Loader2 className="h-7 w-7 animate-spin text-white" />
               ) : (
@@ -401,36 +401,36 @@ export function SetupTab() {
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-base font-bold text-amber-900 dark:text-amber-100">
+              <p className="text-base font-bold text-warning dark:text-warning">
                 Your bot is ready — turn it on!
               </p>
-              <p className="mt-1 text-[12px] leading-relaxed text-amber-700 dark:text-amber-300">
+              <p className="mt-1 text-[12px] leading-relaxed text-warning">
                 Everything is configured. Click here to enable the bot and start
                 responding to leads, handling objections, and booking
                 appointments automatically.
               </p>
             </div>
             <div className="flex flex-shrink-0 flex-col items-center gap-1.5">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500 shadow-lg shadow-emerald-500/30 transition-all group-hover:scale-110 group-hover:bg-emerald-600 group-hover:shadow-emerald-500/50">
+              <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-success shadow-lg shadow-success/30 transition-all group-hover:scale-110 group-hover:bg-success group-hover:shadow-success/30">
                 <Power className="h-8 w-8 text-white" />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-success">
                 Enable
               </span>
             </div>
           </div>
         </button>
       ) : agent?.botEnabled ? (
-        <div className="rounded-xl border-2 border-emerald-400 bg-gradient-to-r from-emerald-50 to-green-50 p-4 dark:border-emerald-600 dark:from-emerald-950/40 dark:to-green-950/30">
+        <div className="rounded-lg border-2 border-success/70 bg-gradient-to-r from-emerald-50 to-green-50 p-4 dark:border-success dark:from-emerald-950/40 dark:to-green-950/30">
           <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500 shadow-md shadow-emerald-400/30">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-success shadow-md shadow-success/30">
               <Power className="h-5 w-5 text-white" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-bold text-emerald-900 dark:text-emerald-100">
+              <p className="text-[13px] font-bold text-success dark:text-success">
                 Bot is active and responding to leads
               </p>
-              <p className="mt-0.5 text-[11px] text-emerald-700 dark:text-emerald-300">
+              <p className="mt-0.5 text-[11px] text-success">
                 Your bot is live and will follow the response schedule you set
                 below.
               </p>
@@ -438,7 +438,7 @@ export function SetupTab() {
             <Button
               variant="outline"
               size="sm"
-              className="h-8 flex-shrink-0 border-red-300 px-3 text-[11px] text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-950/30"
+              className="h-8 flex-shrink-0 border-destructive/40 px-3 text-[11px] text-destructive hover:bg-destructive/10 dark:border-destructive dark:text-destructive dark:hover:bg-destructive/15"
               disabled={updateConfig.isPending}
               onClick={handleToggleBot}
             >
@@ -453,18 +453,18 @@ export function SetupTab() {
         </div>
       ) : null}
 
-      <div className="rounded-xl border border-v2-ring bg-v2-canvas/70 p-4 dark:border-v2-ring dark:bg-v2-card/60">
+      <div className="rounded-lg border border-border bg-background/70 p-4 dark:border-border dark:bg-card/60">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-v2-ink shadow-sm dark:bg-v2-card dark:text-v2-ink">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-foreground shadow-sm dark:bg-card dark:text-foreground">
                 <Settings2 className="h-4 w-4" />
               </div>
               <div>
-                <h2 className="text-[13px] font-semibold text-v2-ink dark:text-v2-ink">
+                <h2 className="text-[13px] font-semibold text-foreground dark:text-foreground">
                   Configuration Workspace
                 </h2>
-                <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                   Split by section so you can adjust behavior without a long
                   single-column form.
                 </p>
@@ -500,7 +500,7 @@ export function SetupTab() {
       <Tabs defaultValue="automation" className="space-y-3">
         <TabsList
           variant="segment"
-          className="grid h-auto w-full grid-cols-2 gap-1 rounded-xl bg-v2-card-tinted p-1 lg:grid-cols-5 dark:bg-v2-card-tinted/70"
+          className="grid h-auto w-full grid-cols-2 gap-1 rounded-lg bg-card-tinted p-1 lg:grid-cols-5 dark:bg-card-tinted/70"
         >
           <TabsTrigger
             value="automation"
@@ -588,7 +588,7 @@ export function SetupTab() {
                   description="Default outbound number for new leads. Used when no state mapping matches."
                 >
                   {phoneNumbersLoading ? (
-                    <div className="flex items-center gap-2 text-[10px] text-v2-ink-muted">
+                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                       <Loader2 className="h-3 w-3 animate-spin" />
                       Loading phone numbers...
                     </div>
@@ -622,18 +622,18 @@ export function SetupTab() {
                     </Select>
                   ) : (
                     <div className="space-y-2">
-                      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                      <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                         No phone numbers found in your Close account.
                       </p>
                       {agent?.primaryPhone ? (
                         <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
+                          <span className="text-[11px] font-medium text-foreground dark:text-muted-foreground">
                             Current: {agent.primaryPhone}
                           </span>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-6 px-2 text-[10px] text-red-500 hover:text-red-700"
+                            className="h-6 px-2 text-[10px] text-destructive hover:text-destructive"
                             disabled={updateConfig.isPending}
                             onClick={() =>
                               updateConfig.mutate({ primaryPhone: null })
@@ -654,11 +654,11 @@ export function SetupTab() {
                   title="Appointment Reminders"
                   description="Send automated SMS reminders before each scheduled appointment."
                 >
-                  <div className="space-y-0 divide-y divide-v2-ring rounded-lg border border-v2-ring bg-v2-canvas dark:divide-v2-ring dark:border-v2-ring dark:bg-v2-canvas/40">
+                  <div className="space-y-0 divide-y divide-border rounded-lg border border-border bg-background dark:divide-border dark:border-border dark:bg-background/40">
                     <div className="flex items-center justify-between gap-3 px-3 py-2.5">
                       <div className="flex items-center gap-2">
-                        <Clock className="h-3.5 w-3.5 text-v2-ink-subtle" />
-                        <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
+                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className="text-[11px] font-medium text-foreground dark:text-foreground">
                           24-hour reminder
                         </p>
                       </div>
@@ -673,8 +673,8 @@ export function SetupTab() {
                     </div>
                     <div className="flex items-center justify-between gap-3 px-3 py-2.5">
                       <div className="flex items-center gap-2">
-                        <Clock className="h-3.5 w-3.5 text-v2-ink-subtle" />
-                        <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
+                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className="text-[11px] font-medium text-foreground dark:text-foreground">
                           1-hour reminder
                         </p>
                       </div>
@@ -682,8 +682,8 @@ export function SetupTab() {
                         className={cn(
                           "text-[10px] font-medium",
                           agent.remindersEnabled
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-v2-ink-subtle dark:text-v2-ink-muted",
+                            ? "text-success"
+                            : "text-muted-foreground dark:text-muted-foreground",
                         )}
                       >
                         {agent.remindersEnabled ? "Enabled" : "Off"}
@@ -691,8 +691,8 @@ export function SetupTab() {
                     </div>
                     <div className="flex items-center justify-between gap-3 px-3 py-2.5">
                       <div className="flex items-center gap-2">
-                        <Clock className="h-3.5 w-3.5 text-v2-ink-subtle" />
-                        <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
+                        <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                        <p className="text-[11px] font-medium text-foreground dark:text-foreground">
                           15-minute reminder
                         </p>
                       </div>
@@ -700,15 +700,15 @@ export function SetupTab() {
                         className={cn(
                           "text-[10px] font-medium",
                           agent.remindersEnabled
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-v2-ink-subtle dark:text-v2-ink-muted",
+                            ? "text-success"
+                            : "text-muted-foreground dark:text-muted-foreground",
                         )}
                       >
                         {agent.remindersEnabled ? "Enabled" : "Off"}
                       </span>
                     </div>
                   </div>
-                  <p className="mt-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <p className="mt-2 text-[10px] text-muted-foreground dark:text-muted-foreground">
                     The toggle controls all three reminders. Each is sent
                     automatically at the specified interval before the
                     appointment.
@@ -780,13 +780,13 @@ export function SetupTab() {
                       </div>
                     )}
                     {agent.notificationPhone && !notifPhoneDirty && (
-                      <p className="flex items-center gap-1.5 text-[10px] text-emerald-600 dark:text-emerald-400">
+                      <p className="flex items-center gap-1.5 text-[10px] text-success">
                         <Check className="h-3 w-3" />
                         Notifications will be sent to {agent.notificationPhone}
                       </p>
                     )}
                     {!agent.notificationPhone && !notifPhoneDirty && (
-                      <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                      <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                         No phone set. You won&apos;t receive SMS notifications
                         for booked appointments.
                       </p>
@@ -802,12 +802,12 @@ export function SetupTab() {
                   description="Automatically re-engage leads that stop responding after initial outreach."
                 >
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-3 rounded-lg border border-v2-ring bg-v2-canvas px-3 py-2.5 dark:border-v2-ring dark:bg-v2-canvas/40">
+                    <div className="flex items-center justify-between gap-3 rounded-lg border border-border bg-background px-3 py-2.5 dark:border-border dark:bg-background/40">
                       <div>
-                        <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
+                        <p className="text-[11px] font-medium text-foreground dark:text-foreground">
                           Enable re-engagement
                         </p>
-                        <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                        <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                           Send follow-up messages to stale leads automatically.
                           Hard declines are always excluded.
                         </p>
@@ -824,12 +824,12 @@ export function SetupTab() {
 
                     <div
                       className={cn(
-                        "space-y-3 rounded-lg border border-v2-ring bg-v2-canvas px-3 py-3 dark:border-v2-ring dark:bg-v2-canvas/40",
+                        "space-y-3 rounded-lg border border-border bg-background px-3 py-3 dark:border-border dark:bg-background/40",
                         !(agent.reEngagementEnabled ?? false) && "opacity-50",
                       )}
                     >
                       <label className="space-y-1">
-                        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
+                        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground dark:text-muted-foreground">
                           Delay before re-engagement (hours)
                         </span>
                         <Input
@@ -847,7 +847,7 @@ export function SetupTab() {
                       </label>
 
                       <label className="space-y-1">
-                        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
+                        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground dark:text-muted-foreground">
                           Max attempts per lead
                         </span>
                         <Input
@@ -865,7 +865,7 @@ export function SetupTab() {
                       </label>
 
                       {reEngageDirty ? (
-                        <div className="flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
+                        <div className="flex items-center gap-2 border-t border-border pt-3 dark:border-border">
                           <Button
                             size="sm"
                             className="h-7 text-[10px]"
@@ -889,7 +889,7 @@ export function SetupTab() {
                             Save
                           </Button>
                           {!reEngageValid ? (
-                            <p className="text-[10px] text-red-500">
+                            <p className="text-[10px] text-destructive">
                               Delay must be 1–720h, attempts 1–10.
                             </p>
                           ) : null}
@@ -905,12 +905,12 @@ export function SetupTab() {
                 title="Schedule Behavior"
                 description="Defaults are 08:00-20:30 every day unless you save a custom schedule."
               >
-                <div className="space-y-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
-                  <div className="rounded-lg border border-v2-ring bg-v2-canvas px-3 py-2 dark:border-v2-ring dark:bg-v2-canvas/40">
+                <div className="space-y-2 text-[10px] text-muted-foreground dark:text-muted-foreground">
+                  <div className="rounded-lg border border-border bg-background px-3 py-2 dark:border-border dark:bg-background/40">
                     Automated replies follow the lead&apos;s timezone when it is
                     available.
                   </div>
-                  <div className="rounded-lg border border-v2-ring bg-v2-canvas px-3 py-2 dark:border-v2-ring dark:bg-v2-canvas/40">
+                  <div className="rounded-lg border border-border bg-background px-3 py-2 dark:border-border dark:bg-background/40">
                     Same-day booking can end earlier than replies by using a
                     custom cutoff per day.
                   </div>
@@ -932,8 +932,8 @@ export function SetupTab() {
               <ConnectionCard
                 title="Close CRM"
                 icon={
-                  <div className="flex h-6 w-6 items-center justify-center rounded bg-v2-ink dark:bg-v2-card-tinted">
-                    <span className="text-[8px] font-bold text-white dark:text-v2-ink">
+                  <div className="flex h-6 w-6 items-center justify-center rounded bg-foreground dark:bg-card-tinted">
+                    <span className="text-[8px] font-bold text-white dark:text-foreground">
                       CRM
                     </span>
                   </div>
@@ -959,7 +959,7 @@ export function SetupTab() {
                   <ConnectionCard
                     title="Calendly"
                     icon={
-                      <div className="flex h-6 w-6 items-center justify-center rounded bg-blue-600">
+                      <div className="flex h-6 w-6 items-center justify-center rounded bg-info">
                         <span className="text-[8px] font-bold text-white">
                           CAL
                         </span>
@@ -979,7 +979,7 @@ export function SetupTab() {
                   <ConnectionCard
                     title="Google Calendar"
                     icon={
-                      <div className="flex h-6 w-6 items-center justify-center rounded bg-red-500">
+                      <div className="flex h-6 w-6 items-center justify-center rounded bg-destructive">
                         <Calendar className="h-3 w-3 text-white" />
                       </div>
                     }
@@ -998,7 +998,7 @@ export function SetupTab() {
                 <ConnectionCard
                   title="Calendly"
                   icon={
-                    <div className="flex h-6 w-6 items-center justify-center rounded bg-blue-600">
+                    <div className="flex h-6 w-6 items-center justify-center rounded bg-info">
                       <span className="text-[8px] font-bold text-white">
                         CAL
                       </span>
@@ -1023,7 +1023,7 @@ export function SetupTab() {
                 <ConnectionCard
                   title="Google Calendar"
                   icon={
-                    <div className="flex h-6 w-6 items-center justify-center rounded bg-red-500">
+                    <div className="flex h-6 w-6 items-center justify-center rounded bg-destructive">
                       <Calendar className="h-3 w-3 text-white" />
                     </div>
                   }
@@ -1063,8 +1063,8 @@ export function SetupTab() {
                         className={cn(
                           "h-7 rounded-full border px-2.5 text-[10px] font-medium transition-colors",
                           bhDays.includes(index)
-                            ? "border-blue-600 bg-blue-600 text-white"
-                            : "border-v2-ring-strong bg-white text-v2-ink-muted hover:border-v2-ring-strong dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink-subtle",
+                            ? "border-info bg-info text-white"
+                            : "border-border bg-white text-muted-foreground hover:border-border dark:border-border dark:bg-card dark:text-muted-foreground",
                         )}
                       >
                         {label}
@@ -1074,7 +1074,7 @@ export function SetupTab() {
 
                   <div className="grid gap-2 sm:grid-cols-2">
                     <label className="space-y-1">
-                      <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground dark:text-muted-foreground">
                         Start
                       </span>
                       <input
@@ -1084,11 +1084,11 @@ export function SetupTab() {
                           setBhStart(event.target.value);
                           setBhDirty(true);
                         }}
-                        className="h-8 w-full rounded-md border border-v2-ring-strong bg-white px-2 text-[11px] text-v2-ink dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink"
+                        className="h-8 w-full rounded-md border border-border bg-white px-2 text-[11px] text-foreground dark:border-border dark:bg-card dark:text-foreground"
                       />
                     </label>
                     <label className="space-y-1">
-                      <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted dark:text-v2-ink-subtle">
+                      <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground dark:text-muted-foreground">
                         End
                       </span>
                       <input
@@ -1098,19 +1098,19 @@ export function SetupTab() {
                           setBhEnd(event.target.value);
                           setBhDirty(true);
                         }}
-                        className="h-8 w-full rounded-md border border-v2-ring-strong bg-white px-2 text-[11px] text-v2-ink dark:border-v2-ring-strong dark:bg-v2-card dark:text-v2-ink"
+                        className="h-8 w-full rounded-md border border-border bg-white px-2 text-[11px] text-foreground dark:border-border dark:bg-card dark:text-foreground"
                       />
                     </label>
                   </div>
 
                   {bhStart >= bhEnd && bhDirty ? (
-                    <p className="mt-2 text-[10px] text-red-500">
+                    <p className="mt-2 text-[10px] text-destructive">
                       Start time must be before end time.
                     </p>
                   ) : null}
 
                   {bhDirty ? (
-                    <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
+                    <div className="mt-3 flex items-center gap-2 border-t border-border pt-3 dark:border-border">
                       <Button
                         size="sm"
                         className="h-7 text-[10px]"
@@ -1140,11 +1140,11 @@ export function SetupTab() {
                   description="Map lead sources to specific Calendly event types."
                 >
                   {eventTypesLoading ? (
-                    <div className="h-8 rounded bg-v2-card-tinted dark:bg-v2-card-tinted" />
+                    <div className="h-8 rounded bg-card-tinted dark:bg-card-tinted" />
                   ) : eventTypesError ? (
-                    <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 p-2 dark:border-amber-800 dark:bg-amber-950/30">
-                      <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" />
-                      <span className="text-[10px] text-amber-700 dark:text-amber-400">
+                    <div className="flex items-center gap-2 rounded-md border border-warning/30 bg-warning/10 p-2 dark:border-warning dark:bg-warning/15">
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-warning" />
+                      <span className="text-[10px] text-warning">
                         {eventTypesErrorObj &&
                         "isServiceError" in eventTypesErrorObj &&
                         eventTypesErrorObj.isServiceError
@@ -1154,7 +1154,7 @@ export function SetupTab() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="ml-auto h-5 px-1.5 text-[9px] text-amber-600 hover:text-amber-800"
+                        className="ml-auto h-5 px-1.5 text-[9px] text-warning hover:text-warning"
                         onClick={() => refetchEventTypes()}
                       >
                         <RefreshCw className="mr-0.5 h-3 w-3" />
@@ -1182,7 +1182,7 @@ export function SetupTab() {
                             }}
                             placeholder="e.g. Sitka Life"
                             disabled={updateConfig.isPending}
-                            className="h-8 rounded-md border border-v2-ring-strong bg-white px-2 text-[11px] dark:border-v2-ring-strong dark:bg-v2-card"
+                            className="h-8 rounded-md border border-border bg-white px-2 text-[11px] dark:border-border dark:bg-card"
                           />
                           <Select
                             value={mapping.eventTypeSlug || "__none__"}
@@ -1222,7 +1222,7 @@ export function SetupTab() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 px-2 text-[10px] text-red-500 hover:text-red-700"
+                            className="h-8 px-2 text-[10px] text-destructive hover:text-destructive"
                             disabled={updateConfig.isPending}
                             onClick={() => {
                               setEventTypeMappings(
@@ -1255,7 +1255,7 @@ export function SetupTab() {
                       </Button>
                     </div>
                   ) : (
-                    <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                    <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                       No event types found. Create an event type in Calendly
                       first.
                     </p>
@@ -1265,13 +1265,13 @@ export function SetupTab() {
                   displayedEventTypeMappings.length > 0 ? (
                     <div className="mt-2 space-y-1">
                       {hasInvalidMappings ? (
-                        <p className="text-[10px] text-red-500">
+                        <p className="text-[10px] text-destructive">
                           Each mapping must have both a lead source and an event
                           type.
                         </p>
                       ) : null}
                       {hasDuplicateMappings ? (
-                        <p className="text-[10px] text-red-500">
+                        <p className="text-[10px] text-destructive">
                           Duplicate lead sources detected. Each source can only
                           be mapped once.
                         </p>
@@ -1280,7 +1280,7 @@ export function SetupTab() {
                   ) : null}
 
                   {eventTypeDirty ? (
-                    <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
+                    <div className="mt-3 flex items-center gap-2 border-t border-border pt-3 dark:border-border">
                       <Button
                         size="sm"
                         className="h-7 text-[10px]"
@@ -1305,7 +1305,7 @@ export function SetupTab() {
                   title="Calendar Rules"
                   description="Connect a calendar provider to unlock scheduling-specific settings."
                 >
-                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                     Google Calendar enables business hours. Calendly enables
                     lead-source-to-event-type mapping.
                   </p>
@@ -1331,7 +1331,7 @@ export function SetupTab() {
                 disabled={updateConfig.isPending}
               />
               {sourcesDirty ? (
-                <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
+                <div className="mt-3 flex items-center gap-2 border-t border-border pt-3 dark:border-border">
                   <Button
                     size="sm"
                     className="h-7 text-[10px]"
@@ -1364,7 +1364,7 @@ export function SetupTab() {
                 disabled={updateConfig.isPending}
               />
               {statusesDirty ? (
-                <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
+                <div className="mt-3 flex items-center gap-2 border-t border-border pt-3 dark:border-border">
                   <Button
                     size="sm"
                     className="h-7 text-[10px]"
@@ -1399,7 +1399,7 @@ export function SetupTab() {
                 isLoadingStatuses={closeLeadStatusesLoading}
               />
               {blockedDirty ? (
-                <div className="mt-3 flex items-center gap-2 border-t border-v2-ring pt-3 dark:border-v2-ring">
+                <div className="mt-3 flex items-center gap-2 border-t border-border pt-3 dark:border-border">
                   <Button
                     size="sm"
                     className="h-7 text-[10px]"

@@ -144,7 +144,7 @@ function ExpirationBadges({
         </Badge>
       )}
       {counts.warning > 0 && (
-        <Badge className="text-xs px-1.5 py-0 bg-yellow-500 hover:bg-yellow-600">
+        <Badge className="text-xs px-1.5 py-0 bg-warning hover:bg-warning">
           {counts.warning}
         </Badge>
       )}
@@ -174,20 +174,20 @@ function ExpiringDocumentRow({
   const urgencyConfig = {
     critical: {
       icon: AlertTriangle,
-      textColor: "text-red-600 dark:text-red-400",
-      bgColor: "bg-red-50 dark:bg-red-950/30",
+      textColor: "text-destructive",
+      bgColor: "bg-destructive/10",
       borderColor: "border-l-red-500",
     },
     warning: {
       icon: Clock,
-      textColor: "text-yellow-600 dark:text-yellow-400",
-      bgColor: "bg-yellow-50 dark:bg-yellow-950/30",
+      textColor: "text-warning",
+      bgColor: "bg-warning/10",
       borderColor: "border-l-yellow-500",
     },
     upcoming: {
       icon: CalendarClock,
-      textColor: "text-blue-600 dark:text-blue-400",
-      bgColor: "bg-blue-50 dark:bg-blue-950/30",
+      textColor: "text-info",
+      bgColor: "bg-info/10",
       borderColor: "border-l-blue-500",
     },
   };
@@ -253,7 +253,7 @@ export function ExpiringDocumentsBadge({
       }
       className={cn(
         "text-xs",
-        hasWarning && !hasCritical && "bg-yellow-500 hover:bg-yellow-600",
+        hasWarning && !hasCritical && "bg-warning hover:bg-warning",
         className,
       )}
     >

@@ -137,48 +137,48 @@ export function LeaderboardPage() {
       <header className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-3 min-w-0 flex-wrap">
           <div className="flex items-center gap-1.5 flex-shrink-0">
-            <Trophy className="h-4 w-4 text-v2-accent-strong" />
-            <h1 className="text-base font-semibold tracking-tight text-v2-ink">
+            <Trophy className="h-4 w-4 text-warning" />
+            <h1 className="text-base font-semibold tracking-tight text-foreground">
               Leaderboard
             </h1>
             <MetricsHelpPopover />
           </div>
           {totals && !isLoading && (
-            <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-v2-ink-muted flex-wrap leading-tight">
+            <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground flex-wrap leading-tight">
               <span>
-                <span className="text-v2-ink font-semibold">
+                <span className="text-foreground font-semibold">
                   {totals.totalEntries.toLocaleString()}
                 </span>{" "}
                 {entryLabel}
               </span>
               {filters.scope !== "submit" && "totalIp" in totals && (
                 <>
-                  <span className="text-v2-ink-subtle">·</span>
+                  <span className="text-muted-foreground">·</span>
                   <span>
-                    <span className="font-mono font-semibold text-amber-600 dark:text-amber-400">
+                    <span className="font-mono font-semibold text-warning">
                       {formatCompactCurrency(totals.totalIp)}
                     </span>{" "}
                     IP
                   </span>
                 </>
               )}
-              <span className="text-v2-ink-subtle">·</span>
+              <span className="text-muted-foreground">·</span>
               <span>
                 <span
                   className={cn(
                     "font-mono font-semibold",
                     filters.scope === "submit"
-                      ? "text-amber-600 dark:text-amber-400"
-                      : "text-v2-ink",
+                      ? "text-warning"
+                      : "text-foreground",
                   )}
                 >
                   {formatCompactCurrency(totals.totalAp)}
                 </span>{" "}
                 AP
               </span>
-              <span className="text-v2-ink-subtle">·</span>
+              <span className="text-muted-foreground">·</span>
               <span>
-                <span className="text-v2-ink font-semibold">
+                <span className="text-foreground font-semibold">
                   {totals.totalPolicies.toLocaleString()}
                 </span>{" "}
                 {filters.scope === "submit" ? "submitted" : "policies"}
@@ -212,7 +212,7 @@ export function LeaderboardPage() {
                 updateFilter("teamThreshold", Number(v) as TeamThreshold)
               }
             >
-              <SelectTrigger className="h-7 w-16 text-[11px] border-v2-ring bg-v2-card rounded-v2-pill">
+              <SelectTrigger className="h-7 w-16 text-[11px] border-border bg-card rounded-v2-pill">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

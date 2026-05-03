@@ -218,30 +218,30 @@ export function SignatureRequiredConfig({
   const hasTemplates = templates && templates.length > 0;
 
   return (
-    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-background rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <PenTool className="h-3.5 w-3.5 text-v2-ink-muted" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
+        <PenTool className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
           E-Signature Configuration
         </span>
       </div>
 
       {/* Template Selection */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
-          Signature Template <span className="text-red-500">*</span>
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+          Signature Template <span className="text-destructive">*</span>
         </Label>
 
         {!hasTemplates && !templatesLoading ? (
           // No templates - show setup guidance
-          <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md space-y-2">
+          <div className="p-3 bg-info/10 border border-info/30 rounded-md space-y-2">
             <div className="flex items-start gap-2">
-              <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+              <Info className="h-4 w-4 text-info mt-0.5 flex-shrink-0" />
               <div className="space-y-1">
-                <p className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                <p className="text-xs font-medium text-info">
                   No signature templates configured
                 </p>
-                <p className="text-[10px] text-blue-600 dark:text-blue-400">
+                <p className="text-[10px] text-info">
                   To use e-signatures, first create a template in DocuSeal, then
                   link it here. Templates define the document layout and
                   signature fields.
@@ -298,7 +298,7 @@ export function SignatureRequiredConfig({
                     >
                       {template.name}
                       {template.templateType !== "custom" && (
-                        <span className="ml-1 text-v2-ink-subtle">
+                        <span className="ml-1 text-muted-foreground">
                           ({TEMPLATE_TYPE_LABELS[template.templateType]})
                         </span>
                       )}
@@ -320,16 +320,16 @@ export function SignatureRequiredConfig({
         )}
 
         {!templateId && hasTemplates && (
-          <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1 text-[10px] text-warning">
             <AlertCircle className="h-3 w-3" />
             Template is required
           </div>
         )}
         {selectedTemplate && (
-          <p className="text-[9px] text-v2-ink-muted">
+          <p className="text-[9px] text-muted-foreground">
             {selectedTemplate.description || "No description"}
             {selectedTemplate.docusealTemplateId && (
-              <span className="ml-1 text-v2-ink-subtle">
+              <span className="ml-1 text-muted-foreground">
                 (DocuSeal ID: {selectedTemplate.docusealTemplateId})
               </span>
             )}
@@ -339,7 +339,7 @@ export function SignatureRequiredConfig({
 
       {/* Required Signers */}
       <div className="space-y-1.5">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle flex items-center gap-1">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground flex items-center gap-1">
           <Users className="h-3 w-3" />
           Required Signers
         </Label>
@@ -360,14 +360,14 @@ export function SignatureRequiredConfig({
               />
               <label
                 htmlFor={`role-${role}`}
-                className="text-[11px] text-v2-ink-muted cursor-pointer"
+                className="text-[11px] text-muted-foreground cursor-pointer"
               >
                 {SIGNER_ROLE_LABELS[role]}
               </label>
             </div>
           ))}
         </div>
-        <p className="text-[9px] text-v2-ink-muted">
+        <p className="text-[9px] text-muted-foreground">
           Select all roles that must sign this document
         </p>
       </div>
@@ -375,7 +375,7 @@ export function SignatureRequiredConfig({
       {/* Signing Order (only if multiple signers) */}
       {requiredSignerRoles.length > 1 && (
         <div className="space-y-1">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle flex items-center gap-1">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground flex items-center gap-1">
             <Settings className="h-3 w-3" />
             Signing Order
           </Label>
@@ -394,7 +394,7 @@ export function SignatureRequiredConfig({
               ))}
             </SelectContent>
           </Select>
-          <p className="text-[9px] text-v2-ink-muted">
+          <p className="text-[9px] text-muted-foreground">
             {signingOrder === "sequential"
               ? "Signers will sign in order: recruit → recruiter → agency owner"
               : "All signers can sign simultaneously"}
@@ -404,7 +404,7 @@ export function SignatureRequiredConfig({
 
       {/* Custom Message */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Custom Message (Optional)
         </Label>
         <Textarea
@@ -413,14 +413,14 @@ export function SignatureRequiredConfig({
           placeholder="Add a custom message to include in the signing invitation..."
           className="min-h-[60px] text-[11px]"
         />
-        <p className="text-[9px] text-v2-ink-muted">
+        <p className="text-[9px] text-muted-foreground">
           This message will be shown to signers when they view the document
         </p>
       </div>
 
       {/* Expiration */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle flex items-center gap-1">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground flex items-center gap-1">
           <Clock className="h-3 w-3" />
           Expires In (Days)
         </Label>
@@ -434,7 +434,7 @@ export function SignatureRequiredConfig({
           max={365}
           className="h-7 text-[11px] w-24"
         />
-        <p className="text-[9px] text-v2-ink-muted">
+        <p className="text-[9px] text-muted-foreground">
           Signature request will expire after this many days
         </p>
       </div>
@@ -442,10 +442,10 @@ export function SignatureRequiredConfig({
       {/* Auto-send */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Auto-send on Phase Start
           </Label>
-          <p className="text-[9px] text-v2-ink-muted">
+          <p className="text-[9px] text-muted-foreground">
             Automatically send signature request when phase begins
           </p>
         </div>
@@ -457,8 +457,8 @@ export function SignatureRequiredConfig({
       </div>
 
       {/* Info */}
-      <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-800">
-        <p className="text-[9px] text-blue-700 dark:text-blue-400">
+      <div className="p-2 bg-info/10 rounded border border-info/30">
+        <p className="text-[9px] text-info">
           <strong>Note:</strong> This item will be marked complete when all
           required signers have signed the document. Signers will receive an
           email notification and can sign directly within the application.
@@ -520,7 +520,7 @@ export function SignatureRequiredConfig({
             <div className="space-y-1">
               <Label className="text-xs">
                 DocuSeal Template ID{" "}
-                <span className="text-v2-ink-subtle">(Optional)</span>
+                <span className="text-muted-foreground">(Optional)</span>
               </Label>
               <Input
                 value={docusealTemplateId}
@@ -528,13 +528,13 @@ export function SignatureRequiredConfig({
                 placeholder="e.g., 12345"
                 className="h-8 text-sm"
               />
-              <p className="text-[10px] text-v2-ink-muted">
+              <p className="text-[10px] text-muted-foreground">
                 Find this ID in your DocuSeal dashboard under Templates. Leave
                 empty to add later.
               </p>
             </div>
-            <div className="p-2 bg-amber-50 dark:bg-amber-950/30 rounded border border-amber-200 dark:border-amber-800">
-              <p className="text-[10px] text-amber-700 dark:text-amber-400">
+            <div className="p-2 bg-warning/10 rounded border border-warning/30">
+              <p className="text-[10px] text-warning">
                 <strong>Important:</strong> Make sure your DocuSeal template has
                 signature fields configured. Without them, signers won't be able
                 to sign the document.

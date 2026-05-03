@@ -91,7 +91,7 @@ export function ChannelOrchestrationPage() {
   return (
     <div className="h-[calc(100vh-4rem)] flex flex-col p-3 space-y-2.5 bg-v2-canvas dark:bg-v2-canvas">
       {/* Hero Header */}
-      <div className="relative overflow-hidden rounded-xl bg-foreground">
+      <div className="relative overflow-hidden rounded-lg bg-v2-card-dark">
         <div className="absolute inset-0 opacity-[0.03]">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -114,25 +114,25 @@ export function ChannelOrchestrationPage() {
         </div>
         <div
           className="absolute top-1/3 -left-16 w-64 h-64 rounded-full blur-3xl"
-          style={{ backgroundColor: "rgba(59,130,246,0.12)" }}
+          style={{ backgroundColor: "rgba(226, 255, 204, 0.15)" }}
         />
         <div
           className="absolute bottom-0 -right-16 w-48 h-48 rounded-full blur-3xl"
-          style={{ backgroundColor: "rgba(139,92,246,0.08)" }}
+          style={{ backgroundColor: "rgba(132, 144, 127, 0.14)" }}
         />
         <div className="relative px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
               className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
-              style={{ backgroundColor: "rgba(59,130,246,0.2)" }}
+              style={{ backgroundColor: "rgba(226, 255, 204, 0.25)" }}
             >
-              <Network className="h-4 w-4 text-white dark:text-black" />
+              <Network className="h-4 w-4 text-white" />
             </div>
             <div>
-              <h1 className="text-sm font-bold text-white dark:text-black tracking-tight">
+              <h1 className="text-sm font-bold text-white tracking-tight">
                 Channel Orchestration
               </h1>
-              <p className="text-[10px] text-white/50 dark:text-black/40">
+              <p className="text-[10px] text-white/60">
                 SMS + Voice routing rules, post-call actions, voice session
                 history
               </p>
@@ -143,9 +143,9 @@ export function ChannelOrchestrationPage() {
 
       {/* Channel availability warning */}
       {!agent.botEnabled && !agent.voiceEnabled && (
-        <div className="flex items-center gap-3 rounded-lg border border-red-300 bg-red-50 px-4 py-2 dark:border-red-700 dark:bg-red-950/30">
-          <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
-          <p className="text-[10px] text-red-700 dark:text-red-300">
+        <div className="flex items-center gap-3 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2 dark:border-destructive dark:bg-destructive/15">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
+          <p className="text-[10px] text-destructive">
             Both SMS Bot and Voice Agent are disabled. Orchestration rules will
             not be evaluated until at least one channel is active.
           </p>
@@ -154,9 +154,9 @@ export function ChannelOrchestrationPage() {
 
       {/* Per-tab status banners */}
       {activeTab === "rules" && (
-        <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50/50 px-4 py-2 dark:border-blue-800 dark:bg-blue-950/20">
-          <ListChecks className="h-3.5 w-3.5 shrink-0 text-blue-500 dark:text-blue-400" />
-          <p className="text-[10px] text-blue-700 dark:text-blue-300">
+        <div className="flex items-center gap-3 rounded-lg border border-info/30 bg-info/10/50 px-4 py-2 dark:border-info dark:bg-info/10">
+          <ListChecks className="h-3.5 w-3.5 shrink-0 text-info" />
+          <p className="text-[10px] text-info">
             Rules are evaluated in real-time for SMS and voice channels.
             {!agent.voiceEnabled &&
               " Voice Agent is not active — voice-only rules will have no effect."}
@@ -166,18 +166,18 @@ export function ChannelOrchestrationPage() {
         </div>
       )}
       {activeTab === "post-call" && (
-        <div className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 dark:border-amber-700 dark:bg-amber-950/30">
-          <Construction className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
-          <p className="text-[10px] text-amber-600 dark:text-amber-400">
+        <div className="flex items-center gap-3 rounded-lg border border-warning/40 bg-warning/10 px-4 py-2 dark:border-warning dark:bg-warning/15">
+          <Construction className="h-3.5 w-3.5 shrink-0 text-warning" />
+          <p className="text-[10px] text-warning">
             Configuration is saved. Automatic post-call execution requires
             backend Retell integration (coming soon).
           </p>
         </div>
       )}
       {activeTab === "sessions" && (
-        <div className="flex items-center gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2 dark:border-amber-700 dark:bg-amber-950/30">
-          <Construction className="h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-400" />
-          <p className="text-[10px] text-amber-600 dark:text-amber-400">
+        <div className="flex items-center gap-3 rounded-lg border border-warning/40 bg-warning/10 px-4 py-2 dark:border-warning dark:bg-warning/15">
+          <Construction className="h-3.5 w-3.5 shrink-0 text-warning" />
+          <p className="text-[10px] text-warning">
             Voice session history depends on backend call recording integration.
           </p>
         </div>

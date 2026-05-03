@@ -95,7 +95,7 @@ export function VoiceSessionDetail({ sessionId, onBack }: Props) {
                   className={cn(
                     "max-w-[80%] px-2 py-1 rounded text-[10px]",
                     entry.role === "agent"
-                      ? "bg-blue-50 dark:bg-blue-950/30 text-blue-800 dark:text-blue-200"
+                      ? "bg-info/10 text-info dark:text-info"
                       : "bg-v2-card-tinted dark:bg-v2-card-tinted text-v2-ink dark:text-v2-ink-muted",
                   )}
                 >

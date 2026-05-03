@@ -192,7 +192,7 @@ export function PremiumAddonsSection() {
     return (
       <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
         <div className="flex items-center gap-1.5 px-3 py-2 border-b border-v2-ring/60">
-          <Sparkles className="h-3.5 w-3.5 text-purple-500" />
+          <Sparkles className="h-3.5 w-3.5 text-info" />
           <span className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
             Premium Add-ons
           </span>
@@ -211,7 +211,7 @@ export function PremiumAddonsSection() {
   return (
     <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
       <div className="flex items-center gap-1.5 px-3 py-2 border-b border-v2-ring/60">
-        <Sparkles className="h-3.5 w-3.5 text-purple-500" />
+        <Sparkles className="h-3.5 w-3.5 text-info" />
         <span className="text-[11px] font-semibold text-v2-ink uppercase tracking-wide">
           Premium Add-ons
         </span>
@@ -226,9 +226,9 @@ export function PremiumAddonsSection() {
         <div className="space-y-4">
           {/* Team plan users: show TeamUWWizardManager instead of standalone addon UI */}
           {isTeamPlan ? (
-            <div className="relative p-3 rounded-lg border border-purple-300 dark:border-purple-700 bg-purple-50/50 dark:bg-purple-950/20">
+            <div className="relative p-3 rounded-lg border border-info/40 dark:border-info bg-info/10/50 dark:bg-info/10">
               <div className="absolute -top-2 right-3">
-                <Badge className="bg-purple-500 text-white text-[9px] px-1.5">
+                <Badge className="bg-info text-white text-[9px] px-1.5">
                   <Check className="h-2.5 w-2.5 mr-0.5" />
                   Included in Team
                 </Badge>
@@ -253,10 +253,10 @@ export function PremiumAddonsSection() {
                 return (
                   <div
                     key={addon.id}
-                    className="relative p-3 rounded-lg border border-purple-300 dark:border-purple-700 bg-purple-50/50 dark:bg-purple-950/20"
+                    className="relative p-3 rounded-lg border border-info/40 dark:border-info bg-info/10/50 dark:bg-info/10"
                   >
                     <div className="absolute -top-2 right-3">
-                      <Badge className="bg-purple-500 text-white text-[9px] px-1.5">
+                      <Badge className="bg-info text-white text-[9px] px-1.5">
                         <Check className="h-2.5 w-2.5 mr-0.5" />
                         {accessSource === "super_admin"
                           ? "Admin Access"
@@ -282,7 +282,7 @@ export function PremiumAddonsSection() {
 
                         {/* Usage Display */}
                         {uwUsage && (
-                          <div className="mt-3 p-2 bg-white dark:bg-v2-ring rounded border border-purple-200 dark:border-purple-800">
+                          <div className="mt-3 p-2 bg-white dark:bg-v2-ring rounded border border-info/30">
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-[10px] font-medium text-v2-ink-muted">
                                 {uwUsage.tier_name}
@@ -296,10 +296,10 @@ export function PremiumAddonsSection() {
                                 className={cn(
                                   "h-full rounded-full transition-all",
                                   uwUsage.usage_percent >= 90
-                                    ? "bg-red-500"
+                                    ? "bg-destructive"
                                     : uwUsage.usage_percent >= 75
-                                      ? "bg-amber-500"
-                                      : "bg-purple-500",
+                                      ? "bg-warning"
+                                      : "bg-info",
                                 )}
                                 style={{
                                   width: `${Math.min(uwUsage.usage_percent, 100)}%`,
@@ -351,10 +351,10 @@ export function PremiumAddonsSection() {
                   return (
                     <div
                       key={addon.id}
-                      className="relative rounded-lg border border-purple-300 bg-purple-50/50 p-3 dark:border-purple-700 dark:bg-purple-950/20"
+                      className="relative rounded-lg border border-info/40 bg-info/10/50 p-3 dark:border-info dark:bg-info/10"
                     >
                       <div className="absolute -top-2 right-3">
-                        <Badge className="bg-purple-500 px-1.5 text-[9px] text-white">
+                        <Badge className="bg-info px-1.5 text-[9px] text-white">
                           <Check className="mr-0.5 h-2.5 w-2.5" />
                           Active
                         </Badge>
@@ -382,7 +382,7 @@ export function PremiumAddonsSection() {
                                 </span>
                               ),
                             )}
-                            <span className="rounded bg-purple-100 px-1.5 py-0.5 text-[9px] font-medium text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
+                            <span className="rounded bg-info/20 px-1.5 py-0.5 text-[9px] font-medium text-info dark:bg-info/15 dark:text-info">
                               {getTierAllowanceLabel(addon.name, currentTier)}
                             </span>
                           </div>
@@ -401,7 +401,7 @@ export function PremiumAddonsSection() {
                     className={cn(
                       "rounded-lg border p-3",
                       comingSoon
-                        ? "border-amber-200 bg-amber-50/60 dark:border-amber-800/70 dark:bg-amber-950/10"
+                        ? "border-warning/30 bg-warning/10/60 dark:border-warning/70 dark:bg-warning/10/10"
                         : "border-v2-ring",
                     )}
                   >
@@ -425,7 +425,7 @@ export function PremiumAddonsSection() {
                             "Enhance your subscription with a premium add-on tier."}
                         </p>
                         {comingSoon && (
-                          <p className="mt-2 text-[10px] text-amber-700 dark:text-amber-300">
+                          <p className="mt-2 text-[10px] text-warning">
                             Self-serve access opens soon. Team subscribers will
                             get first access.
                           </p>
@@ -435,7 +435,7 @@ export function PremiumAddonsSection() {
 
                     <div className="mb-3">
                       <div className="mb-2 flex items-center gap-1.5">
-                        <Zap className="h-3 w-3 text-amber-500" />
+                        <Zap className="h-3 w-3 text-warning" />
                         <span className="text-[10px] font-medium text-v2-ink-muted">
                           Choose Your Plan
                         </span>
@@ -453,7 +453,7 @@ export function PremiumAddonsSection() {
                               className={cn(
                                 "rounded-lg border p-2 text-left transition-all",
                                 isSelected
-                                  ? "border-purple-500 bg-purple-50 dark:bg-purple-950/30"
+                                  ? "border-info bg-info/10"
                                   : "border-v2-ring hover:border-v2-ring  ",
                               )}
                             >
@@ -471,7 +471,7 @@ export function PremiumAddonsSection() {
                               </div>
                               {isSelected && (
                                 <div className="mt-1">
-                                  <Badge className="bg-purple-500 text-[8px] text-white">
+                                  <Badge className="bg-info text-[8px] text-white">
                                     Selected
                                   </Badge>
                                 </div>
@@ -491,7 +491,7 @@ export function PremiumAddonsSection() {
                           {label}
                         </span>
                       ))}
-                      <span className="rounded bg-purple-100 px-1.5 py-0.5 text-[9px] font-medium text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
+                      <span className="rounded bg-info/20 px-1.5 py-0.5 text-[9px] font-medium text-info dark:bg-info/15 dark:text-info">
                         {getTierAllowanceLabel(addon.name, selectedTier)}
                       </span>
                     </div>
@@ -504,7 +504,7 @@ export function PremiumAddonsSection() {
                       {hasVariantIds && !comingSoon ? (
                         <Button
                           size="sm"
-                          className="h-7 bg-purple-600 text-[10px] hover:bg-purple-700"
+                          className="h-7 bg-info text-[10px] hover:bg-info"
                           disabled={purchaseLoading || !hasActiveSubscription}
                           onClick={() =>
                             handlePurchaseTier(selectedTierWithAddon)
@@ -537,13 +537,13 @@ export function PremiumAddonsSection() {
                   className={cn(
                     "relative p-3 rounded-lg border",
                     hasAccess
-                      ? "border-purple-300 dark:border-purple-700 bg-purple-50/50 dark:bg-purple-950/20"
+                      ? "border-info/40 dark:border-info bg-info/10/50 dark:bg-info/10"
                       : "border-v2-ring",
                   )}
                 >
                   {hasAccess && (
                     <div className="absolute -top-2 right-3">
-                      <Badge className="bg-purple-500 text-white text-[9px] px-1.5">
+                      <Badge className="bg-info text-white text-[9px] px-1.5">
                         <Check className="h-2.5 w-2.5 mr-0.5" />
                         Active
                       </Badge>
@@ -585,7 +585,7 @@ export function PremiumAddonsSection() {
                       {hasVariantIds ? (
                         <Button
                           size="sm"
-                          className="h-7 text-[10px] bg-purple-600 hover:bg-purple-700"
+                          className="h-7 text-[10px] bg-info hover:bg-info"
                           disabled={purchaseLoading || !hasActiveSubscription}
                           onClick={() => handlePurchaseAddon(addon)}
                         >

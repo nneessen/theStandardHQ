@@ -102,17 +102,17 @@ export function AcknowledgmentConfig({
   };
 
   return (
-    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-background rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <FileCheck className="h-3.5 w-3.5 text-v2-ink-muted" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
+        <FileCheck className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
           Acknowledgment Configuration
         </span>
       </div>
 
       {/* Content Type */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Content Type
         </Label>
         <Select
@@ -140,7 +140,7 @@ export function AcknowledgmentConfig({
       {(contentType === "document_url" ||
         contentType === "terms_reference") && (
         <div className="space-y-1">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Document Title
           </Label>
           <Input
@@ -155,8 +155,8 @@ export function AcknowledgmentConfig({
 
       {/* Content */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
-          {getContentLabel()} <span className="text-red-500">*</span>
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+          {getContentLabel()} <span className="text-destructive">*</span>
         </Label>
         {contentType === "inline_text" ? (
           <Textarea
@@ -175,7 +175,7 @@ export function AcknowledgmentConfig({
           />
         )}
         {!content.trim() && (
-          <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1 text-[10px] text-warning">
             <AlertCircle className="h-3 w-3" />
             Content is required
           </div>
@@ -184,8 +184,9 @@ export function AcknowledgmentConfig({
 
       {/* Acknowledgment Text */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
-          Acknowledgment Checkbox Text <span className="text-red-500">*</span>
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
+          Acknowledgment Checkbox Text{" "}
+          <span className="text-destructive">*</span>
         </Label>
         <Input
           type="text"
@@ -195,12 +196,12 @@ export function AcknowledgmentConfig({
           className="h-7 text-[11px]"
         />
         {!acknowledgmentText.trim() && (
-          <div className="flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
+          <div className="flex items-center gap-1 text-[10px] text-warning">
             <AlertCircle className="h-3 w-3" />
             Acknowledgment text is required
           </div>
         )}
-        <p className="text-[9px] text-v2-ink-muted">
+        <p className="text-[9px] text-muted-foreground">
           This text appears next to the checkbox the recruit must check
         </p>
       </div>
@@ -209,10 +210,10 @@ export function AcknowledgmentConfig({
       {contentType === "inline_text" && (
         <div className="flex items-center justify-between py-1">
           <div className="space-y-0.5">
-            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               Require Scroll to Bottom
             </Label>
-            <p className="text-[9px] text-v2-ink-muted">
+            <p className="text-[9px] text-muted-foreground">
               Recruit must scroll through entire content before acknowledging
             </p>
           </div>
@@ -225,8 +226,8 @@ export function AcknowledgmentConfig({
       )}
 
       {/* Info */}
-      <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-800">
-        <p className="text-[9px] text-blue-700 dark:text-blue-400">
+      <div className="p-2 bg-info/10 rounded border border-info/30">
+        <p className="text-[9px] text-info">
           <strong>Note:</strong> The recruit will see the content and must check
           a box with "{acknowledgmentText || "I acknowledge..."}" to complete
           this item.

@@ -80,7 +80,7 @@ export function LeadSourceSelector({
               {!disabled && (
                 <button
                   onClick={() => removeCustom(source)}
-                  className="hover:text-red-500 transition-colors"
+                  className="hover:text-destructive transition-colors"
                 >
                   <X className="h-2.5 w-2.5" />
                 </button>
@@ -132,7 +132,7 @@ export function LeadSourceSelector({
         <button
           onClick={() => setShowCustomInput(true)}
           disabled={disabled}
-          className="flex items-center gap-1 text-[10px] text-blue-600 dark:text-blue-400 hover:underline disabled:opacity-50"
+          className="flex items-center gap-1 text-[10px] text-info hover:underline disabled:opacity-50"
         >
           <Plus className="h-3 w-3" />
           Add Custom Source

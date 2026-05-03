@@ -125,9 +125,9 @@ export function InstagramTemplatesSettings(): ReactNode {
   };
 
   return (
-    <div className="h-full flex bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft overflow-hidden">
+    <div className="h-full flex bg-card rounded-v2-md border border-border shadow-v2-soft overflow-hidden">
       {/* Sidebar - Categories */}
-      <div className="w-48 border-r border-v2-ring flex flex-col">
+      <div className="w-48 border-r border-border flex flex-col">
         <CategoryManager
           selectedCategory={prospectTypeFilter}
           onSelectCategory={setProspectTypeFilter}
@@ -138,10 +138,10 @@ export function InstagramTemplatesSettings(): ReactNode {
       {/* Main Content - Templates */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="p-3 border-b border-v2-ring flex items-center gap-2">
+        <div className="p-3 border-b border-border flex items-center gap-2">
           {/* Search */}
           <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-v2-ink-subtle" />
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -152,7 +152,7 @@ export function InstagramTemplatesSettings(): ReactNode {
 
           {/* Filters */}
           <div className="flex items-center gap-1.5">
-            <SlidersHorizontal className="h-3.5 w-3.5 text-v2-ink-subtle" />
+            <SlidersHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
 
             <Select
               value={messageStageFilter}
@@ -193,7 +193,7 @@ export function InstagramTemplatesSettings(): ReactNode {
                 {/* Custom categories */}
                 {customCategories.length > 0 && (
                   <>
-                    <div className="px-2 py-1 text-[10px] font-medium text-v2-ink-subtle uppercase tracking-wide">
+                    <div className="px-2 py-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
                       Custom
                     </div>
                     {customCategories.map((cat) => (

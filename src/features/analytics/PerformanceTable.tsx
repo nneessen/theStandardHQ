@@ -1,46 +1,57 @@
 // /home/nneessen/projects/commissionTracker/src/features/analytics/PerformanceTable.tsx
 
-import React from 'react';
-import {DataTable} from '../../components/shared/DataTable';
-import {CarrierPerformance, StatePerformance, ProductPerformance} from '../../types/metrics.types';
-import {DataTableColumn} from '../../types/ui.types';
+import React from "react";
+import { DataTable } from "../../components/shared/DataTable";
+import {
+  CarrierPerformance,
+  StatePerformance,
+  ProductPerformance,
+} from "../../types/metrics.types";
+import { DataTableColumn } from "../../types/ui.types";
 
 interface PerformanceTableProps {
   title: string;
   data: CarrierPerformance[] | StatePerformance[] | ProductPerformance[];
-  type: 'carrier' | 'state' | 'product';
+  type: "carrier" | "state" | "product";
 }
 
-export const PerformanceTable: React.FC<PerformanceTableProps> = ({ title, data, type }) => {
+export const PerformanceTable: React.FC<PerformanceTableProps> = ({
+  title,
+  data,
+  type,
+}) => {
   const renderTable = () => {
     switch (type) {
-      case 'carrier': {
+      case "carrier": {
         const carrierData = data as CarrierPerformance[];
         const carrierColumns: DataTableColumn<CarrierPerformance>[] = [
           {
-            header: 'Carrier',
-            accessor: 'carrierName',
+            header: "Carrier",
+            accessor: "carrierName",
             render: (item: CarrierPerformance) => (
               <div className="font-medium">{item.carrierName}</div>
             ),
           },
           {
-            header: 'Policies',
-            accessor: 'policies',
+            header: "Policies",
+            accessor: "policies",
             render: (item: CarrierPerformance) => item.policies,
           },
           {
-            header: 'Total Revenue',
-            accessor: 'revenue',
+            header: "Total Revenue",
+            accessor: "revenue",
             render: (item: CarrierPerformance) =>
-              `$${item.revenue.toLocaleString('en-US', { minimumFractionDigits: 0 })}`,
+              `$${item.revenue.toLocaleString("en-US", { minimumFractionDigits: 0 })}`,
           },
           {
-            header: 'Avg Commission',
-            accessor: 'averageCommission',
+            header: "Avg Commission",
+            accessor: "averageCommission",
             render: (item: CarrierPerformance) => (
-              <span className="font-medium text-green-600">
-                ${item.averageCommission.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+              <span className="font-medium text-success">
+                $
+                {item.averageCommission.toLocaleString("en-US", {
+                  minimumFractionDigits: 0,
+                })}
               </span>
             ),
           },
@@ -54,33 +65,36 @@ export const PerformanceTable: React.FC<PerformanceTableProps> = ({ title, data,
         );
       }
 
-      case 'state': {
+      case "state": {
         const stateData = data as StatePerformance[];
         const stateColumns: DataTableColumn<StatePerformance>[] = [
           {
-            header: 'State',
-            accessor: 'state',
+            header: "State",
+            accessor: "state",
             render: (item: StatePerformance) => (
               <div className="font-medium">{item.state}</div>
             ),
           },
           {
-            header: 'Policies',
-            accessor: 'policies',
+            header: "Policies",
+            accessor: "policies",
             render: (item: StatePerformance) => item.policies,
           },
           {
-            header: 'Total Revenue',
-            accessor: 'revenue',
+            header: "Total Revenue",
+            accessor: "revenue",
             render: (item: StatePerformance) =>
-              `$${item.revenue.toLocaleString('en-US', { minimumFractionDigits: 0 })}`,
+              `$${item.revenue.toLocaleString("en-US", { minimumFractionDigits: 0 })}`,
           },
           {
-            header: 'Avg Policy Size',
-            accessor: 'averageSize',
+            header: "Avg Policy Size",
+            accessor: "averageSize",
             render: (item: StatePerformance) => (
-              <span className="font-medium text-green-600">
-                ${item.averageSize.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+              <span className="font-medium text-success">
+                $
+                {item.averageSize.toLocaleString("en-US", {
+                  minimumFractionDigits: 0,
+                })}
               </span>
             ),
           },
@@ -94,21 +108,21 @@ export const PerformanceTable: React.FC<PerformanceTableProps> = ({ title, data,
         );
       }
 
-      case 'product': {
+      case "product": {
         const productData = data as ProductPerformance[];
         const productColumns: DataTableColumn<ProductPerformance>[] = [
           {
-            header: 'Product',
-            accessor: 'product',
+            header: "Product",
+            accessor: "product",
             render: (item: ProductPerformance) => {
               const productLabels: Record<string, string> = {
-                whole_life: 'Whole Life',
-                term: 'Term Life',
-                universal_life: 'Universal Life',
-                indexed_universal_life: 'Indexed Universal',
-                accidental: 'Accidental Death',
-                final_expense: 'Final Expense',
-                annuity: 'Annuity',
+                whole_life: "Whole Life",
+                term: "Term Life",
+                universal_life: "Universal Life",
+                indexed_universal_life: "Indexed Universal",
+                accidental: "Accidental Death",
+                final_expense: "Final Expense",
+                annuity: "Annuity",
               };
               return (
                 <div className="font-medium">
@@ -118,22 +132,25 @@ export const PerformanceTable: React.FC<PerformanceTableProps> = ({ title, data,
             },
           },
           {
-            header: 'Policies',
-            accessor: 'policies',
+            header: "Policies",
+            accessor: "policies",
             render: (item: ProductPerformance) => item.policies,
           },
           {
-            header: 'Total Revenue',
-            accessor: 'revenue',
+            header: "Total Revenue",
+            accessor: "revenue",
             render: (item: ProductPerformance) =>
-              `$${item.revenue.toLocaleString('en-US', { minimumFractionDigits: 0 })}`,
+              `$${item.revenue.toLocaleString("en-US", { minimumFractionDigits: 0 })}`,
           },
           {
-            header: 'Avg Policy Size',
-            accessor: 'averageSize',
+            header: "Avg Policy Size",
+            accessor: "averageSize",
             render: (item: ProductPerformance) => (
-              <span className="font-medium text-green-600">
-                ${item.averageSize.toLocaleString('en-US', { minimumFractionDigits: 0 })}
+              <span className="font-medium text-success">
+                $
+                {item.averageSize.toLocaleString("en-US", {
+                  minimumFractionDigits: 0,
+                })}
               </span>
             ),
           },

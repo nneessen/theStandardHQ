@@ -93,7 +93,7 @@ export function CoverageAuditView({ onOpenBuilder }: CoverageAuditViewProps) {
 
   if (error) {
     return (
-      <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[11px] text-red-700">
+      <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-[11px] text-destructive">
         Failed to load coverage audit.{" "}
         {error instanceof Error ? error.message : ""}
       </div>
@@ -403,15 +403,15 @@ function StatusIcon({
   tone: "ready" | "review" | "unsafe" | "neutral";
 }) {
   if (tone === "ready") {
-    return <ShieldCheck className="h-4 w-4 text-emerald-600" />;
+    return <ShieldCheck className="h-4 w-4 text-success" />;
   }
 
   if (tone === "review") {
-    return <ShieldAlert className="h-4 w-4 text-amber-600" />;
+    return <ShieldAlert className="h-4 w-4 text-warning" />;
   }
 
   if (tone === "unsafe") {
-    return <ShieldX className="h-4 w-4 text-red-600" />;
+    return <ShieldX className="h-4 w-4 text-destructive" />;
   }
 
   return <AlertTriangle className="h-4 w-4 text-v2-ink-muted" />;

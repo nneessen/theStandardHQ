@@ -16,33 +16,31 @@ interface NextActionCardProps {
 }
 
 const TONE_SURFACE: Record<NextActionTone, string> = {
-  primary:
-    "bg-amber-50 dark:bg-amber-950/30 ring-amber-200/80 dark:ring-amber-900",
-  warn: "bg-orange-50 dark:bg-orange-950/30 ring-orange-200/80 dark:ring-orange-900",
+  primary: "bg-warning/10 ring-warning/30/80 dark:ring-warning",
+  warn: "bg-warning/10 ring-warning/80 dark:ring-warning",
   neutral: "bg-v2-canvas dark:bg-v2-card ring-v2-ring/80 ",
-  success:
-    "bg-emerald-50 dark:bg-emerald-950/30 ring-emerald-200/80 dark:ring-emerald-900",
+  success: "bg-success/10 ring-success/30/80 dark:ring-success",
 };
 
 const TONE_RULE: Record<NextActionTone, string> = {
-  primary: "bg-amber-500",
-  warn: "bg-orange-500",
+  primary: "bg-warning",
+  warn: "bg-warning",
   neutral: "bg-v2-canvas ",
-  success: "bg-emerald-500",
+  success: "bg-success",
 };
 
 const TONE_LABEL: Record<NextActionTone, string> = {
-  primary: "text-amber-800 dark:text-amber-300",
-  warn: "text-orange-800 dark:text-orange-300",
+  primary: "text-warning",
+  warn: "text-warning dark:text-warning",
   neutral: "text-v2-ink dark:text-v2-ink-subtle",
-  success: "text-emerald-800 dark:text-emerald-300",
+  success: "text-success dark:text-success",
 };
 
 const TONE_CHIP: Record<NextActionTone, string> = {
-  primary: "bg-amber-500 hover:bg-amber-400 text-v2-ink",
-  warn: "bg-orange-500 hover:bg-orange-400 text-white",
+  primary: "bg-warning hover:bg-warning/70 text-v2-ink",
+  warn: "bg-warning hover:bg-warning/70 text-white",
   neutral: "bg-v2-ring hover:bg-v2-card-dark   text-white dark:text-v2-ink",
-  success: "bg-emerald-600 hover:bg-emerald-500 text-white",
+  success: "bg-success hover:bg-success text-white",
 };
 
 const TONE_HEADLINE: Record<NextActionTone, string> = {

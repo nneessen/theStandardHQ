@@ -112,7 +112,7 @@ export function RuleRow({
         className={cn(
           "flex items-center gap-1.5 px-1.5 py-1 rounded border transition-colors",
           isExpanded
-            ? "border-blue-200 dark:border-blue-800 bg-blue-50/20 dark:bg-blue-950/10"
+            ? "border-info/30 bg-info/10/20 dark:bg-info/10/10"
             : "border-v2-ring dark:border-v2-ring-strong bg-v2-card",
           !rule.enabled && "opacity-50",
         )}
@@ -178,7 +178,7 @@ export function RuleRow({
           className="h-6 w-6 p-0 shrink-0"
           onClick={() => onDelete(rule.id)}
         >
-          <Trash2 className="h-3 w-3 text-v2-ink-subtle hover:text-red-500" />
+          <Trash2 className="h-3 w-3 text-v2-ink-subtle hover:text-destructive" />
         </Button>
       </div>
 

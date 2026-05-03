@@ -36,7 +36,7 @@ export function CustomFieldMappingEditor({ mappings, onChange }: Props) {
   return (
     <div className="space-y-1">
       {mappings.length > 0 && (
-        <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-1 text-[9px] text-v2-ink-subtle font-medium px-0.5">
+        <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-1 text-[9px] text-muted-foreground font-medium px-0.5">
           <span>Event</span>
           <span>Custom Field</span>
           <span>Value Template</span>
@@ -94,7 +94,7 @@ export function CustomFieldMappingEditor({ mappings, onChange }: Props) {
             className="h-7 w-7 p-0"
             onClick={() => removeRow(idx)}
           >
-            <X className="h-3 w-3 text-v2-ink-subtle" />
+            <X className="h-3 w-3 text-muted-foreground" />
           </Button>
         </div>
       ))}

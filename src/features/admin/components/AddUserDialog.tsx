@@ -173,22 +173,22 @@ export default function AddUserDialog({
       }}
     >
       <DialogContent
-        className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-v2-card text-v2-ink border border-v2-ring shadow-v2-lift w-[calc(100vw-1.5rem)] sm:w-auto max-w-md max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
+        className="theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-card text-foreground border border-border shadow-v2-lift w-[calc(100vw-1.5rem)] sm:w-auto max-w-md max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col"
         hideCloseButton
       >
-        <DialogHeader className="px-5 py-3 border-b border-v2-ring bg-v2-card-tinted flex-shrink-0">
+        <DialogHeader className="px-5 py-3 border-b border-border bg-card-tinted flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <span className="h-2 w-2 rounded-full bg-v2-accent" />
+            <span className="h-2 w-2 rounded-full bg-accent" />
             <div className="flex flex-col leading-tight">
-              <span className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
+              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">
                 New user
               </span>
-              <DialogTitle className="text-base font-semibold tracking-tight text-v2-ink text-left">
+              <DialogTitle className="text-base font-semibold tracking-tight text-foreground text-left">
                 Add new user
               </DialogTitle>
             </div>
           </div>
-          <DialogDescription className="text-[11px] text-v2-ink-muted text-left mt-1">
+          <DialogDescription className="text-[11px] text-muted-foreground text-left mt-1">
             A login link will be emailed to the user automatically.
           </DialogDescription>
         </DialogHeader>
@@ -196,34 +196,36 @@ export default function AddUserDialog({
         <div className="px-5 py-4 space-y-3 overflow-y-auto flex-1 min-h-0">
           {/* Email */}
           <div>
-            <Label className="text-[11px] text-v2-ink-muted">
-              Email <span className="text-red-500">*</span>
+            <Label className="text-[11px] text-muted-foreground">
+              Email <span className="text-destructive">*</span>
             </Label>
             <div className="relative">
-              <Mail className="absolute left-2 top-1.5 h-3 w-3 text-v2-ink-subtle" />
+              <Mail className="absolute left-2 top-1.5 h-3 w-3 text-muted-foreground" />
               <Input
                 type="email"
                 value={formData.email}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, email: e.target.value }))
                 }
-                className={`h-7 text-[11px] pl-7 bg-v2-card border-v2-ring ${errors.email ? "border-red-500" : ""}`}
+                className={`h-7 text-[11px] pl-7 bg-card border-border ${errors.email ? "border-destructive" : ""}`}
                 placeholder="user@email.com"
               />
             </div>
             {errors.email && (
-              <p className="text-[10px] text-red-500 mt-0.5">{errors.email}</p>
+              <p className="text-[10px] text-destructive mt-0.5">
+                {errors.email}
+              </p>
             )}
           </div>
 
           {/* First Name & Last Name */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[11px] text-v2-ink-muted">
-                First Name <span className="text-red-500">*</span>
+              <Label className="text-[11px] text-muted-foreground">
+                First Name <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
-                <User className="absolute left-2 top-1.5 h-3 w-3 text-v2-ink-subtle" />
+                <User className="absolute left-2 top-1.5 h-3 w-3 text-muted-foreground" />
                 <Input
                   value={formData.first_name}
                   onChange={(e) =>
@@ -232,20 +234,20 @@ export default function AddUserDialog({
                       first_name: e.target.value,
                     }))
                   }
-                  className={`h-7 text-[11px] pl-7 bg-v2-card border-v2-ring ${errors.first_name ? "border-red-500" : ""}`}
+                  className={`h-7 text-[11px] pl-7 bg-card border-border ${errors.first_name ? "border-destructive" : ""}`}
                   placeholder="First"
                 />
               </div>
               {errors.first_name && (
-                <p className="text-[10px] text-red-500 mt-0.5">
+                <p className="text-[10px] text-destructive mt-0.5">
                   {errors.first_name}
                 </p>
               )}
             </div>
 
             <div>
-              <Label className="text-[11px] text-v2-ink-muted">
-                Last Name <span className="text-red-500">*</span>
+              <Label className="text-[11px] text-muted-foreground">
+                Last Name <span className="text-destructive">*</span>
               </Label>
               <Input
                 value={formData.last_name}
@@ -255,11 +257,11 @@ export default function AddUserDialog({
                     last_name: e.target.value,
                   }))
                 }
-                className={`h-7 text-[11px] bg-v2-card border-v2-ring ${errors.last_name ? "border-red-500" : ""}`}
+                className={`h-7 text-[11px] bg-card border-border ${errors.last_name ? "border-destructive" : ""}`}
                 placeholder="Last"
               />
               {errors.last_name && (
-                <p className="text-[10px] text-red-500 mt-0.5">
+                <p className="text-[10px] text-destructive mt-0.5">
                   {errors.last_name}
                 </p>
               )}
@@ -269,23 +271,25 @@ export default function AddUserDialog({
           {/* Phone & Upline */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[11px] text-v2-ink-muted">Phone</Label>
+              <Label className="text-[11px] text-muted-foreground">Phone</Label>
               <div className="relative">
-                <Phone className="absolute left-2 top-1.5 h-3 w-3 text-v2-ink-subtle" />
+                <Phone className="absolute left-2 top-1.5 h-3 w-3 text-muted-foreground" />
                 <Input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, phone: e.target.value }))
                   }
-                  className="h-7 text-[11px] pl-7 bg-v2-card border-v2-ring"
+                  className="h-7 text-[11px] pl-7 bg-card border-border"
                   placeholder="(555) 123-4567"
                 />
               </div>
             </div>
 
             <div>
-              <Label className="text-[11px] text-v2-ink-muted">Upline</Label>
+              <Label className="text-[11px] text-muted-foreground">
+                Upline
+              </Label>
               <UserSearchCombobox
                 value={formData.upline_id ?? null}
                 onChange={(id) =>
@@ -309,7 +313,9 @@ export default function AddUserDialog({
               {/* IMO Selection - Only for super admins */}
               {isSuperAdmin && (
                 <div>
-                  <Label className="text-[11px] text-v2-ink-muted">IMO</Label>
+                  <Label className="text-[11px] text-muted-foreground">
+                    IMO
+                  </Label>
                   <Select
                     value={selectedImoId || "none"}
                     onValueChange={(value) => {
@@ -323,8 +329,8 @@ export default function AddUserDialog({
                     }}
                     disabled={isLoadingImos}
                   >
-                    <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
-                      <Building2 className="h-3 w-3 text-v2-ink-subtle mr-1.5" />
+                    <SelectTrigger className="h-7 text-[11px] bg-card border-border">
+                      <Building2 className="h-3 w-3 text-muted-foreground mr-1.5" />
                       <SelectValue placeholder="Select IMO" />
                     </SelectTrigger>
                     <SelectContent>
@@ -347,7 +353,9 @@ export default function AddUserDialog({
 
               {/* Agency Selection */}
               <div className={isSuperAdmin ? "" : "col-span-2"}>
-                <Label className="text-[11px] text-v2-ink-muted">Agency</Label>
+                <Label className="text-[11px] text-muted-foreground">
+                  Agency
+                </Label>
                 <Select
                   value={formData.agency_id || "none"}
                   onValueChange={(value) =>
@@ -360,8 +368,8 @@ export default function AddUserDialog({
                     (isSuperAdmin && !selectedImoId) || isLoadingAgencies
                   }
                 >
-                  <SelectTrigger className="h-7 text-[11px] bg-v2-card border-v2-ring">
-                    <Building2 className="h-3 w-3 text-v2-ink-subtle mr-1.5" />
+                  <SelectTrigger className="h-7 text-[11px] bg-card border-border">
+                    <Building2 className="h-3 w-3 text-muted-foreground mr-1.5" />
                     <SelectValue
                       placeholder={
                         isSuperAdmin && !selectedImoId
@@ -386,7 +394,7 @@ export default function AddUserDialog({
                   </SelectContent>
                 </Select>
                 {isSuperAdmin && !selectedImoId && (
-                  <p className="text-[9px] text-amber-600 dark:text-amber-400 mt-0.5">
+                  <p className="text-[9px] text-warning mt-0.5">
                     Choose an IMO above to see agencies
                   </p>
                 )}
@@ -397,13 +405,13 @@ export default function AddUserDialog({
           {/* Roles - Compact Inline Checkboxes */}
           {/* Filter out 'recruit' - this is managed by the status toggle */}
           <div>
-            <Label className="text-[11px] text-v2-ink-muted">
+            <Label className="text-[11px] text-muted-foreground">
               Additional Roles
               {errors.roles && (
-                <span className="text-red-500 ml-1">({errors.roles})</span>
+                <span className="text-destructive ml-1">({errors.roles})</span>
               )}
             </Label>
-            <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-1.5 bg-v2-canvas p-2 rounded border border-v2-ring/50">
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-1.5 bg-background p-2 rounded border border-border/50">
               {roles
                 ?.filter((role) => !["recruit"].includes(role.name))
                 .map((role) => (
@@ -418,7 +426,7 @@ export default function AddUserDialog({
                     />
                     <Label
                       htmlFor={`role-${role.id}`}
-                      className="cursor-pointer text-[11px] font-normal text-v2-ink-muted"
+                      className="cursor-pointer text-[11px] font-normal text-muted-foreground"
                       title={role.description ?? undefined}
                     >
                       {role.display_name}
@@ -427,7 +435,7 @@ export default function AddUserDialog({
                 ))}
             </div>
             {!isStaffRoleSelected && (
-              <p className="text-[10px] text-v2-ink-muted mt-0.5">
+              <p className="text-[10px] text-muted-foreground mt-0.5">
                 Base role (agent/recruit) is set by status below
               </p>
             )}
@@ -435,8 +443,8 @@ export default function AddUserDialog({
 
           {/* Status Toggle Buttons - Hidden for staff roles */}
           {isStaffRoleSelected ? (
-            <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded border border-blue-200 dark:border-blue-800/50">
-              <p className="text-[10px] text-blue-700 dark:text-blue-300">
+            <div className="bg-info/10 p-2 rounded border border-info/30/50">
+              <p className="text-[10px] text-info">
                 Staff roles (Trainer, Contracting Manager) are automatically
                 approved and don't require onboarding.
               </p>
@@ -444,7 +452,9 @@ export default function AddUserDialog({
           ) : (
             <>
               <div>
-                <Label className="text-[11px] text-v2-ink-muted">Status</Label>
+                <Label className="text-[11px] text-muted-foreground">
+                  Status
+                </Label>
                 <div className="grid grid-cols-2 gap-1 mt-1">
                   <Button
                     type="button"
@@ -508,7 +518,7 @@ export default function AddUserDialog({
                     Pending (Recruit)
                   </Button>
                 </div>
-                <p className="text-[10px] text-v2-ink-muted mt-1">
+                <p className="text-[10px] text-muted-foreground mt-1">
                   {formData.approval_status === "approved"
                     ? "User appears in Users & Access"
                     : "User appears in Recruiting Pipeline"}
@@ -517,8 +527,8 @@ export default function AddUserDialog({
 
               {/* Onboarding Status - Only when Pending */}
               {formData.approval_status === "pending" && (
-                <div className="bg-v2-canvas p-2 rounded border border-v2-ring/50">
-                  <Label className="text-[10px] text-v2-ink-muted">
+                <div className="bg-background p-2 rounded border border-border/50">
+                  <Label className="text-[10px] text-muted-foreground">
                     Onboarding Status
                   </Label>
                   <div className="grid grid-cols-3 gap-1 mt-1">
@@ -583,7 +593,7 @@ export default function AddUserDialog({
           )}
         </div>
 
-        <DialogFooter className="px-5 py-3 border-t border-v2-ring bg-v2-card-tinted flex-shrink-0 gap-2 sm:justify-end">
+        <DialogFooter className="px-5 py-3 border-t border-border bg-card-tinted flex-shrink-0 gap-2 sm:justify-end">
           <PillButton
             type="button"
             tone="ghost"

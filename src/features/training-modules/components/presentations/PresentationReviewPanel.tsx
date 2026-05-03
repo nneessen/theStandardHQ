@@ -89,7 +89,7 @@ export function PresentationReviewPanel({
       <div className="flex items-center gap-2">
         <Button
           size="sm"
-          className="h-7 text-[11px] bg-emerald-600 hover:bg-emerald-700"
+          className="h-7 text-[11px] bg-success hover:bg-success"
           onClick={() => handleReview("approved")}
           disabled={reviewMutation.isPending}
         >
@@ -103,7 +103,7 @@ export function PresentationReviewPanel({
         <Button
           size="sm"
           variant="outline"
-          className="h-7 text-[11px] border-amber-300 text-amber-600 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-400"
+          className="h-7 text-[11px] border-warning/40 text-warning hover:bg-warning/10 dark:border-warning dark:text-warning"
           onClick={() => handleReview("needs_improvement")}
           disabled={reviewMutation.isPending}
         >

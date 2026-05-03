@@ -71,7 +71,7 @@ export function RuleSetList({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="h-5 w-5 animate-spin text-v2-ink-subtle" />
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -80,7 +80,7 @@ export function RuleSetList({
     <div className="space-y-2">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <div className="text-[11px] text-muted-foreground dark:text-muted-foreground">
           {ruleSets.length} rule set{ruleSets.length !== 1 ? "s" : ""}
         </div>
         <Button
@@ -96,31 +96,31 @@ export function RuleSetList({
 
       {/* Table */}
       {ruleSets.length === 0 ? (
-        <div className="text-center py-8 text-[11px] text-v2-ink-subtle bg-v2-canvas dark:bg-v2-card/50 rounded-lg">
+        <div className="text-center py-8 text-[11px] text-muted-foreground bg-background dark:bg-card/50 rounded-lg">
           No rule sets yet. Create your first rule set to define acceptance
           criteria.
         </div>
       ) : (
-        <div className="rounded-lg overflow-hidden bg-v2-card shadow-sm">
+        <div className="rounded-lg overflow-hidden bg-card shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow className="bg-v2-canvas dark:bg-v2-card-tinted/50 hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50">
-                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-v2-ink-muted dark:text-v2-ink-subtle">
+              <TableRow className="bg-background dark:bg-card-tinted/50 hover:bg-background dark:hover:bg-card-tinted/50">
+                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                   Name
                 </TableHead>
-                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-v2-ink-muted dark:text-v2-ink-subtle">
+                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                   Scope
                 </TableHead>
-                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-v2-ink-muted dark:text-v2-ink-subtle">
+                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                   Condition
                 </TableHead>
-                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-v2-ink-muted dark:text-v2-ink-subtle">
+                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                   Rules
                 </TableHead>
-                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-v2-ink-muted dark:text-v2-ink-subtle">
+                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                   Active
                 </TableHead>
-                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-v2-ink-muted dark:text-v2-ink-subtle">
+                <TableHead className="h-8 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground dark:text-muted-foreground">
                   Updated
                 </TableHead>
                 <TableHead className="w-10 h-8"></TableHead>
@@ -130,15 +130,15 @@ export function RuleSetList({
               {ruleSets.map((rs) => (
                 <TableRow
                   key={rs.id}
-                  className="cursor-pointer hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/30"
+                  className="cursor-pointer hover:bg-background dark:hover:bg-card-tinted/30"
                   onClick={() => onSelect(rs)}
                 >
                   <TableCell className="py-2">
-                    <div className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
+                    <div className="text-[11px] font-medium text-foreground dark:text-foreground">
                       {rs.name}
                     </div>
                     {rs.description && (
-                      <div className="text-[10px] text-v2-ink-subtle truncate max-w-48">
+                      <div className="text-[10px] text-muted-foreground truncate max-w-48">
                         {rs.description}
                       </div>
                     )}
@@ -151,16 +151,16 @@ export function RuleSetList({
                       {rs.scope}
                     </Badge>
                   </TableCell>
-                  <TableCell className="py-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <TableCell className="py-2 text-[11px] text-muted-foreground dark:text-muted-foreground">
                     {rs.condition_code ? (
                       <span className="capitalize">
                         {rs.condition_code.replace(/_/g, " ")}
                       </span>
                     ) : (
-                      <span className="text-v2-ink-subtle">—</span>
+                      <span className="text-muted-foreground">—</span>
                     )}
                   </TableCell>
-                  <TableCell className="py-2 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle font-mono">
+                  <TableCell className="py-2 text-[11px] text-muted-foreground dark:text-muted-foreground font-mono">
                     {rs.rules?.length || 0}
                   </TableCell>
                   <TableCell
@@ -175,7 +175,7 @@ export function RuleSetList({
                       className="h-4 w-7"
                     />
                   </TableCell>
-                  <TableCell className="py-2 text-[10px] text-v2-ink-subtle">
+                  <TableCell className="py-2 text-[10px] text-muted-foreground">
                     {rs.updated_at
                       ? formatDistanceToNow(new Date(rs.updated_at), {
                           addSuffix: true,
@@ -206,7 +206,7 @@ export function RuleSetList({
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => setDeleteConfirm(rs.id)}
-                          className="text-[11px] text-red-600"
+                          className="text-[11px] text-destructive"
                         >
                           <Trash2 className="h-3 w-3 mr-2" />
                           Delete
@@ -242,7 +242,7 @@ export function RuleSetList({
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="h-6 text-[10px] bg-red-600 hover:bg-red-700"
+              className="h-6 text-[10px] bg-destructive hover:bg-destructive"
             >
               Delete
             </AlertDialogAction>

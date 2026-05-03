@@ -81,7 +81,7 @@ export default function EventTypeFormDialog({
           <DialogTitle className="text-sm font-semibold">
             {isNew ? "Create New Event Type" : "Edit Event Type"}
           </DialogTitle>
-          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-0.5">
+          <p className="text-[10px] text-muted-foreground dark:text-muted-foreground mt-0.5">
             {isNew
               ? "Define a new event that can trigger workflows"
               : "Update the event type configuration"}
@@ -92,13 +92,14 @@ export default function EventTypeFormDialog({
           {/* Event Name & Category Row */}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+              <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                 Event Name
               </Label>
               <Input
                 className={cn(
-                  "h-7 text-[11px] border-v2-ring dark:border-v2-ring-strong",
-                  errors.eventName && "border-red-400 dark:border-red-600",
+                  "h-7 text-[11px] border-border dark:border-border",
+                  errors.eventName &&
+                    "border-destructive/70 dark:border-destructive",
                 )}
                 placeholder="category.action_name"
                 value={editData.eventName}
@@ -109,13 +110,13 @@ export default function EventTypeFormDialog({
                 data-lpignore="true"
               />
               {errors.eventName && (
-                <p className="text-[10px] text-red-600 dark:text-red-400 mt-0.5">
+                <p className="text-[10px] text-destructive mt-0.5">
                   {errors.eventName}
                 </p>
               )}
             </div>
             <div>
-              <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+              <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                 Category
               </Label>
               <Select
@@ -124,8 +125,9 @@ export default function EventTypeFormDialog({
               >
                 <SelectTrigger
                   className={cn(
-                    "h-7 text-[11px] border-v2-ring dark:border-v2-ring-strong",
-                    errors.category && "border-red-400 dark:border-red-600",
+                    "h-7 text-[11px] border-border dark:border-border",
+                    errors.category &&
+                      "border-destructive/70 dark:border-destructive",
                   )}
                 >
                   <SelectValue />
@@ -139,7 +141,7 @@ export default function EventTypeFormDialog({
                 </SelectContent>
               </Select>
               {errors.category && (
-                <p className="text-[10px] text-red-600 dark:text-red-400 mt-0.5">
+                <p className="text-[10px] text-destructive mt-0.5">
                   {errors.category}
                 </p>
               )}
@@ -148,13 +150,14 @@ export default function EventTypeFormDialog({
 
           {/* Description */}
           <div>
-            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               Description
             </Label>
             <Input
               className={cn(
-                "h-7 text-[11px] border-v2-ring dark:border-v2-ring-strong",
-                errors.description && "border-red-400 dark:border-red-600",
+                "h-7 text-[11px] border-border dark:border-border",
+                errors.description &&
+                  "border-destructive/70 dark:border-destructive",
               )}
               placeholder="Brief description of when this event fires"
               value={editData.description}
@@ -165,7 +168,7 @@ export default function EventTypeFormDialog({
               data-lpignore="true"
             />
             {errors.description && (
-              <p className="text-[10px] text-red-600 dark:text-red-400 mt-0.5">
+              <p className="text-[10px] text-destructive mt-0.5">
                 {errors.description}
               </p>
             )}
@@ -173,14 +176,14 @@ export default function EventTypeFormDialog({
 
           {/* Available Variables */}
           <div>
-            <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
               Available Variables (JSON)
             </Label>
             <Textarea
               className={cn(
-                "min-h-[80px] text-[11px] font-mono border-v2-ring dark:border-v2-ring-strong",
+                "min-h-[80px] text-[11px] font-mono border-border dark:border-border",
                 errors.availableVariables &&
-                  "border-red-400 dark:border-red-600",
+                  "border-destructive/70 dark:border-destructive",
               )}
               placeholder='{"userId": "UUID", "userName": "string"}'
               value={JSON.stringify(editData.availableVariables, null, 2)}
@@ -196,11 +199,11 @@ export default function EventTypeFormDialog({
               }}
             />
             {errors.availableVariables && (
-              <p className="text-[10px] text-red-600 dark:text-red-400 mt-0.5">
+              <p className="text-[10px] text-destructive mt-0.5">
                 {errors.availableVariables}
               </p>
             )}
-            <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-1">
+            <p className="text-[10px] text-muted-foreground dark:text-muted-foreground mt-1">
               Define variables that will be available to workflows when this
               event fires
             </p>
@@ -208,14 +211,12 @@ export default function EventTypeFormDialog({
 
           {/* Submit Error */}
           {errors.submit && (
-            <p className="text-[11px] text-red-600 dark:text-red-400">
-              {errors.submit}
-            </p>
+            <p className="text-[11px] text-destructive">{errors.submit}</p>
           )}
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-v2-ring dark:border-v2-ring-strong bg-v2-canvas dark:bg-v2-card-tinted/50">
+        <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-border dark:border-border bg-background dark:bg-card-tinted/50">
           <Button
             size="sm"
             variant="ghost"

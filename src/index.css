@@ -9,43 +9,58 @@
 @layer base {
   :root {
     /* ==================== SHADCN SEMANTIC COLORS - LIGHT MODE ==================== */
-    --background: #f5f5f4;
-    --foreground: #18181b;
+    /* Derived from landing palette: deep green / icy blue / adventure yellow.
+       See plan: /Users/nickneessen/.claude/plans/ok-so-the-way-robust-fiddle.md */
+    --background: #e3e9ea;
+    --foreground: #161b13;
     --card: #ffffff;
-    --card-foreground: #18181b;
+    --card-foreground: #161b13;
     --popover: #ffffff;
-    --popover-foreground: #18181b;
-    --primary: #18181b;
-    --primary-foreground: #fafaf9;
-    --secondary: #f4f4f5;
-    --secondary-foreground: #18181b;
-    --muted: #f4f4f5;
-    --muted-foreground: #71717a;
-    --accent: #f4f4f5;
-    --accent-foreground: #18181b;
-    --destructive: #ef4444;
-    --destructive-foreground: #fafaf9;
-    --border: #e4e4e7;
-    --input: #e4e4e7;
-    --ring: #18181b;
+    --popover-foreground: #161b13;
+    --primary: #161b13;
+    --primary-foreground: #ecf0f1;
+    --secondary: #d3dadc;
+    --secondary-foreground: #2d3329;
+    --muted: #d8dee0;
+    --muted-foreground: #5d6759;
+    --accent: #e2ffcc;
+    --accent-foreground: #161b13;
+    --destructive: #b91c1c;
+    --destructive-foreground: #ecf0f1;
+    --border: rgba(132, 144, 127, 0.28);
+    --input: #c2c9c5;
+    --ring: #2d3329;
+    /* Soft variant for table rows / nested borders that stack visually. */
+    --border-soft: rgba(132, 144, 127, 0.16);
 
     /* Semantic colors */
-    --success: #22c55e;
-    --success-foreground: #fafaf9;
-    --warning: #f59e0b;
-    --warning-foreground: #18181b;
-    --error: #ef4444;
-    --error-foreground: #fafaf9;
-    --info: #3b82f6;
-    --info-foreground: #fafaf9;
+    --success: #3f6b3a;
+    --success-foreground: #ecf0f1;
+    --warning: #a47e1c;
+    --warning-foreground: #161b13;
+    --error: #b91c1c;
+    --error-foreground: #ecf0f1;
+    --info: #5d6759;
+    --info-foreground: #ecf0f1;
+
+    /* Landing-derived extension tokens */
+    --accent-strong: #c8e8b0;
+    --surface-deep: #2d3329;
+    --surface-deep-foreground: #ecf0f1;
 
     /* Design tokens (defined once, not duplicated in dark mode) */
-    --radius: 0.5rem;
+    --radius: 0.25rem; /* 4px base — yields rounded-md=2px (landing radius) */
+    --radius-sm: 1px;
+    --radius-lg: 4px;
+    --radius-pill: 9999px;
     --font-sans:
       "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
       "Helvetica Neue", Arial, sans-serif;
     --font-mono:
-      "SF Mono", Monaco, "Cascadia Code", Consolas, "Courier New", monospace;
+      "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, "Cascadia Code",
+      Consolas, monospace;
+    --font-display:
+      "Big Shoulders Display", "Arial Black", system-ui, sans-serif;
 
     /* ==================== RECRUITING PAGE THEME VARIABLES ==================== */
     /* Legacy brutalist tokens — retained one release for downstream callers. */
@@ -74,80 +89,93 @@
     --rec-error: #b91c1c;
     --rec-error-soft: #fee2e2;
 
-    /* ==================== DESIGN SYSTEM V2 (Crextio-inspired) ==================== */
-    /* Soft, rounded, warm yellow/cream aesthetic. Scoped to .theme-v2 surfaces. */
-    --v2-bg-canvas: #f4f1ea;
+    /* ==================== DESIGN SYSTEM V2 — RETARGETED TO LANDING PALETTE ==================== */
+    /* Token names preserved (.theme-v2 wrapper at App.tsx:213 + 8,900+ v2-*
+       class usages). Values now point at the landing aesthetic: icy-blue
+       canvas, deep-green ink, adventure-yellow accent, sharp 1/2/4px radii,
+       near-flat shadows. Body font is Inter; h1/h2 use Big Shoulders Display
+       via the .theme-v2 h1/h2 rule below. */
+    --v2-bg-canvas: #e3e9ea;
     --v2-bg-card: #ffffff;
-    --v2-bg-card-tinted: #fefcf3;
-    --v2-bg-card-dark: #0e0e0c;
-    --v2-accent: #ffd23b;
-    --v2-accent-strong: #f5b800;
-    --v2-accent-soft: #fff4c2;
-    --v2-ink: #0f0f0f;
-    --v2-ink-muted: #5e5d56;
-    --v2-ink-subtle: #918e85;
-    --v2-ring: #ece9df;
-    --v2-ring-strong: #d9d5c7;
-    --v2-radius-sm: 14px;
-    --v2-radius-md: 20px;
-    --v2-radius-lg: 28px;
+    --v2-bg-card-tinted: #f4f7f8;
+    --v2-bg-card-dark: #161b13;
+    --v2-accent: #e2ffcc;
+    --v2-accent-strong: #c8e8b0;
+    --v2-accent-soft: rgba(226, 255, 204, 0.45);
+    --v2-ink: #161b13;
+    --v2-ink-muted: #5d6759;
+    --v2-ink-subtle: #84907f;
+    --v2-ring: rgba(132, 144, 127, 0.28);
+    --v2-ring-strong: rgba(45, 51, 41, 0.22);
+    --v2-radius-sm: 1px;
+    --v2-radius-md: 2px;
+    --v2-radius-lg: 4px;
     --v2-radius-pill: 9999px;
     --v2-shadow-soft:
-      0 1px 2px rgba(20, 18, 12, 0.04), 0 8px 24px rgba(20, 18, 12, 0.05);
+      0 1px 0 rgba(22, 27, 19, 0.04), 0 4px 16px -2px rgba(22, 27, 19, 0.06);
     --v2-shadow-lift:
-      0 2px 4px rgba(20, 18, 12, 0.06), 0 16px 40px rgba(20, 18, 12, 0.08);
+      0 1px 0 rgba(22, 27, 19, 0.08), 0 8px 24px -4px rgba(22, 27, 19, 0.12);
     --v2-font-display:
-      "Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+      "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
   .dark {
-    /* ==================== SHADCN SEMANTIC COLORS - DARK MODE (SOFT DARK) ==================== */
-    --background: #0a0a0a;
-    --foreground: #f4f4f5;
-    --card: #131313;
-    --card-foreground: #f4f4f5;
-    --popover: #1a1a1a;
-    --popover-foreground: #e4e4e7;
-    --primary: #fafaf9;
-    --primary-foreground: #18181b;
-    --secondary: #27272a;
-    --secondary-foreground: #fafaf9;
-    --muted: #27272a;
-    --muted-foreground: #d4d4d8;
-    --accent: #27272a;
-    --accent-foreground: #fafaf9;
+    /* ==================== SHADCN SEMANTIC COLORS - DARK MODE ==================== */
+    /* Inverted landing palette: deep-green canvas, icy-blue text, adventure
+       yellow becomes primary CTA color. See plan §1.1 dark table. */
+    --background: #131811;
+    --foreground: #ecf0f1;
+    --card: #1f2620;
+    --card-foreground: #ecf0f1;
+    --popover: #2d3329;
+    --popover-foreground: #ecf0f1;
+    --primary: #e2ffcc;
+    --primary-foreground: #161b13;
+    --secondary: #2d3329;
+    --secondary-foreground: #dde2e4;
+    --muted: #262d24;
+    --muted-foreground: #c4ccd0;
+    --accent: #e2ffcc;
+    --accent-foreground: #161b13;
     --destructive: #dc2626;
-    --destructive-foreground: #fafaf9;
-    --border: #27272a;
-    --input: #27272a;
-    --ring: #d4d4d8;
+    --destructive-foreground: #ecf0f1;
+    --border: rgba(221, 226, 228, 0.10);
+    --input: rgba(221, 226, 228, 0.18);
+    --ring: #e2ffcc;
+    /* Soft variant for table rows / nested borders that stack visually. */
+    --border-soft: rgba(221, 226, 228, 0.05);
 
     /* Semantic colors - dark mode variants */
-    --success: #16a34a;
-    --success-foreground: #fafaf9;
-    --warning: #d97706;
-    --warning-foreground: #fafaf9;
+    --success: #84907f;
+    --success-foreground: #161b13;
+    --warning: #c8e8b0;
+    --warning-foreground: #161b13;
     --error: #dc2626;
-    --error-foreground: #fafaf9;
-    --info: #2563eb;
-    --info-foreground: #fafaf9;
+    --error-foreground: #ecf0f1;
+    --info: #c4ccd0;
+    --info-foreground: #161b13;
+
+    /* Landing-derived extension tokens (dark) */
+    --accent-strong: #c8e8b0;
+    --surface-deep: #0e1310;
+    --surface-deep-foreground: #ecf0f1;
   }
 
-  /* ==================== DESIGN SYSTEM V2 — DARK MODE ==================== */
+  /* ==================== DESIGN SYSTEM V2 — DARK MODE (LANDING PALETTE) ==================== */
   .theme-v2.dark,
   .dark .theme-v2 {
-    --v2-bg-canvas: #0d0c09;
-    --v2-bg-card: #18170f;
-    --v2-bg-card-tinted: #1a1810;
-    --v2-bg-card-dark: #050505;
-    --v2-accent: #ffd23b;
-    --v2-accent-strong: #f5b800;
-    --v2-accent-soft: rgba(255, 210, 59, 0.12);
-    --v2-ink: #f7f4ea;
-    --v2-ink-muted: #b3b0a4;
-    --v2-ink-subtle: #6b6a62;
-    --v2-ring: rgba(255, 255, 255, 0.08);
-    --v2-ring-strong: rgba(255, 255, 255, 0.16);
+    --v2-bg-canvas: #131811;
+    --v2-bg-card: #1f2620;
+    --v2-bg-card-tinted: #262d24;
+    --v2-bg-card-dark: #0e1310;
+    --v2-accent: #e2ffcc;
+    --v2-accent-strong: #c8e8b0;
+    --v2-accent-soft: rgba(226, 255, 204, 0.18);
+    --v2-ink: #ecf0f1;
+    --v2-ink-muted: #c4ccd0;
+    --v2-ink-subtle: #84907f;
+    --v2-ring: rgba(221, 226, 228, 0.10);
+    --v2-ring-strong: rgba(221, 226, 228, 0.18);
   }
 
   /* Apply background and text colors to body */
@@ -157,6 +185,103 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+}
+
+/* ==================== APP TYPOGRAPHY UTILITIES ==================== */
+/* Landing-derived accents adapted for app density. These are app-scope
+   (NOT inside .theme-landing or .theme-v2). */
+.text-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem; /* 11px */
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.text-page-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.text-kpi {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==================== DASHBOARD CANVAS — landing-derived layered bg ==================== */
+/* Sits on top of .v2-canvas. Topo grid (terrain-grey lattice) + two signature
+   radial blobs (adventure-yellow top-right, terrain-grey bottom-left).
+   Static, no motion. Designed for data-density: low opacity, won't compete
+   with KPI tiles or tables. Apply to dashboard outer container. */
+.dashboard-canvas {
+  position: relative;
+  isolation: isolate;
+}
+
+.dashboard-canvas::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(132, 144, 127, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(132, 144, 127, 0.08) 1px, transparent 1px);
+  background-size: 64px 64px;
+  background-position: -1px -1px;
+  pointer-events: none;
+  z-index: -1;
+  mask-image: radial-gradient(
+    ellipse 80% 60% at 50% 30%,
+    black 40%,
+    transparent 100%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 80% 60% at 50% 30%,
+    black 40%,
+    transparent 100%
+  );
+}
+
+.dashboard-canvas::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(
+      ellipse 50% 40% at 92% 8%,
+      rgba(226, 255, 204, 0.65) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 45% 35% at 5% 95%,
+      rgba(132, 144, 127, 0.16) 0%,
+      transparent 55%
+    );
+  pointer-events: none;
+  z-index: -1;
+}
+
+.dark .dashboard-canvas::before {
+  background-image:
+    linear-gradient(to right, rgba(221, 226, 228, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(221, 226, 228, 0.05) 1px, transparent 1px);
+}
+
+.dark .dashboard-canvas::after {
+  background-image:
+    radial-gradient(
+      ellipse 50% 40% at 92% 8%,
+      rgba(226, 255, 204, 0.12) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 45% 35% at 5% 95%,
+      rgba(221, 226, 228, 0.05) 0%,
+      transparent 55%
+    );
 }
 
 /* ==================== DESIGN SYSTEM V2 UTILITIES ==================== */
@@ -170,12 +295,12 @@
   background-color: var(--v2-bg-canvas);
   background-image: radial-gradient(
       circle at 78% 28%,
-      rgba(255, 210, 59, 0.42) 0%,
+      rgba(226, 255, 204, 0.55) 0%,
       transparent 38%
     ),
     radial-gradient(
       circle at 12% 92%,
-      rgba(255, 210, 59, 0.16) 0%,
+      rgba(132, 144, 127, 0.18) 0%,
       transparent 42%
     );
   background-attachment: fixed;
@@ -188,12 +313,12 @@
   background-color: var(--v2-bg-canvas);
   background-image: radial-gradient(
       circle at 78% 28%,
-      rgba(255, 210, 59, 0.08) 0%,
+      rgba(226, 255, 204, 0.08) 0%,
       transparent 38%
     ),
     radial-gradient(
       circle at 12% 92%,
-      rgba(255, 210, 59, 0.04) 0%,
+      rgba(132, 144, 127, 0.06) 0%,
       transparent 42%
     );
 }
@@ -212,19 +337,21 @@
   box-shadow: var(--v2-shadow-lift);
 }
 
-/* Page-level H1/H2 inside theme-v2 default to the display font.
-   Pages can opt-out by passing their own font-* class. */
+/* Page-level H1/H2 inside theme-v2 use the landing display font (Big Shoulders
+   Display, uppercase, weight 800). Pages can opt-out by passing their own
+   font-* class. */
 .theme-v2 h1:not([class*="font-"]),
 .theme-v2 h2:not([class*="font-"]) {
-  font-family: var(--v2-font-display);
-  letter-spacing: -0.01em;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  line-height: 1;
 }
 
-/* Pill-ify primary buttons inside the v2 theme so all pages get the rounded
-   button look. Targets shadcn buttons (h-9/h-10/h-11 + rounded-md). */
-.theme-v2 button.rounded-md {
-  border-radius: var(--v2-radius-pill);
-}
+/* Buttons inside v2 keep shadcn's `rounded-md` (now 2px via --radius). The
+   prior pill-ification has been removed so app buttons match the landing
+   aesthetic's sharp 2px corners. */
 
 /* ==================== ANIMATIONS ==================== */
 @keyframes fadeIn {

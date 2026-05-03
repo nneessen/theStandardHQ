@@ -201,7 +201,7 @@ export function VoiceCloneWizardPage() {
             type="button"
             onClick={handleCancelClone}
             disabled={cancelMutation.isPending}
-            className="ml-2 text-[10px] text-v2-ink-subtle hover:text-red-500 dark:text-v2-ink-muted dark:hover:text-red-400 transition-colors"
+            className="ml-2 text-[10px] text-v2-ink-subtle hover:text-destructive dark:text-v2-ink-muted dark:hover:text-destructive transition-colors"
           >
             {cancelMutation.isPending ? (
               "Canceling..."
@@ -222,9 +222,9 @@ export function VoiceCloneWizardPage() {
                 className={cn(
                   "flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-semibold",
                   i < currentStepIndex
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                    ? "bg-success/20 text-success dark:bg-success/20 dark:text-success"
                     : i === currentStepIndex
-                      ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300"
+                      ? "bg-info/20 text-info dark:bg-info/10/40 dark:text-info"
                       : "bg-v2-card-tinted text-v2-ink-subtle dark:bg-v2-card-tinted dark:text-v2-ink-muted",
                 )}
               >

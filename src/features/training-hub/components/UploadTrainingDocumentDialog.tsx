@@ -235,20 +235,20 @@ export function UploadTrainingDocumentDialog({
                 htmlFor="training-file-upload"
                 className={`flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed rounded-md cursor-pointer transition-colors ${
                   dragActive
-                    ? "border-blue-400 bg-blue-50 dark:bg-blue-950/20"
-                    : "border-v2-ring dark:border-v2-ring-strong hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50"
+                    ? "border-info/70 bg-info/10"
+                    : "border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted/50"
                 }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
                 onDrop={handleDrop}
               >
-                <Upload className="h-6 w-6 text-v2-ink-subtle" />
+                <Upload className="h-6 w-6 text-muted-foreground" />
                 <div className="text-center">
-                  <span className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <span className="text-xs text-muted-foreground dark:text-muted-foreground">
                     Drop file here or click to browse
                   </span>
-                  <p className="text-[10px] text-v2-ink-subtle dark:text-v2-ink-muted mt-1">
+                  <p className="text-[10px] text-muted-foreground dark:text-muted-foreground mt-1">
                     PDF, Word, Excel, PowerPoint, Images (max 50MB)
                   </p>
                 </div>
@@ -261,13 +261,13 @@ export function UploadTrainingDocumentDialog({
                 />
               </label>
             ) : (
-              <div className="flex items-center gap-2 p-2 bg-v2-canvas dark:bg-v2-card-tinted/50 rounded-md border border-v2-ring dark:border-v2-ring-strong">
-                <FileText className="h-5 w-5 text-v2-ink-muted flex-shrink-0" />
+              <div className="flex items-center gap-2 p-2 bg-background dark:bg-card-tinted/50 rounded-md border border-border dark:border-border">
+                <FileText className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-v2-ink dark:text-v2-ink truncate">
+                  <p className="text-xs font-medium text-foreground dark:text-foreground truncate">
                     {selectedFile.name}
                   </p>
-                  <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                     {formatFileSize(selectedFile.size)}
                   </p>
                 </div>
@@ -319,7 +319,7 @@ export function UploadTrainingDocumentDialog({
                       {CATEGORY_ICONS[cat]}
                       <div>
                         <span>{TRAINING_CATEGORY_CONFIG[cat].label}</span>
-                        <span className="ml-2 text-[10px] text-v2-ink-subtle">
+                        <span className="ml-2 text-[10px] text-muted-foreground">
                           {TRAINING_CATEGORY_CONFIG[cat].description}
                         </span>
                       </div>
@@ -337,7 +337,9 @@ export function UploadTrainingDocumentDialog({
               className="text-[11px] font-medium"
             >
               Description{" "}
-              <span className="font-normal text-v2-ink-subtle">(optional)</span>
+              <span className="font-normal text-muted-foreground">
+                (optional)
+              </span>
             </Label>
             <Textarea
               id="doc-description"
@@ -352,13 +354,13 @@ export function UploadTrainingDocumentDialog({
           {/* Upload Progress */}
           {uploadProgress > 0 && uploadProgress < 100 && (
             <div className="space-y-1">
-              <div className="h-1.5 bg-v2-ring dark:bg-v2-ring-strong rounded-full overflow-hidden">
+              <div className="h-1.5 bg-muted dark:bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-blue-500 transition-all duration-300"
+                  className="h-full bg-info transition-all duration-300"
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
-              <p className="text-[10px] text-v2-ink-muted text-center">
+              <p className="text-[10px] text-muted-foreground text-center">
                 Uploading...
               </p>
             </div>

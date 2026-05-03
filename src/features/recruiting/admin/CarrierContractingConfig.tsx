@@ -75,10 +75,10 @@ export function CarrierContractingConfig({
   }, [notifyChange]);
 
   return (
-    <div className="space-y-3 p-2.5 bg-v2-canvas rounded-md shadow-sm">
+    <div className="space-y-3 p-2.5 bg-background rounded-md shadow-sm">
       <div className="flex items-center gap-2">
-        <Building2 className="h-3.5 w-3.5 text-v2-ink-muted" />
-        <span className="text-[10px] font-medium uppercase tracking-wide text-v2-ink-muted">
+        <Building2 className="h-3.5 w-3.5 text-muted-foreground" />
+        <span className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
           Carrier Contracting Configuration
         </span>
       </div>
@@ -86,10 +86,10 @@ export function CarrierContractingConfig({
       {/* Allow Recruit to Edit Writing Numbers */}
       <div className="flex items-center justify-between py-1">
         <div className="space-y-0.5">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Allow Recruit to Edit Writing Numbers
           </Label>
-          <p className="text-[9px] text-v2-ink-muted">
+          <p className="text-[9px] text-muted-foreground">
             Recruit can enter their own writing numbers from the checklist
           </p>
         </div>
@@ -102,7 +102,7 @@ export function CarrierContractingConfig({
 
       {/* Completion Criteria */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Completion Criteria
         </Label>
         <Select
@@ -128,7 +128,7 @@ export function CarrierContractingConfig({
       {/* Required Count (only for count criteria) */}
       {completionCriteria === "count" && (
         <div className="space-y-1">
-          <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Required Number of Carriers
           </Label>
           <Input
@@ -144,7 +144,7 @@ export function CarrierContractingConfig({
 
       {/* General Instructions */}
       <div className="space-y-1">
-        <Label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+        <Label className="text-[10px] text-muted-foreground dark:text-muted-foreground">
           Instructions (Optional)
         </Label>
         <Textarea
@@ -156,8 +156,8 @@ export function CarrierContractingConfig({
       </div>
 
       {/* Preview */}
-      <div className="p-2 bg-blue-50 dark:bg-blue-950/20 rounded border border-blue-200 dark:border-blue-800">
-        <p className="text-[9px] text-blue-700 dark:text-blue-400">
+      <div className="p-2 bg-info/10 rounded border border-info/30">
+        <p className="text-[9px] text-info">
           <strong>How it works:</strong> Carriers are added via the Contracting
           tab. This checklist item dynamically shows those carriers and tracks
           writing numbers. Completes when{" "}

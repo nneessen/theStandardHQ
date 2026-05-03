@@ -103,16 +103,16 @@ export function RequestAgencyForm() {
               {isCheckingCode ? (
                 <Loader2 className="h-3 w-3 animate-spin text-v2-ink-subtle" />
               ) : isCodeAvailable ? (
-                <CheckCircle className="h-3 w-3 text-green-500" />
+                <CheckCircle className="h-3 w-3 text-success" />
               ) : (
-                <XCircle className="h-3 w-3 text-red-500" />
+                <XCircle className="h-3 w-3 text-destructive" />
               )}
             </div>
           )}
         </div>
         {debouncedCode.length >= 2 && !isCheckingCode && (
           <p
-            className={`text-[10px] ${isCodeAvailable ? "text-green-600" : "text-red-600"}`}
+            className={`text-[10px] ${isCodeAvailable ? "text-success" : "text-destructive"}`}
           >
             {isCodeAvailable ? "Code is available" : "Code is already in use"}
           </p>

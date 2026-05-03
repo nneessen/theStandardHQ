@@ -85,7 +85,7 @@ export function TeamUWWizardManager() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Wand2 className="h-3.5 w-3.5 text-purple-500" />
+          <Wand2 className="h-3.5 w-3.5 text-info" />
           <span className="text-[11px] font-semibold text-v2-ink">
             UW Wizard — Team Access
           </span>
@@ -95,8 +95,8 @@ export function TeamUWWizardManager() {
           className={cn(
             "text-[9px]",
             allSeatsUsed
-              ? "border-amber-400 text-amber-600"
-              : "border-purple-400 text-purple-600",
+              ? "border-warning/70 text-warning"
+              : "border-info text-info",
           )}
         >
           <Users className="h-2.5 w-2.5 mr-0.5" />
@@ -106,7 +106,7 @@ export function TeamUWWizardManager() {
 
       {/* Owner Usage Row */}
       {ownerUsage && (
-        <div className="p-2 bg-purple-50/50 dark:bg-purple-950/20 rounded border border-purple-200 dark:border-purple-800">
+        <div className="p-2 bg-info/10/50 dark:bg-info/10 rounded border border-info/30">
           <div className="flex items-center justify-between mb-1">
             <span className="text-[10px] font-medium text-v2-ink-muted">
               Your Usage (Owner)
@@ -120,10 +120,10 @@ export function TeamUWWizardManager() {
               className={cn(
                 "h-full rounded-full transition-all",
                 ownerUsage.usage_percent >= 90
-                  ? "bg-red-500"
+                  ? "bg-destructive"
                   : ownerUsage.usage_percent >= 75
-                    ? "bg-amber-500"
-                    : "bg-purple-500",
+                    ? "bg-warning"
+                    : "bg-info",
               )}
               style={{
                 width: `${Math.min(ownerUsage.usage_percent, 100)}%`,
@@ -182,7 +182,7 @@ export function TeamUWWizardManager() {
                     <button
                       onClick={() => handleRevokeSeat(seat.agent_id)}
                       disabled={revokeMutation.isPending}
-                      className="inline-flex items-center gap-0.5 text-[9px] text-red-500 hover:text-red-700 disabled:opacity-50"
+                      className="inline-flex items-center gap-0.5 text-[9px] text-destructive hover:text-destructive disabled:opacity-50"
                     >
                       <X className="h-2.5 w-2.5" />
                       Remove
@@ -220,7 +220,7 @@ export function TeamUWWizardManager() {
           </select>
           <Button
             size="sm"
-            className="h-7 text-[10px] bg-purple-600 hover:bg-purple-700"
+            className="h-7 text-[10px] bg-info hover:bg-info"
             onClick={handleAssignSeat}
             disabled={!selectedAgentId || grantMutation.isPending}
           >
@@ -245,19 +245,19 @@ export function TeamUWWizardManager() {
 
       {/* Seat Pack Expansion CTA */}
       {allSeatsUsed && (
-        <div className="flex items-center justify-between p-2 bg-amber-50 dark:bg-amber-950/20 rounded border border-amber-200 dark:border-amber-800">
+        <div className="flex items-center justify-between p-2 bg-warning/10 rounded border border-warning/30">
           <div>
-            <p className="text-[10px] font-medium text-amber-800 dark:text-amber-300">
+            <p className="text-[10px] font-medium text-warning">
               All seats in use
             </p>
-            <p className="text-[9px] text-amber-600 dark:text-amber-400">
+            <p className="text-[9px] text-warning">
               Add 5 more agent seats for $100/mo
             </p>
           </div>
           <Button
             size="sm"
             variant="outline"
-            className="h-7 text-[10px] border-amber-400 text-amber-700 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+            className="h-7 text-[10px] border-warning/70 text-warning hover:bg-warning/20 dark:hover:bg-warning/30"
             onClick={handleBuySeatPack}
             disabled={seatPackLoading}
           >

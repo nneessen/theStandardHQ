@@ -68,7 +68,7 @@ export function SessionHistoryList() {
 
   if (error) {
     return (
-      <div className="text-center py-8 text-red-500 dark:text-red-400 text-[11px]">
+      <div className="text-center py-8 text-destructive text-[11px]">
         Failed to load sessions: {error.message}
       </div>
     );

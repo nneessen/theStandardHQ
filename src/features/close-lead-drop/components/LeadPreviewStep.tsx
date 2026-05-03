@@ -199,7 +199,7 @@ export function LeadPreviewStep({
             <span
               className={[
                 "text-xs",
-                truncated ? "text-amber-600" : "text-muted-foreground",
+                truncated ? "text-warning" : "text-muted-foreground",
               ].join(" ")}
             >
               {truncated

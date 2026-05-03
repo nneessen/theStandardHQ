@@ -184,7 +184,7 @@ export function GuideList() {
 
     if (isParsing) {
       return (
-        <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-[9px] px-1.5 py-0">
+        <Badge className="bg-info/20 text-info dark:bg-info/30 dark:text-info text-[9px] px-1.5 py-0">
           <Loader2 className="h-2.5 w-2.5 mr-1 animate-spin" />
           Parsing
         </Badge>
@@ -194,20 +194,20 @@ export function GuideList() {
     switch (status) {
       case "completed":
         return (
-          <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-[9px] px-1.5 py-0">
+          <Badge className="bg-success/20 text-success dark:bg-success/15 dark:text-success text-[9px] px-1.5 py-0">
             Parsed
           </Badge>
         );
       case "processing":
         return (
-          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-[9px] px-1.5 py-0">
+          <Badge className="bg-info/20 text-info dark:bg-info/30 dark:text-info text-[9px] px-1.5 py-0">
             <Loader2 className="h-2.5 w-2.5 mr-1 animate-spin" />
             Parsing
           </Badge>
         );
       case "pending":
         return (
-          <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 text-[9px] px-1.5 py-0">
+          <Badge className="bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning text-[9px] px-1.5 py-0">
             Pending
           </Badge>
         );
@@ -216,7 +216,7 @@ export function GuideList() {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 text-[9px] px-1.5 py-0 cursor-help">
+                <Badge className="bg-destructive/20 text-destructive dark:bg-destructive/30 dark:text-destructive text-[9px] px-1.5 py-0 cursor-help">
                   <AlertCircle className="h-2.5 w-2.5 mr-1" />
                   Failed
                 </Badge>
@@ -239,7 +239,7 @@ export function GuideList() {
 
   if (error) {
     return (
-      <div className="text-center py-8 text-red-500 dark:text-red-400 text-[11px]">
+      <div className="text-center py-8 text-destructive text-[11px]">
         Failed to load guides: {error.message}
       </div>
     );
@@ -250,10 +250,10 @@ export function GuideList() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
+          <h3 className="text-[11px] font-medium text-foreground dark:text-foreground">
             Underwriting Guides
           </h3>
-          <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <p className="text-[10px] text-muted-foreground dark:text-muted-foreground">
             Upload and manage carrier underwriting guide PDFs
           </p>
         </div>
@@ -268,29 +268,29 @@ export function GuideList() {
       </div>
 
       {/* Table */}
-      <div className="border border-v2-ring dark:border-v2-ring rounded-md overflow-hidden">
+      <div className="border border-border dark:border-border rounded-md overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-v2-canvas dark:bg-v2-card-tinted/50">
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
+            <TableRow className="bg-background dark:bg-card-tinted/50">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
                 Name
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
                 Carrier
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-center">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground text-center">
                 Size
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-center">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground text-center">
                 Parse
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle text-center">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground text-center">
                 Criteria
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground">
                 Uploaded
               </TableHead>
-              <TableHead className="h-8 px-3 text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle w-[80px]">
+              <TableHead className="h-8 px-3 text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground w-[80px]">
                 Actions
               </TableHead>
             </TableRow>
@@ -326,27 +326,27 @@ export function GuideList() {
               guides.map((guide) => (
                 <TableRow
                   key={guide.id}
-                  className="hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/30"
+                  className="hover:bg-background dark:hover:bg-card-tinted/30"
                 >
                   <TableCell className="px-3 py-2">
                     <div className="flex items-center gap-1.5">
-                      <FileText className="h-3.5 w-3.5 text-red-500 shrink-0" />
+                      <FileText className="h-3.5 w-3.5 text-destructive shrink-0" />
                       <div>
-                        <div className="text-[11px] text-v2-ink dark:text-v2-ink font-medium">
+                        <div className="text-[11px] text-foreground dark:text-foreground font-medium">
                           {guide.name}
                         </div>
-                        <div className="text-[9px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                        <div className="text-[9px] text-muted-foreground dark:text-muted-foreground">
                           {guide.file_name}
                           {guide.version && ` • v${guide.version}`}
                         </div>
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="px-3 py-2 text-[11px] text-v2-ink dark:text-v2-ink-muted">
+                  <TableCell className="px-3 py-2 text-[11px] text-foreground dark:text-muted-foreground">
                     {(guide as unknown as { carrier?: { name: string } })
                       .carrier?.name || "—"}
                   </TableCell>
-                  <TableCell className="px-3 py-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle text-center">
+                  <TableCell className="px-3 py-2 text-[10px] text-muted-foreground dark:text-muted-foreground text-center">
                     {formatFileSize(guide.file_size_bytes)}
                   </TableCell>
                   <TableCell className="px-3 py-2 text-center">
@@ -359,7 +359,7 @@ export function GuideList() {
                       onExtract={() => handleExtractClick(guide)}
                     />
                   </TableCell>
-                  <TableCell className="px-3 py-2 text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <TableCell className="px-3 py-2 text-[10px] text-muted-foreground dark:text-muted-foreground">
                     {formatSessionDate(guide.created_at)}
                   </TableCell>
                   <TableCell className="px-3 py-2">
@@ -415,7 +415,7 @@ export function GuideList() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => handleDeleteClick(guide)}
-                          className="text-[11px] text-red-600 dark:text-red-400"
+                          className="text-[11px] text-destructive"
                         >
                           <Trash2 className="h-3 w-3 mr-2" />
                           Delete
@@ -429,7 +429,7 @@ export function GuideList() {
               <TableRow>
                 <TableCell
                   colSpan={7}
-                  className="px-3 py-8 text-center text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
+                  className="px-3 py-8 text-center text-[11px] text-muted-foreground dark:text-muted-foreground"
                 >
                   <FileText className="h-8 w-8 mx-auto mb-2 opacity-30" />
                   No guides uploaded yet. Upload your first carrier underwriting
@@ -471,7 +471,7 @@ export function GuideList() {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
-              className="h-7 text-[11px] bg-red-600 hover:bg-red-700"
+              className="h-7 text-[11px] bg-destructive hover:bg-destructive"
               disabled={deleteMutation.isPending}
             >
               {deleteMutation.isPending ? "Deleting..." : "Delete"}
@@ -574,7 +574,7 @@ function GuideViewerDialog({
         <div className="py-4">
           {isLoading ? (
             <div className="flex items-center justify-center py-4">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-v2-ink dark:border-v2-ring" />
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-foreground dark:border-border" />
             </div>
           ) : signedUrl ? (
             <div className="space-y-3">
@@ -598,7 +598,7 @@ function GuideViewerDialog({
               </Button>
             </div>
           ) : (
-            <p className="text-[11px] text-red-500 text-center">
+            <p className="text-[11px] text-destructive text-center">
               Failed to load file URL
             </p>
           )}
@@ -635,7 +635,7 @@ function CriteriaStatusCell({
   // Show extracting state
   if (isExtracting || criteria?.extraction_status === "processing") {
     return (
-      <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 text-[9px] px-1.5 py-0">
+      <Badge className="bg-info/20 text-info dark:bg-info/30 dark:text-info text-[9px] px-1.5 py-0">
         <Loader2 className="h-2.5 w-2.5 mr-1 animate-spin" />
         Extracting
       </Badge>
@@ -652,14 +652,14 @@ function CriteriaStatusCell({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 text-[9px] px-1.5 py-0 cursor-help">
+              <Badge className="bg-success/20 text-success dark:bg-success/15 dark:text-success text-[9px] px-1.5 py-0 cursor-help">
                 <CheckCircle2 className="h-2.5 w-2.5 mr-1" />
                 {confidence || "Done"}
               </Badge>
             </TooltipTrigger>
             <TooltipContent side="top" className="text-[10px]">
               <p>Criteria extracted with {confidence} confidence</p>
-              <p className="text-v2-ink-subtle">
+              <p className="text-muted-foreground">
                 Review: {criteria.review_status || "pending"}
               </p>
             </TooltipContent>
@@ -671,7 +671,7 @@ function CriteriaStatusCell({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-4 w-4 p-0 text-v2-ink-subtle hover:text-violet-600"
+                className="h-4 w-4 p-0 text-muted-foreground hover:text-info"
                 onClick={onExtract}
                 disabled={!canExtract}
               >
@@ -696,7 +696,7 @@ function CriteriaStatusCell({
             <Button
               variant="ghost"
               size="sm"
-              className="h-5 px-1.5 text-[9px] text-red-600 dark:text-red-400"
+              className="h-5 px-1.5 text-[9px] text-destructive"
               onClick={onExtract}
               disabled={!canExtract}
             >
@@ -715,7 +715,7 @@ function CriteriaStatusCell({
   // Show pending/extract button
   if (criteria?.extraction_status === "pending") {
     return (
-      <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 text-[9px] px-1.5 py-0">
+      <Badge className="bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning text-[9px] px-1.5 py-0">
         <Clock className="h-2.5 w-2.5 mr-1" />
         Pending
       </Badge>
@@ -752,7 +752,7 @@ function CriteriaStatusCell({
     <Button
       variant="ghost"
       size="sm"
-      className="h-5 px-1.5 text-[9px] text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300"
+      className="h-5 px-1.5 text-[9px] text-info hover:text-info dark:hover:text-info"
       onClick={onExtract}
     >
       <Sparkles className="h-2.5 w-2.5 mr-1" />

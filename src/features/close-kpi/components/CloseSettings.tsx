@@ -76,14 +76,14 @@ export const CloseSettings: React.FC = () => {
 
       {/* Missing close_config warning */}
       {botConnectedButMissingConfig && (
-        <div className="flex items-start gap-2 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50/60 dark:bg-amber-950/20 px-3 py-2.5">
-          <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
+        <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/10/60 dark:bg-warning/10 px-3 py-2.5">
+          <AlertTriangle className="h-3.5 w-3.5 text-warning mt-0.5 shrink-0" />
           <div>
-            <p className="text-[11px] font-medium text-amber-800 dark:text-amber-200">
+            <p className="text-[11px] font-medium text-warning">
               Your Close CRM is connected for SMS/calling, but not linked for
               KPI analytics
             </p>
-            <p className="text-[10px] text-amber-700/70 dark:text-amber-300/70 mt-0.5">
+            <p className="text-[10px] text-warning/70 dark:text-warning/70 mt-0.5">
               Please re-enter your Close API key below to enable AI lead
               scoring, Smart Views, and dashboard analytics.
             </p>

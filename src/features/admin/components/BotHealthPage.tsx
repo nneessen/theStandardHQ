@@ -88,11 +88,11 @@ function formatNumber(value: number): string {
 function heroNumberClass(level: ThresholdLevel): string {
   switch (level) {
     case "critical":
-      return "text-red-600 dark:text-red-400";
+      return "text-destructive";
     case "warn":
-      return "text-amber-600 dark:text-amber-400";
+      return "text-warning";
     default:
-      return "text-emerald-600 dark:text-emerald-400";
+      return "text-success";
   }
 }
 
@@ -327,9 +327,9 @@ export function BotHealthPage() {
                       key={q.queue}
                       className={cn(
                         q.level === "critical" &&
-                          "bg-red-50/50 dark:bg-red-950/20",
+                          "bg-destructive/10/50 dark:bg-destructive/10",
                         q.level === "warn" &&
-                          "bg-amber-50/50 dark:bg-amber-950/20",
+                          "bg-warning/10/50 dark:bg-warning/10",
                       )}
                     >
                       <TableCell className="py-1.5 text-xs font-mono">
@@ -349,8 +349,7 @@ export function BotHealthPage() {
                       <TableCell
                         className={cn(
                           "py-1.5 text-xs text-right",
-                          q.failed24h > 0 &&
-                            "text-red-600 dark:text-red-400 font-semibold",
+                          q.failed24h > 0 && "text-destructive font-semibold",
                         )}
                       >
                         {formatNumber(q.failed24h)}

@@ -112,7 +112,7 @@ export function QuizPlayer({ quiz, lessonId: _lessonId }: QuizPlayerProps) {
 
       <div className="w-full bg-v2-ring dark:bg-v2-ring-strong rounded-full h-1">
         <div
-          className="h-1 rounded-full bg-blue-500 transition-all"
+          className="h-1 rounded-full bg-info transition-all"
           style={{ width: `${((currentQ + 1) / questions.length) * 100}%` }}
         />
       </div>
@@ -132,7 +132,7 @@ export function QuizPlayer({ quiz, lessonId: _lessonId }: QuizPlayerProps) {
                 onClick={() => handleSelectOption(option.id)}
                 className={`w-full text-left px-3 py-2 rounded-lg border text-xs transition-colors ${
                   isSelected
-                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                    ? "border-info bg-info/10 text-info"
                     : "border-v2-ring dark:border-v2-ring-strong hover:border-v2-ring-strong dark:hover:border-v2-ring-strong"
                 }`}
               >

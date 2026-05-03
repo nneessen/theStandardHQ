@@ -117,12 +117,12 @@ SBLI,Universal Life,universal_life`;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg p-3 bg-v2-card border-v2-ring">
-        <DialogHeader className="space-y-1 pb-3 border-b border-v2-ring/60">
-          <DialogTitle className="text-sm font-semibold text-v2-ink">
+      <DialogContent className="sm:max-w-lg p-3 bg-card border-border">
+        <DialogHeader className="space-y-1 pb-3 border-b border-border/60">
+          <DialogTitle className="text-sm font-semibold text-foreground">
             Bulk Import Products
           </DialogTitle>
-          <DialogDescription className="text-[10px] text-v2-ink-muted">
+          <DialogDescription className="text-[10px] text-muted-foreground">
             Import multiple products at once using CSV format. Carriers must
             already exist.
           </DialogDescription>
@@ -130,14 +130,14 @@ SBLI,Universal Life,universal_life`;
 
         <div className="space-y-3 py-3">
           <div className="flex items-center justify-between">
-            <p className="text-[10px] text-v2-ink-muted">
+            <p className="text-[10px] text-muted-foreground">
               Format: Carrier Name, Product Name, Product Type
             </p>
             <Button
               variant="outline"
               size="sm"
               onClick={downloadTemplate}
-              className="h-6 px-2 text-[10px] border-v2-ring"
+              className="h-6 px-2 text-[10px] border-border"
             >
               <Download className="h-3 w-3 mr-1" />
               Template
@@ -145,7 +145,7 @@ SBLI,Universal Life,universal_life`;
           </div>
 
           <div>
-            <label className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide mb-1 block">
+            <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-1 block">
               Paste CSV Data
             </label>
             <Textarea
@@ -155,21 +155,19 @@ SBLI,Universal Life,universal_life`;
                 setError("");
               }}
               placeholder="Foresters,Whole Life 0-75,whole_life&#10;Foresters,Term Life 20yr,term_life&#10;SBLI,Universal Life,universal_life"
-              className="h-32 font-mono text-[11px] bg-v2-card border-v2-ring"
+              className="h-32 font-mono text-[11px] bg-card border-border"
             />
           </div>
 
           {error && (
-            <div className="rounded p-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
-              <p className="text-[10px] text-red-600 dark:text-red-400">
-                {error}
-              </p>
+            <div className="rounded p-2 bg-destructive/10 border border-destructive/30">
+              <p className="text-[10px] text-destructive">{error}</p>
             </div>
           )}
 
-          <div className="rounded p-2 bg-v2-canvas border border-v2-ring">
-            <p className="text-[10px] text-v2-ink-muted">
-              <span className="font-medium text-v2-ink-muted">
+          <div className="rounded p-2 bg-background border border-border">
+            <p className="text-[10px] text-muted-foreground">
+              <span className="font-medium text-muted-foreground">
                 Valid Product Types:
               </span>{" "}
               term_life, whole_life, universal_life, variable_life,
@@ -179,7 +177,7 @@ SBLI,Universal Life,universal_life`;
           </div>
         </div>
 
-        <DialogFooter className="gap-1 pt-3 border-t border-v2-ring/60">
+        <DialogFooter className="gap-1 pt-3 border-t border-border/60">
           <Button
             type="button"
             variant="outline"
@@ -190,7 +188,7 @@ SBLI,Universal Life,universal_life`;
               setError("");
             }}
             disabled={isImporting}
-            className="h-7 px-2 text-[10px] border-v2-ring"
+            className="h-7 px-2 text-[10px] border-border"
           >
             Cancel
           </Button>

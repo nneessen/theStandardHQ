@@ -206,7 +206,7 @@ function AgentWritingNumbersPanel({
           "rounded-lg border p-2.5",
           hasSavedValue
             ? "border-v2-ring dark:border-v2-ring bg-white dark:bg-v2-canvas/20"
-            : "border-amber-200 dark:border-amber-900/40 bg-amber-50/60 dark:bg-amber-950/10",
+            : "border-warning/30 dark:border-warning/40 bg-warning/10/60 dark:bg-warning/10/10",
         )}
       >
         <div className="flex items-start justify-between gap-2 mb-2">
@@ -267,7 +267,7 @@ function AgentWritingNumbersPanel({
                 type="button"
                 size="xs"
                 variant="ghost"
-                className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                className="text-destructive hover:text-destructive dark:hover:text-destructive"
                 onClick={() => handleClear(row.carrier.id)}
                 disabled={isSaving}
               >
@@ -388,10 +388,10 @@ function AgentWritingNumbersPanel({
                   className={cn(
                     "h-full transition-all",
                     coveragePercent >= 80
-                      ? "bg-emerald-500"
+                      ? "bg-success"
                       : coveragePercent >= 40
-                        ? "bg-amber-500"
-                        : "bg-red-500",
+                        ? "bg-warning"
+                        : "bg-destructive",
                   )}
                   style={{ width: `${coveragePercent}%` }}
                 />
@@ -410,9 +410,9 @@ function AgentWritingNumbersPanel({
             ) : (
               <div className="grid grid-cols-1 gap-3 items-start">
                 {filteredMissingRows.length > 0 && (
-                  <section className="min-w-0 space-y-2 rounded-lg border border-amber-200 dark:border-amber-900/40 bg-amber-50/40 dark:bg-amber-950/10 p-2.5">
+                  <section className="min-w-0 space-y-2 rounded-lg border border-warning/30 dark:border-warning/40 bg-warning/10/40 dark:bg-warning/10/10 p-2.5">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-warning">
                         Missing Writing Numbers
                       </p>
                       <Badge variant="outline" size="sm">
@@ -614,10 +614,10 @@ function TeamWritingNumbersBoard({
                     className={cn(
                       "h-full transition-all",
                       coveragePercent >= 80
-                        ? "bg-emerald-500"
+                        ? "bg-success"
                         : coveragePercent >= 40
-                          ? "bg-amber-500"
-                          : "bg-red-500",
+                          ? "bg-warning"
+                          : "bg-destructive",
                     )}
                     style={{ width: `${coveragePercent}%` }}
                   />
@@ -667,7 +667,7 @@ function TeamWritingNumbersBoard({
 
                 <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
                   {missing.length === 0 ? (
-                    <span className="text-emerald-600 dark:text-emerald-400">
+                    <span className="text-success">
                       All visible agents have a writing # for this carrier.
                     </span>
                   ) : (
@@ -782,7 +782,7 @@ export function WritingNumbersTab({
   if (error) {
     return (
       <div className="flex items-center justify-center h-full p-4">
-        <div className="flex items-center gap-2 text-red-500 text-[11px]">
+        <div className="flex items-center gap-2 text-destructive text-[11px]">
           <AlertCircle className="h-4 w-4" />
           <span>Failed to load data: {error.message}</span>
         </div>

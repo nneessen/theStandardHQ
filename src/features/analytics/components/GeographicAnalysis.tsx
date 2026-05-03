@@ -156,9 +156,9 @@ export function GeographicAnalysis() {
                     className={cn(
                       "font-mono",
                       row.percentOfTotal >= 20
-                        ? "text-emerald-600 dark:text-emerald-400"
+                        ? "text-success"
                         : row.percentOfTotal >= 10
-                          ? "text-amber-600 dark:text-amber-400"
+                          ? "text-warning"
                           : "text-v2-ink-muted",
                     )}
                   >

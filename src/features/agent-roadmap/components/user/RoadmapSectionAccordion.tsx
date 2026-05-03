@@ -83,7 +83,7 @@ export function RoadmapSectionAccordion({
           {section.title}
         </h2>
         {sectionComplete && (
-          <span className="inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 border border-emerald-200 dark:border-emerald-800">
+          <span className="inline-flex items-center rounded-full bg-success/10 text-success text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 border border-success/30">
             Done
           </span>
         )}

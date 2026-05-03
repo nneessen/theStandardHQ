@@ -45,7 +45,7 @@ export function LeadStatusSelector({
         <Button
           variant="ghost"
           size="sm"
-          className="h-5 px-1.5 text-[10px] text-blue-600 dark:text-blue-400"
+          className="h-5 px-1.5 text-[10px] text-info"
           onClick={toggleAll}
           disabled={disabled}
         >

@@ -45,22 +45,22 @@ function intensityScore(hint: KPIIntensity | undefined): number | null {
 
 /** Small dot rendered after the value, color-coded by intensity score. */
 function intensityDotClass(score: number | null): string {
-  if (score == null) return "bg-zinc-300 dark:bg-v2-ring-strong";
-  if (score >= 0.5) return "bg-emerald-500";
-  if (score >= 0.15) return "bg-emerald-400";
-  if (score > -0.15) return "bg-v2-ink-subtle";
-  if (score > -0.5) return "bg-amber-500";
-  return "bg-red-500";
+  if (score == null) return "bg-muted";
+  if (score >= 0.5) return "bg-success";
+  if (score >= 0.15) return "bg-success/70";
+  if (score > -0.15) return "bg-foreground-subtle";
+  if (score > -0.5) return "bg-warning";
+  return "bg-destructive";
 }
 
 /** Cell background tint, applied behind the value column only. */
 function cellTintClass(score: number | null): string {
   if (score == null) return "";
-  if (score >= 0.5) return "bg-emerald-50/80 dark:bg-emerald-950/30";
-  if (score >= 0.15) return "bg-emerald-50/40 dark:bg-emerald-950/15";
+  if (score >= 0.5) return "bg-success/15";
+  if (score >= 0.15) return "bg-success/8";
   if (score > -0.15) return "";
-  if (score > -0.5) return "bg-amber-50/60 dark:bg-amber-950/20";
-  return "bg-red-50/70 dark:bg-red-950/25";
+  if (score > -0.5) return "bg-warning/15";
+  return "bg-destructive/15";
 }
 
 const SectionContent: React.FC<{
@@ -68,7 +68,7 @@ const SectionContent: React.FC<{
   sectionIndex: number;
 }> = ({ section, sectionIndex }) => (
   <>
-    <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wide mb-2">
+    <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wide mb-2">
       {section.category}
     </div>
     <div className="space-y-0.5">
@@ -84,10 +84,10 @@ const SectionContent: React.FC<{
                   "hover:brightness-95 dark:hover:brightness-110",
                 )}
               >
-                <span className="text-v2-ink-muted dark:text-v2-ink-subtle truncate">
+                <span className="text-muted-foreground dark:text-muted-foreground truncate">
                   {kpi.label}
                 </span>
-                <span className="font-mono tabular-nums font-semibold text-v2-ink dark:text-v2-ink">
+                <span className="font-mono tabular-nums font-semibold text-foreground dark:text-foreground">
                   {kpi.value}
                 </span>
                 <span
@@ -101,25 +101,25 @@ const SectionContent: React.FC<{
             </TooltipTrigger>
             <TooltipContent
               side="top"
-              className="max-w-xs bg-v2-ink dark:bg-v2-card-tinted border-v2-ring-strong"
+              className="max-w-xs bg-foreground dark:bg-card-tinted border-border"
             >
               <div className="space-y-1">
-                <div className="text-xs font-semibold text-v2-canvas">
+                <div className="text-xs font-semibold text-background">
                   {kpi.label}
                 </div>
-                <div className="text-[10px] text-v2-ink-subtle">
+                <div className="text-[10px] text-muted-foreground">
                   Category: {section.category}
                 </div>
-                <div className="text-[10px] text-v2-ink-subtle">
+                <div className="text-[10px] text-muted-foreground">
                   Value:{" "}
-                  <span className="font-mono tabular-nums text-v2-canvas">
+                  <span className="font-mono tabular-nums text-background">
                     {kpi.value}
                   </span>
                 </div>
                 {kpi.intensity?.target != null && (
-                  <div className="text-[10px] text-v2-ink-subtle">
+                  <div className="text-[10px] text-muted-foreground">
                     Target:{" "}
-                    <span className="font-mono tabular-nums text-v2-canvas">
+                    <span className="font-mono tabular-nums text-background">
                       {kpi.intensity.target}
                       {kpi.intensity.direction === "lower_better" ? "↓" : "↑"}
                     </span>
@@ -145,26 +145,26 @@ export const KPIGridHeatmap: React.FC<KPIGridHeatmapProps> = ({
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <div className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-subtle uppercase tracking-wider">
+        <div className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wider">
           {title}
         </div>
-        <div className="flex items-center gap-2 text-[9px] text-v2-ink-subtle dark:text-v2-ink-muted">
+        <div className="flex items-center gap-2 text-[9px] text-muted-foreground dark:text-muted-foreground">
           <div className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <span className="h-1.5 w-1.5 rounded-full bg-success" />
             <span>Above target</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+            <span className="h-1.5 w-1.5 rounded-full bg-warning" />
             <span>Watch</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+            <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
             <span>Below</span>
           </div>
         </div>
       </div>
       <TooltipProvider delayDuration={200}>
-        <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-v2-card grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-v2-ring dark:divide-v2-ring">
+        <div className="rounded-lg border border-border dark:border-border bg-card grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border dark:divide-border">
           {sections.map((section, sectionIndex) => (
             <div key={sectionIndex} className="p-3 min-w-0">
               {section.gated ? (

@@ -284,11 +284,11 @@ export function DateOfBirthInput({
         onPaste={handlePaste}
         disabled={disabled}
         className={cn(
-          "flex w-full rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 px-3 py-2 text-sm text-foreground transition-all duration-200 ease-out",
-          "hover:border-zinc-300 dark:hover:border-zinc-600",
-          "focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-500",
-          "shadow-sm placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
-          "pr-9", // Space for calendar button
+          "flex w-full rounded-md bg-background border border-input px-3 py-2 text-sm text-foreground transition-colors duration-150",
+          "hover:border-foreground/30",
+          "focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring",
+          "placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
+          "pr-9",
           error && "border-destructive",
           className,
         )}

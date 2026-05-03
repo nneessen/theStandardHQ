@@ -1,34 +1,26 @@
-// src/components/ui/input.tsx
-// Modern input with sleek focus states
-
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const inputVariants = cva(
-  "flex w-full text-sm transition-all duration-200 ease-out file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
+  "flex w-full text-sm transition-colors duration-150 file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
   {
     variants: {
       variant: {
-        // Default: White background with border for clear visibility
         default:
-          "h-9 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 px-3 py-2 text-foreground hover:border-zinc-300 dark:hover:border-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-zinc-100/10 focus:border-zinc-400 dark:focus:border-zinc-500 shadow-sm",
+          "h-9 rounded-md bg-background border border-input px-3 py-2 text-foreground hover:border-foreground/30 focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-ring",
 
-        // Minimal: Underline style
         minimal:
-          "h-9 bg-transparent border-b-2 border-zinc-300 dark:border-zinc-700 rounded-none px-1 py-2 focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-none",
+          "h-9 bg-transparent border-b border-input rounded-none px-1 py-2 focus:border-foreground focus:outline-none",
 
-        // Filled: Darker background
         filled:
-          "h-9 rounded-lg bg-zinc-200 dark:bg-zinc-700 px-3 py-2 focus:bg-zinc-100 dark:focus:bg-zinc-600 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100",
+          "h-9 rounded-md bg-muted border border-transparent px-3 py-2 text-foreground hover:bg-muted/80 focus:bg-background focus:border-input focus:outline-none focus:ring-2 focus:ring-ring/20",
 
-        // Ghost: Transparent until focus
         ghost:
-          "h-9 rounded-lg bg-transparent px-3 py-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 focus:bg-zinc-100 dark:focus:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 dark:focus:ring-zinc-100",
+          "h-9 rounded-md bg-transparent px-3 py-2 hover:bg-accent/50 focus:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-ring/20",
 
-        // Outlined: Border style
         outlined:
-          "h-9 rounded-lg bg-transparent border-2 border-zinc-300 dark:border-zinc-700 px-3 py-2 focus:border-zinc-900 dark:focus:border-zinc-100 focus:outline-none",
+          "h-9 rounded-md bg-transparent border border-input px-3 py-2 hover:border-foreground/30 focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/20",
       },
       inputSize: {
         default: "h-9",

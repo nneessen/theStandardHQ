@@ -33,17 +33,13 @@ interface MarketPulseProps {
 }
 
 const roiColor = (roi: number) =>
-  roi > 0
-    ? "text-emerald-600 dark:text-emerald-400"
-    : roi < 0
-      ? "text-red-600 dark:text-red-400"
-      : "text-v2-ink-muted";
+  roi > 0 ? "text-success" : roi < 0 ? "text-destructive" : "text-v2-ink-muted";
 
 export function MarketPulse({ metrics, packCount }: MarketPulseProps) {
   return (
     <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
       <div className="flex items-center gap-1.5 mb-2.5">
-        <BarChart3 className="h-3.5 w-3.5 text-blue-500" />
+        <BarChart3 className="h-3.5 w-3.5 text-info" />
         <span className="text-[11px] font-semibold text-v2-ink-muted uppercase tracking-wide">
           Market Pulse
         </span>
@@ -59,21 +55,21 @@ export function MarketPulse({ metrics, packCount }: MarketPulseProps) {
             icon={Wallet}
             label="Spend"
             value={formatCompactCurrency(metrics.totalSpend)}
-            iconColor="text-blue-500"
+            iconColor="text-info"
           />
           <MetricRow
             icon={ShoppingCart}
             label="Leads"
             value={formatNumber(metrics.totalLeads)}
             subValue={`${packCount} packs`}
-            iconColor="text-indigo-500"
+            iconColor="text-info"
           />
           <MetricRow
             icon={Target}
             label="Policies"
             value={formatNumber(metrics.totalPolicies)}
             subValue={formatPercent(metrics.convRate) + " conv"}
-            iconColor="text-violet-500"
+            iconColor="text-info"
           />
         </div>
 
@@ -86,13 +82,13 @@ export function MarketPulse({ metrics, packCount }: MarketPulseProps) {
             icon={DollarSign}
             label="Commission"
             value={formatCompactCurrency(metrics.totalCommission)}
-            iconColor="text-emerald-500"
+            iconColor="text-success"
           />
           <MetricRow
             icon={DollarSign}
             label="Premium"
             value={formatCompactCurrency(metrics.totalPremium)}
-            iconColor="text-amber-500"
+            iconColor="text-warning"
           />
           <MetricRow
             icon={TrendingUp}

@@ -50,8 +50,10 @@ function JsonDataView({
   if (!data || typeof data !== "object" || Array.isArray(data)) {
     return (
       <div className="space-y-2">
-        <h4 className="text-[11px] font-medium text-v2-ink-muted">{title}</h4>
-        <p className="text-xs text-v2-ink-subtle italic">No data</p>
+        <h4 className="text-[11px] font-medium text-muted-foreground">
+          {title}
+        </h4>
+        <p className="text-xs text-muted-foreground italic">No data</p>
       </div>
     );
   }
@@ -65,22 +67,24 @@ function JsonDataView({
   if (entries.length === 0) {
     return (
       <div className="space-y-2">
-        <h4 className="text-[11px] font-medium text-v2-ink-muted">{title}</h4>
-        <p className="text-xs text-v2-ink-subtle italic">No data</p>
+        <h4 className="text-[11px] font-medium text-muted-foreground">
+          {title}
+        </h4>
+        <p className="text-xs text-muted-foreground italic">No data</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-2">
-      <h4 className="text-[11px] font-medium text-v2-ink-muted">{title}</h4>
+      <h4 className="text-[11px] font-medium text-muted-foreground">{title}</h4>
       <div className="space-y-1">
         {entries.map(([key, value]) => {
           const isChanged = changedFields?.includes(key);
           const highlightClass = isChanged
             ? isOld
-              ? "bg-red-50 dark:bg-red-950/30"
-              : "bg-green-50 dark:bg-green-950/30"
+              ? "bg-destructive/10"
+              : "bg-success/10"
             : "";
 
           return (
@@ -88,10 +92,10 @@ function JsonDataView({
               key={key}
               className={`flex items-start gap-2 px-2 py-1 rounded ${highlightClass}`}
             >
-              <span className="text-[10px] text-v2-ink-muted font-medium min-w-[120px]">
+              <span className="text-[10px] text-muted-foreground font-medium min-w-[120px]">
                 {formatSnakeCase(key)}:
               </span>
-              <span className="text-[11px] text-v2-ink-muted break-all">
+              <span className="text-[11px] text-muted-foreground break-all">
                 {formatValue(value)}
               </span>
             </div>
@@ -167,7 +171,7 @@ export function AuditLogDetailDialog({
           </div>
         ) : !log ? (
           <div className="py-8 text-center">
-            <p className="text-sm text-v2-ink-muted">Audit log not found</p>
+            <p className="text-sm text-muted-foreground">Audit log not found</p>
           </div>
         ) : (
           <ScrollArea className="max-h-[60vh] pr-4">
@@ -175,15 +179,15 @@ export function AuditLogDetailDialog({
               {/* Header Info */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <p className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                     Table
                   </p>
-                  <p className="text-sm font-medium text-v2-ink">
+                  <p className="text-sm font-medium text-foreground">
                     {formatTableName(log.tableName)}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                     Action
                   </p>
                   <Badge
@@ -194,34 +198,34 @@ export function AuditLogDetailDialog({
                   </Badge>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                     Action Type
                   </p>
-                  <p className="text-sm text-v2-ink">
+                  <p className="text-sm text-foreground">
                     {formatActionType(log.actionType)}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                     Performed By
                   </p>
-                  <p className="text-sm text-v2-ink">
+                  <p className="text-sm text-foreground">
                     {formatPerformer(log.performedByName, log.performedByEmail)}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                     Date & Time
                   </p>
-                  <p className="text-sm text-v2-ink">
+                  <p className="text-sm text-foreground">
                     {formatDateTime(log.createdAt)}
                   </p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                     Record ID
                   </p>
-                  <p className="text-xs font-mono text-v2-ink-muted truncate">
+                  <p className="text-xs font-mono text-muted-foreground truncate">
                     {log.recordId}
                   </p>
                 </div>
@@ -232,7 +236,7 @@ export function AuditLogDetailDialog({
                 <>
                   <Separator />
                   <div className="space-y-2">
-                    <p className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                       Changed Fields
                     </p>
                     <div className="flex flex-wrap gap-1">
@@ -256,7 +260,7 @@ export function AuditLogDetailDialog({
                   <Separator />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {log.action !== "INSERT" && (
-                      <div className="p-3 rounded-lg bg-red-50/50 dark:bg-red-950/20 border border-red-100 dark:border-red-900">
+                      <div className="p-3 rounded-lg bg-destructive/10/50 dark:bg-destructive/10 border border-destructive/20 dark:border-destructive">
                         <JsonDataView
                           data={log.oldData}
                           title="Previous Values"
@@ -266,7 +270,7 @@ export function AuditLogDetailDialog({
                       </div>
                     )}
                     {log.action !== "DELETE" && (
-                      <div className="p-3 rounded-lg bg-green-50/50 dark:bg-green-950/20 border border-green-100 dark:border-green-900">
+                      <div className="p-3 rounded-lg bg-success/10/50 dark:bg-success/10 border border-success dark:border-success">
                         <JsonDataView
                           data={log.newData}
                           title={
@@ -287,17 +291,17 @@ export function AuditLogDetailDialog({
                 <>
                   <Separator />
                   <div className="space-y-2">
-                    <p className="text-[10px] text-v2-ink-muted uppercase tracking-wider">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
                       Description
                     </p>
-                    <p className="text-sm text-v2-ink">{log.description}</p>
+                    <p className="text-sm text-foreground">{log.description}</p>
                   </div>
                 </>
               )}
 
               {/* Source */}
               <Separator />
-              <div className="flex items-center justify-between text-xs text-v2-ink-muted">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>
                   Source:{" "}
                   {log.source === "trigger"

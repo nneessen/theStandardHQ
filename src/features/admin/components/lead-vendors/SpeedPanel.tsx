@@ -19,20 +19,20 @@ interface SpeedPanelProps {
 }
 
 const BUCKETS = [
-  { label: "\u22647d", max: 7, color: "bg-emerald-500" },
-  { label: "8-30d", max: 30, color: "bg-blue-500" },
-  { label: "31-60d", max: 60, color: "bg-amber-500" },
-  { label: ">60d", max: Infinity, color: "bg-red-500" },
+  { label: "\u22647d", max: 7, color: "bg-success" },
+  { label: "8-30d", max: 30, color: "bg-info" },
+  { label: "31-60d", max: 60, color: "bg-warning" },
+  { label: ">60d", max: Infinity, color: "bg-destructive" },
 ] as const;
 
 const daysColor = (days: number) =>
   days <= 7
-    ? "text-emerald-600 dark:text-emerald-400"
+    ? "text-success"
     : days <= 30
-      ? "text-blue-600 dark:text-blue-400"
+      ? "text-info"
       : days <= 60
-        ? "text-amber-600 dark:text-amber-400"
-        : "text-red-600 dark:text-red-400";
+        ? "text-warning"
+        : "text-destructive";
 
 export function SpeedPanel({
   packMetrics,
@@ -161,7 +161,7 @@ export function SpeedPanel({
                 ? `${Math.round(metrics.avgDays)}d`
                 : "\u2014"
             }
-            iconColor="text-blue-500"
+            iconColor="text-info"
             valueColor={
               metrics.avgDays !== null
                 ? daysColor(metrics.avgDays)
@@ -176,7 +176,7 @@ export function SpeedPanel({
                 ? `${Math.round(metrics.medianDays)}d`
                 : "\u2014"
             }
-            iconColor="text-indigo-500"
+            iconColor="text-info"
             valueColor={
               metrics.medianDays !== null
                 ? daysColor(metrics.medianDays)
@@ -194,7 +194,7 @@ export function SpeedPanel({
             icon={Zap}
             label="Sales (30d)"
             value={formatNumber(metrics.salesLast30d)}
-            iconColor="text-amber-500"
+            iconColor="text-warning"
           />
           <MetricRow
             icon={TrendingUp}
@@ -207,7 +207,7 @@ export function SpeedPanel({
                 ? `${Math.round(metrics.fastestVendor.days)}d`
                 : undefined
             }
-            iconColor="text-emerald-500"
+            iconColor="text-success"
             valueColor={
               metrics.fastestVendor
                 ? daysColor(metrics.fastestVendor.days)
@@ -223,7 +223,7 @@ export function SpeedPanel({
                 ? `${Math.round(metrics.fastestAgent.days)}d`
                 : undefined
             }
-            iconColor="text-violet-500"
+            iconColor="text-info"
             valueColor={
               metrics.fastestAgent
                 ? daysColor(metrics.fastestAgent.days)

@@ -97,7 +97,7 @@ export function WizardPageLayout({
                   disabled={!isClickable}
                   className={cn(
                     "flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors text-left",
-                    status === "current" && "bg-amber-100 dark:bg-amber-900/30",
+                    status === "current" && "bg-warning/20 dark:bg-warning/30",
                     isClickable &&
                       status !== "current" &&
                       "hover:bg-muted cursor-pointer",
@@ -109,9 +109,8 @@ export function WizardPageLayout({
                     className={cn(
                       "flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-semibold transition-colors flex-shrink-0",
                       status === "completed" &&
-                        "bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30",
-                      status === "current" &&
-                        "bg-amber-500 text-white shadow-sm",
+                        "bg-warning/20 text-warning border border-warning/30",
+                      status === "current" && "bg-warning text-white shadow-sm",
                       status === "upcoming" &&
                         "bg-v2-ring dark:bg-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-subtle",
                     )}
@@ -128,7 +127,7 @@ export function WizardPageLayout({
                     className={cn(
                       "hidden sm:block text-xs font-medium whitespace-nowrap",
                       status === "current"
-                        ? "text-amber-700 dark:text-amber-300"
+                        ? "text-warning"
                         : status === "completed"
                           ? "text-foreground/70"
                           : "text-muted-foreground",
@@ -144,7 +143,7 @@ export function WizardPageLayout({
                     className={cn(
                       "w-6 lg:w-10 h-px mx-0.5",
                       index < currentStepIndex
-                        ? "bg-amber-400 dark:bg-amber-500/50"
+                        ? "bg-warning/70 dark:bg-warning/50"
                         : "bg-v2-ring-strong dark:bg-v2-ring-strong",
                     )}
                   />

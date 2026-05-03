@@ -236,7 +236,7 @@ export function BadgesManagementTab() {
       {/* Toolbar */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-v2-ink-subtle" />
+          <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
           <Input
             placeholder="Search badges..."
             value={search}
@@ -253,36 +253,36 @@ export function BadgesManagementTab() {
       {/* Table */}
       {isLoading ? (
         <div className="flex justify-center py-8">
-          <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <div className="border border-v2-ring dark:border-v2-ring rounded-lg overflow-hidden">
+        <div className="border border-border dark:border-border rounded-lg overflow-hidden">
           <table className="w-full text-xs">
             <thead>
-              <tr className="bg-v2-canvas dark:bg-v2-card-tinted/50 border-b border-v2-ring dark:border-v2-ring">
-                <th className="text-left px-3 py-2 font-medium text-v2-ink-muted">
+              <tr className="bg-background dark:bg-card-tinted/50 border-b border-border dark:border-border">
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">
                   Badge
                 </th>
-                <th className="text-left px-3 py-2 font-medium text-v2-ink-muted">
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">
                   Type
                 </th>
-                <th className="text-center px-3 py-2 font-medium text-v2-ink-muted">
+                <th className="text-center px-3 py-2 font-medium text-muted-foreground">
                   XP
                 </th>
-                <th className="text-center px-3 py-2 font-medium text-v2-ink-muted">
+                <th className="text-center px-3 py-2 font-medium text-muted-foreground">
                   Status
                 </th>
-                <th className="text-center px-3 py-2 font-medium text-v2-ink-muted">
+                <th className="text-center px-3 py-2 font-medium text-muted-foreground">
                   Order
                 </th>
-                <th className="text-right px-3 py-2 font-medium text-v2-ink-muted w-10"></th>
+                <th className="text-right px-3 py-2 font-medium text-muted-foreground w-10"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-v2-ring dark:divide-v2-ring">
+            <tbody className="divide-y divide-border dark:divide-border">
               {filteredBadges.map((badge) => (
                 <tr
                   key={badge.id}
-                  className="hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/30"
+                  className="hover:bg-background dark:hover:bg-card-tinted/30"
                 >
                   <td className="px-3 py-2">
                     <div className="flex items-center gap-2">
@@ -293,11 +293,11 @@ export function BadgesManagementTab() {
                         {badge.icon.charAt(0).toUpperCase()}
                       </span>
                       <div>
-                        <span className="font-medium text-v2-ink dark:text-v2-ink">
+                        <span className="font-medium text-foreground dark:text-foreground">
                           {badge.name}
                         </span>
                         {badge.description && (
-                          <p className="text-[10px] text-v2-ink-subtle truncate max-w-xs">
+                          <p className="text-[10px] text-muted-foreground truncate max-w-xs">
                             {badge.description}
                           </p>
                         )}
@@ -309,7 +309,7 @@ export function BadgesManagementTab() {
                       {BADGE_TYPE_LABELS[badge.badge_type]}
                     </Badge>
                   </td>
-                  <td className="px-3 py-2 text-center text-v2-ink-muted">
+                  <td className="px-3 py-2 text-center text-muted-foreground">
                     {badge.xp_reward}
                   </td>
                   <td className="px-3 py-2 text-center">
@@ -320,7 +320,7 @@ export function BadgesManagementTab() {
                       {badge.is_active ? "Active" : "Inactive"}
                     </Badge>
                   </td>
-                  <td className="px-3 py-2 text-center text-v2-ink-subtle">
+                  <td className="px-3 py-2 text-center text-muted-foreground">
                     {badge.sort_order}
                   </td>
                   <td className="px-3 py-2 text-right">
@@ -351,7 +351,7 @@ export function BadgesManagementTab() {
                           )}
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          className="text-red-500"
+                          className="text-destructive"
                           onClick={() => handleDelete(badge.id)}
                         >
                           <Trash2 className="h-3 w-3 mr-2" />
@@ -366,7 +366,7 @@ export function BadgesManagementTab() {
                 <tr>
                   <td
                     colSpan={6}
-                    className="text-center py-8 text-v2-ink-subtle"
+                    className="text-center py-8 text-muted-foreground"
                   >
                     {search
                       ? "No badges match your search"
@@ -390,7 +390,7 @@ export function BadgesManagementTab() {
           <div className="space-y-3 py-2">
             {/* Name */}
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-v2-ink-muted">
+              <label className="text-[11px] font-medium text-muted-foreground">
                 Name *
               </label>
               <Input
@@ -406,7 +406,7 @@ export function BadgesManagementTab() {
 
             {/* Description */}
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-v2-ink-muted">
+              <label className="text-[11px] font-medium text-muted-foreground">
                 Description
               </label>
               <textarea
@@ -415,7 +415,7 @@ export function BadgesManagementTab() {
                   setForm((f) => ({ ...f, description: e.target.value }))
                 }
                 rows={2}
-                className="w-full text-xs rounded-md border border-v2-ring dark:border-v2-ring-strong bg-v2-card p-2 resize-none"
+                className="w-full text-xs rounded-md border border-border dark:border-border bg-card p-2 resize-none"
                 placeholder="Badge description..."
               />
             </div>
@@ -423,7 +423,7 @@ export function BadgesManagementTab() {
             {/* Badge Type + Criteria Type */}
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <label className="text-[11px] font-medium text-v2-ink-muted">
+                <label className="text-[11px] font-medium text-muted-foreground">
                   Badge Type
                 </label>
                 <select
@@ -432,7 +432,7 @@ export function BadgesManagementTab() {
                     const bt = e.target.value as BadgeType;
                     setForm((f) => ({ ...f, badge_type: bt }));
                   }}
-                  className="w-full h-8 text-xs border border-v2-ring dark:border-v2-ring-strong rounded-md px-2 bg-v2-card"
+                  className="w-full h-8 text-xs border border-border dark:border-border rounded-md px-2 bg-card"
                 >
                   {BADGE_TYPES.map((bt) => (
                     <option key={bt} value={bt}>
@@ -442,7 +442,7 @@ export function BadgesManagementTab() {
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] font-medium text-v2-ink-muted">
+                <label className="text-[11px] font-medium text-muted-foreground">
                   Criteria Type
                 </label>
                 <select
@@ -452,7 +452,7 @@ export function BadgesManagementTab() {
                       e.target.value as BadgeCriteria["type"],
                     )
                   }
-                  className="w-full h-8 text-xs border border-v2-ring dark:border-v2-ring-strong rounded-md px-2 bg-v2-card"
+                  className="w-full h-8 text-xs border border-border dark:border-border rounded-md px-2 bg-card"
                 >
                   {CRITERIA_TYPE_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -472,7 +472,7 @@ export function BadgesManagementTab() {
             {/* Icon + Color */}
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <label className="text-[11px] font-medium text-v2-ink-muted">
+                <label className="text-[11px] font-medium text-muted-foreground">
                   Icon Name
                 </label>
                 <Input
@@ -485,7 +485,7 @@ export function BadgesManagementTab() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] font-medium text-v2-ink-muted">
+                <label className="text-[11px] font-medium text-muted-foreground">
                   Color
                 </label>
                 <div className="flex gap-1.5">
@@ -495,7 +495,7 @@ export function BadgesManagementTab() {
                     onChange={(e) =>
                       setForm((f) => ({ ...f, color: e.target.value }))
                     }
-                    className="h-8 w-8 rounded border border-v2-ring dark:border-v2-ring-strong cursor-pointer"
+                    className="h-8 w-8 rounded border border-border dark:border-border cursor-pointer"
                   />
                   <Input
                     value={form.color}
@@ -512,7 +512,7 @@ export function BadgesManagementTab() {
             {/* XP + Sort Order */}
             <div className="grid grid-cols-2 gap-2">
               <div className="space-y-1">
-                <label className="text-[11px] font-medium text-v2-ink-muted">
+                <label className="text-[11px] font-medium text-muted-foreground">
                   XP Reward
                 </label>
                 <Input
@@ -528,7 +528,7 @@ export function BadgesManagementTab() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] font-medium text-v2-ink-muted">
+                <label className="text-[11px] font-medium text-muted-foreground">
                   Sort Order
                 </label>
                 <Input
@@ -547,7 +547,7 @@ export function BadgesManagementTab() {
 
             {/* Active toggle */}
             <div className="flex items-center justify-between">
-              <label className="text-[11px] font-medium text-v2-ink-muted">
+              <label className="text-[11px] font-medium text-muted-foreground">
                 Active
               </label>
               <Switch
@@ -559,8 +559,8 @@ export function BadgesManagementTab() {
             </div>
 
             {/* Preview */}
-            <div className="border border-v2-ring dark:border-v2-ring-strong rounded-md p-2">
-              <span className="text-[10px] text-v2-ink-subtle block mb-1">
+            <div className="border border-border dark:border-border rounded-md p-2">
+              <span className="text-[10px] text-muted-foreground block mb-1">
                 Preview
               </span>
               <div className="flex items-center gap-2">
@@ -571,11 +571,11 @@ export function BadgesManagementTab() {
                   {form.icon.charAt(0).toUpperCase()}
                 </span>
                 <div>
-                  <span className="text-xs font-medium text-v2-ink dark:text-v2-ink">
+                  <span className="text-xs font-medium text-foreground dark:text-foreground">
                     {form.name || "Badge Name"}
                   </span>
                   {form.description && (
-                    <p className="text-[10px] text-v2-ink-subtle">
+                    <p className="text-[10px] text-muted-foreground">
                       {form.description}
                     </p>
                   )}
@@ -632,13 +632,13 @@ function CriteriaEditor({
       return (
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
-            <label className="text-[10px] font-medium text-v2-ink-muted">
+            <label className="text-[10px] font-medium text-muted-foreground">
               Category
             </label>
             <select
               value={criteria.category}
               onChange={(e) => onChange("category", e.target.value)}
-              className="w-full h-8 text-xs border border-v2-ring dark:border-v2-ring-strong rounded-md px-2 bg-v2-card"
+              className="w-full h-8 text-xs border border-border dark:border-border rounded-md px-2 bg-card"
             >
               {MODULE_CATEGORIES.map((cat) => (
                 <option key={cat} value={cat}>
@@ -648,7 +648,7 @@ function CriteriaEditor({
             </select>
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-medium text-v2-ink-muted">
+            <label className="text-[10px] font-medium text-muted-foreground">
               Min Modules
             </label>
             <Input
@@ -667,7 +667,7 @@ function CriteriaEditor({
       return (
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
-            <label className="text-[10px] font-medium text-v2-ink-muted">
+            <label className="text-[10px] font-medium text-muted-foreground">
               Min Score (%)
             </label>
             <Input
@@ -682,7 +682,7 @@ function CriteriaEditor({
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-medium text-v2-ink-muted">
+            <label className="text-[10px] font-medium text-muted-foreground">
               Min Attempts
             </label>
             <Input
@@ -700,7 +700,7 @@ function CriteriaEditor({
     case "streak_days":
       return (
         <div className="space-y-1">
-          <label className="text-[10px] font-medium text-v2-ink-muted">
+          <label className="text-[10px] font-medium text-muted-foreground">
             Min Days
           </label>
           <Input
@@ -715,7 +715,7 @@ function CriteriaEditor({
     case "total_xp":
       return (
         <div className="space-y-1">
-          <label className="text-[10px] font-medium text-v2-ink-muted">
+          <label className="text-[10px] font-medium text-muted-foreground">
             Min XP
           </label>
           <Input
@@ -730,7 +730,7 @@ function CriteriaEditor({
     case "module_complete":
       return (
         <div className="space-y-1">
-          <label className="text-[10px] font-medium text-v2-ink-muted">
+          <label className="text-[10px] font-medium text-muted-foreground">
             Module ID
           </label>
           <Input
@@ -745,7 +745,7 @@ function CriteriaEditor({
       return (
         <div className="grid grid-cols-2 gap-2">
           <div className="space-y-1">
-            <label className="text-[10px] font-medium text-v2-ink-muted">
+            <label className="text-[10px] font-medium text-muted-foreground">
               Count
             </label>
             <Input
@@ -757,7 +757,7 @@ function CriteriaEditor({
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-medium text-v2-ink-muted">
+            <label className="text-[10px] font-medium text-muted-foreground">
               Period (days)
             </label>
             <Input
@@ -775,7 +775,7 @@ function CriteriaEditor({
     case "lessons_completed":
       return (
         <div className="space-y-1">
-          <label className="text-[10px] font-medium text-v2-ink-muted">
+          <label className="text-[10px] font-medium text-muted-foreground">
             Min Lessons
           </label>
           <Input
@@ -790,7 +790,7 @@ function CriteriaEditor({
     case "quizzes_passed":
       return (
         <div className="space-y-1">
-          <label className="text-[10px] font-medium text-v2-ink-muted">
+          <label className="text-[10px] font-medium text-muted-foreground">
             Min Quizzes
           </label>
           <Input

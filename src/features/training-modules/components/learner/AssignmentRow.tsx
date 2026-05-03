@@ -49,7 +49,7 @@ export function AssignmentRow({ assignment }: AssignmentRowProps) {
     >
       <div
         className={`flex items-center gap-3 px-2.5 py-1.5 rounded hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 transition-colors cursor-pointer text-[11px] ${
-          isOverdue ? "bg-red-50/50 dark:bg-red-950/20" : ""
+          isOverdue ? "bg-destructive/10/50 dark:bg-destructive/10" : ""
         }`}
       >
         {/* Priority dot */}
@@ -57,7 +57,9 @@ export function AssignmentRow({ assignment }: AssignmentRowProps) {
           {isHighPriority && (
             <div
               className={`w-1.5 h-1.5 rounded-full ${
-                assignment.priority === "urgent" ? "bg-red-500" : "bg-amber-500"
+                assignment.priority === "urgent"
+                  ? "bg-destructive"
+                  : "bg-warning"
               }`}
             />
           )}
@@ -96,7 +98,7 @@ export function AssignmentRow({ assignment }: AssignmentRowProps) {
         <div
           className={`w-16 flex-shrink-0 text-right ${
             isOverdue
-              ? "text-red-500 font-medium"
+              ? "text-destructive font-medium"
               : "text-v2-ink-muted dark:text-v2-ink-subtle"
           }`}
         >

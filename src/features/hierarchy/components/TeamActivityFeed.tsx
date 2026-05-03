@@ -116,21 +116,15 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
   const getActivityIcon = (type: ActivityItem["type"]) => {
     switch (type) {
       case "joined":
-        return (
-          <UserPlus className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
-        );
+        return <UserPlus className="h-3 w-3 text-success" />;
       case "left":
-        return <UserMinus className="h-3 w-3 text-red-600 dark:text-red-400" />;
+        return <UserMinus className="h-3 w-3 text-destructive" />;
       case "promoted":
-        return (
-          <TrendingUp className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-        );
+        return <TrendingUp className="h-3 w-3 text-info" />;
       case "achievement":
-        return <Award className="h-3 w-3 text-amber-600 dark:text-amber-400" />;
+        return <Award className="h-3 w-3 text-warning" />;
       case "warning":
-        return (
-          <AlertTriangle className="h-3 w-3 text-red-600 dark:text-red-400" />
-        );
+        return <AlertTriangle className="h-3 w-3 text-destructive" />;
       default:
         return <Activity className="h-3 w-3 text-v2-ink-muted" />;
     }
@@ -140,12 +134,12 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
     switch (type) {
       case "joined":
       case "achievement":
-        return "text-emerald-600 dark:text-emerald-400";
+        return "text-success";
       case "left":
       case "warning":
-        return "text-red-600 dark:text-red-400";
+        return "text-destructive";
       case "promoted":
-        return "text-blue-600 dark:text-blue-400";
+        return "text-info";
       default:
         return "text-v2-ink-muted";
     }
@@ -219,19 +213,19 @@ export function TeamActivityFeed({ agents }: TeamActivityFeedProps) {
         <div className="mt-3 pt-2 border-t border-v2-ring">
           <div className="grid grid-cols-3 gap-2 text-[10px]">
             <div className="text-center">
-              <div className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">
+              <div className="font-mono font-semibold text-success">
                 +{activities.filter((a) => a.type === "joined").length}
               </div>
               <div className="text-v2-ink-muted">Joined</div>
             </div>
             <div className="text-center">
-              <div className="font-mono font-semibold text-blue-600 dark:text-blue-400">
+              <div className="font-mono font-semibold text-info">
                 {activities.filter((a) => a.type === "promoted").length}
               </div>
               <div className="text-v2-ink-muted">Promoted</div>
             </div>
             <div className="text-center">
-              <div className="font-mono font-semibold text-red-600 dark:text-red-400">
+              <div className="font-mono font-semibold text-destructive">
                 -{activities.filter((a) => a.type === "left").length}
               </div>
               <div className="text-v2-ink-muted">Left</div>

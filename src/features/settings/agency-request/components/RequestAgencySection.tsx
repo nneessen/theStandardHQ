@@ -46,9 +46,9 @@ export function RequestAgencySection() {
     return (
       <div className="border border-v2-ring rounded-lg p-3">
         <div className="flex items-center gap-2 mb-3">
-          <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+          <CheckCircle2 className="h-3.5 w-3.5 text-success" />
           <div>
-            <h4 className="text-[11px] font-semibold text-green-700 dark:text-green-500">
+            <h4 className="text-[11px] font-semibold text-success dark:text-success">
               Agency Created
             </h4>
             <p className="text-[10px] text-v2-ink-muted">
@@ -66,9 +66,9 @@ export function RequestAgencySection() {
     return (
       <div className="border border-v2-ring rounded-lg p-3">
         <div className="flex items-center gap-2 mb-3">
-          <Clock className="h-3.5 w-3.5 text-amber-600" />
+          <Clock className="h-3.5 w-3.5 text-warning" />
           <div>
-            <h4 className="text-[11px] font-semibold text-amber-700 dark:text-amber-500">
+            <h4 className="text-[11px] font-semibold text-warning dark:text-warning">
               Request Pending
             </h4>
             <p className="text-[10px] text-v2-ink-muted">
@@ -86,9 +86,9 @@ export function RequestAgencySection() {
     return (
       <div className="border border-v2-ring rounded-lg p-3 space-y-3">
         <div className="flex items-center gap-2">
-          <XCircle className="h-3.5 w-3.5 text-red-600" />
+          <XCircle className="h-3.5 w-3.5 text-destructive" />
           <div>
-            <h4 className="text-[11px] font-semibold text-red-700 dark:text-red-500">
+            <h4 className="text-[11px] font-semibold text-destructive dark:text-destructive">
               Request Rejected
             </h4>
             <p className="text-[10px] text-v2-ink-muted">

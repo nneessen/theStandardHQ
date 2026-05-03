@@ -210,7 +210,7 @@ export function CloneToTeammateDialog({
       <AlertDialogContent className="max-w-xl">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-base">
-            <Send className="h-4 w-4 text-blue-500" />
+            <Send className="h-4 w-4 text-info" />
             Clone {itemKindLabel} to teammate
           </AlertDialogTitle>
           <AlertDialogDescription className="text-xs">
@@ -226,7 +226,7 @@ export function CloneToTeammateDialog({
         </AlertDialogHeader>
 
         {/* Warning callout */}
-        <div className="flex items-start gap-2 rounded-md border border-amber-300/50 bg-amber-50/60 p-2.5 text-[11px] text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-400">
+        <div className="flex items-start gap-2 rounded-md border border-warning/40/50 bg-warning/10/60 p-2.5 text-[11px] text-warning dark:border-warning/50 dark:bg-warning/15 dark:text-warning">
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           <span>
             This creates an <strong>independent copy</strong> in your teammate's
@@ -263,7 +263,7 @@ export function CloneToTeammateDialog({
                 ))}
               </div>
             ) : teammatesQuery.isError ? (
-              <div className="p-3 text-center text-xs text-red-500">
+              <div className="p-3 text-center text-xs text-destructive">
                 Failed to load teammates.
               </div>
             ) : filteredTeammates.length === 0 ? (
@@ -386,7 +386,7 @@ function TeammateRow({
         onClick={onSelect}
         disabled={disabled}
         className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-left transition-colors ${
-          selected ? "bg-blue-50 dark:bg-blue-950/30" : "hover:bg-muted/50"
+          selected ? "bg-info/10" : "hover:bg-muted/50"
         } ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
       >
         <div className="min-w-0 flex-1">
@@ -396,7 +396,7 @@ function TeammateRow({
           </div>
         </div>
         {selected && (
-          <span className="shrink-0 rounded-full bg-blue-500 px-1.5 py-0.5 text-[10px] font-medium text-white">
+          <span className="shrink-0 rounded-full bg-info px-1.5 py-0.5 text-[10px] font-medium text-white">
             selected
           </span>
         )}

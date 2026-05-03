@@ -86,7 +86,7 @@ export default function TrainingHubPage() {
           </div>
           <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-v2-ink-muted flex-wrap leading-tight">
             <span className="inline-flex items-center gap-1">
-              <Mail className="h-3 w-3 text-blue-500" />
+              <Mail className="h-3 w-3 text-info" />
               <span className="text-v2-ink font-semibold">
                 {templateStats?.count ?? 0}
               </span>
@@ -94,7 +94,7 @@ export default function TrainingHubPage() {
             </span>
             <span className="text-v2-ink-subtle">·</span>
             <span className="inline-flex items-center gap-1">
-              <FileText className="h-3 w-3 text-emerald-500" />
+              <FileText className="h-3 w-3 text-success" />
               <span className="text-v2-ink font-semibold">
                 {documentStats?.count ?? 0}
               </span>

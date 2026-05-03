@@ -47,7 +47,7 @@ export const PolicyDashboardHeader: React.FC<PolicyDashboardHeaderProps> = ({
         </div>
         <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
         <div className="flex items-center gap-1">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <div className="w-1.5 h-1.5 rounded-full bg-success" />
           <span className="font-medium text-v2-ink dark:text-v2-ink">
             {summary.activePolicies}
           </span>
@@ -57,7 +57,7 @@ export const PolicyDashboardHeader: React.FC<PolicyDashboardHeaderProps> = ({
         </div>
         <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
         <div className="flex items-center gap-1">
-          <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+          <div className="w-1.5 h-1.5 rounded-full bg-warning" />
           <span className="font-medium text-v2-ink dark:text-v2-ink">
             {summary.pendingPolicies}
           </span>
@@ -76,7 +76,7 @@ export const PolicyDashboardHeader: React.FC<PolicyDashboardHeaderProps> = ({
         </div>
         <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
         <div className="flex items-center gap-1">
-          <span className="font-medium text-emerald-600 dark:text-emerald-400">
+          <span className="font-medium text-success">
             ${(summary.totalPaidCommission / 1000).toFixed(1)}K
           </span>
           <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
@@ -85,7 +85,7 @@ export const PolicyDashboardHeader: React.FC<PolicyDashboardHeaderProps> = ({
         </div>
         <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
         <div className="flex items-center gap-1">
-          <span className="font-medium text-blue-600 dark:text-blue-400">
+          <span className="font-medium text-info">
             ${(summary.totalPendingCommission / 1000).toFixed(1)}K
           </span>
           <span className="text-v2-ink-muted dark:text-v2-ink-subtle">

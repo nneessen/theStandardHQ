@@ -413,7 +413,7 @@ export function PhaseChecklist({
               {linkedDoc && (
                 <button
                   onClick={() => setViewerDoc(linkedDoc)}
-                  className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-blue-50 dark:hover:bg-blue-950 text-blue-600 dark:text-blue-400 transition-colors"
+                  className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-info/10 dark:hover:bg-info/10 text-info transition-colors"
                   title="View Document"
                 >
                   <FileText className="h-4 w-4" />
@@ -422,7 +422,7 @@ export function PhaseChecklist({
               {/* Approve icon */}
               <button
                 onClick={() => handleApprove(item.id)}
-                className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-emerald-50 dark:hover:bg-emerald-950 text-emerald-600 dark:text-emerald-400 transition-colors"
+                className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-success/10 dark:hover:bg-success/10 text-success transition-colors"
                 title="Approve"
               >
                 <CheckCircle2 className="h-4 w-4" />
@@ -433,7 +433,7 @@ export function PhaseChecklist({
                   const reason = prompt("Reason for rejection:");
                   if (reason) handleReject(item.id, reason);
                 }}
-                className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-red-50 dark:hover:bg-red-950 text-red-600 dark:text-red-400 transition-colors"
+                className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-destructive/10 dark:hover:bg-destructive/10 text-destructive transition-colors"
                 title="Reject"
               >
                 <XCircle className="h-4 w-4" />
@@ -445,7 +445,7 @@ export function PhaseChecklist({
           return (
             <Badge
               variant="outline"
-              className="text-sm text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/30 dark:border-emerald-800"
+              className="text-sm text-success bg-success/10 border-success/30 dark:text-success dark:bg-success/15 dark:border-success"
             >
               <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
               Approved
@@ -470,7 +470,7 @@ export function PhaseChecklist({
           return (
             <Badge
               variant="secondary"
-              className="text-sm text-amber-700 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-950/30 dark:border-amber-800"
+              className="text-sm text-warning bg-warning/10 border-warning/30 dark:text-warning dark:bg-warning/15 dark:border-warning"
             >
               Pending Approval
             </Badge>
@@ -484,7 +484,7 @@ export function PhaseChecklist({
         return (
           <button
             onClick={() => handleApprove(item.id)}
-            className="inline-flex items-center gap-1 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium transition-colors text-sm"
+            className="inline-flex items-center gap-1 text-success hover:text-success dark:hover:text-success font-medium transition-colors text-sm"
           >
             <CheckCircle2 className="h-4 w-4" />
             Approve
@@ -522,7 +522,7 @@ export function PhaseChecklist({
         return (
           <Badge
             variant="outline"
-            className="text-sm text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-950/30"
+            className="text-sm text-warning bg-warning/10 dark:text-warning dark:bg-warning/15"
           >
             <AlertCircle className="h-3.5 w-3.5 mr-1" />
             Not Configured
@@ -538,7 +538,7 @@ export function PhaseChecklist({
         return (
           <Badge
             variant="outline"
-            className="text-sm text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/30"
+            className="text-sm text-success bg-success/10 dark:text-success dark:bg-success/15"
           >
             <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
             Booked
@@ -551,7 +551,7 @@ export function PhaseChecklist({
         return (
           <Badge
             variant="outline"
-            className="text-sm text-amber-700 bg-amber-50 dark:text-amber-400 dark:bg-amber-950/30"
+            className="text-sm text-warning bg-warning/10 dark:text-warning dark:bg-warning/15"
           >
             <AlertCircle className="h-3.5 w-3.5 mr-1" />
             No Link Available
@@ -687,14 +687,14 @@ export function PhaseChecklist({
           !signatureMetadata.required_signer_roles
         ) {
           return (
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+            <div className="p-3 bg-warning/10 border border-warning/30 rounded-lg">
+              <div className="flex items-center gap-2 text-warning">
                 <AlertCircle className="h-4 w-4" />
                 <span className="text-sm font-medium">
                   Signature item not configured
                 </span>
               </div>
-              <p className="text-xs text-amber-600 dark:text-amber-500 mt-1">
+              <p className="text-xs text-warning mt-1">
                 This item requires admin configuration before it can be used.
               </p>
             </div>
@@ -717,7 +717,7 @@ export function PhaseChecklist({
           item.metadata as CarrierContractingMetadata | null;
         if (!contractingMetadata) {
           return (
-            <div className="flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400">
+            <div className="flex items-center gap-2 text-xs text-warning">
               <AlertCircle className="h-3.5 w-3.5" />
               <span>Carrier contracting item not configured</span>
             </div>
@@ -744,7 +744,7 @@ export function PhaseChecklist({
     if (isRecruitViewer && hasHiddenBlockingItems) {
       return (
         <div className="py-8 text-center">
-          <Clock className="h-10 w-10 text-amber-400 dark:text-amber-500 mx-auto mb-3" />
+          <Clock className="h-10 w-10 text-warning dark:text-warning mx-auto mb-3" />
           <p className="text-sm font-medium text-v2-ink-muted mb-1">
             Waiting for Admin Action
           </p>
@@ -768,9 +768,9 @@ export function PhaseChecklist({
     <div className="space-y-3">
       {/* Show waiting message for recruits when hidden items block progress */}
       {isRecruitViewer && hasHiddenBlockingItems && (
-        <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center gap-2">
-          <Clock className="h-4 w-4 text-amber-500 flex-shrink-0" />
-          <p className="text-sm text-amber-700 dark:text-amber-400">
+        <div className="p-3 bg-warning/10 border border-warning/30 rounded-lg flex items-center gap-2">
+          <Clock className="h-4 w-4 text-warning flex-shrink-0" />
+          <p className="text-sm text-warning">
             Some required items are pending admin action. Continue with
             available tasks.
           </p>
@@ -788,9 +788,9 @@ export function PhaseChecklist({
             key={item.id}
             className={`py-1 px-2 border-l-2 transition-colors ${
               isCompleted
-                ? "border-l-emerald-500 bg-emerald-50/30 dark:bg-emerald-950/10"
+                ? "border-l-emerald-500 bg-success/10/30 dark:bg-success/10/10"
                 : isRejected
-                  ? "border-l-red-500 bg-red-50/30 dark:bg-red-950/10"
+                  ? "border-l-red-500 bg-destructive/10/30 dark:bg-destructive/10/10"
                   : checkboxState.isEnabled
                     ? "border-l-blue-500 hover:bg-v2-canvas"
                     : "border-l-v2-ring bg-v2-canvas/50 opacity-60 /30"
@@ -800,11 +800,11 @@ export function PhaseChecklist({
               <div className="relative flex-shrink-0">
                 {item.item_type === "document_upload" ? (
                   status === "approved" ? (
-                    <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    <CheckCircle2 className="h-4 w-4 text-success" />
                   ) : status === "in_progress" ? (
-                    <Clock className="h-4 w-4 text-amber-500" />
+                    <Clock className="h-4 w-4 text-warning" />
                   ) : status === "rejected" ? (
-                    <XCircle className="h-4 w-4 text-red-500" />
+                    <XCircle className="h-4 w-4 text-destructive" />
                   ) : (
                     <Upload className="h-4 w-4 text-v2-ink-subtle" />
                   )
@@ -848,7 +848,7 @@ export function PhaseChecklist({
                 {!isRecruitViewer && isHiddenFromRecruit(item) && (
                   <Badge
                     variant="outline"
-                    className="text-[10px] px-1.5 py-0.5 border-amber-300 text-amber-600 flex-shrink-0"
+                    className="text-[10px] px-1.5 py-0.5 border-warning/40 text-warning flex-shrink-0"
                   >
                     <EyeOff className="h-2.5 w-2.5 mr-0.5" />
                     Hidden
@@ -878,7 +878,7 @@ export function PhaseChecklist({
             {item.item_type === "scheduling_booking" &&
               (item.metadata as SchedulingChecklistMetadata | null)
                 ?.instructions && (
-                <p className="text-xs text-blue-600 dark:text-blue-400 ml-6 mt-1">
+                <p className="text-xs text-info ml-6 mt-1">
                   {(item.metadata as SchedulingChecklistMetadata).instructions}
                 </p>
               )}
@@ -906,7 +906,7 @@ export function PhaseChecklist({
 
             {/* Rejection reason - compact */}
             {progress?.rejection_reason && (
-              <p className="text-[10px] text-red-600 ml-6 mt-0.5">
+              <p className="text-[10px] text-destructive ml-6 mt-0.5">
                 <strong>Rejected:</strong> {progress.rejection_reason}
               </p>
             )}

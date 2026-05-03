@@ -135,9 +135,9 @@ function IPRow({
   };
 
   return (
-    <tr className="h-9 transition-colors hover:bg-v2-canvas border-b border-v2-ring/60">
+    <tr className="h-9 transition-colors hover:bg-background border-b border-border/60">
       {/* Agent Name with Hierarchy */}
-      <td className="px-2 py-1.5 text-[11px] text-v2-ink">
+      <td className="px-2 py-1.5 text-[11px] text-foreground">
         <div
           className="flex items-center gap-1"
           style={{ paddingLeft: `${depth * 16}px` }}
@@ -147,7 +147,7 @@ function IPRow({
               variant="ghost"
               size="sm"
               onClick={onToggle}
-              className="h-4 w-4 p-0 text-v2-ink-muted"
+              className="h-4 w-4 p-0 text-muted-foreground"
             >
               {isExpanded ? (
                 <ChevronDown className="h-3 w-3" />
@@ -157,7 +157,7 @@ function IPRow({
             </Button>
           )}
           {!hasChildren && depth > 0 && (
-            <span className="text-v2-ink-subtle text-[10px] mr-1">└─</span>
+            <span className="text-muted-foreground text-[10px] mr-1">└─</span>
           )}
           <span className="font-medium">
             {agent.first_name && agent.last_name
@@ -165,12 +165,12 @@ function IPRow({
               : agent.email}
           </span>
           {isOwner && (
-            <span className="inline-flex items-center px-1 py-0.5 rounded text-[8px] font-semibold bg-blue-500/20 text-blue-700 dark:text-blue-300 ml-1">
+            <span className="inline-flex items-center px-1 py-0.5 rounded text-[8px] font-semibold bg-info/20 text-info ml-1">
               You
             </span>
           )}
           {agent.approval_status === "approved" && (
-            <UserCheck className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+            <UserCheck className="h-3 w-3 text-success" />
           )}
         </div>
       </td>
@@ -178,31 +178,31 @@ function IPRow({
       {/* IP (Issued Premium) */}
       <td className="px-2 py-1.5 text-right text-[11px] font-mono">
         {ip_total > 0 ? (
-          <span className="font-bold text-blue-600 dark:text-blue-400">
+          <span className="font-bold text-info">
             {formatCurrency(ip_total)}
           </span>
         ) : (
-          <span className="text-v2-ink-subtle">$0</span>
+          <span className="text-muted-foreground">$0</span>
         )}
       </td>
 
       {/* IP Policies Count */}
       <td className="px-2 py-1.5 text-center text-[11px] font-mono">
         {ip_policies > 0 ? (
-          <span className="font-semibold text-v2-ink">{ip_policies}</span>
+          <span className="font-semibold text-foreground">{ip_policies}</span>
         ) : (
-          <span className="text-v2-ink-subtle">0</span>
+          <span className="text-muted-foreground">0</span>
         )}
       </td>
 
       {/* Average Premium */}
       <td className="px-2 py-1.5 text-right text-[11px] font-mono">
         {avg_premium > 0 ? (
-          <span className="font-medium text-v2-ink-muted">
+          <span className="font-medium text-muted-foreground">
             {formatCurrency(avg_premium)}
           </span>
         ) : (
-          <span className="text-v2-ink-subtle">$0</span>
+          <span className="text-muted-foreground">$0</span>
         )}
       </td>
     </tr>
@@ -344,35 +344,35 @@ export function IssuedPremiumTable({
   };
 
   return (
-    <div className="bg-v2-card rounded-lg border border-v2-ring">
-      <div className="px-3 py-2 border-b border-v2-ring bg-v2-canvas/30">
-        <div className="text-[10px] font-medium text-v2-ink-muted uppercase tracking-wide">
+    <div className="bg-card rounded-lg border border-border">
+      <div className="px-3 py-2 border-b border-border bg-background/30">
+        <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
           Issued Premium (IP) — Active Policies Only
         </div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
-          <thead className="bg-v2-canvas border-b border-v2-ring">
+          <thead className="bg-background border-b border-border">
             <tr className="h-8">
-              <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-v2-ink-muted">
+              <th className="px-2 py-1.5 text-left text-[10px] font-semibold text-muted-foreground">
                 Agent
               </th>
-              <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-v2-ink-muted">
-                <span className="text-blue-600 dark:text-blue-400">IP</span>
+              <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-muted-foreground">
+                <span className="text-info">IP</span>
               </th>
-              <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-v2-ink-muted">
+              <th className="px-2 py-1.5 text-center text-[10px] font-semibold text-muted-foreground">
                 Policies
               </th>
-              <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-v2-ink-muted">
+              <th className="px-2 py-1.5 text-right text-[10px] font-semibold text-muted-foreground">
                 Avg Premium
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-v2-ring/60">
+          <tbody className="divide-y divide-border/60">
             {isLoading ? (
               <tr>
                 <td colSpan={4} className="text-center py-8">
-                  <div className="text-[11px] text-v2-ink-muted">
+                  <div className="text-[11px] text-muted-foreground">
                     Loading issued premium data...
                   </div>
                 </td>
@@ -380,7 +380,7 @@ export function IssuedPremiumTable({
             ) : agentsToDisplay.length === 0 && !owner ? (
               <tr>
                 <td colSpan={4} className="text-center py-6">
-                  <span className="text-[11px] text-v2-ink-muted">
+                  <span className="text-[11px] text-muted-foreground">
                     No team members found
                   </span>
                 </td>
@@ -408,21 +408,21 @@ export function IssuedPremiumTable({
 
       {/* Pagination Controls */}
       {totalRootAgents > 0 && (
-        <div className="flex items-center justify-between px-3 py-2 border-t border-v2-ring bg-v2-canvas/30">
+        <div className="flex items-center justify-between px-3 py-2 border-t border-border bg-background/30">
           <div className="flex items-center gap-4">
-            <span className="text-[10px] text-v2-ink-muted">
+            <span className="text-[10px] text-muted-foreground">
               Total: {agents.length + (owner ? 1 : 0)} agent
               {agents.length + (owner ? 1 : 0) !== 1 ? "s" : ""}
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-v2-ink-muted">
+              <span className="text-[10px] text-muted-foreground">
                 Rows per page:
               </span>
               <Select
                 value={rowsPerPage.toString()}
                 onValueChange={handleRowsPerPageChange}
               >
-                <SelectTrigger className="h-6 w-14 text-[10px] bg-v2-card border-v2-ring">
+                <SelectTrigger className="h-6 w-14 text-[10px] bg-card border-border">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -436,7 +436,7 @@ export function IssuedPremiumTable({
           </div>
 
           <div className="flex items-center gap-1">
-            <span className="text-[10px] text-v2-ink-muted">
+            <span className="text-[10px] text-muted-foreground">
               Page {currentPage} of {totalPages || 1}
             </span>
             <Button
@@ -444,7 +444,7 @@ export function IssuedPremiumTable({
               size="sm"
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
             >
               <ChevronLeft className="h-3 w-3" />
             </Button>
@@ -455,7 +455,7 @@ export function IssuedPremiumTable({
                 setCurrentPage(Math.min(totalPages || 1, currentPage + 1))
               }
               disabled={currentPage >= totalPages}
-              className="h-6 w-6 p-0 text-v2-ink-muted hover:text-v2-ink"
+              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
             >
               <ChevronRight className="h-3 w-3" />
             </Button>

@@ -1,7 +1,7 @@
 // src/features/recruiting/admin/PipelineQuickView.tsx
-import { useState } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Mail, Bell, MessageSquare, ChevronDown } from 'lucide-react';
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Mail, Bell, MessageSquare, ChevronDown } from "lucide-react";
 
 interface PipelineQuickViewProps {
   pipeline: {
@@ -47,24 +47,29 @@ export function PipelineQuickView({ pipeline }: PipelineQuickViewProps) {
       <div className="pb-2 border-b">
         <h3 className="font-medium">{pipeline.name}</h3>
         {pipeline.description && (
-          <p className="text-xs text-muted-foreground mt-1">{pipeline.description}</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {pipeline.description}
+          </p>
         )}
       </div>
 
       <div className="w-full space-y-1">
         {pipeline.phases.map((phase) => (
-          <div key={phase.id} className="border-b border-gray-100 dark:border-gray-800">
+          <div
+            key={phase.id}
+            className="border-b border-muted dark:border-muted"
+          >
             <button
               onClick={() => togglePhase(phase.id)}
-              className="w-full text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-800 py-2 px-1 transition-colors"
+              className="w-full text-left text-sm hover:bg-muted dark:hover:bg-muted py-2 px-1 transition-colors"
             >
               <div className="flex items-center gap-2">
                 <ChevronDown
                   className={`h-4 w-4 transition-transform ${
-                    expandedPhases.has(phase.id) ? 'rotate-0' : '-rotate-90'
+                    expandedPhases.has(phase.id) ? "rotate-0" : "-rotate-90"
                   }`}
                 />
-                <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-xs flex items-center justify-center font-medium">
+                <div className="w-6 h-6 rounded-full bg-info/20 text-info text-xs flex items-center justify-center font-medium">
                   {phase.phase_order}
                 </div>
                 <span>{phase.phase_name}</span>
@@ -77,11 +82,18 @@ export function PipelineQuickView({ pipeline }: PipelineQuickViewProps) {
               <div className="pl-8 space-y-2 pb-2">
                 {/* Checklist Items */}
                 <div>
-                  <h5 className="text-xs font-medium text-muted-foreground mb-1">Checklist Items:</h5>
+                  <h5 className="text-xs font-medium text-muted-foreground mb-1">
+                    Checklist Items:
+                  </h5>
                   <ul className="space-y-1">
                     {phase.checklist_items.map((item) => (
-                      <li key={item.id} className="text-xs flex items-center gap-2">
-                        <div className={`w-1 h-1 rounded-full ${item.is_required ? 'bg-red-500' : 'bg-gray-400'}`} />
+                      <li
+                        key={item.id}
+                        className="text-xs flex items-center gap-2"
+                      >
+                        <div
+                          className={`w-1 h-1 rounded-full ${item.is_required ? "bg-destructive" : "bg-muted"}`}
+                        />
                         <span>{item.item_name}</span>
                         <Badge variant="outline" className="text-xs px-1">
                           {item.item_type}
@@ -94,16 +106,29 @@ export function PipelineQuickView({ pipeline }: PipelineQuickViewProps) {
                 {/* Automations */}
                 {phase.automations.length > 0 && (
                   <div>
-                    <h5 className="text-xs font-medium text-muted-foreground mb-1">Automations:</h5>
+                    <h5 className="text-xs font-medium text-muted-foreground mb-1">
+                      Automations:
+                    </h5>
                     <ul className="space-y-1">
                       {phase.automations.map((auto) => (
-                        <li key={auto.id} className="text-xs flex items-center gap-2">
+                        <li
+                          key={auto.id}
+                          className="text-xs flex items-center gap-2"
+                        >
                           <div className="flex items-center gap-1">
-                            {auto.communication_type.includes('email') && <Mail className="h-3 w-3 text-blue-500" />}
-                            {auto.communication_type.includes('notification') && <Bell className="h-3 w-3 text-yellow-500" />}
-                            {auto.communication_type.includes('sms') && <MessageSquare className="h-3 w-3 text-green-500" />}
+                            {auto.communication_type.includes("email") && (
+                              <Mail className="h-3 w-3 text-info" />
+                            )}
+                            {auto.communication_type.includes(
+                              "notification",
+                            ) && <Bell className="h-3 w-3 text-warning" />}
+                            {auto.communication_type.includes("sms") && (
+                              <MessageSquare className="h-3 w-3 text-success" />
+                            )}
                           </div>
-                          <span className="text-muted-foreground">{auto.trigger_type.replace(/_/g, ' ')}</span>
+                          <span className="text-muted-foreground">
+                            {auto.trigger_type.replace(/_/g, " ")}
+                          </span>
                         </li>
                       ))}
                     </ul>

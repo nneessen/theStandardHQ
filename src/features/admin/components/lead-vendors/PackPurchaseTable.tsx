@@ -108,7 +108,7 @@ function ThresholdInput({
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
-      <label className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle whitespace-nowrap">
+      <label className="text-[10px] text-muted-foreground dark:text-muted-foreground whitespace-nowrap">
         {label}
       </label>
       <div className="flex items-center gap-0.5">
@@ -120,10 +120,10 @@ function ThresholdInput({
             const parsed = parseFloat(e.target.value);
             if (!isNaN(parsed)) onChange(parsed);
           }}
-          className="w-14 px-1 py-0.5 text-[10px] text-right tabular-nums border border-v2-ring rounded bg-white dark:bg-v2-ring text-v2-ink-muted focus:outline-none focus:ring-1 focus:ring-v2-accent"
+          className="w-14 px-1 py-0.5 text-[10px] text-right tabular-nums border border-border rounded bg-white dark:bg-muted text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent"
         />
         {suffix && (
-          <span className="text-[9px] text-v2-ink-subtle">{suffix}</span>
+          <span className="text-[9px] text-muted-foreground">{suffix}</span>
         )}
       </div>
     </div>
@@ -146,10 +146,10 @@ function SegmentedToggle<T extends string>({
 }) {
   return (
     <div className="flex items-center gap-1">
-      <span className="text-[9px] font-medium text-v2-ink-muted uppercase tracking-wide">
+      <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">
         {label}
       </span>
-      <div className="flex items-center gap-0 border border-v2-ring rounded overflow-hidden">
+      <div className="flex items-center gap-0 border border-border rounded overflow-hidden">
         {options.map((opt) => (
           <button
             key={opt.value}
@@ -157,8 +157,8 @@ function SegmentedToggle<T extends string>({
             className={cn(
               "px-1.5 py-0.5 text-[10px] font-medium transition-colors",
               value === opt.value
-                ? "bg-v2-ring text-white dark:bg-v2-ring dark:text-v2-ink"
-                : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
+                ? "bg-muted text-white dark:bg-muted dark:text-foreground"
+                : "text-muted-foreground hover:bg-muted dark:hover:bg-muted",
             )}
           >
             {opt.label}
@@ -341,25 +341,25 @@ export function PackPurchaseTable({
 
   const roiColor = (roi: number) =>
     roi > 0
-      ? "text-emerald-600 dark:text-emerald-400"
+      ? "text-success"
       : roi < 0
-        ? "text-red-600 dark:text-red-400"
-        : "text-v2-ink-muted";
+        ? "text-destructive"
+        : "text-muted-foreground";
 
   if (isLoading && packs.length === 0) {
     return (
       <div className="flex items-center justify-center h-32">
-        <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   return (
-    <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
+    <div className="bg-card rounded-v2-md border border-border shadow-v2-soft">
       {/* Header with filters */}
-      <div className="px-2 py-1.5 border-b border-v2-ring space-y-1">
+      <div className="px-2 py-1.5 border-b border-border space-y-1">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-semibold text-v2-ink-muted">
+          <span className="text-[10px] font-semibold text-muted-foreground">
             All Purchases
           </span>
           <Badge variant="outline" className="text-[9px]">
@@ -414,7 +414,7 @@ export function PackPurchaseTable({
 
           {/* Quick Sale toggle */}
           <div className="flex items-center gap-1">
-            <span className="text-[9px] font-medium text-v2-ink-muted uppercase tracking-wide">
+            <span className="text-[9px] font-medium text-muted-foreground uppercase tracking-wide">
               Quick Sale
             </span>
             <button
@@ -422,8 +422,8 @@ export function PackPurchaseTable({
               className={cn(
                 "px-1.5 py-0.5 text-[10px] font-medium rounded border transition-colors",
                 filters.quickSale
-                  ? "bg-v2-ring text-white border-v2-ring dark:bg-v2-ring dark:text-v2-ink dark:border-v2-ring"
-                  : "text-v2-ink-muted border-v2-ring hover:bg-v2-ring dark:hover:bg-v2-ring",
+                  ? "bg-muted text-white border-border dark:bg-muted dark:text-foreground dark:border-border"
+                  : "text-muted-foreground border-border hover:bg-muted dark:hover:bg-muted",
               )}
             >
               {`\u2264${thresholds.quickSaleMaxDays}d`}
@@ -434,7 +434,7 @@ export function PackPurchaseTable({
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
-              className="flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] text-v2-ink-muted hover:text-v2-ink transition-colors"
+              className="flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="h-3 w-3" />
               Clear
@@ -445,14 +445,14 @@ export function PackPurchaseTable({
           <Popover>
             <PopoverTrigger asChild>
               <button
-                className="p-0.5 text-v2-ink-subtle hover:text-v2-ink-muted dark:hover:text-v2-ink-subtle transition-colors rounded hover:bg-v2-ring dark:hover:bg-v2-ring"
+                className="p-0.5 text-muted-foreground hover:text-muted-foreground dark:hover:text-muted-foreground transition-colors rounded hover:bg-muted dark:hover:bg-muted"
                 title="Filter thresholds"
               >
                 <Settings2 className="h-3.5 w-3.5" />
               </button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-56 p-2 space-y-2">
-              <div className="text-[10px] font-semibold text-v2-ink-muted mb-1">
+              <div className="text-[10px] font-semibold text-muted-foreground mb-1">
                 Filter Thresholds
               </div>
 
@@ -489,7 +489,7 @@ export function PackPurchaseTable({
 
               <button
                 onClick={() => setThresholds(DEFAULT_THRESHOLDS)}
-                className="flex items-center gap-1 w-full justify-center pt-1 mt-1 border-t border-v2-ring text-[10px] text-v2-ink-muted hover:text-v2-ink transition-colors"
+                className="flex items-center gap-1 w-full justify-center pt-1 mt-1 border-t border-border text-[10px] text-muted-foreground hover:text-foreground transition-colors"
               >
                 <RotateCcw className="h-3 w-3" />
                 Reset Defaults
@@ -502,7 +502,7 @@ export function PackPurchaseTable({
       {/* Table */}
       <Table className="min-w-[1050px]">
         <TableHeader>
-          <TableRow className="bg-v2-canvas">
+          <TableRow className="bg-background">
             <SortableHead
               field="purchaseDate"
               label="Date"
@@ -611,7 +611,7 @@ export function PackPurchaseTable({
             <TableRow>
               <TableCell
                 colSpan={13}
-                className="text-center text-[10px] text-v2-ink-muted py-6"
+                className="text-center text-[10px] text-muted-foreground py-6"
               >
                 No purchases match your filters
               </TableCell>
@@ -619,7 +619,7 @@ export function PackPurchaseTable({
           ) : (
             paginated.map((pack) => (
               <TableRow key={pack.packId}>
-                <TableCell className="text-[10px] px-1.5 py-0.5 text-v2-ink-muted whitespace-nowrap">
+                <TableCell className="text-[10px] px-1.5 py-0.5 text-muted-foreground whitespace-nowrap">
                   {formatDate(pack.purchaseDate, {
                     month: "numeric",
                     day: "numeric",
@@ -627,19 +627,19 @@ export function PackPurchaseTable({
                   })}
                 </TableCell>
                 <TableCell
-                  className="text-[10px] px-1.5 py-0.5 text-v2-ink-muted truncate max-w-[140px]"
+                  className="text-[10px] px-1.5 py-0.5 text-muted-foreground truncate max-w-[140px]"
                   title={pack.purchaseName || undefined}
                 >
                   {pack.purchaseName || "\u2014"}
                 </TableCell>
                 <TableCell
-                  className="text-[10px] px-1.5 py-0.5 text-v2-ink-muted truncate max-w-[110px]"
+                  className="text-[10px] px-1.5 py-0.5 text-muted-foreground truncate max-w-[110px]"
                   title={pack.vendorName}
                 >
                   {pack.vendorName}
                 </TableCell>
                 <TableCell
-                  className="text-[10px] px-1.5 py-0.5 text-v2-ink-muted truncate max-w-[110px]"
+                  className="text-[10px] px-1.5 py-0.5 text-muted-foreground truncate max-w-[110px]"
                   title={pack.agentName}
                 >
                   {pack.agentName}
@@ -649,8 +649,8 @@ export function PackPurchaseTable({
                     className={cn(
                       "font-semibold",
                       pack.leadFreshness === "fresh"
-                        ? "text-emerald-600 dark:text-emerald-400"
-                        : "text-amber-600 dark:text-amber-400",
+                        ? "text-success"
+                        : "text-warning",
                     )}
                   >
                     {pack.leadFreshness === "fresh" ? "F" : "A"}
@@ -693,15 +693,15 @@ export function PackPurchaseTable({
 
       {/* Pagination */}
       {filtered.length > 0 && (
-        <div className="px-2 py-1 border-t border-v2-ring flex items-center justify-between">
-          <span className="text-[10px] text-v2-ink-muted">
+        <div className="px-2 py-1 border-t border-border flex items-center justify-between">
+          <span className="text-[10px] text-muted-foreground">
             {(page - 1) * pageSize + 1}&ndash;
             {Math.min(page * pageSize, filtered.length)} of {filtered.length}
           </span>
 
           <div className="flex items-center gap-2">
             {/* Page size selector */}
-            <div className="flex items-center gap-0.5 border border-v2-ring rounded overflow-hidden">
+            <div className="flex items-center gap-0.5 border border-border rounded overflow-hidden">
               {PAGE_SIZES.map((size) => (
                 <button
                   key={size}
@@ -709,8 +709,8 @@ export function PackPurchaseTable({
                   className={cn(
                     "px-1.5 py-0.5 text-[10px] transition-colors",
                     pageSize === size
-                      ? "bg-v2-ring text-white dark:bg-v2-ring dark:text-v2-ink"
-                      : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
+                      ? "bg-muted text-white dark:bg-muted dark:text-foreground"
+                      : "text-muted-foreground hover:bg-muted dark:hover:bg-muted",
                   )}
                 >
                   {size}
@@ -723,7 +723,7 @@ export function PackPurchaseTable({
               <button
                 onClick={() => setPage(Math.max(1, page - 1))}
                 disabled={page === 1}
-                className="px-1 py-0.5 text-[10px] text-v2-ink-muted hover:text-v2-ink disabled:opacity-30 disabled:cursor-not-allowed"
+                className="px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 &lsaquo;
               </button>
@@ -747,7 +747,7 @@ export function PackPurchaseTable({
                   item === "ellipsis" ? (
                     <span
                       key={`e-${idx}`}
-                      className="px-0.5 text-[10px] text-v2-ink-subtle"
+                      className="px-0.5 text-[10px] text-muted-foreground"
                     >
                       &hellip;
                     </span>
@@ -758,8 +758,8 @@ export function PackPurchaseTable({
                       className={cn(
                         "px-1.5 py-0.5 text-[10px] rounded transition-colors",
                         page === item
-                          ? "bg-v2-ring text-white dark:bg-v2-ring dark:text-v2-ink"
-                          : "text-v2-ink-muted hover:bg-v2-ring dark:hover:bg-v2-ring",
+                          ? "bg-muted text-white dark:bg-muted dark:text-foreground"
+                          : "text-muted-foreground hover:bg-muted dark:hover:bg-muted",
                       )}
                     >
                       {item}
@@ -769,7 +769,7 @@ export function PackPurchaseTable({
               <button
                 onClick={() => setPage(Math.min(totalPages, page + 1))}
                 disabled={page === totalPages}
-                className="px-1 py-0.5 text-[10px] text-v2-ink-muted hover:text-v2-ink disabled:opacity-30 disabled:cursor-not-allowed"
+                className="px-1 py-0.5 text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 &rsaquo;
               </button>

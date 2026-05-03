@@ -38,10 +38,10 @@ export default function ClientInfoStep({
   const bmiCategory = useMemo(() => getBMICategory(bmi), [bmi]);
 
   const bmiColorClass = useMemo(() => {
-    if (bmi < 18.5 || bmi >= 35) return "text-red-600 dark:text-red-400";
-    if (bmi >= 30) return "text-orange-600 dark:text-orange-400";
-    if (bmi >= 25) return "text-yellow-600 dark:text-yellow-400";
-    return "text-emerald-600 dark:text-emerald-400";
+    if (bmi < 18.5 || bmi >= 35) return "text-destructive";
+    if (bmi >= 30) return "text-warning";
+    if (bmi >= 25) return "text-warning";
+    return "text-success";
   }, [bmi]);
 
   const handleDobChange = (value: string) => {
@@ -54,7 +54,7 @@ export default function ClientInfoStep({
 
   return (
     <div className="space-y-4 p-1">
-      <div className="text-xs text-v2-ink-muted dark:text-v2-ink-subtle mb-3">
+      <div className="text-xs text-muted-foreground dark:text-muted-foreground mb-3">
         Enter client demographic information. Only age, gender, and state are
         required for underwriting analysis.
       </div>
@@ -63,7 +63,7 @@ export default function ClientInfoStep({
       <div className="space-y-1">
         <Label
           htmlFor="name"
-          className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
+          className="text-[11px] text-muted-foreground dark:text-muted-foreground"
         >
           Client Name (optional)
         </Label>
@@ -81,7 +81,7 @@ export default function ClientInfoStep({
         <div className="space-y-1">
           <Label
             htmlFor="dob"
-            className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
+            className="text-[11px] text-muted-foreground dark:text-muted-foreground"
           >
             Date of Birth
           </Label>
@@ -96,9 +96,9 @@ export default function ClientInfoStep({
         <div className="space-y-1">
           <Label
             htmlFor="age"
-            className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
+            className="text-[11px] text-muted-foreground dark:text-muted-foreground"
           >
-            Age <span className="text-red-500">*</span>
+            Age <span className="text-destructive">*</span>
           </Label>
           <Input
             id="age"
@@ -107,10 +107,10 @@ export default function ClientInfoStep({
             max={100}
             value={data.age || ""}
             onChange={(e) => onChange({ age: parseInt(e.target.value) || 0 })}
-            className={cn("h-8 text-sm", errors.age && "border-red-500")}
+            className={cn("h-8 text-sm", errors.age && "border-destructive")}
           />
           {errors.age && (
-            <p className="text-[10px] text-red-500 mt-0.5">{errors.age}</p>
+            <p className="text-[10px] text-destructive mt-0.5">{errors.age}</p>
           )}
         </div>
       </div>
@@ -118,8 +118,8 @@ export default function ClientInfoStep({
       {/* Gender and State */}
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
-          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
-            Gender <span className="text-red-500">*</span>
+          <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+            Gender <span className="text-destructive">*</span>
           </Label>
           <Select
             value={data.gender}
@@ -128,7 +128,10 @@ export default function ClientInfoStep({
             }
           >
             <SelectTrigger
-              className={cn("h-8 text-sm", errors.gender && "border-red-500")}
+              className={cn(
+                "h-8 text-sm",
+                errors.gender && "border-destructive",
+              )}
             >
               <SelectValue placeholder="Select gender" />
             </SelectTrigger>
@@ -139,20 +142,25 @@ export default function ClientInfoStep({
             </SelectContent>
           </Select>
           {errors.gender && (
-            <p className="text-[10px] text-red-500 mt-0.5">{errors.gender}</p>
+            <p className="text-[10px] text-destructive mt-0.5">
+              {errors.gender}
+            </p>
           )}
         </div>
 
         <div className="space-y-1">
-          <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
-            State <span className="text-red-500">*</span>
+          <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+            State <span className="text-destructive">*</span>
           </Label>
           <Select
             value={data.state}
             onValueChange={(value) => onChange({ state: value })}
           >
             <SelectTrigger
-              className={cn("h-8 text-sm", errors.state && "border-red-500")}
+              className={cn(
+                "h-8 text-sm",
+                errors.state && "border-destructive",
+              )}
             >
               <SelectValue placeholder="Select state" />
             </SelectTrigger>
@@ -165,15 +173,17 @@ export default function ClientInfoStep({
             </SelectContent>
           </Select>
           {errors.state && (
-            <p className="text-[10px] text-red-500 mt-0.5">{errors.state}</p>
+            <p className="text-[10px] text-destructive mt-0.5">
+              {errors.state}
+            </p>
           )}
         </div>
       </div>
 
       {/* Height and Weight - BMI section */}
-      <div className="pt-2 border-t border-v2-ring dark:border-v2-ring">
+      <div className="pt-2 border-t border-border dark:border-border">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
+          <span className="text-[11px] font-medium text-foreground dark:text-muted-foreground">
             Build Information
           </span>
           {bmi > 0 && (
@@ -185,7 +195,7 @@ export default function ClientInfoStep({
 
         <div className="grid grid-cols-3 gap-3">
           <div className="space-y-1">
-            <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
               Height (ft)
             </Label>
             <Select
@@ -208,7 +218,7 @@ export default function ClientInfoStep({
           </div>
 
           <div className="space-y-1">
-            <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+            <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
               Height (in)
             </Label>
             <Select
@@ -233,7 +243,7 @@ export default function ClientInfoStep({
           <div className="space-y-1">
             <Label
               htmlFor="weight"
-              className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle"
+              className="text-[11px] text-muted-foreground dark:text-muted-foreground"
             >
               Weight (lbs)
             </Label>
@@ -246,16 +256,21 @@ export default function ClientInfoStep({
               onChange={(e) =>
                 onChange({ weight: parseInt(e.target.value) || 0 })
               }
-              className={cn("h-8 text-sm", errors.weight && "border-red-500")}
+              className={cn(
+                "h-8 text-sm",
+                errors.weight && "border-destructive",
+              )}
             />
             {errors.weight && (
-              <p className="text-[10px] text-red-500 mt-0.5">{errors.weight}</p>
+              <p className="text-[10px] text-destructive mt-0.5">
+                {errors.weight}
+              </p>
             )}
           </div>
         </div>
 
         {errors.height && (
-          <p className="text-[10px] text-red-500 mt-1">{errors.height}</p>
+          <p className="text-[10px] text-destructive mt-1">{errors.height}</p>
         )}
       </div>
     </div>

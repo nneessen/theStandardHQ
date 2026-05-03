@@ -29,7 +29,7 @@ export default function BudgetModeToggle({
           className={cn(
             "text-[10px] h-7 px-2.5 gap-1",
             mode === "coverage"
-              ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700 hover:text-white"
+              ? "bg-info text-white border-info hover:bg-info hover:text-white"
               : "hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted",
           )}
         >
@@ -43,7 +43,7 @@ export default function BudgetModeToggle({
           className={cn(
             "text-[10px] h-7 px-2.5 gap-1",
             mode === "budget"
-              ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700 hover:text-white"
+              ? "bg-info text-white border-info hover:bg-info hover:text-white"
               : "hover:bg-v2-card-tinted dark:hover:bg-v2-card-tinted",
           )}
         >

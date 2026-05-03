@@ -97,7 +97,7 @@ export function WorkspaceLogoUpload({
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-6 w-6 p-0 text-v2-ink-subtle hover:text-red-500"
+                className="h-6 w-6 p-0 text-v2-ink-subtle hover:text-destructive"
                 onClick={handleDelete}
                 disabled={disabled || isLoading}
               >
@@ -116,7 +116,7 @@ export function WorkspaceLogoUpload({
               className={`w-12 h-12 rounded-lg border-2 border-dashed flex items-center justify-center flex-shrink-0 transition-colors ${
                 disabled
                   ? "border-v2-ring bg-v2-canvas"
-                  : "border-v2-ring dark:border-v2-ring bg-v2-canvas hover:border-purple-400 dark:hover:border-purple-600 cursor-pointer"
+                  : "border-v2-ring dark:border-v2-ring bg-v2-canvas hover:border-info dark:hover:border-info cursor-pointer"
               }`}
               onClick={disabled ? undefined : handleUploadClick}
             >

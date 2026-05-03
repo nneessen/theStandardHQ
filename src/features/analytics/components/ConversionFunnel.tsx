@@ -79,22 +79,22 @@ export function ConversionFunnel() {
     {
       label: "Leads Purchased",
       count: leadsPurchased,
-      color: "bg-blue-500",
+      color: "bg-info",
     },
     {
       label: "Applications",
       count: applicationsSubmitted,
-      color: "bg-indigo-500",
+      color: "bg-info",
     },
     {
       label: "Approved",
       count: approved,
-      color: "bg-amber-500",
+      color: "bg-warning",
     },
     {
       label: "Active",
       count: active,
-      color: "bg-emerald-500",
+      color: "bg-success",
     },
   ];
 
@@ -146,10 +146,10 @@ export function ConversionFunnel() {
                       className={cn(
                         "text-[9px] font-medium px-1 py-0.5 rounded",
                         Number(conversionRate) >= 50
-                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                          ? "bg-success/10 text-success"
                           : Number(conversionRate) >= 25
-                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                            : "bg-red-500/10 text-red-600 dark:text-red-400",
+                            ? "bg-warning/10 text-warning"
+                            : "bg-destructive/10 text-destructive",
                       )}
                     >
                       {conversionRate}%

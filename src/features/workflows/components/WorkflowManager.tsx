@@ -148,13 +148,11 @@ export default function WorkflowManager() {
 
   const statusColors = {
     draft:
-      "bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted",
-    active:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-    paused:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+      "bg-card-tinted text-foreground dark:bg-card-tinted dark:text-muted-foreground",
+    active: "bg-success/20 text-success dark:bg-success/30 dark:text-success",
+    paused: "bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning",
     archived:
-      "bg-v2-card-tinted text-v2-ink-muted dark:bg-v2-card-tinted dark:text-v2-ink-muted",
+      "bg-card-tinted text-muted-foreground dark:bg-card-tinted dark:text-muted-foreground",
   };
 
   const triggerIcons = {
@@ -165,11 +163,11 @@ export default function WorkflowManager() {
   };
 
   const runStatusColors = {
-    completed: "text-emerald-600 dark:text-emerald-400",
-    failed: "text-red-600 dark:text-red-400",
-    running: "text-blue-600 dark:text-blue-400",
-    pending: "text-v2-ink-muted dark:text-v2-ink-subtle",
-    cancelled: "text-orange-600 dark:text-orange-400",
+    completed: "text-success",
+    failed: "text-destructive",
+    running: "text-info",
+    pending: "text-muted-foreground dark:text-muted-foreground",
+    cancelled: "text-warning",
   };
 
   return (
@@ -181,10 +179,10 @@ export default function WorkflowManager() {
         className="h-full flex flex-col"
       >
         <div className="flex items-center justify-between mb-2">
-          <TabsList className="h-7 bg-v2-card-tinted dark:bg-v2-card-tinted">
+          <TabsList className="h-7 bg-card-tinted dark:bg-card-tinted">
             <TabsTrigger
               value="workflows"
-              className="text-[11px] h-6 data-[state=active]:bg-white dark:data-[state=active]:bg-v2-card"
+              className="text-[11px] h-6 data-[state=active]:bg-white dark:data-[state=active]:bg-card"
             >
               Workflows
             </TabsTrigger>
@@ -192,14 +190,14 @@ export default function WorkflowManager() {
               <>
                 <TabsTrigger
                   value="templates"
-                  className="text-[11px] h-6 data-[state=active]:bg-white dark:data-[state=active]:bg-v2-card"
+                  className="text-[11px] h-6 data-[state=active]:bg-white dark:data-[state=active]:bg-card"
                 >
                   <Mail className="h-3 w-3 mr-1" />
                   Email Templates
                 </TabsTrigger>
                 <TabsTrigger
                   value="events"
-                  className="text-[11px] h-6 data-[state=active]:bg-white dark:data-[state=active]:bg-v2-card"
+                  className="text-[11px] h-6 data-[state=active]:bg-white dark:data-[state=active]:bg-card"
                 >
                   <Shield className="h-3 w-3 mr-1" />
                   Event Types
@@ -229,22 +227,22 @@ export default function WorkflowManager() {
             {/* Workflow Stats Header */}
             <div className="flex items-center gap-3 mb-2 text-[11px]">
               <div className="flex items-center gap-1">
-                <Zap className="h-3 w-3 text-v2-ink-subtle" />
-                <span className="font-medium text-v2-ink dark:text-v2-ink">
+                <Zap className="h-3 w-3 text-muted-foreground" />
+                <span className="font-medium text-foreground dark:text-foreground">
                   {workflows.length}
                 </span>
-                <span className="text-v2-ink-muted dark:text-v2-ink-subtle">
+                <span className="text-muted-foreground dark:text-muted-foreground">
                   workflow{workflows.length !== 1 ? "s" : ""}
                 </span>
               </div>
               {runs.length > 0 && (
                 <>
-                  <div className="h-3 w-px bg-v2-ring dark:bg-v2-ring-strong" />
+                  <div className="h-3 w-px bg-muted dark:bg-muted" />
                   <button
                     onClick={() => setShowRecentRuns(!showRecentRuns)}
-                    className="flex items-center gap-1 text-v2-ink-muted dark:text-v2-ink-subtle hover:text-v2-ink dark:hover:text-v2-ink-subtle transition-colors cursor-pointer"
+                    className="flex items-center gap-1 text-muted-foreground dark:text-muted-foreground hover:text-foreground dark:hover:text-muted-foreground transition-colors cursor-pointer"
                   >
-                    <span className="font-medium text-v2-ink dark:text-v2-ink">
+                    <span className="font-medium text-foreground dark:text-foreground">
                       {runs.length}
                     </span>
                     <span>recent run{runs.length !== 1 ? "s" : ""}</span>
@@ -258,8 +256,8 @@ export default function WorkflowManager() {
 
             {/* Recent Runs - Collapsible inline view */}
             {showRecentRuns && runs.length > 0 && (
-              <div className="mb-2 rounded-lg border border-v2-ring dark:border-v2-ring-strong px-2.5 py-2 bg-v2-canvas dark:bg-v2-card-tinted/50">
-                <div className="text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle uppercase mb-1">
+              <div className="mb-2 rounded-lg border border-border dark:border-border px-2.5 py-2 bg-background dark:bg-card-tinted/50">
+                <div className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground uppercase mb-1">
                   Recent Activity
                 </div>
                 <div className="space-y-0.5">
@@ -281,10 +279,10 @@ export default function WorkflowManager() {
                               ? "✗"
                               : "○"}
                         </span>
-                        <span className="text-v2-ink-muted dark:text-v2-ink-muted">
+                        <span className="text-muted-foreground dark:text-muted-foreground">
                           {run.workflow?.name || "Unknown"}
                         </span>
-                        <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                        <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                           {run.startedAt
                             ? new Date(run.startedAt).toLocaleString("en-US", {
                                 month: "short",
@@ -296,7 +294,7 @@ export default function WorkflowManager() {
                         </span>
                       </div>
                       {run.completedAt && run.startedAt && (
-                        <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                        <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                           {Math.round(
                             (new Date(run.completedAt).getTime() -
                               new Date(run.startedAt).getTime()) /
@@ -312,17 +310,17 @@ export default function WorkflowManager() {
             )}
 
             {/* Workflows Table - Full width */}
-            <div className="flex-1 rounded-lg border border-v2-ring dark:border-v2-ring-strong overflow-auto">
+            <div className="flex-1 rounded-lg border border-border dark:border-border overflow-auto">
               {workflows.length === 0 ? (
                 <div className="text-center py-8">
-                  <Zap className="h-6 w-6 mx-auto mb-2 text-v2-ink-subtle" />
-                  <p className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle mb-2">
+                  <Zap className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-[11px] text-muted-foreground dark:text-muted-foreground mb-2">
                     No workflows created yet
                   </p>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-6 text-[10px] border-v2-ring dark:border-v2-ring-strong"
+                    className="h-6 text-[10px] border-border dark:border-border"
                     onClick={() => setShowDialog(true)}
                   >
                     Create Your First Workflow
@@ -331,20 +329,20 @@ export default function WorkflowManager() {
               ) : (
                 <Table>
                   <TableHeader>
-                    <TableRow className="h-7 bg-v2-canvas dark:bg-v2-card-tinted/50 border-b border-v2-ring dark:border-v2-ring-strong">
-                      <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted py-1">
+                    <TableRow className="h-7 bg-background dark:bg-card-tinted/50 border-b border-border dark:border-border">
+                      <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground py-1">
                         Name
                       </TableHead>
-                      <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted py-1">
+                      <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground py-1">
                         Description
                       </TableHead>
-                      <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted py-1">
+                      <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground py-1">
                         Type
                       </TableHead>
-                      <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted py-1">
+                      <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground py-1">
                         Status
                       </TableHead>
-                      <TableHead className="text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted py-1">
+                      <TableHead className="text-[10px] font-semibold text-muted-foreground dark:text-muted-foreground py-1">
                         Last Run
                       </TableHead>
                       <TableHead className="text-[10px] py-1 w-8"></TableHead>
@@ -358,30 +356,30 @@ export default function WorkflowManager() {
                       return (
                         <TableRow
                           key={workflow.id}
-                          className="h-8 border-b border-v2-ring dark:border-v2-ring hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50"
+                          className="h-8 border-b border-border dark:border-border hover:bg-background dark:hover:bg-card-tinted/50"
                         >
                           <TableCell className="py-1">
                             <div className="flex items-center gap-1.5">
                               {workflow.isOrgTemplate && (
                                 <Badge
                                   variant="outline"
-                                  className="text-[9px] px-1 py-0 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800"
+                                  className="text-[9px] px-1 py-0 bg-info/10 text-info border-info/30 dark:bg-info/20 dark:text-info dark:border-info"
                                 >
                                   Template
                                 </Badge>
                               )}
-                              <span className="text-[11px] font-medium text-v2-ink dark:text-v2-ink">
+                              <span className="text-[11px] font-medium text-foreground dark:text-foreground">
                                 {workflow.name}
                               </span>
                             </div>
                           </TableCell>
                           <TableCell className="py-1">
-                            <div className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle truncate max-w-[300px]">
+                            <div className="text-[10px] text-muted-foreground dark:text-muted-foreground truncate max-w-[300px]">
                               {workflow.description || "—"}
                             </div>
                           </TableCell>
                           <TableCell className="py-1">
-                            <div className="flex items-center gap-1 text-v2-ink-muted dark:text-v2-ink-subtle">
+                            <div className="flex items-center gap-1 text-muted-foreground dark:text-muted-foreground">
                               {triggerIcons[workflow.triggerType]}
                               <span className="text-[10px]">
                                 {workflow.triggerType}
@@ -410,7 +408,7 @@ export default function WorkflowManager() {
                                 >
                                   {lastRun.status}
                                 </span>
-                                <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                                <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                                   {lastRun.startedAt
                                     ? new Date(
                                         lastRun.startedAt,
@@ -419,7 +417,7 @@ export default function WorkflowManager() {
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                              <span className="text-[10px] text-muted-foreground dark:text-muted-foreground">
                                 Never
                               </span>
                             )}
@@ -509,7 +507,7 @@ export default function WorkflowManager() {
                                 )}
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
-                                  className="text-xs text-red-600"
+                                  className="text-xs text-destructive"
                                   onClick={() =>
                                     workflow.isOrgTemplate
                                       ? setDeleteTemplateId(workflow.id)

@@ -227,18 +227,18 @@ export function LeaderboardCustomRange({
         <button
           type="button"
           className={cn(
-            "inline-flex h-7 items-center gap-1.5 rounded-v2-pill border border-v2-ring bg-v2-card px-2.5 text-[11px] font-medium text-v2-ink transition-colors",
-            "hover:bg-v2-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-v2-accent",
-            !range?.from && "text-v2-ink-muted",
+            "inline-flex h-7 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-[11px] font-medium text-foreground transition-colors shadow-sm",
+            "hover:border-foreground/30 hover:bg-accent/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/30",
+            !range?.from && "text-muted-foreground",
           )}
         >
-          <CalendarIcon className="h-3 w-3 text-v2-ink-subtle" />
+          <CalendarIcon className="h-3 w-3 text-muted-foreground" />
           <span className="whitespace-nowrap">{triggerLabel}</span>
           {range?.from && (
             <X
               role="button"
               aria-label="Clear date range"
-              className="h-3 w-3 text-v2-ink-subtle hover:text-v2-ink"
+              className="h-3 w-3 text-muted-foreground hover:text-foreground"
               onClick={handleClear}
             />
           )}
@@ -246,13 +246,13 @@ export function LeaderboardCustomRange({
       </PopoverTrigger>
       <PopoverContent
         align="end"
-        className="w-auto p-0 overflow-hidden"
+        className="w-auto p-0 overflow-hidden bg-popover text-popover-foreground"
         sideOffset={6}
       >
         <div className="flex flex-col sm:flex-row">
           {/* Preset rail */}
-          <div className="flex flex-col gap-0.5 border-b sm:border-b-0 sm:border-r border-v2-ring bg-v2-surface-muted p-1.5 sm:w-[150px]">
-            <p className="px-2 pt-1 pb-0.5 text-[10px] font-semibold uppercase tracking-wide text-v2-ink-subtle">
+          <div className="flex flex-col gap-0.5 border-b sm:border-b-0 sm:border-r border-border bg-muted/40 p-1.5 sm:w-[150px]">
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 pt-1 pb-0.5">
               Quick select
             </p>
             {PRESETS.map((preset) => (
@@ -260,11 +260,11 @@ export function LeaderboardCustomRange({
                 key={preset.label}
                 type="button"
                 onClick={() => handlePreset(preset)}
-                className="flex w-full items-center justify-between gap-2 rounded-md px-2 py-1 text-left text-[11px] text-v2-ink hover:bg-v2-card hover:text-v2-ink focus:bg-v2-card focus:outline-none"
+                className="flex w-full items-center justify-between gap-2 rounded-sm px-2 py-1 text-left text-[11px] text-popover-foreground hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none transition-colors"
               >
                 <span>{preset.label}</span>
                 {preset.hint && (
-                  <span className="text-[10px] text-v2-ink-subtle">
+                  <span className="text-[10px] text-muted-foreground">
                     {preset.hint}
                   </span>
                 )}
@@ -283,18 +283,18 @@ export function LeaderboardCustomRange({
               disabled={{ after: new Date() }}
               className="p-0"
             />
-            <div className="flex items-center justify-between border-t border-v2-ring px-1 pt-2 mt-1">
+            <div className="flex items-center justify-between border-t border-border px-1 pt-2 mt-1">
               <button
                 type="button"
                 onClick={() => onChange(undefined, undefined)}
-                className="text-[11px] text-v2-ink-muted hover:text-v2-ink"
+                className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
               >
                 Clear
               </button>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-md bg-v2-accent px-2.5 py-1 text-[11px] font-medium text-white hover:bg-v2-accent-strong disabled:opacity-50"
+                className="rounded-sm bg-primary px-2.5 py-1 text-[11px] font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
                 disabled={!range?.from || !range?.to}
               >
                 Apply

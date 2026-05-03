@@ -115,7 +115,7 @@ export function VoiceAgentConnectionCard({
   };
 
   return (
-    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[11px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
@@ -130,7 +130,7 @@ export function VoiceAgentConnectionCard({
         <Badge
           className={
             connection?.connected
-              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+              ? "bg-success/20 text-success dark:bg-success/20 dark:text-success"
               : "bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink-muted"
           }
         >
@@ -138,11 +138,11 @@ export function VoiceAgentConnectionCard({
         </Badge>
       </div>
 
-      <div className="mt-4 rounded-xl border border-v2-ring bg-v2-canvas p-4 dark:border-v2-ring dark:bg-v2-canvas/40">
+      <div className="mt-4 rounded-lg border border-v2-ring bg-v2-canvas p-4 dark:border-v2-ring dark:bg-v2-canvas/40">
         {connection?.connected ? (
           <div className="space-y-4">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/20 text-success dark:bg-success/20 dark:text-success">
                 <ShieldCheck className="h-4 w-4" />
               </div>
               <div>
@@ -204,7 +204,7 @@ export function VoiceAgentConnectionCard({
         ) : (
           <div className="space-y-3">
             <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 text-white dark:bg-v2-card-tinted dark:text-v2-ink">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-card text-white dark:bg-v2-card-tinted dark:text-v2-ink">
                 <PhoneCall className="h-4 w-4" />
               </div>
               <div>
@@ -317,7 +317,7 @@ export function VoiceAgentConnectionCard({
                     onClick={() => setFromNumberSource("retell")}
                     className={`rounded-lg border px-3 py-3 text-left transition ${
                       fromNumberSource === "retell"
-                        ? "border-sky-400 bg-sky-50 dark:border-sky-700 dark:bg-sky-950/20"
+                        ? "border-info bg-info/10 dark:border-info dark:bg-info/20"
                         : "border-v2-ring bg-v2-canvas dark:border-v2-ring dark:bg-v2-canvas/40"
                     }`}
                   >
@@ -335,7 +335,7 @@ export function VoiceAgentConnectionCard({
                     disabled={!closeConnected}
                     className={`rounded-lg border px-3 py-3 text-left transition ${
                       fromNumberSource === "close"
-                        ? "border-sky-400 bg-sky-50 dark:border-sky-700 dark:bg-sky-950/20"
+                        ? "border-info bg-info/10 dark:border-info dark:bg-info/20"
                         : "border-v2-ring bg-v2-canvas dark:border-v2-ring dark:bg-v2-canvas/40"
                     } ${!closeConnected ? "cursor-not-allowed opacity-60" : ""}`}
                   >
@@ -381,20 +381,20 @@ export function VoiceAgentConnectionCard({
               )}
 
               {mutationError && (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 dark:border-red-950/60 dark:bg-red-950/20">
-                  <p className="text-[11px] font-semibold text-red-700 dark:text-red-300">
+                <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2.5 dark:border-destructive/60 dark:bg-destructive/10">
+                  <p className="text-[11px] font-semibold text-destructive">
                     {disconnectRetellConnection.error
                       ? "Failed to disconnect"
                       : "Failed to save connection"}
                   </p>
-                  <p className="mt-1 text-[10px] text-red-600 dark:text-red-400">
+                  <p className="mt-1 text-[10px] text-destructive">
                     {mutationError.message || "An unexpected error occurred."}
                   </p>
                 </div>
               )}
 
               {numberValidationError && (
-                <p className="text-[10px] text-red-600 dark:text-red-400">
+                <p className="text-[10px] text-destructive">
                   {numberValidationError}
                 </p>
               )}

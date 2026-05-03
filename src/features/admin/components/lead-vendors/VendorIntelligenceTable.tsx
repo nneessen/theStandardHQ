@@ -116,9 +116,9 @@ export function VendorIntelligenceTable({
 
   const roiColor = (roi: number) =>
     roi > 0
-      ? "text-emerald-600 dark:text-emerald-400"
+      ? "text-success"
       : roi < 0
-        ? "text-red-600 dark:text-red-400"
+        ? "text-destructive"
         : "text-v2-ink-muted";
 
   if (isLoading && rows.length === 0) {
@@ -408,11 +408,11 @@ function VendorTableRow({
           <div className="flex items-center gap-1">
             <div className="flex-1 h-[5px] rounded-full overflow-hidden bg-v2-ring flex">
               <div
-                className="bg-blue-500 h-full"
+                className="bg-info h-full"
                 style={{ width: `${freshPct}%` }}
               />
               <div
-                className="bg-amber-500 h-full"
+                className="bg-warning h-full"
                 style={{ width: `${100 - freshPct}%` }}
               />
             </div>

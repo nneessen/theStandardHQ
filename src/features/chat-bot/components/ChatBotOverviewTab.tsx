@@ -166,7 +166,7 @@ export function ChatBotOverviewTab({
   return (
     <div className="space-y-4">
       {/* ══════ Hero Section ══════ */}
-      <div className="relative overflow-hidden rounded-xl bg-foreground">
+      <div className="relative overflow-hidden rounded-lg bg-v2-card-dark">
         {/* Grid background */}
         <div className="absolute inset-0 opacity-[0.04]">
           <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -196,14 +196,14 @@ export function ChatBotOverviewTab({
         />
         <div
           className="absolute bottom-0 -right-16 w-64 h-64 rounded-full blur-3xl"
-          style={{ backgroundColor: "rgba(139,92,246,0.08)" }}
+          style={{ backgroundColor: "rgba(132, 144, 127, 0.14)" }}
         />
 
         <div className="relative px-6 py-6">
           <div className="flex items-start gap-5">
             {/* Hero icon */}
             <div
-              className="flex items-center justify-center w-14 h-14 rounded-2xl flex-shrink-0"
+              className="flex items-center justify-center w-14 h-14 rounded-lg flex-shrink-0"
               style={{ backgroundColor: `${ACCENT}25` }}
             >
               <Bot className="h-7 w-7" style={{ color: ACCENT }} />
@@ -228,12 +228,12 @@ export function ChatBotOverviewTab({
               </div>
 
               <h1
-                className="text-xl font-bold text-white dark:text-black tracking-tight mb-1.5"
+                className="text-xl font-bold text-white tracking-tight mb-1.5"
                 style={{ fontFamily: "'Space Grotesk', sans-serif" }}
               >
                 Automate Lead Engagement &amp; Appointment Booking
               </h1>
-              <p className="text-[11px] text-white/50 dark:text-black/40 leading-relaxed max-w-2xl">
+              <p className="text-[11px] text-white/60 leading-relaxed max-w-2xl">
                 Your AI-powered SMS assistant responds to leads in seconds,
                 handles objections naturally, and books appointments on your
                 real calendar — all within compliant hours. No leads fall
@@ -242,25 +242,25 @@ export function ChatBotOverviewTab({
 
               {/* Integration logos */}
               <div className="flex items-center gap-3 mt-4">
-                <span className="text-[9px] text-white/30 dark:text-black/25 uppercase tracking-widest font-medium">
+                <span className="text-[9px] text-white/30 uppercase tracking-widest font-medium">
                   Integrates with
                 </span>
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-white/5 dark:bg-black/5 border border-white/10 dark:border-black/10">
-                    <CloseLogo className="h-3.5 w-auto text-white dark:text-black" />
-                    <span className="text-[9px] text-white/60 dark:text-black/50 font-medium">
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-white/5 dark:bg-white/5 border border-white/10 dark:border-black/10">
+                    <CloseLogo className="h-3.5 w-auto text-white" />
+                    <span className="text-[9px] text-white/60 font-medium">
                       Close CRM
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-white/5 dark:bg-black/5 border border-white/10 dark:border-black/10">
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-white/5 dark:bg-white/5 border border-white/10 dark:border-black/10">
                     <CalendlyLogo className="h-4 w-4" />
-                    <span className="text-[9px] text-white/60 dark:text-black/50 font-medium">
+                    <span className="text-[9px] text-white/60 font-medium">
                       Calendly
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-white/5 dark:bg-black/5 border border-white/10 dark:border-black/10">
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-white/5 dark:bg-white/5 border border-white/10 dark:border-black/10">
                     <GoogleCalendarLogo className="h-4 w-4" />
-                    <span className="text-[9px] text-white/60 dark:text-black/50 font-medium">
+                    <span className="text-[9px] text-white/60 font-medium">
                       Google Cal
                     </span>
                   </div>
@@ -308,8 +308,8 @@ export function ChatBotOverviewTab({
             Platform Performance · 30 days
           </span>
           <span className="relative flex h-1.5 w-1.5">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success/70 opacity-75" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-success" />
           </span>
         </div>
 
@@ -351,13 +351,9 @@ export function ChatBotOverviewTab({
             </span>
             <span className="text-[9px] font-medium">
               {agent?.botEnabled ? (
-                <span className="text-emerald-600 dark:text-emerald-400">
-                  Active
-                </span>
+                <span className="text-success">Active</span>
               ) : (
-                <span className="text-amber-600 dark:text-amber-400">
-                  Inactive
-                </span>
+                <span className="text-warning">Inactive</span>
               )}
             </span>
           </div>

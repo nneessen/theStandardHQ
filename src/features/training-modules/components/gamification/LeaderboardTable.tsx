@@ -52,17 +52,17 @@ export function LeaderboardTable({ agencyId }: LeaderboardTableProps) {
               <div
                 key={entry.user_id}
                 className={`flex items-center gap-3 px-3 py-2 text-xs ${
-                  isMe ? "bg-blue-50 dark:bg-blue-900/10" : ""
+                  isMe ? "bg-info/10 dark:bg-info/10" : ""
                 }`}
               >
                 <span
                   className={`w-6 text-center font-bold ${
                     entry.rank === 1
-                      ? "text-amber-500"
+                      ? "text-warning"
                       : entry.rank === 2
                         ? "text-v2-ink-subtle"
                         : entry.rank === 3
-                          ? "text-amber-700"
+                          ? "text-warning"
                           : "text-v2-ink-subtle"
                   }`}
                 >
@@ -74,12 +74,10 @@ export function LeaderboardTable({ agencyId }: LeaderboardTableProps) {
                 </span>
                 <span className={`flex-1 ${isMe ? "font-medium" : ""}`}>
                   {entry.full_name}{" "}
-                  {isMe && (
-                    <span className="text-[10px] text-blue-500">(you)</span>
-                  )}
+                  {isMe && <span className="text-[10px] text-info">(you)</span>}
                 </span>
                 <div className="flex items-center gap-1">
-                  <Zap className="h-3 w-3 text-amber-500" />
+                  <Zap className="h-3 w-3 text-warning" />
                   <span className="font-medium">
                     {(entry.total_xp ?? 0).toLocaleString()}
                   </span>

@@ -214,11 +214,11 @@ export default function WorkflowDiagnostic() {
                     Authentication:
                   </span>{" "}
                   {results.auth.isAuthenticated ? (
-                    <span className="text-emerald-600 dark:text-emerald-400">
+                    <span className="text-success">
                       ✅ Logged in as {results.auth.email}
                     </span>
                   ) : (
-                    <span className="text-red-600 dark:text-red-400">
+                    <span className="text-destructive">
                       ❌ Not authenticated
                     </span>
                   )}

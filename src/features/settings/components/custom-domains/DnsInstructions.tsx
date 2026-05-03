@@ -35,7 +35,7 @@ export function DnsInstructions({
       title="Copy"
     >
       {copiedField === field ? (
-        <Check className="h-3 w-3 text-green-500" />
+        <Check className="h-3 w-3 text-success" />
       ) : (
         <Copy className="h-3 w-3" />
       )}
@@ -44,9 +44,9 @@ export function DnsInstructions({
 
   return (
     <div className="mt-3 space-y-3 rounded bg-v2-ring p-3">
-      <div className="flex items-start gap-2 rounded bg-blue-50 p-2">
-        <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-blue-500" />
-        <p className="text-xs text-blue-700">
+      <div className="flex items-start gap-2 rounded bg-info/10 p-2">
+        <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-info" />
+        <p className="text-xs text-info">
           Add these DNS records at your domain registrar. Changes may take 5-15
           minutes to propagate.
         </p>
@@ -81,7 +81,7 @@ export function DnsInstructions({
             </span>
           </div>
           {!vercelCname && (
-            <p className="mt-1 text-xs text-amber-600">
+            <p className="mt-1 text-xs text-warning">
               Note: Check Vercel dashboard for domain-specific CNAME if this
               generic one doesn't work.
             </p>

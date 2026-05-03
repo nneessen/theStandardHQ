@@ -91,7 +91,7 @@ export function TemplateSelector({
       <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-sm">Apply Template</DialogTitle>
-          <DialogDescription className="text-[10px] text-v2-ink-muted">
+          <DialogDescription className="text-[10px] text-muted-foreground">
             Choose a pre-built rule template. Select one on the left, preview
             its rules on the right, then apply.
           </DialogDescription>
@@ -99,10 +99,10 @@ export function TemplateSelector({
 
         {templatesLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           </div>
         ) : templates.length === 0 ? (
-          <p className="text-[11px] text-v2-ink-muted py-6 text-center">
+          <p className="text-[11px] text-muted-foreground py-6 text-center">
             No templates available.
           </p>
         ) : (
@@ -119,17 +119,17 @@ export function TemplateSelector({
                     className={cn(
                       "w-full text-left px-2 py-1.5 rounded border transition-colors",
                       isSelected
-                        ? "border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30"
+                        ? "border-info/40 bg-info/10"
                         : isDefault
-                          ? "border-emerald-200 dark:border-emerald-800 hover:border-emerald-300"
-                          : "border-v2-ring dark:border-v2-ring-strong hover:border-v2-ring-strong",
+                          ? "border-success/30 hover:border-success/40"
+                          : "border-border dark:border-border hover:border-border",
                     )}
                   >
                     <div className="flex items-center gap-1">
                       {isSelected && (
-                        <Check className="h-3 w-3 text-blue-500 shrink-0" />
+                        <Check className="h-3 w-3 text-info shrink-0" />
                       )}
-                      <span className="text-[10px] font-medium text-v2-ink dark:text-v2-ink truncate">
+                      <span className="text-[10px] font-medium text-foreground dark:text-foreground truncate">
                         {t.name}
                       </span>
                     </div>
@@ -141,7 +141,7 @@ export function TemplateSelector({
                         {t.ruleCount} rules
                       </Badge>
                       {isDefault && (
-                        <Badge className="h-3.5 px-1 text-[8px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700">
+                        <Badge className="h-3.5 px-1 text-[8px] bg-success/20 dark:bg-success/30 text-success border-success/40">
                           <Star className="h-2 w-2 mr-0.5" />
                           Recommended
                         </Badge>
@@ -155,7 +155,7 @@ export function TemplateSelector({
             {/* Right: Preview + Apply */}
             <div className="flex-1 flex flex-col min-h-0 min-w-0">
               {!selectedKey ? (
-                <div className="flex-1 flex items-center justify-center text-[10px] text-v2-ink-subtle">
+                <div className="flex-1 flex items-center justify-center text-[10px] text-muted-foreground">
                   Select a template to preview
                 </div>
               ) : (
@@ -163,20 +163,20 @@ export function TemplateSelector({
                   {/* Template Description */}
                   {selectedTemplate && (
                     <div className="mb-2">
-                      <p className="text-[11px] font-medium text-v2-ink dark:text-v2-ink-muted">
+                      <p className="text-[11px] font-medium text-foreground dark:text-muted-foreground">
                         {selectedTemplate.name}
                       </p>
-                      <p className="text-[10px] text-v2-ink-muted mt-0.5">
+                      <p className="text-[10px] text-muted-foreground mt-0.5">
                         {getTemplateDescription(selectedTemplate)}
                       </p>
                     </div>
                   )}
 
                   {/* Rules Preview */}
-                  <div className="flex-1 overflow-y-auto border border-v2-ring dark:border-v2-ring-strong rounded p-2 mb-2">
+                  <div className="flex-1 overflow-y-auto border border-border dark:border-border rounded p-2 mb-2">
                     {previewLoading ? (
                       <div className="flex items-center justify-center py-4">
-                        <Loader2 className="h-3 w-3 animate-spin text-v2-ink-subtle" />
+                        <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
                       </div>
                     ) : preview ? (
                       <div className="space-y-1">
@@ -185,14 +185,14 @@ export function TemplateSelector({
                             key={r.id}
                             className="flex items-start gap-1.5 text-[10px]"
                           >
-                            <span className="text-v2-ink-subtle shrink-0 w-3 text-right">
+                            <span className="text-muted-foreground shrink-0 w-3 text-right">
                               {i + 1}.
                             </span>
                             <div className="min-w-0">
-                              <span className="font-medium text-v2-ink dark:text-v2-ink-muted">
+                              <span className="font-medium text-foreground dark:text-muted-foreground">
                                 {r.name}
                               </span>
-                              <span className="text-v2-ink-subtle ml-1">
+                              <span className="text-muted-foreground ml-1">
                                 →{" "}
                                 {r.action.allowedChannels
                                   .map((c) => (c === "sms" ? "SMS" : "Voice"))
@@ -204,7 +204,7 @@ export function TemplateSelector({
                             </div>
                           </div>
                         ))}
-                        <div className="text-[9px] text-v2-ink-subtle pt-1 border-t border-v2-ring dark:border-v2-ring mt-1">
+                        <div className="text-[9px] text-muted-foreground pt-1 border-t border-border dark:border-border mt-1">
                           Fallback:{" "}
                           {preview.fallbackAction.allowedChannels
                             .map((c) => (c === "sms" ? "SMS" : "Voice"))
@@ -217,7 +217,7 @@ export function TemplateSelector({
                         </div>
                       </div>
                     ) : (
-                      <p className="text-[10px] text-v2-ink-subtle text-center py-4">
+                      <p className="text-[10px] text-muted-foreground text-center py-4">
                         Unable to load preview
                       </p>
                     )}
@@ -245,7 +245,7 @@ export function TemplateSelector({
                         warnings.push("SMS Bot is not active");
                       if (warnings.length === 0) return null;
                       return (
-                        <div className="flex items-start gap-1.5 text-[10px] text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 rounded px-2 py-1.5 mb-2">
+                        <div className="flex items-start gap-1.5 text-[10px] text-warning bg-warning/10 rounded px-2 py-1.5 mb-2">
                           <AlertTriangle className="h-3 w-3 shrink-0 mt-0.5" />
                           <span>
                             This template references channels you haven't
@@ -264,12 +264,12 @@ export function TemplateSelector({
                         className={cn(
                           "flex-1 px-2 py-1 rounded border text-[10px] text-left transition-colors",
                           mode === "replace"
-                            ? "border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30"
-                            : "border-v2-ring dark:border-v2-ring-strong",
+                            ? "border-info/40 bg-info/10"
+                            : "border-border dark:border-border",
                         )}
                       >
                         <span className="font-medium">Replace</span>
-                        <span className="text-v2-ink-muted ml-1">
+                        <span className="text-muted-foreground ml-1">
                           — wipe existing rules
                         </span>
                       </button>
@@ -278,19 +278,19 @@ export function TemplateSelector({
                         className={cn(
                           "flex-1 px-2 py-1 rounded border text-[10px] text-left transition-colors",
                           mode === "append"
-                            ? "border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30"
-                            : "border-v2-ring dark:border-v2-ring-strong",
+                            ? "border-info/40 bg-info/10"
+                            : "border-border dark:border-border",
                         )}
                       >
                         <span className="font-medium">Append</span>
-                        <span className="text-v2-ink-muted ml-1">
+                        <span className="text-muted-foreground ml-1">
                           — add after existing
                         </span>
                       </button>
                     </div>
 
                     {mode === "replace" && hasExistingRules && (
-                      <div className="flex items-center gap-1.5 text-[10px] text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/20 rounded px-2 py-1">
+                      <div className="flex items-center gap-1.5 text-[10px] text-warning bg-warning/10 rounded px-2 py-1">
                         <AlertTriangle className="h-3 w-3 shrink-0" />
                         This will remove all existing rules
                       </div>

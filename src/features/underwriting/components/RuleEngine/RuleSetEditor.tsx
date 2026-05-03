@@ -254,8 +254,8 @@ export function RuleSetEditor({
               <div className="space-y-3">
                 {/* Name */}
                 <div className="space-y-1">
-                  <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
-                    Name <span className="text-red-500">*</span>
+                  <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+                    Name <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     className="h-7 text-[11px]"
@@ -267,7 +267,7 @@ export function RuleSetEditor({
 
                 {/* Description */}
                 <div className="space-y-1">
-                  <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                     Description
                   </Label>
                   <Textarea
@@ -283,7 +283,7 @@ export function RuleSetEditor({
                 {/* Scope + Condition */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                    <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                       Scope
                     </Label>
                     <Select
@@ -308,7 +308,7 @@ export function RuleSetEditor({
 
                   {formData.scope === "condition" && (
                     <div className="space-y-1">
-                      <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                      <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                         Health Condition
                       </Label>
                       <Select
@@ -324,7 +324,7 @@ export function RuleSetEditor({
                           {Object.entries(conditionsByCategory).map(
                             ([category, conditions]) => (
                               <div key={category}>
-                                <div className="text-[10px] font-semibold text-v2-ink-subtle px-2 py-1">
+                                <div className="text-[10px] font-semibold text-muted-foreground px-2 py-1">
                                   {category}
                                 </div>
                                 {conditions.map((c) => (
@@ -354,7 +354,7 @@ export function RuleSetEditor({
                     }
                     className="h-4 w-7"
                   />
-                  <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                     Active
                   </Label>
                 </div>
@@ -410,8 +410,8 @@ export function RuleSetEditor({
               <div className="space-y-3 pb-4">
                 {/* Name */}
                 <div className="space-y-1">
-                  <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
-                    Name <span className="text-red-500">*</span>
+                  <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
+                    Name <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     className="h-7 text-[11px]"
@@ -423,7 +423,7 @@ export function RuleSetEditor({
 
                 {/* Description */}
                 <div className="space-y-1">
-                  <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                     Description
                   </Label>
                   <Textarea
@@ -445,7 +445,7 @@ export function RuleSetEditor({
                     }
                     className="h-4 w-7"
                   />
-                  <Label className="text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle">
+                  <Label className="text-[11px] text-muted-foreground dark:text-muted-foreground">
                     Active
                   </Label>
                 </div>
@@ -468,7 +468,7 @@ export function RuleSetEditor({
               </div>
 
               {/* Rules for global scope would go here - keeping simple for now */}
-              <div className="text-[10px] text-v2-ink-subtle text-center py-4">
+              <div className="text-[10px] text-muted-foreground text-center py-4">
                 Global rule sets are for knockout conditions that apply
                 regardless of specific health conditions.
               </div>

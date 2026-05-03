@@ -1,12 +1,18 @@
 // src/features/expenses/components/ExpenseFilters.tsx
 
-import {useState} from 'react';
-import {Search, X, Filter} from 'lucide-react';
-import {Button} from '@/components/ui/button';
-import {Input} from '@/components/ui/input';
-import {Label} from '@/components/ui/label';
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@/components/ui/select';
-import type {ExpenseFilters as ExpenseFiltersType} from '@/types/expense.types';
+import { useState } from "react";
+import { Search, X, Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { ExpenseFilters as ExpenseFiltersType } from "@/types/expense.types";
 
 interface ExpenseFiltersProps {
   filters: ExpenseFiltersType;
@@ -14,21 +20,25 @@ interface ExpenseFiltersProps {
   categories: string[];
 }
 
-export function ExpenseFilters({ filters, onFiltersChange, categories }: ExpenseFiltersProps) {
+export function ExpenseFilters({
+  filters,
+  onFiltersChange,
+  categories,
+}: ExpenseFiltersProps) {
   const [showFilters, setShowFilters] = useState(false);
 
   const handleClearFilters = () => {
     onFiltersChange({
-      expenseType: 'all',
-      category: 'all',
-      searchTerm: '',
+      expenseType: "all",
+      category: "all",
+      searchTerm: "",
       deductibleOnly: false,
     });
   };
 
   const hasActiveFilters =
-    filters.expenseType !== 'all' ||
-    filters.category !== 'all' ||
+    filters.expenseType !== "all" ||
+    filters.category !== "all" ||
     filters.searchTerm ||
     filters.deductibleOnly ||
     filters.startDate ||
@@ -42,8 +52,10 @@ export function ExpenseFilters({ filters, onFiltersChange, categories }: Expense
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search expenses..."
-            value={filters.searchTerm || ''}
-            onChange={(e) => onFiltersChange({ ...filters, searchTerm: e.target.value })}
+            value={filters.searchTerm || ""}
+            onChange={(e) =>
+              onFiltersChange({ ...filters, searchTerm: e.target.value })
+            }
             className="pl-9"
           />
         </div>
@@ -51,7 +63,7 @@ export function ExpenseFilters({ filters, onFiltersChange, categories }: Expense
           variant="outline"
           size="icon"
           onClick={() => setShowFilters(!showFilters)}
-          className={showFilters ? 'bg-accent' : ''}
+          className={showFilters ? "bg-accent" : ""}
         >
           <Filter className="h-4 w-4" />
         </Button>
@@ -69,9 +81,12 @@ export function ExpenseFilters({ filters, onFiltersChange, categories }: Expense
           <div className="space-y-2">
             <Label>Expense Type</Label>
             <Select
-              value={filters.expenseType || 'all'}
+              value={filters.expenseType || "all"}
               onValueChange={(value) =>
-                onFiltersChange({ ...filters, expenseType: value as 'personal' | 'business' | 'all' })
+                onFiltersChange({
+                  ...filters,
+                  expenseType: value as "personal" | "business" | "all",
+                })
               }
             >
               <SelectTrigger>
@@ -89,8 +104,10 @@ export function ExpenseFilters({ filters, onFiltersChange, categories }: Expense
           <div className="space-y-2">
             <Label>Category</Label>
             <Select
-              value={filters.category || 'all'}
-              onValueChange={(value) => onFiltersChange({ ...filters, category: value })}
+              value={filters.category || "all"}
+              onValueChange={(value) =>
+                onFiltersChange({ ...filters, category: value })
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -111,8 +128,10 @@ export function ExpenseFilters({ filters, onFiltersChange, categories }: Expense
             <Label>Start Date</Label>
             <Input
               type="date"
-              value={filters.startDate || ''}
-              onChange={(e) => onFiltersChange({ ...filters, startDate: e.target.value })}
+              value={filters.startDate || ""}
+              onChange={(e) =>
+                onFiltersChange({ ...filters, startDate: e.target.value })
+              }
             />
           </div>
 
@@ -121,8 +140,10 @@ export function ExpenseFilters({ filters, onFiltersChange, categories }: Expense
             <Label>End Date</Label>
             <Input
               type="date"
-              value={filters.endDate || ''}
-              onChange={(e) => onFiltersChange({ ...filters, endDate: e.target.value })}
+              value={filters.endDate || ""}
+              onChange={(e) =>
+                onFiltersChange({ ...filters, endDate: e.target.value })
+              }
             />
           </div>
 
@@ -133,9 +154,12 @@ export function ExpenseFilters({ filters, onFiltersChange, categories }: Expense
               id="deductibleOnly"
               checked={filters.deductibleOnly || false}
               onChange={(e) =>
-                onFiltersChange({ ...filters, deductibleOnly: e.target.checked })
+                onFiltersChange({
+                  ...filters,
+                  deductibleOnly: e.target.checked,
+                })
               }
-              className="h-4 w-4 rounded border-gray-300"
+              className="h-4 w-4 rounded border-input"
             />
             <Label htmlFor="deductibleOnly" className="cursor-pointer">
               Tax Deductible Only

@@ -111,13 +111,13 @@ export const AddWidgetDialog: React.FC<AddWidgetDialogProps> = ({
         </DialogHeader>
 
         {/* Category Filter */}
-        <div className="flex items-center gap-0.5 bg-v2-canvas rounded-md p-0.5">
+        <div className="flex items-center gap-0.5 bg-background rounded-md p-0.5">
           <button
             onClick={() => setActiveCategory("all")}
             className={cn(
               "px-2 py-1 text-[10px] font-medium rounded transition-all",
               activeCategory === "all"
-                ? "bg-v2-card shadow-sm text-foreground"
+                ? "bg-card shadow-sm text-foreground"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -130,7 +130,7 @@ export const AddWidgetDialog: React.FC<AddWidgetDialogProps> = ({
               className={cn(
                 "px-2 py-1 text-[10px] font-medium rounded transition-all",
                 activeCategory === cat.id
-                  ? "bg-v2-card shadow-sm text-foreground"
+                  ? "bg-card shadow-sm text-foreground"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -151,12 +151,12 @@ export const AddWidgetDialog: React.FC<AddWidgetDialogProps> = ({
                 onClick={() => handleAdd(entry)}
                 disabled={!!addingType}
                 className={cn(
-                  "flex items-start gap-2 rounded-md border border-v2-ring p-2 text-left transition-all",
-                  "hover:border-v2-ring-strong dark:hover:border-v2-ring hover:bg-v2-canvas",
+                  "flex items-start gap-2 rounded-md border border-border p-2 text-left transition-all",
+                  "hover:border-border dark:hover:border-border hover:bg-background",
                   "disabled:opacity-60 disabled:cursor-not-allowed",
                 )}
               >
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-v2-ring">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded bg-muted">
                   {isAdding ? (
                     <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
                   ) : (

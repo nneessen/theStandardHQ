@@ -127,9 +127,7 @@ function FieldRow({
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
       />
-      {error && (
-        <p className="text-[10px] text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-[10px] text-destructive">{error}</p>}
     </div>
   );
 }
@@ -181,7 +179,7 @@ export function VoiceGuardrailsCard({
   };
 
   return (
-    <div className="rounded-xl border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
+    <div className="rounded-lg border border-v2-ring bg-white p-4 dark:border-v2-ring dark:bg-v2-card">
       <div className="flex items-start gap-3">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-v2-card-tinted text-v2-ink dark:bg-v2-card-tinted dark:text-v2-ink">
           <ShieldCheck className="h-4 w-4" />

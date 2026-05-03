@@ -75,11 +75,11 @@ function CollapsibleSection({
 }) {
   const [open, setOpen] = useState(active);
   return (
-    <div className="border border-v2-ring dark:border-v2-ring-strong rounded-md">
+    <div className="border border-border dark:border-border rounded-md">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 w-full px-2 py-1.5 text-[10px] font-medium text-v2-ink-muted dark:text-v2-ink-subtle hover:bg-v2-canvas dark:hover:bg-v2-card-tinted/50 rounded-t-md"
+        className="flex items-center gap-1.5 w-full px-2 py-1.5 text-[10px] font-medium text-muted-foreground dark:text-muted-foreground hover:bg-background dark:hover:bg-card-tinted/50 rounded-t-md"
       >
         {open ? (
           <ChevronDown className="h-3 w-3" />
@@ -90,7 +90,7 @@ function CollapsibleSection({
         {active && (
           <Badge
             variant="secondary"
-            className="ml-auto h-4 px-1 text-[8px] bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+            className="ml-auto h-4 px-1 text-[8px] bg-info/15 text-info"
           >
             Active
           </Badge>
@@ -99,7 +99,7 @@ function CollapsibleSection({
       {open && (
         <div className="px-2 pb-2 space-y-1.5">
           {description && (
-            <p className="text-[9px] text-v2-ink-subtle">{description}</p>
+            <p className="text-[9px] text-muted-foreground">{description}</p>
           )}
           {children}
         </div>
@@ -131,10 +131,10 @@ function MultiSelect({
 
   return (
     <div>
-      <Label className="text-[10px] text-v2-ink-muted">{label}</Label>
+      <Label className="text-[10px] text-muted-foreground">{label}</Label>
       <div className="flex flex-wrap gap-1 mt-0.5">
         {loading ? (
-          <span className="text-[10px] text-v2-ink-subtle">Loading...</span>
+          <span className="text-[10px] text-muted-foreground">Loading...</span>
         ) : (
           options.map((opt) => (
             <button
@@ -144,8 +144,8 @@ function MultiSelect({
               className={cn(
                 "px-1.5 py-0.5 text-[10px] rounded border transition-colors",
                 selected.includes(opt.value)
-                  ? "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300"
-                  : "border-v2-ring dark:border-v2-ring-strong text-v2-ink-muted hover:border-v2-ring-strong",
+                  ? "bg-info/10 dark:bg-info/30 border-info/40 text-info"
+                  : "border-border dark:border-border text-muted-foreground hover:border-border",
               )}
             >
               {opt.label}
@@ -312,7 +312,7 @@ function TimeWindowEditor({
     <div className="space-y-1.5">
       <div className="flex gap-2">
         <div>
-          <Label className="text-[10px] text-v2-ink-muted">Start</Label>
+          <Label className="text-[10px] text-muted-foreground">Start</Label>
           <Input
             type="time"
             value={timeWindow.startTime}
@@ -321,7 +321,7 @@ function TimeWindowEditor({
           />
         </div>
         <div>
-          <Label className="text-[10px] text-v2-ink-muted">End</Label>
+          <Label className="text-[10px] text-muted-foreground">End</Label>
           <Input
             type="time"
             value={timeWindow.endTime}
@@ -330,7 +330,7 @@ function TimeWindowEditor({
           />
         </div>
         <div>
-          <Label className="text-[10px] text-v2-ink-muted">Timezone</Label>
+          <Label className="text-[10px] text-muted-foreground">Timezone</Label>
           <Input
             value={timeWindow.timezone}
             onChange={(e) => update({ timezone: e.target.value })}
@@ -340,7 +340,7 @@ function TimeWindowEditor({
         </div>
       </div>
       <div>
-        <Label className="text-[10px] text-v2-ink-muted">Days</Label>
+        <Label className="text-[10px] text-muted-foreground">Days</Label>
         <div className="flex gap-1 mt-0.5">
           {DAYS.map((d) => (
             <button
@@ -350,8 +350,8 @@ function TimeWindowEditor({
               className={cn(
                 "w-7 h-6 text-[9px] rounded border transition-colors",
                 timeWindow.days.includes(d.value)
-                  ? "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300"
-                  : "border-v2-ring dark:border-v2-ring-strong text-v2-ink-muted",
+                  ? "bg-info/10 dark:bg-info/30 border-info/40 text-info"
+                  : "border-border dark:border-border text-muted-foreground",
               )}
             >
               {d.label}
@@ -362,7 +362,7 @@ function TimeWindowEditor({
       <Button
         variant="ghost"
         size="sm"
-        className="h-5 text-[9px] text-red-500 hover:text-red-600 px-1"
+        className="h-5 text-[9px] text-destructive hover:text-destructive px-1"
         onClick={() => onChange(null)}
       >
         <X className="h-2.5 w-2.5 mr-0.5" />
@@ -449,7 +449,7 @@ function CustomFieldConditionsEditor({
             className="h-7 w-7 p-0"
             onClick={() => removeRow(idx)}
           >
-            <X className="h-3 w-3 text-v2-ink-subtle" />
+            <X className="h-3 w-3 text-muted-foreground" />
           </Button>
         </div>
       ))}
@@ -502,7 +502,7 @@ function ChannelHistoryEditor({
     }
     return (
       <div className="flex items-center gap-1">
-        <span className="text-[10px] text-v2-ink-muted w-28 shrink-0">
+        <span className="text-[10px] text-muted-foreground w-28 shrink-0">
           {label}
         </span>
         <Select
@@ -547,7 +547,7 @@ function ChannelHistoryEditor({
             onChange(next);
           }}
         >
-          <X className="h-3 w-3 text-v2-ink-subtle" />
+          <X className="h-3 w-3 text-muted-foreground" />
         </Button>
       </div>
     );

@@ -283,7 +283,7 @@ export const TeamAgentsTable: React.FC<TeamAgentsTableProps> = ({ rows }) => {
                     )}
                     {stale && (
                       <span
-                        className="h-1.5 w-1.5 rounded-full bg-amber-500 flex-shrink-0"
+                        className="h-1.5 w-1.5 rounded-full bg-warning flex-shrink-0"
                         title={`Last scored ${relativeTime(r.lastScoredAt)}`}
                       />
                     )}
@@ -335,7 +335,7 @@ export const TeamAgentsTable: React.FC<TeamAgentsTableProps> = ({ rows }) => {
                   className={cn(
                     "px-2 py-1.5 text-right font-mono tabular-nums",
                     r.staleLeadsCount > 0
-                      ? "text-amber-600 dark:text-amber-500"
+                      ? "text-warning"
                       : "text-muted-foreground",
                   )}
                 >
@@ -347,7 +347,7 @@ export const TeamAgentsTable: React.FC<TeamAgentsTableProps> = ({ rows }) => {
                   className={cn(
                     "px-2 py-1.5 text-right font-mono tabular-nums",
                     r.untouchedActive > 0
-                      ? "text-amber-600 dark:text-amber-500"
+                      ? "text-warning"
                       : "text-muted-foreground",
                   )}
                 >
@@ -359,7 +359,7 @@ export const TeamAgentsTable: React.FC<TeamAgentsTableProps> = ({ rows }) => {
                   className={cn(
                     "px-2 py-1.5 text-right font-mono tabular-nums",
                     r.noAnswerStreak > 0
-                      ? "text-amber-600 dark:text-amber-500"
+                      ? "text-warning"
                       : "text-muted-foreground",
                   )}
                 >
@@ -380,9 +380,7 @@ export const TeamAgentsTable: React.FC<TeamAgentsTableProps> = ({ rows }) => {
                 <td
                   className={cn(
                     "px-2 py-1.5 text-right text-[10px]",
-                    stale
-                      ? "text-amber-600 dark:text-amber-500"
-                      : "text-muted-foreground",
+                    stale ? "text-warning" : "text-muted-foreground",
                   )}
                 >
                   {relativeTime(r.lastScoredAt)}
