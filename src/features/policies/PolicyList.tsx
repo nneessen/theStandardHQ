@@ -990,11 +990,11 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                               className={cn(
                                 "h-6 text-[10px] w-[85px] px-1.5 gap-1 font-medium border",
                                 policy.status === "pending" &&
-                                  "bg-warning/10 text-warning border-warning/30",
+                                  "bg-warning text-warning-foreground border-warning",
                                 policy.status === "approved" &&
-                                  "bg-success/10 text-success border-success/30",
+                                  "bg-success text-success-foreground border-success",
                                 policy.status === "denied" &&
-                                  "bg-destructive/10 text-destructive border-destructive/30",
+                                  "bg-destructive text-destructive-foreground border-destructive",
                                 policy.status === "withdrawn" &&
                                   "bg-muted text-muted-foreground dark:text-muted-foreground border-border dark:border-border",
                               )}
@@ -1054,9 +1054,9 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                                   "h-6 text-[10px] w-[85px] px-1.5 gap-1 font-medium border",
                                   (policy.lifecycleStatus === "active" ||
                                     !policy.lifecycleStatus) &&
-                                    "bg-info/10 text-info border-info/30",
+                                    "bg-info text-info-foreground border-info",
                                   policy.lifecycleStatus === "lapsed" &&
-                                    "bg-destructive/10 text-destructive border-destructive/30",
+                                    "bg-destructive text-destructive-foreground border-destructive",
                                   policy.lifecycleStatus === "cancelled" &&
                                     "bg-muted text-muted-foreground dark:text-muted-foreground border-border dark:border-border",
                                   policy.lifecycleStatus === "expired" &&
@@ -1115,17 +1115,17 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                               className={cn(
                                 "h-6 text-[10px] w-[90px] mx-auto px-1.5 gap-1 font-medium border",
                                 policyCommission.status === "paid" &&
-                                  "bg-success/10 text-success border-success/30",
+                                  "bg-success text-success-foreground border-success",
                                 policyCommission.status === "pending" &&
-                                  "bg-warning/10 text-warning border-warning/30",
+                                  "bg-warning text-warning-foreground border-warning",
                                 (policyCommission.status as string) ===
                                   "unpaid" &&
-                                  "bg-warning/10 text-warning border-warning/30",
+                                  "bg-warning text-warning-foreground border-warning",
                                 (policyCommission.status as string) ===
                                   "earned" &&
-                                  "bg-info/10 text-info border-info/30",
+                                  "bg-info text-info-foreground border-info",
                                 policyCommission.status === "charged_back" &&
-                                  "bg-destructive/10 text-destructive border-destructive/30",
+                                  "bg-destructive text-destructive-foreground border-destructive",
                               )}
                             >
                               <SelectValue />
@@ -1409,11 +1409,11 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                           className={cn(
                             "text-[10px] font-medium px-1.5 py-0.5 rounded capitalize",
                             policy.status === "pending" &&
-                              "bg-warning/10 text-warning",
+                              "bg-warning text-warning-foreground",
                             policy.status === "approved" &&
-                              "bg-success/10 text-success",
+                              "bg-success text-success-foreground",
                             policy.status === "denied" &&
-                              "bg-destructive/10 text-destructive",
+                              "bg-destructive text-destructive-foreground",
                             policy.status === "withdrawn" &&
                               "bg-muted text-muted-foreground dark:text-muted-foreground",
                           )}
@@ -1426,9 +1426,9 @@ export const PolicyList: React.FC<PolicyListProps> = ({
                               "text-[10px] font-medium px-1.5 py-0.5 rounded capitalize",
                               (!policy.lifecycleStatus ||
                                 policy.lifecycleStatus === "active") &&
-                                "bg-info/10 text-info",
+                                "bg-info text-info-foreground",
                               policy.lifecycleStatus === "lapsed" &&
-                                "bg-destructive/10 text-destructive",
+                                "bg-destructive text-destructive-foreground",
                               policy.lifecycleStatus === "cancelled" &&
                                 "bg-muted text-muted-foreground dark:text-muted-foreground",
                               policy.lifecycleStatus === "expired" &&
