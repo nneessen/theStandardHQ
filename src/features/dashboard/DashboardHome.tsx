@@ -40,7 +40,6 @@ import { TeamRecruitingSection } from "./components/TeamRecruitingSection";
 
 // V2 hero + shell
 import { DashboardHeroV2 } from "./components/DashboardHeroV2";
-import { PalettePreviewPicker } from "./components/PalettePreviewPicker";
 import { SectionShell, SoftCard } from "@/components/v2";
 
 // Dialogs
@@ -479,7 +478,6 @@ export const DashboardHome: React.FC = () => {
 
   return (
     <>
-      <PalettePreviewPicker />
       <SectionShell className="dashboard-canvas">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12 py-4 sm:py-6">
           <DashboardHeroV2

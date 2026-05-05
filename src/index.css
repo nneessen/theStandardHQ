@@ -9,44 +9,45 @@
 @layer base {
   :root {
     /* ==================== SHADCN SEMANTIC COLORS - LIGHT MODE ==================== */
-    /* Derived from landing palette: deep green / icy blue / adventure yellow.
-       See plan: /Users/nickneessen/.claude/plans/ok-so-the-way-robust-fiddle.md */
-    --background: #e3e9ea;
-    --foreground: #161b13;
+    /* Slate + Indigo — cool fintech palette. Slate-900 ink on icy off-white,
+       indigo-500 as the single signature accent. Replaces the legacy
+       deep-green/adventure-yellow scheme. */
+    --background: #f8f9fb;
+    --foreground: #0f172a;
     --card: #ffffff;
-    --card-foreground: #161b13;
+    --card-foreground: #0f172a;
     --popover: #ffffff;
-    --popover-foreground: #161b13;
-    --primary: #161b13;
-    --primary-foreground: #ecf0f1;
-    --secondary: #d3dadc;
-    --secondary-foreground: #2d3329;
-    --muted: #d8dee0;
-    --muted-foreground: #5d6759;
-    --accent: #e2ffcc;
-    --accent-foreground: #161b13;
-    --destructive: #b91c1c;
-    --destructive-foreground: #ecf0f1;
-    --border: rgba(132, 144, 127, 0.28);
-    --input: #c2c9c5;
-    --ring: #2d3329;
+    --popover-foreground: #0f172a;
+    --primary: #0f172a;
+    --primary-foreground: #f1f5f9;
+    --secondary: #f1f3f7;
+    --secondary-foreground: #1e293b;
+    --muted: #f1f3f7;
+    --muted-foreground: #64748b;
+    --accent: #6366f1;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --destructive-foreground: #f1f5f9;
+    --border: rgba(15, 23, 42, 0.10);
+    --input: #e2e8f0;
+    --ring: #6366f1;
     /* Soft variant for table rows / nested borders that stack visually. */
-    --border-soft: rgba(132, 144, 127, 0.16);
+    --border-soft: rgba(15, 23, 42, 0.06);
 
     /* Semantic colors */
-    --success: #3f6b3a;
-    --success-foreground: #ecf0f1;
-    --warning: #a47e1c;
-    --warning-foreground: #161b13;
-    --error: #b91c1c;
-    --error-foreground: #ecf0f1;
-    --info: #5d6759;
-    --info-foreground: #ecf0f1;
+    --success: #10b981;
+    --success-foreground: #f1f5f9;
+    --warning: #f59e0b;
+    --warning-foreground: #0f172a;
+    --error: #ef4444;
+    --error-foreground: #f1f5f9;
+    --info: #06b6d4;
+    --info-foreground: #f1f5f9;
 
-    /* Landing-derived extension tokens */
-    --accent-strong: #c8e8b0;
-    --surface-deep: #2d3329;
-    --surface-deep-foreground: #ecf0f1;
+    /* Slate-derived extension tokens */
+    --accent-strong: #4f46e5;
+    --surface-deep: #1e293b;
+    --surface-deep-foreground: #f1f5f9;
 
     /* Design tokens (defined once, not duplicated in dark mode) */
     --radius: 0.25rem; /* 4px base — yields rounded-md=2px (landing radius) */
@@ -89,94 +90,92 @@
     --rec-error: #b91c1c;
     --rec-error-soft: #fee2e2;
 
-    /* ==================== DESIGN SYSTEM V2 — RETARGETED TO LANDING PALETTE ==================== */
+    /* ==================== DESIGN SYSTEM V2 — SLATE + INDIGO ==================== */
     /* Token names preserved (.theme-v2 wrapper at App.tsx:213 + 8,900+ v2-*
-       class usages). Values now point at the landing aesthetic: icy-blue
-       canvas, deep-green ink, adventure-yellow accent, sharp 1/2/4px radii,
-       near-flat shadows. Body font is Inter; h1/h2 use Big Shoulders Display
-       via the .theme-v2 h1/h2 rule below. */
-    --v2-bg-canvas: #e3e9ea;
+       class usages). Values point at the Slate+Indigo palette: icy off-white
+       canvas, slate-900 ink, indigo-500 accent. Sharp 1/2/4px radii and
+       near-flat shadows preserved. */
+    --v2-bg-canvas: #f8f9fb;
     --v2-bg-card: #ffffff;
-    --v2-bg-card-tinted: #f4f7f8;
-    --v2-bg-card-dark: #161b13;
-    --v2-accent: #e2ffcc;
-    --v2-accent-strong: #c8e8b0;
-    --v2-accent-soft: rgba(226, 255, 204, 0.45);
-    --v2-ink: #161b13;
-    --v2-ink-muted: #5d6759;
-    --v2-ink-subtle: #84907f;
-    --v2-ring: rgba(132, 144, 127, 0.28);
-    --v2-ring-strong: rgba(45, 51, 41, 0.22);
+    --v2-bg-card-tinted: #f1f3f7;
+    --v2-bg-card-dark: #1e293b;
+    --v2-accent: #6366f1;
+    --v2-accent-strong: #4f46e5;
+    --v2-accent-soft: rgba(99, 102, 241, 0.12);
+    --v2-ink: #0f172a;
+    --v2-ink-muted: #64748b;
+    --v2-ink-subtle: #94a3b8;
+    --v2-ring: rgba(15, 23, 42, 0.10);
+    --v2-ring-strong: rgba(15, 23, 42, 0.18);
     --v2-radius-sm: 1px;
     --v2-radius-md: 2px;
     --v2-radius-lg: 4px;
     --v2-radius-pill: 9999px;
     --v2-shadow-soft:
-      0 1px 0 rgba(22, 27, 19, 0.04), 0 4px 16px -2px rgba(22, 27, 19, 0.06);
+      0 1px 0 rgba(15, 23, 42, 0.04), 0 4px 16px -2px rgba(15, 23, 42, 0.06);
     --v2-shadow-lift:
-      0 1px 0 rgba(22, 27, 19, 0.08), 0 8px 24px -4px rgba(22, 27, 19, 0.12);
+      0 1px 0 rgba(15, 23, 42, 0.08), 0 8px 24px -4px rgba(15, 23, 42, 0.12);
     --v2-font-display:
       "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
   .dark {
     /* ==================== SHADCN SEMANTIC COLORS - DARK MODE ==================== */
-    /* Retuned May 2026: brand DNA preserved (deep-green canvas, adventure
-       yellow-green accent), but elevation widened, borders strengthened,
-       accent saturated, semantic colors restored to real signal hues. */
-    --background: #0e1411;
-    --foreground: #f1f4f0;
-    --card: #1a211d;
-    --card-foreground: #f1f4f0;
-    --popover: #232a26;
-    --popover-foreground: #f1f4f0;
-    --primary: #d4f88f;
-    --primary-foreground: #0e1411;
-    --secondary: #232a26;
-    --secondary-foreground: #e8ede9;
-    --muted: #1f2622;
-    --muted-foreground: #a8b2ad;
-    --accent: #d4f88f;
-    --accent-foreground: #0e1411;
-    --destructive: #ef4444;
-    --destructive-foreground: #f1f4f0;
-    --border: rgba(232, 237, 233, 0.12);
-    --input: rgba(232, 237, 233, 0.16);
-    --ring: #d4f88f;
+    /* Slate + Indigo dark — deep slate-blue canvas, navy cards, indigo-400
+       primary accent. Cool fintech aesthetic with strong elevation contrast. */
+    --background: #0a0f1c;
+    --foreground: #f1f5f9;
+    --card: #141a2a;
+    --card-foreground: #f1f5f9;
+    --popover: #1e2538;
+    --popover-foreground: #f1f5f9;
+    --primary: #818cf8;
+    --primary-foreground: #0a0f1c;
+    --secondary: #1e2538;
+    --secondary-foreground: #f1f5f9;
+    --muted: #1e2538;
+    --muted-foreground: #94a3b8;
+    --accent: #818cf8;
+    --accent-foreground: #0a0f1c;
+    --destructive: #f87171;
+    --destructive-foreground: #f1f5f9;
+    --border: rgba(241, 245, 249, 0.10);
+    --input: rgba(241, 245, 249, 0.14);
+    --ring: #818cf8;
     /* Soft variant for table rows / nested borders that stack visually. */
-    --border-soft: rgba(232, 237, 233, 0.06);
+    --border-soft: rgba(241, 245, 249, 0.05);
 
-    /* Semantic colors - real signal hues, not gray-on-gray */
-    --success: #4ade80;
-    --success-foreground: #0e1411;
+    /* Semantic colors */
+    --success: #34d399;
+    --success-foreground: #0a0f1c;
     --warning: #fbbf24;
-    --warning-foreground: #0e1411;
-    --error: #ef4444;
-    --error-foreground: #f1f4f0;
-    --info: #60a5fa;
-    --info-foreground: #0e1411;
+    --warning-foreground: #0a0f1c;
+    --error: #f87171;
+    --error-foreground: #0a0f1c;
+    --info: #22d3ee;
+    --info-foreground: #0a0f1c;
 
-    /* Landing-derived extension tokens (dark) */
-    --accent-strong: #b8e878;
-    --surface-deep: #060a07;
-    --surface-deep-foreground: #f1f4f0;
+    /* Slate-derived extension tokens (dark) */
+    --accent-strong: #6366f1;
+    --surface-deep: #050811;
+    --surface-deep-foreground: #f1f5f9;
   }
 
-  /* ==================== DESIGN SYSTEM V2 — DARK MODE (LANDING PALETTE) ==================== */
+  /* ==================== DESIGN SYSTEM V2 — DARK MODE (SLATE + INDIGO) ==================== */
   .theme-v2.dark,
   .dark .theme-v2 {
-    --v2-bg-canvas: #0e1411;
-    --v2-bg-card: #1a211d;
-    --v2-bg-card-tinted: #232a26;
-    --v2-bg-card-dark: #060a07;
-    --v2-accent: #d4f88f;
-    --v2-accent-strong: #b8e878;
-    --v2-accent-soft: rgba(212, 248, 143, 0.20);
-    --v2-ink: #f1f4f0;
-    --v2-ink-muted: #a8b2ad;
-    --v2-ink-subtle: #6f7a72;
-    --v2-ring: rgba(232, 237, 233, 0.12);
-    --v2-ring-strong: rgba(232, 237, 233, 0.20);
+    --v2-bg-canvas: #0a0f1c;
+    --v2-bg-card: #141a2a;
+    --v2-bg-card-tinted: #1e2538;
+    --v2-bg-card-dark: #050811;
+    --v2-accent: #818cf8;
+    --v2-accent-strong: #6366f1;
+    --v2-accent-soft: rgba(129, 140, 248, 0.18);
+    --v2-ink: #f1f5f9;
+    --v2-ink-muted: #94a3b8;
+    --v2-ink-subtle: #64748b;
+    --v2-ring: rgba(241, 245, 249, 0.10);
+    --v2-ring-strong: rgba(241, 245, 249, 0.20);
   }
 
   /* Apply background and text colors to body */
@@ -188,304 +187,6 @@
   }
 }
 
-/* ==================== PREVIEW PALETTES (TEMPORARY) ==================== */
-/* Toggle one of these classes on <body> to A/B test palettes without
-   committing to global token rewrites. Removed after a direction is picked.
-   Each class redefines both shadcn semantic tokens (--background / --card /
-   --primary / etc.) and the v2-namespaced mirrors so the entire app
-   re-skins from one switch. Light values are on the base class; dark
-   values are scoped under .dark. */
-
-/* ── Option A: Carbon + Amber ─────────────────────────────── */
-.preview-palette-a {
-  --background: #fafaf7;
-  --foreground: #09090b;
-  --card: #ffffff;
-  --card-foreground: #09090b;
-  --popover: #ffffff;
-  --popover-foreground: #09090b;
-  --primary: #09090b;
-  --primary-foreground: #fafafa;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
-  --muted-foreground: #52525b;
-  --accent: #f59e0b;
-  --accent-foreground: #09090b;
-  --destructive: #ef4444;
-  --destructive-foreground: #fafafa;
-  --border: rgba(9, 9, 11, 0.08);
-  --input: #e4e4e7;
-  --ring: #f59e0b;
-  --border-soft: rgba(9, 9, 11, 0.04);
-  --success: #10b981;
-  --success-foreground: #fafafa;
-  --warning: #f59e0b;
-  --warning-foreground: #09090b;
-  --error: #ef4444;
-  --error-foreground: #fafafa;
-  --info: #3b82f6;
-  --info-foreground: #fafafa;
-  --accent-strong: #d97706;
-  --surface-deep: #18181b;
-  --surface-deep-foreground: #fafafa;
-
-  --v2-bg-canvas: #fafaf7;
-  --v2-bg-card: #ffffff;
-  --v2-bg-card-tinted: #f4f4f5;
-  --v2-bg-card-dark: #18181b;
-  --v2-accent: #f59e0b;
-  --v2-accent-strong: #d97706;
-  --v2-accent-soft: rgba(245, 158, 11, 0.12);
-  --v2-ink: #09090b;
-  --v2-ink-muted: #52525b;
-  --v2-ink-subtle: #71717a;
-  --v2-ring: rgba(9, 9, 11, 0.08);
-  --v2-ring-strong: rgba(9, 9, 11, 0.16);
-}
-.dark.preview-palette-a,
-.dark .preview-palette-a,
-.preview-palette-a.dark,
-.preview-palette-a .dark {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --card: #18181b;
-  --card-foreground: #fafafa;
-  --popover: #18181b;
-  --popover-foreground: #fafafa;
-  --primary: #fbbf24;
-  --primary-foreground: #09090b;
-  --secondary: #27272a;
-  --secondary-foreground: #fafafa;
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  --accent: #fbbf24;
-  --accent-foreground: #09090b;
-  --destructive: #f87171;
-  --destructive-foreground: #fafafa;
-  --border: rgba(250, 250, 250, 0.08);
-  --input: rgba(250, 250, 250, 0.12);
-  --ring: #fbbf24;
-  --border-soft: rgba(250, 250, 250, 0.04);
-  --success: #34d399;
-  --success-foreground: #09090b;
-  --warning: #fbbf24;
-  --warning-foreground: #09090b;
-  --error: #f87171;
-  --error-foreground: #09090b;
-  --info: #60a5fa;
-  --info-foreground: #09090b;
-  --accent-strong: #f59e0b;
-  --surface-deep: #050505;
-  --surface-deep-foreground: #fafafa;
-
-  --v2-bg-canvas: #09090b;
-  --v2-bg-card: #18181b;
-  --v2-bg-card-tinted: #27272a;
-  --v2-bg-card-dark: #050505;
-  --v2-accent: #fbbf24;
-  --v2-accent-strong: #f59e0b;
-  --v2-accent-soft: rgba(251, 191, 36, 0.18);
-  --v2-ink: #fafafa;
-  --v2-ink-muted: #a1a1aa;
-  --v2-ink-subtle: #71717a;
-  --v2-ring: rgba(250, 250, 250, 0.08);
-  --v2-ring-strong: rgba(250, 250, 250, 0.16);
-}
-
-/* ── Option B: Slate + Indigo ─────────────────────────────── */
-.preview-palette-b {
-  --background: #f8f9fb;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #0f172a;
-  --primary-foreground: #f1f5f9;
-  --secondary: #f1f3f7;
-  --secondary-foreground: #1e293b;
-  --muted: #f1f3f7;
-  --muted-foreground: #64748b;
-  --accent: #6366f1;
-  --accent-foreground: #ffffff;
-  --destructive: #ef4444;
-  --destructive-foreground: #f1f5f9;
-  --border: rgba(15, 23, 42, 0.08);
-  --input: #e2e8f0;
-  --ring: #6366f1;
-  --border-soft: rgba(15, 23, 42, 0.04);
-  --success: #10b981;
-  --success-foreground: #f1f5f9;
-  --warning: #f59e0b;
-  --warning-foreground: #0f172a;
-  --error: #ef4444;
-  --error-foreground: #f1f5f9;
-  --info: #06b6d4;
-  --info-foreground: #f1f5f9;
-  --accent-strong: #4f46e5;
-  --surface-deep: #1e293b;
-  --surface-deep-foreground: #f1f5f9;
-
-  --v2-bg-canvas: #f8f9fb;
-  --v2-bg-card: #ffffff;
-  --v2-bg-card-tinted: #f1f3f7;
-  --v2-bg-card-dark: #1e293b;
-  --v2-accent: #6366f1;
-  --v2-accent-strong: #4f46e5;
-  --v2-accent-soft: rgba(99, 102, 241, 0.12);
-  --v2-ink: #0f172a;
-  --v2-ink-muted: #64748b;
-  --v2-ink-subtle: #94a3b8;
-  --v2-ring: rgba(15, 23, 42, 0.08);
-  --v2-ring-strong: rgba(15, 23, 42, 0.16);
-}
-.dark.preview-palette-b,
-.dark .preview-palette-b,
-.preview-palette-b.dark,
-.preview-palette-b .dark {
-  --background: #0a0f1c;
-  --foreground: #f1f5f9;
-  --card: #141a2a;
-  --card-foreground: #f1f5f9;
-  --popover: #1e2538;
-  --popover-foreground: #f1f5f9;
-  --primary: #818cf8;
-  --primary-foreground: #0a0f1c;
-  --secondary: #1e2538;
-  --secondary-foreground: #f1f5f9;
-  --muted: #1e2538;
-  --muted-foreground: #94a3b8;
-  --accent: #818cf8;
-  --accent-foreground: #0a0f1c;
-  --destructive: #f87171;
-  --destructive-foreground: #f1f5f9;
-  --border: rgba(241, 245, 249, 0.08);
-  --input: rgba(241, 245, 249, 0.12);
-  --ring: #818cf8;
-  --border-soft: rgba(241, 245, 249, 0.04);
-  --success: #34d399;
-  --success-foreground: #0a0f1c;
-  --warning: #fbbf24;
-  --warning-foreground: #0a0f1c;
-  --error: #f87171;
-  --error-foreground: #0a0f1c;
-  --info: #22d3ee;
-  --info-foreground: #0a0f1c;
-  --accent-strong: #6366f1;
-  --surface-deep: #050811;
-  --surface-deep-foreground: #f1f5f9;
-
-  --v2-bg-canvas: #0a0f1c;
-  --v2-bg-card: #141a2a;
-  --v2-bg-card-tinted: #1e2538;
-  --v2-bg-card-dark: #050811;
-  --v2-accent: #818cf8;
-  --v2-accent-strong: #6366f1;
-  --v2-accent-soft: rgba(129, 140, 248, 0.18);
-  --v2-ink: #f1f5f9;
-  --v2-ink-muted: #94a3b8;
-  --v2-ink-subtle: #64748b;
-  --v2-ring: rgba(241, 245, 249, 0.08);
-  --v2-ring-strong: rgba(241, 245, 249, 0.16);
-}
-
-/* ── Option C: Pure Neutral + Lime ────────────────────────── */
-.preview-palette-c {
-  --background: #fafafa;
-  --foreground: #0a0a0a;
-  --card: #ffffff;
-  --card-foreground: #0a0a0a;
-  --popover: #ffffff;
-  --popover-foreground: #0a0a0a;
-  --primary: #0a0a0a;
-  --primary-foreground: #fafafa;
-  --secondary: #f5f5f5;
-  --secondary-foreground: #171717;
-  --muted: #f5f5f5;
-  --muted-foreground: #525252;
-  --accent: #65a30d;
-  --accent-foreground: #fafafa;
-  --destructive: #dc2626;
-  --destructive-foreground: #fafafa;
-  --border: rgba(10, 10, 10, 0.08);
-  --input: #e5e5e5;
-  --ring: #65a30d;
-  --border-soft: rgba(10, 10, 10, 0.04);
-  --success: #16a34a;
-  --success-foreground: #fafafa;
-  --warning: #ea580c;
-  --warning-foreground: #fafafa;
-  --error: #dc2626;
-  --error-foreground: #fafafa;
-  --info: #0891b2;
-  --info-foreground: #fafafa;
-  --accent-strong: #4d7c0f;
-  --surface-deep: #171717;
-  --surface-deep-foreground: #fafafa;
-
-  --v2-bg-canvas: #fafafa;
-  --v2-bg-card: #ffffff;
-  --v2-bg-card-tinted: #f5f5f5;
-  --v2-bg-card-dark: #171717;
-  --v2-accent: #65a30d;
-  --v2-accent-strong: #4d7c0f;
-  --v2-accent-soft: rgba(101, 163, 13, 0.12);
-  --v2-ink: #0a0a0a;
-  --v2-ink-muted: #525252;
-  --v2-ink-subtle: #737373;
-  --v2-ring: rgba(10, 10, 10, 0.08);
-  --v2-ring-strong: rgba(10, 10, 10, 0.16);
-}
-.dark.preview-palette-c,
-.dark .preview-palette-c,
-.preview-palette-c.dark,
-.preview-palette-c .dark {
-  --background: #0a0a0a;
-  --foreground: #fafafa;
-  --card: #171717;
-  --card-foreground: #fafafa;
-  --popover: #171717;
-  --popover-foreground: #fafafa;
-  --primary: #a3e635;
-  --primary-foreground: #0a0a0a;
-  --secondary: #262626;
-  --secondary-foreground: #fafafa;
-  --muted: #262626;
-  --muted-foreground: #a3a3a3;
-  --accent: #a3e635;
-  --accent-foreground: #0a0a0a;
-  --destructive: #f87171;
-  --destructive-foreground: #fafafa;
-  --border: rgba(250, 250, 250, 0.10);
-  --input: rgba(250, 250, 250, 0.14);
-  --ring: #a3e635;
-  --border-soft: rgba(250, 250, 250, 0.05);
-  --success: #4ade80;
-  --success-foreground: #0a0a0a;
-  --warning: #fb923c;
-  --warning-foreground: #0a0a0a;
-  --error: #f87171;
-  --error-foreground: #0a0a0a;
-  --info: #22d3ee;
-  --info-foreground: #0a0a0a;
-  --accent-strong: #84cc16;
-  --surface-deep: #050505;
-  --surface-deep-foreground: #fafafa;
-
-  --v2-bg-canvas: #0a0a0a;
-  --v2-bg-card: #171717;
-  --v2-bg-card-tinted: #262626;
-  --v2-bg-card-dark: #050505;
-  --v2-accent: #a3e635;
-  --v2-accent-strong: #84cc16;
-  --v2-accent-soft: rgba(163, 230, 53, 0.18);
-  --v2-ink: #fafafa;
-  --v2-ink-muted: #a3a3a3;
-  --v2-ink-subtle: #737373;
-  --v2-ring: rgba(250, 250, 250, 0.10);
-  --v2-ring-strong: rgba(250, 250, 250, 0.18);
-}
 
 /* ==================== APP TYPOGRAPHY UTILITIES ==================== */
 /* Landing-derived accents adapted for app density. These are app-scope
@@ -527,8 +228,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(to right, rgba(132, 144, 127, 0.08) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(132, 144, 127, 0.08) 1px, transparent 1px);
+    linear-gradient(to right, rgba(100, 116, 139, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(100, 116, 139, 0.08) 1px, transparent 1px);
   background-size: 64px 64px;
   background-position: -1px -1px;
   pointer-events: none;
@@ -552,12 +253,12 @@
   background-image:
     radial-gradient(
       ellipse 50% 40% at 92% 8%,
-      rgba(226, 255, 204, 0.65) 0%,
+      rgba(99, 102, 241, 0.20) 0%,
       transparent 60%
     ),
     radial-gradient(
       ellipse 45% 35% at 5% 95%,
-      rgba(132, 144, 127, 0.16) 0%,
+      rgba(6, 182, 212, 0.10) 0%,
       transparent 55%
     );
   pointer-events: none;
@@ -566,20 +267,20 @@
 
 .dark .dashboard-canvas::before {
   background-image:
-    linear-gradient(to right, rgba(221, 226, 228, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(221, 226, 228, 0.05) 1px, transparent 1px);
+    linear-gradient(to right, rgba(241, 245, 249, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(241, 245, 249, 0.05) 1px, transparent 1px);
 }
 
 .dark .dashboard-canvas::after {
   background-image:
     radial-gradient(
       ellipse 50% 40% at 92% 8%,
-      rgba(212, 248, 143, 0.18) 0%,
+      rgba(129, 140, 248, 0.18) 0%,
       transparent 60%
     ),
     radial-gradient(
       ellipse 45% 35% at 5% 95%,
-      rgba(96, 165, 250, 0.10) 0%,
+      rgba(34, 211, 238, 0.10) 0%,
       transparent 55%
     );
 }
@@ -595,12 +296,12 @@
   background-color: var(--v2-bg-canvas);
   background-image: radial-gradient(
       circle at 78% 28%,
-      rgba(226, 255, 204, 0.55) 0%,
+      rgba(99, 102, 241, 0.18) 0%,
       transparent 38%
     ),
     radial-gradient(
       circle at 12% 92%,
-      rgba(132, 144, 127, 0.18) 0%,
+      rgba(6, 182, 212, 0.10) 0%,
       transparent 42%
     );
   background-attachment: fixed;
@@ -613,12 +314,12 @@
   background-color: var(--v2-bg-canvas);
   background-image: radial-gradient(
       circle at 78% 28%,
-      rgba(212, 248, 143, 0.14) 0%,
+      rgba(129, 140, 248, 0.14) 0%,
       transparent 38%
     ),
     radial-gradient(
       circle at 12% 92%,
-      rgba(96, 165, 250, 0.08) 0%,
+      rgba(34, 211, 238, 0.08) 0%,
       transparent 42%
     );
 }
