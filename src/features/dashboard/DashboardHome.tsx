@@ -503,9 +503,6 @@ export const DashboardHome: React.FC = () => {
             policiesCount={periodPolicies.newCount}
             premiumWritten={periodPolicies.premiumWritten}
             pendingPipeline={currentState.pendingPipeline}
-            quickActions={quickActions}
-            onQuickActionClick={handleQuickAction}
-            isCreating={isCreating}
           />
 
           {/* Pace bars — full width (it's already a wide horizontal list) */}

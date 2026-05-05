@@ -5,4 +5,3 @@ export { PillNav, type PillNavItem } from "./PillNav";
 export { MetricBar } from "./MetricBar";
 export { StatTile } from "./StatTile";
 export { RingProgress } from "./RingProgress";
-export { ArcGauge } from "./ArcGauge";

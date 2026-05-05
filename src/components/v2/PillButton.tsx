@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-type PillButtonTone = "black" | "yellow" | "ghost" | "white" | "glass";
+type PillButtonTone = "black" | "yellow" | "ghost" | "white";
 type PillButtonSize = "sm" | "md" | "lg";
 
 interface PillButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -21,7 +21,6 @@ const toneStyles: Record<PillButtonTone, string> = {
     "bg-transparent text-v2-ink hover:bg-v2-accent-soft border border-v2-ring disabled:opacity-50",
   white:
     "bg-v2-card text-v2-ink hover:bg-v2-card-tinted border border-v2-ring disabled:opacity-50",
-  glass: "v2-glass-pill text-v2-ink disabled:opacity-50",
 };
 
 const sizeStyles: Record<PillButtonSize, string> = {

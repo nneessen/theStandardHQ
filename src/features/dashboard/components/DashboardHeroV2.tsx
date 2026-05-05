@@ -5,28 +5,16 @@ import {
   FileText,
   DollarSign,
   Users,
-  Plus,
-  BarChart3,
-  Receipt,
 } from "lucide-react";
 import {
-  ArcGauge,
   MetricBar,
+  StatTile,
   PillNav,
-  SoftCard,
   type PillNavItem,
 } from "@/components/v2";
 import { TimePeriod } from "../../../utils/dateRange";
 import { formatCompactCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
-interface QuickAction {
-  label: string;
-  action: string;
-  hasAccess: boolean;
-  lockedTooltip?: string;
-  requiredTier?: string;
-}
 
 interface DashboardHeroV2Props {
   greetingName: string;
@@ -37,6 +25,9 @@ interface DashboardHeroV2Props {
   periodOffset: number;
   onOffsetChange: (n: number) => void;
 
+  /** Always-on pace bars showing AP submitted + Commissions for both MTD and YTD.
+   *  pct values 0..1 control bar fill (vs. monthly/yearly target where available),
+   *  display values are the formatted $ amount shown in the chip. */
   apMtdPct: number;
   apMtdDisplay: string;
   apYtdPct: number;
@@ -46,13 +37,10 @@ interface DashboardHeroV2Props {
   commYtdPct: number;
   commYtdDisplay: string;
 
+  /** stat tiles (right column) */
   policiesCount: number;
   premiumWritten: number;
   pendingPipeline: number;
-
-  quickActions?: QuickAction[];
-  onQuickActionClick?: (action: string) => void;
-  isCreating?: boolean;
 }
 
 const PERIODS: PillNavItem[] = [
@@ -71,67 +59,11 @@ const CURRENT_PERIOD_LABELS: Record<TimePeriod, string> = {
   yearly: "This Year",
 };
 
-const ACTION_ICONS: Record<string, React.ReactNode> = {
-  "Add Policy": <Plus className="h-3.5 w-3.5" />,
-  "Add Expense": <Receipt className="h-3.5 w-3.5" />,
-  "View Reports": <BarChart3 className="h-3.5 w-3.5" />,
-};
-
-interface KpiCardProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  pct?: number;
-  pctTone?: "yellow" | "ink" | "muted";
-}
-
-const KpiCard: React.FC<KpiCardProps> = ({
-  icon,
-  label,
-  value,
-  pct,
-  pctTone = "yellow",
-}) => {
-  const fillColor =
-    pctTone === "yellow"
-      ? "var(--v2-accent-strong)"
-      : pctTone === "ink"
-        ? "var(--v2-ink)"
-        : "var(--v2-ink-subtle)";
-
-  return (
-    <SoftCard
-      variant="glass"
-      radius="lg"
-      padding="md"
-      className="min-h-[148px]"
-    >
-      <div className="flex items-center gap-2 mb-3">
-        <span className="inline-flex h-7 w-7 items-center justify-center rounded-v2-pill bg-v2-accent-soft text-v2-ink">
-          {icon}
-        </span>
-        <span className="text-[11px] uppercase tracking-[0.14em] text-v2-ink-muted font-semibold">
-          {label}
-        </span>
-      </div>
-      <div className="font-display text-4xl sm:text-5xl font-semibold tracking-tight leading-none text-v2-ink mb-3">
-        {value}
-      </div>
-      {typeof pct === "number" && (
-        <div className="h-1 w-full rounded-full bg-v2-ring overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-700 ease-out"
-            style={{
-              width: `${Math.min(100, Math.max(0, pct * 100))}%`,
-              backgroundColor: fillColor,
-            }}
-          />
-        </div>
-      )}
-    </SoftCard>
-  );
-};
-
+/**
+ * Crextio-inspired dashboard hero: large welcome heading, period nav,
+ * a 4-row MetricBar column on the left and 3 StatTiles on the right.
+ * Replaces Masthead + HeroSummary + SecondaryMetricsRow when v2 is on.
+ */
 export const DashboardHeroV2: React.FC<DashboardHeroV2Props> = ({
   greetingName,
   periodTitle,
@@ -151,18 +83,14 @@ export const DashboardHeroV2: React.FC<DashboardHeroV2Props> = ({
   policiesCount,
   premiumWritten,
   pendingPipeline,
-  quickActions,
-  onQuickActionClick,
-  isCreating,
 }) => {
   const isCurrent = periodOffset === 0;
   const currentPeriodLabel = CURRENT_PERIOD_LABELS[timePeriod];
-  const gaugePct = Math.max(0, Math.min(1, commMtdPct));
-  const gaugePctLabel = Math.round(gaugePct * 100);
 
   return (
-    <section className="v2-hero-backdrop pt-2 pb-8">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-5">
+    <section className="pt-2 pb-8">
+      {/* Top row: welcome + period controls */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-7">
         <div>
           <div className="text-[11px] uppercase tracking-[0.18em] font-semibold text-v2-ink-subtle mb-2">
             {periodTitle}
@@ -184,7 +112,7 @@ export const DashboardHeroV2: React.FC<DashboardHeroV2Props> = ({
             onChange={(v) => onTimePeriodChange(v as TimePeriod)}
             size="sm"
           />
-          <div className="inline-flex items-center gap-1 v2-glass-pill rounded-v2-pill p-1">
+          <div className="inline-flex items-center gap-1 rounded-v2-pill bg-v2-card border border-v2-ring p-1 shadow-v2-soft">
             <button
               type="button"
               onClick={() => onOffsetChange(periodOffset - 1)}
@@ -224,112 +152,52 @@ export const DashboardHeroV2: React.FC<DashboardHeroV2Props> = ({
         </div>
       </div>
 
-      {quickActions && quickActions.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2 mb-5">
-          {quickActions.map((qa) => {
-            const disabled = !qa.hasAccess || isCreating;
-            return (
-              <button
-                key={qa.action}
-                type="button"
-                disabled={disabled}
-                onClick={() => onQuickActionClick?.(qa.action)}
-                title={!qa.hasAccess ? qa.lockedTooltip : undefined}
-                className={cn(
-                  "v2-glass-pill rounded-v2-pill px-4 h-9 gap-2 text-xs font-semibold tracking-tight",
-                  "text-v2-ink",
-                  disabled && "opacity-50 cursor-not-allowed",
-                )}
-              >
-                {ACTION_ICONS[qa.action] ?? <Plus className="h-3.5 w-3.5" />}
-                <span>{qa.label}</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-        <KpiCard
-          icon={<FileText className="h-3.5 w-3.5" />}
-          label="Policies"
-          value={policiesCount.toLocaleString()}
-          pct={apMtdPct}
-          pctTone="yellow"
-        />
-        <KpiCard
-          icon={<DollarSign className="h-3.5 w-3.5" />}
-          label="Premium"
-          value={formatCompactCurrency(premiumWritten)}
-          pct={apMtdPct}
-          pctTone="ink"
-        />
-        <KpiCard
-          icon={<Users className="h-3.5 w-3.5" />}
-          label="Pipeline"
-          value={formatCompactCurrency(pendingPipeline)}
-          pct={undefined}
-        />
-        <SoftCard
-          variant="glass"
-          radius="lg"
-          padding="md"
-          className="flex flex-col items-center justify-between min-h-[148px]"
-        >
-          <div className="flex items-center gap-2 self-start mb-1">
-            <span className="text-[11px] uppercase tracking-[0.14em] text-v2-ink-muted font-semibold">
-              Comm Pace
-            </span>
-          </div>
-          <ArcGauge
-            value={gaugePct}
-            size={170}
-            thickness={11}
-            centerLabel={
-              <div className="flex flex-col items-center -mt-1">
-                <span className="font-display text-3xl font-semibold leading-none text-v2-ink">
-                  {gaugePctLabel}%
-                </span>
-                <span className="text-[9px] uppercase tracking-[0.16em] text-v2-ink-subtle mt-1">
-                  vs target
-                </span>
-              </div>
-            }
+      {/* Metric strip: bars left, stat tiles right */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <div className="lg:col-span-7 space-y-2.5">
+          <MetricBar
+            label="AP MTD"
+            value={apMtdPct}
+            tone="ink"
+            display={apMtdDisplay}
           />
-        </SoftCard>
+          <MetricBar
+            label="AP YTD"
+            value={apYtdPct}
+            tone="muted"
+            display={apYtdDisplay}
+          />
+          <MetricBar
+            label="Commissions MTD"
+            value={commMtdPct}
+            tone="yellow"
+            display={commMtdDisplay}
+          />
+          <MetricBar
+            label="Commissions YTD"
+            value={commYtdPct}
+            tone="muted"
+            display={commYtdDisplay}
+          />
+        </div>
+        <div className="lg:col-span-5 flex flex-col gap-3">
+          <StatTile
+            icon={<FileText className="h-4 w-4" />}
+            value={policiesCount.toLocaleString()}
+            caption="Policies"
+          />
+          <StatTile
+            icon={<DollarSign className="h-4 w-4" />}
+            value={formatCompactCurrency(premiumWritten)}
+            caption="Premium"
+          />
+          <StatTile
+            icon={<Users className="h-4 w-4" />}
+            value={formatCompactCurrency(pendingPipeline)}
+            caption="Pipeline"
+          />
+        </div>
       </div>
-
-      <SoftCard
-        variant="glass"
-        radius="lg"
-        padding="lg"
-        className="space-y-2.5"
-      >
-        <MetricBar
-          label="AP MTD"
-          value={apMtdPct}
-          tone="ink"
-          display={apMtdDisplay}
-        />
-        <MetricBar
-          label="AP YTD"
-          value={apYtdPct}
-          tone="muted"
-          display={apYtdDisplay}
-        />
-        <MetricBar
-          label="Commissions MTD"
-          value={commMtdPct}
-          tone="yellow"
-          display={commMtdDisplay}
-        />
-        <MetricBar
-          label="Commissions YTD"
-          value={commYtdPct}
-          tone="muted"
-          display={commYtdDisplay}
-        />
-      </SoftCard>
     </section>
   );
 };
