@@ -188,6 +188,305 @@
   }
 }
 
+/* ==================== PREVIEW PALETTES (TEMPORARY) ==================== */
+/* Toggle one of these classes on <body> to A/B test palettes without
+   committing to global token rewrites. Removed after a direction is picked.
+   Each class redefines both shadcn semantic tokens (--background / --card /
+   --primary / etc.) and the v2-namespaced mirrors so the entire app
+   re-skins from one switch. Light values are on the base class; dark
+   values are scoped under .dark. */
+
+/* ── Option A: Carbon + Amber ─────────────────────────────── */
+.preview-palette-a {
+  --background: #fafaf7;
+  --foreground: #09090b;
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  --primary: #09090b;
+  --primary-foreground: #fafafa;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #52525b;
+  --accent: #f59e0b;
+  --accent-foreground: #09090b;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: rgba(9, 9, 11, 0.08);
+  --input: #e4e4e7;
+  --ring: #f59e0b;
+  --border-soft: rgba(9, 9, 11, 0.04);
+  --success: #10b981;
+  --success-foreground: #fafafa;
+  --warning: #f59e0b;
+  --warning-foreground: #09090b;
+  --error: #ef4444;
+  --error-foreground: #fafafa;
+  --info: #3b82f6;
+  --info-foreground: #fafafa;
+  --accent-strong: #d97706;
+  --surface-deep: #18181b;
+  --surface-deep-foreground: #fafafa;
+
+  --v2-bg-canvas: #fafaf7;
+  --v2-bg-card: #ffffff;
+  --v2-bg-card-tinted: #f4f4f5;
+  --v2-bg-card-dark: #18181b;
+  --v2-accent: #f59e0b;
+  --v2-accent-strong: #d97706;
+  --v2-accent-soft: rgba(245, 158, 11, 0.12);
+  --v2-ink: #09090b;
+  --v2-ink-muted: #52525b;
+  --v2-ink-subtle: #71717a;
+  --v2-ring: rgba(9, 9, 11, 0.08);
+  --v2-ring-strong: rgba(9, 9, 11, 0.16);
+}
+.dark.preview-palette-a,
+.dark .preview-palette-a,
+.preview-palette-a.dark,
+.preview-palette-a .dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: #18181b;
+  --card-foreground: #fafafa;
+  --popover: #18181b;
+  --popover-foreground: #fafafa;
+  --primary: #fbbf24;
+  --primary-foreground: #09090b;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #fbbf24;
+  --accent-foreground: #09090b;
+  --destructive: #f87171;
+  --destructive-foreground: #fafafa;
+  --border: rgba(250, 250, 250, 0.08);
+  --input: rgba(250, 250, 250, 0.12);
+  --ring: #fbbf24;
+  --border-soft: rgba(250, 250, 250, 0.04);
+  --success: #34d399;
+  --success-foreground: #09090b;
+  --warning: #fbbf24;
+  --warning-foreground: #09090b;
+  --error: #f87171;
+  --error-foreground: #09090b;
+  --info: #60a5fa;
+  --info-foreground: #09090b;
+  --accent-strong: #f59e0b;
+  --surface-deep: #050505;
+  --surface-deep-foreground: #fafafa;
+
+  --v2-bg-canvas: #09090b;
+  --v2-bg-card: #18181b;
+  --v2-bg-card-tinted: #27272a;
+  --v2-bg-card-dark: #050505;
+  --v2-accent: #fbbf24;
+  --v2-accent-strong: #f59e0b;
+  --v2-accent-soft: rgba(251, 191, 36, 0.18);
+  --v2-ink: #fafafa;
+  --v2-ink-muted: #a1a1aa;
+  --v2-ink-subtle: #71717a;
+  --v2-ring: rgba(250, 250, 250, 0.08);
+  --v2-ring-strong: rgba(250, 250, 250, 0.16);
+}
+
+/* ── Option B: Slate + Indigo ─────────────────────────────── */
+.preview-palette-b {
+  --background: #f8f9fb;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #0f172a;
+  --primary-foreground: #f1f5f9;
+  --secondary: #f1f3f7;
+  --secondary-foreground: #1e293b;
+  --muted: #f1f3f7;
+  --muted-foreground: #64748b;
+  --accent: #6366f1;
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --destructive-foreground: #f1f5f9;
+  --border: rgba(15, 23, 42, 0.08);
+  --input: #e2e8f0;
+  --ring: #6366f1;
+  --border-soft: rgba(15, 23, 42, 0.04);
+  --success: #10b981;
+  --success-foreground: #f1f5f9;
+  --warning: #f59e0b;
+  --warning-foreground: #0f172a;
+  --error: #ef4444;
+  --error-foreground: #f1f5f9;
+  --info: #06b6d4;
+  --info-foreground: #f1f5f9;
+  --accent-strong: #4f46e5;
+  --surface-deep: #1e293b;
+  --surface-deep-foreground: #f1f5f9;
+
+  --v2-bg-canvas: #f8f9fb;
+  --v2-bg-card: #ffffff;
+  --v2-bg-card-tinted: #f1f3f7;
+  --v2-bg-card-dark: #1e293b;
+  --v2-accent: #6366f1;
+  --v2-accent-strong: #4f46e5;
+  --v2-accent-soft: rgba(99, 102, 241, 0.12);
+  --v2-ink: #0f172a;
+  --v2-ink-muted: #64748b;
+  --v2-ink-subtle: #94a3b8;
+  --v2-ring: rgba(15, 23, 42, 0.08);
+  --v2-ring-strong: rgba(15, 23, 42, 0.16);
+}
+.dark.preview-palette-b,
+.dark .preview-palette-b,
+.preview-palette-b.dark,
+.preview-palette-b .dark {
+  --background: #0a0f1c;
+  --foreground: #f1f5f9;
+  --card: #141a2a;
+  --card-foreground: #f1f5f9;
+  --popover: #1e2538;
+  --popover-foreground: #f1f5f9;
+  --primary: #818cf8;
+  --primary-foreground: #0a0f1c;
+  --secondary: #1e2538;
+  --secondary-foreground: #f1f5f9;
+  --muted: #1e2538;
+  --muted-foreground: #94a3b8;
+  --accent: #818cf8;
+  --accent-foreground: #0a0f1c;
+  --destructive: #f87171;
+  --destructive-foreground: #f1f5f9;
+  --border: rgba(241, 245, 249, 0.08);
+  --input: rgba(241, 245, 249, 0.12);
+  --ring: #818cf8;
+  --border-soft: rgba(241, 245, 249, 0.04);
+  --success: #34d399;
+  --success-foreground: #0a0f1c;
+  --warning: #fbbf24;
+  --warning-foreground: #0a0f1c;
+  --error: #f87171;
+  --error-foreground: #0a0f1c;
+  --info: #22d3ee;
+  --info-foreground: #0a0f1c;
+  --accent-strong: #6366f1;
+  --surface-deep: #050811;
+  --surface-deep-foreground: #f1f5f9;
+
+  --v2-bg-canvas: #0a0f1c;
+  --v2-bg-card: #141a2a;
+  --v2-bg-card-tinted: #1e2538;
+  --v2-bg-card-dark: #050811;
+  --v2-accent: #818cf8;
+  --v2-accent-strong: #6366f1;
+  --v2-accent-soft: rgba(129, 140, 248, 0.18);
+  --v2-ink: #f1f5f9;
+  --v2-ink-muted: #94a3b8;
+  --v2-ink-subtle: #64748b;
+  --v2-ring: rgba(241, 245, 249, 0.08);
+  --v2-ring-strong: rgba(241, 245, 249, 0.16);
+}
+
+/* ── Option C: Pure Neutral + Lime ────────────────────────── */
+.preview-palette-c {
+  --background: #fafafa;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #0a0a0a;
+  --primary-foreground: #fafafa;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+  --muted: #f5f5f5;
+  --muted-foreground: #525252;
+  --accent: #65a30d;
+  --accent-foreground: #fafafa;
+  --destructive: #dc2626;
+  --destructive-foreground: #fafafa;
+  --border: rgba(10, 10, 10, 0.08);
+  --input: #e5e5e5;
+  --ring: #65a30d;
+  --border-soft: rgba(10, 10, 10, 0.04);
+  --success: #16a34a;
+  --success-foreground: #fafafa;
+  --warning: #ea580c;
+  --warning-foreground: #fafafa;
+  --error: #dc2626;
+  --error-foreground: #fafafa;
+  --info: #0891b2;
+  --info-foreground: #fafafa;
+  --accent-strong: #4d7c0f;
+  --surface-deep: #171717;
+  --surface-deep-foreground: #fafafa;
+
+  --v2-bg-canvas: #fafafa;
+  --v2-bg-card: #ffffff;
+  --v2-bg-card-tinted: #f5f5f5;
+  --v2-bg-card-dark: #171717;
+  --v2-accent: #65a30d;
+  --v2-accent-strong: #4d7c0f;
+  --v2-accent-soft: rgba(101, 163, 13, 0.12);
+  --v2-ink: #0a0a0a;
+  --v2-ink-muted: #525252;
+  --v2-ink-subtle: #737373;
+  --v2-ring: rgba(10, 10, 10, 0.08);
+  --v2-ring-strong: rgba(10, 10, 10, 0.16);
+}
+.dark.preview-palette-c,
+.dark .preview-palette-c,
+.preview-palette-c.dark,
+.preview-palette-c .dark {
+  --background: #0a0a0a;
+  --foreground: #fafafa;
+  --card: #171717;
+  --card-foreground: #fafafa;
+  --popover: #171717;
+  --popover-foreground: #fafafa;
+  --primary: #a3e635;
+  --primary-foreground: #0a0a0a;
+  --secondary: #262626;
+  --secondary-foreground: #fafafa;
+  --muted: #262626;
+  --muted-foreground: #a3a3a3;
+  --accent: #a3e635;
+  --accent-foreground: #0a0a0a;
+  --destructive: #f87171;
+  --destructive-foreground: #fafafa;
+  --border: rgba(250, 250, 250, 0.10);
+  --input: rgba(250, 250, 250, 0.14);
+  --ring: #a3e635;
+  --border-soft: rgba(250, 250, 250, 0.05);
+  --success: #4ade80;
+  --success-foreground: #0a0a0a;
+  --warning: #fb923c;
+  --warning-foreground: #0a0a0a;
+  --error: #f87171;
+  --error-foreground: #0a0a0a;
+  --info: #22d3ee;
+  --info-foreground: #0a0a0a;
+  --accent-strong: #84cc16;
+  --surface-deep: #050505;
+  --surface-deep-foreground: #fafafa;
+
+  --v2-bg-canvas: #0a0a0a;
+  --v2-bg-card: #171717;
+  --v2-bg-card-tinted: #262626;
+  --v2-bg-card-dark: #050505;
+  --v2-accent: #a3e635;
+  --v2-accent-strong: #84cc16;
+  --v2-accent-soft: rgba(163, 230, 53, 0.18);
+  --v2-ink: #fafafa;
+  --v2-ink-muted: #a3a3a3;
+  --v2-ink-subtle: #737373;
+  --v2-ring: rgba(250, 250, 250, 0.10);
+  --v2-ring-strong: rgba(250, 250, 250, 0.18);
+}
+
 /* ==================== APP TYPOGRAPHY UTILITIES ==================== */
 /* Landing-derived accents adapted for app density. These are app-scope
    (NOT inside .theme-landing or .theme-v2). */
