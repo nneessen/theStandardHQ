@@ -218,12 +218,22 @@ export function useMetricsWithDateRange(
     });
   })();
 
-  // Filter policies by date range (for new policies)
+  // Filter policies by date range (for new policies).
+  // Sales bucketing uses submit_date — that's when the policy was sold and
+  // is the convention used elsewhere (PolicyRepository default, hierarchy
+  // service, analytics dashboard). effective_date is when coverage starts
+  // and frequently sits weeks/months in the future (client-chosen start),
+  // so filtering on it under-counts the current month.
+  const policyBucketDate = (p: {
+    submitDate?: string;
+    effectiveDate?: string;
+    createdAt?: string;
+  }) => p.submitDate || p.effectiveDate || p.createdAt;
   const filteredPolicies = (() => {
     // Check for year mismatch using parseLocalDate to avoid timezone issues
     const currentYear = new Date().getFullYear();
     const hasCurrentYearData = policies.some((p) => {
-      const date = p.effectiveDate || p.createdAt;
+      const date = policyBucketDate(p);
       if (!date) return false;
       const dateObj = typeof date === "string" ? parseLocalDate(date) : date;
       return dateObj.getFullYear() === currentYear;
@@ -236,7 +246,7 @@ export function useMetricsWithDateRange(
     ) {
       // Find most recent year with data instead of returning everything
       const mostRecentYear = policies.reduce((maxYear, p) => {
-        const d = p.effectiveDate || p.createdAt;
+        const d = policyBucketDate(p);
         if (!d) return maxYear;
         const dateObj = typeof d === "string" ? parseLocalDate(d) : d;
         return Math.max(maxYear, dateObj.getFullYear());
@@ -244,7 +254,7 @@ export function useMetricsWithDateRange(
 
       return mostRecentYear > 0
         ? policies.filter((p) => {
-            const d = p.effectiveDate || p.createdAt;
+            const d = policyBucketDate(p);
             if (!d) return false;
             const dateObj = typeof d === "string" ? parseLocalDate(d) : d;
             return dateObj.getFullYear() === mostRecentYear;
@@ -253,7 +263,7 @@ export function useMetricsWithDateRange(
     }
 
     return policies.filter((policy) => {
-      const policyDate = policy.effectiveDate || policy.createdAt;
+      const policyDate = policyBucketDate(policy) ?? null;
       return isInDateRange(policyDate, dateRangeForFiltering);
     });
   })();
