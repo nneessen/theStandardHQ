@@ -121,61 +121,62 @@
 
   .dark {
     /* ==================== SHADCN SEMANTIC COLORS - DARK MODE ==================== */
-    /* Inverted landing palette: deep-green canvas, icy-blue text, adventure
-       yellow becomes primary CTA color. See plan §1.1 dark table. */
-    --background: #131811;
-    --foreground: #ecf0f1;
-    --card: #1f2620;
-    --card-foreground: #ecf0f1;
-    --popover: #2d3329;
-    --popover-foreground: #ecf0f1;
-    --primary: #e2ffcc;
-    --primary-foreground: #161b13;
-    --secondary: #2d3329;
-    --secondary-foreground: #dde2e4;
-    --muted: #262d24;
-    --muted-foreground: #c4ccd0;
-    --accent: #e2ffcc;
-    --accent-foreground: #161b13;
-    --destructive: #dc2626;
-    --destructive-foreground: #ecf0f1;
-    --border: rgba(221, 226, 228, 0.10);
-    --input: rgba(221, 226, 228, 0.18);
-    --ring: #e2ffcc;
+    /* Retuned May 2026: brand DNA preserved (deep-green canvas, adventure
+       yellow-green accent), but elevation widened, borders strengthened,
+       accent saturated, semantic colors restored to real signal hues. */
+    --background: #0e1411;
+    --foreground: #f1f4f0;
+    --card: #1a211d;
+    --card-foreground: #f1f4f0;
+    --popover: #232a26;
+    --popover-foreground: #f1f4f0;
+    --primary: #d4f88f;
+    --primary-foreground: #0e1411;
+    --secondary: #232a26;
+    --secondary-foreground: #e8ede9;
+    --muted: #1f2622;
+    --muted-foreground: #a8b2ad;
+    --accent: #d4f88f;
+    --accent-foreground: #0e1411;
+    --destructive: #ef4444;
+    --destructive-foreground: #f1f4f0;
+    --border: rgba(232, 237, 233, 0.12);
+    --input: rgba(232, 237, 233, 0.16);
+    --ring: #d4f88f;
     /* Soft variant for table rows / nested borders that stack visually. */
-    --border-soft: rgba(221, 226, 228, 0.05);
+    --border-soft: rgba(232, 237, 233, 0.06);
 
-    /* Semantic colors - dark mode variants */
-    --success: #84907f;
-    --success-foreground: #161b13;
-    --warning: #c8e8b0;
-    --warning-foreground: #161b13;
-    --error: #dc2626;
-    --error-foreground: #ecf0f1;
-    --info: #c4ccd0;
-    --info-foreground: #161b13;
+    /* Semantic colors - real signal hues, not gray-on-gray */
+    --success: #4ade80;
+    --success-foreground: #0e1411;
+    --warning: #fbbf24;
+    --warning-foreground: #0e1411;
+    --error: #ef4444;
+    --error-foreground: #f1f4f0;
+    --info: #60a5fa;
+    --info-foreground: #0e1411;
 
     /* Landing-derived extension tokens (dark) */
-    --accent-strong: #c8e8b0;
-    --surface-deep: #0e1310;
-    --surface-deep-foreground: #ecf0f1;
+    --accent-strong: #b8e878;
+    --surface-deep: #060a07;
+    --surface-deep-foreground: #f1f4f0;
   }
 
   /* ==================== DESIGN SYSTEM V2 — DARK MODE (LANDING PALETTE) ==================== */
   .theme-v2.dark,
   .dark .theme-v2 {
-    --v2-bg-canvas: #131811;
-    --v2-bg-card: #1f2620;
-    --v2-bg-card-tinted: #262d24;
-    --v2-bg-card-dark: #0e1310;
-    --v2-accent: #e2ffcc;
-    --v2-accent-strong: #c8e8b0;
-    --v2-accent-soft: rgba(226, 255, 204, 0.18);
-    --v2-ink: #ecf0f1;
-    --v2-ink-muted: #c4ccd0;
-    --v2-ink-subtle: #84907f;
-    --v2-ring: rgba(221, 226, 228, 0.10);
-    --v2-ring-strong: rgba(221, 226, 228, 0.18);
+    --v2-bg-canvas: #0e1411;
+    --v2-bg-card: #1a211d;
+    --v2-bg-card-tinted: #232a26;
+    --v2-bg-card-dark: #060a07;
+    --v2-accent: #d4f88f;
+    --v2-accent-strong: #b8e878;
+    --v2-accent-soft: rgba(212, 248, 143, 0.20);
+    --v2-ink: #f1f4f0;
+    --v2-ink-muted: #a8b2ad;
+    --v2-ink-subtle: #6f7a72;
+    --v2-ring: rgba(232, 237, 233, 0.12);
+    --v2-ring-strong: rgba(232, 237, 233, 0.20);
   }
 
   /* Apply background and text colors to body */
@@ -274,12 +275,12 @@
   background-image:
     radial-gradient(
       ellipse 50% 40% at 92% 8%,
-      rgba(226, 255, 204, 0.12) 0%,
+      rgba(212, 248, 143, 0.18) 0%,
       transparent 60%
     ),
     radial-gradient(
       ellipse 45% 35% at 5% 95%,
-      rgba(221, 226, 228, 0.05) 0%,
+      rgba(96, 165, 250, 0.10) 0%,
       transparent 55%
     );
 }
@@ -313,12 +314,12 @@
   background-color: var(--v2-bg-canvas);
   background-image: radial-gradient(
       circle at 78% 28%,
-      rgba(226, 255, 204, 0.08) 0%,
+      rgba(212, 248, 143, 0.14) 0%,
       transparent 38%
     ),
     radial-gradient(
       circle at 12% 92%,
-      rgba(132, 144, 127, 0.06) 0%,
+      rgba(96, 165, 250, 0.08) 0%,
       transparent 42%
     );
 }
