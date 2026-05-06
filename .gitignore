@@ -39,6 +39,9 @@ yarn-error.log*
 public/*.pdf
 *.pdf:Zone.Identifier
 
+# Parsed UW guide text dumps (proprietary carrier content)
+scripts/output/
+
 # Auto-generated continuation prompts
 plans/continuation-prompts/
 
@@ -82,3 +85,4 @@ dev.log
 .zencoder/
 skills/
 skills-lock.json
+
