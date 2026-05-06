@@ -1,0 +1,5 @@
+# Recruit-templates is a service-to-service endpoint called by
+# standard-chat-bot (NOT by end users via the app). Auth is X-API-Key, not a
+# Supabase-issued JWT — so the platform's verify_jwt middleware would always
+# 401 us. Disable it and let the function do its own auth check.
+verify_jwt = false
