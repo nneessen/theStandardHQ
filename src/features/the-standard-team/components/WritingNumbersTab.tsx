@@ -205,8 +205,8 @@ function AgentWritingNumbersPanel({
         className={cn(
           "rounded-lg border p-2.5",
           hasSavedValue
-            ? "border-v2-ring dark:border-v2-ring bg-white dark:bg-v2-canvas/20"
-            : "border-warning/30 dark:border-warning/40 bg-warning/10/60 dark:bg-warning/10/10",
+            ? "border-v2-ring dark:border-v2-ring bg-card"
+            : "border-warning/30 dark:border-warning/40 bg-warning/10",
         )}
       >
         <div className="flex items-start justify-between gap-2 mb-2">
@@ -309,7 +309,7 @@ function AgentWritingNumbersPanel({
 
       <div className="flex-1 min-h-0 overflow-auto">
         <div className="p-3 space-y-3">
-          <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-white dark:bg-v2-canvas/20 p-3 space-y-3">
+          <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-card p-3 space-y-3">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
@@ -410,7 +410,7 @@ function AgentWritingNumbersPanel({
             ) : (
               <div className="grid grid-cols-1 gap-3 items-start">
                 {filteredMissingRows.length > 0 && (
-                  <section className="min-w-0 space-y-2 rounded-lg border border-warning/30 dark:border-warning/40 bg-warning/10/40 dark:bg-warning/10/10 p-2.5">
+                  <section className="min-w-0 space-y-2 rounded-lg border border-warning/30 dark:border-warning/40 bg-warning/10 p-2.5">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <p className="text-[10px] font-semibold uppercase tracking-wide text-warning">
                         Missing Writing Numbers
@@ -623,7 +623,7 @@ function TeamWritingNumbersBoard({
                   />
                 </div>
 
-                <div className="rounded-md border border-v2-ring dark:border-v2-ring bg-white/90 dark:bg-v2-canvas/30 p-2">
+                <div className="rounded-md border border-v2-ring dark:border-v2-ring bg-card p-2">
                   <div className="flex items-center justify-between gap-2 mb-1.5">
                     <p className="text-[10px] font-medium text-v2-ink dark:text-v2-ink truncate">
                       Selected Agent Quick Edit

@@ -129,8 +129,7 @@ export function StateLicensesTable({
                   key={agent.id}
                   className={cn(
                     "text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wide text-center px-2 py-2 border-b border-v2-ring dark:border-v2-ring-strong min-w-[80px] w-[80px]",
-                    agent.id === selectedAgentId &&
-                      "bg-info/20/70 dark:bg-info/20 text-info",
+                    agent.id === selectedAgentId && "bg-info/20 text-info",
                   )}
                   title={`${agent.first_name} ${agent.last_name}`}
                 >
@@ -216,8 +215,7 @@ export function StateLicensesTable({
                         className={cn(
                           "text-center py-1 px-2 border-b border-v2-ring dark:border-v2-ring",
                           bgClass,
-                          agent.id === selectedAgentId &&
-                            "bg-info/10/70 dark:bg-info/10/15",
+                          agent.id === selectedAgentId && "bg-info/10",
                         )}
                       >
                         <Checkbox

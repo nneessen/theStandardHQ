@@ -3,9 +3,11 @@
 // Editorial dashboard. Drops bordered-card-per-section in favor of a
 // publication-style layout: typography, hairline rules, generous whitespace.
 //
-//   Masthead → HeroSummary → SecondaryMetricsRow → PaceLines
-//      → EditorialAlertsActions → DetailsSection
-//      → Org / Team (legacy)
+//   DashboardHeroV2
+//      → [Pace · Quick Actions] (paired row)
+//      → [Alerts · Details] (paired row)
+//      → Organization (fluid reflow)
+//      → Team & Recruiting
 
 import React, { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
@@ -33,7 +35,8 @@ import { formatCurrency, formatCompactCurrency } from "@/lib/format";
 
 // New editorial components (kept for the lower sections)
 import { PaceLines, type PaceLine } from "./components/PaceLines";
-import { EditorialAlertsActions } from "./components/EditorialAlertsActions";
+import { EditorialAlerts } from "./components/EditorialAlerts";
+import { QuickActionsPanel } from "./components/QuickActionsPanel";
 import { DetailsSection } from "./components/DetailsSection";
 import { OrgMetricsSection } from "./components/OrgMetricsSection";
 import { TeamRecruitingSection } from "./components/TeamRecruitingSection";
@@ -337,11 +340,9 @@ export const DashboardHome: React.FC = () => {
       requiredTier: "Pro",
     },
     {
-      label: "View Reports",
-      action: "View Reports",
-      hasAccess: dashboardFeatures.canViewReports,
-      lockedTooltip: "Upgrade to Pro to view reports",
-      requiredTier: "Pro",
+      label: "Leaderboard",
+      action: "Leaderboard",
+      hasAccess: true,
     },
   ];
 
@@ -353,8 +354,8 @@ export const DashboardHome: React.FC = () => {
       case "Add Expense":
         setActiveDialog("expense");
         break;
-      case "View Reports":
-        navigate({ to: "/reports" });
+      case "Leaderboard":
+        navigate({ to: "/leaderboard" });
         break;
       default:
         console.warn(`Unknown action: ${action}`);
@@ -505,25 +506,30 @@ export const DashboardHome: React.FC = () => {
             pendingPipeline={currentState.pendingPipeline}
           />
 
-          {/* Pace bars — full width (it's already a wide horizontal list) */}
-          <SoftCard padding="lg" className="mb-4">
-            <PaceLines
-              lines={paceLines}
-              daysElapsed={showDaysSubtitle ? elapsed.daysElapsed : undefined}
-              daysTotal={showDaysSubtitle ? elapsed.daysTotal : undefined}
-              expectedPct={expectedPct}
-            />
-          </SoftCard>
-
-          {/* Alerts + Details side-by-side on desktop */}
+          {/* Pace + Quick Actions — paired row, no longer full-width */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             <SoftCard padding="lg">
-              <EditorialAlertsActions
-                alerts={augmentedAlerts}
+              <PaceLines
+                lines={paceLines}
+                daysElapsed={showDaysSubtitle ? elapsed.daysElapsed : undefined}
+                daysTotal={showDaysSubtitle ? elapsed.daysTotal : undefined}
+                expectedPct={expectedPct}
+              />
+            </SoftCard>
+
+            <SoftCard padding="lg">
+              <QuickActionsPanel
                 actions={quickActions}
                 onActionClick={handleQuickAction}
                 isCreating={isCreating}
               />
+            </SoftCard>
+          </div>
+
+          {/* Alerts + Details side-by-side on desktop */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            <SoftCard padding="lg">
+              <EditorialAlerts alerts={augmentedAlerts} />
             </SoftCard>
 
             <SoftCard padding="lg">
@@ -531,9 +537,8 @@ export const DashboardHome: React.FC = () => {
             </SoftCard>
           </div>
 
-          {/* Org + Team — kept full-width because both sections have
-              internal 3-col grids with fixed-pixel column widths
-              (260/280/300px) that overflow if squeezed into half-columns. */}
+          {/* Org panels reflow fluidly now (no more fixed-pixel grid tracks),
+              so this can sit at full width without overflow. */}
           {showOrg && (
             <SoftCard padding="lg" className="mb-4">
               <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-subtle mb-3">

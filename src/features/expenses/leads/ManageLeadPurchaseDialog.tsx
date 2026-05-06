@@ -1,8 +1,13 @@
 // src/features/expenses/leads/ManageLeadPurchaseDialog.tsx
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -14,19 +19,23 @@ import {
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
+import { PillButton } from "@/components/v2";
 import {
-  Loader2,
   DollarSign,
   User,
   Link2,
-  X,
-  Package,
-  Target,
+  TrendingUp,
+  TrendingDown,
+  Unlink,
 } from "lucide-react";
 import { VendorCombobox } from "./VendorCombobox";
 import { PolicySelector } from "./PolicySelector";
 import { useLeadVendors } from "@/hooks/lead-purchases";
-import { usePoliciesByLeadPurchase, policyKeys } from "@/features/policies";
+import {
+  usePoliciesByLeadPurchase,
+  policyKeys,
+  useUpdatePolicyLeadSource,
+} from "@/features/policies";
 import { useQueryClient } from "@tanstack/react-query";
 import { leadPurchaseKeys } from "@/hooks/lead-purchases";
 import { useAuth } from "@/contexts/AuthContext";
@@ -39,6 +48,7 @@ import { LeadVendorDialog } from "./LeadVendorDialog";
 import { useCreateLeadVendor } from "@/hooks/lead-purchases";
 import { toast } from "sonner";
 import { getTodayString } from "@/lib/date";
+import { formatCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 interface ManageLeadPurchaseDialogProps {
@@ -60,7 +70,9 @@ export function ManageLeadPurchaseDialog({
   const { user } = useAuth();
   const { data: vendors = [] } = useLeadVendors();
   const createVendor = useCreateLeadVendor();
+  const updateLeadSource = useUpdatePolicyLeadSource();
   const [showVendorDialog, setShowVendorDialog] = useState(false);
+  const [unlinkingId, setUnlinkingId] = useState<string | null>(null);
 
   const { data: linkedPolicies = [], isLoading: isLoadingPolicies } =
     usePoliciesByLeadPurchase(purchase?.id);
@@ -139,10 +151,10 @@ export function ManageLeadPurchaseDialog({
   const isEditing = !!purchase;
 
   const avgLeadAge =
-    linkedPolicies.length > 0
+    linkedPolicies.length > 0 && purchase
       ? Math.round(
           linkedPolicies.reduce((acc, policy) => {
-            const purchaseDate = new Date(purchase!.purchaseDate);
+            const purchaseDate = new Date(purchase.purchaseDate);
             const policyDate = new Date(policy.effectiveDate);
             return (
               acc +
@@ -153,7 +165,7 @@ export function ManageLeadPurchaseDialog({
         )
       : null;
 
-  const handlePolicyLinked = () => {
+  const invalidatePolicyAttribution = () => {
     queryClient.invalidateQueries({
       queryKey: policyKeys.byLeadPurchase(purchase!.id),
     });
@@ -165,475 +177,428 @@ export function ManageLeadPurchaseDialog({
     });
   };
 
+  const handlePolicyLinked = () => {
+    invalidatePolicyAttribution();
+  };
+
+  const handleUnlinkPolicy = async (policyId: string, clientName: string) => {
+    if (!purchase) return;
+    setUnlinkingId(policyId);
+    try {
+      await updateLeadSource.mutateAsync({
+        policyId,
+        leadSourceType: null,
+      });
+      invalidatePolicyAttribution();
+      toast.success(`Unlinked ${clientName}`);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to unlink policy",
+      );
+    } finally {
+      setUnlinkingId(null);
+    }
+  };
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           className={cn(
-            "p-0 gap-0 overflow-hidden bg-background border-0 shadow-2xl ring-0 outline-none",
-            isEditing ? "max-w-4xl w-[90vw]" : "max-w-lg",
+            "theme-v2 font-display p-0 gap-0 overflow-hidden rounded-v2-lg bg-card text-foreground border border-border shadow-v2-lift w-[calc(100vw-1.5rem)] sm:w-auto max-h-[calc(100vh-1.5rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col",
+            isEditing ? "max-w-3xl" : "max-w-md",
           )}
           hideCloseButton
         >
-          <DialogTitle className="sr-only">
-            {purchase ? "Manage Lead Purchase" : "Add Lead Purchase"}
-          </DialogTitle>
-
-          <div
-            className={cn("flex overflow-hidden", isEditing ? "h-[70vh]" : "")}
-          >
-            {/* Left Panel - Branding (only when editing) */}
-            {isEditing && (
-              <div className="hidden lg:flex lg:w-[220px] bg-foreground relative overflow-hidden flex-shrink-0">
-                {/* Grid pattern overlay */}
-                <div className="absolute inset-0 opacity-[0.04]">
-                  <svg
-                    className="w-full h-full"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <defs>
-                      <pattern
-                        id="leadpurchase-grid"
-                        width="32"
-                        height="32"
-                        patternUnits="userSpaceOnUse"
-                      >
-                        <path
-                          d="M 32 0 L 0 0 0 32"
-                          fill="none"
-                          stroke="white"
-                          strokeWidth="0.5"
-                        />
-                      </pattern>
-                    </defs>
-                    <rect
-                      width="100%"
-                      height="100%"
-                      fill="url(#leadpurchase-grid)"
-                    />
-                  </svg>
-                </div>
-
-                {/* Animated glow orbs */}
-                <div className="absolute top-1/4 -left-16 w-64 h-64 bg-accent/40 rounded-full blur-3xl animate-pulse" />
-                <div
-                  className="absolute bottom-1/4 -right-16 w-56 h-56 bg-warning/5 rounded-full blur-3xl animate-pulse"
-                  style={{ animationDelay: "1s" }}
-                />
-
-                {/* Content */}
-                <div className="relative z-10 flex flex-col justify-between p-6 w-full">
-                  {/* Logo */}
-                  <div className="flex items-center gap-3 group">
-                    <div className="relative">
-                      <div className="absolute inset-0 bg-warning/20 rounded-lg blur-lg group-hover:bg-warning/30 transition-all duration-500" />
-                      <img
-                        src="/logos/Light Letter Logo .png"
-                        alt="The Standard"
-                        className="relative h-10 w-10 drop-shadow-xl dark:hidden"
-                      />
-                      <img
-                        src="/logos/LetterLogo.png"
-                        alt="The Standard"
-                        className="relative h-10 w-10 drop-shadow-xl hidden dark:block"
-                      />
-                    </div>
-                    <div className="flex flex-col">
-                      <span
-                        className="text-white text-lg font-bold tracking-wide"
-                        style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                      >
-                        Lead ROI
-                      </span>
-                      <span className="text-warning text-[9px] uppercase tracking-[0.2em] font-medium">
-                        Track & Optimize
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* ROI Stats */}
-                  <div className="flex-1 flex flex-col justify-center space-y-4 py-8">
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-white/60">
-                          Policies Sold
-                        </span>
-                        <span className="text-lg font-bold text-white">
-                          {policiesSold}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-white/60">
-                          Commission
-                        </span>
-                        <span className="text-lg font-bold text-success">
-                          $
-                          {commissionEarned.toLocaleString("en-US", {
-                            maximumFractionDigits: 0,
-                          })}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-white/60">
-                          Net Profit
-                        </span>
-                        <span
-                          className={cn(
-                            "text-lg font-bold",
-                            netProfit >= 0
-                              ? "text-success"
-                              : "text-destructive",
-                          )}
-                        >
-                          {netProfit >= 0 ? "+" : ""}$
-                          {Math.abs(netProfit).toLocaleString("en-US", {
-                            maximumFractionDigits: 0,
-                          })}
-                        </span>
-                      </div>
-                      <div className="pt-2 border-t border-white/10 dark:border-black/10">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-white/60">ROI</span>
-                          <span
-                            className={cn(
-                              "text-xl font-bold",
-                              roi >= 0 ? "text-success" : "text-destructive",
-                            )}
-                          >
-                            {roi >= 0 ? "+" : ""}
-                            {roi.toFixed(1)}%
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Footer */}
-                  <div className="text-[10px] text-white/30">
-                    {avgLeadAge !== null
-                      ? `Avg. ${avgLeadAge} days from purchase to sale`
-                      : "Link policies to track conversion time"}
-                  </div>
-                </div>
+          {/* Header */}
+          <DialogHeader className="px-5 py-3 border-b border-border bg-card-tinted flex-shrink-0">
+            <div className="flex items-center gap-2.5">
+              <span className="h-2 w-2 rounded-full bg-accent" />
+              <div className="flex flex-col leading-tight">
+                <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">
+                  {isEditing ? "Manage" : "New"}
+                </span>
+                <DialogTitle className="text-base font-semibold tracking-tight text-foreground text-left">
+                  {isEditing ? "Lead purchase" : "Add lead purchase"}
+                </DialogTitle>
               </div>
-            )}
-
-            {/* Right Panel - Form */}
-            <div className="flex-1 flex flex-col min-w-0 bg-background">
-              {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
-                <div className="flex items-center gap-2">
-                  <Package className="h-4 w-4 text-warning" />
-                  <span className="text-sm font-semibold">
-                    {purchase ? "Manage Lead Purchase" : "Add Lead Purchase"}
-                  </span>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => onOpenChange(false)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {/* Form Content */}
-              <form
-                onSubmit={handleSubmit}
-                className="flex-1 flex flex-col min-h-0"
-              >
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {/* Purchase Details Section */}
-                  <div className="p-3 bg-background rounded-lg border border-border/60">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Target className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.18em]">
-                        Purchase Details
-                      </span>
-                    </div>
-
-                    <div className="space-y-3">
-                      {/* Vendor */}
-                      <div className="space-y-1">
-                        <Label className="text-[10px] text-muted-foreground">
-                          Vendor <span className="text-destructive">*</span>
-                        </Label>
-                        <VendorCombobox
-                          vendors={vendors}
-                          value={formData.vendorId}
-                          onChange={(vendorId) =>
-                            setFormData({ ...formData, vendorId })
-                          }
-                          onAddVendor={() => setShowVendorDialog(true)}
-                        />
-                      </div>
-
-                      {/* Purchase Name & Lead Type */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <Label className="text-[10px] text-muted-foreground">
-                            Purchase Name
-                          </Label>
-                          <Input
-                            value={formData.purchaseName}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                purchaseName: e.target.value,
-                              })
-                            }
-                            className="h-8 text-xs bg-background border-border"
-                            placeholder="e.g., March 2024 Pack"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-[10px] text-muted-foreground">
-                            Lead Type{" "}
-                            <span className="text-destructive">*</span>
-                          </Label>
-                          <Select
-                            value={formData.leadFreshness}
-                            onValueChange={(value: LeadFreshness) =>
-                              setFormData({ ...formData, leadFreshness: value })
-                            }
-                          >
-                            <SelectTrigger className="h-8 text-xs bg-background border-border">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="fresh">
-                                Fresh (High-Intent)
-                              </SelectItem>
-                              <SelectItem value="aged">Aged</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-
-                      {/* Lead Count, Total Cost, Cost/Lead */}
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="space-y-1">
-                          <Label className="text-[10px] text-muted-foreground">
-                            # of Leads{" "}
-                            <span className="text-destructive">*</span>
-                          </Label>
-                          <Input
-                            type="number"
-                            min="1"
-                            value={formData.leadCount}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                leadCount: e.target.value,
-                              })
-                            }
-                            required
-                            className="h-8 text-xs bg-background border-border"
-                            placeholder="50"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-[10px] text-muted-foreground">
-                            Total Cost{" "}
-                            <span className="text-destructive">*</span>
-                          </Label>
-                          <div className="relative">
-                            <DollarSign className="absolute left-2 top-2 h-3 w-3 text-muted-foreground" />
-                            <Input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={formData.totalCost}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  totalCost: e.target.value,
-                                })
-                              }
-                              required
-                              className="h-8 text-xs pl-6 bg-background border-border"
-                              placeholder="500.00"
-                            />
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-[10px] text-muted-foreground">
-                            Cost/Lead
-                          </Label>
-                          <div className="h-8 flex items-center px-2 bg-muted border border-border rounded-md text-xs font-mono text-muted-foreground">
-                            ${costPerLead.toFixed(2)}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Purchase Date & Notes */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <Label className="text-[10px] text-muted-foreground">
-                            Purchase Date{" "}
-                            <span className="text-destructive">*</span>
-                          </Label>
-                          <Input
-                            type="date"
-                            value={formData.purchaseDate}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                purchaseDate: e.target.value,
-                              })
-                            }
-                            required
-                            className="h-8 text-xs bg-background border-border"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-[10px] text-muted-foreground">
-                            Notes
-                          </Label>
-                          <Input
-                            value={formData.notes}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                notes: e.target.value,
-                              })
-                            }
-                            className="h-8 text-xs bg-background border-border"
-                            placeholder="Optional notes..."
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Policy Linking Section (only when editing) */}
-                  {isEditing && (
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Linked Policies */}
-                      <div className="p-3 bg-background rounded-lg border border-border/60">
-                        <div className="flex items-center gap-2 mb-3">
-                          <User className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.18em]">
-                            Linked Policies ({linkedPolicies.length})
-                          </span>
-                        </div>
-
-                        <div className="border border-border rounded-md overflow-hidden bg-card">
-                          {isLoadingPolicies ? (
-                            <div className="p-3 space-y-2">
-                              {[1, 2].map((i) => (
-                                <Skeleton key={i} className="h-10 w-full" />
-                              ))}
-                            </div>
-                          ) : linkedPolicies.length > 0 ? (
-                            <ScrollArea className="h-[180px]">
-                              <div className="divide-y divide-border/60">
-                                {linkedPolicies.map((policy) => {
-                                  const purchaseDate = new Date(
-                                    purchase.purchaseDate,
-                                  );
-                                  const policyDate = new Date(
-                                    policy.effectiveDate,
-                                  );
-                                  const leadAgeDays = Math.round(
-                                    (policyDate.getTime() -
-                                      purchaseDate.getTime()) /
-                                      (1000 * 60 * 60 * 24),
-                                  );
-                                  const policyCommission =
-                                    policy.annualPremium *
-                                    policy.commissionPercentage;
-
-                                  return (
-                                    <div
-                                      key={policy.id}
-                                      className="flex items-center justify-between gap-2 px-3 py-2 hover:bg-background transition-colors"
-                                    >
-                                      <div className="min-w-0 flex-1">
-                                        <div className="font-medium text-xs truncate">
-                                          {policy.client?.name || "Unknown"}
-                                        </div>
-                                        <div className="text-[10px] text-muted-foreground">
-                                          {policy.policyNumber &&
-                                            `#${policy.policyNumber} · `}
-                                          {leadAgeDays}d ·{" "}
-                                          {policyDate.toLocaleDateString(
-                                            "en-US",
-                                            {
-                                              month: "short",
-                                              day: "numeric",
-                                            },
-                                          )}
-                                        </div>
-                                      </div>
-                                      <div className="text-right font-mono text-xs font-semibold text-success">
-                                        $
-                                        {policyCommission.toLocaleString(
-                                          "en-US",
-                                          { maximumFractionDigits: 0 },
-                                        )}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            </ScrollArea>
-                          ) : (
-                            <div className="px-3 py-6 text-center">
-                              <User className="h-5 w-5 text-muted-foreground/30 mx-auto mb-1" />
-                              <p className="text-[10px] text-muted-foreground">
-                                No policies linked yet
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Link Policy */}
-                      <div className="p-3 bg-background rounded-lg border border-border/60">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-[0.18em]">
-                            Link Policy
-                          </span>
-                        </div>
-                        <PolicySelector
-                          leadPurchaseId={purchase.id}
-                          onPolicyLinked={handlePolicyLinked}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Footer */}
-                <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-border/50 bg-background">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onOpenChange(false)}
-                    disabled={isLoading}
-                    className="h-8 text-xs"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    size="sm"
-                    disabled={isLoading}
-                    className="h-8 text-xs bg-warning hover:bg-warning text-white"
-                  >
-                    {isLoading && (
-                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                    )}
-                    {purchase ? "Update Purchase" : "Add Purchase"}
-                  </Button>
-                </div>
-              </form>
             </div>
-          </div>
+          </DialogHeader>
+
+          {/* ROI Metrics Ribbon — edit mode only */}
+          {isEditing && (
+            <div className="flex items-center gap-3 px-5 py-2 border-b border-border text-[11px] flex-shrink-0">
+              <div className="flex items-center gap-1">
+                <span className="font-medium text-foreground">
+                  {policiesSold}
+                </span>
+                <span className="text-muted-foreground">sold</span>
+              </div>
+              <div className="h-3 w-px bg-muted" />
+
+              <div className="flex items-center gap-1">
+                <span className="font-medium text-foreground">
+                  {formatCurrency(commissionEarned)}
+                </span>
+                <span className="text-muted-foreground">earned</span>
+              </div>
+              <div className="h-3 w-px bg-muted" />
+
+              <div className="flex items-center gap-1">
+                <span
+                  className={cn(
+                    "font-medium font-mono",
+                    netProfit >= 0 ? "text-success" : "text-destructive",
+                  )}
+                >
+                  {netProfit >= 0 ? "+" : ""}
+                  {formatCurrency(Math.abs(netProfit))}
+                </span>
+                <span className="text-muted-foreground">net</span>
+              </div>
+              <div className="h-3 w-px bg-muted" />
+
+              <div className="flex items-center gap-1">
+                {roi >= 0 ? (
+                  <TrendingUp className="h-3 w-3 text-success" />
+                ) : (
+                  <TrendingDown className="h-3 w-3 text-destructive" />
+                )}
+                <span
+                  className={cn(
+                    "font-medium font-mono",
+                    roi >= 0 ? "text-success" : "text-destructive",
+                  )}
+                >
+                  {roi >= 0 ? "+" : ""}
+                  {roi.toFixed(1)}%
+                </span>
+                <span className="text-muted-foreground">ROI</span>
+              </div>
+
+              {avgLeadAge !== null && (
+                <>
+                  <div className="h-3 w-px bg-muted" />
+                  <div className="flex items-center gap-1">
+                    <span className="font-medium text-foreground">
+                      {avgLeadAge}d
+                    </span>
+                    <span className="text-muted-foreground">
+                      avg. to convert
+                    </span>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col flex-1 min-h-0"
+          >
+            {/* Body — only this region scrolls */}
+            <div className="px-5 py-4 space-y-4 overflow-y-auto flex-1 min-h-0">
+              {/* Purchase Details */}
+              <section className="space-y-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">
+                    Purchase Details
+                  </span>
+                  <div className="h-px flex-1 bg-border" />
+                </div>
+
+                <div className="grid gap-3">
+                  {/* Vendor */}
+                  <div>
+                    <Label className="text-[11px] text-muted-foreground">
+                      Vendor <span className="text-destructive">*</span>
+                    </Label>
+                    <VendorCombobox
+                      vendors={vendors}
+                      value={formData.vendorId}
+                      onChange={(vendorId) =>
+                        setFormData({ ...formData, vendorId })
+                      }
+                      onAddVendor={() => setShowVendorDialog(true)}
+                    />
+                  </div>
+
+                  {/* Purchase Name & Lead Type */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-[11px] text-muted-foreground">
+                        Pack name
+                      </Label>
+                      <Input
+                        value={formData.purchaseName}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            purchaseName: e.target.value,
+                          })
+                        }
+                        className="h-7 text-xs"
+                        placeholder="e.g., March 2026 Pack"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-[11px] text-muted-foreground">
+                        Lead type <span className="text-destructive">*</span>
+                      </Label>
+                      <Select
+                        value={formData.leadFreshness}
+                        onValueChange={(value: LeadFreshness) =>
+                          setFormData({ ...formData, leadFreshness: value })
+                        }
+                      >
+                        <SelectTrigger className="h-7 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="fresh" className="text-xs">
+                            Fresh (high-intent)
+                          </SelectItem>
+                          <SelectItem value="aged" className="text-xs">
+                            Aged
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Lead Count, Total Cost, Cost/Lead */}
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <Label className="text-[11px] text-muted-foreground">
+                        Leads <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        type="number"
+                        min="1"
+                        value={formData.leadCount}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            leadCount: e.target.value,
+                          })
+                        }
+                        required
+                        className="h-7 text-xs font-mono"
+                        placeholder="50"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-[11px] text-muted-foreground">
+                        Total cost <span className="text-destructive">*</span>
+                      </Label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-2 top-1.5 h-3 w-3 text-muted-foreground" />
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={formData.totalCost}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              totalCost: e.target.value,
+                            })
+                          }
+                          required
+                          className="h-7 text-xs pl-7 font-mono"
+                          placeholder="500.00"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="text-[11px] text-muted-foreground">
+                        Cost/lead
+                      </Label>
+                      <div className="h-7 flex items-center px-2 bg-card-tinted border border-border rounded-md text-xs font-mono text-muted-foreground tabular-nums">
+                        ${costPerLead.toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Date & Notes */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-[11px] text-muted-foreground">
+                        Purchase date{" "}
+                        <span className="text-destructive">*</span>
+                      </Label>
+                      <Input
+                        type="date"
+                        value={formData.purchaseDate}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            purchaseDate: e.target.value,
+                          })
+                        }
+                        required
+                        className="h-7 text-xs"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-[11px] text-muted-foreground">
+                        Notes
+                      </Label>
+                      <Input
+                        value={formData.notes}
+                        onChange={(e) =>
+                          setFormData({ ...formData, notes: e.target.value })
+                        }
+                        className="h-7 text-xs"
+                        placeholder="Optional"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* Policies — edit mode only */}
+              {isEditing && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Linked Policies */}
+                  <section className="space-y-2">
+                    <div className="flex items-center gap-1.5">
+                      <User className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">
+                        Linked policies
+                      </span>
+                      <span className="text-[10px] text-muted-foreground tabular-nums">
+                        ({linkedPolicies.length})
+                      </span>
+                      <div className="h-px flex-1 bg-border" />
+                    </div>
+
+                    <div className="border border-border rounded-md overflow-hidden bg-card-tinted">
+                      {isLoadingPolicies ? (
+                        <div className="p-2.5 space-y-1.5">
+                          {[1, 2].map((i) => (
+                            <Skeleton key={i} className="h-9 w-full" />
+                          ))}
+                        </div>
+                      ) : linkedPolicies.length > 0 ? (
+                        <ScrollArea className="h-[180px]">
+                          <div className="divide-y divide-border/60">
+                            {linkedPolicies.map((policy) => {
+                              const purchaseDate = new Date(
+                                purchase.purchaseDate,
+                              );
+                              const policyDate = new Date(policy.effectiveDate);
+                              const leadAgeDays = Math.round(
+                                (policyDate.getTime() -
+                                  purchaseDate.getTime()) /
+                                  (1000 * 60 * 60 * 24),
+                              );
+                              const policyCommission =
+                                policy.annualPremium *
+                                policy.commissionPercentage;
+
+                              const clientName =
+                                policy.client?.name || "Unknown";
+                              const isUnlinkingThis = unlinkingId === policy.id;
+                              return (
+                                <div
+                                  key={policy.id}
+                                  className="group flex items-center justify-between gap-2 px-2.5 py-1.5 hover:bg-card transition-colors"
+                                >
+                                  <div className="min-w-0 flex-1">
+                                    <div className="font-medium text-xs truncate text-foreground">
+                                      {clientName}
+                                    </div>
+                                    <div className="text-[10px] text-muted-foreground tabular-nums">
+                                      {policy.policyNumber &&
+                                        `#${policy.policyNumber} · `}
+                                      {leadAgeDays}d ·{" "}
+                                      {policyDate.toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                      })}
+                                    </div>
+                                  </div>
+                                  <div className="text-right font-mono text-xs font-semibold text-success tabular-nums shrink-0">
+                                    {formatCurrency(policyCommission)}
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleUnlinkPolicy(policy.id, clientName)
+                                    }
+                                    disabled={isUnlinkingThis}
+                                    title={`Unlink ${clientName}`}
+                                    aria-label={`Unlink ${clientName}`}
+                                    className={cn(
+                                      "shrink-0 inline-flex h-6 w-6 items-center justify-center rounded text-muted-foreground/60 transition-colors",
+                                      "hover:text-destructive hover:bg-destructive/10 focus-visible:opacity-100 focus-visible:text-destructive",
+                                      "opacity-0 group-hover:opacity-100",
+                                      isUnlinkingThis &&
+                                        "opacity-100 cursor-wait",
+                                    )}
+                                  >
+                                    <Unlink className="h-3 w-3" />
+                                  </button>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </ScrollArea>
+                      ) : (
+                        <div className="px-3 py-8 text-center">
+                          <User className="h-5 w-5 text-muted-foreground/40 mx-auto mb-1.5" />
+                          <p className="text-[11px] text-muted-foreground">
+                            No policies linked yet
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </section>
+
+                  {/* Link Policy */}
+                  <section className="space-y-2">
+                    <div className="flex items-center gap-1.5">
+                      <Link2 className="h-3 w-3 text-muted-foreground" />
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.18em]">
+                        Link a policy
+                      </span>
+                      <div className="h-px flex-1 bg-border" />
+                    </div>
+                    <PolicySelector
+                      leadPurchaseId={purchase.id}
+                      onPolicyLinked={handlePolicyLinked}
+                    />
+                  </section>
+                </div>
+              )}
+            </div>
+
+            {/* Footer — fixed, no scroll */}
+            <DialogFooter className="px-5 py-3 border-t border-border bg-card-tinted flex-shrink-0 gap-2 sm:justify-end">
+              <PillButton
+                type="button"
+                tone="ghost"
+                size="sm"
+                onClick={() => onOpenChange(false)}
+                disabled={isLoading}
+              >
+                Cancel
+              </PillButton>
+              <PillButton
+                type="submit"
+                tone="black"
+                size="sm"
+                disabled={isLoading}
+              >
+                {isLoading
+                  ? "Saving…"
+                  : isEditing
+                    ? "Update purchase"
+                    : "Add purchase"}
+              </PillButton>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 

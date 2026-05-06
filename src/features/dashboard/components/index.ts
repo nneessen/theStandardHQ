@@ -5,7 +5,8 @@ export { Masthead } from "./Masthead";
 export { HeroSummary } from "./HeroSummary";
 export { SecondaryMetricsRow } from "./SecondaryMetricsRow";
 export { PaceLines } from "./PaceLines";
-export { EditorialAlertsActions } from "./EditorialAlertsActions";
+export { EditorialAlerts } from "./EditorialAlerts";
+export { QuickActionsPanel } from "./QuickActionsPanel";
 export { DetailsSection } from "./DetailsSection";
 
 // Period chrome (still used by other dashboards in the app)

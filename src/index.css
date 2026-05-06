@@ -286,9 +286,14 @@
 }
 
 /* ==================== DESIGN SYSTEM V2 UTILITIES ==================== */
-.theme-v2 {
-  font-family: var(--v2-font-display);
-  color: var(--v2-ink);
+/* Defaults sit in @layer base so explicit utility classes (text-white,
+   text-foreground, etc.) still win inside a theme-v2 scope. Without the
+   layer, this unlayered rule beats every Tailwind utility in the cascade. */
+@layer base {
+  .theme-v2 {
+    font-family: var(--v2-font-display);
+    color: var(--v2-ink);
+  }
 }
 
 .theme-v2.v2-canvas,

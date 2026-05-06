@@ -117,7 +117,7 @@ export function WritingNumbersTable({
           widthClass,
           !isEditing &&
             "cursor-pointer hover:bg-v2-card-tinted dark:hover:bg-v2-ring-strong/50",
-          agentId === selectedAgentId && "bg-info/10/70 dark:bg-info/10/15",
+          agentId === selectedAgentId && "bg-info/10",
         )}
         onClick={() => !isEditing && handleCellClick(agentId, carrierId)}
       >
@@ -200,7 +200,7 @@ export function WritingNumbersTable({
                       ? "bg-v2-card"
                       : "bg-v2-canvas/50 dark:bg-v2-card/50",
                     agent.id === selectedAgentId &&
-                      "bg-info/10 hover:bg-info/20/70 dark:hover:bg-info/15",
+                      "bg-info/10 hover:bg-info/20",
                   )}
                 >
                   <td
@@ -247,8 +247,7 @@ export function WritingNumbersTable({
                   key={agent.id}
                   className={cn(
                     "text-[10px] font-semibold text-v2-ink-muted dark:text-v2-ink-muted uppercase tracking-wide text-center px-2 py-2 border-b border-v2-ring dark:border-v2-ring-strong min-w-[92px] w-[92px] whitespace-nowrap",
-                    agent.id === selectedAgentId &&
-                      "bg-info/20/70 dark:bg-info/20 text-info",
+                    agent.id === selectedAgentId && "bg-info/20 text-info",
                   )}
                   title={`${agent.first_name} ${agent.last_name}`}
                 >

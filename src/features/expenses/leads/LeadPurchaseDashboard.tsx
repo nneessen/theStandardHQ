@@ -745,48 +745,50 @@ export function LeadPurchaseDashboard() {
                         {purchase.roiPercentage.toFixed(0)}%
                       </span>
                     </TableCell>
-                    <TableCell className="py-1.5 px-2">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                          >
-                            <MoreVertical className="h-3.5 w-3.5" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedPurchase(purchase);
-                              setIsDialogOpen(true);
-                            }}
-                            className="text-[11px]"
-                          >
-                            <Eye className="mr-2 h-3.5 w-3.5" />
-                            View / Manage
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => {
-                              setSelectedPurchase(purchase);
-                              setIsDialogOpen(true);
-                            }}
-                            className="text-[11px] text-info"
-                          >
-                            <Link2 className="mr-2 h-3.5 w-3.5" />
-                            Link Policies
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(purchase)}
-                            className="text-destructive text-[11px]"
-                          >
-                            <Trash2 className="mr-2 h-3.5 w-3.5" />
-                            Delete Purchase
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                    <TableCell className="py-1.5 px-2 align-middle">
+                      <div className="flex items-center justify-end">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                            >
+                              <MoreVertical className="h-3.5 w-3.5" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-48">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedPurchase(purchase);
+                                setIsDialogOpen(true);
+                              }}
+                              className="text-[11px]"
+                            >
+                              <Eye className="mr-2 h-3.5 w-3.5" />
+                              View / Manage
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedPurchase(purchase);
+                                setIsDialogOpen(true);
+                              }}
+                              className="text-[11px] text-info"
+                            >
+                              <Link2 className="mr-2 h-3.5 w-3.5" />
+                              Link Policies
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(purchase)}
+                              className="text-destructive text-[11px]"
+                            >
+                              <Trash2 className="mr-2 h-3.5 w-3.5" />
+                              Delete Purchase
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

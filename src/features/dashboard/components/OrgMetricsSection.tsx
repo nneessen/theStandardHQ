@@ -649,25 +649,19 @@ export const OrgMetricsSection: React.FC<OrgMetricsSectionProps> = ({
     return null;
   }
 
-  // IMO admin view: Show IMO metrics + Override Summary + Production breakdown
-  // (Recruiting pipeline is shown in TeamRecruitingSection to avoid duplication)
   if (isImoAdmin) {
     return (
-      <div className="space-y-2">
-        <div className="grid gap-2 grid-cols-1 md:grid-cols-2 lg:grid-cols-[300px_300px_1fr]">
-          <ImoMetricsPanel dateRange={dateRange} />
-          <ImoOverrideSummaryPanel dateRange={dateRange} />
-          <ProductionBreakdownPanel dateRange={dateRange} />
-        </div>
+      <div className="grid gap-2 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 [&>*]:min-w-0">
+        <ImoMetricsPanel dateRange={dateRange} />
+        <ImoOverrideSummaryPanel dateRange={dateRange} />
+        <ProductionBreakdownPanel dateRange={dateRange} />
       </div>
     );
   }
 
-  // Agency owner view: Show Agency metrics + Override Summary
-  // (Recruiting pipeline is shown in TeamRecruitingSection to avoid duplication)
   if (isAgencyOwner) {
     return (
-      <div className="grid gap-2 grid-cols-1 md:grid-cols-[300px_300px]">
+      <div className="grid gap-2 grid-cols-1 md:grid-cols-2 [&>*]:min-w-0">
         <AgencyMetricsPanel dateRange={dateRange} />
         <AgencyOverrideSummaryPanel dateRange={dateRange} />
       </div>

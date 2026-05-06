@@ -186,9 +186,7 @@ function AgentStateLicensesPanel({
         key={state.value}
         className={cn(
           "px-3 py-2 transition-colors",
-          isLicensed
-            ? "bg-success/10/40 dark:bg-success/10/10"
-            : "bg-transparent",
+          isLicensed ? "bg-success/10" : "bg-transparent",
         )}
       >
         <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_auto] gap-2 items-center">
@@ -287,7 +285,7 @@ function AgentStateLicensesPanel({
 
       <div className="flex-1 min-h-0 overflow-auto">
         <div className="p-3 space-y-3">
-          <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-white dark:bg-v2-canvas/20 p-3 space-y-3">
+          <div className="rounded-lg border border-v2-ring dark:border-v2-ring bg-card p-3 space-y-3">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-wide text-v2-ink dark:text-v2-ink">
@@ -459,7 +457,7 @@ function AgentStateLicensesPanel({
             ) : (
               <div className="grid grid-cols-1 gap-3 items-start">
                 {visibleUnlicensedStates.length > 0 && (
-                  <section className="min-w-0 space-y-2 rounded-lg border border-warning/30 dark:border-warning/40 bg-warning/10/40 dark:bg-warning/10/10 p-2.5">
+                  <section className="min-w-0 space-y-2 rounded-lg border border-warning/30 dark:border-warning/40 bg-warning/10 p-2.5">
                     <div className="flex items-center justify-between gap-2 flex-wrap">
                       <p className="text-[10px] font-semibold uppercase tracking-wide text-warning">
                         Missing Licenses
@@ -468,7 +466,7 @@ function AgentStateLicensesPanel({
                         {visibleUnlicensedStates.length}
                       </Badge>
                     </div>
-                    <div className="rounded-md border border-warning/30/80 dark:border-warning/40 overflow-hidden divide-y divide-amber-200/60 dark:divide-amber-900/30 bg-white/70 dark:bg-v2-canvas/10">
+                    <div className="rounded-md border border-warning/30 dark:border-warning/40 overflow-hidden divide-y divide-warning/20 dark:divide-warning/30 bg-card/60">
                       {visibleUnlicensedStates.map(renderStateRow)}
                     </div>
                   </section>
@@ -484,7 +482,7 @@ function AgentStateLicensesPanel({
                         {visibleLicensedStates.length}
                       </Badge>
                     </div>
-                    <div className="rounded-md border border-v2-ring dark:border-v2-ring overflow-hidden divide-y divide-v2-ring/80 dark:divide-v2-ring bg-white/70 dark:bg-v2-canvas/10">
+                    <div className="rounded-md border border-v2-ring dark:border-v2-ring overflow-hidden divide-y divide-v2-ring/80 dark:divide-v2-ring bg-card/60">
                       {visibleLicensedStates.map(renderStateRow)}
                     </div>
                   </section>
