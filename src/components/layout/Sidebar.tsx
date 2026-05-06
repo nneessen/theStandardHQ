@@ -281,7 +281,7 @@ export default function Sidebar({
         },
         {
           icon: Users,
-          label: "Licensing/Writing #'s",
+          label: "Writing Numbers",
           href: "/the-standard-team",
           public: true,
         },

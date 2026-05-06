@@ -892,22 +892,18 @@ const leadVendorsRoute = createRoute({
   ),
 });
 
-// Licensing/Writing route (legacy path kept for backwards compatibility)
-// Supports tab search param: ?tab=writing-numbers or ?tab=state-licenses
+// Writing Numbers route (legacy path kept for backwards compatibility).
+// Old `?tab=writing-numbers|state-licenses` search params are silently ignored.
 const theStandardTeamRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "the-standard-team",
-  validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
-    tab: typeof search.tab === "string" ? search.tab : undefined,
-  }),
   component: TheStandardTeamRouteComponent,
 });
 
 function TheStandardTeamRouteComponent() {
-  const { tab } = theStandardTeamRoute.useSearch();
   return (
     <RouteGuard noRecruits noStaffRoles>
-      <TheStandardTeamRoutePage initialTab={tab} />
+      <TheStandardTeamRoutePage />
     </RouteGuard>
   );
 }

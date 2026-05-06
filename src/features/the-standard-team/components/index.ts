@@ -1,7 +1,7 @@
 // src/features/the-standard-team/components/index.ts
 
-export * from "./WritingNumbersTab";
+export * from "./MyWritingNumbersView";
+export * from "./TeamWritingNumbersOverview";
+export * from "./AgentDetailView";
+export * from "./WritingNumbersMatrixView";
 export * from "./WritingNumbersTable";
-export * from "./StateLicensesTab";
-export * from "./StateLicensesTable";
-export * from "./StateClassificationDialog";
