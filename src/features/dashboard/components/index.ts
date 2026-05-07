@@ -1,13 +1,16 @@
 // src/features/dashboard/components/index.ts
 
-// Editorial dashboard components
+// Active dashboard components (data-dense layout)
+export { DashboardHeader } from "./DashboardHeader";
+export { HeroStatStrip, type HeroStat } from "./HeroStatStrip";
+export { DetailsTable } from "./DetailsTable";
+export { PaceLines } from "./PaceLines";
+export { EditorialAlerts } from "./EditorialAlerts";
+
+// Pre-V2 editorial primitives (orphaned — pending cleanup)
 export { Masthead } from "./Masthead";
 export { HeroSummary } from "./HeroSummary";
 export { SecondaryMetricsRow } from "./SecondaryMetricsRow";
-export { PaceLines } from "./PaceLines";
-export { EditorialAlerts } from "./EditorialAlerts";
-export { QuickActionsPanel } from "./QuickActionsPanel";
-export { DetailsSection } from "./DetailsSection";
 
 // Period chrome (still used by other dashboards in the app)
 export { TimePeriodSwitcher } from "./TimePeriodSwitcher";

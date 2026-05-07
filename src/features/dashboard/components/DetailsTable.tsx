@@ -1,17 +1,22 @@
 import React from "react";
+import { ArrowUp, ArrowDown, Minus } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
 import type { KPISection, KPIIntensity } from "../../../types/dashboard.types";
 import { GatedKPISection } from "./GatedKPISection";
 
+interface DetailsTableProps {
+  sections: KPISection[];
+}
+
 /**
- * Same intensity → score mapping the heatmap used. Keeps tinting consistent
- * across the dashboard.
+ * Same intensity → score mapping the prior DetailsSection used. Returns
+ * a value in [-1, 1] where positive = above target / good direction.
  */
 function intensityScore(hint: KPIIntensity | undefined): number | null {
   if (!hint) return null;
@@ -30,55 +35,54 @@ function intensityScore(hint: KPIIntensity | undefined): number | null {
   return direction === "higher_better" ? norm : -norm;
 }
 
-function intensityDotClass(score: number | null): string {
-  if (score == null) return "bg-muted";
-  if (score >= 0.5) return "bg-success";
-  if (score >= 0.15) return "bg-success/70";
-  if (score > -0.15) return "bg-muted";
-  if (score > -0.5) return "bg-warning";
-  return "bg-destructive";
+function valueClass(score: number | null): string {
+  if (score == null) return "text-v2-ink";
+  if (score >= 0.5) return "text-success";
+  if (score >= 0.15) return "text-success/80";
+  if (score > -0.15) return "text-v2-ink";
+  if (score > -0.5) return "text-warning";
+  return "text-destructive";
 }
 
-interface DetailsSectionProps {
-  sections: KPISection[];
-}
+const StatusGlyph: React.FC<{ score: number | null }> = ({ score }) => {
+  if (score == null) return null;
+  if (score >= 0.15)
+    return <ArrowUp className="h-3 w-3 text-success shrink-0" aria-hidden />;
+  if (score > -0.15)
+    return (
+      <Minus className="h-3 w-3 text-v2-ink-subtle shrink-0" aria-hidden />
+    );
+  return (
+    <ArrowDown className="h-3 w-3 text-destructive shrink-0" aria-hidden />
+  );
+};
 
-const DetailsRow: React.FC<{
-  section: KPISection;
-}> = ({ section }) => (
+const DetailsColumn: React.FC<{ section: KPISection }> = ({ section }) => (
   <TooltipProvider delayDuration={200}>
-    <div className="grid grid-cols-1 lg:grid-cols-[100px_1fr] gap-x-4 gap-y-2 py-3 border-t border-dashed border-border first:border-t-0">
-      {/* Category label — magazine-style margin label */}
-      <div className="text-[10px] uppercase tracking-[0.18em] font-semibold text-muted-foreground lg:pt-0.5">
+    <div className="min-w-0">
+      <div className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted pb-2 mb-3 border-b border-v2-ring">
         {section.category}
       </div>
-
-      {/* KPI grid — 1-col by default; 2-col only at xl, 3-col at 2xl,
-          so the section stays readable when nested inside a half-width
-          SoftCard (e.g. the dashboard's Alerts + Details split). */}
-      <dl className="grid grid-cols-1 xl:grid-cols-2 2xl:grid-cols-3 gap-x-4 gap-y-1.5 min-w-0">
+      <dl className="space-y-2">
         {section.kpis.map((kpi, i) => {
           const score = intensityScore(kpi.intensity);
           return (
             <Tooltip key={i}>
               <TooltipTrigger asChild>
-                <div className="flex items-baseline justify-between gap-2 cursor-default group min-w-0">
-                  <dt className="text-[12px] italic text-muted-foreground group-hover:text-foreground transition-colors min-w-0 break-words">
+                <div className="flex items-baseline justify-between gap-3 cursor-default group min-w-0 py-0.5">
+                  <dt className="text-[12px] text-v2-ink-muted group-hover:text-v2-ink transition-colors min-w-0 truncate">
                     {kpi.label}
                   </dt>
-                  <dd className="flex items-center gap-1.5 flex-shrink-0">
-                    <span className="font-mono tabular-nums text-[12px] font-medium text-foreground whitespace-nowrap">
+                  <dd className="flex items-center gap-1 flex-shrink-0">
+                    <span
+                      className={cn(
+                        "font-mono tabular-nums text-[13px] font-semibold whitespace-nowrap",
+                        valueClass(score),
+                      )}
+                    >
                       {kpi.value}
                     </span>
-                    {score != null && (
-                      <span
-                        className={cn(
-                          "h-1.5 w-1.5 rounded-full",
-                          intensityDotClass(score),
-                        )}
-                        aria-hidden
-                      />
-                    )}
+                    <StatusGlyph score={score} />
                   </dd>
                 </div>
               </TooltipTrigger>
@@ -112,29 +116,29 @@ const DetailsRow: React.FC<{
   </TooltipProvider>
 );
 
-export const DetailsSection: React.FC<DetailsSectionProps> = ({ sections }) => {
+export const DetailsTable: React.FC<DetailsTableProps> = ({ sections }) => {
   return (
-    <section className="py-6 border-t border-border">
-      <div className="flex items-baseline justify-between mb-3 flex-wrap gap-2">
-        <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-muted-foreground">
+    <section>
+      <div className="flex items-baseline justify-between mb-4 flex-wrap gap-2">
+        <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted">
           Details
         </h2>
-        <div className="flex items-center gap-3 text-[10px] italic text-muted-foreground">
+        <div className="flex items-center gap-3 text-[10px] text-v2-ink-subtle">
           <span className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-success" />
-            above target
+            <ArrowUp className="h-2.5 w-2.5 text-success" aria-hidden />
+            ahead
           </span>
           <span className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-warning" />
-            watch
+            <Minus className="h-2.5 w-2.5 text-v2-ink-subtle" aria-hidden />
+            steady
           </span>
           <span className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
-            below
+            <ArrowDown className="h-2.5 w-2.5 text-destructive" aria-hidden />
+            behind
           </span>
         </div>
       </div>
-      <div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
         {sections.map((section, i) => (
           <div key={i}>
             {section.gated ? (
@@ -143,10 +147,10 @@ export const DetailsSection: React.FC<DetailsSectionProps> = ({ sections }) => {
                 title={section.category}
                 requiredTier={section.requiredTier ?? "Starter"}
               >
-                <DetailsRow section={section} />
+                <DetailsColumn section={section} />
               </GatedKPISection>
             ) : (
-              <DetailsRow section={section} />
+              <DetailsColumn section={section} />
             )}
           </div>
         ))}

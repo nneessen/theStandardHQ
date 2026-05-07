@@ -1,16 +1,10 @@
 // src/features/dashboard/DashboardHome.tsx
 //
-// Editorial dashboard. Drops bordered-card-per-section in favor of a
-// publication-style layout: typography, hairline rules, generous whitespace.
-//
-//   DashboardHeroV2
-//      → [Pace · Quick Actions] (paired row)
-//      → [Alerts · Details] (paired row)
-//      → Organization (fluid reflow)
-//      → Team & Recruiting
+// Dense data-first dashboard. Top header (period + actions), then a
+// 5-column hero stat strip (no card chrome), one Pace+Alerts card,
+// one full-width Details table, then Org / Team & Recruiting.
 
 import React, { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import {
   useConstants,
   useMyHierarchyStats,
@@ -33,27 +27,22 @@ import type { NewPolicyForm } from "../../types/policy.types";
 import { transformFormToCreateData } from "../policies/utils/policyFormTransformer";
 import { formatCurrency, formatCompactCurrency } from "@/lib/format";
 
-// New editorial components (kept for the lower sections)
 import { PaceLines, type PaceLine } from "./components/PaceLines";
 import { EditorialAlerts } from "./components/EditorialAlerts";
-import { QuickActionsPanel } from "./components/QuickActionsPanel";
-import { DetailsSection } from "./components/DetailsSection";
+import { DashboardHeader } from "./components/DashboardHeader";
+import { HeroStatStrip, type HeroStat } from "./components/HeroStatStrip";
+import { DetailsTable } from "./components/DetailsTable";
 import { OrgMetricsSection } from "./components/OrgMetricsSection";
 import { TeamRecruitingSection } from "./components/TeamRecruitingSection";
 
-// V2 hero + shell
-import { DashboardHeroV2 } from "./components/DashboardHeroV2";
 import { SectionShell, SoftCard } from "@/components/v2";
 
-// Dialogs
 import { ExpenseDialogCompact as ExpenseDialog } from "../expenses/components/ExpenseDialogCompact";
 import { PolicyDialog } from "../policies/components/PolicyDialog";
 
-// Configuration
 import { generateKPIConfig } from "./config/kpiConfig";
 import { generateAlertsConfig } from "./config/alertsConfig";
 
-// Utils
 import {
   calculateDerivedMetrics,
   getBreakevenDisplay,
@@ -121,7 +110,6 @@ function periodElapsed(
     return { pct: 1, daysElapsed: 7, daysTotal: 7 };
   }
 
-  // daily — period is just one day; treat as fully elapsed.
   return { pct: 1, daysElapsed: 1, daysTotal: 1 };
 }
 
@@ -150,12 +138,33 @@ function periodTitle(period: TimePeriod, dr: DateRange): string {
   if (period === "yearly") {
     return String(start.getFullYear());
   }
-  // MTD / monthly
   return start.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
+/**
+ * Calendar-progress helpers used by the YTD bars on the hero strip:
+ * the bar fills as the *year* progresses, so the user has a visual
+ * anchor for "where am I in the year vs. what I've earned so far."
+ */
+function calendarProgress(now: Date) {
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  const startOfNextMonth = new Date(
+    now.getFullYear(),
+    now.getMonth() + 1,
+    1,
+  ).getTime();
+  const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
+  const startOfNextYear = new Date(now.getFullYear() + 1, 0, 1).getTime();
+  const month =
+    (now.getTime() - startOfMonth) / (startOfNextMonth - startOfMonth);
+  const year = (now.getTime() - startOfYear) / (startOfNextYear - startOfYear);
+  return {
+    month: Math.max(0, Math.min(1, month)),
+    year: Math.max(0, Math.min(1, year)),
+  };
+}
+
 export const DashboardHome: React.FC = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { data: constants } = useConstants();
   const dashboardFeatures = useDashboardFeatures();
@@ -187,11 +196,9 @@ export const DashboardHome: React.FC = () => {
     targetAvgPremium: constants?.avgAP || 1500,
   });
 
-  // Hero MTD/YTD bars track the picker. Anchor end-date is "today" when
-  // viewing the current period, otherwise the end of the selected period —
-  // so navigating back to April shows April MTD (full month) and YTD as
-  // Jan 1 → April 30. Commission totals sum paid + pending so the value
-  // isn't artificially $0 while a carrier hasn't disbursed yet.
+  // Hero MTD/YTD totals always anchor on "today" when current period; on
+  // the end of the selected period when navigating back. This keeps the
+  // strip honest about historical context without flickering past values.
   const heroAnchorEnd =
     periodOffset === 0
       ? new Date()
@@ -306,14 +313,9 @@ export const DashboardHome: React.FC = () => {
     periodSuffix,
   });
 
-  // Pace lines — full-width labelled progress bars
   const commissionTarget = periodAnalytics.paceMetrics.monthlyTarget || null;
   const policyTarget =
     periodPolicies.newCount + Math.max(0, Math.ceil(policiesNeededDisplay));
-  const _premiumTarget =
-    constants?.avgAP && policyTarget > 0
-      ? constants.avgAP * policyTarget
-      : null;
 
   const paceLines: PaceLine[] = [
     {
@@ -329,38 +331,6 @@ export const DashboardHome: React.FC = () => {
       unit: "#",
     },
   ];
-
-  const quickActions = [
-    { label: "Add Policy", action: "Add Policy", hasAccess: true },
-    {
-      label: "Add Expense",
-      action: "Add Expense",
-      hasAccess: dashboardFeatures.canAddExpense,
-      lockedTooltip: "Upgrade to Pro to track expenses",
-      requiredTier: "Pro",
-    },
-    {
-      label: "Leaderboard",
-      action: "Leaderboard",
-      hasAccess: true,
-    },
-  ];
-
-  const handleQuickAction = (action: string) => {
-    switch (action) {
-      case "Add Policy":
-        setActiveDialog("policy");
-        break;
-      case "Add Expense":
-        setActiveDialog("expense");
-        break;
-      case "Leaderboard":
-        navigate({ to: "/leaderboard" });
-        break;
-      default:
-        console.warn(`Unknown action: ${action}`);
-    }
-  };
 
   const handleSaveExpense = async (data: CreateExpenseData) => {
     try {
@@ -441,15 +411,12 @@ export const DashboardHome: React.FC = () => {
     dashboardFeatures.isImoAdmin ||
     dashboardFeatures.isAgencyOwner;
 
-  // Hero pace bars — always show MTD and YTD totals.
-  // Bar fill ratio = current value vs. period target where one is configured.
-  // Commission target comes from paceMetrics.monthlyTarget. AP target is
-  // not directly tracked — proxy via the highest YTD AP seen so each new
-  // month's bar grows naturally; if YTD is 0, show the bar full so the
-  // chip ($ value) reads cleanly.
+  // Compute pace ratios for the hero strip. MTD bars track against
+  // monthly targets; YTD bars use calendar position so they tell the
+  // user "you're X% through the year and have earned $N."
   const monthlyCommTarget =
     mtdMetrics.periodAnalytics?.paceMetrics?.monthlyTarget ?? 0;
-  const yearlyCommTarget = monthlyCommTarget > 0 ? monthlyCommTarget * 12 : 0;
+  const calProgress = calendarProgress(new Date());
 
   const apMtdPct =
     ytdAPTotal > 0
@@ -457,32 +424,76 @@ export const DashboardHome: React.FC = () => {
       : mtdAPTotal > 0
         ? 1
         : 0;
-  const apYtdPct = ytdAPTotal > 0 ? 1 : 0;
   const commMtdPct =
     monthlyCommTarget > 0
       ? Math.min(1, mtdCommissionTotal / monthlyCommTarget)
       : mtdCommissionTotal > 0
         ? 1
         : 0;
-  const commYtdPct =
-    yearlyCommTarget > 0
-      ? Math.min(1, ytdCommissionTotal / yearlyCommTarget)
-      : ytdCommissionTotal > 0
+  const policiesPct =
+    policyTarget > 0
+      ? Math.min(1, periodPolicies.newCount / policyTarget)
+      : periodPolicies.newCount > 0
         ? 1
         : 0;
 
-  const greetingName =
-    user?.email
-      ?.split("@")[0]
-      ?.split(".")[0]
-      ?.replace(/^./, (c) => c.toUpperCase()) || "there";
+  const heroStats: HeroStat[] = [
+    {
+      label: "Premium MTD",
+      value: formatCompactCurrency(mtdAPTotal),
+      pct: apMtdPct,
+      expectedPct: periodOffset === 0 ? calProgress.month : undefined,
+      hint:
+        ytdAPTotal > 0
+          ? `${Math.round(apMtdPct * 100)}% of ${formatCompactCurrency(ytdAPTotal / 12)} pace`
+          : "no pace yet",
+      tone: "ink",
+    },
+    {
+      label: "Premium YTD",
+      value: formatCompactCurrency(ytdAPTotal),
+      pct: calProgress.year,
+      hint: `${Math.round(calProgress.year * 100)}% through year`,
+      tone: "muted",
+      secondary: true,
+    },
+    {
+      label: "Commissions MTD",
+      value: formatCompactCurrency(mtdCommissionTotal),
+      pct: commMtdPct,
+      expectedPct: periodOffset === 0 ? calProgress.month : undefined,
+      hint:
+        monthlyCommTarget > 0
+          ? `${Math.round(commMtdPct * 100)}% of ${formatCompactCurrency(monthlyCommTarget)} target`
+          : "no target set",
+      tone: "accent",
+    },
+    {
+      label: "Commissions YTD",
+      value: formatCompactCurrency(ytdCommissionTotal),
+      pct: calProgress.year,
+      hint: `${Math.round(calProgress.year * 100)}% through year`,
+      tone: "muted",
+      secondary: true,
+    },
+    {
+      label: "Policies",
+      value: periodPolicies.newCount.toLocaleString(),
+      pct: policiesPct,
+      expectedPct: periodOffset === 0 ? expectedPct : undefined,
+      hint:
+        policyTarget > 0
+          ? `${periodPolicies.newCount} of ${policyTarget} target`
+          : `${periodPolicies.newCount} written`,
+      tone: "ink",
+    },
+  ];
 
   return (
     <>
       <SectionShell className="dashboard-canvas">
         <div className="mx-auto max-w-[1400px] px-4 sm:px-8 lg:px-12 py-4 sm:py-6">
-          <DashboardHeroV2
-            greetingName={greetingName}
+          <DashboardHeader
             periodTitle={title}
             daysSubtitle={
               showDaysSubtitle
@@ -493,52 +504,36 @@ export const DashboardHome: React.FC = () => {
             onTimePeriodChange={handleTimePeriodChange}
             periodOffset={periodOffset}
             onOffsetChange={setPeriodOffset}
-            apMtdPct={apMtdPct}
-            apMtdDisplay={formatCompactCurrency(mtdAPTotal)}
-            apYtdPct={apYtdPct}
-            apYtdDisplay={formatCompactCurrency(ytdAPTotal)}
-            commMtdPct={commMtdPct}
-            commMtdDisplay={formatCompactCurrency(mtdCommissionTotal)}
-            commYtdPct={commYtdPct}
-            commYtdDisplay={formatCompactCurrency(ytdCommissionTotal)}
-            policiesCount={periodPolicies.newCount}
-            premiumWritten={periodPolicies.premiumWritten}
-            pendingPipeline={currentState.pendingPipeline}
+            onAddPolicy={() => setActiveDialog("policy")}
+            onAddExpense={() => setActiveDialog("expense")}
+            canAddExpense={dashboardFeatures.canAddExpense}
+            isCreating={isCreating}
           />
 
-          {/* Pace + Quick Actions — paired row, no longer full-width */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <SoftCard padding="lg">
-              <PaceLines
-                lines={paceLines}
-                daysElapsed={showDaysSubtitle ? elapsed.daysElapsed : undefined}
-                daysTotal={showDaysSubtitle ? elapsed.daysTotal : undefined}
-                expectedPct={expectedPct}
-              />
-            </SoftCard>
+          <HeroStatStrip stats={heroStats} />
 
-            <SoftCard padding="lg">
-              <QuickActionsPanel
-                actions={quickActions}
-                onActionClick={handleQuickAction}
-                isCreating={isCreating}
-              />
-            </SoftCard>
-          </div>
+          <SoftCard padding="lg" className="mb-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-y-4 lg:gap-x-8 lg:divide-x lg:divide-v2-ring">
+              <div className="lg:pr-8">
+                <PaceLines
+                  lines={paceLines}
+                  daysElapsed={
+                    showDaysSubtitle ? elapsed.daysElapsed : undefined
+                  }
+                  daysTotal={showDaysSubtitle ? elapsed.daysTotal : undefined}
+                  expectedPct={expectedPct}
+                />
+              </div>
+              <div className="lg:pl-8">
+                <EditorialAlerts alerts={augmentedAlerts} />
+              </div>
+            </div>
+          </SoftCard>
 
-          {/* Alerts + Details side-by-side on desktop */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-            <SoftCard padding="lg">
-              <EditorialAlerts alerts={augmentedAlerts} />
-            </SoftCard>
+          <SoftCard padding="lg" className="mb-4">
+            <DetailsTable sections={kpiConfig} />
+          </SoftCard>
 
-            <SoftCard padding="lg">
-              <DetailsSection sections={kpiConfig} />
-            </SoftCard>
-          </div>
-
-          {/* Org panels reflow fluidly now (no more fixed-pixel grid tracks),
-              so this can sit at full width without overflow. */}
           {showOrg && (
             <SoftCard padding="lg" className="mb-4">
               <h2 className="text-[10px] uppercase tracking-[0.18em] font-semibold text-v2-ink-subtle mb-3">
