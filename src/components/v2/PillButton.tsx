@@ -13,8 +13,12 @@ interface PillButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
 }
 
 const toneStyles: Record<PillButtonTone, string> = {
+  // "black" semantically = ink-on-canvas primary CTA. Uses --v2-ink which
+  // inverts with the theme so the pill stays high-contrast in both modes
+  // (was bg-v2-bg-card-dark, which rendered ~invisible against the dark
+  // canvas in dark mode).
   black:
-    "bg-v2-bg-card-dark text-white hover:bg-black border border-v2-bg-card-dark disabled:opacity-50",
+    "bg-v2-ink text-v2-canvas hover:bg-v2-ink/90 active:bg-v2-ink/95 border border-v2-ink disabled:opacity-50",
   yellow:
     "bg-v2-accent text-v2-ink hover:bg-v2-accent-strong border border-v2-accent-strong disabled:opacity-50",
   ghost:

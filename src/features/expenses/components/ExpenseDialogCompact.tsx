@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
@@ -373,7 +374,11 @@ export function ExpenseDialogCompact({
                             : "outline"
                         }
                         size="sm"
-                        className="h-7 text-[10px]"
+                        className={cn(
+                          "h-7 text-[10px]",
+                          formData.expense_type === "business" &&
+                            "bg-v2-ink text-v2-canvas hover:bg-v2-ink/90 border-v2-ink",
+                        )}
                         onClick={() =>
                           setFormData({ ...formData, expense_type: "business" })
                         }
@@ -388,7 +393,11 @@ export function ExpenseDialogCompact({
                             : "outline"
                         }
                         size="sm"
-                        className="h-7 text-[10px]"
+                        className={cn(
+                          "h-7 text-[10px]",
+                          formData.expense_type === "personal" &&
+                            "bg-v2-ink text-v2-canvas hover:bg-v2-ink/90 border-v2-ink",
+                        )}
                         onClick={() =>
                           setFormData({ ...formData, expense_type: "personal" })
                         }
@@ -415,7 +424,11 @@ export function ExpenseDialogCompact({
                           formData.category === cat.name ? "default" : "ghost"
                         }
                         size="sm"
-                        className="h-6 px-2 text-[10px]"
+                        className={cn(
+                          "h-6 px-2 text-[10px]",
+                          formData.category === cat.name &&
+                            "bg-v2-ink text-v2-canvas hover:bg-v2-ink/90 border-v2-ink",
+                        )}
                         onClick={() =>
                           setFormData({
                             ...formData,

@@ -102,8 +102,14 @@ export const PolicyDashboardHeader: React.FC<PolicyDashboardHeaderProps> = ({
         )}
       </div>
 
-      {/* New Policy Button */}
-      <Button onClick={onNewPolicy} size="sm" className="h-6 text-[10px] px-2">
+      {/* New Policy Button — overrides bg-primary/text-primary-foreground
+          (lavender in dark mode) with the v2 ink-on-canvas treatment so the
+          button matches the rest of the v2-palette header in both modes. */}
+      <Button
+        onClick={onNewPolicy}
+        size="sm"
+        className="h-6 text-[10px] px-2 bg-v2-ink text-v2-canvas hover:bg-v2-ink/90 active:bg-v2-ink/95"
+      >
         <Plus className="h-3 w-3 mr-1" />
         New Policy
       </Button>
