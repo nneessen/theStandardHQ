@@ -11,27 +11,27 @@ import type {
 } from "./types.ts";
 
 // ═══════════════════════════════════════════════════════════════════════
-// ENGAGEMENT SIGNALS (27 pts max)
+// ENGAGEMENT SIGNALS (32 pts max — bumped from 27 in 2026-05 rebalance)
 // ═══════════════════════════════════════════════════════════════════════
 
-/** Call answer rate: lead answers agent's outbound calls (0-8 pts) */
+/** Call answer rate: lead answers agent's outbound calls (0-10 pts) */
 function scoreCallAnswerRate(answered: number, totalOutbound: number): number {
   if (totalOutbound === 0) return 0;
   const rate = answered / totalOutbound;
-  if (rate >= 0.5) return 8;
-  if (rate >= 0.35) return 6;
-  if (rate >= 0.2) return 4;
-  if (rate >= 0.1) return 2;
+  if (rate >= 0.5) return 10;
+  if (rate >= 0.35) return 8;
+  if (rate >= 0.2) return 6;
+  if (rate >= 0.1) return 3;
   if (rate > 0) return 1;
   return 0;
 }
 
-/** Email reply rate: lead sends emails to agent (0-5 pts) */
+/** Email reply rate: lead sends emails to agent (0-6 pts) */
 function scoreEmailReplyRate(inbound: number, outbound: number): number {
-  if (outbound === 0) return inbound > 0 ? 5 : 0;
+  if (outbound === 0) return inbound > 0 ? 6 : 0;
   const rate = inbound / outbound;
-  if (rate >= 0.4) return 5;
-  if (rate >= 0.25) return 4;
+  if (rate >= 0.4) return 6;
+  if (rate >= 0.25) return 5;
   if (rate >= 0.15) return 3;
   if (rate >= 0.05) return 2;
   if (rate > 0) return 1;
@@ -50,26 +50,25 @@ function scoreSmsResponseRate(inbound: number, outbound: number): number {
   return 0;
 }
 
-/** Last interaction recency: hours since last touch from either side (0-9 pts)
- *  NOTE: This signal overlaps with timeSinceTouch — both derive from lastActivityAt.
- *  Combined they allocate 14 pts for one data point. Consider differentiating in the
- *  supervised model revamp (Phase 3 of CLOSE-KPI-AI-REVAMP.md). */
+/** Last interaction recency: hours since last touch from either side (0-11 pts).
+ *  Curve steepened 2026-05: 14-day stale now scores 0 (was 1) so leads with
+ *  active opps but no touch can no longer ride into the Hot decile on opp
+ *  alone. timeSinceTouch is the courser-grained companion (in days). */
 function scoreLastInteractionRecency(
   hoursSinceLastTouch: number | null,
 ): number {
   if (hoursSinceLastTouch === null) return 0;
-  if (hoursSinceLastTouch <= 4) return 9;
-  if (hoursSinceLastTouch <= 12) return 8;
-  if (hoursSinceLastTouch <= 24) return 7;
-  if (hoursSinceLastTouch <= 48) return 5;
+  if (hoursSinceLastTouch <= 4) return 11;
+  if (hoursSinceLastTouch <= 12) return 10;
+  if (hoursSinceLastTouch <= 24) return 9;
+  if (hoursSinceLastTouch <= 48) return 6;
   if (hoursSinceLastTouch <= 72) return 4;
   if (hoursSinceLastTouch <= 168) return 2; // 1 week
-  if (hoursSinceLastTouch <= 336) return 1; // 2 weeks
-  return 0;
+  return 0; // 1+ week — recency no longer credits
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// BEHAVIORAL SIGNALS (25 pts max)
+// BEHAVIORAL SIGNALS (27 pts max — emailEngagement bumped 3→5 in 2026-05)
 // ═══════════════════════════════════════════════════════════════════════
 
 /** Inbound call from lead: strongest buying signal (0-13 pts) */
@@ -91,11 +90,12 @@ function scoreQuoteRequested(
   return 0;
 }
 
-/** Email opened / email engagement indicator (0-3 pts) */
+/** Email opened / email engagement indicator (0-5 pts) */
 function scoreEmailEngagement(emailsReceived: number): number {
   // Close doesn't expose open tracking directly, so we use inbound emails
   // as a proxy for engagement (lead is actively communicating)
-  if (emailsReceived >= 3) return 3;
+  if (emailsReceived >= 5) return 5;
+  if (emailsReceived >= 3) return 4;
   if (emailsReceived >= 1) return 2;
   return 0;
 }
@@ -106,85 +106,86 @@ function scoreAppointment(hasCallback: boolean): number {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// TEMPORAL SIGNALS (20 pts max)
+// TEMPORAL SIGNALS (18 pts max — leadAge cut from 5→3 in 2026-05 rebalance;
+// timeSinceTouch raised 5→7 to make staleness hurt more)
 // ═══════════════════════════════════════════════════════════════════════
 
-/** Lead age freshness: newer leads score higher (0-5 pts) */
+/** Lead age freshness: newer leads score higher (0-3 pts) */
 function scoreLeadAge(daysSinceCreation: number): number {
-  if (daysSinceCreation <= 3) return 5;
-  if (daysSinceCreation <= 7) return 4;
-  if (daysSinceCreation <= 14) return 3;
-  if (daysSinceCreation <= 30) return 2;
-  if (daysSinceCreation <= 60) return 1;
+  if (daysSinceCreation <= 3) return 3;
+  if (daysSinceCreation <= 7) return 2;
+  if (daysSinceCreation <= 30) return 1;
   return 0;
 }
 
-/** Time since last touch: stale leads lose points (0-5 pts)
- *  NOTE: Overlaps with engagementRecency — see comment on scoreLastInteractionRecency. */
+/** Time since last touch: stale leads lose points (0-7 pts)
+ *  NOTE: Overlaps with engagementRecency — engagementRecency is hours-grained
+ *  (recovers fast on a single touch), this one is days-grained (the SLA proxy). */
 function scoreTimeSinceTouch(daysSinceTouch: number | null): number {
   if (daysSinceTouch === null) return 0;
-  if (daysSinceTouch <= 1) return 5;
-  if (daysSinceTouch <= 3) return 4;
-  if (daysSinceTouch <= 7) return 3;
-  if (daysSinceTouch <= 14) return 2;
-  if (daysSinceTouch <= 30) return 1;
-  return 0;
+  if (daysSinceTouch <= 1) return 7;
+  if (daysSinceTouch <= 3) return 6;
+  if (daysSinceTouch <= 7) return 4;
+  if (daysSinceTouch <= 14) return 1;
+  return 0; // 14+ days: SLA breach territory
 }
 
-/** Time stuck in current status (0-5 pts) */
+/** Time stuck in current status (0-4 pts) */
 function scoreTimeInStatus(
   daysInStatus: number | null,
   isPositiveStatus: boolean,
 ): number {
-  if (daysInStatus === null) return 2; // unknown, give partial credit
+  if (daysInStatus === null) return 1; // unknown, small partial credit
   if (isPositiveStatus) {
     // Positive statuses: being there a while is less bad
-    if (daysInStatus <= 7) return 5;
-    if (daysInStatus <= 14) return 4;
+    if (daysInStatus <= 7) return 4;
+    if (daysInStatus <= 14) return 3;
     if (daysInStatus <= 30) return 2;
     return 1;
   }
   // Negative/neutral: time hurts more
-  if (daysInStatus <= 3) return 4;
+  if (daysInStatus <= 3) return 3;
   if (daysInStatus <= 7) return 2;
   if (daysInStatus <= 14) return 1;
   return 0;
 }
 
-/** Status velocity: how fast lead is progressing (0-5 pts) */
+/** Status velocity: how fast lead is progressing (0-4 pts) */
 function scoreStatusVelocity(
   positiveChanges30d: number,
   negativeChanges30d: number,
 ): number {
   const net = positiveChanges30d - negativeChanges30d;
-  if (net >= 3) return 5;
-  if (net === 2) return 4;
-  if (net === 1) return 3;
-  if (net === 0 && positiveChanges30d > 0) return 2;
+  if (net >= 3) return 4;
+  if (net === 2) return 3;
+  if (net === 1) return 2;
+  if (net === 0 && positiveChanges30d > 0) return 1;
   if (net === 0) return 1;
   return 0;
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// PIPELINE SIGNALS (13 pts max)
+// PIPELINE SIGNALS (8 pts max — cut from 13 in 2026-05 rebalance.
+// Insights showed leads with opps converted at 0.17x rate of those without —
+// most "open opps" are stale CRM data, not active deals. Opportunity is now
+// a tiebreaker, not a Hot-band override.)
 // ═══════════════════════════════════════════════════════════════════════
 
-/** Has active opportunity (0-9 pts) */
+/** Has active opportunity (0-5 pts) */
 function scoreHasOpportunity(
   hasActiveOpp: boolean,
   hasAnyOpp: boolean,
 ): number {
-  if (hasActiveOpp) return 9;
-  if (hasAnyOpp) return 3;
+  if (hasActiveOpp) return 5;
+  if (hasAnyOpp) return 2;
   return 0;
 }
 
-/** Opportunity value (0-4 pts) */
+/** Opportunity value (0-3 pts) */
 function scoreOpportunityValue(valueUsd: number | null): number {
   if (valueUsd === null || valueUsd <= 0) return 0;
-  if (valueUsd >= 5000) return 4;
-  if (valueUsd >= 2000) return 3;
-  if (valueUsd >= 500) return 2;
+  if (valueUsd >= 5000) return 3;
+  if (valueUsd >= 2000) return 2;
   return 1;
 }
 
@@ -232,10 +233,16 @@ function penaltyBadStatus(
   return 0;
 }
 
-/** 45+ day stagnation with no activity (-4 max) */
+/** Stagnation penalty: tiered by days since any activity (-5 max).
+ *  Tightened 2026-05: previously only kicked at 45+ days. The Lead #1 case
+ *  (14d stale, sat in Hot decile on opp+quote alone) showed that "active
+ *  opportunity, never touched" was scoring like a real prospect. Now 14d
+ *  costs -1, 21d costs -3, 45d costs -5. */
 function penaltyStagnation(daysSinceAnyActivity: number | null): number {
   if (daysSinceAnyActivity === null) return 0;
-  if (daysSinceAnyActivity >= 45) return -4;
+  if (daysSinceAnyActivity >= 45) return -5;
+  if (daysSinceAnyActivity >= 21) return -3;
+  if (daysSinceAnyActivity >= 14) return -1;
   return 0;
 }
 
@@ -268,23 +275,28 @@ export function getTrendDirection(
 // WEIGHT APPLICATION
 // ═══════════════════════════════════════════════════════════════════════
 
-// Redistributed 10 dead-signal points (oppStageAdvances=5, aiSimilarityScore=5)
-// to live signals: inboundCalls +3, engagementRecency +2, hasOpportunity +3, quoteRequested +2
+// 2026-05 rebalance: shifted 10 pts from pipeline+temporal-age into engagement.
+// Total still sums to 90; penalties still cap at -20.
+//   Engagement 27 → 32 (engagementRecency +2, callAnswerRate +2, emailReplyRate +1)
+//   Behavioral 25 → 27 (emailEngagement +2)
+//   Temporal   20 → 18 (leadAge -2, timeSinceTouch +2, timeInStatus -1, statusVelocity -1)
+//   Pipeline   13 →  8 (hasOpportunity -4, opportunityValue -1)
+//   Historical  5 →  5 (unchanged)
 const DEFAULT_MAX_POINTS: Record<string, number> = {
-  engagementRecency: 9,
-  callAnswerRate: 8,
-  emailReplyRate: 5,
+  engagementRecency: 11,
+  callAnswerRate: 10,
+  emailReplyRate: 6,
   smsResponseRate: 5,
   inboundCalls: 13,
   quoteRequested: 7,
-  emailEngagement: 3,
+  emailEngagement: 5,
   appointment: 2,
-  leadAge: 5,
-  timeSinceTouch: 5,
-  timeInStatus: 5,
-  statusVelocity: 5,
-  hasOpportunity: 9,
-  opportunityValue: 4,
+  leadAge: 3,
+  timeSinceTouch: 7,
+  timeInStatus: 4,
+  statusVelocity: 4,
+  hasOpportunity: 5,
+  opportunityValue: 3,
   sourceQuality: 5,
 };
 

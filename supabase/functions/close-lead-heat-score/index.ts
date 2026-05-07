@@ -907,7 +907,7 @@ async function handleScoreAll(
         opp_snapshot: oppSnapshotMap.get(s.closeLeadId) ?? [],
         last_activity_at: s.signals.lastActivityAt ?? null,
         percentile_rank: cal?.percentileRank ?? null,
-        scoring_model_version: "heuristic_v1",
+        scoring_model_version: "heuristic_v2",
         scored_at: now.toISOString(),
         updated_at: now.toISOString(),
       };
