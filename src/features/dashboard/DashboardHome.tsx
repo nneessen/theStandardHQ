@@ -358,8 +358,6 @@ export const DashboardHome: React.FC = () => {
   const safePct = (current: number, target: number): number =>
     target > 0 ? Math.min(1, current / target) : current > 0 ? 1 : 0;
 
-  const aboveBreakeven = periodAnalytics.surplusDeficit >= 0;
-
   const heroStats: HeroStat[] = [
     {
       label: "Premium",
@@ -382,14 +380,6 @@ export const DashboardHome: React.FC = () => {
           ? `${Math.round(safePct(periodCommTotal, periodCommTarget) * 100)}% of ${formatCompactCurrency(periodCommTarget)} target`
           : "no target set",
       tone: "accent",
-    },
-    {
-      label: "Net Income",
-      value: formatCompactCurrency(periodAnalytics.netIncome),
-      // pct intentionally omitted — net is signed, a 0..1 bar would mislead.
-      hint: aboveBreakeven ? "above breakeven" : "below breakeven",
-      tone: "muted",
-      valueTone: aboveBreakeven ? "good" : "bad",
     },
     {
       label: "Policies",

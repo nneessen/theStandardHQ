@@ -41,7 +41,7 @@ export const HeroStatStrip: React.FC<HeroStatStripProps> = ({ stats }) => {
   return (
     <section
       className={cn(
-        "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-px",
+        "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-px",
         "bg-v2-ring rounded-v2-md overflow-hidden border border-v2-ring shadow-v2-soft mb-4",
       )}
     >
