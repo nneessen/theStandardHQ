@@ -31,6 +31,10 @@ interface UserTargetsEntity {
   persistency25MonthTarget: number;
   monthlyExpenseTarget: number;
   expenseRatioTarget: number;
+  persistencyAssumption: number;
+  taxReserveRate: number;
+  ntoBufferRate: number;
+  premiumStatPreference: "mean" | "median";
   achievements: Achievement[];
   lastMilestoneDate: string | null;
   createdAt: string;
@@ -49,6 +53,10 @@ export interface CreateUserTargetsInput {
   persistency25MonthTarget?: number;
   monthlyExpenseTarget?: number;
   expenseRatioTarget?: number;
+  persistencyAssumption?: number;
+  taxReserveRate?: number;
+  ntoBufferRate?: number;
+  premiumStatPreference?: "mean" | "median";
   achievements?: Achievement[];
   lastMilestoneDate?: string | null;
 }
@@ -63,6 +71,10 @@ export interface UpdateUserTargetsInput {
   persistency25MonthTarget?: number;
   monthlyExpenseTarget?: number;
   expenseRatioTarget?: number;
+  persistencyAssumption?: number;
+  taxReserveRate?: number;
+  ntoBufferRate?: number;
+  premiumStatPreference?: "mean" | "median";
   achievements?: Achievement[];
   lastMilestoneDate?: string | null;
 }
@@ -103,6 +115,11 @@ export class UserTargetsRepository extends BaseRepository<
       persistency25MonthTarget: row.persistency_25_month_target || 0,
       monthlyExpenseTarget: row.monthly_expense_target || 0,
       expenseRatioTarget: row.expense_ratio_target || 0,
+      persistencyAssumption: row.persistency_assumption ?? 0.75,
+      taxReserveRate: row.tax_reserve_rate ?? 0.3,
+      ntoBufferRate: row.nto_buffer_rate ?? 0.12,
+      premiumStatPreference:
+        (row.premium_stat_preference as "mean" | "median") ?? "median",
       achievements: (row.achievements as unknown as Achievement[]) || [],
       lastMilestoneDate: row.last_milestone_date,
       createdAt: row.created_at || "",
@@ -148,6 +165,18 @@ export class UserTargetsRepository extends BaseRepository<
     }
     if (data.expenseRatioTarget !== undefined) {
       result.expense_ratio_target = data.expenseRatioTarget;
+    }
+    if (data.persistencyAssumption !== undefined) {
+      result.persistency_assumption = data.persistencyAssumption;
+    }
+    if (data.taxReserveRate !== undefined) {
+      result.tax_reserve_rate = data.taxReserveRate;
+    }
+    if (data.ntoBufferRate !== undefined) {
+      result.nto_buffer_rate = data.ntoBufferRate;
+    }
+    if (data.premiumStatPreference !== undefined) {
+      result.premium_stat_preference = data.premiumStatPreference;
     }
     if (data.achievements !== undefined) {
       result.achievements = data.achievements;

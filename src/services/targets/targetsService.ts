@@ -401,6 +401,10 @@ class TargetsService {
     persistency25MonthTarget: number;
     monthlyExpenseTarget: number;
     expenseRatioTarget: number;
+    persistencyAssumption: number;
+    taxReserveRate: number;
+    ntoBufferRate: number;
+    premiumStatPreference: "mean" | "median";
     achievements: Achievement[];
     lastMilestoneDate: string | null;
     createdAt: string;
@@ -419,6 +423,10 @@ class TargetsService {
       persistency25MonthTarget: entity.persistency25MonthTarget,
       monthlyExpenseTarget: entity.monthlyExpenseTarget,
       expenseRatioTarget: entity.expenseRatioTarget,
+      persistencyAssumption: entity.persistencyAssumption,
+      taxReserveRate: entity.taxReserveRate,
+      ntoBufferRate: entity.ntoBufferRate,
+      premiumStatPreference: entity.premiumStatPreference,
       achievements: entity.achievements,
       lastMilestoneDate: entity.lastMilestoneDate
         ? new Date(entity.lastMilestoneDate)

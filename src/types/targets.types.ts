@@ -8,8 +8,13 @@
  */
 
 // Achievement types and levels
-export type AchievementType = 'income' | 'policies' | 'persistency' | 'streak' | 'milestone';
-export type AchievementLevel = 'bronze' | 'silver' | 'gold' | 'platinum';
+export type AchievementType =
+  | "income"
+  | "policies"
+  | "persistency"
+  | "streak"
+  | "milestone";
+export type AchievementLevel = "bronze" | "silver" | "gold" | "platinum";
 
 export interface Achievement {
   id: string;
@@ -44,6 +49,13 @@ export interface UserTargets {
   monthlyExpenseTarget: number;
   expenseRatioTarget: number; // As decimal: 0.30 = 30%
 
+  // Realism knobs — drive the realistic plan in targetsCalculationService.
+  // All decimals. premiumStatPreference is 'mean' | 'median'.
+  persistencyAssumption: number;
+  taxReserveRate: number;
+  ntoBufferRate: number;
+  premiumStatPreference: "mean" | "median";
+
   // Milestones
   achievements: Achievement[];
   lastMilestoneDate: Date | null;
@@ -54,7 +66,7 @@ export interface UserTargets {
 }
 
 // Progress tracking status
-export type ProgressStatus = 'ahead' | 'on-track' | 'behind' | 'critical';
+export type ProgressStatus = "ahead" | "on-track" | "behind" | "critical";
 
 // Pace calculations for "policies needed per time period"
 export interface PaceMetrics {
@@ -138,6 +150,12 @@ export interface UpdateTargetsForm {
   // Expense targets
   monthlyExpenseTarget?: number;
   expenseRatioTarget?: number;
+
+  // Realism knobs
+  persistencyAssumption?: number;
+  taxReserveRate?: number;
+  ntoBufferRate?: number;
+  premiumStatPreference?: "mean" | "median";
 }
 
 // Milestone detection result
@@ -147,11 +165,21 @@ export interface MilestoneCheck {
 }
 
 // Service layer types
-export type CreateUserTargetsData = Omit<UserTargets, 'id' | 'createdAt' | 'updatedAt' | 'achievements' | 'lastMilestoneDate'>;
+export type CreateUserTargetsData = Omit<
+  UserTargets,
+  "id" | "createdAt" | "updatedAt" | "achievements" | "lastMilestoneDate"
+>;
 export type UpdateUserTargetsData = Partial<UpdateTargetsForm>;
 
 // Time period for progress calculations
-export type TimePeriod = 'MTD' | 'QTD' | 'YTD' | 'last30' | 'last60' | 'last90' | 'custom';
+export type TimePeriod =
+  | "MTD"
+  | "QTD"
+  | "YTD"
+  | "last30"
+  | "last60"
+  | "last90"
+  | "custom";
 
 export interface TimePeriodRange {
   start: Date;
@@ -166,7 +194,7 @@ export interface TimePeriodRange {
 /**
  * View mode for targets - own, team (downline), or IMO-wide
  */
-export type TargetViewMode = 'own' | 'team' | 'imo';
+export type TargetViewMode = "own" | "team" | "imo";
 
 /**
  * Target data with owner information for downline view

@@ -3,7 +3,7 @@
 import React from "react";
 import { useAnalyticsData } from "../../../hooks";
 import { useAnalyticsDateRange } from "../context/AnalyticsDateContext";
-import { useUserTargets } from "../../../hooks/targets/useUserTargets";
+import { useCalculatedTargets } from "../../../hooks/targets";
 import { useExpenses } from "../../../hooks/expenses/useExpenses";
 import { gamePlanService } from "../../../services/analytics/gamePlanService";
 import { cn } from "@/lib/utils";
@@ -36,8 +36,10 @@ export function GamePlan() {
     endDate: dateRange.endDate,
   });
 
-  // Fetch user's actual targets from database
-  const { data: userTargets, isLoading: isTargetsLoading } = useUserTargets();
+  // Pull the unified realistic-plan calculation. Same source the Targets
+  // page and other dashboard surfaces use, so all gross-commission goals
+  // line up with what the user tuned in Realism Settings.
+  const { calculated, isLoading: isTargetsLoading } = useCalculatedTargets();
 
   // Fetch expenses for MTD calculation
   const { data: allExpenses, isLoading: isExpensesLoading } = useExpenses();
@@ -67,19 +69,19 @@ export function GamePlan() {
     })
     .reduce((sum, e) => sum + e.amount, 0);
 
-  // Calculate game plan using REAL data
+  // Calculate game plan using the realistic plan from useCalculatedTargets
   const gamePlan = gamePlanService.calculateGamePlan(
     raw.policies,
     raw.commissions,
-    userTargets || null,
+    calculated,
     periodExpenses,
   );
 
-  // Calculate annual progress
+  // Calculate annual progress against realistic gross commission target
   const annualProgress = gamePlanService.calculateAnnualProgress(
     raw.policies,
     raw.commissions,
-    userTargets || null,
+    calculated,
   );
 
   const formatCurrency = (value: number) => {

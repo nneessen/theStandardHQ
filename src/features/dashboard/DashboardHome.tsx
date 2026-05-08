@@ -19,6 +19,7 @@ import { useCreatePolicy } from "../../hooks/policies";
 import { useChargebackSummary } from "../../hooks/commissions/useChargebackSummary";
 import { useAuth } from "../../contexts/AuthContext";
 import { useDashboardFeatures } from "../../hooks/dashboard";
+import { useCalculatedTargets } from "../../hooks/targets";
 import { TimePeriod } from "../../utils/dateRange";
 import type { DateRange } from "../../utils/dateRange";
 import { toast } from "sonner";
@@ -196,6 +197,10 @@ export const DashboardHome: React.FC = () => {
   const { data: unreadNotifications } = useUnreadCount();
   const { data: unreadMessages } = useUnreadMessageCount();
 
+  // Realistic target plan — same source the Targets page tunes via Realism
+  // Settings. Falls back to breakeven-based pace if no target set yet.
+  const { calculated: calculatedTargets } = useCalculatedTargets();
+
   const derivedMetrics = calculateDerivedMetrics(periodPolicies, periodClients);
   const breakevenDisplay = getBreakevenDisplay(
     periodAnalytics.breakevenNeeded,
@@ -240,9 +245,23 @@ export const DashboardHome: React.FC = () => {
     periodSuffix,
   });
 
-  const commissionTarget = periodAnalytics.paceMetrics.monthlyTarget || null;
+  // Pace targets pull from the realistic plan when set: gross commission
+  // needed monthly (i.e. what you must earn pre-tax/pre-expense to take home
+  // the goal) and apps to write monthly. When no target is set, fall back to
+  // the legacy breakeven-derived pace so the dashboard still has SOMETHING to
+  // pace against.
+  const realisticMonthlyCommission =
+    calculatedTargets && calculatedTargets.realisticGrossCommissionNeeded > 0
+      ? calculatedTargets.realisticGrossCommissionNeeded / 12
+      : null;
+  const commissionTarget =
+    realisticMonthlyCommission ??
+    periodAnalytics.paceMetrics.monthlyTarget ??
+    null;
   const policyTarget =
-    periodPolicies.newCount + Math.max(0, Math.ceil(policiesNeededDisplay));
+    calculatedTargets && calculatedTargets.realisticMonthlyAppsToWrite > 0
+      ? calculatedTargets.realisticMonthlyAppsToWrite
+      : periodPolicies.newCount + Math.max(0, Math.ceil(policiesNeededDisplay));
 
   const paceLines: PaceLine[] = [
     {
@@ -342,7 +361,21 @@ export const DashboardHome: React.FC = () => {
   // period-scoped queries the rest of the page uses, so flipping the
   // Day/Week/MTD/Month/Year picker (or prev/next) updates all values
   // together. Targets scale to match the selected period.
+  //
+  // When a realistic plan is set, scale the annual realistic gross commission
+  // to the selected period (yearly/30/52/365). Otherwise fall back to the
+  // breakeven-derived pace from useMetricsWithDateRange.
   const periodCommTarget = (() => {
+    if (
+      calculatedTargets &&
+      calculatedTargets.realisticGrossCommissionNeeded > 0
+    ) {
+      const annual = calculatedTargets.realisticGrossCommissionNeeded;
+      if (timePeriod === "yearly") return annual;
+      if (timePeriod === "daily") return annual / 365;
+      if (timePeriod === "weekly") return annual / 52;
+      return annual / 12; // MTD / monthly
+    }
     const m = periodAnalytics.paceMetrics;
     if (timePeriod === "daily") return m.dailyTarget;
     if (timePeriod === "weekly") return m.weeklyTarget;

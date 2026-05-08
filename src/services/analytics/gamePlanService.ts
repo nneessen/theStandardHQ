@@ -1,17 +1,22 @@
 // src/services/analytics/gamePlanService.ts
 
 import type { Policy, Commission } from "../../types";
-import type { UserTargets } from "../targets/userTargetsService";
+import type { CalculatedTargets } from "../targets/targetsCalculationService";
 import { parseLocalDate } from "../../lib/date";
 import { ANALYTICS_CONSTANTS } from "../../constants/financial";
 
 export interface GamePlanData {
   // Current Status
-  mtdCommissions: number; // Month-to-date commissions earned
+  mtdCommissions: number; // Month-to-date commissions earned (gross, paid)
   mtdExpenses: number; // Month-to-date expenses
-  monthlyIncomeTarget: number; // Target monthly NET income
+  monthlyIncomeTarget: number; // Target monthly NET take-home (informational)
   monthlyExpenseTarget: number; // Expected monthly expenses
-  grossCommissionNeeded: number; // Total commission needed (income + expenses)
+  /**
+   * Monthly gross commission needed to take home `monthlyIncomeTarget` after
+   * persistency, tax, and NTO drag. This is what `mtdCommissions` is compared
+   * against — apples to apples (both gross commission $).
+   */
+  grossCommissionNeeded: number;
   gap: number; // How much more commission needed
   progressPercent: number; // % progress to gross commission goal
   isOnTrack: boolean;
@@ -81,14 +86,17 @@ class GamePlanService {
    *
    * @param policies - All policies for filtering MTD
    * @param commissions - All commissions for calculating MTD earnings
-   * @param userTargets - User's targets from database
+   * @param calculated - Pre-computed CalculatedTargets (use `useCalculatedTargets`).
+   *   Provides realistic monthly gross commission needed (with persistency,
+   *   tax, NTO drag baked in), which is the right comparator for MTD
+   *   commissions earned. Pass `null` to fall back to safe defaults.
    * @param mtdExpenses - Month-to-date expenses
    * @returns GamePlanData with all calculations
    */
   calculateGamePlan(
     policies: Policy[],
     commissions: Commission[],
-    userTargets: UserTargets | null,
+    calculated: CalculatedTargets | null,
     mtdExpenses: number,
   ): GamePlanData {
     // Get current month boundaries
@@ -108,12 +116,19 @@ class GamePlanService {
       year: "numeric",
     });
 
-    // Get targets or use defaults
-    const monthlyIncomeTarget = userTargets?.monthly_income_target ?? 10000;
-    const monthlyExpenseTarget = userTargets?.monthly_expense_target ?? 5000;
+    // Pull monthly targets from the realistic plan. Fallbacks only fire when
+    // no targets are set yet (calculated === null).
+    const monthlyIncomeTarget = calculated?.monthlyIncomeTarget ?? 10000;
+    const monthlyExpenseTarget = calculated?.monthlyExpenseTarget ?? 5000;
 
-    // Calculate GROSS commission needed (NET income + expenses)
-    const grossCommissionNeeded = monthlyIncomeTarget + monthlyExpenseTarget;
+    // GROSS commission needed = realistic monthly gross commission to take
+    // home the NET goal after persistency × first-year rate, plus tax reserve
+    // and expenses. Falls back to NET + expenses (the old, broken math) only
+    // when no targets are configured.
+    const grossCommissionNeeded =
+      calculated && calculated.realisticGrossCommissionNeeded > 0
+        ? calculated.realisticGrossCommissionNeeded / 12
+        : monthlyIncomeTarget + monthlyExpenseTarget;
 
     // Filter to MTD policies (current month only)
     const mtdPolicies = policies.filter((p) => {
@@ -449,13 +464,15 @@ class GamePlanService {
    *
    * @param policies - All policies
    * @param commissions - All commissions
-   * @param userTargets - User's annual/monthly targets
+   * @param calculated - Pre-computed CalculatedTargets. Annual goal is the
+   *   realistic gross commission needed (apples-to-apples comparison with
+   *   YTD paid commissions). Pass `null` for safe defaults.
    * @returns AnnualProgress with year-to-date metrics
    */
   calculateAnnualProgress(
     policies: Policy[],
     commissions: Commission[],
-    userTargets: UserTargets | null,
+    calculated: CalculatedTargets | null,
   ): AnnualProgress {
     const now = new Date();
     const yearStart = new Date(now.getFullYear(), 0, 1);
@@ -465,8 +482,13 @@ class GamePlanService {
     const monthsElapsed = now.getMonth() + 1; // JavaScript months are 0-indexed
     const monthsRemaining = 12 - monthsElapsed;
 
-    // Get annual goal from user targets
-    const annualGoal = userTargets?.annual_income_target ?? 120000;
+    // Annual goal = realistic gross commission needed for the year (matches
+    // the unit of YTD paid commissions). Falls back to NET annual target only
+    // when no plan exists yet.
+    const annualGoal =
+      calculated && calculated.realisticGrossCommissionNeeded > 0
+        ? calculated.realisticGrossCommissionNeeded
+        : (calculated?.annualIncomeTarget ?? 120000);
 
     // Filter YTD policies
     const ytdPolicies = policies.filter((p) => {

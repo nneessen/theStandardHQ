@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CircularProgressGauge } from "../visualizations/CircularProgressGauge";
-import { useUserTargets, useCommissions } from "@/hooks";
+import { useCommissions, useCalculatedTargets } from "@/hooks";
 // eslint-disable-next-line no-restricted-imports
 import {
   calculateGoalTracking,
@@ -28,14 +28,24 @@ import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 
 export function IncomeGoalTracker() {
-  const { data: userTargets, isLoading: targetsLoading } = useUserTargets();
+  const { calculated, isLoading: targetsLoading } = useCalculatedTargets();
   const { data: commissions = [], isLoading: commissionsLoading } =
     useCommissions();
 
   const isLoading = targetsLoading || commissionsLoading;
 
-  // Use default goal if user hasn't set one yet
-  const annualGoal = userTargets?.annual_income_target ?? 120000;
+  // Annual goal = realistic gross commission needed for the year. This is the
+  // pre-tax/pre-expense commission income that, after persistency × first-year
+  // rate, NTO drag, and tax reserve, lands the user at their NET take-home
+  // target. YTD `goalData.ytdEarned` is gross paid commissions, so the units
+  // line up.
+  const annualGoal =
+    calculated && calculated.realisticGrossCommissionNeeded > 0
+      ? calculated.realisticGrossCommissionNeeded
+      : 120000;
+  // Display the user's NET take-home goal alongside, since that's what they
+  // actually care about hitting.
+  const netTakeHomeGoal = calculated?.annualIncomeTarget ?? 0;
 
   // Calculate goal tracking data
   const goalData = calculateGoalTracking({
@@ -73,7 +83,13 @@ export function IncomeGoalTracker() {
           <div>
             <CardTitle>Income Goal Tracker</CardTitle>
             <CardDescription>
-              Annual Target: {formatCurrency(annualGoal)}
+              Gross Commission Target: {formatCurrency(annualGoal)}
+              {netTakeHomeGoal > 0 && (
+                <span className="text-muted-foreground/70">
+                  {" "}
+                  → {formatCurrency(netTakeHomeGoal)} take-home
+                </span>
+              )}
             </CardDescription>
           </div>
           <Link

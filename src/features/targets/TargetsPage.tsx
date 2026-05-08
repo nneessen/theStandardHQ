@@ -1,6 +1,6 @@
 // src/features/targets/TargetsPage.tsx
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   useTargets,
   useUpdateTargets,
@@ -45,8 +45,8 @@ export function TargetsPage() {
   const [isEditingInline, setIsEditingInline] = useState(false);
   const [inlineEditValue, setInlineEditValue] = useState<string>("");
 
-  // Realism knobs — local UI state (not yet persisted). Default persistency
-  // tracks historical when present; the others use industry defaults.
+  // Realism knobs — initialized from defaults, hydrated from saved DB values
+  // once `targets` loads, then user edits flow forward to DB via debounced save.
   const historicalPersistency =
     averages.hasData && averages.persistency13Month > 0
       ? averages.persistency13Month
@@ -57,23 +57,41 @@ export function TargetsPage() {
     ntoBufferRate: DEFAULT_REALISM_OPTIONS.ntoBufferRate,
     premiumStat: DEFAULT_REALISM_OPTIONS.premiumStat,
   });
+  const knobsHydratedRef = useRef(false);
 
-  // When historical persistency loads after first render, sync it into the
-  // knob if the user hasn't manually changed it (cheap heuristic: still at
-  // default 0.75 means untouched).
+  // Hydrate realism state from saved DB targets on first load. The ref guard
+  // prevents the post-mutation refetch from clobbering in-flight user edits.
   useEffect(() => {
-    if (
-      averages.hasData &&
-      averages.persistency13Month > 0 &&
-      realism.persistencyRate === DEFAULT_REALISM_OPTIONS.persistencyRate
-    ) {
-      setRealism((r) => ({
-        ...r,
-        persistencyRate: averages.persistency13Month,
-      }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- only sync when historical data first arrives
-  }, [averages.hasData, averages.persistency13Month]);
+    if (!targets || knobsHydratedRef.current) return;
+    setRealism({
+      persistencyRate: targets.persistencyAssumption,
+      taxReserveRate: targets.taxReserveRate,
+      ntoBufferRate: targets.ntoBufferRate,
+      premiumStat: targets.premiumStatPreference,
+    });
+    knobsHydratedRef.current = true;
+  }, [targets]);
+
+  // Debounce-save knob changes to DB so all dashboard surfaces see the same
+  // realistic plan. 500ms settle window keeps number-input typing smooth.
+  useEffect(() => {
+    if (!knobsHydratedRef.current) return;
+    const timer = setTimeout(() => {
+      updateTargets.mutate({
+        persistencyAssumption: realism.persistencyRate,
+        taxReserveRate: realism.taxReserveRate,
+        ntoBufferRate: realism.ntoBufferRate,
+        premiumStatPreference: realism.premiumStat,
+      });
+    }, 500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- updateTargets is a stable mutation hook; we only want to fire on knob changes
+  }, [
+    realism.persistencyRate,
+    realism.taxReserveRate,
+    realism.ntoBufferRate,
+    realism.premiumStat,
+  ]);
 
   // Check if this is the first visit (no target set)
   const isFirstTime = targets && targets.annualIncomeTarget === 0;
