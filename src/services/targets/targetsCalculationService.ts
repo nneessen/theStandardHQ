@@ -50,7 +50,8 @@ export interface AvgPolicyPremiumBreakdown {
 
 export interface HistoricalAverages {
   avgCommissionRate: number; // As decimal (e.g., 0.50 for 50%)
-  avgPolicyPremium: number; // Average annual premium per policy
+  avgPolicyPremium: number; // Average annual premium per policy (mean)
+  medianPolicyPremium: number; // Median annual premium per policy
   avgPoliciesPerMonth: number; // Historical average policies written per month
   avgExpensesPerMonth: number; // Historical average monthly expenses (for monthly display)
   projectedAnnualExpenses: number; // Sum of actual expenses for the year (NOT avgExpensesPerMonth * 12)
@@ -61,34 +62,80 @@ export interface HistoricalAverages {
   hasData: boolean; // Whether we have enough historical data
 }
 
+/**
+ * Realism knobs that turn the optimistic gross-commission math into a
+ * realistic take-home plan. All defaults come from industry-typical
+ * values when historical data is missing.
+ */
+export interface RealismOptions {
+  /** Persistency rate as decimal (e.g., 0.75 = 75%). Reduces effective commission. */
+  persistencyRate: number;
+  /** Combined effective tax rate as decimal (default 0.30 ≈ SE tax + federal + state). */
+  taxReserveRate: number;
+  /** App→policy drag as decimal (e.g., 0.12 = need 12% more apps to hit policy count). */
+  ntoBufferRate: number;
+  /** Which premium stat to use for the divisor. Median is more robust to outliers. */
+  premiumStat: "mean" | "median";
+}
+
+export const DEFAULT_REALISM_OPTIONS: RealismOptions = {
+  persistencyRate: 0.75,
+  taxReserveRate: 0.3,
+  ntoBufferRate: 0.12,
+  premiumStat: "median",
+};
+
 export interface CalculatedTargets {
-  // Income breakdowns
+  // Income breakdowns (NET — pre-tax after expenses, matches existing semantics)
   annualIncomeTarget: number;
   quarterlyIncomeTarget: number;
   monthlyIncomeTarget: number;
   weeklyIncomeTarget: number;
   dailyIncomeTarget: number;
 
-  // Premium requirements
+  // Premium requirements (optimistic)
   totalPremiumNeeded: number;
 
-  // Policy requirements
+  // Policy requirements (optimistic — gross commission ÷ first-year rate ÷ avg premium)
   annualPoliciesTarget: number;
   quarterlyPoliciesTarget: number;
   monthlyPoliciesTarget: number;
   weeklyPoliciesTarget: number;
   dailyPoliciesTarget: number;
 
-  // Averages used
-  avgCommissionRate: number;
-  avgPolicyPremium: number;
+  // Averages used (optimistic)
+  avgCommissionRate: number; // First-year rate from comp_guide
+  avgPolicyPremium: number; // Mean by default; switches to median when premiumStat='median'
 
   // Other metrics
   persistency13MonthTarget: number;
   persistency25MonthTarget: number;
   monthlyExpenseTarget: number;
-  annualExpenses: number; // Actual projected annual expenses (NOT monthlyExpenseTarget * 12)
+  annualExpenses: number;
   expenseRatio: number;
+
+  // ───────────────────────────────────────────────────────────────────────
+  // Realistic mode (persistency + taxes + NTO drag, optional median premium)
+  // ───────────────────────────────────────────────────────────────────────
+  realism: RealismOptions;
+  /** Tax reserve $ — gross-up to keep `annualIncomeTarget` as actual take-home. */
+  taxReserveAmount: number;
+  /** firstYearRate × persistencyRate. */
+  effectiveCommissionRate: number;
+  /** annualIncomeTarget + taxReserve + expenses. */
+  realisticGrossCommissionNeeded: number;
+  /** realisticGross ÷ effectiveCommissionRate. */
+  realisticTotalPremiumNeeded: number;
+  /** Issued policies needed (after persistency drag). */
+  realisticAnnualPoliciesIssued: number;
+  /** Apps to write (issued × (1 + ntoBufferRate)). This is the action target. */
+  realisticAnnualAppsToWrite: number;
+  realisticQuarterlyAppsToWrite: number;
+  realisticMonthlyAppsToWrite: number;
+  realisticWeeklyAppsToWrite: number;
+  realisticDailyAppsToWrite: number;
+  /** Difference between realistic apps and optimistic policies — useful for context. */
+  realisticVsOptimisticDelta: number;
 
   // Calculation metadata
   calculationMethod: "historical" | "default";
@@ -105,65 +152,88 @@ export interface TargetCalculationOptions {
     monthlyExpenseTarget?: number;
     projectedAnnualExpenses?: number;
   };
+  /**
+   * Realism knobs. When omitted, falls back to historical persistency
+   * (or DEFAULT_REALISM_OPTIONS) and median premium.
+   */
+  realism?: Partial<RealismOptions>;
 }
 
 class TargetsCalculationService {
   /**
-   * Calculate all targets from a single annual income target
+   * Calculate all targets from a single annual income target.
+   *
+   * Returns BOTH the optimistic view (the original math — no chargebacks,
+   * no taxes, no NTO drag) and a realistic view that bakes in those drags.
+   * Callers can show either or both.
    */
   calculateTargets(options: TargetCalculationOptions): CalculatedTargets {
     const { annualIncomeTarget, historicalAverages, overrides } = options;
 
-    // CRITICAL: NO hardcoded defaults - only use actual data
+    // CRITICAL: NO hardcoded defaults — only use actual data
     // Determine which values to use (overrides > historical > zero)
     const avgCommissionRate =
       overrides?.avgCommissionRate ??
       historicalAverages?.avgCommissionRate ??
       0;
 
-    const avgPolicyPremium =
+    // Resolve realism knobs: explicit > historical persistency > defaults.
+    const realism: RealismOptions = {
+      persistencyRate:
+        options.realism?.persistencyRate ??
+        (historicalAverages?.persistency13Month &&
+        historicalAverages.persistency13Month > 0
+          ? historicalAverages.persistency13Month
+          : DEFAULT_REALISM_OPTIONS.persistencyRate),
+      taxReserveRate:
+        options.realism?.taxReserveRate ??
+        DEFAULT_REALISM_OPTIONS.taxReserveRate,
+      ntoBufferRate:
+        options.realism?.ntoBufferRate ?? DEFAULT_REALISM_OPTIONS.ntoBufferRate,
+      premiumStat:
+        options.realism?.premiumStat ?? DEFAULT_REALISM_OPTIONS.premiumStat,
+    };
+
+    // Pick the premium stat for the divisor. Median is more robust against
+    // a single large case skewing the picture.
+    const meanPremium =
       overrides?.avgPolicyPremium ?? historicalAverages?.avgPolicyPremium ?? 0;
+    const medianPremium = historicalAverages?.medianPolicyPremium ?? 0;
+    const avgPolicyPremium =
+      realism.premiumStat === "median" && medianPremium > 0
+        ? medianPremium
+        : meanPremium;
 
     const monthlyExpenseTarget =
       overrides?.monthlyExpenseTarget ??
       historicalAverages?.avgExpensesPerMonth ??
       0;
 
-    // CRITICAL: Use projected annual expenses (sum of actual expenses), NOT monthlyExpenseTarget * 12
-    // This correctly handles one-time vs recurring expenses:
-    // - One-time expenses are counted once (not multiplied by 12)
-    // - Recurring expenses are stored as individual records per occurrence, so summing gives correct annual total
+    // Projected annual expenses = sum of one-time + recurring rows for the year.
+    // Do NOT use monthlyExpenseTarget * 12 — that double-counts one-time items.
     const annualExpenses =
       overrides?.projectedAnnualExpenses ??
       historicalAverages?.projectedAnnualExpenses ??
       0;
 
-    // CRITICAL: annualIncomeTarget is NET income (after expenses)
-    // We need to calculate GROSS commission income needed (before expenses)
+    // ─── Optimistic view (existing math — kept verbatim for back-compat) ──
+    // annualIncomeTarget is NET (after expenses); add expenses to get GROSS.
     const grossCommissionNeeded = annualIncomeTarget + annualExpenses;
 
-    // Income breakdowns (based on NET income target)
     const quarterlyIncomeTarget = annualIncomeTarget / 4;
     const monthlyIncomeTarget = annualIncomeTarget / 12;
     const weeklyIncomeTarget = annualIncomeTarget / 52;
     const dailyIncomeTarget = annualIncomeTarget / 365;
 
-    // Calculate total premium needed (using GROSS commission needed, not net)
-    // Formula: Gross Commission Needed / Average Commission Rate = Total Premium Needed
     const totalPremiumNeeded =
       avgCommissionRate > 0 ? grossCommissionNeeded / avgCommissionRate : 0;
 
-    // Calculate policies needed
-    // Formula: Total Premium Needed / Average Policy Premium = Policies Needed
     const annualPoliciesTarget =
       avgPolicyPremium > 0
         ? Math.ceil(totalPremiumNeeded / avgPolicyPremium)
         : 0;
 
-    // Break down policies by time period.
-    // Use Math.round (not Math.ceil) so 12 × monthlyTarget ≈ annualTarget
-    // instead of overshooting by up to 11 policies. Daily floor keeps the
-    // "at least 1/day" guard so the dashboard doesn't show 0.
+    // Math.round so 12 × monthly ≈ annual instead of overshooting by 11.
     const quarterlyPoliciesTarget = Math.round(annualPoliciesTarget / 4);
     const monthlyPoliciesTarget = Math.round(annualPoliciesTarget / 12);
     const weeklyPoliciesTarget = Math.round(annualPoliciesTarget / 52);
@@ -172,9 +242,57 @@ class TargetsCalculationService {
         ? Math.max(1, Math.round(annualPoliciesTarget / 365))
         : 0;
 
-    // Calculate expense ratio (expenses as % of GROSS commission income)
     const expenseRatio =
       grossCommissionNeeded > 0 ? annualExpenses / grossCommissionNeeded : 0;
+
+    // ─── Realistic view ──────────────────────────────────────────────────
+    // Tax gross-up: if you want $X take-home, you need $X / (1 - taxRate).
+    // The delta is the tax reserve.
+    const taxableIncomeNeeded =
+      realism.taxReserveRate > 0 && realism.taxReserveRate < 1
+        ? annualIncomeTarget / (1 - realism.taxReserveRate)
+        : annualIncomeTarget;
+    const taxReserveAmount = taxableIncomeNeeded - annualIncomeTarget;
+
+    const realisticGrossCommissionNeeded = taxableIncomeNeeded + annualExpenses;
+
+    // Effective rate = first-year × persistency. A policy that charges back
+    // contributes 0 to durable income, so effective comp is the rate × the
+    // share of policies that actually stick.
+    const effectiveCommissionRate = avgCommissionRate * realism.persistencyRate;
+
+    const realisticTotalPremiumNeeded =
+      effectiveCommissionRate > 0
+        ? realisticGrossCommissionNeeded / effectiveCommissionRate
+        : 0;
+
+    const realisticAnnualPoliciesIssued =
+      avgPolicyPremium > 0
+        ? Math.ceil(realisticTotalPremiumNeeded / avgPolicyPremium)
+        : 0;
+
+    // Apps to write = issued × (1 + NTO drag). This is the activity target —
+    // what you actually need to do to net the take-home goal.
+    const realisticAnnualAppsToWrite = Math.ceil(
+      realisticAnnualPoliciesIssued * (1 + realism.ntoBufferRate),
+    );
+
+    const realisticQuarterlyAppsToWrite = Math.round(
+      realisticAnnualAppsToWrite / 4,
+    );
+    const realisticMonthlyAppsToWrite = Math.round(
+      realisticAnnualAppsToWrite / 12,
+    );
+    const realisticWeeklyAppsToWrite = Math.round(
+      realisticAnnualAppsToWrite / 52,
+    );
+    const realisticDailyAppsToWrite =
+      realisticAnnualAppsToWrite > 0
+        ? Math.max(1, Math.round(realisticAnnualAppsToWrite / 365))
+        : 0;
+
+    const realisticVsOptimisticDelta =
+      realisticAnnualAppsToWrite - annualPoliciesTarget;
 
     // Use historical persistency or zero
     const persistency13MonthTarget =
@@ -188,8 +306,7 @@ class TargetsCalculationService {
     let dataPoints = 0;
 
     if (historicalAverages?.hasData) {
-      // Count how many months of data we have
-      dataPoints = historicalAverages.avgPoliciesPerMonth > 0 ? 12 : 0; // Simplified
+      dataPoints = historicalAverages.avgPoliciesPerMonth > 0 ? 12 : 0;
 
       if (dataPoints >= 12) {
         confidence = "high";
@@ -206,10 +323,10 @@ class TargetsCalculationService {
       weeklyIncomeTarget,
       dailyIncomeTarget,
 
-      // Premium requirement
+      // Premium requirement (optimistic)
       totalPremiumNeeded,
 
-      // Policy targets
+      // Policy targets (optimistic)
       annualPoliciesTarget,
       quarterlyPoliciesTarget,
       monthlyPoliciesTarget,
@@ -227,6 +344,20 @@ class TargetsCalculationService {
       annualExpenses,
       expenseRatio,
 
+      // Realistic view
+      realism,
+      taxReserveAmount,
+      effectiveCommissionRate,
+      realisticGrossCommissionNeeded,
+      realisticTotalPremiumNeeded,
+      realisticAnnualPoliciesIssued,
+      realisticAnnualAppsToWrite,
+      realisticQuarterlyAppsToWrite,
+      realisticMonthlyAppsToWrite,
+      realisticWeeklyAppsToWrite,
+      realisticDailyAppsToWrite,
+      realisticVsOptimisticDelta,
+
       // Metadata
       calculationMethod: historicalAverages?.hasData ? "historical" : "default",
       confidence,
@@ -240,7 +371,6 @@ class TargetsCalculationService {
   getCalculationBreakdown(targets: CalculatedTargets): string[] {
     const breakdown: string[] = [];
     const commissionPercent = (targets.avgCommissionRate * 100).toFixed(1);
-    // Use actual projected annual expenses (not monthlyExpenseTarget * 12)
     const grossCommissionNeeded =
       targets.annualIncomeTarget + targets.annualExpenses;
 
@@ -289,21 +419,21 @@ class TargetsCalculationService {
       return { isAchievable: true, warnings, recommendations };
     }
 
-    // Check if monthly policy target is more than 2x historical average
+    // Compare REALISTIC apps-to-write against historical pace — that's the
+    // real activity ask, not the optimistic policy count.
     if (
-      targets.monthlyPoliciesTarget >
+      targets.realisticMonthlyAppsToWrite >
       historicalAverages.avgPoliciesPerMonth * 2
     ) {
       warnings.push(
-        `Target requires ${targets.monthlyPoliciesTarget} policies/month, ` +
-          `but your historical average is ${historicalAverages.avgPoliciesPerMonth.toFixed(1)}.`,
+        `Realistic plan requires ${targets.realisticMonthlyAppsToWrite} apps/month, ` +
+          `but your historical average is ${historicalAverages.avgPoliciesPerMonth.toFixed(1)} policies.`,
       );
       recommendations.push(
         "Consider adjusting your income target or improving your average policy size.",
       );
     }
 
-    // Check expense ratio
     if (targets.expenseRatio > 0.5) {
       warnings.push(
         `Expenses are ${(targets.expenseRatio * 100).toFixed(1)}% of income target.`,

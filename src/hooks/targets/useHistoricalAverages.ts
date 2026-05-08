@@ -53,6 +53,7 @@ export function useHistoricalAverages(): {
       return {
         avgCommissionRate: 0,
         avgPolicyPremium: 0,
+        medianPolicyPremium: 0,
         avgPoliciesPerMonth: 0,
         avgExpensesPerMonth: 0,
         projectedAnnualExpenses: 0,
@@ -423,6 +424,7 @@ export function useHistoricalAverages(): {
     return {
       avgCommissionRate,
       avgPolicyPremium,
+      medianPolicyPremium: median,
       avgPoliciesPerMonth,
       avgExpensesPerMonth,
       projectedAnnualExpenses,
