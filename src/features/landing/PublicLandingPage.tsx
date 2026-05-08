@@ -72,10 +72,6 @@ export function PublicLandingPage() {
     }
   }, [theme]);
 
-  const heroImage = theme.hero_image_url;
-  const galleryImage =
-    theme.gallery_featured_url || theme.gallery_images[0]?.url;
-
   return (
     <div className="theme-landing min-h-screen">
       <StickyNav theme={theme} />
@@ -95,10 +91,11 @@ export function PublicLandingPage() {
 
         <IntegrationsWallSection />
 
-        {/* Visual break — uses hero image if set, otherwise navy gradient with gold orbs */}
+        {/* Visual break — navy gradient with gold orbs/rings (no photo bg).
+            Photos read poorly behind display copy and the agency is one
+            person, so the design element does the heavy lifting here. */}
         <LifestyleBreakSection
-          imageUrl={heroImage}
-          variant={heroImage ? "image" : "navy-gradient"}
+          variant="navy-gradient"
           overlayText="Built by producers, for producers."
           overlaySubtext="Every feature on this page was designed by someone who writes business and got tired of doing it the slow way."
         />
@@ -114,16 +111,6 @@ export function PublicLandingPage() {
         <OpportunityPath theme={theme} />
 
         <EarningsAndCompSection />
-
-        {/* Second visual break — uses gallery image if available */}
-        {galleryImage && (
-          <LifestyleBreakSection
-            imageUrl={galleryImage}
-            variant="image"
-            overlayText="The team that ships the software is the team you'll work with."
-            overlaySubtext="No customer-success layer. No support tier. The agents using this platform are the ones building it."
-          />
-        )}
 
         <FounderQuoteSection />
 

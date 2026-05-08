@@ -103,17 +103,13 @@ function PlaceholderGrid() {
       {Array.from({ length: PLACEHOLDER_COUNT }).map((_, i) => (
         <div
           key={i}
-          className="aspect-square surface-base flex flex-col items-center justify-center text-center px-4"
+          className="aspect-square surface-base flex items-center justify-center"
         >
           <ImageIcon
             size={28}
             strokeWidth={1.25}
-            className="text-[var(--landing-terrain-grey)] mb-3"
+            className="text-[var(--landing-terrain-grey)]/40"
           />
-          <p className="text-eyebrow">{`Photo ${i + 1}`}</p>
-          <p className="text-[10px] text-muted mt-2 leading-snug max-w-[18ch]">
-            Upload via admin → Landing Page Settings → Gallery
-          </p>
         </div>
       ))}
     </div>

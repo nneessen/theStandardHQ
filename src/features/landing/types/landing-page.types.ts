@@ -388,8 +388,8 @@ export const DEFAULT_LANDING_PAGE_THEME: LandingPageTheme = {
 
   // Gallery
   gallery_enabled: true,
-  gallery_headline: "Our People",
-  gallery_subheadline: "The culture that drives our success",
+  gallery_headline: "Agency Owner",
+  gallery_subheadline: "The producer behind the platform",
   gallery_featured_url: null,
   gallery_images: [],
 

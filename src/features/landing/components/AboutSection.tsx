@@ -1,4 +1,3 @@
-import { User } from "lucide-react";
 import type { LandingPageTheme } from "../types";
 import { useReveal } from "../hooks/useReveal";
 
@@ -156,22 +155,12 @@ function PhotoPlaceholder({ name }: { name: string }) {
         }}
       />
       <div className="text-center relative z-10">
-        <div className="w-20 h-20 mx-auto mb-4 border border-[var(--landing-icy-blue)]/30 rounded-[2px] flex items-center justify-center">
-          <User
-            size={32}
-            strokeWidth={1.25}
-            className="text-[var(--landing-icy-blue)]/60"
-          />
-        </div>
         <div
-          className="text-display-2xl text-[var(--landing-adventure-yellow)] mb-2"
-          style={{ fontWeight: 900 }}
+          className="text-display-2xl text-[var(--landing-adventure-yellow)]"
+          style={{ fontWeight: 900, fontSize: "5rem", lineHeight: 1 }}
         >
           {initials}
         </div>
-        <p className="text-eyebrow !text-[var(--landing-icy-blue)]/50">
-          Drop a photo URL in admin → Landing Page Settings → About → Image URL
-        </p>
       </div>
     </div>
   );
