@@ -34,6 +34,77 @@ import { TargetInputDialog } from "./components/TargetInputDialog";
 import { PersistencyScenarios } from "./components/PersistencyScenarios";
 import { WelcomeTargetCard } from "./components/WelcomeTargetCard";
 
+/**
+ * Number input for a 0–100 percent value backed by a 0–1 decimal in parent
+ * state. Holds its own local string state so the user can fully clear the
+ * field while editing — controlled-input parsing (`parseFloat("")` → NaN)
+ * would otherwise refuse to commit an empty string and the last char would
+ * pop right back in. On blur, falls back to the parent's saved value if
+ * the string is empty or out of range.
+ */
+function PercentInput({
+  value,
+  onChange,
+  min,
+  max,
+  step = 1,
+  className,
+  "aria-label": ariaLabel,
+}: {
+  value: number; // decimal 0-1
+  onChange: (next: number) => void; // decimal 0-1
+  min: number; // percent (e.g. 0)
+  max: number; // percent (e.g. 100)
+  step?: number;
+  className?: string;
+  "aria-label"?: string;
+}) {
+  const [local, setLocal] = useState(() => (value * 100).toFixed(0));
+  const isFocusedRef = useRef(false);
+
+  // Sync from parent only while NOT focused, so external resets (e.g. the
+  // "Reset to defaults" button or DB hydration) propagate without stomping
+  // on in-flight typing.
+  useEffect(() => {
+    if (!isFocusedRef.current) {
+      setLocal((value * 100).toFixed(0));
+    }
+  }, [value]);
+
+  return (
+    <Input
+      type="number"
+      min={min}
+      max={max}
+      step={step}
+      value={local}
+      aria-label={ariaLabel}
+      onFocus={() => {
+        isFocusedRef.current = true;
+      }}
+      onChange={(e) => {
+        const str = e.target.value;
+        setLocal(str); // always reflect what user typed, including ""
+        if (str === "") return; // allow temporary empty state
+        const v = parseFloat(str);
+        if (!isNaN(v) && v >= min && v <= max) {
+          onChange(v / 100);
+        }
+      }}
+      onBlur={() => {
+        isFocusedRef.current = false;
+        const v = parseFloat(local);
+        if (isNaN(v) || v < min || v > max) {
+          setLocal((value * 100).toFixed(0));
+        } else {
+          setLocal((value * 100).toFixed(0));
+        }
+      }}
+      className={className}
+    />
+  );
+}
+
 export function TargetsPage() {
   const { data: targets, isLoading, error } = useTargets();
   const actualMetrics = useActualMetrics();
@@ -382,21 +453,14 @@ export function TargetsPage() {
                     )}
                   </span>
                   <div className="flex items-center gap-1">
-                    <Input
-                      type="number"
+                    <PercentInput
                       min={0}
                       max={100}
-                      step={1}
-                      value={(realism.persistencyRate * 100).toFixed(0)}
-                      onChange={(e) => {
-                        const v = parseFloat(e.target.value);
-                        if (!isNaN(v) && v >= 0 && v <= 100) {
-                          setRealism((r) => ({
-                            ...r,
-                            persistencyRate: v / 100,
-                          }));
-                        }
-                      }}
+                      value={realism.persistencyRate}
+                      onChange={(v) =>
+                        setRealism((r) => ({ ...r, persistencyRate: v }))
+                      }
+                      aria-label="Persistency percent"
                       className="h-7 text-[11px] font-mono px-2"
                     />
                     <span className="text-[10px] text-muted-foreground">%</span>
@@ -408,21 +472,14 @@ export function TargetsPage() {
                     Tax Reserve
                   </span>
                   <div className="flex items-center gap-1">
-                    <Input
-                      type="number"
+                    <PercentInput
                       min={0}
                       max={70}
-                      step={1}
-                      value={(realism.taxReserveRate * 100).toFixed(0)}
-                      onChange={(e) => {
-                        const v = parseFloat(e.target.value);
-                        if (!isNaN(v) && v >= 0 && v < 100) {
-                          setRealism((r) => ({
-                            ...r,
-                            taxReserveRate: v / 100,
-                          }));
-                        }
-                      }}
+                      value={realism.taxReserveRate}
+                      onChange={(v) =>
+                        setRealism((r) => ({ ...r, taxReserveRate: v }))
+                      }
+                      aria-label="Tax reserve percent"
                       className="h-7 text-[11px] font-mono px-2"
                     />
                     <span className="text-[10px] text-muted-foreground">%</span>
@@ -434,21 +491,14 @@ export function TargetsPage() {
                     NTO Drag
                   </span>
                   <div className="flex items-center gap-1">
-                    <Input
-                      type="number"
+                    <PercentInput
                       min={0}
                       max={50}
-                      step={1}
-                      value={(realism.ntoBufferRate * 100).toFixed(0)}
-                      onChange={(e) => {
-                        const v = parseFloat(e.target.value);
-                        if (!isNaN(v) && v >= 0 && v < 100) {
-                          setRealism((r) => ({
-                            ...r,
-                            ntoBufferRate: v / 100,
-                          }));
-                        }
-                      }}
+                      value={realism.ntoBufferRate}
+                      onChange={(v) =>
+                        setRealism((r) => ({ ...r, ntoBufferRate: v }))
+                      }
+                      aria-label="NTO drag percent"
                       className="h-7 text-[11px] font-mono px-2"
                     />
                     <span className="text-[10px] text-muted-foreground">%</span>
