@@ -4,8 +4,9 @@ import { cn } from "@/lib/utils";
 export interface HeroStat {
   label: string;
   value: string;
-  /** 0..1 — controls the bar fill. Pass 0 to hide the bar gracefully. */
-  pct: number;
+  /** 0..1 — controls the bar fill. Omit to skip the bar entirely (used for
+   *  snapshot cells like Pipeline that don't have a meaningful target). */
+  pct?: number;
   /** 0..1 — when set and < 1, renders a vertical tick on the bar marking
    *  expected pace position (e.g., 67% of the month elapsed). */
   expectedPct?: number;
@@ -13,6 +14,9 @@ export interface HeroStat {
   hint?: string;
   /** Bar fill color tone. */
   tone?: "ink" | "accent" | "muted";
+  /** Optional override for the big number's color (e.g., red for negative
+   *  net income). Falls back to the default ink/muted treatment. */
+  valueTone?: "default" | "good" | "bad";
   /** When true, render the cell as half-prominence (used for YTD pairs). */
   secondary?: boolean;
 }
@@ -42,12 +46,21 @@ export const HeroStatStrip: React.FC<HeroStatStripProps> = ({ stats }) => {
       )}
     >
       {stats.map((stat, i) => {
-        const pct = Math.max(0, Math.min(1, stat.pct));
         const tone = stat.tone ?? "ink";
+        const hasBar = stat.pct != null;
+        const pct = hasBar ? Math.max(0, Math.min(1, stat.pct as number)) : 0;
         const showTick =
           stat.expectedPct != null &&
           stat.expectedPct > 0 &&
           stat.expectedPct < 1;
+        const valueColor =
+          stat.valueTone === "good"
+            ? "text-success"
+            : stat.valueTone === "bad"
+              ? "text-destructive"
+              : stat.secondary
+                ? "text-v2-ink-muted"
+                : "text-v2-ink";
         return (
           <div
             key={i}
@@ -62,30 +75,33 @@ export const HeroStatStrip: React.FC<HeroStatStripProps> = ({ stats }) => {
             <div
               className={cn(
                 "font-mono tabular-nums font-semibold leading-none truncate",
-                stat.secondary
-                  ? "text-xl text-v2-ink-muted"
-                  : "text-2xl text-v2-ink",
+                stat.secondary ? "text-xl" : "text-2xl",
+                valueColor,
               )}
             >
               {stat.value}
             </div>
-            <div className="relative h-1 bg-v2-canvas border border-v2-ring overflow-hidden rounded-v2-pill mt-1">
-              <div
-                className={cn(
-                  "absolute inset-y-0 left-0 transition-[width] duration-500",
-                  toneFill[tone],
-                )}
-                style={{ width: `${pct * 100}%` }}
-              />
-              {showTick && (
+            {hasBar ? (
+              <div className="relative h-1 bg-v2-canvas border border-v2-ring overflow-hidden rounded-v2-pill mt-1">
                 <div
-                  className="absolute -top-0.5 -bottom-0.5 w-px bg-v2-ink"
-                  style={{ left: `${(stat.expectedPct as number) * 100}%` }}
-                  aria-hidden
-                  title={`Expected: ${Math.round((stat.expectedPct as number) * 100)}%`}
+                  className={cn(
+                    "absolute inset-y-0 left-0 transition-[width] duration-500",
+                    toneFill[tone],
+                  )}
+                  style={{ width: `${pct * 100}%` }}
                 />
-              )}
-            </div>
+                {showTick && (
+                  <div
+                    className="absolute -top-0.5 -bottom-0.5 w-px bg-v2-ink"
+                    style={{ left: `${(stat.expectedPct as number) * 100}%` }}
+                    aria-hidden
+                    title={`Expected: ${Math.round((stat.expectedPct as number) * 100)}%`}
+                  />
+                )}
+              </div>
+            ) : (
+              <div className="h-1 mt-1" aria-hidden />
+            )}
             {stat.hint && (
               <div className="text-[11px] text-v2-ink-muted font-mono tabular-nums truncate">
                 {stat.hint}

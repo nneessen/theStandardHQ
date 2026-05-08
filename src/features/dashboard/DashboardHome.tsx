@@ -141,29 +141,6 @@ function periodTitle(period: TimePeriod, dr: DateRange): string {
   return start.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
-/**
- * Calendar-progress helpers used by the YTD bars on the hero strip:
- * the bar fills as the *year* progresses, so the user has a visual
- * anchor for "where am I in the year vs. what I've earned so far."
- */
-function calendarProgress(now: Date) {
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-  const startOfNextMonth = new Date(
-    now.getFullYear(),
-    now.getMonth() + 1,
-    1,
-  ).getTime();
-  const startOfYear = new Date(now.getFullYear(), 0, 1).getTime();
-  const startOfNextYear = new Date(now.getFullYear() + 1, 0, 1).getTime();
-  const month =
-    (now.getTime() - startOfMonth) / (startOfNextMonth - startOfMonth);
-  const year = (now.getTime() - startOfYear) / (startOfNextYear - startOfYear);
-  return {
-    month: Math.max(0, Math.min(1, month)),
-    year: Math.max(0, Math.min(1, year)),
-  };
-}
-
 export const DashboardHome: React.FC = () => {
   const { user } = useAuth();
   const { data: constants } = useConstants();
@@ -195,56 +172,6 @@ export const DashboardHome: React.FC = () => {
     periodOffset,
     targetAvgPremium: constants?.avgAP || 1500,
   });
-
-  // Hero MTD/YTD totals always anchor on "today" when current period; on
-  // the end of the selected period when navigating back. This keeps the
-  // strip honest about historical context without flickering past values.
-  const heroAnchorEnd =
-    periodOffset === 0
-      ? new Date()
-      : new Date(
-          dateRange.endDate.getFullYear(),
-          dateRange.endDate.getMonth(),
-          dateRange.endDate.getDate(),
-          23,
-          59,
-          59,
-          999,
-        );
-  const heroMtdRange: DateRange = {
-    startDate: new Date(
-      heroAnchorEnd.getFullYear(),
-      heroAnchorEnd.getMonth(),
-      1,
-      0,
-      0,
-      0,
-      0,
-    ),
-    endDate: heroAnchorEnd,
-  };
-  const heroYtdRange: DateRange = {
-    startDate: new Date(heroAnchorEnd.getFullYear(), 0, 1, 0, 0, 0, 0),
-    endDate: heroAnchorEnd,
-  };
-  const mtdMetrics = useMetricsWithDateRange({
-    timePeriod: "monthly",
-    periodOffset: 0,
-    customRange: heroMtdRange,
-  });
-  const ytdMetrics = useMetricsWithDateRange({
-    timePeriod: "yearly",
-    periodOffset: 0,
-    customRange: heroYtdRange,
-  });
-  const mtdCommissionTotal =
-    (mtdMetrics.periodCommissions.paid ?? 0) +
-    (mtdMetrics.periodCommissions.pending ?? 0);
-  const ytdCommissionTotal =
-    (ytdMetrics.periodCommissions.paid ?? 0) +
-    (ytdMetrics.periodCommissions.pending ?? 0);
-  const mtdAPTotal = mtdMetrics.periodPolicies.premiumWritten;
-  const ytdAPTotal = ytdMetrics.periodPolicies.premiumWritten;
 
   const createExpense = useCreateExpense();
   const createPolicy = useCreatePolicy();
@@ -411,81 +338,77 @@ export const DashboardHome: React.FC = () => {
     dashboardFeatures.isImoAdmin ||
     dashboardFeatures.isAgencyOwner;
 
-  // Compute pace ratios for the hero strip. MTD bars track against
-  // monthly targets; YTD bars use calendar position so they tell the
-  // user "you're X% through the year and have earned $N."
-  const monthlyCommTarget =
-    mtdMetrics.periodAnalytics?.paceMetrics?.monthlyTarget ?? 0;
-  const calProgress = calendarProgress(new Date());
+  // Hero strip is fully period-aware — every cell reads from the same
+  // period-scoped queries the rest of the page uses, so flipping the
+  // Day/Week/MTD/Month/Year picker (or prev/next) updates all values
+  // together. Targets scale to match the selected period.
+  const periodCommTarget = (() => {
+    const m = periodAnalytics.paceMetrics;
+    if (timePeriod === "daily") return m.dailyTarget;
+    if (timePeriod === "weekly") return m.weeklyTarget;
+    if (timePeriod === "yearly") return m.monthlyTarget * 12;
+    return m.monthlyTarget;
+  })();
 
-  const apMtdPct =
-    ytdAPTotal > 0
-      ? Math.min(1, mtdAPTotal / (ytdAPTotal / 12))
-      : mtdAPTotal > 0
-        ? 1
-        : 0;
-  const commMtdPct =
-    monthlyCommTarget > 0
-      ? Math.min(1, mtdCommissionTotal / monthlyCommTarget)
-      : mtdCommissionTotal > 0
-        ? 1
-        : 0;
-  const policiesPct =
-    policyTarget > 0
-      ? Math.min(1, periodPolicies.newCount / policyTarget)
-      : periodPolicies.newCount > 0
-        ? 1
-        : 0;
+  const periodCommTotal =
+    (periodCommissions.paid ?? 0) + (periodCommissions.pending ?? 0);
+  const premiumTarget =
+    constants?.avgAP && policyTarget > 0 ? constants.avgAP * policyTarget : 0;
+
+  const safePct = (current: number, target: number): number =>
+    target > 0 ? Math.min(1, current / target) : current > 0 ? 1 : 0;
+
+  const aboveBreakeven = periodAnalytics.surplusDeficit >= 0;
 
   const heroStats: HeroStat[] = [
     {
-      label: "Premium MTD",
-      value: formatCompactCurrency(mtdAPTotal),
-      pct: apMtdPct,
-      expectedPct: periodOffset === 0 ? calProgress.month : undefined,
+      label: "Premium",
+      value: formatCompactCurrency(periodPolicies.premiumWritten),
+      pct: safePct(periodPolicies.premiumWritten, premiumTarget),
+      expectedPct: periodOffset === 0 ? expectedPct : undefined,
       hint:
-        ytdAPTotal > 0
-          ? `${Math.round(apMtdPct * 100)}% of ${formatCompactCurrency(ytdAPTotal / 12)} pace`
-          : "no pace yet",
+        premiumTarget > 0
+          ? `${Math.round(safePct(periodPolicies.premiumWritten, premiumTarget) * 100)}% of ${formatCompactCurrency(premiumTarget)} target`
+          : `${formatCompactCurrency(periodPolicies.premiumWritten)} written`,
       tone: "ink",
     },
     {
-      label: "Premium YTD",
-      value: formatCompactCurrency(ytdAPTotal),
-      pct: calProgress.year,
-      hint: `${Math.round(calProgress.year * 100)}% through year`,
-      tone: "muted",
-      secondary: true,
-    },
-    {
-      label: "Commissions MTD",
-      value: formatCompactCurrency(mtdCommissionTotal),
-      pct: commMtdPct,
-      expectedPct: periodOffset === 0 ? calProgress.month : undefined,
+      label: "Commissions",
+      value: formatCompactCurrency(periodCommTotal),
+      pct: safePct(periodCommTotal, periodCommTarget),
+      expectedPct: periodOffset === 0 ? expectedPct : undefined,
       hint:
-        monthlyCommTarget > 0
-          ? `${Math.round(commMtdPct * 100)}% of ${formatCompactCurrency(monthlyCommTarget)} target`
+        periodCommTarget > 0
+          ? `${Math.round(safePct(periodCommTotal, periodCommTarget) * 100)}% of ${formatCompactCurrency(periodCommTarget)} target`
           : "no target set",
       tone: "accent",
     },
     {
-      label: "Commissions YTD",
-      value: formatCompactCurrency(ytdCommissionTotal),
-      pct: calProgress.year,
-      hint: `${Math.round(calProgress.year * 100)}% through year`,
+      label: "Net Income",
+      value: formatCompactCurrency(periodAnalytics.netIncome),
+      // pct intentionally omitted — net is signed, a 0..1 bar would mislead.
+      hint: aboveBreakeven ? "above breakeven" : "below breakeven",
       tone: "muted",
-      secondary: true,
+      valueTone: aboveBreakeven ? "good" : "bad",
     },
     {
       label: "Policies",
       value: periodPolicies.newCount.toLocaleString(),
-      pct: policiesPct,
+      pct: safePct(periodPolicies.newCount, policyTarget),
       expectedPct: periodOffset === 0 ? expectedPct : undefined,
       hint:
         policyTarget > 0
           ? `${periodPolicies.newCount} of ${policyTarget} target`
           : `${periodPolicies.newCount} written`,
       tone: "ink",
+    },
+    {
+      label: "Pipeline",
+      value: formatCompactCurrency(currentState.pendingPipeline),
+      // pct omitted — pipeline is a current snapshot, not pace toward a target.
+      hint: "current pending",
+      tone: "muted",
+      secondary: true,
     },
   ];
 
