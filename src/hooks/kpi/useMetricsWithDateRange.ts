@@ -507,16 +507,22 @@ export function useMetricsWithDateRange(
 
   // Calculate period analytics
   const periodAnalytics = (() => {
-    // Use 'paid' (money received) for financial calculations, not 'earned' (entitled)
-    const surplusDeficit = periodCommissions.paid - periodExpenses.total;
+    // Accrual-basis: count what you've EARNED this period (paid + pending)
+    // against expenses incurred. Cash-basis (paid only) systematically
+    // understates net income because carriers typically wire commission
+    // 30–60 days after policy issue, while rent/leads/etc. are booked
+    // immediately. Using paid alone made well-performing months look like
+    // losses and inflated breakevenNeeded / policiesNeeded.
+    const earnedThisPeriod =
+      (periodCommissions.paid ?? 0) + (periodCommissions.pending ?? 0);
+    const surplusDeficit = earnedThisPeriod - periodExpenses.total;
     const netIncome = surplusDeficit;
     const breakevenNeeded = surplusDeficit < 0 ? Math.abs(surplusDeficit) : 0;
 
-    // Calculate profit margin
+    // Profit margin uses the same accrual denominator so the percentage
+    // matches the net-income narrative.
     const profitMargin =
-      periodCommissions.paid > 0
-        ? (netIncome / periodCommissions.paid) * 100
-        : 0;
+      earnedThisPeriod > 0 ? (netIncome / earnedThisPeriod) * 100 : 0;
 
     const allCommissionTotal = commissions.reduce(
       (sum, c) => sum + (c.amount || 0),
