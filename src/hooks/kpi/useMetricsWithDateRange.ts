@@ -8,7 +8,7 @@ import {
   isInDateRange,
   getTimeRemaining,
 } from "../../utils/dateRange";
-import { parseLocalDate, formatDateForDB } from "../../lib/date";
+import { formatDateForDB } from "../../lib/date";
 import { usePolicies } from "../policies";
 import { useCommissions } from "../commissions/useCommissions";
 import { useExpenses } from "../expenses/useExpenses";
@@ -129,94 +129,24 @@ export function useMetricsWithDateRange(
     end: formatDateForDB(dateRange.endDate),
   };
 
-  // Filter commissions by date range
-  const filteredCommissions = (() => {
-    // If date range is for 2025 but all data is from 2024, show all data
-    // This handles the case where system date is ahead of data dates
-    const currentYear = new Date().getFullYear();
-    const hasCurrentYearData = commissions.some((c) => {
-      const date =
-        c.status === "paid" && c.paymentDate ? c.paymentDate : c.createdAt;
-      if (!date) return false;
-      const dateObj = typeof date === "string" ? parseLocalDate(date) : date;
-      return dateObj.getFullYear() === currentYear;
-    });
-
-    if (
-      !hasCurrentYearData &&
-      dateRangeForFiltering.start &&
-      parseLocalDate(dateRangeForFiltering.start).getFullYear() === currentYear
-    ) {
-      // Find most recent year with data instead of returning everything
-      const mostRecentYear = commissions.reduce((maxYear, c) => {
-        const d =
-          c.status === "paid" && c.paymentDate ? c.paymentDate : c.createdAt;
-        if (!d) return maxYear;
-        const dateObj = typeof d === "string" ? parseLocalDate(d) : d;
-        return Math.max(maxYear, dateObj.getFullYear());
-      }, 0);
-
-      return mostRecentYear > 0
-        ? commissions.filter((c) => {
-            const d =
-              c.status === "paid" && c.paymentDate
-                ? c.paymentDate
-                : c.createdAt;
-            if (!d) return false;
-            const dateObj = typeof d === "string" ? parseLocalDate(d) : d;
-            return dateObj.getFullYear() === mostRecentYear;
-          })
-        : commissions;
-    }
-
-    return commissions.filter((commission) => {
-      const dateToCheck =
-        commission.status === "paid" && commission.paymentDate
-          ? commission.paymentDate // Use paymentDate (matches DB field payment_date)
-          : commission.createdAt;
-      return isInDateRange(dateToCheck, dateRangeForFiltering);
-    });
-  })();
+  // Filter commissions by date range. Paid rows bucket by paymentDate
+  // (when the carrier wired the money); pending/unpaid rows bucket by
+  // createdAt (which is when the row was inserted, typically right after
+  // policy issuance). Date ranges are honored exactly — if there's no
+  // data in the period, the column shows 0.
+  const filteredCommissions = commissions.filter((commission) => {
+    const dateToCheck =
+      commission.status === "paid" && commission.paymentDate
+        ? commission.paymentDate
+        : commission.createdAt;
+    return isInDateRange(dateToCheck, dateRangeForFiltering);
+  });
 
   // Filter expenses by date range
-  const filteredExpenses = (() => {
-    // Check for year mismatch using parseLocalDate to avoid timezone issues
-    const currentYear = new Date().getFullYear();
-    const hasCurrentYearData = expenses.some((e) => {
-      const date = e.date || e.created_at;
-      if (!date) return false;
-      const dateObj = typeof date === "string" ? parseLocalDate(date) : date;
-      return dateObj.getFullYear() === currentYear;
-    });
-
-    if (
-      !hasCurrentYearData &&
-      dateRangeForFiltering.start &&
-      parseLocalDate(dateRangeForFiltering.start).getFullYear() === currentYear
-    ) {
-      // Find most recent year with data instead of returning everything
-      const mostRecentYear = expenses.reduce((maxYear, e) => {
-        const d = e.date || e.created_at;
-        if (!d) return maxYear;
-        const dateObj = typeof d === "string" ? parseLocalDate(d) : d;
-        return Math.max(maxYear, dateObj.getFullYear());
-      }, 0);
-
-      return mostRecentYear > 0
-        ? expenses.filter((e) => {
-            const d = e.date || e.created_at;
-            if (!d) return false;
-            const dateObj = typeof d === "string" ? parseLocalDate(d) : d;
-            return dateObj.getFullYear() === mostRecentYear;
-          })
-        : expenses;
-    }
-
-    return expenses.filter((expense) => {
-      const expenseDate = expense.date || expense.created_at;
-      return isInDateRange(expenseDate, dateRangeForFiltering);
-    });
-  })();
+  const filteredExpenses = expenses.filter((expense) => {
+    const expenseDate = expense.date || expense.created_at;
+    return isInDateRange(expenseDate, dateRangeForFiltering);
+  });
 
   // Filter policies by date range (for new policies).
   // Sales bucketing uses submit_date — that's when the policy was sold and
@@ -229,44 +159,10 @@ export function useMetricsWithDateRange(
     effectiveDate?: string;
     createdAt?: string;
   }) => p.submitDate || p.effectiveDate || p.createdAt;
-  const filteredPolicies = (() => {
-    // Check for year mismatch using parseLocalDate to avoid timezone issues
-    const currentYear = new Date().getFullYear();
-    const hasCurrentYearData = policies.some((p) => {
-      const date = policyBucketDate(p);
-      if (!date) return false;
-      const dateObj = typeof date === "string" ? parseLocalDate(date) : date;
-      return dateObj.getFullYear() === currentYear;
-    });
-
-    if (
-      !hasCurrentYearData &&
-      dateRangeForFiltering.start &&
-      parseLocalDate(dateRangeForFiltering.start).getFullYear() === currentYear
-    ) {
-      // Find most recent year with data instead of returning everything
-      const mostRecentYear = policies.reduce((maxYear, p) => {
-        const d = policyBucketDate(p);
-        if (!d) return maxYear;
-        const dateObj = typeof d === "string" ? parseLocalDate(d) : d;
-        return Math.max(maxYear, dateObj.getFullYear());
-      }, 0);
-
-      return mostRecentYear > 0
-        ? policies.filter((p) => {
-            const d = policyBucketDate(p);
-            if (!d) return false;
-            const dateObj = typeof d === "string" ? parseLocalDate(d) : d;
-            return dateObj.getFullYear() === mostRecentYear;
-          })
-        : policies;
-    }
-
-    return policies.filter((policy) => {
-      const policyDate = policyBucketDate(policy) ?? null;
-      return isInDateRange(policyDate, dateRangeForFiltering);
-    });
-  })();
+  const filteredPolicies = policies.filter((policy) => {
+    const policyDate = policyBucketDate(policy) ?? null;
+    return isInDateRange(policyDate, dateRangeForFiltering);
+  });
 
   const periodCommissions = (() => {
     const earned = filteredCommissions.reduce(
