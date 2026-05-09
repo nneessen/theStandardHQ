@@ -20,6 +20,7 @@ import { useChargebackSummary } from "../../hooks/commissions/useChargebackSumma
 import { useAuth } from "../../contexts/AuthContext";
 import { useDashboardFeatures } from "../../hooks/dashboard";
 import { useCalculatedTargets } from "../../hooks/targets";
+import { useHistoricalAverages } from "../../hooks/targets/useHistoricalAverages";
 import { TimePeriod } from "../../utils/dateRange";
 import type { DateRange } from "../../utils/dateRange";
 import { toast } from "sonner";
@@ -200,6 +201,10 @@ export const DashboardHome: React.FC = () => {
   // Realistic target plan — same source the Targets page tunes via Realism
   // Settings. Falls back to breakeven-based pace if no target set yet.
   const { calculated: calculatedTargets } = useCalculatedTargets();
+  // Historical averages exposes both agency-wide and personal premium stats.
+  // Used below to compute the highest-available avg AP for the Premium target,
+  // so the dashboard never anchors to whichever signal is lowest.
+  const { averages: historicalAverages } = useHistoricalAverages();
 
   const derivedMetrics = calculateDerivedMetrics(periodPolicies, periodClients);
   const breakevenDisplay = getBreakevenDisplay(
@@ -385,8 +390,21 @@ export const DashboardHome: React.FC = () => {
 
   const periodCommTotal =
     (periodCommissions.paid ?? 0) + (periodCommissions.pending ?? 0);
+  // Avg AP for the Premium hero target: take the HIGHEST of all known
+  // signals so the dashboard frames the goal aspirationally rather than
+  // anchoring to whichever number happens to be lowest.
+  // - constants.avgAP: org-set baseline
+  // - agency mean / median: stable cohort signal
+  // - personal mean / median: the user's own book, if higher than agency
+  const dashboardAvgAP = Math.max(
+    constants?.avgAP ?? 0,
+    historicalAverages.avgPolicyPremium ?? 0,
+    historicalAverages.medianPolicyPremium ?? 0,
+    historicalAverages.personalAvgPolicyPremium ?? 0,
+    historicalAverages.personalMedianPolicyPremium ?? 0,
+  );
   const premiumTarget =
-    constants?.avgAP && policyTarget > 0 ? constants.avgAP * policyTarget : 0;
+    dashboardAvgAP > 0 && policyTarget > 0 ? dashboardAvgAP * policyTarget : 0;
 
   const safePct = (current: number, target: number): number =>
     target > 0 ? Math.min(1, current / target) : current > 0 ? 1 : 0;

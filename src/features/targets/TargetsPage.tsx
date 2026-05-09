@@ -31,7 +31,6 @@ import {
   type RealismOptions,
 } from "../../services/targets/targetsCalculationService";
 import { TargetInputDialog } from "./components/TargetInputDialog";
-import { PersistencyScenarios } from "./components/PersistencyScenarios";
 import { WelcomeTargetCard } from "./components/WelcomeTargetCard";
 
 /**
@@ -890,38 +889,89 @@ export function TargetsPage() {
                             </PopoverTrigger>
                             <PopoverContent
                               align="start"
-                              className="w-[400px] p-3"
+                              className="w-[420px] p-3"
                             >
                               <div className="text-[11px]">
                                 <div className="font-semibold text-foreground mb-1.5">
                                   Avg Premium Breakdown
                                 </div>
-                                <div className="text-muted-foreground mb-2">
-                                  {(() => {
-                                    const b =
-                                      averages.avgPolicyPremiumBreakdown;
-                                    switch (b.source) {
-                                      case "current-year":
-                                        return `Mean of ${b.policyCount} ${b.policyCount === 1 ? "policy" : "policies"} written this year`;
-                                      case "active-policies-fallback":
-                                        return `No policies yet this year — using ${b.policyCount} active ${b.policyCount === 1 ? "policy" : "policies"} (fallback)`;
-                                      case "all-policies-fallback":
-                                        return `Using ${b.policyCount} total ${b.policyCount === 1 ? "policy" : "policies"} (fallback — no current-year or active data)`;
-                                      case "no-data":
-                                        return "No policy data yet.";
-                                    }
-                                  })()}
+
+                                {/* Agency cohort — used for the calc */}
+                                <div className="rounded border border-border p-2 mb-2">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="text-[10px] font-semibold uppercase tracking-wider text-foreground">
+                                      Agency-wide (used)
+                                    </span>
+                                    <span className="text-[9px] text-muted-foreground">
+                                      {(() => {
+                                        const b =
+                                          averages.agencyAvgPolicyPremiumBreakdown;
+                                        switch (b.source) {
+                                          case "current-year":
+                                            return `${b.policyCount} ${b.policyCount === 1 ? "policy" : "policies"} this year`;
+                                          case "active-policies-fallback":
+                                            return `${b.policyCount} active ${b.policyCount === 1 ? "policy" : "policies"} (fallback)`;
+                                          case "all-policies-fallback":
+                                            return `${b.policyCount} total ${b.policyCount === 1 ? "policy" : "policies"} (fallback)`;
+                                          case "no-data":
+                                            return "no agency data";
+                                        }
+                                      })()}
+                                    </span>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">
+                                        Mean
+                                      </span>
+                                      <span className="font-mono text-foreground font-semibold">
+                                        {formatCurrency(
+                                          averages
+                                            .agencyAvgPolicyPremiumBreakdown
+                                            .mean,
+                                        )}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">
+                                        Median
+                                      </span>
+                                      <span className="font-mono text-foreground">
+                                        {formatCurrency(
+                                          averages
+                                            .agencyAvgPolicyPremiumBreakdown
+                                            .median,
+                                        )}
+                                      </span>
+                                    </div>
+                                  </div>
                                 </div>
 
+                                {/* Personal cohort — comparison only */}
                                 {averages.avgPolicyPremiumBreakdown
                                   .policyCount > 0 && (
-                                  <>
-                                    <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 mb-2">
+                                  <div className="rounded border border-border/50 p-2 mb-2 bg-muted/20">
+                                    <div className="flex items-center justify-between mb-1">
+                                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                        Your book (comparison)
+                                      </span>
+                                      <span className="text-[9px] text-muted-foreground">
+                                        {
+                                          averages.avgPolicyPremiumBreakdown
+                                            .policyCount
+                                        }{" "}
+                                        {averages.avgPolicyPremiumBreakdown
+                                          .policyCount === 1
+                                          ? "policy"
+                                          : "policies"}
+                                      </span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-x-3 gap-y-0.5 mb-1">
                                       <div className="flex justify-between">
                                         <span className="text-muted-foreground">
                                           Mean
                                         </span>
-                                        <span className="font-mono text-foreground font-semibold">
+                                        <span className="font-mono text-foreground">
                                           {formatCurrency(
                                             averages.avgPolicyPremiumBreakdown
                                               .mean,
@@ -939,76 +989,47 @@ export function TargetsPage() {
                                           )}
                                         </span>
                                       </div>
-                                      <div className="flex justify-between">
-                                        <span className="text-muted-foreground">
-                                          Min
-                                        </span>
-                                        <span className="font-mono text-foreground">
-                                          {formatCurrency(
-                                            averages.avgPolicyPremiumBreakdown
-                                              .min,
-                                          )}
-                                        </span>
-                                      </div>
-                                      <div className="flex justify-between">
-                                        <span className="text-muted-foreground">
-                                          Max
-                                        </span>
-                                        <span className="font-mono text-foreground">
-                                          {formatCurrency(
-                                            averages.avgPolicyPremiumBreakdown
-                                              .max,
-                                          )}
-                                        </span>
-                                      </div>
                                     </div>
-                                    {Math.abs(
-                                      averages.avgPolicyPremiumBreakdown.mean -
-                                        averages.avgPolicyPremiumBreakdown
-                                          .median,
-                                    ) /
-                                      Math.max(
-                                        averages.avgPolicyPremiumBreakdown
-                                          .median,
-                                        1,
-                                      ) >
-                                      0.25 && (
-                                      <div className="text-warning text-[10px] mb-2">
-                                        ⚠ Mean is {">"}25% above median — your
-                                        target is being driven by a few large
-                                        outliers. Consider using median for
-                                        planning.
-                                      </div>
-                                    )}
-
-                                    <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                                      Policies (largest first)
-                                    </div>
-                                    <div className="space-y-0.5 max-h-[220px] overflow-y-auto">
-                                      {averages.avgPolicyPremiumBreakdown.policies.map(
-                                        (p) => (
-                                          <div
-                                            key={p.id}
-                                            className="flex justify-between gap-2"
+                                    {(() => {
+                                      const personalMean =
+                                        averages.avgPolicyPremiumBreakdown.mean;
+                                      const agencyMean =
+                                        averages.agencyAvgPolicyPremiumBreakdown
+                                          .mean;
+                                      if (agencyMean === 0) return null;
+                                      const diffPct =
+                                        ((personalMean - agencyMean) /
+                                          agencyMean) *
+                                        100;
+                                      if (Math.abs(diffPct) < 5) return null;
+                                      const sign = diffPct > 0 ? "+" : "";
+                                      return (
+                                        <div className="text-[10px] text-muted-foreground">
+                                          Your mean is{" "}
+                                          <span
+                                            className={
+                                              diffPct > 0
+                                                ? "text-success"
+                                                : "text-warning"
+                                            }
                                           >
-                                            <span
-                                              className="text-foreground truncate"
-                                              title={`${p.clientName} • ${p.productName} • ${p.effectiveDate}`}
-                                            >
-                                              {p.clientName}{" "}
-                                              <span className="text-muted-foreground">
-                                                ({p.productName})
-                                              </span>
-                                            </span>
-                                            <span className="font-mono text-foreground font-semibold whitespace-nowrap">
-                                              {formatCurrency(p.annualPremium)}
-                                            </span>
-                                          </div>
-                                        ),
-                                      )}
-                                    </div>
-                                  </>
+                                            {sign}
+                                            {diffPct.toFixed(0)}%
+                                          </span>{" "}
+                                          {diffPct > 0 ? "above" : "below"} the
+                                          agency average.
+                                        </div>
+                                      );
+                                    })()}
+                                  </div>
                                 )}
+
+                                <div className="text-[10px] text-muted-foreground">
+                                  Realistic plan uses the agency cohort so new
+                                  agents and skewed personal books get a stable
+                                  baseline. Toggle Mean/Median in Realism
+                                  Settings.
+                                </div>
                               </div>
                             </PopoverContent>
                           </Popover>
@@ -1697,17 +1718,6 @@ export function TargetsPage() {
                 </div>
               </div>
             </div>
-
-            {/* What-If Persistency Scenarios */}
-            <PersistencyScenarios
-              baseAnnualPolicies={calculatedTargets.annualPoliciesTarget}
-              totalPremiumNeeded={calculatedTargets.totalPremiumNeeded}
-              avgPolicyPremium={calculatedTargets.avgPolicyPremium}
-              currentPersistency={actualMetrics.persistency13Month || 0.85}
-              avgCommissionRate={calculatedTargets.avgCommissionRate}
-              annualIncomeTarget={calculatedTargets.annualIncomeTarget}
-              monthlyExpenseTarget={calculatedTargets.monthlyExpenseTarget}
-            />
 
             {/* Validation Warnings - Compact */}
             {(() => {

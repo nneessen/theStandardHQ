@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { usePolicies } from "../policies";
 import { useExpenses } from "../expenses/useExpenses";
 import { useUserCommissionProfile } from "../commissions/useUserCommissionProfile";
+import { useAgencyPremiumStats } from "./useAgencyPremiumStats";
 import {
   AnnualExpenseBreakdown,
   AnnualExpenseOneTimeContribution,
@@ -42,8 +43,11 @@ export function useHistoricalAverages(): {
     isLoading: profileLoading,
     error: profileError,
   } = useUserCommissionProfile();
+  const { data: agencyStats, isLoading: agencyStatsLoading } =
+    useAgencyPremiumStats();
 
-  const isLoading = policiesLoading || expensesLoading || profileLoading;
+  const isLoading =
+    policiesLoading || expensesLoading || profileLoading || agencyStatsLoading;
 
   // Calculate averages from historical data - MEMOIZED to prevent infinite loops
   // FORCE RECALCULATION when policies change by including policies.length in deps
@@ -54,6 +58,8 @@ export function useHistoricalAverages(): {
         avgCommissionRate: 0,
         avgPolicyPremium: 0,
         medianPolicyPremium: 0,
+        personalAvgPolicyPremium: 0,
+        personalMedianPolicyPremium: 0,
         avgPoliciesPerMonth: 0,
         avgExpensesPerMonth: 0,
         projectedAnnualExpenses: 0,
@@ -73,6 +79,12 @@ export function useHistoricalAverages(): {
           min: 0,
           max: 0,
           policies: [],
+        },
+        agencyAvgPolicyPremiumBreakdown: {
+          source: "no-data",
+          policyCount: 0,
+          mean: 0,
+          median: 0,
         },
         persistency13Month: 0,
         persistency25Month: 0,
@@ -421,20 +433,53 @@ export function useHistoricalAverages(): {
         ? stillActive25Month / policiesFrom25MonthsAgo.length
         : 0; // NO defaults - show zero if no data
 
+    // Personal aggregates (kept around for popover comparison)
+    const personalAvgPolicyPremium = avgPolicyPremium;
+    const personalMedianPolicyPremium = median;
+
+    // Agency aggregates take precedence for the realistic plan divisor.
+    // Falls back to personal numbers when the function returns no-data
+    // (new IMO with no policies anywhere).
+    const agencyHasData =
+      !!agencyStats &&
+      agencyStats.source !== "no-data" &&
+      agencyStats.policyCount > 0;
+
+    const finalAvgPolicyPremium = agencyHasData
+      ? agencyStats.meanPremium
+      : personalAvgPolicyPremium;
+    const finalMedianPolicyPremium = agencyHasData
+      ? agencyStats.medianPremium
+      : personalMedianPolicyPremium;
+
+    const agencyAvgPolicyPremiumBreakdown = {
+      source: (agencyStats?.source ?? "no-data") as
+        | "current-year"
+        | "active-policies-fallback"
+        | "all-policies-fallback"
+        | "no-data",
+      policyCount: agencyStats?.policyCount ?? 0,
+      mean: agencyStats?.meanPremium ?? 0,
+      median: agencyStats?.medianPremium ?? 0,
+    };
+
     return {
       avgCommissionRate,
-      avgPolicyPremium,
-      medianPolicyPremium: median,
+      avgPolicyPremium: finalAvgPolicyPremium,
+      medianPolicyPremium: finalMedianPolicyPremium,
+      personalAvgPolicyPremium,
+      personalMedianPolicyPremium,
       avgPoliciesPerMonth,
       avgExpensesPerMonth,
       projectedAnnualExpenses,
       annualExpenseBreakdown,
       avgPolicyPremiumBreakdown,
+      agencyAvgPolicyPremiumBreakdown,
       persistency13Month,
       persistency25Month,
       hasData: true,
     };
-  }, [commissionProfile, policies, expenses]);
+  }, [commissionProfile, policies, expenses, agencyStats]);
 
   return {
     averages,

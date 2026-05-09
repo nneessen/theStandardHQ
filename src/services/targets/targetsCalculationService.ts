@@ -50,13 +50,31 @@ export interface AvgPolicyPremiumBreakdown {
 
 export interface HistoricalAverages {
   avgCommissionRate: number; // As decimal (e.g., 0.50 for 50%)
-  avgPolicyPremium: number; // Average annual premium per policy (mean)
-  medianPolicyPremium: number; // Median annual premium per policy
+  /**
+   * Agency-wide mean annual premium per policy. Used as the divisor in the
+   * realistic plan when premiumStat='mean'. Replaces the per-user mean so
+   * new agents and skewed personal books don't distort the target.
+   */
+  avgPolicyPremium: number;
+  /** Agency-wide median annual premium per policy. Used when premiumStat='median'. */
+  medianPolicyPremium: number;
+  /** User's personal mean — surfaced for comparison in the popover, not used in the calc. */
+  personalAvgPolicyPremium: number;
+  /** User's personal median — surfaced for comparison in the popover, not used in the calc. */
+  personalMedianPolicyPremium: number;
   avgPoliciesPerMonth: number; // Historical average policies written per month
   avgExpensesPerMonth: number; // Historical average monthly expenses (for monthly display)
   projectedAnnualExpenses: number; // Sum of actual expenses for the year (NOT avgExpensesPerMonth * 12)
   annualExpenseBreakdown: AnnualExpenseBreakdown;
+  /** Personal-policy breakdown — kept for popover (mean/median, top policies list). */
   avgPolicyPremiumBreakdown: AvgPolicyPremiumBreakdown;
+  /** Agency cohort summary (no policy list — only aggregates). */
+  agencyAvgPolicyPremiumBreakdown: {
+    source: AvgPolicyPremiumBreakdown["source"];
+    policyCount: number;
+    mean: number;
+    median: number;
+  };
   persistency13Month: number; // As decimal
   persistency25Month: number; // As decimal
   hasData: boolean; // Whether we have enough historical data
