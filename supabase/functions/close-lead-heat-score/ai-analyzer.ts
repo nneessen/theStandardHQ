@@ -299,19 +299,14 @@ export async function analyzeLeadDeepDive(
   const client = getAnthropicClient();
   const userPrompt = buildDeepDivePrompt(input);
 
-  // Prefill the assistant turn with "{" to physically prevent Sonnet from
-  // emitting a ```json code fence. The model is forced to continue from the
-  // opening brace, so the first tokens it produces are inside the JSON body.
-  // We have to prepend "{" back onto the response text before parsing since
-  // the prefill itself is not included in content blocks.
+  // Sonnet 4.6 rejects assistant message prefill ("conversation must end with
+  // a user message"), so we rely on parseStructuredJson() to tolerate fenced
+  // or brace-wrapped output instead of forcing the opening "{" via prefill.
   const response = await client.messages.create({
     model: DEEP_DIVE_MODEL,
     max_tokens: MAX_DEEP_DIVE_TOKENS,
     system: DEEP_DIVE_SYSTEM_PROMPT,
-    messages: [
-      { role: "user", content: userPrompt },
-      { role: "assistant", content: "{" },
-    ],
+    messages: [{ role: "user", content: userPrompt }],
   });
 
   const rawText = response.content
@@ -334,8 +329,7 @@ export async function analyzeLeadDeepDive(
     );
   }
 
-  const text = `{${rawText}`;
-  const parsed = parseStructuredJson<LeadDeepDiveResult>(text);
+  const parsed = parseStructuredJson<LeadDeepDiveResult>(rawText);
 
   // Runtime validation: ensure expected shapes (LLM output is untrusted)
   const VALID_HEAT = new Set(["hot", "warming", "neutral", "cooling", "cold"]);

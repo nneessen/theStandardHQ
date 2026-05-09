@@ -129,6 +129,17 @@ export function useMetricsWithDateRange(
     end: formatDateForDB(dateRange.endDate),
   };
 
+  // TEMP DIAGNOSTIC — remove after dashboard date-filter bug is pinpointed.
+
+  console.log("[useMetricsWithDateRange]", {
+    timePeriod,
+    periodOffset,
+    dateRangeForFiltering,
+    policiesCount: policies.length,
+    commissionsCount: commissions.length,
+    expensesCount: expenses.length,
+  });
+
   // Filter commissions by date range. Paid rows bucket by paymentDate
   // (when the carrier wired the money); pending/unpaid rows bucket by
   // createdAt (which is when the row was inserted, typically right after
@@ -162,6 +173,18 @@ export function useMetricsWithDateRange(
   const filteredPolicies = policies.filter((policy) => {
     const policyDate = policyBucketDate(policy) ?? null;
     return isInDateRange(policyDate, dateRangeForFiltering);
+  });
+
+  // TEMP DIAGNOSTIC — remove after dashboard date-filter bug is pinpointed.
+
+  console.log("[useMetricsWithDateRange] filtered counts", {
+    timePeriod,
+    filteredPoliciesCount: filteredPolicies.length,
+    filteredCommissionsCount: filteredCommissions.length,
+    filteredExpensesCount: filteredExpenses.length,
+    samplePolicyDate: policies[0]
+      ? policyBucketDate(policies[0])
+      : "(no policies)",
   });
 
   const periodCommissions = (() => {

@@ -22,6 +22,7 @@ import type {
   CloseActivity,
   CloseStatusChange,
   CloseOpportunity,
+  HeatLevel,
   LeadSignals,
   ScoreBreakdown,
 } from "./types.ts";
@@ -405,6 +406,26 @@ async function materializePortfolioInsights(
     throw new Error(outcomesError.message);
   }
 
+  // Match the percentile bands used by handleScoreAll (lines 871-892) so the AI
+  // sees the same Hot/Warming/Neutral/Cooling/Cold distribution the UI shows.
+  // Previously this used getHeatLevel(score) (absolute thresholds), which made
+  // the AI report "zero Hot/Warming" while the UI showed plenty.
+  const sortedForBands = [...rankableScoredLeads].sort(
+    (a, b) => b.score - a.score,
+  );
+  const heatByLead = new Map<(typeof rankableScoredLeads)[number], HeatLevel>();
+  const n = sortedForBands.length;
+  for (let i = 0; i < n; i++) {
+    const percentileRank = Math.round(((n - i - 0.5) / n) * 100);
+    let heatLevel: HeatLevel;
+    if (percentileRank >= 90) heatLevel = "hot";
+    else if (percentileRank >= 75) heatLevel = "warming";
+    else if (percentileRank >= 50) heatLevel = "neutral";
+    else if (percentileRank >= 25) heatLevel = "cooling";
+    else heatLevel = "cold";
+    heatByLead.set(sortedForBands[i], heatLevel);
+  }
+
   const portfolioSummary = buildPortfolioSummary(
     rankableScoredLeads.map(
       (lead: {
@@ -413,7 +434,7 @@ async function materializePortfolioInsights(
         breakdown: ScoreBreakdown;
       }) => ({
         score: lead.score,
-        heatLevel: getHeatLevel(lead.score),
+        heatLevel: heatByLead.get(lead) ?? getHeatLevel(lead.score),
         signals: lead.signals,
         breakdown: lead.breakdown,
       }),
