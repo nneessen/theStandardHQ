@@ -454,7 +454,7 @@ export function TargetsPage() {
                   </span>
                   <div className="flex items-center gap-1">
                     <PercentInput
-                      min={0}
+                      min={30}
                       max={100}
                       value={realism.persistencyRate}
                       onChange={(v) =>
