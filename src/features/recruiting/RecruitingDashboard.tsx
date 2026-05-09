@@ -15,7 +15,6 @@ import {
   Copy,
   Check,
   ArrowRight,
-  ArrowUpRight,
   Users,
 } from "lucide-react";
 import {
@@ -29,12 +28,6 @@ import { RecruitDetailPanel } from "./components/RecruitDetailPanel";
 import { AddRecruitDialog } from "./components/AddRecruitDialog";
 import { SendInviteDialog } from "./components/SendInviteDialog";
 import { RecruitingErrorBoundary } from "./components/RecruitingErrorBoundary";
-import {
-  EditorialMasthead,
-  EditorialStat,
-  PipelineAttentionRow,
-} from "./components/editorial";
-import type { AttentionItem } from "./components/editorial";
 import type { UserProfile } from "@/types/hierarchy.types";
 import { useAuth } from "@/contexts/AuthContext";
 import { STAFF_ONLY_ROLES } from "@/constants/roles";
@@ -49,6 +42,7 @@ import { normalizePhaseNameToStatus } from "@/lib/pipeline";
 import { useFeatureAccess } from "@/hooks/subscription";
 import { FeatureGate } from "@/components/subscription/FeatureGate";
 import { BasicRecruitingView } from "./components/BasicRecruitingView";
+import { PillButton, PillNav, SoftCard } from "@/components/v2";
 import { cn } from "@/lib/utils";
 
 type RecruitWithRelations = UserProfile & {
@@ -65,11 +59,6 @@ type RecruitWithRelations = UserProfile & {
     email: string;
   } | null;
 };
-
-const TOOLBAR_LINK_PRIMARY =
-  "inline-flex items-center gap-1.5 rounded-lg bg-warning hover:bg-warning/70 text-foreground px-3.5 py-2 text-[12px] font-semibold transition-all hover:-translate-y-px hover:shadow-md active:translate-y-0";
-const TOOLBAR_LINK_GHOST =
-  "inline-flex items-center gap-1.5 rounded-lg ring-1 ring-border    hover:bg-background dark:hover:bg-muted px-3 py-2 text-[12px] font-semibold text-foreground dark:text-muted-foreground transition-colors";
 
 function RecruitingDashboardContent() {
   const { user } = useAuth();
@@ -109,7 +98,7 @@ function RecruitingDashboardContent() {
   const [sendInviteDialogOpen, setSendInviteDialogOpen] = useState(false);
   const [detailSheetOpen, setDetailSheetOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("");
 
   const { recruitId } = useSearch({ from: "/recruiting" });
 
@@ -210,37 +199,19 @@ function RecruitingDashboardContent() {
     };
   }, [recruits, activePhaseStatuses]);
 
-  const attentionItems: AttentionItem[] = [
-    {
-      id: "invited",
-      count: stats.invited,
-      label: "invited · awaiting signup",
-      tone: "warn",
-      onSelect: () =>
-        setStatusFilter((f) => (f === "invited" ? null : "invited")),
-      isActive: statusFilter === "invited",
-    },
-    {
-      id: "blocked",
-      count: stats.blocked,
-      label: "blocked · need unblock",
-      tone: "error",
-      onSelect: () =>
-        setStatusFilter((f) => (f === "blocked" ? null : "blocked")),
-      isActive: statusFilter === "blocked",
-    },
-    {
-      id: "leads",
-      count: pendingLeadsCount || 0,
-      label: "incoming leads to review",
-      tone: "success",
-    },
-  ];
-
   const filteredRecruits = useMemo(() => {
     if (!statusFilter) return recruits;
     return recruits.filter((r) => r.onboarding_status === statusFilter);
   }, [recruits, statusFilter]);
+
+  const filterItems = useMemo(
+    () => [
+      { label: `All ${stats.total}`, value: "" },
+      { label: `Invited ${stats.invited}`, value: "invited" },
+      { label: `Blocked ${stats.blocked}`, value: "blocked" },
+    ],
+    [stats.total, stats.invited, stats.blocked],
+  );
 
   const handleSelectRecruit = (recruit: UserProfile) => {
     setSelectedRecruit(recruit);
@@ -277,212 +248,218 @@ function RecruitingDashboardContent() {
     : null;
 
   return (
-    <div className="min-h-screen bg-background ">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-12 flex flex-col gap-5 md:gap-6">
-        <EditorialMasthead
-          icon={Users}
-          eyebrow="Recruiting · Pipeline"
-          title="Your recruits, at a glance"
-          subtitle={
+    <div className="flex flex-col gap-3">
+      {/* Compact header — title + inline summary + action buttons */}
+      <header className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <Users className="h-4 w-4 text-v2-ink" />
+            <h1 className="text-base font-semibold tracking-tight text-v2-ink">
+              Recruiting
+            </h1>
+          </div>
+          <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-v2-ink-muted flex-wrap leading-tight">
+            <span>
+              <span className="text-v2-ink font-semibold tabular-nums">
+                {stats.active}
+              </span>{" "}
+              active
+            </span>
+            <span className="text-v2-ink-muted">·</span>
+            <span>
+              <span className="font-mono font-semibold text-warning tabular-nums">
+                {stats.invited}
+              </span>{" "}
+              invited
+            </span>
+            {stats.blocked > 0 && (
+              <>
+                <span className="text-v2-ink-muted">·</span>
+                <span>
+                  <span className="font-mono font-semibold text-destructive tabular-nums">
+                    {stats.blocked}
+                  </span>{" "}
+                  blocked
+                </span>
+              </>
+            )}
+            <span className="text-v2-ink-muted">·</span>
+            <span>
+              <span className="font-mono font-semibold text-emerald-600 tabular-nums">
+                {stats.completed}
+              </span>{" "}
+              complete
+            </span>
+            {stats.dropped > 0 && (
+              <>
+                <span className="text-v2-ink-muted">·</span>
+                <span>
+                  <span className="font-mono font-semibold tabular-nums">
+                    {stats.dropped}
+                  </span>{" "}
+                  dropped
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          {!isStaffRole && (
+            <Link to="/recruiting/leads">
+              <PillButton
+                tone="ghost"
+                size="sm"
+                leadingIcon={<Inbox className="h-3.5 w-3.5" />}
+              >
+                Leads
+                {pendingLeadsCount && pendingLeadsCount > 0 ? (
+                  <span className="ml-1 font-mono tabular-nums text-warning">
+                    {pendingLeadsCount}
+                  </span>
+                ) : null}
+              </PillButton>
+            </Link>
+          )}
+          <PillButton
+            tone="ghost"
+            size="sm"
+            onClick={handleExportCSV}
+            leadingIcon={<Download className="h-3.5 w-3.5" />}
+          >
+            Export
+          </PillButton>
+          <PillButton
+            tone="ghost"
+            size="sm"
+            onClick={() => setSendInviteDialogOpen(true)}
+            leadingIcon={<Mail className="h-3.5 w-3.5" />}
+          >
+            Send invite
+          </PillButton>
+          <Link to="/recruiting/admin/pipelines">
+            <PillButton
+              tone="ghost"
+              size="sm"
+              leadingIcon={<Settings2 className="h-3.5 w-3.5" />}
+            >
+              Pipelines
+            </PillButton>
+          </Link>
+          <PillButton
+            tone="black"
+            size="sm"
+            onClick={() => setAddRecruitDialogOpen(true)}
+            leadingIcon={<UserPlus className="h-3.5 w-3.5" />}
+          >
+            Add recruit
+          </PillButton>
+        </div>
+      </header>
+
+      {/* Filter row */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <PillNav
+          size="sm"
+          activeValue={statusFilter}
+          onChange={setStatusFilter}
+          items={filterItems}
+        />
+        <label className="inline-flex items-center gap-1.5 text-[11px] text-v2-ink-muted cursor-pointer">
+          <input
+            type="checkbox"
+            checked={hideProspects}
+            onChange={(e) => setHideProspects(e.target.checked)}
+            className="h-3.5 w-3.5 rounded border-v2-ring"
+          />
+          Hide prospects
+        </label>
+      </div>
+
+      {/* Recruiting link strip — only for non-staff with custom branding */}
+      {!isStaffRole && hasCustomBranding && (
+        <SoftCard
+          variant="tinted"
+          padding="sm"
+          className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+        >
+          {recruitingLinkUrl ? (
             <>
-              Click any name to open their pipeline. The card below highlights
-              who needs you right now — start there before scrolling the full
-              list.
+              <div className="flex items-center gap-2 min-w-0">
+                <Link2 className="h-3.5 w-3.5 text-warning flex-shrink-0" />
+                <span className="text-[10px] uppercase tracking-[0.16em] font-semibold text-v2-ink-muted">
+                  Your link
+                </span>
+                <span className="text-[12px] font-mono text-v2-ink truncate">
+                  {recruitingLinkUrl}
+                </span>
+              </div>
+              <PillButton
+                tone="yellow"
+                size="sm"
+                onClick={handleCopyLink}
+                leadingIcon={
+                  linkCopied ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )
+                }
+              >
+                {linkCopied ? "Copied" : "Copy link"}
+              </PillButton>
             </>
-          }
-          rightSlot={
-            <div className="flex items-end gap-6">
-              <EditorialStat
-                label="Active"
-                value={stats.active}
-                size="lg"
-                tone="brand"
-              />
-              <EditorialStat
-                label="Complete"
-                value={stats.completed}
-                size="md"
-                tone="success"
-              />
-              <EditorialStat
-                label="Dropped"
-                value={stats.dropped}
-                size="md"
-                tone={stats.dropped > 0 ? "error" : "default"}
-              />
-            </div>
-          }
+          ) : (
+            <>
+              <div className="flex items-center gap-2 min-w-0">
+                <Link2 className="h-3.5 w-3.5 text-warning flex-shrink-0" />
+                <span className="text-[12px] text-v2-ink-muted">
+                  Set up your personal recruiting link to share on social media.
+                </span>
+              </div>
+              <Link to="/settings">
+                <PillButton
+                  tone="yellow"
+                  size="sm"
+                  trailingIcon={<ArrowRight className="h-3.5 w-3.5" />}
+                >
+                  Set up link
+                </PillButton>
+              </Link>
+            </>
+          )}
+        </SoftCard>
+      )}
+
+      {/* Table */}
+      <SoftCard padding="none" className="overflow-hidden">
+        <RecruitListTable
+          recruits={filteredRecruits}
+          isLoading={recruitsLoading}
+          selectedRecruitId={selectedRecruit?.id}
+          onSelectRecruit={handleSelectRecruit}
         />
 
-        <PipelineAttentionRow items={attentionItems} />
-
-        {/* Recruit list — wrapped in a card */}
-        <section className="rounded-2xl bg-white dark:bg-card ring-1 ring-border  shadow-sm dark:shadow-none overflow-hidden">
-          {/* Toolbar */}
-          <div className="px-5 md:px-6 py-4 border-b border-border  bg-background/40 dark:bg-background/40 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:flex-wrap">
-            <div className="flex items-baseline gap-3 flex-wrap">
-              <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-muted-foreground dark:text-muted-foreground">
-                {statusFilter
-                  ? `Filtered · ${statusFilter}`
-                  : `Showing all ${stats.total}`}
-              </span>
-              {statusFilter && (
-                <button
-                  type="button"
-                  onClick={() => setStatusFilter(null)}
-                  className="text-[11px] text-muted-foreground dark:text-muted-foreground underline underline-offset-2 hover:text-foreground dark:hover:text-background"
-                >
-                  clear filter
-                </button>
-              )}
-              <label className="ml-2 inline-flex items-center gap-1.5 text-[11px] text-foreground dark:text-muted-foreground cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={hideProspects}
-                  onChange={(e) => setHideProspects(e.target.checked)}
-                  className="h-3.5 w-3.5 rounded border-border "
-                />
-                Hide prospects
-              </label>
-            </div>
-
-            <div className="flex items-center gap-2 flex-wrap">
-              {!isStaffRole && (
-                <Link to="/recruiting/leads" className={TOOLBAR_LINK_GHOST}>
-                  <Inbox className="h-3.5 w-3.5" />
-                  Leads
-                  {pendingLeadsCount && pendingLeadsCount > 0 ? (
-                    <span className="ml-1 font-mono tabular-nums text-warning">
-                      {pendingLeadsCount}
-                    </span>
-                  ) : null}
-                </Link>
-              )}
-              <button
-                type="button"
-                onClick={handleExportCSV}
-                className={TOOLBAR_LINK_GHOST}
-              >
-                <Download className="h-3.5 w-3.5" />
-                Export
-              </button>
-              <button
-                type="button"
+        {filteredRecruits.length === 0 && !recruitsLoading && (
+          <div className="px-5 py-8 text-center">
+            <p className="text-[12px] text-v2-ink-muted mb-3">
+              {statusFilter
+                ? `No recruits match the "${statusFilter}" filter.`
+                : "No recruits yet — send an invite or add one to start your pipeline."}
+            </p>
+            {!statusFilter && (
+              <PillButton
+                tone="black"
+                size="sm"
                 onClick={() => setSendInviteDialogOpen(true)}
-                className={TOOLBAR_LINK_GHOST}
+                leadingIcon={<Mail className="h-3.5 w-3.5" />}
               >
-                <Mail className="h-3.5 w-3.5" />
-                Send invite
-              </button>
-              <Link
-                to="/recruiting/admin/pipelines"
-                className={TOOLBAR_LINK_GHOST}
-              >
-                <Settings2 className="h-3.5 w-3.5" />
-                Pipelines
-              </Link>
-              <button
-                type="button"
-                onClick={() => setAddRecruitDialogOpen(true)}
-                className={TOOLBAR_LINK_PRIMARY}
-              >
-                <UserPlus className="h-3.5 w-3.5" />
-                Add recruit
-              </button>
-            </div>
+                Send your first invite
+              </PillButton>
+            )}
           </div>
-
-          {/* Recruiting link strip */}
-          {!isStaffRole && hasCustomBranding && (
-            <div
-              className={cn(
-                "px-5 md:px-6 py-3.5 border-b border-border  flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3",
-                recruitingLinkUrl
-                  ? "bg-warning/10/60 dark:bg-warning/15"
-                  : "bg-warning/10/30 dark:bg-warning/10",
-              )}
-            >
-              {recruitingLinkUrl ? (
-                <>
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Link2 className="h-3.5 w-3.5 text-warning flex-shrink-0" />
-                    <span className="text-[10px] uppercase tracking-[0.18em] font-bold text-warning">
-                      Your link
-                    </span>
-                    <span className="text-[12px] font-mono text-foreground  truncate">
-                      {recruitingLinkUrl}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleCopyLink}
-                    className={cn(
-                      TOOLBAR_LINK_PRIMARY,
-                      "self-start sm:self-auto",
-                    )}
-                  >
-                    {linkCopied ? (
-                      <>
-                        <Check className="h-3.5 w-3.5" />
-                        Copied
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="h-3.5 w-3.5" />
-                        Copy link
-                      </>
-                    )}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Link2 className="h-3.5 w-3.5 text-warning flex-shrink-0" />
-                    <span className="text-[12px] text-foreground dark:text-muted-foreground">
-                      Set up your personal recruiting link to share on social
-                      media.
-                    </span>
-                  </div>
-                  <Link to="/settings" className={TOOLBAR_LINK_PRIMARY}>
-                    Set up link
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Table */}
-          <div className="px-5 md:px-6">
-            <RecruitListTable
-              recruits={filteredRecruits}
-              isLoading={recruitsLoading}
-              selectedRecruitId={selectedRecruit?.id}
-              onSelectRecruit={handleSelectRecruit}
-            />
-          </div>
-
-          {filteredRecruits.length === 0 && !recruitsLoading && (
-            <div className="px-5 md:px-6 pb-8 pt-2 text-center">
-              <p className="text-[14px] text-foreground dark:text-muted-foreground mb-4">
-                {statusFilter
-                  ? `No recruits match the "${statusFilter}" filter.`
-                  : "No recruits yet — send an invite or add one to start your pipeline."}
-              </p>
-              {!statusFilter && (
-                <button
-                  type="button"
-                  onClick={() => setSendInviteDialogOpen(true)}
-                  className={cn(TOOLBAR_LINK_PRIMARY, "inline-flex")}
-                >
-                  Send your first invite
-                  <ArrowUpRight className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-          )}
-        </section>
-      </div>
+        )}
+      </SoftCard>
 
       <Sheet open={detailSheetOpen} onOpenChange={setDetailSheetOpen}>
         <SheetContent
@@ -598,74 +575,86 @@ function FreeUplineRecruitingView() {
   };
 
   return (
-    <div className="min-h-screen bg-background ">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-12 flex flex-col gap-5 md:gap-6">
-        <EditorialMasthead
-          icon={Users}
-          eyebrow="Recruiting · Free tier"
-          title="Your existing team"
-          subtitle={
-            <>
-              You can keep managing your existing recruits on the free plan.{" "}
-              <Link
-                to="/billing"
-                className="font-bold text-warning hover:text-warning dark:hover:text-warning underline underline-offset-2"
-              >
-                Upgrade
-              </Link>{" "}
-              to unlock the full pipeline configuration and add more.
-            </>
-          }
-          rightSlot={
-            <div className="flex items-end gap-6">
-              <EditorialStat
-                label="Active"
-                value={stats.active}
-                size="lg"
-                tone="brand"
-              />
-              <EditorialStat
-                label="Complete"
-                value={stats.completed}
-                size="md"
-                tone="success"
-              />
-              <EditorialStat
-                label="Dropped"
-                value={stats.dropped}
-                size="md"
-                tone={stats.dropped > 0 ? "error" : "default"}
-              />
-            </div>
-          }
-        />
+    <div className="flex flex-col gap-3">
+      <header className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3 min-w-0 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <Users className="h-4 w-4 text-v2-ink" />
+            <h1 className="text-base font-semibold tracking-tight text-v2-ink">
+              Your team
+            </h1>
+            <span className="rounded-full bg-v2-card-tinted px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-v2-ink-muted">
+              Free
+            </span>
+          </div>
+          <div className="flex items-center gap-x-2 gap-y-0.5 text-[11px] text-v2-ink-muted flex-wrap leading-tight">
+            <span>
+              <span className="text-v2-ink font-semibold tabular-nums">
+                {stats.active}
+              </span>{" "}
+              active
+            </span>
+            <span className="text-v2-ink-muted">·</span>
+            <span>
+              <span className="font-mono font-semibold text-emerald-600 tabular-nums">
+                {stats.completed}
+              </span>{" "}
+              complete
+            </span>
+            {stats.dropped > 0 && (
+              <>
+                <span className="text-v2-ink-muted">·</span>
+                <span>
+                  <span className="font-mono font-semibold tabular-nums">
+                    {stats.dropped}
+                  </span>{" "}
+                  dropped
+                </span>
+              </>
+            )}
+          </div>
+        </div>
 
-        <section className="rounded-2xl bg-white dark:bg-card ring-1 ring-border  shadow-sm dark:shadow-none overflow-hidden">
-          <div className="px-5 md:px-6 py-4 border-b border-border  bg-background/40 dark:bg-background/40 flex items-center justify-end gap-2 flex-wrap">
-            <Link to="/billing" className={TOOLBAR_LINK_GHOST}>
-              Upgrade for full pipeline
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-            <button
-              type="button"
-              onClick={() => setAddRecruitDialogOpen(true)}
-              className={TOOLBAR_LINK_PRIMARY}
+        <div className="flex flex-wrap items-center gap-1.5">
+          <Link to="/billing">
+            <PillButton
+              tone="ghost"
+              size="sm"
+              trailingIcon={<ArrowRight className="h-3.5 w-3.5" />}
             >
-              <UserPlus className="h-3.5 w-3.5" />
-              Add recruit
-            </button>
-          </div>
+              Upgrade for full pipeline
+            </PillButton>
+          </Link>
+          <PillButton
+            tone="black"
+            size="sm"
+            onClick={() => setAddRecruitDialogOpen(true)}
+            leadingIcon={<UserPlus className="h-3.5 w-3.5" />}
+          >
+            Add recruit
+          </PillButton>
+        </div>
+      </header>
 
-          <div className="px-5 md:px-6">
-            <RecruitListTable
-              recruits={recruits}
-              isLoading={recruitsLoading}
-              selectedRecruitId={selectedRecruit?.id}
-              onSelectRecruit={handleSelectRecruit}
-            />
-          </div>
-        </section>
-      </div>
+      <p className={cn("text-[11px] text-v2-ink-muted")}>
+        You can keep managing your existing recruits on the free plan.{" "}
+        <Link
+          to="/billing"
+          className="font-semibold text-warning hover:underline underline-offset-2"
+        >
+          Upgrade
+        </Link>{" "}
+        to unlock the full pipeline configuration and add more.
+      </p>
+
+      <SoftCard padding="none" className="overflow-hidden">
+        <RecruitListTable
+          recruits={recruits}
+          isLoading={recruitsLoading}
+          selectedRecruitId={selectedRecruit?.id}
+          onSelectRecruit={handleSelectRecruit}
+        />
+      </SoftCard>
 
       <Sheet open={detailSheetOpen} onOpenChange={setDetailSheetOpen}>
         <SheetContent
@@ -743,7 +732,7 @@ export function RecruitingDashboard() {
 
   if (loadingCustomPipeline || loadingBasicRecruiting) {
     return (
-      <div className="flex items-center justify-center h-64 text-[11px] uppercase tracking-[0.2em] font-semibold text-muted-foreground dark:text-muted-foreground">
+      <div className="flex items-center justify-center h-64 text-[11px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted">
         Loading…
       </div>
     );
@@ -760,14 +749,14 @@ export function RecruitingDashboard() {
   if (hasBasicRecruiting) {
     return (
       <RecruitingErrorBoundary>
-        <BasicRecruitingView className="p-4" />
+        <BasicRecruitingView />
       </RecruitingErrorBoundary>
     );
   }
 
   if (loadingOwnRecruits) {
     return (
-      <div className="flex items-center justify-center h-64 text-[11px] uppercase tracking-[0.2em] font-semibold text-muted-foreground dark:text-muted-foreground">
+      <div className="flex items-center justify-center h-64 text-[11px] uppercase tracking-[0.18em] font-semibold text-v2-ink-muted">
         Loading…
       </div>
     );

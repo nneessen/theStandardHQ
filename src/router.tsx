@@ -104,6 +104,9 @@ const QuickQuotePage = lazy(
   () =>
     import("./features/underwriting/components/QuickQuote/QuickQuoteDialog"),
 );
+const UnderwritingGuidesPage = lazy(
+  () => import("./features/underwriting/components/UnderwritingGuidesPage"),
+);
 
 // Create root route with App layout
 const rootRoute = createRootRoute({
@@ -578,6 +581,13 @@ const quickQuoteRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "underwriting/quick-quote",
   component: () => <QuickQuotePage />,
+});
+
+// Underwriting Guides route - browse/upload carrier UW guides; available to any signed-in user
+const underwritingGuidesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "underwriting/guides",
+  component: () => <UnderwritingGuidesPage />,
 });
 
 // Chat Bot route - AI Chat Bot management dashboard, accessible to all authenticated users
@@ -1146,6 +1156,7 @@ const routeTree = rootRoute.addChildren([
   marketingTemplateEditRoute,
   underwritingWizardRoute,
   quickQuoteRoute,
+  underwritingGuidesRoute,
   chatBotRoute,
   voiceCloneRoute,
   voiceAgentRoute,

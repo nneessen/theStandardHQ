@@ -36,6 +36,7 @@ import {
   Sparkles,
   Compass,
   Zap,
+  Library,
 } from "lucide-react";
 import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
 import { SupportDialog } from "./SupportDialog";
@@ -424,6 +425,12 @@ export default function Sidebar({
           label: "My Training",
           href: "/my-training",
           subscriptionFeature: "training",
+        },
+        {
+          icon: Library,
+          label: "UW Guides",
+          href: "/underwriting/guides",
+          public: true,
         },
         {
           icon: Compass,
