@@ -873,8 +873,32 @@ async function persistExtractedRules(args: {
       .insert(ruleInserts, { count: "exact" });
 
     if (rulesError) {
+      // Don't leave an orphan rule_set with 0 rules — that's noise in the UI
+      // and gives the user no actionable info. Roll the rule_set back so the
+      // user only sees what actually persisted, and surface the real DB error.
+      console.error(
+        `[persist] rules insert failed for set "${set.name}" (${ruleInserts.length} rules attempted):`,
+        rulesError,
+      );
+      const sampleRule = ruleInserts[0];
+      console.error(
+        `[persist] sample rule that failed:`,
+        JSON.stringify(sampleRule, null, 2).slice(0, 1200),
+      );
+      const { error: cleanupError } = await supabase
+        .from("underwriting_rule_sets")
+        .delete()
+        .eq("id", setRow.id);
+      if (cleanupError) {
+        console.error(
+          `[persist] failed to clean up orphan rule_set ${setRow.id}:`,
+          cleanupError,
+        );
+      } else {
+        setsCreated--;
+      }
       errors.push(
-        `Failed to insert rules for set "${set.name}": ${rulesError.message}`,
+        `Set "${set.name}" rolled back: ${rulesError.message} (${rulesError.code ?? "no code"}; ${rulesError.details ?? "no details"})`,
       );
     } else {
       rulesCreated += count ?? ruleInserts.length;
