@@ -10668,6 +10668,13 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "training_lesson_content_document_id_fkey";
+            columns: ["document_id"];
+            isOneToOne: false;
+            referencedRelation: "training_documents";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "training_lesson_content_imo_id_fkey";
             columns: ["imo_id"];
             isOneToOne: false;
@@ -15938,19 +15945,6 @@ export type Database = {
         }[];
       };
       get_agency_metrics: { Args: { p_agency_id: string }; Returns: Json };
-      get_agency_premium_stats: {
-        Args: { p_user_id: string };
-        Returns: {
-          source: string;
-          mean_premium: number;
-          median_premium: number;
-          policy_count: number;
-          personal_source: string;
-          personal_mean_premium: number;
-          personal_median_premium: number;
-          personal_policy_count: number;
-        }[];
-      };
       get_agency_override_summary: {
         Args: {
           p_agency_id?: string;
@@ -15992,6 +15986,19 @@ export type Database = {
           policies_lapsed: number;
           running_total_policies: number;
           running_total_premium: number;
+        }[];
+      };
+      get_agency_premium_stats: {
+        Args: { p_user_id: string };
+        Returns: {
+          mean_premium: number;
+          median_premium: number;
+          personal_mean_premium: number;
+          personal_median_premium: number;
+          personal_policy_count: number;
+          personal_source: string;
+          policy_count: number;
+          source: string;
         }[];
       };
       get_agency_production_by_agent: {
