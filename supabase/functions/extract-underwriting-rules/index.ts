@@ -308,7 +308,10 @@ serve(async (req) => {
 
     const aiStart = Date.now();
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-5",
+      // Sonnet 4.6 is the current Sonnet alias; "claude-sonnet-4-5" is not
+      // a valid published alias and Anthropic returns model-not-found which
+      // surfaces as 502 from Supabase's edge gateway.
+      model: "claude-sonnet-4-5-20250929",
       max_tokens: MAX_OUTPUT_TOKENS,
       system: systemPrompt,
       messages: [{ role: "user", content: userPrompt }],
