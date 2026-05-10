@@ -26,29 +26,6 @@ export {
 export type { PaginatedSessionsResult } from "./sessions/useUnderwritingSessions";
 
 export {
-  useCarriersWithProducts,
-  carriersWithProductsQueryKeys,
-} from "./coverage/useCarriersWithProducts";
-
-export {
-  useCoverageStats,
-  coverageStatsKeys,
-  getCoverageKey,
-  getProductCoverage,
-  getCarrierAggregateCoverage,
-} from "./coverage/useCoverageStats";
-
-export {
-  useCoverageAudit,
-  coverageAuditKeys,
-} from "./coverage/useCoverageAudit";
-
-export {
-  useProductConstraints,
-  productConstraintsQueryKeys,
-} from "./coverage/useProductConstraints";
-
-export {
   useUnderwritingGuides,
   useUnderwritingGuide,
   useUploadGuide,
@@ -66,26 +43,13 @@ export {
 } from "./guides/useParseGuide";
 
 export {
-  useCriteriaList,
-  useCriteriaByGuide,
-  criteriaQueryKeys,
-} from "./criteria/useCriteria";
-
-export {
-  useExtractCriteria,
-  useUpdateCriteriaReview,
-  useDeleteCriteria,
-  useUpdateCriteriaContent,
-} from "./criteria/useExtractCriteria";
-
-export {
   useDecisionEngineRecommendations,
   buildAuthoritativeUnderwritingRunInput,
   buildAuthoritativeSessionSaveInput,
 } from "./wizard/useDecisionEngineRecommendations";
 
-// Build chart hooks are now in features/settings/carriers/hooks/
-// Export key names for re-export convenience
+// Build chart hooks live in features/settings/carriers/hooks/ — re-exported here
+// for convenience because the wizard's product-evaluation flow consumes them.
 export { buildChartKeys } from "@/features/settings/carriers/hooks/useCarrierBuildCharts";
 export { useCarrierBuildCharts } from "@/features/settings/carriers/hooks/useCarrierBuildCharts";
 export { useBuildChartOptions } from "@/features/settings/carriers/hooks/useBuildChartOptions";
@@ -96,23 +60,6 @@ export { useSetDefaultBuildChart } from "@/features/settings/carriers/hooks/useS
 export { useDefaultBuildCharts } from "@/features/settings/carriers/hooks/useDefaultBuildCharts";
 
 export {
-  useQuotesForCoverage,
-  useQuotesForBudget,
-  useQuotes,
-  useQuoteMutation,
-  useTopQuotes,
-  useAllPremiumMatrices,
-  quoteKeys,
-  type QuoteInput,
-  type QuoteResult,
-  type QuoteMode,
-  type EligibilityStatus,
-  presetKeys,
-  useQuickQuotePresets,
-  useUpdatePresets,
-} from "./quotes/useQuickQuote";
-
-export {
   useUWWizardUsage,
   useRecordUWWizardRun,
   getUsageStatus,
@@ -120,19 +67,6 @@ export {
   uwWizardUsageKeys,
   type UWWizardUsage,
 } from "./wizard/useUWWizardUsage";
-
-export {
-  acceptanceKeys,
-  useCarrierAcceptance,
-  useConditionAcceptance,
-  useAllAcceptanceRules,
-  useAcceptanceLookup,
-  useCarriersWithAcceptanceRules,
-  useUpsertAcceptanceRule,
-  useBulkUpsertAcceptanceRules,
-  useDeleteAcceptanceRule,
-  useDeleteCarrierAcceptance,
-} from "./rules/useAcceptance";
 
 export {
   ruleEngineKeys,
@@ -169,41 +103,3 @@ export {
   useRejectRuleSet,
   useRevertToDraft,
 } from "./rules/useRuleWorkflow";
-
-export {
-  generateRulesKeys,
-  useKnockoutCodes,
-  useGenerateKnockoutRules,
-  useGenerateAgeRules,
-  useGenerateGuaranteedIssueRules,
-} from "./rules/useGenerateRules";
-export type {
-  GenerationStrategy,
-  KnockoutCondition,
-  GenerationResult,
-} from "./rules/useGenerateRules";
-
-export {
-  rateKeys,
-  useProductRates,
-  useCarrierRates,
-  useRateLookup,
-  useProductsWithRates,
-  useUpsertRate,
-  useBulkUpsertRates,
-  useDeleteRate,
-  useDeleteProductRates,
-} from "./rates/useRates";
-
-export {
-  premiumMatrixKeys,
-  usePremiumMatrix,
-  usePremiumMatrixForClassification,
-  useProductsWithPremiumMatrix,
-  useTermYearsForProduct,
-  useBulkUpsertPremiumMatrix,
-  useDeletePremiumMatrixEntry,
-  useDeleteProductPremiumMatrix,
-  useDeleteTermPremiumMatrix,
-  useEstimatePremium,
-} from "./rates/usePremiumMatrix";

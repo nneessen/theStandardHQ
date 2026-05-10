@@ -11,7 +11,6 @@ import {
   type CreateRuleInput,
 } from "@/services/underwriting/repositories/ruleService";
 import { ruleEngineKeys } from "./useRuleSets";
-import { coverageStatsKeys } from "../coverage/useCoverageStats";
 
 // ============================================================================
 // Mutation Hooks
@@ -70,9 +69,6 @@ export function useUpdateRule() {
       queryClient.invalidateQueries({
         queryKey: ruleEngineKeys.needingReview(imoId),
       });
-      queryClient.invalidateQueries({
-        queryKey: coverageStatsKeys.all,
-      });
     },
   });
 }
@@ -104,9 +100,6 @@ export function useDeleteRule() {
       });
       queryClient.invalidateQueries({
         queryKey: ruleEngineKeys.needingReview(imoId),
-      });
-      queryClient.invalidateQueries({
-        queryKey: coverageStatsKeys.all,
       });
     },
   });

@@ -23,8 +23,6 @@ import type {
   PredicateGroup,
   RuleSetScope,
 } from "@/services/underwriting/core/ruleEngineDSL";
-import { coverageStatsKeys } from "../coverage/useCoverageStats";
-
 function normalizeRuleReviewStatusKey(
   reviewStatus?: RuleReviewStatus | RuleReviewStatus[],
 ): RuleReviewStatus[] | ["all"] {
@@ -200,10 +198,6 @@ export function useUpdateRuleSet() {
       queryClient.invalidateQueries({
         queryKey: ruleEngineKeys.needingReview(imoId),
       });
-      // Invalidate coverage stats (active/inactive changes affect coverage)
-      queryClient.invalidateQueries({
-        queryKey: coverageStatsKeys.all,
-      });
     },
   });
 }
@@ -241,10 +235,6 @@ export function useDeleteRuleSet() {
       // Invalidate needing review
       queryClient.invalidateQueries({
         queryKey: ruleEngineKeys.needingReview(imoId),
-      });
-      // Invalidate coverage stats
-      queryClient.invalidateQueries({
-        queryKey: coverageStatsKeys.all,
       });
     },
   });
