@@ -66,6 +66,7 @@ import { toast } from "sonner";
 import { useImo } from "@/contexts/ImoContext";
 import { useTemporaryAccessCheck } from "@/hooks/subscription";
 import { useUnderwritingFeatureFlag } from "@/features/underwriting";
+import { useCanManageUnderwriting } from "@/features/underwriting/hooks/wizard/useUnderwritingFeatureFlag";
 import { useLicensingWorkspaceAccess } from "@/features/the-standard-team";
 
 // ─── Types ───────────────────────────────────────────────────────
@@ -149,6 +150,7 @@ export default function Sidebar({
   const { imo, agency, loading: imoLoading, error: imoError } = useImo();
   const { isEnabled: isUnderwritingEnabled, isLoading: isUnderwritingLoading } =
     useUnderwritingFeatureFlag();
+  const { canManage: canManageUnderwriting } = useCanManageUnderwriting();
   const { shouldGrantTemporaryAccess, isLoading: tempAccessLoading } =
     useTemporaryAccessCheck();
   const licensingWorkspaceAccess = useLicensingWorkspaceAccess();
@@ -346,6 +348,17 @@ export default function Sidebar({
                 icon: ShieldCheck,
                 label: "UW Wizard",
                 href: "/underwriting/wizard",
+                public: true,
+              } as NavItem,
+            ]
+          : []),
+        // UW Admin — visible only to users with underwriting management permission
+        ...(canManageUnderwriting
+          ? [
+              {
+                icon: Shield,
+                label: "UW Admin",
+                href: "/underwriting/admin",
                 public: true,
               } as NavItem,
             ]

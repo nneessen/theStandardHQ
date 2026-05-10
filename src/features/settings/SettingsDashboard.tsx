@@ -18,7 +18,6 @@ import {
   Bell,
   History,
   Link2,
-  Stethoscope,
   Globe,
 } from "lucide-react";
 import { UserProfile } from "./components/UserProfile";
@@ -33,7 +32,6 @@ import { JoinRequestPage } from "./join-request";
 import { NotificationsSettingsPage } from "./notifications";
 import { IntegrationsTab } from "./integrations";
 import { AuditTrailPage } from "@/features/audit";
-import { UnderwritingSettingsTab } from "@/features/underwriting";
 import { LandingPageSettingsTab } from "./landing-page";
 import {
   Select,
@@ -219,15 +217,6 @@ export function SettingsDashboard({ initialTab }: SettingsDashboardProps) {
             icon: Percent,
             visible: canManageCarriers,
             Component: CommissionRatesManagement,
-          },
-          {
-            id: "underwriting",
-            label: "Underwriting",
-            description:
-              "AI underwriting wizard: criteria, acceptance rules, and guides.",
-            icon: Stethoscope,
-            visible: canManageCarriers,
-            Component: UnderwritingSettingsTab,
           },
         ],
       },
