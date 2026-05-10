@@ -1,11 +1,6 @@
 // src/services/underwriting/index.ts
 // Barrel file for underwriting services
 
-export {
-  criteriaService,
-  createCriteria,
-  type CreateCriteriaInput,
-} from "./repositories";
 export { guideStorageService } from "./repositories";
 export {
   transformConditionResponses,
