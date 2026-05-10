@@ -2,6 +2,7 @@
 
 // Page components (full-page routes, no props)
 export { default as UnderwritingWizardPage } from "./components/Wizard";
+export { UnderwritingAdminPage } from "./admin";
 export { QuickQuotePage } from "./components/QuickQuote";
 export { UnderwritingSettingsTab } from "./components/Settings";
 export {

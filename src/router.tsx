@@ -110,6 +110,9 @@ const UnderwritingGuidesPage = lazy(
 const ExtractedRulesPage = lazy(
   () => import("./features/underwriting/pages/ExtractedRulesPage"),
 );
+const UnderwritingAdminPage = lazy(
+  () => import("./features/underwriting/admin"),
+);
 
 // Create root route with App layout
 const rootRoute = createRootRoute({
@@ -575,6 +578,19 @@ const underwritingWizardRoute = createRoute({
   component: () => (
     <RouteGuard noRecruits noStaffRoles>
       <UnderwritingWizardPage />
+    </RouteGuard>
+  ),
+});
+
+// Underwriting Admin route - single-page workflow for uploading guides,
+// extracting rule candidates, and approving them. Page itself gates on
+// useCanManageUnderwriting() so non-admin users see a friendly empty state.
+const underwritingAdminRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "underwriting/admin",
+  component: () => (
+    <RouteGuard noRecruits noStaffRoles>
+      <UnderwritingAdminPage />
     </RouteGuard>
   ),
 });
@@ -1168,6 +1184,7 @@ const routeTree = rootRoute.addChildren([
   marketingTemplateCreateRoute,
   marketingTemplateEditRoute,
   underwritingWizardRoute,
+  underwritingAdminRoute,
   quickQuoteRoute,
   underwritingGuidesRoute,
   extractedRulesRoute,
