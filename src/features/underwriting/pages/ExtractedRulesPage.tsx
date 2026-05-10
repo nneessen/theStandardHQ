@@ -103,20 +103,34 @@ export default function ExtractedRulesPage({
     return groups;
   }, [ruleSets]);
 
+  const [extractProgress, setExtractProgress] = useState<{
+    chunkIndex: number;
+    totalChunks: number;
+    setsCreated: number;
+    rulesCreated: number;
+  } | null>(null);
+
   const handleExtract = async () => {
+    setExtractProgress(null);
     try {
-      const result = await extractRules.mutateAsync({ guideId });
+      const result = await extractRules.mutateAsync({
+        guideId,
+        onProgress: (p) => setExtractProgress(p),
+      });
+      const wallSec = (result.totalWallClockMs / 1000).toFixed(1);
       if (result.errors.length > 0) {
         showToast.warning(
-          `Extracted ${result.setsCreated} sets / ${result.rulesCreated} rules with ${result.errors.length} errors`,
+          `Extracted ${result.setsCreated} sets / ${result.rulesCreated} rules from ${result.totalChunks} chunks in ${wallSec}s — ${result.errors.length} warnings`,
         );
       } else {
         showToast.success(
-          `Extracted ${result.setsCreated} sets, ${result.rulesCreated} rules in ${(result.totalDurationMs / 1000).toFixed(1)}s`,
+          `Extracted ${result.setsCreated} sets, ${result.rulesCreated} rules from ${result.totalChunks} chunks (${result.totalChars.toLocaleString()} chars) in ${wallSec}s`,
         );
       }
     } catch (err) {
       showToast.error(err instanceof Error ? err.message : "Extraction failed");
+    } finally {
+      setExtractProgress(null);
     }
   };
 
@@ -222,7 +236,9 @@ export default function ExtractedRulesPage({
               <Sparkles className="h-3 w-3 mr-1.5" />
             )}
             {extractRules.isPending
-              ? "Extracting..."
+              ? extractProgress
+                ? `Chunk ${extractProgress.chunkIndex + 1}/${extractProgress.totalChunks} · ${extractProgress.setsCreated} sets`
+                : "Extracting..."
               : ruleSets.length === 0
                 ? "Extract Rules"
                 : "Re-extract"}

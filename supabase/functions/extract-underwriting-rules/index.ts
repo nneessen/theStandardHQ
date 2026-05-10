@@ -32,6 +32,12 @@ const corsHeaders = {
 interface ExtractionRequest {
   guideId: string;
   productId?: string | null;
+  // Chunked extraction: client (UI or script) loops over chunks until hasMore=false.
+  // One Claude call = one chunk = always fits inside Supabase's 150s timeout.
+  // The full guide is processed across N invocations, never truncated.
+  chunkOffset?: number; // byte offset into parsed_content.fullText (default 0)
+  chunkSize?: number; // bytes to send to Claude this call (default CHUNK_SIZE)
+  knownConditions?: string[]; // condition codes already extracted in prior chunks
 }
 
 interface ParsedGuideContent {
@@ -112,10 +118,22 @@ interface ClaudeOutput {
 // CONSTANTS
 // =============================================================================
 
-const MAX_PROMPT_CONTENT_CHARS = 90000; // ~22k tokens of guide content
+// One Claude call per invocation, sized to fit Supabase's 150s timeout.
+// 40k chars (~10k tokens) input + 4k output cap typically lands at 25-45s
+// for Sonnet 4.5. The CLIENT (UI button or bulk script) drives a loop:
+// invoke with chunkOffset=0 → invoke with chunkOffset=40000 → ... until
+// hasMore=false. The FULL guide is processed; we never truncate.
+//
+// CHUNK_OVERLAP catches rules whose definition straddles a chunk boundary:
+// each chunk re-includes the last N chars of the previous chunk so a
+// condition definition split across chunks is still seen whole at least
+// once.
+const CHUNK_SIZE = 40000;
+const CHUNK_OVERLAP = 2500;
+const MAX_OUTPUT_TOKENS = 4000;
 const MIN_VALID_CONTENT_LENGTH = 5000;
 const MAX_RULES_PER_SET = 25;
-const MAX_TOTAL_RULES_PER_RUN = 200;
+const MAX_TOTAL_RULES_PER_RUN = 100;
 
 // =============================================================================
 // MAIN HANDLER
@@ -179,6 +197,11 @@ serve(async (req) => {
     // Parse + validate request
     const body: ExtractionRequest = await req.json();
     const { guideId, productId } = body;
+    const chunkOffset = Math.max(0, body.chunkOffset ?? 0);
+    const chunkSize = Math.max(1000, body.chunkSize ?? CHUNK_SIZE);
+    const knownConditions: string[] = Array.isArray(body.knownConditions)
+      ? body.knownConditions.filter((c): c is string => typeof c === "string")
+      : [];
 
     if (!guideId || typeof guideId !== "string") {
       return errorResponse("Missing or invalid guideId", 400);
@@ -235,24 +258,58 @@ serve(async (req) => {
       category: c.category as string,
     }));
 
+    // === CHUNKING ===
+    // Slice the full text to this chunk's window. Re-include CHUNK_OVERLAP
+    // chars before chunkOffset (when offset > 0) so a rule definition that
+    // straddles a chunk boundary is still seen whole at least once.
+    const totalChars = parsedContent.fullText.length;
+    if (chunkOffset >= totalChars) {
+      return errorResponse(
+        `chunkOffset ${chunkOffset} is beyond guide length ${totalChars}`,
+        400,
+      );
+    }
+    const sliceStart =
+      chunkOffset > 0 ? Math.max(0, chunkOffset - CHUNK_OVERLAP) : 0;
+    const sliceEnd = Math.min(totalChars, chunkOffset + chunkSize);
+    const chunkText = parsedContent.fullText.slice(sliceStart, sliceEnd);
+    const nextOffset = sliceEnd;
+    const hasMore = sliceEnd < totalChars;
+    const chunkIndex = Math.floor(chunkOffset / chunkSize);
+    const totalChunks = Math.ceil(totalChars / chunkSize);
+
+    // Approximate which page numbers this slice covers, by walking the
+    // section list and counting cumulative chars. Used for source_pages
+    // hints when Claude can't pinpoint exact pages.
+    const approxPagesInChunk = approximatePagesForRange(
+      parsedContent,
+      sliceStart,
+      sliceEnd,
+    );
+
     // Build prompt + call Claude
     const anthropic = new Anthropic({ apiKey: anthropicApiKey });
-    const systemPrompt = buildSystemPrompt(validConditionCodes);
+    const systemPrompt = buildSystemPrompt(
+      validConditionCodes,
+      knownConditions,
+    );
     const userPrompt = buildUserPrompt({
       guideName: guide.name as string,
-      carrierName: "(see DB)", // not strictly required for extraction
       productScope: productId ? "Single product" : "All products on the guide",
-      parsedContent,
+      chunkText,
+      chunkIndex,
+      totalChunks,
+      approxPagesInChunk,
     });
 
     console.log(
-      `[extract-rules] Calling Claude for guide ${guideId} (${parsedContent.fullText.length} chars, ${parsedContent.pageCount} pages)`,
+      `[extract-rules] Calling Claude for guide ${guideId} chunk ${chunkIndex + 1}/${totalChunks} (${chunkText.length} chars, knownConditions=${knownConditions.length})`,
     );
 
     const aiStart = Date.now();
     const response = await anthropic.messages.create({
       model: "claude-sonnet-4-5",
-      max_tokens: 8000,
+      max_tokens: MAX_OUTPUT_TOKENS,
       system: systemPrompt,
       messages: [{ role: "user", content: userPrompt }],
     });
@@ -292,15 +349,34 @@ serve(async (req) => {
       userId,
     });
 
+    // Track which condition codes Claude emitted in this chunk so the client
+    // can pass them back as knownConditions on the next chunk and avoid
+    // duplicate rule_sets.
+    const conditionsExtracted = Array.from(
+      new Set(
+        claudeOutput.rule_sets
+          .map((rs) => rs.condition_code)
+          .filter((c): c is string => Boolean(c)),
+      ),
+    );
+
     const totalDurationMs = Date.now() - startTime;
     console.log(
-      `[extract-rules] Done. ${persistResult.setsCreated} sets, ${persistResult.rulesCreated} rules. ai=${aiDurationMs}ms total=${totalDurationMs}ms`,
+      `[extract-rules] Done chunk ${chunkIndex + 1}/${totalChunks}. ${persistResult.setsCreated} sets, ${persistResult.rulesCreated} rules. ai=${aiDurationMs}ms total=${totalDurationMs}ms hasMore=${hasMore}`,
     );
 
     return new Response(
       JSON.stringify({
         success: true,
         guideId,
+        chunkOffset,
+        chunkSize,
+        chunkIndex,
+        totalChunks,
+        totalChars,
+        nextOffset,
+        hasMore,
+        conditionsExtracted,
         setsCreated: persistResult.setsCreated,
         rulesCreated: persistResult.rulesCreated,
         errors: persistResult.errors,
@@ -361,10 +437,27 @@ function parseGuideContent(raw: unknown): ParsedGuideContent | null {
 
 function buildSystemPrompt(
   validConditions: Array<{ code: string; name: string; category: string }>,
+  knownConditions: string[],
 ): string {
   const conditionList = validConditions
     .map((c) => `  - ${c.code}: ${c.name} (${c.category})`)
     .join("\n");
+
+  // When the client is on chunk 2+, it passes the condition codes already
+  // extracted in prior chunks. We tell Claude NOT to re-emit rule_sets for
+  // those condition codes, otherwise the same condition processed in two
+  // chunks (or in chunk overlap) creates duplicate pending_review sets.
+  const dedupSection =
+    knownConditions.length > 0
+      ? `
+
+ALREADY EXTRACTED IN PRIOR CHUNKS — DO NOT EMIT RULE_SETS FOR THESE CONDITIONS AGAIN:
+${knownConditions.map((c) => `  - ${c}`).join("\n")}
+If you encounter content for one of these conditions in this chunk, SKIP it —
+do not create a duplicate rule_set. Only emit rule_sets for conditions NOT in
+the list above.
+`
+      : "";
 
   return `You are an underwriting analyst extracting structured eligibility rules from life insurance carrier underwriting guides.
 
@@ -420,7 +513,7 @@ CANONICAL FIELD NAMES (use these — do not invent):
 
 VALID CONDITION CODES (use these EXACTLY — do not invent codes):
 ${conditionList}
-
+${dedupSection}
 EXTRACTION RULES:
 1. ONE rule_set per condition you find in the guide. Use scope="condition" and the matching condition_code.
 2. Cross-condition rules (e.g., "client with both diabetes AND hypertension") use scope="global" and condition_code=null.
@@ -438,27 +531,69 @@ Return ONLY the JSON object — no surrounding markdown fences, no commentary.`;
 
 function buildUserPrompt(args: {
   guideName: string;
-  carrierName: string;
   productScope: string;
-  parsedContent: ParsedGuideContent;
+  chunkText: string;
+  chunkIndex: number;
+  totalChunks: number;
+  approxPagesInChunk: number[];
 }): string {
-  const { guideName, productScope, parsedContent } = args;
-  const truncated =
-    parsedContent.fullText.length > MAX_PROMPT_CONTENT_CHARS
-      ? parsedContent.fullText.slice(0, MAX_PROMPT_CONTENT_CHARS) +
-        "\n\n[...truncated for token budget...]"
-      : parsedContent.fullText;
+  const {
+    guideName,
+    productScope,
+    chunkText,
+    chunkIndex,
+    totalChunks,
+    approxPagesInChunk,
+  } = args;
+
+  const pageHint =
+    approxPagesInChunk.length > 0
+      ? `APPROX PAGES IN THIS CHUNK: ${approxPagesInChunk[0]}–${approxPagesInChunk[approxPagesInChunk.length - 1]}`
+      : "APPROX PAGES IN THIS CHUNK: unknown";
 
   return `GUIDE: ${guideName}
 SCOPE: ${productScope}
-PAGE COUNT: ${parsedContent.pageCount}
+CHUNK: ${chunkIndex + 1} of ${totalChunks}
+${pageHint}
 
-PARSED CONTENT (with page markers from the OCR pipeline):
+This is one slice of a larger guide. The full guide is being processed across
+${totalChunks} chunk${totalChunks === 1 ? "" : "s"}; you are seeing chunk
+${chunkIndex + 1}. Other chunks are processed in separate calls — extract only
+what you can identify from THIS slice.
+
+PARSED CONTENT (this chunk only):
 """
-${truncated}
+${chunkText}
 """
 
-Extract all underwriting rules you can identify into the JSON format described in the system prompt.`;
+Extract all underwriting rules you can identify in this chunk into the JSON
+format described in the system prompt. Use the APPROX PAGES range above for
+source_pages when you cannot pinpoint exact page markers.`;
+}
+
+/**
+ * Walk the parsed sections to determine which page numbers fall within a
+ * given character range of the joined fullText. Used to give Claude a
+ * source_pages hint when it can't find explicit page markers in a chunk.
+ */
+function approximatePagesForRange(
+  parsed: ParsedGuideContent,
+  rangeStart: number,
+  rangeEnd: number,
+): number[] {
+  const pages: number[] = [];
+  let cursor = 0;
+  for (const section of parsed.sections) {
+    const sectionStart = cursor;
+    const sectionEnd = cursor + section.content.length;
+    // Section overlaps the range
+    if (sectionEnd >= rangeStart && sectionStart <= rangeEnd) {
+      pages.push(section.pageNumber);
+    }
+    cursor = sectionEnd;
+    if (cursor > rangeEnd) break;
+  }
+  return pages.sort((a, b) => a - b);
 }
 
 interface ParseResult<T> {
