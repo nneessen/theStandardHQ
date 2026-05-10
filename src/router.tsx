@@ -107,6 +107,9 @@ const QuickQuotePage = lazy(
 const UnderwritingGuidesPage = lazy(
   () => import("./features/underwriting/components/UnderwritingGuidesPage"),
 );
+const ExtractedRulesPage = lazy(
+  () => import("./features/underwriting/pages/ExtractedRulesPage"),
+);
 
 // Create root route with App layout
 const rootRoute = createRootRoute({
@@ -588,6 +591,16 @@ const underwritingGuidesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "underwriting/guides",
   component: () => <UnderwritingGuidesPage />,
+});
+
+// Extracted Rules review route - per-guide list of AI-extracted rule candidates
+const extractedRulesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "underwriting/guides/$guideId/extracted-rules",
+  component: function ExtractedRulesRouteComponent() {
+    const { guideId } = extractedRulesRoute.useParams();
+    return <ExtractedRulesPage guideId={guideId} />;
+  },
 });
 
 // Chat Bot route - AI Chat Bot management dashboard, accessible to all authenticated users
@@ -1157,6 +1170,7 @@ const routeTree = rootRoute.addChildren([
   underwritingWizardRoute,
   quickQuoteRoute,
   underwritingGuidesRoute,
+  extractedRulesRoute,
   chatBotRoute,
   voiceCloneRoute,
   voiceAgentRoute,

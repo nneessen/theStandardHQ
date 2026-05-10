@@ -268,6 +268,42 @@ export async function getRuleSet(
 }
 
 /**
+ * Get all rule sets that came from a specific underwriting guide.
+ *
+ * Used by the Rule Review UI on /underwriting/guides/:guideId/extracted-rules
+ * to show every candidate the AI extractor produced from this guide so the
+ * admin can approve, reject, or edit them in one place.
+ */
+export async function getRuleSetsByGuide(
+  guideId: string,
+  imoId: string,
+): Promise<RuleSetWithRules[]> {
+  const { data, error } = await supabase
+    .from("underwriting_rule_sets")
+    .select(
+      `
+      *,
+      rules:underwriting_rules(*)
+    `,
+    )
+    .eq("imo_id", imoId)
+    .eq("source_guide_id", guideId)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error loading rule sets by guide:", error);
+    throw error;
+  }
+
+  return (data ?? []).map((rs) => ({
+    ...rs,
+    rules: (rs.rules ?? []).sort(
+      (a: RuleRow, b: RuleRow) => a.priority - b.priority,
+    ),
+  }));
+}
+
+/**
  * Create a new rule set
  */
 export async function createRuleSet(

@@ -19,7 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useNavigate } from "@tanstack/react-router";
 import { useUploadGuide } from "../../hooks/guides/useUnderwritingGuides";
+import { useParseGuide } from "../../hooks/guides/useParseGuide";
 import { useCarriersWithProducts } from "../../hooks/coverage/useCarriersWithProducts";
 
 interface GuideUploaderProps {
@@ -30,7 +32,9 @@ interface GuideUploaderProps {
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
+  const navigate = useNavigate();
   const uploadMutation = useUploadGuide();
+  const parseMutation = useParseGuide();
   const { data: carriers, isLoading: carriersLoading } =
     useCarriersWithProducts();
 
@@ -120,7 +124,7 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
     }
 
     try {
-      await uploadMutation.mutateAsync({
+      const newGuide = await uploadMutation.mutateAsync({
         carrierId,
         name,
         file: selectedFile,
@@ -128,7 +132,20 @@ export function GuideUploader({ open, onOpenChange }: GuideUploaderProps) {
         effectiveDate: effectiveDate || undefined,
         expirationDate: expirationDate || undefined,
       });
+
+      // Fire-and-forget: kick off parsing so the user doesn't have to.
+      // Parse is slow (PDF → text via PaddleOCR/text-layer); the review page
+      // polls parsing_status and unlocks the Extract button when ready.
+      parseMutation.mutate({
+        guideId: newGuide.id,
+        storagePath: newGuide.storage_path,
+      });
+
       handleClose();
+      navigate({
+        to: "/underwriting/guides/$guideId/extracted-rules",
+        params: { guideId: newGuide.id },
+      });
     } catch {
       // Error handled by mutation
     }

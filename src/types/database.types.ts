@@ -12129,6 +12129,7 @@ export type Database = {
           draft_rules_fyi: Json | null;
           eligibility_reasons: string[] | null;
           eligibility_status: string;
+          fired_rules: Json | null;
           health_class_result: string | null;
           id: string;
           imo_id: string;
@@ -12152,6 +12153,7 @@ export type Database = {
           draft_rules_fyi?: Json | null;
           eligibility_reasons?: string[] | null;
           eligibility_status: string;
+          fired_rules?: Json | null;
           health_class_result?: string | null;
           id?: string;
           imo_id: string;
@@ -12175,6 +12177,7 @@ export type Database = {
           draft_rules_fyi?: Json | null;
           eligibility_reasons?: string[] | null;
           eligibility_status?: string;
+          fired_rules?: Json | null;
           health_class_result?: string | null;
           id?: string;
           imo_id?: string;

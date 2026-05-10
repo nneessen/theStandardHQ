@@ -390,6 +390,20 @@ export function GuideList() {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
+                          onClick={() => handleParseClick(guide, false)}
+                          disabled={isGuideBeingParsed(guide.id)}
+                          className="text-[11px]"
+                        >
+                          {isGuideBeingParsed(guide.id) ? (
+                            <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                          ) : (
+                            <FileText className="h-3 w-3 mr-2" />
+                          )}
+                          {guide.parsing_status === "completed"
+                            ? "Re-parse (text)"
+                            : "Parse (text)"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
                           onClick={() => handleParseClick(guide, true)}
                           disabled={isGuideBeingParsed(guide.id)}
                           className="text-[11px]"
@@ -400,8 +414,8 @@ export function GuideList() {
                             <ScanEye className="h-3 w-3 mr-2" />
                           )}
                           {guide.parsing_status === "completed"
-                            ? "Re-parse"
-                            : "Parse"}
+                            ? "Re-parse with OCR"
+                            : "Parse with OCR"}
                         </DropdownMenuItem>
                         {guide.parsing_status === "completed" && (
                           <DropdownMenuItem

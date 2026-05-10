@@ -13,6 +13,7 @@ import {
 import { useCanManageUnderwriting } from "../../hooks/wizard/useUnderwritingFeatureFlag";
 import { SessionHistoryList } from "../SessionHistory";
 import { GuideList } from "../GuideManager";
+import { CarrierRuleCoveragePanel } from "../CoverageDashboard";
 import { CriteriaReviewDashboard } from "../CriteriaReview";
 import { RateEntryTab } from "../RateEntry";
 import { AcceptanceRulesTab } from "../AcceptanceRules";
@@ -119,7 +120,8 @@ export function UnderwritingSettingsTab() {
             <CoverageTab />
           </TabsContent>
 
-          <TabsContent value="guides" className="mt-0">
+          <TabsContent value="guides" className="mt-0 space-y-3">
+            <CarrierRuleCoveragePanel />
             <GuideList />
           </TabsContent>
 
