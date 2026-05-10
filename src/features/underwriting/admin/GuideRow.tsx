@@ -315,6 +315,7 @@ export function GuideRow({ guide, defaultOpen = false }: GuideRowProps) {
                         key={set.id}
                         ruleSet={set}
                         status={group.status}
+                        carrierId={guide.carrier_id ?? ""}
                         onApprove={() => handleApprove(set.id)}
                         onReject={() => handleReject(set.id)}
                         isMutating={updateRuleSet.isPending}

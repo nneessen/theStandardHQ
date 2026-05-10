@@ -1,4 +1,6 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useCarrierRuleCoverage,
@@ -6,6 +8,7 @@ import {
 } from "./useUnderwritingAdmin";
 import { GuideRow } from "./GuideRow";
 import { UploadDropZone } from "./UploadDropZone";
+import { RuleSetEditorDialog } from "./RuleSetEditorDialog";
 
 interface CarrierPanelProps {
   carrierId: string;
@@ -15,6 +18,7 @@ export function CarrierPanel({ carrierId }: CarrierPanelProps) {
   const { data: coverage = [] } = useCarrierRuleCoverage();
   const { data: guides = [], isLoading: guidesLoading } =
     useUnderwritingGuides();
+  const [createOpen, setCreateOpen] = useState(false);
 
   const carrier = useMemo(
     () => coverage.find((c) => c.carrierId === carrierId),
@@ -29,7 +33,7 @@ export function CarrierPanel({ carrierId }: CarrierPanelProps) {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="px-4 py-2.5 border-b border-v2-ring bg-v2-card flex items-center gap-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="text-[13px] font-semibold text-v2-ink truncate">
             {carrier?.carrierName ?? "—"}
           </div>
@@ -39,6 +43,14 @@ export function CarrierPanel({ carrierId }: CarrierPanelProps) {
               : "Carrier details loading…"}
           </div>
         </div>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setCreateOpen(true)}
+          className="h-7 text-[11px]"
+        >
+          <Plus className="h-3 w-3 mr-1" /> New rule set
+        </Button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
@@ -71,6 +83,12 @@ export function CarrierPanel({ carrierId }: CarrierPanelProps) {
           </div>
         )}
       </div>
+
+      <RuleSetEditorDialog
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        carrierId={carrierId}
+      />
     </div>
   );
 }

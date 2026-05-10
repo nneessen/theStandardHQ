@@ -39,9 +39,27 @@ export {
 export {
   useUpdateRuleSet,
   useDeleteRuleSet,
+  useCreateRuleSet,
   ruleEngineKeys,
   type RuleSetWithRules,
   type RuleReviewStatus,
+  type CreateRuleSetInput,
+  type HealthClass,
+  type TableRating,
+  type PredicateGroup,
+  type RuleSetScope,
 } from "../hooks/rules/useRuleSets";
 
-export { useUpdateRule, useDeleteRule } from "../hooks/rules/useRules";
+export {
+  useCreateRule,
+  useUpdateRule,
+  useDeleteRule,
+  type CreateRuleInput,
+} from "../hooks/rules/useRules";
+
+export { useHealthConditions } from "../hooks/shared/useHealthConditions";
+
+// Re-export the predicate validator. Lives in services/underwriting/core but
+// admin/ is in features/ so it can't deep-import directly — go through the
+// hooks barrel which is allowed to span the boundary.
+export { validatePredicate } from "../hooks";

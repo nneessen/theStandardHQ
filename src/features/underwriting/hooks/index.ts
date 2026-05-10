@@ -79,6 +79,11 @@ export {
   parsePredicate,
   deleteRuleSet,
 } from "./rules/useRuleSets";
+
+// validatePredicate lives in services/underwriting/core/ruleEngineDSL alongside
+// parsePredicate. Re-exporting here so admin/ (which can't deep-import from
+// services) has a single barrel entry-point for both.
+export { validatePredicate } from "@/services/underwriting/core/ruleEngineDSL";
 export type {
   RuleSetWithRules,
   CreateRuleSetInput,

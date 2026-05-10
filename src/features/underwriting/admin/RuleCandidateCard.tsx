@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronRight,
   Loader2,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ import type {
   RuleSetWithRules,
   RuleReviewStatus,
 } from "./useUnderwritingAdmin";
+import { RuleSetEditorDialog } from "./RuleSetEditorDialog";
 
 const STATUS_BADGE_VARIANT: Record<
   RuleReviewStatus,
@@ -32,6 +34,7 @@ const ELIGIBILITY_BADGE_TEXT: Record<string, string> = {
 interface RuleCandidateCardProps {
   ruleSet: RuleSetWithRules;
   status: RuleReviewStatus;
+  carrierId: string;
   onApprove: () => void;
   onReject: () => void;
   isMutating: boolean;
@@ -40,11 +43,13 @@ interface RuleCandidateCardProps {
 export function RuleCandidateCard({
   ruleSet,
   status,
+  carrierId,
   onApprove,
   onReject,
   isMutating,
 }: RuleCandidateCardProps) {
   const [expanded, setExpanded] = useState(status === "pending_review");
+  const [editorOpen, setEditorOpen] = useState(false);
 
   const ruleCount = ruleSet.rules?.length ?? 0;
   const sourcePages = useMemo(() => {
@@ -170,39 +175,56 @@ export function RuleCandidateCard({
             ) : null}
           </div>
 
-          {status === "pending_review" ? (
-            <div className="border-t border-v2-ring px-2.5 py-1.5 bg-v2-card-tinted flex items-center justify-end gap-1.5">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onReject}
-                disabled={isMutating}
-                className="h-6 text-[10px]"
-              >
-                {isMutating ? (
-                  <Loader2 className="h-2.5 w-2.5 mr-1 animate-spin" />
-                ) : (
-                  <XCircle className="h-2.5 w-2.5 mr-1" />
-                )}
-                Reject
-              </Button>
-              <Button
-                size="sm"
-                onClick={onApprove}
-                disabled={isMutating}
-                className="h-6 text-[10px]"
-              >
-                {isMutating ? (
-                  <Loader2 className="h-2.5 w-2.5 mr-1 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="h-2.5 w-2.5 mr-1" />
-                )}
-                Approve
-              </Button>
-            </div>
-          ) : null}
+          <div className="border-t border-v2-ring px-2.5 py-1.5 bg-v2-card-tinted flex items-center justify-end gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditorOpen(true)}
+              disabled={isMutating}
+              className="h-6 text-[10px]"
+            >
+              <Pencil className="h-2.5 w-2.5 mr-1" /> Edit
+            </Button>
+            {status === "pending_review" ? (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onReject}
+                  disabled={isMutating}
+                  className="h-6 text-[10px]"
+                >
+                  {isMutating ? (
+                    <Loader2 className="h-2.5 w-2.5 mr-1 animate-spin" />
+                  ) : (
+                    <XCircle className="h-2.5 w-2.5 mr-1" />
+                  )}
+                  Reject
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={onApprove}
+                  disabled={isMutating}
+                  className="h-6 text-[10px]"
+                >
+                  {isMutating ? (
+                    <Loader2 className="h-2.5 w-2.5 mr-1 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="h-2.5 w-2.5 mr-1" />
+                  )}
+                  Approve
+                </Button>
+              </>
+            ) : null}
+          </div>
         </>
       ) : null}
+      <RuleSetEditorDialog
+        open={editorOpen}
+        onOpenChange={setEditorOpen}
+        carrierId={carrierId}
+        ruleSet={ruleSet}
+      />
     </div>
   );
 }
