@@ -130,7 +130,7 @@ interface ClaudeOutput {
 // once.
 const CHUNK_SIZE = 40000;
 const CHUNK_OVERLAP = 2500;
-const MAX_OUTPUT_TOKENS = 4000;
+const MAX_OUTPUT_TOKENS = 16000;
 const MIN_VALID_CONTENT_LENGTH = 5000;
 const MAX_RULES_PER_SET = 25;
 const MAX_TOTAL_RULES_PER_RUN = 100;
@@ -323,8 +323,43 @@ serve(async (req) => {
     const aiText =
       response.content[0]?.type === "text" ? response.content[0].text : "";
 
+    const truncated = response.stop_reason === "max_tokens";
+
     const parseResult = parseClaudeJson(aiText);
     if (!parseResult.ok) {
+      if (truncated) {
+        console.warn(
+          `[extract-rules] Chunk ${chunkIndex + 1}/${totalChunks} truncated at max_tokens with unparseable JSON; skipping persistence and continuing.`,
+        );
+        const totalDurationMs = Date.now() - startTime;
+        return new Response(
+          JSON.stringify({
+            success: true,
+            guideId,
+            chunkOffset,
+            chunkSize,
+            chunkIndex,
+            totalChunks,
+            totalChars,
+            nextOffset,
+            hasMore,
+            conditionsExtracted: [],
+            setsCreated: 0,
+            rulesCreated: 0,
+            errors: [`truncated_at_chunk_${chunkIndex}_unparseable`],
+            aiDurationMs,
+            totalDurationMs,
+            usage: {
+              inputTokens: response.usage.input_tokens,
+              outputTokens: response.usage.output_tokens,
+            },
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
       return errorResponse(
         `Claude output was not valid JSON: ${parseResult.error}`,
         502,
@@ -384,7 +419,9 @@ serve(async (req) => {
         conditionsExtracted,
         setsCreated: persistResult.setsCreated,
         rulesCreated: persistResult.rulesCreated,
-        errors: persistResult.errors,
+        errors: truncated
+          ? [...persistResult.errors, `truncated_at_chunk_${chunkIndex}`]
+          : persistResult.errors,
         aiDurationMs,
         totalDurationMs,
         usage: {
@@ -784,7 +821,7 @@ async function persistExtractedRules(args: {
         review_status: "pending_review",
         source: "ai_extracted",
         source_guide_id: guideId,
-        source_type: "extracted",
+        source_type: "carrier_document",
         created_by: userId,
       })
       .select("id")
