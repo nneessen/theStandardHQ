@@ -35,9 +35,6 @@ import type { RecruitFilters } from "@/types/recruiting.types";
 import { toast } from "sonner";
 import { Link, useSearch } from "@tanstack/react-router";
 import { downloadCSV } from "@/utils/exportHelpers";
-import { useQuery } from "@tanstack/react-query";
-// eslint-disable-next-line no-restricted-imports -- pre-existing: recruiter_slug query needs direct supabase access
-import { supabase } from "@/services/base/supabase";
 import { normalizePhaseNameToStatus } from "@/lib/pipeline";
 import { useFeatureAccess } from "@/hooks/subscription";
 import { FeatureGate } from "@/components/subscription/FeatureGate";
@@ -102,19 +99,7 @@ function RecruitingDashboardContent() {
 
   const { recruitId } = useSearch({ from: "/recruiting" });
 
-  const { data: recruiterSlug } = useQuery({
-    queryKey: ["recruiter-slug", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data } = await supabase
-        .from("user_profiles")
-        .select("recruiter_slug")
-        .eq("id", user.id)
-        .single();
-      return data?.recruiter_slug || null;
-    },
-    enabled: !!user?.id,
-  });
+  const recruiterSlug = user?.recruiter_slug ?? null;
 
   const handleCopyLink = async () => {
     if (!recruiterSlug) return;

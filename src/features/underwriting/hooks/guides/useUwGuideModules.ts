@@ -2,6 +2,30 @@ import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/services/base/supabase";
 import { trainingDocumentService } from "@/features/training-hub/services/trainingDocumentService";
+import type { Database } from "@/types/database.types";
+
+type Tables = Database["public"]["Tables"];
+type LessonPick = Pick<
+  Tables["training_lessons"]["Row"],
+  "id" | "title" | "sort_order"
+>;
+type ModulePick = Pick<
+  Tables["training_modules"]["Row"],
+  "id" | "title" | "category" | "is_active" | "updated_at"
+>;
+type DocumentPick = Pick<
+  Tables["training_documents"]["Row"],
+  "id" | "name" | "file_name" | "storage_path" | "file_size"
+>;
+// PostgREST returns nested relations as arrays even with !inner, so we
+// model the wire shape exactly and unwrap to the first element below.
+type ContentRow = Pick<
+  Tables["training_lesson_content"]["Row"],
+  "id" | "sort_order"
+> & {
+  lesson: Array<LessonPick & { module: ModulePick[] }>;
+  document: DocumentPick[];
+};
 
 export interface UwGuideModuleRow {
   contentId: string;
@@ -68,48 +92,32 @@ export function useUwGuideModules() {
         throw new Error(`Failed to fetch UW guide modules: ${error.message}`);
       }
 
-      type Row = {
-        id: string;
-        sort_order: number | null;
-        lesson: {
-          id: string;
-          title: string | null;
-          sort_order: number | null;
-          module: {
-            id: string;
-            title: string;
-            category: string | null;
-            is_active: boolean | null;
-            updated_at: string | null;
-          };
-        };
-        document: {
-          id: string;
-          name: string;
-          file_name: string;
-          storage_path: string;
-          file_size: number | null;
-        };
-      };
-
-      const rows = (data || []) as unknown as Row[];
+      const rows = (data ?? []) as ContentRow[];
 
       return rows
-        .filter((r) => r.lesson?.module?.is_active !== false && r.document)
-        .map((r) => ({
-          contentId: r.id,
-          moduleId: r.lesson.module.id,
-          moduleTitle: r.lesson.module.title,
-          category: r.lesson.module.category,
-          lessonId: r.lesson.id,
-          lessonTitle: r.lesson.title,
-          documentId: r.document.id,
-          documentName: r.document.name,
-          fileName: r.document.file_name,
-          storagePath: r.document.storage_path,
-          fileSize: r.document.file_size,
-          updatedAt: r.lesson.module.updated_at,
-        }))
+        .flatMap<UwGuideModuleRow>((r) => {
+          const lesson = r.lesson?.[0];
+          const moduleRow = lesson?.module?.[0];
+          const doc = r.document?.[0];
+          if (!lesson || !moduleRow || !doc) return [];
+          if (moduleRow.is_active === false) return [];
+          return [
+            {
+              contentId: r.id,
+              moduleId: moduleRow.id,
+              moduleTitle: moduleRow.title,
+              category: moduleRow.category,
+              lessonId: lesson.id,
+              lessonTitle: lesson.title,
+              documentId: doc.id,
+              documentName: doc.name,
+              fileName: doc.file_name,
+              storagePath: doc.storage_path,
+              fileSize: doc.file_size,
+              updatedAt: moduleRow.updated_at,
+            },
+          ];
+        })
         .sort((a, b) =>
           a.moduleTitle.localeCompare(b.moduleTitle, undefined, {
             sensitivity: "base",
@@ -122,24 +130,27 @@ export function useUwGuideModules() {
 
 /**
  * Open a PDF in a new tab using a fresh signed URL.
- * Pop-up is opened synchronously to avoid being blocked, then redirected
- * once the signed URL resolves.
+ * Pop-up is opened synchronously (inside the user-gesture frame) so the
+ * browser doesn't block it, then redirected once the signed URL resolves.
+ * If the browser blocks the pop-up (returns null), surface a clear error
+ * rather than navigating the current tab away.
  */
 export async function openUwGuidePdf(storagePath: string): Promise<void> {
   const popup = window.open("", "_blank");
+  if (!popup) {
+    throw new Error(
+      "Pop-up blocked. Allow pop-ups for this site, or right-click the row and choose Open in new tab.",
+    );
+  }
   try {
     const url = await trainingDocumentService.getSignedUrl(storagePath);
     if (!url) {
-      popup?.close();
-      throw new Error("Could not create signed URL");
+      popup.close();
+      throw new Error("Could not create signed URL for this PDF.");
     }
-    if (popup) {
-      popup.location.href = url;
-    } else {
-      window.location.href = url;
-    }
+    popup.location.href = url;
   } catch (err) {
-    popup?.close();
+    popup.close();
     throw err;
   }
 }

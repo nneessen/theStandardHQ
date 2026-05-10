@@ -47,9 +47,6 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
-// eslint-disable-next-line no-restricted-imports
-import { supabase } from "@/services/base/supabase";
 
 export function LeadsQueueDashboard() {
   const navigate = useNavigate();
@@ -76,20 +73,7 @@ export function LeadsQueueDashboard() {
   const acceptMutation = useAcceptLead();
   const rejectMutation = useRejectLead();
 
-  // Fetch current user's recruiter_slug
-  const { data: recruiterSlug } = useQuery({
-    queryKey: ["recruiter-slug", user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data } = await supabase
-        .from("user_profiles")
-        .select("recruiter_slug")
-        .eq("id", user.id)
-        .single();
-      return data?.recruiter_slug || null;
-    },
-    enabled: !!user?.id,
-  });
+  const recruiterSlug = user?.recruiter_slug ?? null;
 
   const shareableUrl = recruiterSlug
     ? `https://www.thestandardhq.com/join-${recruiterSlug}`
