@@ -134,10 +134,7 @@ export function UWLimitReachedDialog({
             Close
           </Button>
           {upgradeTiers.length > 0 && (
-            <Button
-              onClick={handleUpgrade}
-              className="flex-1 bg-warning hover:bg-warning text-white"
-            >
+            <Button onClick={handleUpgrade} className="flex-1">
               Upgrade Plan
               <ArrowUpRight className="h-4 w-4 ml-1" />
             </Button>

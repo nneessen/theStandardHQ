@@ -63,10 +63,7 @@ export function WizardPageLayout({
             alt="Logo"
             className="h-6 w-6 dark:hidden"
           />
-          <span
-            className="text-sm font-semibold tracking-wide"
-            style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-          >
+          <span className="text-sm font-semibold tracking-wide text-v2-ink">
             Underwriting Wizard
           </span>
         </div>
@@ -76,7 +73,7 @@ export function WizardPageLayout({
       </div>
 
       {/* Horizontal Stepper */}
-      <div className="px-4 py-2.5 border-b border-border/50 bg-muted/30 flex-shrink-0">
+      <div className="px-4 py-2.5 border-b border-v2-ring bg-v2-card-tinted flex-shrink-0">
         <nav
           className="flex items-center justify-center gap-0"
           aria-label="Progress"
@@ -97,22 +94,20 @@ export function WizardPageLayout({
                   disabled={!isClickable}
                   className={cn(
                     "flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors text-left",
-                    status === "current" && "bg-warning/20 dark:bg-warning/30",
                     isClickable &&
                       status !== "current" &&
-                      "hover:bg-muted cursor-pointer",
+                      "hover:bg-v2-accent-soft cursor-pointer",
                     !isClickable && "cursor-default",
                   )}
                 >
-                  {/* Step circle */}
                   <div
                     className={cn(
                       "flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-semibold transition-colors flex-shrink-0",
                       status === "completed" &&
-                        "bg-warning/20 text-warning border border-warning/30",
-                      status === "current" && "bg-warning text-white shadow-sm",
-                      status === "upcoming" &&
-                        "bg-v2-ring dark:bg-v2-ring-strong text-v2-ink-muted dark:text-v2-ink-subtle",
+                        "bg-v2-accent-soft text-v2-ink border border-v2-ring",
+                      status === "current" &&
+                        "bg-v2-ink text-v2-canvas shadow-sm",
+                      status === "upcoming" && "bg-v2-ring text-v2-ink-muted",
                     )}
                   >
                     {status === "completed" ? (
@@ -122,29 +117,25 @@ export function WizardPageLayout({
                     )}
                   </div>
 
-                  {/* Step label — hidden on small screens */}
                   <span
                     className={cn(
                       "hidden sm:block text-xs font-medium whitespace-nowrap",
                       status === "current"
-                        ? "text-warning"
+                        ? "text-v2-ink"
                         : status === "completed"
-                          ? "text-foreground/70"
-                          : "text-muted-foreground",
+                          ? "text-v2-ink-muted"
+                          : "text-v2-ink-subtle",
                     )}
                   >
                     {stepConfig.label}
                   </span>
                 </button>
 
-                {/* Connector line */}
                 {!isLast && (
                   <div
                     className={cn(
                       "w-6 lg:w-10 h-px mx-0.5",
-                      index < currentStepIndex
-                        ? "bg-warning/70 dark:bg-warning/50"
-                        : "bg-v2-ring-strong dark:bg-v2-ring-strong",
+                      index < currentStepIndex ? "bg-v2-ink/30" : "bg-v2-ring",
                     )}
                   />
                 )}

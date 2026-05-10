@@ -119,20 +119,19 @@ export default function MedicationsStep({
   const highRiskMeds = getHighRiskMedications(data);
 
   return (
-    <div className="space-y-3 p-1">
-      <div className="text-xs text-muted-foreground dark:text-muted-foreground">
+    <div className="space-y-3">
+      <div className="text-xs text-v2-ink-muted">
         Select current medications. All fields optional but impacts product
         eligibility.
       </div>
 
-      {/* Medication Grid - Two columns */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+      <div className="grid grid-cols-2 gap-2">
         {MEDICATION_CATEGORIES.map((category) => (
           <div
             key={category.id}
-            className="space-y-1.5 p-2 bg-background dark:bg-card-tinted/30 rounded border border-border dark:border-border"
+            className="space-y-1.5 p-2.5 bg-v2-card-tinted rounded-v2-md border border-v2-ring"
           >
-            <div className="text-[10px] font-medium text-muted-foreground dark:text-muted-foreground uppercase tracking-wide">
+            <div className="text-[10px] font-semibold text-v2-ink-muted uppercase tracking-wider">
               {category.label}
             </div>
             <div className="space-y-1">
@@ -149,29 +148,27 @@ export default function MedicationsStep({
         ))}
       </div>
 
-      {/* High-risk warnings */}
       {highRiskMeds.length > 0 && (
-        <div className="p-2 rounded border bg-warning/10 border-warning/30">
-          <div className="text-[10px] font-medium text-warning mb-1">
-            ⚠️ High-impact medications detected:
+        <div className="p-2.5 rounded-v2-md border bg-warning/10 border-warning/30">
+          <div className="text-[11px] font-semibold text-warning mb-1">
+            High-impact medications detected
           </div>
-          <div className="text-[10px] text-warning">
+          <div className="text-[11px] text-warning">
             {highRiskMeds.join(", ")}
           </div>
         </div>
       )}
 
-      {/* Summary */}
       <div
         className={cn(
-          "p-2 rounded border text-xs",
+          "px-2.5 py-1.5 rounded-v2-md border text-xs",
           selectedCount === 0
-            ? "bg-success/10 border-success/30 text-success"
-            : "bg-info/10 border-info/30 text-info",
+            ? "bg-v2-card-tinted border-v2-ring text-v2-ink-muted"
+            : "bg-v2-card-tinted border-v2-ring text-v2-ink",
         )}
       >
         {selectedCount === 0
-          ? "✓ No medications reported"
+          ? "No medications reported"
           : `${selectedCount} medication${selectedCount > 1 ? "s" : ""} reported`}
       </div>
     </div>
@@ -202,9 +199,7 @@ function MedicationField({ item, data, onChange }: MedicationFieldProps) {
           htmlFor={item.key}
           className={cn(
             "text-[11px] cursor-pointer",
-            checked
-              ? "text-info font-medium"
-              : "text-muted-foreground dark:text-muted-foreground",
+            checked ? "text-v2-ink font-medium" : "text-v2-ink-muted",
           )}
         >
           {item.label}

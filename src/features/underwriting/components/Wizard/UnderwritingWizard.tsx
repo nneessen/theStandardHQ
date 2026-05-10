@@ -10,6 +10,7 @@ import {
   Sparkles,
   Zap,
   History,
+  HelpCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -69,6 +70,8 @@ import CoverageRequestStep from "./Steps/CoverageRequestStep";
 import ReviewStep from "./Steps/ReviewStep";
 import RecommendationsStep from "./Steps/RecommendationsStep";
 import WizardInfoPanel from "./WizardInfoPanel";
+import WizardHelpDrawer from "./WizardHelpDrawer";
+import InlineStepGuidance from "./InlineStepGuidance";
 
 const initialClientInfo: ClientInfo = {
   name: "",
@@ -135,7 +138,7 @@ export default function UnderwritingWizardPage() {
   if (featureLoading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-3.5rem)]">
-        <div className="h-6 w-6 border-2 border-warning border-t-transparent rounded-full animate-spin" />
+        <div className="h-6 w-6 border-2 border-v2-ink border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -173,6 +176,7 @@ function UnderwritingWizardInner() {
   );
   const [lastAnalyzedData, setLastAnalyzedData] = useState<string | null>(null);
   const [showHistorySheet, setShowHistorySheet] = useState(false);
+  const [showHelpSheet, setShowHelpSheet] = useState(false);
   const [showLimitDialog, setShowLimitDialog] = useState(false);
 
   const analysisInFlightRef = useRef(false);
@@ -755,7 +759,7 @@ function UnderwritingWizardInner() {
     <Suspense
       fallback={
         <div className="flex items-center justify-center h-[calc(100vh-3.5rem)]">
-          <div className="h-6 w-6 border-2 border-warning border-t-transparent rounded-full animate-spin" />
+          <div className="h-6 w-6 border-2 border-v2-ink border-t-transparent rounded-full animate-spin" />
         </div>
       }
     >
@@ -766,7 +770,6 @@ function UnderwritingWizardInner() {
         onBack={() => navigate({ to: "/policies" })}
         headerRight={
           <>
-            {/* Usage Badge */}
             {usageData && (
               <Badge
                 variant={
@@ -778,18 +781,13 @@ function UnderwritingWizardInner() {
                         ? "outline"
                         : "secondary"
                 }
-                className={`flex items-center gap-1 text-[10px] px-2 py-0.5 ${
-                  usageStatus.status === "warning"
-                    ? "border-warning text-warning"
-                    : ""
-                }`}
+                className="flex items-center gap-1 text-[10px] px-2 py-0.5"
               >
                 <Zap className="h-3 w-3" />
                 {usageData.runs_used}/{usageData.runs_limit}
               </Badge>
             )}
 
-            {/* History Button */}
             <Button
               variant="outline"
               size="sm"
@@ -799,61 +797,35 @@ function UnderwritingWizardInner() {
               <History className="h-3 w-3" />
               History
             </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowHelpSheet(true)}
+              className="h-7 w-7 p-0"
+              aria-label="About the UW Wizard"
+            >
+              <HelpCircle className="h-4 w-4" />
+            </Button>
           </>
         }
       >
-        <div className="flex-1 overflow-hidden p-4">
-          <div className="grid h-full min-h-0 gap-4 xl:grid-cols-[320px_minmax(0,1fr)] 2xl:grid-cols-[360px_minmax(0,1fr)]">
-            <div className="min-h-0">
-              <WizardInfoPanel
-                currentStep={currentStep.id}
-                formData={formData}
-              />
+        <div className="flex-1 overflow-hidden p-3">
+          <div className="grid h-full min-h-0 gap-3 xl:grid-cols-[280px_minmax(0,1fr)]">
+            <div className="min-h-0 hidden xl:block">
+              <WizardInfoPanel formData={formData} />
             </div>
 
-            <div className="min-h-0 overflow-hidden rounded-[28px] border border-border/70 bg-background/90 shadow-sm backdrop-blur-sm">
+            <div className="min-h-0 overflow-hidden rounded-v2-md border border-v2-ring bg-v2-card shadow-v2-soft">
               <div className="flex h-full min-h-0 flex-col">
-                <div className="border-b border-border/60 bg-gradient-to-r from-amber-50/80 via-background to-background px-5 py-4 dark:from-amber-950/20">
-                  <div className="mb-2 flex items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className="rounded-full text-[10px] uppercase tracking-[0.16em]"
-                    >
-                      Step {currentStepIndex + 1} of {WIZARD_STEPS.length}
-                    </Badge>
-                    <Badge
-                      variant="secondary"
-                      className="rounded-full bg-warning/20 text-warning dark:bg-warning/30 dark:text-warning"
-                    >
-                      Screening workflow
-                    </Badge>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-warning/15 text-warning">
-                      <Sparkles className="h-5 w-5" />
-                    </div>
-                    <div className="min-w-0">
-                      <h3
-                        className="text-lg font-semibold text-foreground"
-                        style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                      >
-                        {currentStep.label}
-                      </h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {currentStep.description ||
-                          "Capture accurate underwriting details before reviewing the results."}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
                 {errors.submit && (
-                  <div className="border-b border-destructive/30 bg-destructive/10/80 px-5 py-3 dark:border-destructive dark:bg-destructive/10">
-                    <p className="text-sm text-destructive">{errors.submit}</p>
+                  <div className="border-b border-destructive/30 bg-destructive/10 px-4 py-2.5">
+                    <p className="text-xs text-destructive">{errors.submit}</p>
                   </div>
                 )}
 
-                <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 md:px-5 md:py-5">
+                <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4">
+                  <InlineStepGuidance step={currentStep.id} />
                   {renderStepContent()}
                 </div>
               </div>
@@ -894,7 +866,7 @@ function UnderwritingWizardInner() {
                   !decisionEngineMutation.data?.authoritativeRunEnvelope
                 }
                 size="sm"
-                className="h-8 text-xs px-4 bg-success hover:bg-success text-white"
+                className="h-8 text-xs px-4"
               >
                 <Save className="h-3.5 w-3.5 mr-1.5" />
                 {isSaving ? "Saving..." : "Save Session"}
@@ -904,7 +876,7 @@ function UnderwritingWizardInner() {
                 onClick={handleNext}
                 size="sm"
                 disabled={isAnalyzing}
-                className="h-8 text-xs px-4 bg-warning hover:bg-warning text-white"
+                className="h-8 text-xs px-4"
               >
                 {currentStep.id === "review" ? (
                   <>
@@ -937,6 +909,9 @@ function UnderwritingWizardInner() {
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Help Drawer */}
+      <WizardHelpDrawer open={showHelpSheet} onOpenChange={setShowHelpSheet} />
 
       {/* Limit Reached Dialog */}
       <UWLimitReachedDialog
