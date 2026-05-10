@@ -130,7 +130,11 @@ interface ClaudeOutput {
 // once.
 const CHUNK_SIZE = 40000;
 const CHUNK_OVERLAP = 2500;
-const MAX_OUTPUT_TOKENS = 16000;
+// claude-sonnet-4-20250514 caps max_tokens at 8192 without the extended-output
+// beta header. We deliberately stay at the model's safe ceiling and rely on
+// the truncation guard below (stop_reason === "max_tokens") to handle the
+// rare overflow case gracefully instead of crashing into a 500.
+const MAX_OUTPUT_TOKENS = 8192;
 const MIN_VALID_CONTENT_LENGTH = 5000;
 const MAX_RULES_PER_SET = 25;
 const MAX_TOTAL_RULES_PER_RUN = 100;
