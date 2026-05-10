@@ -17,14 +17,15 @@ type DocumentPick = Pick<
   Tables["training_documents"]["Row"],
   "id" | "name" | "file_name" | "storage_path" | "file_size"
 >;
-// PostgREST returns nested relations as arrays even with !inner, so we
-// model the wire shape exactly and unwrap to the first element below.
+// training_lesson_content.document_id has no FK to training_documents, so
+// PostgREST can't auto-embed and we stitch the document rows in JS below.
+// Lesson + module relations DO have FKs and embed normally — PostgREST
+// returns those as arrays even with !inner, so we unwrap to first element.
 type ContentRow = Pick<
   Tables["training_lesson_content"]["Row"],
-  "id" | "sort_order"
+  "id" | "sort_order" | "document_id"
 > & {
   lesson: Array<LessonPick & { module: ModulePick[] }>;
-  document: DocumentPick[];
 };
 
 export interface UwGuideModuleRow {
@@ -59,12 +60,13 @@ export function useUwGuideModules() {
   return useQuery({
     queryKey: uwGuideModuleKeys.list(),
     queryFn: async (): Promise<UwGuideModuleRow[]> => {
-      const { data, error } = await supabase
+      const { data: contentData, error: contentError } = await supabase
         .from("training_lesson_content")
         .select(
           `
           id,
           sort_order,
+          document_id,
           lesson:training_lessons!inner (
             id,
             title,
@@ -76,29 +78,47 @@ export function useUwGuideModules() {
               is_active,
               updated_at
             )
-          ),
-          document:training_documents!inner (
-            id,
-            name,
-            file_name,
-            storage_path,
-            file_size
           )
         `,
         )
-        .eq("content_type", "pdf");
+        .eq("content_type", "pdf")
+        .not("document_id", "is", null);
 
-      if (error) {
-        throw new Error(`Failed to fetch UW guide modules: ${error.message}`);
+      if (contentError) {
+        throw new Error(
+          `Failed to fetch UW guide modules: ${contentError.message}`,
+        );
       }
 
-      const rows = (data ?? []) as ContentRow[];
+      const rows = (contentData ?? []) as ContentRow[];
+      const documentIds = Array.from(
+        new Set(
+          rows
+            .map((r) => r.document_id)
+            .filter((id): id is string => typeof id === "string"),
+        ),
+      );
+
+      if (documentIds.length === 0) return [];
+
+      const { data: docData, error: docError } = await supabase
+        .from("training_documents")
+        .select("id, name, file_name, storage_path, file_size")
+        .in("id", documentIds);
+
+      if (docError) {
+        throw new Error(`Failed to fetch UW guide PDFs: ${docError.message}`);
+      }
+
+      const docsById = new Map<string, DocumentPick>(
+        ((docData ?? []) as DocumentPick[]).map((d) => [d.id, d]),
+      );
 
       return rows
         .flatMap<UwGuideModuleRow>((r) => {
           const lesson = r.lesson?.[0];
           const moduleRow = lesson?.module?.[0];
-          const doc = r.document?.[0];
+          const doc = r.document_id ? docsById.get(r.document_id) : undefined;
           if (!lesson || !moduleRow || !doc) return [];
           if (moduleRow.is_active === false) return [];
           return [
