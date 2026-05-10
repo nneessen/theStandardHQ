@@ -308,11 +308,12 @@ serve(async (req) => {
 
     const aiStart = Date.now();
     const response = await anthropic.messages.create({
-      // Documented current Sonnet alias per the model registry.
-      // The shorter "claude-sonnet-4-5" form (no date suffix, no minor)
-      // is NOT a valid alias — Anthropic returns model-not-found and
-      // Supabase's edge gateway surfaces it as 502 Bad Gateway.
-      model: "claude-sonnet-4-6",
+      // Use the same model string the sibling extract-underwriting-criteria
+      // function has been calling successfully against this Anthropic account
+      // for over a year. Newer Sonnet aliases (4-5, 4-6) may not be enabled
+      // on this account tier even if they exist in Anthropic's catalog.
+      // Bump after we verify access via logs.
+      model: "claude-sonnet-4-20250514",
       max_tokens: MAX_OUTPUT_TOKENS,
       system: systemPrompt,
       messages: [{ role: "user", content: userPrompt }],
