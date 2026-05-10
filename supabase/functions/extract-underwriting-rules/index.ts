@@ -128,7 +128,11 @@ interface ClaudeOutput {
 // each chunk re-includes the last N chars of the previous chunk so a
 // condition definition split across chunks is still seen whole at least
 // once.
-const CHUNK_SIZE = 40000;
+// CHUNK_SIZE is tuned so a single Claude call finishes inside the local
+// supabase-edge-runtime per-request budget (~60s) — chunk 1 at 40000 chars
+// took 48s and chunk 2 was getting killed at "early termination." Cloud
+// allows 150s so 40000 fits there, but 25000 keeps both environments green.
+const CHUNK_SIZE = 25000;
 const CHUNK_OVERLAP = 2500;
 // claude-sonnet-4-20250514 caps max_tokens at 8192 without the extended-output
 // beta header. We deliberately stay at the model's safe ceiling and rely on
