@@ -509,7 +509,68 @@ the list above.
 `
       : "";
 
-  return `You are an underwriting analyst extracting structured eligibility rules from life insurance carrier underwriting guides.
+  return `You extract eligibility/rating rules from a life insurance carrier's UW guide. The rules will be evaluated by an automated underwriting wizard against the following inputs the agent collects from a client:
+
+WIZARD INPUT FIELDS (the only fields predicates can reference):
+  • Demographics: age (int), gender ("male"|"female"), state (2-letter), bmi (number)
+  • Tobacco: tobacco (boolean — current use), tobacco_last_use_date
+  • Conditions: client.conditions (array of condition_codes from the fixed list below)
+  • Per-condition follow-ups (e.g. a1c, diagnosis_date, complications, treatment_status, etc.)
+  • Medications (~30 boolean flags): insulin_use, blood_thinners, heart_meds, oral_diabetes_meds,
+    antidepressants, antianxiety, antipsychotics, mood_stabilizers, sleep_aids, adhd_meds,
+    seizure_meds, migraine_meds, inhalers, copd_meds, thyroid_meds, hormonal_therapy, steroids,
+    immunosuppressants, biologics, dmards, cancer_treatment, antivirals, osteoporosis_meds,
+    kidney_meds, liver_meds, plus bp_med_count (int), cholesterol_med_count (int),
+    pain_medications ("none"|"otc_only"|"prescribed_non_opioid"|"opioid")
+  • Coverage request: face_amount (int), product_type ("term_life"|"whole_life"|"universal_life"|"indexed_universal_life")
+
+EXTRACT ONLY THESE 6 RULE TYPES — they are the ONLY ones the wizard can act on:
+
+  1. MEDICAL CONDITION RULES — eligibility/rating tied to a specific diagnosis.
+     scope="condition", condition_code="<exact match from list>".
+     Per condition, ONE rule per distinct outcome (controlled → Standard, uncontrolled → Decline, etc.).
+
+  2. KNOCKOUT RULES — auto-decline triggers from the presence of any condition or combination.
+     scope="global", predicate uses condition_presence operator.
+     Example: { "type": "condition_presence", "field": "conditions", "operator": "includes_any",
+                "value": ["active_cancer_treatment", "end_stage_renal_disease"] }
+
+  3. BUILD CHART / BMI RULES — height/weight or BMI-based rating tiers.
+     scope="global", predicate on bmi.
+     Even if the guide presents the chart as a flat table without preserved column structure,
+     extract every threshold you can identify (e.g. "BMI > 35 = Decline", "30-35 = Substandard").
+
+  4. TOBACCO CLASS RULES — smoker classifications by clean date / last-use thresholds.
+     scope="global", predicate on tobacco + tobacco_last_use_date.
+
+  5. MEDICATION RESTRICTIONS — meds that disqualify or rate up.
+     scope="global", predicate on the relevant medication boolean / count field above.
+
+  6. AGE + FACE AMOUNT LIMITS PER PRODUCT — issue-age and face-amount caps that gate ELIGIBILITY.
+     scope="global", predicate on age and/or face_amount, optionally constrained by product_type.
+     ONLY extract if the limit gates eligibility (eligible vs ineligible). Skip pure pricing.
+
+DO NOT EXTRACT — these are admin/process rules the wizard cannot act on:
+  ✗ Telephone interview / inspection report / paramedical exam requirements
+  ✗ Third-party payor / payment-source restrictions
+  ✗ Re-application / replacement / 1035 exchange restrictions
+  ✗ Application form, signature, witness, or notary requirements
+  ✗ Free-look, contestability, suicide-clause provisions
+  ✗ Premium payment options / mode / billing details
+  ✗ Underwriting class definitions in isolation (those are looked up via the rules, not extracted as rules)
+  ✗ Generic process descriptions ("the underwriter will review...")
+  ✗ Anything procedural about how the carrier processes apps internally
+
+If a section of the guide describes process/admin rather than client eligibility, SKIP it entirely.
+
+EXHAUSTIVENESS REQUIREMENT — be aggressive on medical content:
+  • If a condition appears in the guide WITH any underwriting impact (rating, decline, refer,
+    eligibility caveat) it MUST produce a rule_set. Do not skip because the criteria seem partial.
+  • Build/impairment tables that lost their column structure during text extraction: still extract
+    every threshold you can identify. A partial extraction beats none.
+  • If you see a list of impairments with table ratings (e.g. "Sleep Apnea — Table B"), each entry
+    is a rule. Do not lump them.
+  • A typical 50-page UW guide should yield 20-50+ medical rule_sets, not 5.
 
 OUTPUT FORMAT — RETURN ONLY VALID JSON, NO PROSE:
 {
@@ -564,17 +625,25 @@ CANONICAL FIELD NAMES (use these — do not invent):
 VALID CONDITION CODES (use these EXACTLY — do not invent codes):
 ${conditionList}
 ${dedupSection}
-EXTRACTION RULES:
-1. ONE rule_set per condition you find in the guide. Use scope="condition" and the matching condition_code.
-2. Cross-condition rules (e.g., "client with both diabetes AND hypertension") use scope="global" and condition_code=null.
-3. Within each rule_set, create ONE rule per distinct outcome (e.g., "controlled → Standard", "uncontrolled → Decline" = 2 rules).
-4. Rule priority: higher number = higher priority. Use 100 for the most specific (best-case) rule, decreasing by 10 for less specific rules.
-5. extraction_confidence: 0.9+ if the guide is explicit, 0.7 if you're inferring from context, 0.5 if uncertain.
-6. source_pages: the actual page numbers where the rule appears.
-7. source_snippet: a verbatim quote from the guide supporting the rule (max 500 chars).
-8. If the guide is silent on a condition, do NOT make up rules — omit it.
-9. Always include outcome_reason — agents will read this to understand why the rule fired.
-10. Maximum ${MAX_RULES_PER_SET} rules per rule_set. Maximum ${MAX_TOTAL_RULES_PER_RUN} total rules per response.
+EXTRACTION MECHANICS:
+1. ONE rule_set per condition (scope="condition", matching condition_code from the list above).
+   Cross-condition / knockout / build / tobacco / medication / age-limit rules use scope="global"
+   with condition_code=null.
+2. Within each rule_set, ONE rule per distinct outcome (e.g. "controlled → Standard", "uncontrolled → Decline" = 2 rules).
+3. Rule priority: provide any integer; the persistence layer reassigns sequential priorities to guarantee
+   uniqueness within the set, but RELATIVE ORDER (highest priority first in your output) is preserved
+   as the rule's tie-breaking precedence. Put your most-specific / best-case rule first.
+4. extraction_confidence: 0.9+ if the guide is explicit, 0.7 if inferring from context, 0.5 if uncertain.
+5. source_pages: the actual page numbers where the rule appears.
+6. source_snippet: a verbatim quote (max 500 chars) supporting the rule.
+7. If the guide is silent on a condition, do NOT invent rules — omit it.
+8. Always include outcome_reason — agents read it to understand why the rule fired.
+9. Maximum ${MAX_RULES_PER_SET} rules per rule_set. Maximum ${MAX_TOTAL_RULES_PER_RUN} total rules per response.
+
+REJECTION CHECKLIST — before emitting any rule_set, verify it falls into one of the 6 allowed types
+above. If your candidate rule is about telephone interviews, third-party payors, re-applications,
+application forms, free-look, or any other administrative/process detail, DROP IT. Those are not
+actionable by the wizard.
 
 Return ONLY the JSON object — no surrounding markdown fences, no commentary.`;
 }
