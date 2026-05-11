@@ -4,15 +4,24 @@ import { LegalPageLayout } from "../components/LegalPageLayout";
 
 export function PrivacyPage() {
   return (
-    <LegalPageLayout title="Privacy Policy" lastUpdated="December 23, 2024">
+    <LegalPageLayout title="Privacy Policy" lastUpdated="May 11, 2026">
       <section className="mb-8">
         <p className="mb-4 text-muted-foreground">
-          At The Standard HQ, we are committed to protecting your privacy and
-          ensuring the security of your personal and business information. This
-          Privacy Policy explains how we collect, use, and safeguard your data.
+          The Standard HQ&trade; (the "Service") is operated by Nick Neessen, an
+          individual residing in Denver, Colorado ("Owner," "we," "us," or
+          "our"), as an independent commercial software product. The Owner is
+          the data controller for all personal information processed by the
+          Service.
+        </p>
+        <p className="mb-4 text-muted-foreground">
+          We are committed to protecting your privacy and ensuring the security
+          of your personal and business information. This Privacy Policy
+          explains how we collect, use, and safeguard your data.
         </p>
         <p className="font-semibold text-foreground">
-          Your data is never sold to third parties.
+          Your data is never sold to third parties and is never shared with any
+          insurance agency, IMO, FMO, brokerage, or carrier without your express
+          consent.
         </p>
       </section>
 
@@ -86,7 +95,15 @@ export function PrivacyPage() {
         </h2>
         <p className="mb-4 text-muted-foreground">
           We share your data only with essential service providers who help us
-          operate the platform:
+          operate the platform. We do{" "}
+          <span className="font-semibold text-foreground">not</span> share your
+          data with any insurance agency, IMO, FMO, brokerage, or carrier —
+          including any organization with which the Owner or you are affiliated
+          — except where you have expressly directed us to do so or as required
+          by law.
+        </p>
+        <p className="mb-4 text-muted-foreground">
+          Our essential service providers are:
         </p>
         <ul className="mb-4 list-disc pl-6 text-muted-foreground">
           <li>

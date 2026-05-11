@@ -151,7 +151,8 @@ export function LandingFooter({ theme }: Props) {
 
         <div className="pt-6 border-t border-[var(--landing-cream)]/10 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
           <p className="text-xs text-[var(--landing-cream)]/40">
-            © {new Date().getFullYear()} The Standard. All rights reserved.
+            © {new Date().getFullYear()} Nick Neessen. All rights reserved. The
+            Standard HQ™ is owned and operated by Nick Neessen.
           </p>
           <p className="text-xs text-[var(--landing-cream)]/30">
             Built in-house. Powered by Claude, Retell, Close, Stripe, and

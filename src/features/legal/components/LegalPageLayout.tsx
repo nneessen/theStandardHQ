@@ -35,8 +35,9 @@ export function LegalPageLayout({
         </div>
         <div className="mt-12 border-t border-border pt-8">
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} The Standard HQ. All rights
-            reserved.
+            &copy; {new Date().getFullYear()} Nick Neessen. All rights reserved.
+            The Standard HQ&trade; is owned and operated by Nick Neessen as an
+            independent commercial software product.
           </p>
         </div>
       </div>
