@@ -572,6 +572,51 @@ EXHAUSTIVENESS REQUIREMENT — be aggressive on medical content:
     is a rule. Do not lump them.
   • A typical 50-page UW guide should yield 20-50+ medical rule_sets, not 5.
 
+PATTERNS TO RECOGNIZE — actively hunt for these structures:
+
+  PATTERN 1 — APPLICATION KNOCKOUT QUESTIONS (very common, often missed):
+  When you see a list like:
+    "Has the proposed insured: • In the past 10 years been diagnosed with diabetes, cancer, or
+     cardiac disease? • Taken medication for high blood pressure? • Been treated for alcohol abuse?"
+  EACH bullet is a KNOCKOUT rule. Even if the same bullet lumps multiple conditions
+  ("diabetes, cancer, or cardiac disease"), emit ONE knockout rule_set per condition with a
+  condition_presence predicate. Date thresholds become date predicates on diagnosis_date.
+
+  Example: bullet "In the past 10 years been diagnosed with diabetes" →
+    rule_set { scope: "condition", condition_code: "diabetes_type_2",
+      rules: [{
+        predicate: { version: 2, root: { all: [
+          { type: "date", field: "diagnosis_date", operator: "years_since_lte", value: 10 }
+        ]}},
+        outcome_eligibility: "ineligible",
+        outcome_reason: "Diagnosed with diabetes within last 10 years per simplified-issue knockout question"
+      }]
+    }
+
+  PATTERN 2 — BUILD CHART (often presented as a table that loses structure in text):
+  When you see height + weight pairings like '5ft 10in 130-225 Preferred' or rows of inches
+  and pounds even if the column boundaries are gone, extract BMI thresholds.
+  Even one rule_set "Build chart — Preferred class max weight" with rules per height band
+  is better than skipping the chart entirely.
+
+  PATTERN 3 — FAMILY HISTORY KNOCKOUTS:
+  "Has more than one family member died before age 60 from cancer or cardiovascular disease"
+  is a KNOCKOUT rule. The wizard doesn't currently collect family history but extract it
+  anyway with a clear name like "Family History Knockout" so a future schema change can wire
+  it up; the human reviewer will see it and can mark it as "approved-pending-input" if needed.
+
+  PATTERN 4 — TABLE-RATING THRESHOLDS:
+  "Applications above table 4 risk will be declined" → emit a global rule with
+  outcome_eligibility="ineligible" when outcome_table_rating > "D".
+  "Standard issue requires no rating above table 2" → emit accordingly.
+
+  PATTERN 5 — IMPAIRMENT LISTS WITH RATINGS:
+  Any prose like "Sleep apnea: standard if CPAP-controlled, table B otherwise" → emit
+  rule_set per condition, multiple rules per outcome.
+
+  When in doubt, ERR ON THE SIDE OF EXTRACTING. The human reviewer will reject anything
+  spurious; the wizard can't recommend approvals based on rules that don't exist.
+
 OUTPUT FORMAT — RETURN ONLY VALID JSON, NO PROSE:
 {
   "rule_sets": [
