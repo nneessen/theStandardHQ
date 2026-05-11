@@ -844,12 +844,26 @@ async function persistExtractedRules(args: {
 
     setsCreated++;
 
-    // Bulk-insert child rules
-    const ruleInserts = set.rules.map((rule) => ({
+    // underwriting_rules has a UNIQUE constraint on (rule_set_id, priority).
+    // Claude routinely assigns the same priority (typically 100) to multiple
+    // rules in the same set when several feel "most specific" — e.g. age
+    // bands for 10-year vs 20-year term, both rated equally. That collision
+    // crashes the bulk insert and the orphan-cleanup below rolls back the
+    // whole set, so chunks report "0 sets, 0 rules" even when Claude returned
+    // good data.
+    //
+    // Fix: trust Claude's RELATIVE order, not the literal priority number.
+    // Sort by Claude's priority desc (highest = most specific = first),
+    // then reassign 1000, 999, 998... so every rule has a unique priority
+    // within the set while preserving Claude's intent.
+    const sortedRules = [...set.rules].sort(
+      (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
+    );
+    const ruleInserts = sortedRules.map((rule, idx) => ({
       rule_set_id: setRow.id,
       name: rule.name,
       description: rule.description ?? null,
-      priority: rule.priority,
+      priority: 1000 - idx,
       age_band_min: rule.age_band_min ?? null,
       age_band_max: rule.age_band_max ?? null,
       gender: rule.gender ?? null,
