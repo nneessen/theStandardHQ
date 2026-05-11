@@ -202,17 +202,23 @@ export function useUpdateGuide() {
 }
 
 /**
- * Delete a guide (storage + database)
+ * Delete a guide (database row first, storage file as best-effort cleanup).
+ *
+ * Order matters: the DB delete cascades SET NULL onto rule_sets / criteria
+ * referencing this guide and removes the row the user can see in the UI.
+ * The storage delete is RLS-finicky on the `underwriting-guides` bucket
+ * (the policy expression looks correct but the Storage HTTP API rejects
+ * authenticated DELETEs from the browser with "new row violates RLS"),
+ * so we treat it as best-effort: a failed storage cleanup leaves an orphan
+ * PDF in S3 but the user can always remove the guide from the system.
+ *
+ * Orphan PDFs are tolerable; a delete button that doesn't delete is not.
  */
 export function useDeleteGuide() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (guide: UnderwritingGuide): Promise<void> => {
-      // Delete from storage first
-      await guideStorageService.delete(guide.storage_path);
-
-      // Then delete database record
       const { error } = await supabase
         .from("underwriting_guides")
         .delete()
@@ -220,6 +226,15 @@ export function useDeleteGuide() {
 
       if (error) {
         throw new Error(`Failed to delete guide: ${error.message}`);
+      }
+
+      try {
+        await guideStorageService.delete(guide.storage_path);
+      } catch (storageError) {
+        console.warn(
+          `[useDeleteGuide] Guide ${guide.id} removed from DB but storage cleanup failed (file orphaned, safe to ignore):`,
+          storageError,
+        );
       }
     },
     onSuccess: () => {
