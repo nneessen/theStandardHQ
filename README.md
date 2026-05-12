@@ -171,7 +171,7 @@ The Standard HQ is a full-featured platform designed specifically for insurance 
 
    ```bash
    git clone <repository-url>
-   cd commissionTracker
+   cd theStandardHQ
    ```
 
 2. Install dependencies:
