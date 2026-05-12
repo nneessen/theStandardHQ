@@ -67,8 +67,7 @@ export function PhaseStepper({
                         "bg-destructive hover:bg-destructive",
                       status === "not_started" && "bg-muted hover:bg-muted ",
                       isActive && "ring-2 ring-foreground  ring-offset-1",
-                      isHidden &&
-                        "ring-1 ring-dashed ring-warning dark:ring-warning",
+                      isHidden && "ring-1 ring-dashed ring-warning",
                     )}
                   >
                     {status === "completed" ? (

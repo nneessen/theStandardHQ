@@ -40,15 +40,11 @@ interface DocumentManagerProps {
 }
 
 const DOCUMENT_STATUS_STYLES: Record<string, string> = {
-  pending:
-    "bg-warning/10 text-warning border-warning/30 dark:bg-warning/15 dark:text-warning dark:border-warning",
-  received:
-    "bg-info/10 text-info border-info/30 dark:bg-info/15 dark:text-info dark:border-info",
-  approved:
-    "bg-success/10 text-success border-success/30 dark:bg-success/15 dark:text-success dark:border-success",
-  rejected:
-    "bg-destructive/10 text-destructive border-destructive/30 dark:bg-destructive/15 dark:text-destructive dark:border-destructive",
-  expired: "bg-muted text-muted-foreground border-border  -subtle ",
+  pending: "bg-warning/10 text-warning border-warning/30",
+  received: "bg-info/10 text-info border-info/30",
+  approved: "bg-success/10 text-success border-success/30",
+  rejected: "bg-destructive/10 text-destructive border-destructive/30",
+  expired: "bg-muted text-muted-foreground border-border",
 };
 
 export function DocumentManager({

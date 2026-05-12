@@ -413,7 +413,7 @@ export function PhaseChecklist({
               {linkedDoc && (
                 <button
                   onClick={() => setViewerDoc(linkedDoc)}
-                  className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-info/10 dark:hover:bg-info/10 text-info transition-colors"
+                  className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-info/10 text-info transition-colors"
                   title="View Document"
                 >
                   <FileText className="h-4 w-4" />
@@ -422,7 +422,7 @@ export function PhaseChecklist({
               {/* Approve icon */}
               <button
                 onClick={() => handleApprove(item.id)}
-                className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-success/10 dark:hover:bg-success/10 text-success transition-colors"
+                className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-success/10 text-success transition-colors"
                 title="Approve"
               >
                 <CheckCircle2 className="h-4 w-4" />
@@ -433,7 +433,7 @@ export function PhaseChecklist({
                   const reason = prompt("Reason for rejection:");
                   if (reason) handleReject(item.id, reason);
                 }}
-                className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-destructive/10 dark:hover:bg-destructive/10 text-destructive transition-colors"
+                className="inline-flex items-center justify-center h-7 w-7 rounded hover:bg-destructive/10 text-destructive transition-colors"
                 title="Reject"
               >
                 <XCircle className="h-4 w-4" />
@@ -445,7 +445,7 @@ export function PhaseChecklist({
           return (
             <Badge
               variant="outline"
-              className="text-sm text-success bg-success/10 border-success/30 dark:text-success dark:bg-success/15 dark:border-success"
+              className="text-sm text-success bg-success/10 border-success/30"
             >
               <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
               Approved
@@ -470,7 +470,7 @@ export function PhaseChecklist({
           return (
             <Badge
               variant="secondary"
-              className="text-sm text-warning bg-warning/10 border-warning/30 dark:text-warning dark:bg-warning/15 dark:border-warning"
+              className="text-sm text-warning bg-warning/10 border-warning/30"
             >
               Pending Approval
             </Badge>
@@ -484,7 +484,7 @@ export function PhaseChecklist({
         return (
           <button
             onClick={() => handleApprove(item.id)}
-            className="inline-flex items-center gap-1 text-success hover:text-success dark:hover:text-success font-medium transition-colors text-sm"
+            className="inline-flex items-center gap-1 text-success hover:text-success/80 font-medium transition-colors text-sm"
           >
             <CheckCircle2 className="h-4 w-4" />
             Approve
@@ -522,7 +522,7 @@ export function PhaseChecklist({
         return (
           <Badge
             variant="outline"
-            className="text-sm text-warning bg-warning/10 dark:text-warning dark:bg-warning/15"
+            className="text-sm text-warning bg-warning/10"
           >
             <AlertCircle className="h-3.5 w-3.5 mr-1" />
             Not Configured
@@ -538,7 +538,7 @@ export function PhaseChecklist({
         return (
           <Badge
             variant="outline"
-            className="text-sm text-success bg-success/10 dark:text-success dark:bg-success/15"
+            className="text-sm text-success bg-success/10"
           >
             <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
             Booked
@@ -551,7 +551,7 @@ export function PhaseChecklist({
         return (
           <Badge
             variant="outline"
-            className="text-sm text-warning bg-warning/10 dark:text-warning dark:bg-warning/15"
+            className="text-sm text-warning bg-warning/10"
           >
             <AlertCircle className="h-3.5 w-3.5 mr-1" />
             No Link Available
@@ -744,11 +744,11 @@ export function PhaseChecklist({
     if (isRecruitViewer && hasHiddenBlockingItems) {
       return (
         <div className="py-8 text-center">
-          <Clock className="h-10 w-10 text-warning dark:text-warning mx-auto mb-3" />
-          <p className="text-sm font-medium text-v2-ink-muted mb-1">
+          <Clock className="h-10 w-10 text-warning mx-auto mb-3" />
+          <p className="text-sm font-medium text-muted-foreground mb-1">
             Waiting for Admin Action
           </p>
-          <p className="text-xs text-v2-ink-muted">
+          <p className="text-xs text-muted-foreground">
             Some required items must be completed by your recruiter or admin.
           </p>
         </div>
@@ -756,8 +756,8 @@ export function PhaseChecklist({
     }
     return (
       <div className="py-8 text-center">
-        <FileText className="h-10 w-10 text-v2-ink-subtle mx-auto mb-3" />
-        <p className="text-sm text-v2-ink-muted">
+        <FileText className="h-10 w-10 text-muted-foreground/70 mx-auto mb-3" />
+        <p className="text-sm text-muted-foreground">
           No checklist items for this phase
         </p>
       </div>
@@ -788,12 +788,12 @@ export function PhaseChecklist({
             key={item.id}
             className={`py-1 px-2 border-l-2 transition-colors ${
               isCompleted
-                ? "border-l-emerald-500 bg-success/10/30 dark:bg-success/10/10"
+                ? "border-l-success bg-success/10"
                 : isRejected
-                  ? "border-l-red-500 bg-destructive/10/30 dark:bg-destructive/10/10"
+                  ? "border-l-destructive bg-destructive/10"
                   : checkboxState.isEnabled
-                    ? "border-l-blue-500 hover:bg-v2-canvas"
-                    : "border-l-v2-ring bg-v2-canvas/50 opacity-60 /30"
+                    ? "border-l-info hover:bg-muted"
+                    : "border-l-border bg-muted/50 opacity-60"
             }`}
           >
             <div className="flex items-center gap-2">
@@ -806,10 +806,10 @@ export function PhaseChecklist({
                   ) : status === "rejected" ? (
                     <XCircle className="h-4 w-4 text-destructive" />
                   ) : (
-                    <Upload className="h-4 w-4 text-v2-ink-subtle" />
+                    <Upload className="h-4 w-4 text-muted-foreground/70" />
                   )
                 ) : loadingItemIds.has(item.id) ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-v2-ink-subtle" />
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground/70" />
                 ) : (
                   <Checkbox
                     checked={isCompleted}
@@ -826,21 +826,21 @@ export function PhaseChecklist({
                   !checkboxState.isEnabled &&
                   !loadingItemIds.has(item.id) && (
                     <div className="absolute -top-0.5 -right-0.5">
-                      <Lock className="h-2.5 w-2.5 text-v2-ink-subtle" />
+                      <Lock className="h-2.5 w-2.5 text-muted-foreground/70" />
                     </div>
                   )}
               </div>
 
               <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
                 <span
-                  className={`text-sm font-medium ${isCompleted ? "line-through text-v2-ink-muted" : "text-v2-ink"}`}
+                  className={`text-sm font-medium ${isCompleted ? "line-through text-muted-foreground" : "text-foreground"}`}
                 >
                   {item.item_name}
                 </span>
                 {item.is_required && (
                   <Badge
                     variant="outline"
-                    className="text-[10px] px-1.5 py-0.5 border-v2-ring text-v2-ink-muted flex-shrink-0"
+                    className="text-[10px] px-1.5 py-0.5 border-border text-muted-foreground flex-shrink-0"
                   >
                     Req
                   </Badge>
@@ -869,7 +869,7 @@ export function PhaseChecklist({
 
             {/* All additional content outside main row */}
             {item.item_description && (
-              <p className="text-xs text-v2-ink-muted mt-1 ml-6">
+              <p className="text-xs text-muted-foreground mt-1 ml-6">
                 {item.item_description}
               </p>
             )}
@@ -898,7 +898,7 @@ export function PhaseChecklist({
             {!checkboxState.isEnabled &&
               checkboxState.disabledReason &&
               checkboxState.disabledReason !== "Use upload button" && (
-                <p className="text-[10px] text-v2-ink-muted ml-6 mt-0.5">
+                <p className="text-[10px] text-muted-foreground ml-6 mt-0.5">
                   <AlertCircle className="h-2.5 w-2.5 inline mr-0.5" />
                   {checkboxState.disabledReason}
                 </p>
@@ -913,14 +913,14 @@ export function PhaseChecklist({
 
             {/* Notes - compact */}
             {progress?.notes && !progress.rejection_reason && (
-              <p className="text-[10px] text-v2-ink-muted italic ml-6 mt-0.5">
+              <p className="text-[10px] text-muted-foreground italic ml-6 mt-0.5">
                 {progress.notes}
               </p>
             )}
 
             {/* Completed timestamp - inline with icon */}
             {progress?.completed_at && (
-              <span className="text-[10px] text-v2-ink-subtle ml-6 block">
+              <span className="text-[10px] text-muted-foreground/70 ml-6 block">
                 {new Date(progress.completed_at).toLocaleDateString("en-US", {
                   month: "numeric",
                   day: "numeric",

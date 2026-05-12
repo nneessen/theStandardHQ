@@ -144,7 +144,7 @@ function InvitationActionBar({
           disabled={!policy.canCancelInvitation}
           className={cn(
             buttonBase,
-            "text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15",
+            "text-destructive hover:text-destructive hover:bg-destructive/10",
           )}
         >
           {loading.isCancellingInvitation ? (
@@ -256,7 +256,7 @@ function PipelineActionBar({
               disabled={loading.isUnenrolling}
               className={cn(
                 buttonBase,
-                "text-warning hover:text-warning hover:bg-warning/10 dark:hover:bg-warning/15",
+                "text-warning hover:text-warning hover:bg-warning/10",
               )}
             >
               <RotateCcw className="h-3 w-3 mr-1" />
@@ -309,7 +309,7 @@ function PipelineActionBar({
             onClick={onDeleteOpen}
             aria-label="Delete recruit"
             className={cn(
-              "h-7 px-2 flex-shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10 dark:hover:bg-destructive/15",
+              "h-7 px-2 flex-shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10",
             )}
           >
             <Trash2 className="h-3 w-3" />
@@ -357,7 +357,7 @@ function SlackActionBar({
             className={cn(
               buttonBase,
               slack.notificationStatus?.newRecruitSent &&
-                "text-success border-success dark:text-success dark:border-success",
+                "text-success border-success",
             )}
           >
             {sendingType === "new_recruit" && loading.isSendingSlack ? (
@@ -395,7 +395,7 @@ function SlackActionBar({
             className={cn(
               buttonBase,
               slack.notificationStatus?.npnReceivedSent &&
-                "text-success border-success dark:text-success dark:border-success",
+                "text-success border-success",
             )}
           >
             {sendingType === "npn_received" && loading.isSendingSlack ? (
@@ -537,7 +537,7 @@ export function RecruitActionBar({
                 onClick={() => setGraduateDialogOpen(true)}
                 className={cn(
                   buttonBase,
-                  "text-success border-success hover:text-success hover:bg-success/10 dark:text-success dark:border-success dark:hover:bg-success/30",
+                  "text-success border-success hover:text-success hover:bg-success/10",
                 )}
               >
                 <GraduationCap className="h-3 w-3 mr-1" />

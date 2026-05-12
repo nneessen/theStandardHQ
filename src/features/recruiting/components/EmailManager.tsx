@@ -188,11 +188,11 @@ export function EmailManager({
                       </div>
 
                       {email.failed_reason && (
-                        <div className="mt-2 p-2 bg-destructive/20/50 dark:bg-destructive/10/50 rounded-sm text-sm">
-                          <span className="font-medium text-destructive dark:text-destructive">
+                        <div className="mt-2 p-2 bg-destructive/10 rounded-sm text-sm">
+                          <span className="font-medium text-destructive">
                             Failed:{" "}
                           </span>
-                          <span className="text-destructive dark:text-destructive">
+                          <span className="text-destructive">
                             {email.failed_reason}
                           </span>
                         </div>
