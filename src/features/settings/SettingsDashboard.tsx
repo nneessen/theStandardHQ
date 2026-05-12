@@ -19,8 +19,10 @@ import {
   History,
   Link2,
   Globe,
+  Scale,
 } from "lucide-react";
 import { UserProfile } from "./components/UserProfile";
+import { LegalSettings } from "./legal/LegalSettings";
 import { CarriersManagement } from "./carriers/CarriersManagement";
 import { ProductsManagement } from "./products/ProductsManagement";
 import { CommissionRatesManagement } from "./commission-rates/CommissionRatesManagement";
@@ -249,6 +251,19 @@ export function SettingsDashboard({ initialTab }: SettingsDashboardProps) {
             icon: History,
             visible: canViewAuditTrail,
             Component: AuditTrailPage,
+          },
+        ],
+      },
+      {
+        label: "About",
+        items: [
+          {
+            id: "legal",
+            label: "Legal",
+            description: "Terms of Service, Privacy Policy, and support.",
+            icon: Scale,
+            visible: true,
+            Component: LegalSettings,
           },
         ],
       },

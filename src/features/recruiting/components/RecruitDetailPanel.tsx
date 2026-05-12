@@ -514,7 +514,7 @@ export function RecruitDetailPanel({
       {/* Invitation Pending State */}
       {isInvitation && (
         <div className="px-3 py-4 bg-card border-b border-border text-center">
-          <Mail className="h-8 w-8 text-warning dark:text-warning mx-auto mb-2" />
+          <Mail className="h-8 w-8 text-warning mx-auto mb-2" />
           <p className="text-xs text-muted-foreground font-medium mb-1">
             Awaiting Registration
           </p>
@@ -534,40 +534,40 @@ export function RecruitDetailPanel({
         <TabsList className="mx-4 mt-3 mb-1 flex h-auto items-center gap-4 sm:gap-5 bg-transparent p-0 rounded-none border-b border-border justify-start overflow-x-auto">
           <TabsTrigger
             value="checklist"
-            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground dark:data-[state=active]:text-background data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
+            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
           >
             <ListChecks className="h-3 w-3 mr-1.5" />
             Tasks
           </TabsTrigger>
           <TabsTrigger
             value="contracting"
-            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground dark:data-[state=active]:text-background data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
+            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
           >
             <Briefcase className="h-3 w-3 mr-1.5" />
             Contracts
             {contractRequests && contractRequests.length > 0 && (
-              <span className="ml-1.5 font-mono tabular-nums text-[10px] text-success dark:text-success">
+              <span className="ml-1.5 font-mono tabular-nums text-[10px] text-success">
                 {contractRequests.length}
               </span>
             )}
           </TabsTrigger>
           <TabsTrigger
             value="documents"
-            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground dark:data-[state=active]:text-background data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
+            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
           >
             <FolderOpen className="h-3 w-3 mr-1.5" />
             Docs
           </TabsTrigger>
           <TabsTrigger
             value="emails"
-            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground dark:data-[state=active]:text-background data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
+            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
           >
             <Mail className="h-3 w-3 mr-1.5" />
             Email
           </TabsTrigger>
           <TabsTrigger
             value="activity"
-            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground dark:data-[state=active]:text-background data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
+            className="text-[11px] uppercase tracking-[0.18em] font-semibold py-2 px-0 rounded-none bg-transparent text-muted-foreground hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground data-[state=active]:underline data-[state=active]:underline-offset-[10px] data-[state=active]:decoration-2 transition-colors"
           >
             <Activity className="h-3 w-3 mr-1.5" />
             Log

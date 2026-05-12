@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Outlet, useNavigate, useLocation } from "@tanstack/react-router";
 import { Toaster } from "react-hot-toast";
-import { Sidebar, FreeUserHeader, AppFooter } from "./components/layout";
+import { Sidebar, FreeUserHeader } from "./components/layout";
 import { useAuth } from "./contexts/AuthContext";
 import { ImoProvider } from "./contexts/ImoContext";
 import { logger } from "./services/base/logger";
@@ -183,7 +183,7 @@ function AuthenticatedApp() {
         <Toaster />
         <CookieConsentBanner />
         <ImoProvider>
-          <div className="flex min-h-screen flex-col bg-[#0a0a0a]">
+          <div className="min-h-screen bg-[#0a0a0a]">
             <RecruitHeader
               userName={
                 user.first_name && user.last_name
@@ -196,12 +196,9 @@ function AuthenticatedApp() {
               }
               onLogout={handleLogout}
             />
-            <div className="flex-1">
-              <ApprovalGuard>
-                <Outlet />
-              </ApprovalGuard>
-            </div>
-            <AppFooter />
+            <ApprovalGuard>
+              <Outlet />
+            </ApprovalGuard>
           </div>
         </ImoProvider>
       </>
@@ -229,13 +226,12 @@ function AuthenticatedApp() {
                 userEmail={user.email || ""}
                 onLogout={handleLogout}
               />
-              <div className="flex flex-1 flex-col min-w-0">
-                <div className="p-6 w-full flex-1">
+              <div className="flex-1 min-w-0">
+                <div className="p-6 w-full min-h-screen">
                   <ApprovalGuard>
                     <Outlet />
                   </ApprovalGuard>
                 </div>
-                <AppFooter />
               </div>
             </>
           ) : (
@@ -255,13 +251,12 @@ function AuthenticatedApp() {
                 userEmail={user.email || ""}
                 onLogout={handleLogout}
               />
-              <div className="main-content flex flex-1 flex-col min-w-0">
-                <div className="p-6 w-full flex-1">
+              <div className="main-content flex-1 min-w-0">
+                <div className="p-6 w-full min-h-screen">
                   <ApprovalGuard>
                     <Outlet />
                   </ApprovalGuard>
                 </div>
-                <AppFooter />
               </div>
             </div>
           )}
