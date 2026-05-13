@@ -227,8 +227,19 @@ export function AgentDetailPage() {
   });
 
   const handleStatusChange = useCallback(
-    (policyId: string, status: string) => {
-      updatePolicyStatus.mutate({ policyId, updates: { status } });
+    (
+      policyId: string,
+      status: string,
+      currentLifecycleStatus: string | null,
+    ) => {
+      const updates: Record<string, unknown> = { status };
+      // DB constraint policies_approved_has_lifecycle requires lifecycle_status
+      // to be non-null when status='approved'. Pending applications have it
+      // null, so transitioning pending→approved must also seed lifecycle.
+      if (status === "approved" && !currentLifecycleStatus) {
+        updates.lifecycleStatus = "active";
+      }
+      updatePolicyStatus.mutate({ policyId, updates });
     },
     [updatePolicyStatus],
   );
@@ -768,7 +779,11 @@ export function AgentDetailPage() {
                                             )}
                                             disabled={policy.status === s}
                                             onClick={() =>
-                                              handleStatusChange(policy.id, s)
+                                              handleStatusChange(
+                                                policy.id,
+                                                s,
+                                                policy.lifecycleStatus,
+                                              )
                                             }
                                           >
                                             {s}
