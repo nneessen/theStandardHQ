@@ -15,46 +15,46 @@ interface NextActionCardProps {
   className?: string;
 }
 
-const TONE_SURFACE: Record<NextActionTone, string> = {
-  primary: "bg-warning/10 ring-warning/30/80 dark:ring-warning",
-  warn: "bg-warning/10 ring-warning/80 dark:ring-warning",
-  neutral: "bg-v2-canvas dark:bg-v2-card ring-v2-ring/80 ",
-  success: "bg-success/10 ring-success/30/80 dark:ring-success",
-};
-
-const TONE_RULE: Record<NextActionTone, string> = {
-  primary: "bg-warning",
-  warn: "bg-warning",
-  neutral: "bg-v2-canvas ",
-  success: "bg-success",
-};
-
-const TONE_LABEL: Record<NextActionTone, string> = {
-  primary: "text-warning",
-  warn: "text-warning dark:text-warning",
-  neutral: "text-v2-ink dark:text-v2-ink-subtle",
-  success: "text-success dark:text-success",
-};
-
-const TONE_CHIP: Record<NextActionTone, string> = {
-  primary: "bg-warning hover:bg-warning/70 text-v2-ink",
-  warn: "bg-warning hover:bg-warning/70 text-white",
-  neutral: "bg-v2-ring hover:bg-v2-card-dark   text-white dark:text-v2-ink",
-  success: "bg-success hover:bg-success text-white",
-};
-
-const TONE_HEADLINE: Record<NextActionTone, string> = {
-  primary: "text-v2-ink ",
-  warn: "text-v2-ink ",
-  neutral: "text-v2-ink ",
-  success: "text-v2-ink ",
-};
-
-const TONE_BODY: Record<NextActionTone, string> = {
-  primary: "text-v2-ink dark:text-v2-ink-subtle",
-  warn: "text-v2-ink dark:text-v2-ink-subtle",
-  neutral: "text-v2-ink dark:text-v2-ink-subtle",
-  success: "text-v2-ink dark:text-v2-ink-subtle",
+// Themed for `.theme-landing` — deep-green rule on the left, paper surface,
+// adventure-yellow accents on the primary tone.
+const TONE_STYLES: Record<
+  NextActionTone,
+  {
+    surface: string;
+    rule: string;
+    label: string;
+    chipBg: string;
+    chipText: string;
+  }
+> = {
+  primary: {
+    surface: "var(--landing-adventure-yellow)",
+    rule: "var(--landing-deep-green)",
+    label: "var(--landing-deep-green)",
+    chipBg: "var(--landing-deep-green)",
+    chipText: "var(--landing-icy-blue)",
+  },
+  warn: {
+    surface: "var(--landing-adventure-yellow-dim)",
+    rule: "var(--landing-deep-green)",
+    label: "var(--landing-deep-green)",
+    chipBg: "var(--landing-deep-green)",
+    chipText: "var(--landing-icy-blue)",
+  },
+  neutral: {
+    surface: "var(--landing-icy-blue-light)",
+    rule: "var(--landing-terrain-grey-dark)",
+    label: "var(--landing-terrain-grey-dark)",
+    chipBg: "var(--landing-terrain-grey-dark)",
+    chipText: "var(--landing-icy-blue)",
+  },
+  success: {
+    surface: "var(--landing-adventure-yellow)",
+    rule: "var(--landing-deep-green)",
+    label: "var(--landing-deep-green)",
+    chipBg: "var(--landing-deep-green)",
+    chipText: "var(--landing-icy-blue)",
+  },
 };
 
 export const NextActionCard: React.FC<NextActionCardProps> = ({
@@ -67,63 +67,62 @@ export const NextActionCard: React.FC<NextActionCardProps> = ({
   tone = "primary",
   className,
 }) => {
-  const ctaCls = cn(
-    "inline-flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-semibold tracking-tight transition-all hover:-translate-y-px hover:shadow-md active:translate-y-0",
-    TONE_CHIP[tone],
-  );
-
+  const t = TONE_STYLES[tone];
   return (
     <aside
       className={cn(
-        "relative overflow-hidden rounded-2xl ring-1 shadow-sm dark:shadow-none",
-        TONE_SURFACE[tone],
+        "relative overflow-hidden rounded-[2px] border border-[var(--landing-border)]",
+        "shadow-[0_1px_0_rgba(22,27,19,0.04),0_4px_16px_-2px_rgba(22,27,19,0.06)]",
         className,
       )}
+      style={{ background: t.surface }}
     >
       <div
         aria-hidden
-        className={cn("absolute left-0 top-0 bottom-0 w-1.5", TONE_RULE[tone])}
+        className="absolute left-0 top-0 bottom-0 w-1.5"
+        style={{ background: t.rule }}
       />
       <div className="pl-7 pr-6 py-5 md:pl-8 md:pr-7 md:py-6">
         <div className="flex items-center gap-2 mb-2">
-          <Sparkles className={cn("h-3.5 w-3.5", TONE_LABEL[tone])} />
-          <span
-            className={cn(
-              "text-[10px] uppercase tracking-[0.2em] font-bold",
-              TONE_LABEL[tone],
-            )}
-          >
+          <Sparkles className="h-3.5 w-3.5" style={{ color: t.label }} />
+          <span className="text-eyebrow-lg" style={{ color: t.label }}>
             {eyebrow}
           </span>
         </div>
         <p
-          className={cn(
-            "text-lg sm:text-xl font-semibold leading-snug max-w-2xl",
-            TONE_HEADLINE[tone],
-          )}
-          style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+          className="text-display-xl max-w-2xl"
+          style={{
+            color: "var(--landing-deep-green)",
+            fontWeight: 800,
+            fontFamily: "var(--landing-font-display)",
+            textTransform: "none",
+            letterSpacing: "-0.01em",
+            lineHeight: 1.15,
+          }}
         >
           {headline}
         </p>
         {caption && (
-          <p
-            className={cn(
-              "mt-2 text-[13px] max-w-2xl leading-relaxed",
-              TONE_BODY[tone],
-            )}
-          >
-            {caption}
-          </p>
+          <p className="mt-2 text-fluid-base text-muted max-w-2xl">{caption}</p>
         )}
         {ctaLabel && (ctaHref || onCta) && (
           <div className="mt-4">
             {ctaHref ? (
-              <a href={ctaHref} className={ctaCls}>
+              <a
+                href={ctaHref}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[2px] text-[13px] font-bold uppercase tracking-[0.06em] transition-all hover:-translate-y-px font-mono"
+                style={{ background: t.chipBg, color: t.chipText }}
+              >
                 {ctaLabel}
                 <ArrowRight className="h-3.5 w-3.5" />
               </a>
             ) : (
-              <button type="button" onClick={onCta} className={ctaCls}>
+              <button
+                type="button"
+                onClick={onCta}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[2px] text-[13px] font-bold uppercase tracking-[0.06em] transition-all hover:-translate-y-px font-mono"
+                style={{ background: t.chipBg, color: t.chipText }}
+              >
                 {ctaLabel}
                 <ArrowRight className="h-3.5 w-3.5" />
               </button>

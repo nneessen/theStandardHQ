@@ -10,6 +10,9 @@ interface EditorialStatProps {
   className?: string;
 }
 
+// Themed for `.theme-landing` — Big Shoulders Display value, JetBrains Mono
+// eyebrow/caption.
+
 const VALUE_SIZE: Record<NonNullable<EditorialStatProps["size"]>, string> = {
   sm: "text-2xl",
   md: "text-3xl sm:text-4xl",
@@ -17,13 +20,13 @@ const VALUE_SIZE: Record<NonNullable<EditorialStatProps["size"]>, string> = {
   xl: "text-5xl sm:text-6xl",
 };
 
-const TONE: Record<NonNullable<EditorialStatProps["tone"]>, string> = {
-  default: "text-v2-ink ",
-  brand: "text-warning",
-  success: "text-success",
-  progress: "text-info dark:text-info",
-  warn: "text-warning dark:text-warning",
-  error: "text-destructive",
+const TONE_COLOR: Record<NonNullable<EditorialStatProps["tone"]>, string> = {
+  default: "var(--landing-deep-green)",
+  brand: "var(--landing-deep-green)",
+  success: "var(--landing-deep-green)",
+  progress: "var(--landing-deep-green)",
+  warn: "var(--landing-terrain-grey-dark)",
+  error: "rgb(185, 28, 28)",
 };
 
 export const EditorialStat: React.FC<EditorialStatProps> = ({
@@ -36,22 +39,22 @@ export const EditorialStat: React.FC<EditorialStatProps> = ({
 }) => {
   return (
     <div className={cn("flex flex-col", className)}>
-      <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-v2-ink-muted dark:text-v2-ink-subtle">
-        {label}
-      </span>
+      <span className="text-eyebrow">{label}</span>
       <span
         className={cn(
-          "mt-1 font-mono tabular-nums font-bold tracking-tight leading-none",
+          "mt-1 uppercase tracking-tight leading-none tabular",
           VALUE_SIZE[size],
-          TONE[tone],
         )}
+        style={{
+          color: TONE_COLOR[tone],
+          fontFamily: "var(--landing-font-display)",
+          fontWeight: 900,
+        }}
       >
         {value}
       </span>
       {caption && (
-        <span className="mt-1.5 text-[11px] text-v2-ink-muted dark:text-v2-ink-subtle leading-relaxed">
-          {caption}
-        </span>
+        <span className="mt-1.5 text-eyebrow normal-case">{caption}</span>
       )}
     </div>
   );

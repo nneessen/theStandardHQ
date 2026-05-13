@@ -454,9 +454,16 @@ export const recruitInvitationService = {
     message: string | null,
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      // Build registration URL
+      // Build registration URL.
+      // This service runs in the browser. Use the sender's current origin so
+      // a dev clicking "Send invite" on localhost:3000 generates a localhost
+      // link (the invitation row only lives in their local DB), and prod
+      // builds a thestandardhq.com link. VITE_APP_URL is a manual override.
       const baseUrl =
-        import.meta.env.VITE_APP_URL || "https://www.thestandardhq.com";
+        import.meta.env.VITE_APP_URL ||
+        (typeof window !== "undefined"
+          ? window.location.origin
+          : "https://www.thestandardhq.com");
       const registrationUrl = `${baseUrl}/register/${token}`;
 
       // Build email body

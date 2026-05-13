@@ -1,16 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import {
   UserPlus,
   Mail,
   Download,
   Settings2,
-  Inbox,
   Link2,
   Copy,
   Check,
@@ -19,13 +12,19 @@ import {
 } from "lucide-react";
 import {
   useRecruits,
-  usePendingLeadsCount,
   usePendingInvitations,
+  useLeads,
+  useAcceptLead,
+  useRejectLead,
 } from "./hooks";
 import { useActiveTemplate, usePhases } from "./hooks/usePipeline";
-import { RecruitListTable } from "./components/RecruitListTable";
-import { RecruitDetailPanel } from "./components/RecruitDetailPanel";
+import {
+  RecruitListTable,
+  type RecruitingRow,
+} from "./components/RecruitListTable";
+import type { EnrichedLead } from "@/types/leads.types";
 import { AddRecruitDialog } from "./components/AddRecruitDialog";
+import { PostAddRecruitWizard } from "./components/PostAddRecruitWizard";
 import { SendInviteDialog } from "./components/SendInviteDialog";
 import { RecruitingErrorBoundary } from "./components/RecruitingErrorBoundary";
 import type { UserProfile } from "@/types/hierarchy.types";
@@ -33,7 +32,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { STAFF_ONLY_ROLES } from "@/constants/roles";
 import type { RecruitFilters } from "@/types/recruiting.types";
 import { toast } from "sonner";
-import { Link, useSearch } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { downloadCSV } from "@/utils/exportHelpers";
 import { normalizePhaseNameToStatus } from "@/lib/pipeline";
 import { useFeatureAccess } from "@/hooks/subscription";
@@ -84,20 +83,44 @@ function RecruitingDashboardContent() {
   );
 
   const { data: pendingInvitations = [] } = usePendingInvitations();
-  const { data: pendingLeadsCount } = usePendingLeadsCount();
+  const { data: pendingLeadsResponse } = useLeads(
+    { status: ["pending"] },
+    1,
+    50,
+  );
+  const pendingLeads = useMemo(
+    () => pendingLeadsResponse?.leads ?? [],
+    [pendingLeadsResponse],
+  );
+  const acceptLeadMutation = useAcceptLead();
+  const rejectLeadMutation = useRejectLead();
   const { data: activeTemplate } = useActiveTemplate();
   const { data: pipelinePhases = [] } = usePhases(activeTemplate?.id);
 
-  const [selectedRecruit, setSelectedRecruit] = useState<UserProfile | null>(
-    null,
-  );
   const [addRecruitDialogOpen, setAddRecruitDialogOpen] = useState(false);
   const [sendInviteDialogOpen, setSendInviteDialogOpen] = useState(false);
-  const [detailSheetOpen, setDetailSheetOpen] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("");
+  const [wizardState, setWizardState] = useState<{
+    recruitId: string;
+    recruitName: string;
+    isLicensed: boolean;
+    skippedPipeline: boolean;
+  } | null>(null);
 
-  const { recruitId } = useSearch({ from: "/recruiting" });
+  const navigate = useNavigate();
+  const { recruitId: deepLinkRecruitId } = useSearch({ from: "/recruiting" });
+
+  // Legacy deep-link: `/recruiting?recruitId=...` now redirects to the
+  // full-page detail at `/recruiting/$recruitId`.
+  useEffect(() => {
+    if (deepLinkRecruitId) {
+      navigate({
+        to: "/recruiting/$recruitId",
+        params: { recruitId: deepLinkRecruitId },
+      });
+    }
+  }, [deepLinkRecruitId, navigate]);
 
   const recruiterSlug = user?.recruiter_slug ?? null;
 
@@ -147,22 +170,6 @@ function RecruitingDashboardContent() {
     [invitedRecruits, registeredRecruits],
   );
 
-  useEffect(() => {
-    if (recruitId && recruits.length > 0 && !selectedRecruit) {
-      const recruit = recruits.find((r) => r.id === recruitId);
-      if (recruit) {
-        setSelectedRecruit(recruit);
-        setDetailSheetOpen(true);
-      }
-    }
-  }, [recruitId, recruits, selectedRecruit]);
-
-  useEffect(() => {
-    if (!selectedRecruit) return;
-    const fresh = recruits.find((r) => r.id === selectedRecruit.id);
-    if (fresh && fresh !== selectedRecruit) setSelectedRecruit(fresh);
-  }, [recruits]);
-
   const activePhaseStatuses = pipelinePhases.map((phase) =>
     normalizePhaseNameToStatus(phase.phase_name),
   );
@@ -199,8 +206,10 @@ function RecruitingDashboardContent() {
   );
 
   const handleSelectRecruit = (recruit: UserProfile) => {
-    setSelectedRecruit(recruit);
-    setDetailSheetOpen(true);
+    navigate({
+      to: "/recruiting/$recruitId",
+      params: { recruitId: recruit.id },
+    });
   };
 
   const handleExportCSV = () => {
@@ -223,10 +232,32 @@ function RecruitingDashboardContent() {
     toast.success(`Exported ${recruits.length} recruits to CSV`);
   };
 
-  const handleRecruitDeleted = () => {
-    setSelectedRecruit(null);
-    setDetailSheetOpen(false);
+  const handleSelectLead = (lead: EnrichedLead) => {
+    navigate({
+      to: "/recruiting/lead/$leadId",
+      params: { leadId: lead.id },
+    });
   };
+
+  const handleAcceptLead = async (lead: EnrichedLead) => {
+    await acceptLeadMutation.mutateAsync({ leadId: lead.id });
+  };
+
+  const handleRejectLead = async (lead: EnrichedLead, reason?: string) => {
+    await rejectLeadMutation.mutateAsync({ leadId: lead.id, reason });
+  };
+
+  const rows = useMemo<RecruitingRow[]>(() => {
+    const leadRows: RecruitingRow[] = pendingLeads.map((lead) => ({
+      kind: "lead" as const,
+      lead,
+    }));
+    const recruitRows: RecruitingRow[] = filteredRecruits.map((recruit) => ({
+      kind: "recruit" as const,
+      recruit,
+    }));
+    return [...leadRows, ...recruitRows];
+  }, [pendingLeads, filteredRecruits]);
 
   const recruitingLinkUrl = recruiterSlug
     ? `www.thestandardhq.com/join-${recruiterSlug}`
@@ -290,22 +321,6 @@ function RecruitingDashboardContent() {
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
-          {!isStaffRole && (
-            <Link to="/recruiting/leads">
-              <PillButton
-                tone="ghost"
-                size="sm"
-                leadingIcon={<Inbox className="h-3.5 w-3.5" />}
-              >
-                Leads
-                {pendingLeadsCount && pendingLeadsCount > 0 ? (
-                  <span className="ml-1 font-mono tabular-nums text-warning">
-                    {pendingLeadsCount}
-                  </span>
-                ) : null}
-              </PillButton>
-            </Link>
-          )}
           <PillButton
             tone="ghost"
             size="sm"
@@ -357,9 +372,29 @@ function RecruitingDashboardContent() {
             onChange={(e) => setHideProspects(e.target.checked)}
             className="h-3.5 w-3.5 rounded border-v2-ring"
           />
-          Hide prospects
+          Hide prospects (unenrolled recruits)
         </label>
       </div>
+
+      {/* Heads-up banner when Hide Prospects is on — explains why a freshly
+          added recruit might not appear in the list yet. */}
+      {hideProspects && (
+        <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-md border border-warning/30 bg-warning/5 text-[11px] text-v2-ink">
+          <span>
+            <strong>Hide prospects is on</strong> — recruits not yet enrolled in
+            a pipeline are hidden. If a recruit you just added doesn&apos;t show
+            up here, enroll them in a pipeline from their profile, or click to
+            show all.
+          </span>
+          <button
+            type="button"
+            onClick={() => setHideProspects(false)}
+            className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md border border-warning/40 text-warning hover:bg-warning/10 text-[10px] uppercase tracking-[0.16em] font-semibold"
+          >
+            Show all
+          </button>
+        </div>
+      )}
 
       {/* Recruiting link strip — only for non-staff with custom branding */}
       {!isStaffRole && hasCustomBranding && (
@@ -419,13 +454,17 @@ function RecruitingDashboardContent() {
       {/* Table */}
       <SoftCard padding="none" className="overflow-hidden">
         <RecruitListTable
-          recruits={filteredRecruits}
+          rows={rows}
           isLoading={recruitsLoading}
-          selectedRecruitId={selectedRecruit?.id}
           onSelectRecruit={handleSelectRecruit}
+          onSelectLead={handleSelectLead}
+          onAcceptLead={handleAcceptLead}
+          onRejectLead={handleRejectLead}
+          isAcceptingLead={acceptLeadMutation.isPending}
+          isRejectingLead={rejectLeadMutation.isPending}
         />
 
-        {filteredRecruits.length === 0 && !recruitsLoading && (
+        {rows.length === 0 && !recruitsLoading && (
           <div className="px-5 py-8 text-center">
             <p className="text-[12px] text-v2-ink-muted mb-3">
               {statusFilter
@@ -446,36 +485,36 @@ function RecruitingDashboardContent() {
         )}
       </SoftCard>
 
-      <Sheet open={detailSheetOpen} onOpenChange={setDetailSheetOpen}>
-        <SheetContent
-          side="right"
-          className="w-full sm:max-w-[480px] md:max-w-[560px] lg:max-w-[640px] p-0 overflow-hidden"
-        >
-          <SheetTitle className="sr-only">Recruit Details</SheetTitle>
-          <SheetDescription className="sr-only">
-            View and manage recruit information, pipeline progress, and
-            documents
-          </SheetDescription>
-          {selectedRecruit && (
-            <RecruitDetailPanel
-              key={selectedRecruit.id}
-              recruit={selectedRecruit}
-              currentUserId={user?.id}
-              isUpline={true}
-              onRecruitDeleted={handleRecruitDeleted}
-            />
-          )}
-        </SheetContent>
-      </Sheet>
-
       <AddRecruitDialog
         open={addRecruitDialogOpen}
         onOpenChange={setAddRecruitDialogOpen}
-        onSuccess={(newRecruitId) => {
-          const newRecruit = recruits.find((r) => r.id === newRecruitId);
-          if (newRecruit) {
-            setSelectedRecruit(newRecruit);
-            setDetailSheetOpen(true);
+        onSuccess={(newRecruitId, meta) => {
+          setWizardState({
+            recruitId: newRecruitId,
+            recruitName: meta.fullName,
+            isLicensed: meta.isLicensed,
+            skippedPipeline: meta.skippedPipeline,
+          });
+        }}
+      />
+
+      <PostAddRecruitWizard
+        open={!!wizardState}
+        onOpenChange={(o) => {
+          if (!o) setWizardState(null);
+        }}
+        recruitId={wizardState?.recruitId ?? null}
+        recruitName={wizardState?.recruitName ?? ""}
+        isLicensed={wizardState?.isLicensed ?? false}
+        skippedPipeline={wizardState?.skippedPipeline ?? false}
+        onComplete={() => {
+          const id = wizardState?.recruitId;
+          setWizardState(null);
+          if (id) {
+            navigate({
+              to: "/recruiting/$recruitId",
+              params: { recruitId: id },
+            });
           }
         }}
       />
@@ -505,33 +544,30 @@ function FreeUplineRecruitingView() {
   const { data: activeTemplate } = useActiveTemplate();
   const { data: pipelinePhases = [] } = usePhases(activeTemplate?.id);
 
-  const [selectedRecruit, setSelectedRecruit] = useState<UserProfile | null>(
-    null,
-  );
   const [addRecruitDialogOpen, setAddRecruitDialogOpen] = useState(false);
-  const [detailSheetOpen, setDetailSheetOpen] = useState(false);
 
-  const { recruitId } = useSearch({ from: "/recruiting" });
+  const navigate = useNavigate();
+  const { recruitId: deepLinkRecruitId } = useSearch({ from: "/recruiting" });
 
   const recruits = ((recruitsData?.data || []) as UserProfile[]).filter(
     (recruit) => recruit.id !== user?.id,
   );
 
-  useEffect(() => {
-    if (recruitId && recruits.length > 0 && !selectedRecruit) {
-      const recruit = recruits.find((r) => r.id === recruitId);
-      if (recruit) {
-        setSelectedRecruit(recruit);
-        setDetailSheetOpen(true);
-      }
-    }
-  }, [recruitId, recruits, selectedRecruit]);
+  const recruitRows = useMemo<RecruitingRow[]>(
+    () => recruits.map((recruit) => ({ kind: "recruit" as const, recruit })),
+    [recruits],
+  );
 
+  // Legacy deep-link: `/recruiting?recruitId=...` now redirects to the
+  // full-page detail at `/recruiting/$recruitId`.
   useEffect(() => {
-    if (!selectedRecruit) return;
-    const fresh = recruits.find((r) => r.id === selectedRecruit.id);
-    if (fresh && fresh !== selectedRecruit) setSelectedRecruit(fresh);
-  }, [recruits]);
+    if (deepLinkRecruitId) {
+      navigate({
+        to: "/recruiting/$recruitId",
+        params: { recruitId: deepLinkRecruitId },
+      });
+    }
+  }, [deepLinkRecruitId, navigate]);
 
   const activePhaseStatuses = pipelinePhases.map((phase) =>
     normalizePhaseNameToStatus(phase.phase_name),
@@ -550,13 +586,10 @@ function FreeUplineRecruitingView() {
   };
 
   const handleSelectRecruit = (recruit: UserProfile) => {
-    setSelectedRecruit(recruit);
-    setDetailSheetOpen(true);
-  };
-
-  const handleRecruitDeleted = () => {
-    setSelectedRecruit(null);
-    setDetailSheetOpen(false);
+    navigate({
+      to: "/recruiting/$recruitId",
+      params: { recruitId: recruit.id },
+    });
   };
 
   return (
@@ -634,44 +667,20 @@ function FreeUplineRecruitingView() {
 
       <SoftCard padding="none" className="overflow-hidden">
         <RecruitListTable
-          recruits={recruits}
+          rows={recruitRows}
           isLoading={recruitsLoading}
-          selectedRecruitId={selectedRecruit?.id}
           onSelectRecruit={handleSelectRecruit}
         />
       </SoftCard>
-
-      <Sheet open={detailSheetOpen} onOpenChange={setDetailSheetOpen}>
-        <SheetContent
-          side="right"
-          className="w-full sm:max-w-[480px] md:max-w-[560px] lg:max-w-[640px] p-0 overflow-hidden"
-        >
-          <SheetTitle className="sr-only">Recruit Details</SheetTitle>
-          <SheetDescription className="sr-only">
-            View and manage recruit information, pipeline progress, and
-            documents
-          </SheetDescription>
-          {selectedRecruit && (
-            <RecruitDetailPanel
-              key={selectedRecruit.id}
-              recruit={selectedRecruit}
-              currentUserId={user?.id}
-              isUpline={true}
-              onRecruitDeleted={handleRecruitDeleted}
-            />
-          )}
-        </SheetContent>
-      </Sheet>
 
       <AddRecruitDialog
         open={addRecruitDialogOpen}
         onOpenChange={setAddRecruitDialogOpen}
         onSuccess={(newRecruitId) => {
-          const newRecruit = recruits.find((r) => r.id === newRecruitId);
-          if (newRecruit) {
-            setSelectedRecruit(newRecruit);
-            setDetailSheetOpen(true);
-          }
+          navigate({
+            to: "/recruiting/$recruitId",
+            params: { recruitId: newRecruitId },
+          });
         }}
       />
     </div>

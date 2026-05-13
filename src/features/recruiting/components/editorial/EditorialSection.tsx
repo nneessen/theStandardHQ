@@ -13,20 +13,36 @@ interface EditorialSectionProps {
   compact?: boolean;
 }
 
-const ICON_TONE: Record<
+// Themed for `.theme-landing` — sharp corners, paper surface, mono eyebrows.
+const ICON_TONE_STYLES: Record<
   NonNullable<EditorialSectionProps["iconTone"]>,
-  string
+  { bg: string; color: string; border: string }
 > = {
-  stone:
-    "bg-v2-ring dark:bg-v2-ring ring-v2-ring  text-v2-ink dark:text-v2-ink-subtle",
-  brand:
-    "bg-warning/10 dark:bg-warning/20 ring-warning/30 dark:ring-warning text-warning",
-  success:
-    "bg-success/10 dark:bg-success/20 ring-success/30 dark:ring-success text-success",
-  progress:
-    "bg-info/10 dark:bg-info/40 ring-info dark:ring-info text-info dark:text-info",
-  error:
-    "bg-destructive/10 dark:bg-destructive/20 ring-destructive/30 dark:ring-destructive text-destructive",
+  stone: {
+    bg: "var(--landing-icy-blue-light)",
+    color: "var(--landing-terrain-grey-dark)",
+    border: "var(--landing-border)",
+  },
+  brand: {
+    bg: "var(--landing-adventure-yellow)",
+    color: "var(--landing-deep-green)",
+    border: "var(--landing-deep-green)",
+  },
+  success: {
+    bg: "var(--landing-adventure-yellow)",
+    color: "var(--landing-deep-green)",
+    border: "var(--landing-deep-green)",
+  },
+  progress: {
+    bg: "var(--landing-icy-blue)",
+    color: "var(--landing-deep-green)",
+    border: "var(--landing-deep-green)",
+  },
+  error: {
+    bg: "rgba(220, 38, 38, 0.10)",
+    color: "rgb(185, 28, 28)",
+    border: "rgba(220, 38, 38, 0.35)",
+  },
 };
 
 export const EditorialSection: React.FC<EditorialSectionProps> = ({
@@ -40,10 +56,12 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
   className,
   compact = false,
 }) => {
+  const tone = ICON_TONE_STYLES[iconTone];
   return (
     <section
       className={cn(
-        "rounded-2xl bg-white dark:bg-v2-card ring-1 ring-v2-ring  shadow-sm dark:shadow-none",
+        "rounded-[2px] surface-paper border border-[var(--landing-border)]",
+        "shadow-[0_1px_0_rgba(22,27,19,0.04),0_4px_16px_-2px_rgba(22,27,19,0.06)]",
         compact ? "p-5 md:p-6" : "p-6 md:p-8",
         className,
       )}
@@ -52,28 +70,31 @@ export const EditorialSection: React.FC<EditorialSectionProps> = ({
         <div className="min-w-0 flex-1 flex items-start gap-3">
           {Icon && (
             <span
-              className={cn(
-                "inline-flex h-8 w-8 items-center justify-center rounded-lg ring-1 flex-shrink-0",
-                ICON_TONE[iconTone],
-              )}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-[2px] border flex-shrink-0"
+              style={{
+                background: tone.bg,
+                borderColor: tone.border,
+                color: tone.color,
+              }}
             >
               <Icon className="h-4 w-4" />
             </span>
           )}
           <div className="min-w-0 flex-1">
-            <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-v2-ink-muted dark:text-v2-ink-subtle">
-              {eyebrow}
-            </div>
+            <div className="text-eyebrow">{eyebrow}</div>
             {title && (
               <h2
-                className="mt-1 text-xl font-bold tracking-tight text-v2-ink "
-                style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                className="mt-1 text-display-xl"
+                style={{
+                  color: "var(--landing-deep-green)",
+                  fontWeight: 900,
+                }}
               >
                 {title}
               </h2>
             )}
             {caption && (
-              <p className="mt-1.5 text-[13px] text-v2-ink-muted dark:text-v2-ink-subtle max-w-2xl leading-relaxed">
+              <p className="mt-2 text-fluid-base text-muted max-w-2xl">
                 {caption}
               </p>
             )}

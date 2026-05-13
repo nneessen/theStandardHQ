@@ -113,7 +113,10 @@ const createRecruitSchema = z.object({
 interface AddRecruitDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: (recruitId: string) => void;
+  onSuccess?: (
+    recruitId: string,
+    meta: { fullName: string; isLicensed: boolean; skippedPipeline: boolean },
+  ) => void;
 }
 
 export function AddRecruitDialog({
@@ -221,11 +224,20 @@ export function AddRecruitDialog({
       });
 
       if (recruit) {
+        // Capture meta for the post-add wizard (parent uses it for personalization
+        // and to skip the pipeline step when admin/office-staff was chosen).
+        const meta = {
+          fullName:
+            `${value.first_name || ""} ${value.last_name || ""}`.trim() ||
+            value.email,
+          isLicensed: value.is_licensed_agent,
+          skippedPipeline: skipPipeline,
+        };
         // Always close dialog and reset form on successful recruit creation
         onOpenChange(false);
         form.reset();
         setActiveTab("basic");
-        onSuccess?.(recruit.id);
+        onSuccess?.(recruit.id, meta);
       }
     },
   });

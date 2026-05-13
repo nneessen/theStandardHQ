@@ -33,6 +33,8 @@ import {
 } from "../components/editorial";
 import type { StepperItem, StepperStatus } from "../components/editorial";
 import type { UserProfile } from "@/types/hierarchy.types";
+// eslint-disable-next-line no-restricted-imports -- CSS side-effect: scoped .theme-landing tokens shared with public landing surfaces
+import "@/features/landing/styles/landing-theme.css";
 
 interface KeyContact {
   id: string;
@@ -360,12 +362,13 @@ export function MyRecruitingPipeline() {
 
   if (authLoading || profileLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-v2-canvas ">
+      <div className="theme-landing surface-base flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <Loader2 className="h-6 w-6 animate-spin mx-auto mb-3 text-warning" />
-          <p className="text-[11px] uppercase tracking-[0.2em] font-bold text-v2-ink-muted dark:text-v2-ink-subtle">
-            Loading your pipeline…
-          </p>
+          <Loader2
+            className="h-6 w-6 animate-spin mx-auto mb-3"
+            style={{ color: "var(--landing-deep-green)" }}
+          />
+          <p className="text-eyebrow">Loading your pipeline…</p>
         </div>
       </div>
     );
@@ -373,13 +376,13 @@ export function MyRecruitingPipeline() {
 
   if (profileError) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-v2-canvas ">
-        <div className="bg-white dark:bg-v2-card rounded-2xl ring-1 ring-v2-ring  shadow-md dark:shadow-none p-6 max-w-sm text-center">
+      <div className="theme-landing surface-base flex items-center justify-center min-h-screen px-4">
+        <div className="surface-paper rounded-[2px] border border-[var(--landing-border)] p-6 max-w-sm text-center shadow-[0_1px_0_rgba(22,27,19,0.04),0_8px_24px_-4px_rgba(22,27,19,0.12)]">
           <AlertCircle className="h-6 w-6 text-destructive mx-auto mb-3" />
-          <h2 className="text-base font-bold text-v2-ink  mb-1">
+          <h2 className="text-display-xl mb-1">
             Couldn&apos;t load your profile
           </h2>
-          <p className="text-[13px] text-v2-ink-muted dark:text-v2-ink-subtle">
+          <p className="text-fluid-base text-muted">
             Refresh the page to try again. If this keeps happening, message your
             recruiter.
           </p>
@@ -390,15 +393,14 @@ export function MyRecruitingPipeline() {
 
   if (!profile) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-v2-canvas ">
-        <div className="bg-white dark:bg-v2-card rounded-2xl ring-1 ring-v2-ring  shadow-md dark:shadow-none p-6 max-w-sm text-center">
-          <AlertCircle className="h-6 w-6 text-warning mx-auto mb-3" />
-          <h2 className="text-base font-bold text-v2-ink  mb-1">
-            Profile not found
-          </h2>
-          <p className="text-[13px] text-v2-ink-muted dark:text-v2-ink-subtle">
-            Please contact support.
-          </p>
+      <div className="theme-landing surface-base flex items-center justify-center min-h-screen px-4">
+        <div className="surface-paper rounded-[2px] border border-[var(--landing-border)] p-6 max-w-sm text-center shadow-[0_1px_0_rgba(22,27,19,0.04),0_8px_24px_-4px_rgba(22,27,19,0.12)]">
+          <AlertCircle
+            className="h-6 w-6 mx-auto mb-3"
+            style={{ color: "var(--landing-deep-green)" }}
+          />
+          <h2 className="text-display-xl mb-1">Profile not found</h2>
+          <p className="text-fluid-base text-muted">Please contact support.</p>
         </div>
       </div>
     );
@@ -409,7 +411,10 @@ export function MyRecruitingPipeline() {
   const subtitle = (
     <>
       You&apos;re{" "}
-      <span className="font-mono tabular-nums font-bold text-v2-ink ">
+      <span
+        className="font-mono tabular font-bold"
+        style={{ color: "var(--landing-deep-green)" }}
+      >
         {progressPercentage}%
       </span>{" "}
       through your onboarding with {agencyName}.{" "}
@@ -420,18 +425,22 @@ export function MyRecruitingPipeline() {
   );
 
   return (
-    <div className="min-h-screen bg-v2-canvas ">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-16 flex flex-col gap-5 md:gap-6">
+    <div className="theme-landing surface-base min-h-screen relative">
+      <div
+        className="topo-grid absolute inset-0 pointer-events-none"
+        aria-hidden
+      />
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-16 flex flex-col gap-5 md:gap-6">
         <EditorialMasthead
           icon={Compass}
           eyebrow={`Onboarding · ${agencyName}`}
           title={
             <>
-              Welcome,{" "}
-              <span className="text-warning">
+              <span style={{ fontWeight: 300 }}>Welcome,</span>{" "}
+              <span style={{ fontWeight: 900 }}>
                 {recruitFirstName || "recruit"}
               </span>
-              .
+              <span style={{ fontWeight: 300 }}>.</span>
             </>
           }
           subtitle={subtitle}

@@ -786,54 +786,76 @@ export function PhaseChecklist({
         return (
           <div
             key={item.id}
-            className={`py-1 px-2 border-l-2 transition-colors ${
+            className={`rounded-lg border bg-card p-3 sm:p-3.5 transition-all ${
               isCompleted
-                ? "border-l-success bg-success/10"
+                ? "border-success/30 bg-success/5"
                 : isRejected
-                  ? "border-l-destructive bg-destructive/10"
+                  ? "border-destructive/30 bg-destructive/5"
                   : checkboxState.isEnabled
-                    ? "border-l-info hover:bg-muted"
-                    : "border-l-border bg-muted/50 opacity-60"
+                    ? "border-border hover:border-foreground/30 hover:shadow-sm"
+                    : "border-border bg-muted/30 opacity-70"
             }`}
           >
-            <div className="flex items-center gap-2">
-              <div className="relative flex-shrink-0">
+            <div className="flex items-start gap-3">
+              <div className="relative flex-shrink-0 mt-0.5">
                 {item.item_type === "document_upload" ? (
-                  status === "approved" ? (
-                    <CheckCircle2 className="h-4 w-4 text-success" />
-                  ) : status === "in_progress" ? (
-                    <Clock className="h-4 w-4 text-warning" />
-                  ) : status === "rejected" ? (
-                    <XCircle className="h-4 w-4 text-destructive" />
-                  ) : (
-                    <Upload className="h-4 w-4 text-muted-foreground/70" />
-                  )
+                  <div
+                    className={`h-7 w-7 rounded-md flex items-center justify-center ${
+                      status === "approved"
+                        ? "bg-success/15 ring-1 ring-success/40"
+                        : status === "in_progress"
+                          ? "bg-warning/15 ring-1 ring-warning/40"
+                          : status === "rejected"
+                            ? "bg-destructive/15 ring-1 ring-destructive/40"
+                            : "bg-muted ring-1 ring-border"
+                    }`}
+                  >
+                    {status === "approved" ? (
+                      <CheckCircle2 className="h-4 w-4 text-success" />
+                    ) : status === "in_progress" ? (
+                      <Clock className="h-4 w-4 text-warning" />
+                    ) : status === "rejected" ? (
+                      <XCircle className="h-4 w-4 text-destructive" />
+                    ) : (
+                      <Upload className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
                 ) : loadingItemIds.has(item.id) ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground/70" />
+                  <div className="h-7 w-7 rounded-md bg-muted flex items-center justify-center ring-1 ring-border">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  </div>
                 ) : (
-                  <Checkbox
-                    checked={isCompleted}
-                    disabled={!checkboxState.isEnabled}
-                    onCheckedChange={() => {
-                      if (checkboxState.isEnabled) {
-                        handleToggleComplete(item.id, status);
-                      }
-                    }}
-                    className="h-4 w-4"
-                  />
+                  <div
+                    className={`h-7 w-7 rounded-md flex items-center justify-center ring-1 ${
+                      isCompleted
+                        ? "bg-success/15 ring-success/40"
+                        : "bg-background ring-border"
+                    }`}
+                  >
+                    <Checkbox
+                      checked={isCompleted}
+                      disabled={!checkboxState.isEnabled}
+                      onCheckedChange={() => {
+                        if (checkboxState.isEnabled) {
+                          handleToggleComplete(item.id, status);
+                        }
+                      }}
+                      className="h-4 w-4"
+                    />
+                  </div>
                 )}
                 {item.item_type !== "document_upload" &&
                   !checkboxState.isEnabled &&
                   !loadingItemIds.has(item.id) && (
-                    <div className="absolute -top-0.5 -right-0.5">
-                      <Lock className="h-2.5 w-2.5 text-muted-foreground/70" />
+                    <div className="absolute -top-1 -right-1 h-3.5 w-3.5 rounded-full bg-card border border-border flex items-center justify-center">
+                      <Lock className="h-2 w-2 text-muted-foreground" />
                     </div>
                   )}
               </div>
 
               <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
                 <span
-                  className={`text-sm font-medium ${isCompleted ? "line-through text-muted-foreground" : "text-foreground"}`}
+                  className={`text-[13px] font-semibold tracking-tight ${isCompleted ? "line-through text-muted-foreground" : "text-foreground"}`}
                 >
                   {item.item_name}
                 </span>
