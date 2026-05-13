@@ -10,6 +10,10 @@ interface EditorialMastheadProps {
   className?: string;
 }
 
+// Themed for `.theme-landing` — restrained editorial header. Section-eyebrow
+// row (number/line/label style) at top, display headline below.
+// NOTE: no big accent stripe, no boxed icon — matches the public landing
+// page's minimal masthead aesthetic.
 export const EditorialMasthead: React.FC<EditorialMastheadProps> = ({
   eyebrow,
   title,
@@ -21,43 +25,49 @@ export const EditorialMasthead: React.FC<EditorialMastheadProps> = ({
   return (
     <header
       className={cn(
-        "relative overflow-hidden rounded-2xl bg-white dark:bg-v2-card shadow-md dark:shadow-none ring-1 ring-v2-ring ",
+        "relative overflow-hidden rounded-[2px] surface-paper border border-[var(--landing-border)]",
+        "shadow-[0_1px_0_rgba(22,27,19,0.04),0_4px_16px_-2px_rgba(22,27,19,0.06)]",
+        "px-6 md:px-8 py-6 md:py-7",
         className,
       )}
     >
       <div
-        aria-hidden
-        className="absolute top-0 left-0 right-0 h-1 bg-warning"
-      />
-      <div className="px-6 md:px-8 pt-7 pb-7 md:pt-8 md:pb-8">
-        <div className="flex items-center gap-3 mb-3">
-          {Icon && (
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-warning/10 dark:bg-warning/20 ring-1 ring-warning/30 dark:ring-warning">
-              <Icon className="h-4 w-4 text-warning" />
-            </span>
-          )}
-          <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-warning">
-            {eyebrow}
+        className="section-eyebrow-row mb-3"
+        style={{ marginBottom: "1rem" }}
+      >
+        {Icon && (
+          <span
+            className="inline-flex items-center"
+            style={{ color: "var(--landing-deep-green)" }}
+          >
+            <Icon className="h-3.5 w-3.5" />
           </span>
-        </div>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="min-w-0 flex-1">
-            <h1
-              className="text-3xl sm:text-4xl font-bold tracking-tight text-v2-ink  leading-[1.05]"
-              style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-            >
-              {title}
-            </h1>
-            {subtitle && (
-              <p className="mt-3 text-[14px] text-v2-ink dark:text-v2-ink-subtle max-w-2xl leading-relaxed">
-                {subtitle}
-              </p>
-            )}
-          </div>
-          {rightSlot && (
-            <div className="flex-shrink-0 flex items-end">{rightSlot}</div>
+        )}
+        <span className="section-eyebrow-num">01</span>
+        <span className="section-eyebrow-line" />
+        <span className="section-eyebrow-label">{eyebrow}</span>
+      </div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <h1
+            className="text-display-xl"
+            style={{
+              color: "var(--landing-deep-green)",
+              textTransform: "none",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="mt-3 text-fluid-base text-muted max-w-2xl">
+              {subtitle}
+            </p>
           )}
         </div>
+        {rightSlot && (
+          <div className="flex-shrink-0 flex items-end">{rightSlot}</div>
+        )}
       </div>
     </header>
   );

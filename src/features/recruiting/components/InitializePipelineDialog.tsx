@@ -1,7 +1,7 @@
 // src/features/recruiting/components/InitializePipelineDialog.tsx
 // Dialog for selecting a pipeline template when initializing recruit progress
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, FileStack, Check } from "lucide-react";
 import { useTemplates } from "../hooks/usePipeline";
+import { filterUserSelectableTemplates } from "../utils/template-filters";
 import type { PipelineTemplate } from "@/types/recruiting.types";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +33,13 @@ export function InitializePipelineDialog({
   onConfirm,
   isLoading = false,
 }: InitializePipelineDialogProps) {
-  const { data: templates, isLoading: templatesLoading } = useTemplates();
+  const { data: allTemplates, isLoading: templatesLoading } = useTemplates();
+  // Only the two DEFAULT-named templates are user-selectable; legacy / system
+  // templates stay in the DB but don't appear in the picker.
+  const templates = useMemo(
+    () => filterUserSelectableTemplates(allTemplates),
+    [allTemplates],
+  );
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
     null,
   );

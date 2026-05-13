@@ -58,29 +58,47 @@ export function useCreateRecruitWithInvitation() {
             `${profile.first_name || ""} ${profile.last_name || ""}`.trim() ||
             "Your Recruiter";
 
-          await recruitInvitationService.sendInvitationEmail(
-            result.invitation_id,
-            result.token,
-            options.email,
-            options.first_name
-              ? `${options.first_name}${options.last_name ? ` ${options.last_name}` : ""}`
-              : null,
-            inviterName,
-            profile.email,
-            profile.phone,
-            options.message || null,
-          );
+          const emailResult =
+            await recruitInvitationService.sendInvitationEmail(
+              result.invitation_id,
+              result.token,
+              options.email,
+              options.first_name
+                ? `${options.first_name}${options.last_name ? ` ${options.last_name}` : ""}`
+                : null,
+              inviterName,
+              profile.email,
+              profile.phone,
+              options.message || null,
+            );
+          // Return the email result alongside the create result so onSuccess
+          // can warn the user if the row was created but the email failed
+          // (e.g., missing MAILGUN_API_KEY in dev or supabase secrets in prod).
+          return {
+            ...result,
+            emailSent: emailResult.success,
+            emailError: emailResult.error,
+          };
         }
       }
 
-      return result;
+      return { ...result, emailSent: !sendEmail, emailError: undefined };
     },
-    onSuccess: () => {
-      toast.success("Invitation sent successfully!", {
-        description:
-          "Registration link sent. User will be added when they complete the form.",
-        duration: 5000,
-      });
+    onSuccess: (data) => {
+      const emailFailed = "emailSent" in data && data.emailSent === false;
+      if (emailFailed) {
+        toast.warning("Recruit added — but the invite email didn't send", {
+          description:
+            "The registration link wasn't delivered. Likely cause: Mailgun env vars (MAILGUN_API_KEY / MAILGUN_DOMAIN) aren't set on the send-email function. Check Settings → Integrations or contact an admin.",
+          duration: 10000,
+        });
+      } else {
+        toast.success("Invitation sent successfully!", {
+          description:
+            "Registration link sent. User will be added when they complete the form.",
+          duration: 5000,
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ["recruits"] });
       queryClient.invalidateQueries({ queryKey: ["recruit-invitations"] });
       queryClient.invalidateQueries({

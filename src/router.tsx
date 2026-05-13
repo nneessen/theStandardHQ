@@ -44,7 +44,8 @@ import { PublicJoinPage } from "./features/recruiting/pages/PublicJoinPage";
 import { PublicJoinWrapper } from "./features/recruiting/pages/PublicJoinWrapper";
 import { PublicRegistrationPage } from "./features/recruiting/pages/PublicRegistrationPage";
 import { TestRegistration } from "./features/recruiting/pages/TestRegistration";
-import { LeadsQueueDashboard } from "./features/recruiting/components/LeadsQueueDashboard";
+import { RecruitDetailPage } from "./features/recruiting/pages/RecruitDetailPage";
+import { LeadDetailPage } from "./features/recruiting/pages/LeadDetailPage";
 import { TrainingHubPage, TrainerDashboard } from "./features/training-hub";
 import MyTrainingPage from "./features/training-modules/components/learner/MyTrainingPage";
 import ModulePlayer from "./features/training-modules/components/learner/ModulePlayer";
@@ -507,6 +508,36 @@ const recruitingRoute = createRoute({
   ),
 });
 
+// Recruit detail route - full-page detail view for a single recruit
+const recruitDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "recruiting/$recruitId",
+  component: () => (
+    <RouteGuard permission="nav.recruiting_pipeline" noRecruits>
+      <RecruitDetailPage />
+    </RouteGuard>
+  ),
+});
+
+// Lead detail route - full-page detail view for a single lead from the public funnel
+const leadDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "recruiting/lead/$leadId",
+  component: () => (
+    <RouteGuard
+      permission="nav.recruiting_pipeline"
+      noRecruits
+      subscriptionFeatures={[
+        "recruiting",
+        "recruiting_basic",
+        "recruiting_custom_pipeline",
+      ]}
+    >
+      <LeadDetailPage />
+    </RouteGuard>
+  ),
+});
+
 // Recruiting admin route - pipeline management
 // Accessible by: super admins (bypass), staff roles (trainers, contracting managers)
 // RLS policies control which pipelines each user can actually view/edit
@@ -691,25 +722,6 @@ const publicJoinAltRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "$slug",
   component: PublicJoinWrapper,
-});
-
-// Leads Queue route - manage incoming leads from public funnel
-const leadsQueueRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "recruiting/leads",
-  component: () => (
-    <RouteGuard
-      permission="nav.recruiting_pipeline"
-      noRecruits
-      subscriptionFeatures={[
-        "recruiting",
-        "recruiting_basic",
-        "recruiting_custom_pipeline",
-      ]}
-    >
-      <LeadsQueueDashboard />
-    </RouteGuard>
-  ),
 });
 
 // Training Hub route - for trainers and contracting managers
@@ -1131,13 +1143,14 @@ const routeTree = rootRoute.addChildren([
   agentDetailRoute,
   orgChartRoute,
   recruitingRoute,
+  recruitDetailRoute,
+  leadDetailRoute,
   recruitingAdminRoute,
   workflowAdminRoute,
   myPipelineRoute,
   publicJoinRoute,
   publicRegistrationRoute,
   testRegistrationRoute,
-  leadsQueueRoute,
   trainingHubRoute,
   myTrainingRoute,
   myTrainingBuilderRoute,

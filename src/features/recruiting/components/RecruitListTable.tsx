@@ -4,9 +4,17 @@ import {
   ChevronRight,
   ChevronRight as Chev,
   Users,
+  UserPlus,
+  XCircle,
+  Loader2,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { UserProfile } from "@/types/hierarchy.types";
+import {
+  STATUS_COLORS,
+  type EnrichedLead,
+  type LeadStatus,
+} from "@/types/leads.types";
 import {
   Table,
   TableBody,
@@ -24,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   useActiveTemplate,
   usePhases,
@@ -53,11 +62,21 @@ type RecruitWithRelations = UserProfile & {
   pipeline_template_id?: string | null;
 };
 
+export type RecruitingRow =
+  | { kind: "recruit"; recruit: UserProfile }
+  | { kind: "lead"; lead: EnrichedLead };
+
 interface RecruitListTableProps {
-  recruits: UserProfile[];
+  rows: RecruitingRow[];
   isLoading?: boolean;
   selectedRecruitId?: string;
+  selectedLeadId?: string;
   onSelectRecruit: (recruit: UserProfile) => void;
+  onSelectLead?: (lead: EnrichedLead) => void;
+  onAcceptLead?: (lead: EnrichedLead) => void;
+  onRejectLead?: (lead: EnrichedLead) => void;
+  isAcceptingLead?: boolean;
+  isRejectingLead?: boolean;
 }
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50];
@@ -65,11 +84,29 @@ const PAGE_SIZE_OPTIONS = [10, 25, 50];
 const headerCellCls =
   "text-[10px] uppercase tracking-[0.18em] font-semibold text-muted-foreground";
 
+function leadInitials(lead: EnrichedLead) {
+  const f = (lead.first_name?.[0] || "").toUpperCase();
+  const l = (lead.last_name?.[0] || "").toUpperCase();
+  return f + l || "?";
+}
+
+function recruitInitials(recruit: UserProfile) {
+  const f = (recruit.first_name?.[0] || "").toUpperCase();
+  const l = (recruit.last_name?.[0] || "").toUpperCase();
+  return f + l;
+}
+
 export function RecruitListTable({
-  recruits,
+  rows,
   isLoading,
   selectedRecruitId,
+  selectedLeadId,
   onSelectRecruit,
+  onSelectLead,
+  onAcceptLead,
+  onRejectLead,
+  isAcceptingLead,
+  isRejectingLead,
 }: RecruitListTableProps) {
   const [phaseFilter, setPhaseFilter] = useState<string>("all");
   const [recruiterFilter, setRecruiterFilter] = useState<string>("all");
@@ -79,10 +116,26 @@ export function RecruitListTable({
   const { data: activeTemplate } = useActiveTemplate();
   const { data: phases = [] } = usePhases(activeTemplate?.id);
 
+  const recruitRows = useMemo(
+    () =>
+      rows.filter(
+        (r): r is Extract<RecruitingRow, { kind: "recruit" }> =>
+          r.kind === "recruit",
+      ),
+    [rows],
+  );
+  const leadRows = useMemo(
+    () =>
+      rows.filter(
+        (r): r is Extract<RecruitingRow, { kind: "lead" }> => r.kind === "lead",
+      ),
+    [rows],
+  );
+
   const recruiters = useMemo(() => {
     const map = new Map<string, { id: string; name: string }>();
-    recruits.forEach((r) => {
-      const recruit = r as RecruitWithRelations;
+    recruitRows.forEach((row) => {
+      const recruit = row.recruit as RecruitWithRelations;
       if (recruit.recruiter?.id) {
         const name =
           recruit.recruiter.first_name && recruit.recruiter.last_name
@@ -92,11 +145,13 @@ export function RecruitListTable({
       }
     });
     return Array.from(map.values());
-  }, [recruits]);
+  }, [recruitRows]);
 
-  const filteredRecruits = useMemo(() => {
-    return recruits.filter((r) => {
-      const recruit = r as RecruitWithRelations;
+  // Phase + recruiter filters apply to recruit rows only.
+  // Pending leads stay visible at the top regardless of filter state.
+  const filteredRecruitRows = useMemo(() => {
+    return recruitRows.filter((row) => {
+      const recruit = row.recruit as RecruitWithRelations;
       if (
         phaseFilter !== "all" &&
         recruit.current_onboarding_phase !== phaseFilter
@@ -109,17 +164,28 @@ export function RecruitListTable({
         return false;
       return true;
     });
-  }, [recruits, phaseFilter, recruiterFilter]);
+  }, [recruitRows, phaseFilter, recruiterFilter]);
 
-  const totalPages = Math.ceil(filteredRecruits.length / pageSize);
-  const paginatedRecruits = useMemo(() => {
+  const visibleRows = useMemo<RecruitingRow[]>(
+    () => [...leadRows, ...filteredRecruitRows],
+    [leadRows, filteredRecruitRows],
+  );
+
+  const totalPages = Math.ceil(visibleRows.length / pageSize);
+  const paginatedRows = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
-    return filteredRecruits.slice(start, start + pageSize);
-  }, [filteredRecruits, currentPage, pageSize]);
+    return visibleRows.slice(start, start + pageSize);
+  }, [visibleRows, currentPage, pageSize]);
 
   const paginatedRecruitIds = useMemo(
-    () => paginatedRecruits.map((r) => r.id),
-    [paginatedRecruits],
+    () =>
+      paginatedRows
+        .filter(
+          (r): r is Extract<RecruitingRow, { kind: "recruit" }> =>
+            r.kind === "recruit",
+        )
+        .map((r) => r.recruit.id),
+    [paginatedRows],
   );
   const { data: checklistSummary } =
     useRecruitsChecklistSummary(paginatedRecruitIds);
@@ -137,6 +203,14 @@ export function RecruitListTable({
       </div>
     );
   }
+
+  const pendingLeadStatus: LeadStatus = "pending";
+  const leadBadgeCls = cn(
+    "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] uppercase tracking-[0.16em] font-bold ring-1",
+    STATUS_COLORS[pendingLeadStatus].bg,
+    STATUS_COLORS[pendingLeadStatus].text,
+    "ring-warning/30",
+  );
 
   return (
     <div className="flex flex-col">
@@ -167,8 +241,8 @@ export function RecruitListTable({
                   ))
               : Array.from(
                   new Set(
-                    recruits
-                      .map((r) => r.current_onboarding_phase)
+                    recruitRows
+                      .map((row) => row.recruit.current_onboarding_phase)
                       .filter(Boolean),
                   ),
                 ).map((phase) => (
@@ -200,24 +274,111 @@ export function RecruitListTable({
         </Select>
 
         <span className="text-[11px] italic text-muted-foreground ml-auto">
-          {filteredRecruits.length} recruit
-          {filteredRecruits.length === 1 ? "" : "s"} shown
+          {filteredRecruitRows.length} recruit
+          {filteredRecruitRows.length === 1 ? "" : "s"}
+          {leadRows.length > 0 && (
+            <>
+              {" · "}
+              <span className="not-italic font-mono tabular-nums text-warning">
+                {leadRows.length}
+              </span>{" "}
+              pending lead{leadRows.length === 1 ? "" : "s"}
+            </>
+          )}
         </span>
       </div>
 
       {/* Mobile card list */}
       <ul className="md:hidden flex flex-col">
-        {paginatedRecruits.length === 0 && (
+        {paginatedRows.length === 0 && (
           <li className="border-t border-border py-10 text-center">
             <Users className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
             <p className="text-[12px] italic text-muted-foreground">
-              {filteredRecruits.length === 0 && recruits.length > 0
+              {filteredRecruitRows.length === 0 &&
+              leadRows.length === 0 &&
+              recruitRows.length > 0
                 ? "No recruits match your filters."
                 : "No recruits yet."}
             </p>
           </li>
         )}
-        {paginatedRecruits.map((recruit) => {
+        {paginatedRows.map((row) => {
+          if (row.kind === "lead") {
+            const lead = row.lead;
+            const isSelected = selectedLeadId === lead.id;
+            return (
+              <li key={`lead-${lead.id}`} className="border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => onSelectLead?.(lead)}
+                  className={cn(
+                    "w-full flex items-center gap-3 py-3 px-1 text-left hover:bg-muted/60 transition-colors",
+                    isSelected && "bg-muted/60",
+                  )}
+                >
+                  <Avatar className="h-9 w-9 flex-shrink-0">
+                    <AvatarFallback className="text-[10px] bg-warning/10 text-warning ring-1 ring-warning/30">
+                      {leadInitials(lead)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[14px] font-semibold tracking-tight text-foreground truncate">
+                      {lead.first_name} {lead.last_name}
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-2">
+                      <span className={leadBadgeCls}>LEAD · PENDING</span>
+                      <span className="text-[10px] text-muted-foreground truncate">
+                        {lead.email}
+                      </span>
+                    </div>
+                  </div>
+                  <Chev className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                </button>
+                {onAcceptLead && onRejectLead && (
+                  <div className="flex gap-1 px-1 pb-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-6 px-2 text-[10px] text-success border-success/30 hover:bg-success/10"
+                      disabled={isAcceptingLead}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onAcceptLead(lead);
+                      }}
+                    >
+                      {isAcceptingLead ? (
+                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      ) : (
+                        <UserPlus className="h-3 w-3 mr-1" />
+                      )}
+                      Accept
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-6 px-2 text-[10px] text-destructive border-destructive/30 hover:bg-destructive/10"
+                      disabled={isRejectingLead}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRejectLead(lead);
+                      }}
+                    >
+                      {isRejectingLead ? (
+                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                      ) : (
+                        <XCircle className="h-3 w-3 mr-1" />
+                      )}
+                      Reject
+                    </Button>
+                  </div>
+                )}
+              </li>
+            );
+          }
+
+          const recruit = row.recruit;
           const summary = checklistSummary?.get(recruit.id);
           const phaseName = recruit.current_onboarding_phase || "Not started";
           const pct =
@@ -241,8 +402,7 @@ export function RecruitListTable({
                 <Avatar className="h-9 w-9 flex-shrink-0">
                   <AvatarImage src={recruit.profile_photo_url || undefined} />
                   <AvatarFallback className="text-[10px] bg-muted text-muted-foreground -subtle">
-                    {(recruit.first_name?.[0] || "").toUpperCase()}
-                    {(recruit.last_name?.[0] || "").toUpperCase()}
+                    {recruitInitials(recruit)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
@@ -293,8 +453,8 @@ export function RecruitListTable({
               <TableHead className={cn(headerCellCls, "w-[120px]")}>
                 Phone
               </TableHead>
-              <TableHead className={cn(headerCellCls, "w-[200px]")}>
-                Progress
+              <TableHead className={cn(headerCellCls, "w-[240px]")}>
+                Status
               </TableHead>
               <TableHead className={headerCellCls}>Recruiter</TableHead>
               <TableHead className={cn(headerCellCls, "w-14 text-center")}>
@@ -306,13 +466,15 @@ export function RecruitListTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedRecruits.length === 0 ? (
+            {paginatedRows.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-10">
                   <div className="flex flex-col items-center">
                     <Users className="h-7 w-7 text-muted-foreground mb-3" />
                     <p className="text-[12px] italic text-muted-foreground">
-                      {filteredRecruits.length === 0 && recruits.length > 0
+                      {filteredRecruitRows.length === 0 &&
+                      leadRows.length === 0 &&
+                      recruitRows.length > 0
                         ? "No recruits match your filters."
                         : "No recruits yet — send an invite or add one to start your pipeline."}
                     </p>
@@ -320,7 +482,107 @@ export function RecruitListTable({
                 </TableCell>
               </TableRow>
             ) : (
-              paginatedRecruits.map((recruit) => {
+              paginatedRows.map((row) => {
+                if (row.kind === "lead") {
+                  const lead = row.lead;
+                  const isSelected = selectedLeadId === lead.id;
+                  const days =
+                    typeof lead.days_since_submitted === "number"
+                      ? lead.days_since_submitted
+                      : Math.floor(
+                          (Date.now() - new Date(lead.submitted_at).getTime()) /
+                            (1000 * 60 * 60 * 24),
+                        );
+                  return (
+                    <TableRow
+                      key={`lead-${lead.id}`}
+                      onClick={() => onSelectLead?.(lead)}
+                      className={cn(
+                        "cursor-pointer border-b border-border/60 transition-colors",
+                        isSelected ? "bg-muted/60" : "hover:bg-muted/50",
+                      )}
+                    >
+                      <TableCell className="py-2 align-middle">
+                        <Avatar className="h-7 w-7">
+                          <AvatarFallback className="text-[9px] bg-warning/10 text-warning ring-1 ring-warning/30">
+                            {leadInitials(lead)}
+                          </AvatarFallback>
+                        </Avatar>
+                      </TableCell>
+                      <TableCell className="py-2 text-[13px] font-semibold tracking-tight text-foreground">
+                        {lead.first_name} {lead.last_name}
+                      </TableCell>
+                      <TableCell className="py-2 text-[12px] text-muted-foreground truncate max-w-[200px]">
+                        {lead.email || "—"}
+                      </TableCell>
+                      <TableCell className="py-2 text-[12px] font-mono tabular-nums text-muted-foreground">
+                        {lead.phone || "—"}
+                      </TableCell>
+                      <TableCell className="py-2">
+                        <div className="flex flex-col gap-1.5">
+                          <span className={leadBadgeCls}>LEAD · PENDING</span>
+                          {onAcceptLead && onRejectLead && (
+                            <div
+                              className="flex items-center gap-1"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-6 px-2 text-[10px] text-success border-success/30 hover:bg-success/10"
+                                disabled={isAcceptingLead}
+                                onClick={() => onAcceptLead(lead)}
+                              >
+                                {isAcceptingLead ? (
+                                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                ) : (
+                                  <UserPlus className="h-3 w-3 mr-1" />
+                                )}
+                                Accept
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-6 px-2 text-[10px] text-destructive border-destructive/30 hover:bg-destructive/10"
+                                disabled={isRejectingLead}
+                                onClick={() => onRejectLead(lead)}
+                              >
+                                {isRejectingLead ? (
+                                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                ) : (
+                                  <XCircle className="h-3 w-3 mr-1" />
+                                )}
+                                Reject
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="py-2 text-[12px] text-muted-foreground">
+                        {lead.recruiter_name?.split(" ")[0] || "—"}
+                      </TableCell>
+                      <TableCell className="py-2 text-[12px] font-mono tabular-nums text-center text-muted-foreground">
+                        {days}
+                      </TableCell>
+                      <TableCell className="py-2 text-[11px] font-mono text-muted-foreground">
+                        {formatDistanceToNow(new Date(lead.submitted_at), {
+                          addSuffix: false,
+                        })
+                          .replace("about ", "")
+                          .replace(" days", "d")
+                          .replace(" day", "d")
+                          .replace(" hours", "h")
+                          .replace(" hour", "h")
+                          .replace(" minutes", "m")
+                          .replace(" minute", "m")}
+                      </TableCell>
+                    </TableRow>
+                  );
+                }
+
+                const recruit = row.recruit;
                 const recruitWithRelations = recruit as RecruitWithRelations;
                 const createdDate = new Date(
                   recruit.created_at || new Date().toISOString(),
@@ -363,8 +625,7 @@ export function RecruitListTable({
                           src={recruit.profile_photo_url || undefined}
                         />
                         <AvatarFallback className="text-[9px] bg-muted text-muted-foreground -subtle">
-                          {(recruit.first_name?.[0] || "").toUpperCase()}
-                          {(recruit.last_name?.[0] || "").toUpperCase()}
+                          {recruitInitials(recruit)}
                         </AvatarFallback>
                       </Avatar>
                     </TableCell>
@@ -498,9 +759,9 @@ export function RecruitListTable({
         </div>
 
         <span className="text-[10px] uppercase tracking-[0.18em] font-semibold text-muted-foreground">
-          {paginatedRecruits.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
-          {Math.min(currentPage * pageSize, filteredRecruits.length)} of{" "}
-          {filteredRecruits.length}
+          {paginatedRows.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
+          {Math.min(currentPage * pageSize, visibleRows.length)} of{" "}
+          {visibleRows.length}
         </span>
       </div>
     </div>

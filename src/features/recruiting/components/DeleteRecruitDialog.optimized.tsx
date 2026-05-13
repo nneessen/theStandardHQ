@@ -131,8 +131,31 @@ export function DeleteRecruitDialogOptimized({
 
       toast.success(`Permanently deleted ${recruitName}`);
 
-      await queryClient.invalidateQueries({ queryKey: ["recruits"] });
-      await queryClient.invalidateQueries({ queryKey: ["user-profiles"] });
+      // Wipe per-recruit caches that are now invalid (useRecruitById, etc.)
+      queryClient.removeQueries({ queryKey: ["recruits", recruit.id] });
+      queryClient.removeQueries({ queryKey: ["user-profiles", recruit.id] });
+
+      // Invalidate every recruit-related list/count/stat so currently-mounted
+      // observers refetch immediately and any inactive queries are marked stale.
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["recruits"] }),
+        queryClient.invalidateQueries({ queryKey: ["user-profiles"] }),
+        queryClient.invalidateQueries({ queryKey: ["recruit-invitations"] }),
+        queryClient.invalidateQueries({
+          queryKey: ["pending-invitations-count"],
+        }),
+        queryClient.invalidateQueries({ queryKey: ["recruiting-stats"] }),
+        queryClient.invalidateQueries({ queryKey: ["recruit-phase-progress"] }),
+        queryClient.invalidateQueries({ queryKey: ["current-phase"] }),
+      ]);
+
+      // Force inactive recruits queries (e.g. dashboard list while user is on
+      // the detail page) to refetch BEFORE we navigate, so landing on /recruiting
+      // shows fresh data with no flash of stale-cache.
+      await queryClient.refetchQueries({
+        queryKey: ["recruits"],
+        type: "all",
+      });
 
       onOpenChange(false);
       onSuccess?.();
