@@ -45,6 +45,8 @@ function createMockQueryBuilder(
   return builder;
 }
 
+// Used by OverrideRepository.findByOverrideAndBaseAgentInRange tests: one
+// commissions query, one overrides query, single builder each.
 function mockPaidOverrideFlow(
   commissionsData: unknown[] = [],
   overridesData: unknown[] = [],
@@ -59,6 +61,33 @@ function mockPaidOverrideFlow(
   });
 
   return { commissionsBuilder, overridesBuilder };
+}
+
+// Used by HierarchyService.getViewerOverridesFromAgent tests: the service
+// fires findByOverrideAndBaseAgentInRange (earned/paid path, awaits commissions
+// internally) AND findPendingByOverrideAndBaseAgent in parallel. Because the
+// earned path's await on commissions defers its from('override_commissions')
+// call by a microtask, the pending path's call lands first. Queue order:
+// pendingOverridesBuilder, then overridesBuilder.
+function mockServiceOverrideFlow(
+  commissionsData: unknown[] = [],
+  overridesData: unknown[] = [],
+  pendingOverridesData: unknown[] = [],
+) {
+  const commissionsBuilder = createMockQueryBuilder(commissionsData);
+  const overridesBuilder = createMockQueryBuilder(overridesData);
+  const pendingOverridesBuilder = createMockQueryBuilder(pendingOverridesData);
+  const overrideBuilderQueue = [pendingOverridesBuilder, overridesBuilder];
+
+  (supabase.from as Mock).mockImplementation((tableName: string) => {
+    if (tableName === "commissions") return commissionsBuilder;
+    if (tableName === "override_commissions") {
+      return overrideBuilderQueue.shift() || createMockQueryBuilder([]);
+    }
+    return createMockQueryBuilder([]);
+  });
+
+  return { commissionsBuilder, overridesBuilder, pendingOverridesBuilder };
 }
 
 describe("OverrideRepository.findByOverrideAndBaseAgentInRange", () => {
@@ -273,8 +302,8 @@ describe("HierarchyService.getViewerOverridesFromAgent", () => {
     vi.clearAllMocks();
   });
 
-  it("should return { mtd: 0 } for single ID with empty results", async () => {
-    mockPaidOverrideFlow([], []);
+  it("should return { mtd: 0, pending: 0 } for single ID with empty results", async () => {
+    mockServiceOverrideFlow([], [], []);
 
     const { HierarchyService } =
       await import("../../../services/hierarchy/hierarchyService");
@@ -285,7 +314,7 @@ describe("HierarchyService.getViewerOverridesFromAgent", () => {
       "agent-1",
     );
 
-    expect(result).toEqual({ mtd: 0 });
+    expect(result).toEqual({ mtd: 0, pending: 0 });
   });
 
   it("should return Map for array input", async () => {
@@ -309,7 +338,7 @@ describe("HierarchyService.getViewerOverridesFromAgent", () => {
         status: "earned",
       },
     ];
-    mockPaidOverrideFlow(
+    mockServiceOverrideFlow(
       [
         {
           policy_id: "policy-1",
@@ -344,9 +373,9 @@ describe("HierarchyService.getViewerOverridesFromAgent", () => {
     );
 
     expect(result).toBeInstanceOf(Map);
-    const map = result as Map<string, number>;
-    expect(map.get("agent-1")).toBe(150); // 100 + 50
-    expect(map.get("agent-2")).toBe(200);
+    const map = result as Map<string, { earned: number; pending: number }>;
+    expect(map.get("agent-1")).toEqual({ earned: 150, pending: 0 }); // 100 + 50
+    expect(map.get("agent-2")).toEqual({ earned: 200, pending: 0 });
   });
 
   it("should return empty Map for empty array input", async () => {
@@ -357,7 +386,9 @@ describe("HierarchyService.getViewerOverridesFromAgent", () => {
     const result = await service.getViewerOverridesFromAgent("viewer-123", []);
 
     expect(result).toBeInstanceOf(Map);
-    expect((result as Map<string, number>).size).toBe(0);
+    expect(
+      (result as Map<string, { earned: number; pending: number }>).size,
+    ).toBe(0);
     expect(supabase.from).not.toHaveBeenCalled();
   });
 
@@ -382,7 +413,7 @@ describe("HierarchyService.getViewerOverridesFromAgent", () => {
         status: "earned",
       },
     ];
-    mockPaidOverrideFlow(
+    mockServiceOverrideFlow(
       [
         {
           policy_id: "policy-1",
@@ -416,8 +447,9 @@ describe("HierarchyService.getViewerOverridesFromAgent", () => {
       },
     );
 
-    const map = result as Map<string, number>;
-    expect(map.get("agent-1")).toBeCloseTo(350.75, 2);
+    const map = result as Map<string, { earned: number; pending: number }>;
+    expect(map.get("agent-1")?.earned).toBeCloseTo(350.75, 2);
+    expect(map.get("agent-1")?.pending).toBe(0);
   });
 
   it("should handle null/undefined override amounts gracefully", async () => {
@@ -441,7 +473,7 @@ describe("HierarchyService.getViewerOverridesFromAgent", () => {
         status: "earned",
       },
     ];
-    mockPaidOverrideFlow(
+    mockServiceOverrideFlow(
       [
         {
           policy_id: "policy-1",
@@ -475,8 +507,8 @@ describe("HierarchyService.getViewerOverridesFromAgent", () => {
       },
     );
 
-    const map = result as Map<string, number>;
-    expect(map.get("agent-1")).toBe(100); // null and undefined treated as 0
+    const map = result as Map<string, { earned: number; pending: number }>;
+    expect(map.get("agent-1")).toEqual({ earned: 100, pending: 0 }); // null and undefined treated as 0
   });
 });
 

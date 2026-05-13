@@ -1238,12 +1238,17 @@ class HierarchyService {
     viewerId: string,
     baseAgentIds: string | string[],
     options?: { startDate?: string; endDate?: string },
-  ): Promise<{ mtd: number } | Map<string, number>> {
+  ): Promise<
+    | { mtd: number; pending: number }
+    | Map<string, { earned: number; pending: number }>
+  > {
     const ids = Array.isArray(baseAgentIds) ? baseAgentIds : [baseAgentIds];
     const isBatch = Array.isArray(baseAgentIds);
 
     if (ids.length === 0) {
-      return isBatch ? new Map() : { mtd: 0 };
+      return (isBatch ? new Map() : { mtd: 0, pending: 0 }) as
+        | { mtd: number; pending: number }
+        | Map<string, { earned: number; pending: number }>;
     }
 
     try {
@@ -1256,30 +1261,60 @@ class HierarchyService {
       const startDate = options?.startDate ?? defaultMtdStart;
       const endDate = options?.endDate;
 
-      const overrides =
-        await this.overrideRepo.findByOverrideAndBaseAgentInRange(
+      // Run earned/paid and pending queries in parallel. They use different
+      // repo methods because pending overrides are gated only by an active
+      // policy, while earned/paid additionally requires a paid base advance.
+      const [earnedOverrides, pendingOverrides] = await Promise.all([
+        this.overrideRepo.findByOverrideAndBaseAgentInRange(
           viewerId,
           ids,
           startDate,
           endDate,
-        );
+        ),
+        this.overrideRepo.findPendingByOverrideAndBaseAgent(
+          viewerId,
+          ids,
+          startDate,
+          endDate,
+        ),
+      ]);
 
-      // Group by base_agent_id and sum
-      const mtdByAgent = new Map<string, number>();
-      for (const o of overrides) {
+      const earnedByAgent = new Map<string, number>();
+      for (const o of earnedOverrides) {
         const agentId = o.base_agent_id;
-        const current = mtdByAgent.get(agentId) || 0;
-        mtdByAgent.set(
+        const amount = parseFloat(String(o.override_commission_amount) || "0");
+        earnedByAgent.set(agentId, (earnedByAgent.get(agentId) || 0) + amount);
+      }
+
+      const pendingByAgent = new Map<string, number>();
+      for (const o of pendingOverrides) {
+        const agentId = o.base_agent_id;
+        const amount = parseFloat(String(o.override_commission_amount) || "0");
+        pendingByAgent.set(
           agentId,
-          current + parseFloat(String(o.override_commission_amount) || "0"),
+          (pendingByAgent.get(agentId) || 0) + amount,
         );
       }
 
-      // Return format based on input type (backward compatible)
       if (!isBatch) {
-        return { mtd: mtdByAgent.get(ids[0]) || 0 };
+        return {
+          mtd: earnedByAgent.get(ids[0]) || 0,
+          pending: pendingByAgent.get(ids[0]) || 0,
+        };
       }
-      return mtdByAgent;
+
+      const merged = new Map<string, { earned: number; pending: number }>();
+      const allIds = new Set<string>([
+        ...earnedByAgent.keys(),
+        ...pendingByAgent.keys(),
+      ]);
+      for (const id of allIds) {
+        merged.set(id, {
+          earned: earnedByAgent.get(id) || 0,
+          pending: pendingByAgent.get(id) || 0,
+        });
+      }
+      return merged;
     } catch (error) {
       logger.error(
         "HierarchyService.getViewerOverridesFromAgent",

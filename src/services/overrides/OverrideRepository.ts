@@ -552,12 +552,13 @@ export class OverrideRepository extends BaseRepository<
     overrideAgentId: string,
     baseAgentIds: string | string[],
     startDate: string,
+    endDate?: string,
   ): Promise<OverrideMetricRow[]> {
     const ids = Array.isArray(baseAgentIds) ? baseAgentIds : [baseAgentIds];
     if (ids.length === 0) return [];
 
     try {
-      const { data, error } = await this.client
+      let query = this.client
         .from(this.tableName)
         .select(
           `
@@ -573,6 +574,15 @@ export class OverrideRepository extends BaseRepository<
         .in("base_agent_id", ids)
         .eq("policy.lifecycle_status", "active")
         .gte("created_at", startDate);
+
+      if (endDate) {
+        // Include the entire end date by extending to end-of-day UTC
+        const endInclusive =
+          endDate.length === 10 ? `${endDate}T23:59:59.999Z` : endDate;
+        query = query.lte("created_at", endInclusive);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         throw this.handleError(error, "findPendingByOverrideAndBaseAgent");

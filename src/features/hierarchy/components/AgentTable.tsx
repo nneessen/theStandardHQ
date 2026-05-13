@@ -85,7 +85,8 @@ interface AgentMetrics {
   pending_ap: number; // Pending submissions in period
   mtd_policies: number; // Count of all policies in period
   pending_count: number; // Count of pending policies
-  override_amount: number; // Override earnings
+  override_amount: number; // Earned/paid override earnings (counts as income now)
+  override_pending: number; // Pending overrides on active policies (computed but not yet earned)
 }
 
 /**
@@ -122,7 +123,10 @@ async function fetchAllAgentMetrics(
   const allPolicies = await policyRepository.findMetricsByUserIds(agentIds);
 
   // BATCH QUERY 2: Get all overrides the viewer earns from all agents
-  let overridesByAgent = new Map<string, number>();
+  // Map value carries earned (status=earned|paid AND base commission paid)
+  // and pending (status=pending on currently-active policies) separately so
+  // financial integrity is preserved in the table cell.
+  let overridesByAgent = new Map<string, { earned: number; pending: number }>();
   if (viewerId) {
     // Filter out the viewer's own ID - they don't earn overrides from themselves
     const otherAgentIds = agentIds.filter((id) => id !== viewerId);
@@ -136,7 +140,10 @@ async function fetchAllAgentMetrics(
         },
       );
       // Result is a Map when passed an array
-      overridesByAgent = result as Map<string, number>;
+      overridesByAgent = result as Map<
+        string,
+        { earned: number; pending: number }
+      >;
     }
   }
 
@@ -182,12 +189,14 @@ async function fetchAllAgentMetrics(
     // MTD policies count: all policies with submit_date in range
     const mtd_policies = periodPolicies.length;
 
+    const overrideForAgent = overridesByAgent.get(agentId);
     metricsMap.set(agentId, {
       total_ap,
       pending_ap,
       mtd_policies,
       pending_count: pendingPolicies.length,
-      override_amount: overridesByAgent.get(agentId) || 0,
+      override_amount: overrideForAgent?.earned ?? 0,
+      override_pending: overrideForAgent?.pending ?? 0,
     });
   }
 
@@ -224,12 +233,19 @@ function AgentRow({
   const navigate = useNavigate();
 
   // Use metrics passed from parent (batch-fetched), with defaults
-  const { mtd_policies, override_amount, pending_ap, total_ap } = metrics || {
+  const {
+    mtd_policies,
+    override_amount,
+    override_pending,
+    pending_ap,
+    total_ap,
+  } = metrics || {
     total_ap: 0,
     pending_ap: 0,
     mtd_policies: 0,
     pending_count: 0,
     override_amount: 0,
+    override_pending: 0,
   };
 
   // Calculate real override spread
@@ -391,12 +407,28 @@ function AgentRow({
         )}
       </td>
 
-      {/* Override $ MTD */}
+      {/* Override $ MTD: earned on top, pending below in warning color */}
       <td className="px-2 py-1.5 text-right text-[11px] font-mono">
-        {override_amount > 0 ? (
-          <span className="font-bold text-success">
-            {formatCurrency(override_amount)}
-          </span>
+        {override_amount > 0 || override_pending > 0 ? (
+          <div className="flex flex-col items-end leading-tight">
+            <span
+              className={
+                override_amount > 0
+                  ? "font-bold text-success"
+                  : "text-muted-foreground"
+              }
+            >
+              {formatCurrency(override_amount)}
+            </span>
+            {override_pending > 0 && (
+              <span
+                className="text-warning text-[10px]"
+                title="Pending override — computed but not yet earned (base commission not paid)"
+              >
+                +{formatCurrency(override_pending)} pending
+              </span>
+            )}
+          </div>
         ) : (
           <span className="text-muted-foreground">$0</span>
         )}
