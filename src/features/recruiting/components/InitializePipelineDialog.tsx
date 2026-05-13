@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, FileStack, Check } from "lucide-react";
 import { useTemplates } from "../hooks/usePipeline";
 import { filterUserSelectableTemplates } from "../utils/template-filters";
+import { useCurrentUserProfile } from "@/hooks/admin";
 import type { PipelineTemplate } from "@/types/recruiting.types";
 import { cn } from "@/lib/utils";
 
@@ -34,11 +35,15 @@ export function InitializePipelineDialog({
   isLoading = false,
 }: InitializePipelineDialogProps) {
   const { data: allTemplates, isLoading: templatesLoading } = useTemplates();
+  const { data: currentUserProfile } = useCurrentUserProfile();
+  const isSuperAdmin = currentUserProfile?.is_super_admin === true;
   // Only the two DEFAULT-named templates are user-selectable; legacy / system
-  // templates stay in the DB but don't appear in the picker.
+  // templates stay in the DB but don't appear in the picker. Super-admins
+  // bypass this gate and see every template.
   const templates = useMemo(
-    () => filterUserSelectableTemplates(allTemplates),
-    [allTemplates],
+    () =>
+      filterUserSelectableTemplates(allTemplates, { includeAll: isSuperAdmin }),
+    [allTemplates, isSuperAdmin],
   );
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(
     null,

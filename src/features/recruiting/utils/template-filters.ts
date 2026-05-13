@@ -22,9 +22,20 @@ export function isUserSelectableTemplate(t: MinimalTemplate): boolean {
   return t.name.trim().toLowerCase().startsWith("default");
 }
 
+export interface FilterTemplatesOptions {
+  /**
+   * Super-admin escape hatch. When true, returns every template the caller
+   * passed in (still respecting any caller-side active/archive filters),
+   * bypassing the DEFAULT-name gate. Everyone else only sees DEFAULT pipelines.
+   */
+  includeAll?: boolean;
+}
+
 export function filterUserSelectableTemplates<T extends MinimalTemplate>(
   templates: T[] | undefined,
+  options: FilterTemplatesOptions = {},
 ): T[] {
   if (!templates) return [];
+  if (options.includeAll) return templates;
   return templates.filter(isUserSelectableTemplate);
 }

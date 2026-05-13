@@ -80,15 +80,18 @@ export function PostAddRecruitWizard({
   const [slackPosted, setSlackPosted] = useState(false);
 
   const { data: allTemplates, isLoading: templatesLoading } = useTemplates();
-  // Only the two DEFAULT-named templates are user-pickable; everything else is
-  // legacy / system-only and stays hidden from the picker.
-  const templates = useMemo(
-    () => filterUserSelectableTemplates(allTemplates),
-    [allTemplates],
-  );
   const initializeProgress = useInitializeRecruitProgress();
 
   const { data: currentUserProfile } = useCurrentUserProfile();
+  const isSuperAdmin = currentUserProfile?.is_super_admin === true;
+  // Only the two DEFAULT-named templates are user-pickable; everything else is
+  // legacy / system-only and stays hidden from the picker. Super-admins see
+  // every template.
+  const templates = useMemo(
+    () =>
+      filterUserSelectableTemplates(allTemplates, { includeAll: isSuperAdmin }),
+    [allTemplates, isSuperAdmin],
+  );
   const { data: slackIntegrations = [] } = useSlackIntegrations();
   const recruitIntegration = findRecruitIntegration(slackIntegrations);
   const { data: slackChannels = [] } = useSlackChannelsById(
