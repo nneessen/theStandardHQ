@@ -31,9 +31,20 @@ NC='\033[0m'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
+# Preserve a caller-provided DATABASE_URL across the .env source so that
+#   DATABASE_URL=$REMOTE_DATABASE_URL ./run-sql.sh ...
+# actually targets remote. Without this, sourcing .env silently overwrites it
+# with the local value and verification queries appear to "see different data"
+# than the migration runner just wrote.
+PRESET_DATABASE_URL="${DATABASE_URL:-}"
+
 # Load environment
 if [ -f "$PROJECT_ROOT/.env" ]; then
     source "$PROJECT_ROOT/.env"
+fi
+
+if [ -n "$PRESET_DATABASE_URL" ]; then
+    DATABASE_URL="$PRESET_DATABASE_URL"
 fi
 
 if [ -z "$DATABASE_URL" ]; then
