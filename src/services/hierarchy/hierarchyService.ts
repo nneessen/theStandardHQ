@@ -1040,9 +1040,8 @@ class HierarchyService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase response type
   async getAgentCommissions(agentId: string): Promise<any> {
     try {
-      const commissions = await this.commissionRepo.findWithPolicyByUserId(
-        agentId,
-      );
+      const commissions =
+        await this.commissionRepo.findWithPolicyByUserId(agentId);
 
       const enrichedCommissions = commissions.map((commission) => {
         const policy = Array.isArray(commission.policy)
@@ -1108,7 +1107,10 @@ class HierarchyService {
         chargebacks: metrics.chargebacks,
         unearned: Math.max(
           0,
-          Math.max(metrics.totalUnearned, metrics.advances - metrics.totalEarned),
+          Math.max(
+            metrics.totalUnearned,
+            metrics.advances - metrics.totalEarned,
+          ),
         ),
         recent: enrichedCommissions,
       };
@@ -1138,25 +1140,44 @@ class HierarchyService {
       ).toISOString();
       const ytdStart = new Date(now.getFullYear(), 0, 1).toISOString();
 
-      // Build parallel queries
+      // Build parallel queries. Earned/paid totals use the existing methods
+      // (which require a paid base commission). Pending totals use the new
+      // pending methods (which only require an active policy) so unpaid-but-
+      // computed override income is still visible on dashboards.
+      const hasViewer = !!viewerId && viewerId !== agentId;
+
       const queries: Promise<
         { override_commission_amount: number | string | null }[]
       >[] = [
-        // Agent's earnings from their downlines (by override_agent_id)
+        // [0,1] Agent's earned/paid earnings from their downlines
         this.overrideRepo.findByOverrideAgentIdInRange(agentId, mtdStart),
         this.overrideRepo.findByOverrideAgentIdInRange(agentId, ytdStart),
+        // [2,3] Agent's PENDING earnings from their downlines
+        this.overrideRepo.findPendingByOverrideAgentInRange(agentId, mtdStart),
+        this.overrideRepo.findPendingByOverrideAgentInRange(agentId, ytdStart),
       ];
 
-      // If viewerId provided, also get viewer's overrides from this agent
-      if (viewerId && viewerId !== agentId) {
+      if (hasViewer) {
         queries.push(
+          // [4,5] Viewer's earned overrides from this agent
           this.overrideRepo.findByOverrideAndBaseAgentInRange(
-            viewerId,
+            viewerId!,
             agentId,
             mtdStart,
           ),
           this.overrideRepo.findByOverrideAndBaseAgentInRange(
-            viewerId,
+            viewerId!,
+            agentId,
+            ytdStart,
+          ),
+          // [6,7] Viewer's PENDING overrides from this agent
+          this.overrideRepo.findPendingByOverrideAndBaseAgent(
+            viewerId!,
+            agentId,
+            mtdStart,
+          ),
+          this.overrideRepo.findPendingByOverrideAndBaseAgent(
+            viewerId!,
             agentId,
             ytdStart,
           ),
@@ -1174,27 +1195,26 @@ class HierarchyService {
           0,
         );
 
-      // Agent's override earnings from their downlines
       const agentEarnings = {
         mtd: sumOverrides(results[0]),
         ytd: sumOverrides(results[1]),
+        mtdPending: sumOverrides(results[2]),
+        ytdPending: sumOverrides(results[3]),
       };
 
-      // Viewer's overrides earned from this agent (if viewerId was provided)
-      const viewerEarningsFromAgent =
-        viewerId && viewerId !== agentId
-          ? {
-              mtd: sumOverrides(results[2]),
-              ytd: sumOverrides(results[3]),
-            }
-          : { mtd: 0, ytd: 0 };
+      const viewerEarningsFromAgent = hasViewer
+        ? {
+            mtd: sumOverrides(results[4]),
+            ytd: sumOverrides(results[5]),
+            mtdPending: sumOverrides(results[6]),
+            ytdPending: sumOverrides(results[7]),
+          }
+        : { mtd: 0, ytd: 0, mtdPending: 0, ytdPending: 0 };
 
       return {
-        // Agent's own override earnings from their downlines
         agentEarnings,
-        // What the viewer earns from this agent
         viewerEarningsFromAgent,
-        // Keep legacy fields for backward compatibility
+        // Legacy fields preserved for any callers that still read them
         mtd: agentEarnings.mtd,
         ytd: agentEarnings.ytd,
       };

@@ -404,11 +404,15 @@ export function AgentDetailPage() {
   const agentOverrideEarnings = {
     mtd: overrides?.agentEarnings?.mtd || overrides?.mtd || 0,
     ytd: overrides?.agentEarnings?.ytd || overrides?.ytd || 0,
+    mtdPending: overrides?.agentEarnings?.mtdPending || 0,
+    ytdPending: overrides?.agentEarnings?.ytdPending || 0,
   };
 
   const viewerEarningsFromAgent = {
     mtd: overrides?.viewerEarningsFromAgent?.mtd || 0,
     ytd: overrides?.viewerEarningsFromAgent?.ytd || 0,
+    mtdPending: overrides?.viewerEarningsFromAgent?.mtdPending || 0,
+    ytdPending: overrides?.viewerEarningsFromAgent?.ytdPending || 0,
   };
 
   if (loadingAgent) {
@@ -1095,10 +1099,17 @@ export function AgentDetailPage() {
                     <div className="h-3 w-px bg-muted" />
                     <div className="flex items-center gap-1">
                       <span className="text-muted-foreground">
-                        Your MTD from them:
+                        Your MTD earned from them:
                       </span>
                       <span className="font-semibold text-info">
                         {formatCurrency(viewerEarningsFromAgent.mtd)}
+                      </span>
+                    </div>
+                    <div className="h-3 w-px bg-muted" />
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">Pending:</span>
+                      <span className="font-semibold text-warning">
+                        {formatCurrency(viewerEarningsFromAgent.mtdPending)}
                       </span>
                     </div>
                   </>
@@ -1114,22 +1125,36 @@ export function AgentDetailPage() {
                   Their Override Earnings
                 </h4>
                 {agentOverrideEarnings.mtd > 0 ||
-                agentOverrideEarnings.ytd > 0 ? (
+                agentOverrideEarnings.ytd > 0 ||
+                agentOverrideEarnings.mtdPending > 0 ||
+                agentOverrideEarnings.ytdPending > 0 ? (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-muted-foreground">
-                        MTD Override Income:
-                      </span>
+                      <span className="text-muted-foreground">MTD Earned:</span>
                       <span className="font-semibold text-success">
                         {formatCurrency(agentOverrideEarnings.mtd)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="text-muted-foreground">
-                        YTD Override Income:
+                        MTD Pending:
                       </span>
+                      <span className="font-semibold text-warning">
+                        {formatCurrency(agentOverrideEarnings.mtdPending)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-muted-foreground">YTD Earned:</span>
                       <span className="font-semibold text-success">
                         {formatCurrency(agentOverrideEarnings.ytd)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-muted-foreground">
+                        YTD Pending:
+                      </span>
+                      <span className="font-semibold text-warning">
+                        {formatCurrency(agentOverrideEarnings.ytdPending)}
                       </span>
                     </div>
                   </div>
@@ -1147,11 +1172,13 @@ export function AgentDetailPage() {
                     Your Overrides from This Agent
                   </h4>
                   {viewerEarningsFromAgent.mtd > 0 ||
-                  viewerEarningsFromAgent.ytd > 0 ? (
+                  viewerEarningsFromAgent.ytd > 0 ||
+                  viewerEarningsFromAgent.mtdPending > 0 ||
+                  viewerEarningsFromAgent.ytdPending > 0 ? (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-[11px]">
                         <span className="text-muted-foreground">
-                          MTD Override Income:
+                          MTD Earned:
                         </span>
                         <span className="font-semibold text-info">
                           {formatCurrency(viewerEarningsFromAgent.mtd)}
@@ -1159,10 +1186,26 @@ export function AgentDetailPage() {
                       </div>
                       <div className="flex items-center justify-between text-[11px]">
                         <span className="text-muted-foreground">
-                          YTD Override Income:
+                          MTD Pending:
+                        </span>
+                        <span className="font-semibold text-warning">
+                          {formatCurrency(viewerEarningsFromAgent.mtdPending)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-muted-foreground">
+                          YTD Earned:
                         </span>
                         <span className="font-semibold text-info">
                           {formatCurrency(viewerEarningsFromAgent.ytd)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-muted-foreground">
+                          YTD Pending:
+                        </span>
+                        <span className="font-semibold text-warning">
+                          {formatCurrency(viewerEarningsFromAgent.ytdPending)}
                         </span>
                       </div>
                     </div>

@@ -502,6 +502,89 @@ export class OverrideRepository extends BaseRepository<
   }
 
   /**
+   * Find PENDING overrides earned by this override agent on currently-active
+   * policies, created within the requested range. Distinct from
+   * findByOverrideAgentIdInRange (which filters to earned/paid). Used to
+   * surface "pipeline" income on dashboards before base commissions are paid.
+   *
+   * Filters policies on lifecycle_status='active' so chargeback-eligible
+   * pending overrides (against lapsed/cancelled policies) are excluded.
+   */
+  async findPendingByOverrideAgentInRange(
+    overrideAgentId: string,
+    startDate: string,
+  ): Promise<OverrideMetricRow[]> {
+    try {
+      const { data, error } = await this.client
+        .from(this.tableName)
+        .select(
+          `
+            override_commission_amount,
+            status,
+            policy:policies!inner(lifecycle_status)
+          `,
+        )
+        .eq("override_agent_id", overrideAgentId)
+        .eq("status", "pending")
+        .eq("policy.lifecycle_status", "active")
+        .gte("created_at", startDate);
+
+      if (error) {
+        throw this.handleError(error, "findPendingByOverrideAgentInRange");
+      }
+
+      return (data as unknown as OverrideMetricRow[]) || [];
+    } catch (error) {
+      throw this.wrapError(error, "findPendingByOverrideAgentInRange");
+    }
+  }
+
+  /**
+   * Find PENDING overrides earned by a specific override agent from
+   * specific base agent(s), on currently-active policies. Counterpart to
+   * findByOverrideAndBaseAgentInRange but without the paid-base-commission
+   * gate — the whole point of "pending" is the base commission isn't paid yet.
+   *
+   * Date filter is over override_commissions.created_at, matching the
+   * existing "earned" path's semantic of "overrides generated within range."
+   */
+  async findPendingByOverrideAndBaseAgent(
+    overrideAgentId: string,
+    baseAgentIds: string | string[],
+    startDate: string,
+  ): Promise<OverrideMetricRow[]> {
+    const ids = Array.isArray(baseAgentIds) ? baseAgentIds : [baseAgentIds];
+    if (ids.length === 0) return [];
+
+    try {
+      const { data, error } = await this.client
+        .from(this.tableName)
+        .select(
+          `
+            base_agent_id,
+            policy_id,
+            override_commission_amount,
+            status,
+            policy:policies!inner(lifecycle_status)
+          `,
+        )
+        .eq("override_agent_id", overrideAgentId)
+        .eq("status", "pending")
+        .in("base_agent_id", ids)
+        .eq("policy.lifecycle_status", "active")
+        .gte("created_at", startDate);
+
+      if (error) {
+        throw this.handleError(error, "findPendingByOverrideAndBaseAgent");
+      }
+
+      return (data as unknown as OverrideMetricRow[]) || [];
+    } catch (error) {
+      throw this.wrapError(error, "findPendingByOverrideAndBaseAgent");
+    }
+  }
+
+  /**
    * Find overrides by policy ID
    */
   async findByPolicyId(policyId: string): Promise<OverrideCommission[]> {
