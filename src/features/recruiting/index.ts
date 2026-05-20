@@ -1,5 +1,14 @@
 // src/features/recruiting/index.ts
-export { useActiveTemplate, usePhases } from "./hooks/usePipeline";
+export {
+  useActiveTemplate,
+  usePhases,
+  useTemplates,
+} from "./hooks/usePipeline";
+export { useInitializeRecruitProgress } from "./hooks/useRecruitProgress";
+export {
+  filterUserSelectableTemplates,
+  selectDefaultRecruitTemplate,
+} from "./utils/template-filters";
 export {
   usePhaseAutomations,
   useChecklistItemAutomations,

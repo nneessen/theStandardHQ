@@ -31,7 +31,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RecruitDetailPanel, AddRecruitDialog } from "@/features/recruiting";
+import {
+  RecruitDetailPanel,
+  AddRecruitDialog,
+  useTemplates,
+  useInitializeRecruitProgress,
+  filterUserSelectableTemplates,
+  selectDefaultRecruitTemplate,
+} from "@/features/recruiting";
 import type { RoleName } from "@/types/permissions.types";
 import type { UserProfile } from "@/types/user.types";
 import { hasStaffRole } from "@/constants/roles";
@@ -64,6 +71,12 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
   const { user: currentUser } = useAuth();
   const { data: allUsers, isLoading: usersLoading } = useAllUsers();
   const { data: phases } = usePhases(undefined);
+  const { data: allTemplates = [] } = useTemplates();
+  const initializeProgress = useInitializeRecruitProgress();
+  const selectableTemplates = useMemo(
+    () => filterUserSelectableTemplates(allTemplates),
+    [allTemplates],
+  );
 
   // Pure recruits: have recruit role, no agent/admin/staff roles
   // Training Hub sees ALL recruits (no hierarchy filtering)
@@ -509,8 +522,32 @@ export function RecruitingTab({ searchQuery }: RecruitingTabProps) {
       <AddRecruitDialog
         open={addRecruitDialogOpen}
         onOpenChange={setAddRecruitDialogOpen}
-        onSuccess={(recruitId) => {
-          // Find the newly created recruit and select it
+        onSuccess={async (recruitId, meta) => {
+          if (!meta.skippedPipeline) {
+            const template = selectDefaultRecruitTemplate(
+              selectableTemplates,
+              meta.isLicensed,
+            );
+            if (template) {
+              try {
+                await initializeProgress.mutateAsync({
+                  userId: recruitId,
+                  templateId: template.id,
+                });
+              } catch (error) {
+                toast.error(
+                  error instanceof Error
+                    ? error.message
+                    : "Failed to enroll recruit in the pipeline.",
+                );
+              }
+            } else {
+              toast.error(
+                "No default pipeline template is available. Ask an admin to enable the DEFAULT recruiting pipelines.",
+              );
+            }
+          }
+
           const newRecruit = allRecruits.find((r) => r.id === recruitId);
           if (newRecruit) {
             setSelectedRecruit(newRecruit);

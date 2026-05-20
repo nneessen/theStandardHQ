@@ -95,6 +95,12 @@ import type { RecruitFilters } from "@/types/recruiting.types";
 import { TERMINAL_STATUS_COLORS } from "@/types/recruiting.types";
 import type { UserProfile } from "@/types/hierarchy.types";
 import { buildRecruitCreateAssignmentFields } from "../utils/recruit-create-assignment";
+import {
+  filterUserSelectableTemplates,
+  selectDefaultRecruitTemplate,
+} from "../utils/template-filters";
+import { useTemplates } from "../hooks/usePipeline";
+import { useInitializeRecruitProgress } from "../hooks/useRecruitProgress";
 import { Link, useSearch } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
 
@@ -1060,6 +1066,13 @@ function BasicAddRecruitDialog({
 }: BasicAddRecruitDialogProps) {
   const { user } = useAuth();
   const createRecruit = useCreateRecruit();
+  const initializeProgress = useInitializeRecruitProgress();
+  const { data: allTemplates = [], isLoading: templatesLoading } =
+    useTemplates();
+  const selectableTemplates = useMemo(
+    () => filterUserSelectableTemplates(allTemplates),
+    [allTemplates],
+  );
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -1092,6 +1105,24 @@ function BasicAddRecruitDialog({
       return;
     }
 
+    if (templatesLoading) {
+      setErrors({ _form: "Pipeline templates are still loading." });
+      return;
+    }
+
+    const defaultTemplate = selectDefaultRecruitTemplate(
+      selectableTemplates,
+      formData.is_licensed,
+    );
+
+    if (!defaultTemplate) {
+      setErrors({
+        _form:
+          "No default pipeline template is available. Ask an admin to enable the DEFAULT recruiting pipelines.",
+      });
+      return;
+    }
+
     try {
       const agentStatus = formData.is_licensed ? "licensed" : "unlicensed";
       const contractLevel = formData.contract_level
@@ -1105,7 +1136,7 @@ function BasicAddRecruitDialog({
         agencyId: user?.agency_id ?? undefined,
       });
 
-      await createRecruit.mutateAsync({
+      const recruit = await createRecruit.mutateAsync({
         first_name: formData.first_name.trim(),
         last_name: formData.last_name.trim(),
         email: formData.email.trim().toLowerCase(),
@@ -1115,6 +1146,11 @@ function BasicAddRecruitDialog({
         contract_level:
           contractLevel && !isNaN(contractLevel) ? contractLevel : undefined,
         ...assignmentFields,
+      });
+
+      await initializeProgress.mutateAsync({
+        userId: recruit.id,
+        templateId: defaultTemplate.id,
       });
 
       // Success toast is handled by the mutation's onSuccess callback
@@ -1130,6 +1166,12 @@ function BasicAddRecruitDialog({
       onOpenChange(false);
     } catch (error) {
       // Error toast is handled by the mutation's onError callback
+      setErrors({
+        _form:
+          error instanceof Error
+            ? error.message
+            : "Failed to add recruit to the pipeline.",
+      });
       console.error("[BasicRecruitingView] Create recruit failed:", error);
     }
   };
@@ -1322,6 +1364,11 @@ function BasicAddRecruitDialog({
               </Select>
             </div>
           </div>
+          {errors._form && (
+            <p className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-[10px] text-destructive">
+              {errors._form}
+            </p>
+          )}
           <div className="flex justify-end gap-2 pt-2">
             <Button
               type="button"
@@ -1336,9 +1383,15 @@ function BasicAddRecruitDialog({
               type="submit"
               size="sm"
               className="h-7 text-[10px]"
-              disabled={createRecruit.isPending}
+              disabled={
+                createRecruit.isPending ||
+                initializeProgress.isPending ||
+                templatesLoading
+              }
             >
-              {createRecruit.isPending ? "Adding..." : "Add Recruit"}
+              {createRecruit.isPending || initializeProgress.isPending
+                ? "Adding..."
+                : "Add Recruit"}
             </Button>
           </div>
         </form>

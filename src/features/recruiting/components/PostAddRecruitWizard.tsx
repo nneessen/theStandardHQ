@@ -31,7 +31,10 @@ import {
   Workflow,
 } from "lucide-react";
 import { useTemplates } from "../hooks/usePipeline";
-import { filterUserSelectableTemplates } from "../utils/template-filters";
+import {
+  filterUserSelectableTemplates,
+  selectDefaultRecruitTemplate,
+} from "../utils/template-filters";
 import { useInitializeRecruitProgress } from "../hooks/useRecruitProgress";
 import { useCurrentUserProfile } from "@/hooks/admin";
 import {
@@ -106,15 +109,8 @@ export function PostAddRecruitWizard({
   // prefer the DEFAULT Non-Licensed Recruit Pipeline.
   useEffect(() => {
     if (!selectedTemplateId && templates.length > 0) {
-      const licensedTpl = templates.find((t) =>
-        t.name.toLowerCase().includes("licensed agent"),
-      );
-      const nonLicensedTpl = templates.find((t) =>
-        t.name.toLowerCase().includes("non-licensed"),
-      );
-      const preferred = isLicensed ? licensedTpl : nonLicensedTpl;
-      const flagged = templates.find((t) => t.is_default);
-      setSelectedTemplateId(preferred?.id ?? flagged?.id ?? templates[0].id);
+      const template = selectDefaultRecruitTemplate(templates, isLicensed);
+      if (template) setSelectedTemplateId(template.id);
     }
   }, [templates, selectedTemplateId, isLicensed]);
 

@@ -26,6 +26,16 @@ type EdgeFunctionInvokeError = Error & {
   context?: Response;
 };
 
+type CreateAuthUserEdgeResult = {
+  user?: {
+    id?: string;
+  } | null;
+  profile?: unknown;
+  profileUpdateError?: string | null;
+  alreadyExists?: boolean;
+  emailSent?: boolean;
+};
+
 export const recruitingService = {
   // ========================================
   // RECRUIT CRUD (using RecruitRepository)
@@ -97,11 +107,13 @@ export const recruitingService = {
       });
 
     // Debug: Log the full result from edge function
+    const edgeResult = result as CreateAuthUserEdgeResult | null;
+
     console.log("[recruitingService.createRecruit] Edge function result:", {
       ok: !invokeError,
-      hasProfile: !!result?.profile,
-      profileUpdateError: result?.profileUpdateError,
-      alreadyExists: result?.alreadyExists,
+      hasProfile: !!edgeResult?.profile,
+      profileUpdateError: edgeResult?.profileUpdateError,
+      alreadyExists: edgeResult?.alreadyExists,
     });
 
     if (invokeError) {
@@ -135,27 +147,27 @@ export const recruitingService = {
       throw new Error(errorMessage);
     }
 
-    if (!result) {
+    if (!edgeResult) {
       throw new Error("Auth user creation returned no data");
     }
 
-    const authUserId = result.user?.id;
+    const authUserId = edgeResult.user?.id;
     if (!authUserId) {
       // Handle case where user already exists
-      if (result.alreadyExists) {
+      if (edgeResult.alreadyExists) {
         throw new Error(`A user with email ${recruit.email} already exists`);
       }
       throw new Error("Auth user was created but no ID was returned");
     }
 
-    // Profile is updated by edge function - use returned profile or create fallback
-    const newRecruit =
-      (result.profile as UserProfile) ||
-      ({
-        ...profileData,
-        id: authUserId,
-        email: recruit.email.toLowerCase().trim(),
-      } as UserProfile);
+    if (edgeResult.profileUpdateError || !edgeResult.profile) {
+      throw new Error(
+        edgeResult.profileUpdateError ||
+          "Auth user was created but recruit profile was not persisted",
+      );
+    }
+
+    const newRecruit = edgeResult.profile as UserProfile;
 
     // Emit recruit created event
     await workflowEventEmitter.emit(WORKFLOW_EVENTS.RECRUIT_CREATED, {

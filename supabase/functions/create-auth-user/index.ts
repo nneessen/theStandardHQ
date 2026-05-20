@@ -89,6 +89,7 @@ type CallerContext = {
   userId: string;
   roles: string[];
   isAdmin: boolean;
+  isSuperAdmin: boolean;
   imoId: string | null;
   agencyId: string | null;
   canManageUsers: boolean;
@@ -97,6 +98,10 @@ type CallerContext = {
 
 type ProfileData = z.infer<typeof profileDataSchema>;
 type CreateAuthUserRequest = z.infer<typeof createAuthUserRequestSchema>;
+// The edge function intentionally uses the service-role client against several
+// tables without generated Deno DB types.
+// deno-lint-ignore no-explicit-any
+type SupabaseAdminClient = any;
 
 function jsonResponse(status: number, payload: Record<string, unknown>) {
   return new Response(JSON.stringify(payload), {
@@ -312,7 +317,7 @@ async function sendSmsNotification(
 }
 
 async function hasAnyPermission(
-  supabaseAdmin: ReturnType<typeof createClient>,
+  supabaseAdmin: SupabaseAdminClient,
   userId: string,
   permissionCodes: string[],
 ) {
@@ -340,10 +345,10 @@ async function hasAnyPermission(
 }
 
 async function resolveAssignableUpline(
-  supabaseAdmin: ReturnType<typeof createClient>,
+  supabaseAdmin: SupabaseAdminClient,
   caller: CallerContext,
   requestedUplineId: string | null | undefined,
-) {
+): Promise<string | null> {
   if (!requestedUplineId) {
     return caller.userId;
   }
@@ -355,8 +360,8 @@ async function resolveAssignableUpline(
     return caller.userId;
   }
 
-  if (caller.canManageUsers) {
-    return requestedUplineId;
+  if (caller.isSuperAdmin) {
+    return requestedUplineId ?? null;
   }
 
   const { data: uplineProfile, error } = await supabaseAdmin
@@ -373,21 +378,30 @@ async function resolveAssignableUpline(
     ? uplineProfile.roles
     : [];
 
+  const isSameTenant = uplineProfile.imo_id === caller.imoId;
+  if (caller.canManageUsers) {
+    return isSameTenant ? uplineProfile.id : null;
+  }
+
   const isAssignable =
-    uplineProfile.imo_id === caller.imoId &&
+    isSameTenant &&
     (uplineProfile.is_admin === true ||
-      uplineRoles.some((role) => UPLINE_ROLE_ALLOWLIST.has(role)));
+      uplineRoles.some((role: string) => UPLINE_ROLE_ALLOWLIST.has(role)));
 
   return isAssignable ? uplineProfile.id : null;
 }
 
 async function resolveAssignablePipelineTemplate(
-  supabaseAdmin: ReturnType<typeof createClient>,
+  supabaseAdmin: SupabaseAdminClient,
   caller: CallerContext,
   pipelineTemplateId: string | null | undefined,
-) {
-  if (!pipelineTemplateId || caller.canManageUsers) {
+): Promise<string | null> {
+  if (!pipelineTemplateId) {
     return pipelineTemplateId ?? null;
+  }
+
+  if (caller.isSuperAdmin) {
+    return pipelineTemplateId;
   }
 
   const { data: template, error } = await supabaseAdmin
@@ -407,7 +421,7 @@ async function resolveAssignablePipelineTemplate(
 }
 
 async function validateExistingProfileId(
-  supabaseAdmin: ReturnType<typeof createClient>,
+  supabaseAdmin: SupabaseAdminClient,
   caller: CallerContext,
   existingProfileId: string,
   normalizedEmail: string,
@@ -445,7 +459,7 @@ async function validateExistingProfileId(
 
 async function authorizeInternalCaller(
   req: Request,
-  supabaseAdmin: ReturnType<typeof createClient>,
+  supabaseAdmin: SupabaseAdminClient,
 ): Promise<
   | {
       ok: true;
@@ -478,7 +492,7 @@ async function authorizeInternalCaller(
 
   const { data: callerProfile, error: profileError } = await supabaseAdmin
     .from("user_profiles")
-    .select("roles, is_admin, imo_id, agency_id")
+    .select("roles, is_admin, is_super_admin, imo_id, agency_id")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -498,10 +512,12 @@ async function authorizeInternalCaller(
     : [];
 
   const hasAllowedRole =
+    callerProfile?.is_super_admin === true ||
     callerProfile?.is_admin === true ||
-    callerRoles.some((role) => INTERNAL_ROLE_ALLOWLIST.has(role));
+    callerRoles.some((role: string) => INTERNAL_ROLE_ALLOWLIST.has(role));
 
   const canManageUsers =
+    callerProfile?.is_super_admin === true ||
     callerProfile?.is_admin === true ||
     callerRoles.includes("admin") ||
     (await hasAnyPermission(
@@ -532,6 +548,7 @@ async function authorizeInternalCaller(
       userId: user.id,
       roles: callerRoles,
       isAdmin: callerProfile?.is_admin === true,
+      isSuperAdmin: callerProfile?.is_super_admin === true,
       imoId: callerProfile?.imo_id ?? null,
       agencyId: callerProfile?.agency_id ?? null,
       canManageUsers,
@@ -622,6 +639,12 @@ serve(async (req) => {
       : undefined;
 
     if (sanitizedProfileData) {
+      if (!callerResult.caller.isSuperAdmin && !callerResult.caller.imoId) {
+        return jsonResponse(403, {
+          error: "Current user is not assigned to an IMO.",
+        });
+      }
+
       // Agent-driven recruit creation should only create a prospect.
       // Ignore any client-supplied pipeline assignment here so stale bundles
       // cannot implicitly enroll recruits during the create step.
@@ -673,7 +696,13 @@ serve(async (req) => {
         sanitizedProfileData.pipeline_template_id = resolvedTemplateId;
       }
 
-      if (!callerResult.caller.canManageUsers) {
+      if (callerResult.caller.isSuperAdmin) {
+        sanitizedProfileData = {
+          ...sanitizedProfileData,
+          recruiter_id:
+            sanitizedProfileData.recruiter_id ?? callerResult.caller.userId,
+        };
+      } else {
         sanitizedProfileData = {
           ...sanitizedProfileData,
           recruiter_id: callerResult.caller.userId,
@@ -765,6 +794,7 @@ serve(async (req) => {
     // Update the profile with additional data if provided (using service role to bypass RLS)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let profile: any = null;
+    let profileUpdateError: string | null = null;
     if (authUser.user && sanitizedProfileData) {
       // Small delay to ensure trigger has completed
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -785,6 +815,8 @@ serve(async (req) => {
         .single();
 
       if (profileError) {
+        profileUpdateError =
+          profileError.message || "Profile update failed after auth creation";
         console.error(
           "[create-auth-user] Profile update failed:",
           JSON.stringify(profileError),
@@ -793,7 +825,32 @@ serve(async (req) => {
           "[create-auth-user] Profile update keys:",
           Object.keys(sanitizedProfileData),
         );
-        // Don't throw - auth user was created, profile will have minimal data
+        if (!existingProfileId) {
+          const { error: profileDeleteError } = await supabaseAdmin
+            .from("user_profiles")
+            .delete()
+            .eq("id", authUser.user.id);
+
+          if (profileDeleteError) {
+            console.error(
+              "[create-auth-user] Failed to rollback profile after update failure:",
+              profileDeleteError.message,
+            );
+          }
+        }
+
+        const { error: deleteError } =
+          await supabaseAdmin.auth.admin.deleteUser(authUser.user.id);
+        if (deleteError) {
+          console.error(
+            "[create-auth-user] Failed to rollback auth user after profile update failure:",
+            deleteError.message,
+          );
+        }
+        return jsonResponse(500, {
+          error: "Failed to create user profile",
+          details: profileUpdateError,
+        });
       } else {
         profile = updatedProfile;
         console.log("[create-auth-user] Profile updated successfully:", {
@@ -834,7 +891,7 @@ serve(async (req) => {
             options: {
               redirectTo: `${siteUrl}/auth/callback`,
               expiresIn: 259200, // 72 hours in seconds
-            },
+            } as Record<string, unknown>,
           });
 
         // Log link generation result for diagnostics
@@ -906,9 +963,7 @@ serve(async (req) => {
     return jsonResponse(200, {
       user: authUser.user,
       profile, // Include the updated profile (or null if profileData wasn't provided)
-      profileUpdateError: profile
-        ? null
-        : "Profile update may have failed - check logs",
+      profileUpdateError,
       message,
       emailSent,
       smsSent,

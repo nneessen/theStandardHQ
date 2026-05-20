@@ -39,3 +39,21 @@ export function filterUserSelectableTemplates<T extends MinimalTemplate>(
   if (options.includeAll) return templates;
   return templates.filter(isUserSelectableTemplate);
 }
+
+export function selectDefaultRecruitTemplate<T extends MinimalTemplate>(
+  templates: T[] | undefined,
+  isLicensed: boolean,
+): T | undefined {
+  if (!templates || templates.length === 0) return undefined;
+
+  const licensedTemplate = templates.find((t) =>
+    t.name.toLowerCase().includes("licensed agent"),
+  );
+  const nonLicensedTemplate = templates.find((t) =>
+    t.name.toLowerCase().includes("non-licensed"),
+  );
+  const preferred = isLicensed ? licensedTemplate : nonLicensedTemplate;
+  const flagged = templates.find((t) => t.is_default);
+
+  return preferred ?? flagged ?? templates[0];
+}
