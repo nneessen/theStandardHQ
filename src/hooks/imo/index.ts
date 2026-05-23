@@ -10,6 +10,7 @@ export {
   useImoById,
   useImoWithAgencies,
   useAllActiveImos,
+  useAllImos,
   useImoMetrics,
   useCreateImo,
   useUpdateImo,

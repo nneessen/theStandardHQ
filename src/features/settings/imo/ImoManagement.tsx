@@ -30,7 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  useAllActiveImos,
+  useAllImos,
   useCreateImo,
   useUpdateImo,
   useDeactivateImo,
@@ -40,7 +40,7 @@ import { ImoForm } from "./components/ImoForm";
 import type { Imo, CreateImoData, UpdateImoData } from "@/types/imo.types";
 
 export function ImoManagement() {
-  const { data: imos, isLoading } = useAllActiveImos();
+  const { data: imos, isLoading } = useAllImos();
   const createImo = useCreateImo();
   const updateImo = useUpdateImo();
   const deactivateImo = useDeactivateImo();

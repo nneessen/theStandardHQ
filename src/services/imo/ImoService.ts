@@ -129,10 +129,22 @@ class ImoService {
   }
 
   /**
-   * Get all active IMOs (super admin only)
+   * Get all active IMOs (super admin only in practice; RLS enforces).
+   * Use this for the sidebar IMO switcher where only usable IMOs belong.
    */
   async getAllActiveImos(): Promise<ImoRow[]> {
     return this.repo.findAllActive();
+  }
+
+  /**
+   * Get ALL IMOs including inactive ones (super admin only in practice;
+   * RLS restricts non-super-admins to their own row regardless).
+   * Use this for the IMO Management settings page so deactivated IMOs
+   * remain reachable for edit/reactivate. Otherwise an inactive row
+   * holding a unique code is invisible but still blocks code reuse.
+   */
+  async getAllImos(): Promise<ImoRow[]> {
+    return this.repo.findAll();
   }
 
   /**
@@ -140,9 +152,20 @@ class ImoService {
    */
   async createImo(data: CreateImoData): Promise<ImoRow> {
     try {
-      // Check if code is available
+      // Check if code is available. On collision, look up the conflicting
+      // IMO so the error message can tell the user WHICH IMO holds that code
+      // and whether it's active or inactive — otherwise an inactive ghost
+      // looks like "already exists but nowhere visible" to the user.
       const isAvailable = await this.repo.isCodeAvailable(data.code);
       if (!isAvailable) {
+        const conflicting = await this.repo.findByCode(data.code);
+        if (conflicting) {
+          const status = conflicting.is_active ? "active" : "inactive";
+          throw new Error(
+            `Code "${data.code}" is in use by IMO "${conflicting.name}" (${status}). ` +
+              `Reactivate it from Settings → IMOs or pick a different code.`,
+          );
+        }
         throw new Error(`IMO code "${data.code}" is already in use`);
       }
 

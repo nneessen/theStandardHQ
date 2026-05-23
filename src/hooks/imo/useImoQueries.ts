@@ -30,6 +30,10 @@ export const imoKeys = {
   all: ["imos"] as const,
   lists: () => [...imoKeys.all, "list"] as const,
   list: (filters?: object) => [...imoKeys.lists(), filters] as const,
+  // Distinct cache key for "all (active + inactive)" so the management page
+  // doesn't fight the sidebar's active-only cache.
+  allIncludingInactive: () =>
+    [...imoKeys.all, "list", "includingInactive"] as const,
   details: () => [...imoKeys.all, "detail"] as const,
   detail: (id: string) => [...imoKeys.details(), id] as const,
   myImo: () => [...imoKeys.all, "my"] as const,
@@ -171,6 +175,24 @@ export function useAllActiveImos(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: imoKeys.lists(),
     queryFn: () => imoService.getAllActiveImos(),
+    staleTime: 5 * 60 * 1000,
+    enabled: options?.enabled ?? true,
+  });
+}
+
+/**
+ * Get ALL IMOs (active + inactive). Intended for the IMO Management settings
+ * page so super-admins can see/edit/reactivate deactivated IMOs. Without this,
+ * an inactive IMO holding a unique code is invisible to the UI but still
+ * blocks code reuse on create.
+ *
+ * RLS restricts non-super-admins to their own IMO row regardless, so this
+ * does not widen visibility for them.
+ */
+export function useAllImos(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: imoKeys.allIncludingInactive(),
+    queryFn: () => imoService.getAllImos(),
     staleTime: 5 * 60 * 1000,
     enabled: options?.enabled ?? true,
   });
