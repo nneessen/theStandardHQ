@@ -86,7 +86,7 @@ export async function getProducts(
     query = query.in("product_type", coverage.productTypes);
   }
 
-  query = query.or(`imo_id.eq.${imoId},imo_id.is.null`);
+  query = query.eq("imo_id", imoId);
 
   const { data: products, error } = await query;
 

@@ -13,6 +13,10 @@ export {
   type FilterOptions,
 } from "./BaseRepository";
 export {
+  TenantScopedRepository,
+  type TenantScopedEntity,
+} from "./TenantScopedRepository";
+export {
   BaseService,
   type ServiceResponse,
   type ListResponse,

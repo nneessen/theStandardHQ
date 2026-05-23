@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "../../services/base/supabase";
+import { compGuideService } from "../../services/settings/comp-guide";
 
 interface CompGuideResult {
   commission_percentage: number;
-  bonus_percentage: number;
+  bonus_percentage: number | null;
 }
 
 export const useCompGuide = (
@@ -16,24 +16,11 @@ export const useCompGuide = (
     queryFn: async (): Promise<CompGuideResult | null> => {
       if (!productId || !contractLevel) return null;
 
-      const today = new Date().toISOString().split("T")[0];
-
-      let query = supabase
-        .from("comp_guide")
-        .select("commission_percentage, bonus_percentage")
-        .eq("product_id", productId)
-        .eq("contract_level", contractLevel)
-        .lte("effective_date", today)
-        .or(`expiration_date.is.null,expiration_date.gte.${today}`);
-
-      if (carrierId) {
-        query = query.eq("carrier_id", carrierId);
-      }
-
-      const { data, error } = await query
-        .order("effective_date", { ascending: false })
-        .limit(1)
-        .maybeSingle();
+      const { data, error } = await compGuideService.getCurrentRate({
+        productId,
+        contractLevel,
+        carrierId,
+      });
 
       if (error) {
         console.error("comp_guide query error:", error);

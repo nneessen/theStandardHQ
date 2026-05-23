@@ -100,86 +100,110 @@ serve(async (req) => {
     // Decrypt bot token
     const botToken = await decrypt(integration.bot_token_encrypted);
 
-    // Fetch channels from Slack API
-    const allChannels: SlackChannel[] = [];
-    let cursor: string | undefined;
+    // Slack's `conversations.list` requires `channels:read` for public and
+    // `groups:read` for private channels. If you pass `types=public_channel,
+    // private_channel` and lack EITHER scope, the whole call returns
+    // `missing_scope` — even for the channels you DO have scope for. To stay
+    // resilient against partial-scope installs (e.g. an older Slack app that
+    // never asked for `groups:read`), query the two types separately and
+    // treat each as best-effort.
+    async function fetchAllChannels(
+      channelType: "public_channel" | "private_channel",
+    ): Promise<{
+      channels: SlackChannel[];
+      fatalError?: SlackChannelsResponse["error"];
+    }> {
+      const out: SlackChannel[] = [];
+      let cursor: string | undefined;
+      do {
+        const params = new URLSearchParams({
+          types: channelType,
+          exclude_archived: "true",
+          limit: "200",
+        });
+        if (cursor) params.set("cursor", cursor);
 
-    do {
-      const params = new URLSearchParams({
-        types: "public_channel,private_channel",
-        exclude_archived: "true",
-        limit: "200",
-      });
-
-      if (cursor) {
-        params.set("cursor", cursor);
-      }
-
-      const response = await fetch(
-        `https://slack.com/api/conversations.list?${params}`,
-        {
-          headers: {
-            Authorization: `Bearer ${botToken}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      const data: SlackChannelsResponse = await response.json();
-
-      if (!data.ok) {
-        console.error("[slack-list-channels] Slack API error:", data.error);
-
-        // Update integration status if token is invalid
-        if (data.error === "token_revoked" || data.error === "invalid_auth") {
-          await supabase
-            .from("slack_integrations")
-            .update({
-              connection_status: "error",
-              last_error: data.error,
-            })
-            .eq("id", integration.id);
-        }
-
-        // Map common Slack errors to user-friendly messages
-        let userMessage = data.error || "Failed to list channels";
-        if (data.error === "missing_scope") {
-          userMessage =
-            "The Slack app is missing required permissions. Please reinstall the app with 'channels:read' and 'groups:read' scopes.";
-        } else if (
-          data.error === "token_revoked" ||
-          data.error === "invalid_auth"
-        ) {
-          userMessage =
-            "Slack connection expired. Please reconnect in Settings.";
-        } else if (data.error === "not_authed") {
-          userMessage =
-            "Slack authentication failed. Please reconnect in Settings.";
-        }
-
-        // Return 200 with ok:false so client can handle gracefully
-        return new Response(
-          JSON.stringify({
-            ok: false,
-            error: userMessage,
-            slackError: data.error,
-          }),
+        const res = await fetch(
+          `https://slack.com/api/conversations.list?${params}`,
           {
-            status: 200,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            headers: {
+              Authorization: `Bearer ${botToken}`,
+              "Content-Type": "application/json",
+            },
           },
         );
+        const data: SlackChannelsResponse = await res.json();
+
+        if (!data.ok) {
+          // missing_scope on the private-channel call is expected for
+          // narrow-scope installs and is NOT fatal — just return empty so the
+          // caller can still serve public channels. Auth/token errors ARE
+          // fatal.
+          if (data.error === "missing_scope") {
+            console.warn(
+              `[slack-list-channels] ${channelType} list returned missing_scope; skipping`,
+            );
+            return { channels: out };
+          }
+          return { channels: out, fatalError: data.error };
+        }
+        if (data.channels) out.push(...data.channels);
+        cursor = data.response_metadata?.next_cursor;
+      } while (cursor);
+      return { channels: out };
+    }
+
+    const publicResult = await fetchAllChannels("public_channel");
+
+    if (publicResult.fatalError) {
+      const errCode = publicResult.fatalError;
+      console.error("[slack-list-channels] Slack API error:", errCode);
+
+      if (errCode === "token_revoked" || errCode === "invalid_auth") {
+        await supabase
+          .from("slack_integrations")
+          .update({
+            connection_status: "error",
+            last_error: errCode,
+          })
+          .eq("id", integration.id);
       }
 
-      if (data.channels) {
-        allChannels.push(...data.channels);
+      let userMessage = errCode || "Failed to list channels";
+      if (errCode === "missing_scope") {
+        userMessage =
+          "The Slack app is missing the 'channels:read' permission. Please reconnect Slack in Settings.";
+      } else if (errCode === "token_revoked" || errCode === "invalid_auth") {
+        userMessage = "Slack connection expired. Please reconnect in Settings.";
+      } else if (errCode === "not_authed") {
+        userMessage =
+          "Slack authentication failed. Please reconnect in Settings.";
       }
 
-      cursor = data.response_metadata?.next_cursor;
-    } while (cursor);
+      return new Response(
+        JSON.stringify({ ok: false, error: userMessage, slackError: errCode }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const privateResult = await fetchAllChannels("private_channel");
+    if (privateResult.fatalError) {
+      console.warn(
+        "[slack-list-channels] private_channel fetch non-fatal error:",
+        privateResult.fatalError,
+      );
+    }
+
+    const allChannels: SlackChannel[] = [
+      ...publicResult.channels,
+      ...privateResult.channels,
+    ];
 
     console.log(
-      `[slack-list-channels] Found ${allChannels.length} channels for integration ${integrationId || imoId}`,
+      `[slack-list-channels] Found ${allChannels.length} channels (${publicResult.channels.length} public, ${privateResult.channels.length} private) for integration ${integrationId || imoId}`,
     );
 
     return new Response(

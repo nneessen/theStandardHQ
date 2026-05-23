@@ -29,6 +29,8 @@ import {
   useCheckEmailExists,
 } from "../hooks/useRecruitMutations";
 import { useAuth } from "@/contexts/AuthContext";
+import { useImo } from "@/contexts/ImoContext";
+import { useAllActiveImos } from "@/hooks/imo";
 import { Loader2, UserPlus } from "lucide-react";
 import { UserSearchCombobox } from "@/components/shared/user-search-combobox";
 import type { AgentStatus, LicensingInfo } from "@/types/recruiting.types";
@@ -125,6 +127,11 @@ export function AddRecruitDialog({
   onSuccess,
 }: AddRecruitDialogProps) {
   const { user } = useAuth();
+  const { effectiveImoId, actingImoId, imo: contextImo } = useImo();
+  const { data: allImos } = useAllActiveImos({ enabled: !!actingImoId });
+  const actingImoName = actingImoId
+    ? (allImos?.find((i) => i.id === actingImoId)?.name ?? actingImoId)
+    : null;
   const { canAny, isAdmin } = usePermissionCheck();
   const createRecruitMutation = useCreateRecruit();
   const checkEmailMutation = useCheckEmailExists();
@@ -196,12 +203,19 @@ export function AddRecruitDialog({
           }
         : undefined;
 
+      // When acting as a foreign IMO, the user's home agency_id belongs to a
+      // different IMO. Passing it would trip the user_profile IMO-consistency
+      // trigger (`user_profile IMO must match agency IMO`). Omit agency in that
+      // case so the recruit lands at the IMO root, unassigned to an agency.
+      const isActingForeignImo = !!actingImoId && actingImoId !== user.imo_id;
       const assignmentFields = buildRecruitCreateAssignmentFields({
         canManageUsers,
         currentUserId: user.id,
         selectedUplineId: value.upline_id,
-        imoId: user.imo_id ?? undefined,
-        agencyId: user.agency_id ?? undefined,
+        imoId: effectiveImoId ?? undefined,
+        agencyId: isActingForeignImo
+          ? undefined
+          : (user.agency_id ?? undefined),
       });
 
       const recruit = await createRecruitMutation.mutateAsync({
@@ -265,6 +279,24 @@ export function AddRecruitDialog({
             Enter recruit details to begin onboarding. Only basic info required
             initially.
           </DialogDescription>
+          {actingImoName ? (
+            <div className="mt-2 px-2 py-1.5 rounded border border-amber-500/40 bg-amber-500/10 text-[11px] text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+              <span className="font-semibold uppercase tracking-wider text-[9px]">
+                Acting as
+              </span>
+              <span className="font-medium">{actingImoName}</span>
+              <span className="ml-auto text-[10px] opacity-70">
+                Recruit will be assigned to this IMO
+              </span>
+            </div>
+          ) : contextImo ? (
+            <div className="mt-2 px-2 py-1.5 rounded border border-border bg-muted/30 text-[10px] text-muted-foreground flex items-center gap-1.5">
+              <span>Assigning to:</span>
+              <span className="font-medium text-foreground">
+                {contextImo.name}
+              </span>
+            </div>
+          ) : null}
         </DialogHeader>
 
         <form

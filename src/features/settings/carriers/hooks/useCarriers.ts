@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { carrierService, type Carrier } from "@/services/settings/carriers";
 import { type NewCarrierForm } from "@/types/carrier.types";
+import { useImo } from "@/contexts/ImoContext";
 import { toast } from "sonner";
 
 // Re-export the Carrier type for convenience
@@ -24,8 +25,10 @@ export interface UpdateCarrierData {
   advance_cap?: number | null;
 }
 
-export function useCarriers() {
+export function useCarriers(imoId?: string, options?: { enabled?: boolean }) {
   const queryClient = useQueryClient();
+  const { imo } = useImo();
+  const queryImoId = imoId ?? imo?.id;
 
   // Fetch all carriers
   const {
@@ -33,12 +36,15 @@ export function useCarriers() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["carriers"],
+    queryKey: ["carriers", queryImoId ?? "default"],
     queryFn: async () => {
-      const result = await carrierService.getAll();
+      const result = imoId
+        ? await carrierService.getAllForImo(imoId)
+        : await carrierService.getAll();
       if (!result.success) throw new Error(result.error?.message);
       return (result.data || []) as Carrier[];
     },
+    enabled: options?.enabled ?? true,
   });
 
   // Create carrier mutation

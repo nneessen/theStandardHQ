@@ -24,6 +24,7 @@ interface ProductBulkImportProps {
   onOpenChange: (open: boolean) => void;
   onImport: (products: ProductFormData[]) => void;
   isImporting?: boolean;
+  imoId?: string;
 }
 
 export function ProductBulkImport({
@@ -31,8 +32,9 @@ export function ProductBulkImport({
   onOpenChange,
   onImport,
   isImporting = false,
+  imoId,
 }: ProductBulkImportProps) {
-  const { carriers } = useCarriers();
+  const { carriers } = useCarriers(imoId, { enabled: !!imoId || open });
   const [csvText, setCsvText] = useState("");
   const [error, setError] = useState("");
 
@@ -98,6 +100,7 @@ SBLI,Universal Life,universal_life`;
           name: productName,
           product_type: productType,
           is_active: true,
+          imo_id: imoId,
         });
       }
 

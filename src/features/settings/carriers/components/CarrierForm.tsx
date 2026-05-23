@@ -59,6 +59,8 @@ interface CarrierFormProps {
   carrier?: Carrier | null;
   onSubmit: (data: CarrierFormValues) => void;
   isSubmitting?: boolean;
+  defaultImoId?: string;
+  onImoChange?: (imoId: string) => void;
 }
 
 export function CarrierForm({
@@ -67,6 +69,8 @@ export function CarrierForm({
   carrier,
   onSubmit,
   isSubmitting = false,
+  defaultImoId,
+  onImoChange,
 }: CarrierFormProps) {
   const { isSuperAdmin, imo } = useImo();
   const { data: allImos = [] } = useAllActiveImos({ enabled: isSuperAdmin });
@@ -97,14 +101,22 @@ export function CarrierForm({
         name: "",
         code: undefined,
         is_active: true,
-        // Default to user's IMO for new carriers
-        imo_id: imo?.id || undefined,
+        // Default to the selected Settings IMO first, then user's IMO.
+        imo_id: defaultImoId || imo?.id || undefined,
         advance_cap: undefined,
       });
     }
-  }, [carrier, open, form, imo?.id]);
+  }, [carrier, open, form, defaultImoId, imo?.id]);
 
   const handleSubmit = (data: CarrierFormValues) => {
+    if (isSuperAdmin && !data.imo_id) {
+      form.setError("imo_id", {
+        type: "required",
+        message: "IMO is required",
+      });
+      return;
+    }
+
     onSubmit(data);
   };
 
@@ -186,7 +198,10 @@ export function CarrierForm({
                       IMO *
                     </FormLabel>
                     <Select
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        onImoChange?.(value);
+                      }}
                       value={field.value || ""}
                     >
                       <FormControl>

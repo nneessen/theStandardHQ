@@ -76,7 +76,7 @@ export interface CarrierStats {
 
 // NOTE: is this normal to hardcode these carriers in this const? should this not be coming from the actual database table from carriers?
 export const DEFAULT_CARRIERS: Array<
-  Omit<Carrier, "id" | "created_at" | "updated_at">
+  Omit<Carrier, "id" | "created_at" | "updated_at" | "imo_id">
 > = [
   {
     name: "United Home Life",
@@ -84,7 +84,6 @@ export const DEFAULT_CARRIERS: Array<
     is_active: true,
     commission_structure: null,
     contact_info: null,
-    imo_id: null,
     advance_cap: null,
     contracting_metadata: null,
   },
@@ -94,7 +93,6 @@ export const DEFAULT_CARRIERS: Array<
     is_active: true,
     commission_structure: null,
     contact_info: null,
-    imo_id: null,
     advance_cap: null,
     contracting_metadata: null,
   },
@@ -104,7 +102,6 @@ export const DEFAULT_CARRIERS: Array<
     is_active: true,
     commission_structure: null,
     contact_info: null,
-    imo_id: null,
     advance_cap: null,
     contracting_metadata: null,
   },
@@ -114,7 +111,6 @@ export const DEFAULT_CARRIERS: Array<
     is_active: true,
     commission_structure: null,
     contact_info: null,
-    imo_id: null,
     advance_cap: null,
     contracting_metadata: null,
   },
@@ -124,7 +120,6 @@ export const DEFAULT_CARRIERS: Array<
     is_active: true,
     commission_structure: null,
     contact_info: null,
-    imo_id: null,
     advance_cap: null,
     contracting_metadata: null,
   },
@@ -134,7 +129,6 @@ export const DEFAULT_CARRIERS: Array<
     is_active: true,
     commission_structure: null,
     contact_info: null,
-    imo_id: null,
     advance_cap: null,
     contracting_metadata: null,
   },
@@ -144,7 +138,6 @@ export const DEFAULT_CARRIERS: Array<
     is_active: true,
     commission_structure: null,
     contact_info: null,
-    imo_id: null,
     advance_cap: null,
     contracting_metadata: null,
   },
@@ -154,7 +147,6 @@ export const DEFAULT_CARRIERS: Array<
     is_active: true,
     commission_structure: null,
     contact_info: null,
-    imo_id: null,
     advance_cap: null,
     contracting_metadata: null,
   },
@@ -164,7 +156,6 @@ export const DEFAULT_CARRIERS: Array<
     is_active: true,
     commission_structure: null,
     contact_info: null,
-    imo_id: null,
     advance_cap: null,
     contracting_metadata: null,
   },
@@ -174,7 +165,6 @@ export const DEFAULT_CARRIERS: Array<
     is_active: true,
     commission_structure: null,
     contact_info: null,
-    imo_id: null,
     advance_cap: null,
     contracting_metadata: null,
   },
@@ -184,7 +174,6 @@ export const DEFAULT_CARRIERS: Array<
     is_active: true,
     commission_structure: null,
     contact_info: null,
-    imo_id: null,
     advance_cap: null,
     contracting_metadata: null,
   },

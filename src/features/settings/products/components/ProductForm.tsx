@@ -101,6 +101,8 @@ interface ProductFormProps {
   product?: Product | null;
   onSubmit: (data: ProductFormValues) => void;
   isSubmitting?: boolean;
+  defaultImoId?: string;
+  onImoChange?: (imoId: string) => void;
 }
 
 export function ProductForm({
@@ -109,8 +111,9 @@ export function ProductForm({
   product,
   onSubmit,
   isSubmitting = false,
+  defaultImoId,
+  onImoChange,
 }: ProductFormProps) {
-  const { carriers } = useCarriers();
   const { isSuperAdmin, imo } = useImo();
   const { data: allImos = [] } = useAllActiveImos({ enabled: isSuperAdmin });
   const [carrierSearchOpen, setCarrierSearchOpen] = useState(false);
@@ -130,6 +133,13 @@ export function ProductForm({
       build_chart_id: null,
       metadata: null,
     },
+  });
+
+  const formImoId = form.watch("imo_id");
+  const effectiveImoId =
+    product?.imo_id || formImoId || defaultImoId || imo?.id;
+  const { carriers } = useCarriers(effectiveImoId, {
+    enabled: !isSuperAdmin || !!effectiveImoId,
   });
 
   // Reset form when product changes or dialog opens/closes
@@ -167,15 +177,29 @@ export function ProductForm({
         name: "",
         product_type: "term_life",
         is_active: true,
-        // Default to user's IMO for new products
-        imo_id: imo?.id || undefined,
+        // Default to the selected Settings IMO first, then user's IMO.
+        imo_id: defaultImoId || imo?.id || undefined,
         build_chart_id: null,
         metadata: null,
       });
     }
-  }, [product, open, form, imo?.id]);
+  }, [product, open, form, defaultImoId, imo?.id]);
+
+  useEffect(() => {
+    if (!product) {
+      form.setValue("carrier_id", "");
+    }
+  }, [effectiveImoId, form, product]);
 
   const handleSubmit = (data: ProductFormValues) => {
+    if (isSuperAdmin && !data.imo_id) {
+      form.setError("imo_id", {
+        type: "required",
+        message: "IMO is required",
+      });
+      return;
+    }
+
     // Merge underwriting constraints and term modifiers into metadata
     const hasConstraints =
       underwritingConstraints &&
@@ -201,7 +225,11 @@ export function ProductForm({
       }
     }
 
-    onSubmit({ ...data, metadata });
+    onSubmit({
+      ...data,
+      metadata,
+      imo_id: data.imo_id || effectiveImoId,
+    });
   };
 
   const selectedCarrier = carriers.find(
@@ -370,7 +398,10 @@ export function ProductForm({
                             IMO *
                           </FormLabel>
                           <Select
-                            onValueChange={field.onChange}
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                              onImoChange?.(value);
+                            }}
                             value={field.value || ""}
                           >
                             <FormControl>
@@ -513,7 +544,7 @@ export function ProductForm({
               <Button
                 type="submit"
                 size="sm"
-                disabled={isSubmitting}
+                disabled={isSubmitting || (isSuperAdmin && !effectiveImoId)}
                 className="h-7 px-2 text-[10px]"
               >
                 {isSubmitting

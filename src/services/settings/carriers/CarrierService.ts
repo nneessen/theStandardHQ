@@ -5,13 +5,14 @@ import type {
   Carrier,
   NewCarrierForm,
   CarrierContactInfo,
-  CarrierRow,
+  CarrierInsert,
+  CarrierUpdate,
 } from "@/types/carrier.types";
 import type { Json } from "@/types/database.types";
 
 type CarrierEntity = Carrier;
-type CarrierCreateData = Omit<CarrierRow, "id" | "created_at" | "updated_at">;
-type CarrierUpdateData = Partial<CarrierRow>;
+type CarrierCreateData = CarrierInsert;
+type CarrierUpdateData = CarrierUpdate;
 
 /**
  * Service for carrier business logic
@@ -127,7 +128,7 @@ export class CarrierService extends BaseService<
       is_active: data.is_active ?? true,
       contact_info: (data.contact_info || null) as Json,
       commission_structure: null, // Always null on creation
-      imo_id: data.imo_id || null,
+      imo_id: data.imo_id || undefined,
       advance_cap: data.advance_cap ?? null,
       contracting_metadata: null, // Always null on creation
     };
@@ -166,7 +167,7 @@ export class CarrierService extends BaseService<
     }
     // Include imo_id if present in data (even if null/undefined to allow clearing)
     if ("imo_id" in data) {
-      repositoryData.imo_id = data.imo_id || null;
+      repositoryData.imo_id = data.imo_id || undefined;
     }
     // Include advance_cap if present in data (even if null/undefined to allow clearing)
     if ("advance_cap" in data) {
@@ -195,7 +196,7 @@ export class CarrierService extends BaseService<
       is_active: data.is_active ?? true,
       contact_info: (data.contact_info || null) as Json,
       commission_structure: null,
-      imo_id: data.imo_id || null,
+      imo_id: data.imo_id || undefined,
       advance_cap: data.advance_cap ?? null,
       contracting_metadata: null,
     }));
@@ -255,6 +256,26 @@ export class CarrierService extends BaseService<
     try {
       const repo = this.repository as CarrierRepository;
       const carriers = await repo.findActive();
+      return { success: true, data: carriers };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error : new Error(String(error)),
+      };
+    }
+  }
+
+  /**
+   * Get carriers for an explicit IMO. Used by super-admin settings views so
+   * tenant selection is deliberate instead of relying on a user default IMO.
+   */
+  async getAllForImo(imoId: string): Promise<ServiceResponse<CarrierEntity[]>> {
+    try {
+      const repo = this.repository as CarrierRepository;
+      const carriers = await repo.findAllByTenant(imoId, {
+        orderBy: "name",
+        orderDirection: "asc",
+      });
       return { success: true, data: carriers };
     } catch (error) {
       return {

@@ -30,6 +30,7 @@ import { supabase } from "@/services/base/supabase";
 import type {
   Agency,
   CreateAgencyData,
+  Imo,
   UpdateAgencyData,
 } from "@/types/imo.types";
 
@@ -43,6 +44,10 @@ interface AgencyFormProps {
     options?: { cascadeDownlines?: boolean },
   ) => Promise<void>;
   isSubmitting: boolean;
+  isSuperAdmin?: boolean;
+  availableImos?: Imo[];
+  selectedImoId?: string;
+  onImoChange?: (imoId: string) => void;
 }
 
 interface FormData {
@@ -74,26 +79,31 @@ export function AgencyForm({
   imoId,
   onSubmit,
   isSubmitting,
+  isSuperAdmin = false,
+  availableImos = [],
+  selectedImoId,
+  onImoChange,
 }: AgencyFormProps) {
   const isEditing = !!agency;
+  const targetImoId = selectedImoId ?? imoId;
 
   // State for cascade option (only for new agencies)
   const [cascadeDownlines, setCascadeDownlines] = useState(false);
 
   // Fetch potential owners (agents in the same IMO)
   const { data: potentialOwners = [] } = useQuery({
-    queryKey: ["potential-agency-owners", imoId],
+    queryKey: ["potential-agency-owners", targetImoId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("user_profiles")
         .select("id, email, first_name, last_name")
-        .eq("imo_id", imoId)
+        .eq("imo_id", targetImoId)
         .eq("approval_status", "approved")
         .order("first_name");
       if (error) throw error;
       return (data ?? []) as PotentialOwner[];
     },
-    enabled: !!imoId && open,
+    enabled: !!targetImoId && open,
   });
 
   const {
@@ -173,7 +183,18 @@ export function AgencyForm({
     setCascadeDownlines(false);
   }, [watchedOwnerId]);
 
+  // Owner options are tenant-scoped; avoid retaining an owner from another IMO.
+  useEffect(() => {
+    if (!isEditing) {
+      setValue("owner_id", "");
+    }
+  }, [isEditing, setValue, targetImoId]);
+
   const onFormSubmit = async (data: FormData) => {
+    if (!isEditing && !targetImoId) {
+      return;
+    }
+
     const submitData: CreateAgencyData | UpdateAgencyData = {
       name: data.name,
       code: data.code,
@@ -189,7 +210,7 @@ export function AgencyForm({
     };
 
     if (!isEditing) {
-      (submitData as CreateAgencyData).imo_id = imoId;
+      (submitData as CreateAgencyData).imo_id = targetImoId;
     }
 
     if (isEditing) {
@@ -224,6 +245,34 @@ export function AgencyForm({
             <h4 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
               Basic Information
             </h4>
+
+            {!isEditing && isSuperAdmin && (
+              <div className="space-y-1">
+                <Label className="text-[11px]">IMO *</Label>
+                <Select
+                  value={targetImoId || ""}
+                  onValueChange={(value) => onImoChange?.(value)}
+                >
+                  <SelectTrigger className="h-7 text-[11px]">
+                    <SelectValue placeholder="Select IMO" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableImos.map((imoOption) => (
+                      <SelectItem
+                        key={imoOption.id}
+                        value={imoOption.id}
+                        className="text-[11px]"
+                      >
+                        {imoOption.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-muted-foreground">
+                  Agency ownership and owner options are scoped to this IMO
+                </p>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -506,7 +555,7 @@ export function AgencyForm({
               type="submit"
               size="sm"
               className="h-7 text-[11px]"
-              disabled={isSubmitting}
+              disabled={isSubmitting || (!isEditing && !targetImoId)}
             >
               {isSubmitting && (
                 <Loader2 className="h-3 w-3 mr-1 animate-spin" />

@@ -125,12 +125,15 @@ serve(async (req) => {
     }
 
     // Server-side feature access check — mirrors frontend useFeatureAccess logic:
-    // 1. Super admin bypass (owner email)
+    // 1. Super admin bypass (DB flag, not email — survives email changes)
     // 2. Subscription plan feature check
     // 3. Owner-downline access (direct downlines get team-tier features)
-    const SUPER_ADMIN_EMAIL = "nickneessen@thestandardhq.com";
-    const userEmail = user.email?.toLowerCase() ?? "";
-    const isSuperAdmin = userEmail === SUPER_ADMIN_EMAIL.toLowerCase();
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("is_super_admin")
+      .eq("id", user.id)
+      .maybeSingle();
+    const isSuperAdmin = profile?.is_super_admin === true;
 
     if (!isSuperAdmin) {
       const { data: hasFeature } = await supabase.rpc("user_has_feature", {

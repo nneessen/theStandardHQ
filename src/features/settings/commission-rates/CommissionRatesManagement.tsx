@@ -66,12 +66,15 @@ export function CommissionRatesManagement() {
   // Set default IMO on mount
   useEffect(() => {
     if (isSuperAdmin) {
-      // Default to FFG for super admins
-      setFilterImoId(FFG_IMO_ID);
+      const defaultImoId =
+        allImos.find((imoOption) => imoOption.id === FFG_IMO_ID)?.id ??
+        allImos[0]?.id ??
+        "";
+      setFilterImoId(defaultImoId);
     } else if (imo?.id) {
       setFilterImoId(imo.id);
     }
-  }, [isSuperAdmin, imo?.id]);
+  }, [allImos, isSuperAdmin, imo?.id]);
 
   const {
     productsWithRates,
@@ -80,10 +83,17 @@ export function CommissionRatesManagement() {
     updateRate,
     deleteRate,
     getProductRates,
-  } = useCommissionRates({ imoId: filterImoId || undefined });
+  } = useCommissionRates({
+    imoId: filterImoId || undefined,
+    enabled: !!filterImoId,
+  });
 
-  const { carriers } = useCarriers();
-  const { products } = useProducts();
+  const { carriers } = useCarriers(filterImoId || undefined, {
+    enabled: !!filterImoId,
+  });
+  const { products } = useProducts(filterImoId || undefined, {
+    enabled: !!filterImoId,
+  });
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCarrierId, setFilterCarrierId] = useState("");
@@ -340,15 +350,11 @@ export function CommissionRatesManagement() {
           <div className="flex gap-2 flex-wrap">
             {/* IMO Filter - Only for super admins */}
             {isSuperAdmin && allImos.length > 0 && (
-              <Select
-                value={filterImoId || "all"}
-                onValueChange={(v) => setFilterImoId(v === "all" ? "" : v)}
-              >
+              <Select value={filterImoId} onValueChange={setFilterImoId}>
                 <SelectTrigger className="w-48 h-7 text-[11px] bg-card border-border">
-                  <SelectValue placeholder="All IMOs" />
+                  <SelectValue placeholder="Select IMO" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All IMOs</SelectItem>
                   {allImos.map((imoOption) => (
                     <SelectItem key={imoOption.id} value={imoOption.id}>
                       {imoOption.name}

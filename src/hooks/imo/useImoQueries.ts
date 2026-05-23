@@ -75,7 +75,8 @@ export const imoKeys = {
 export const agencyKeys = {
   all: ["agencies"] as const,
   lists: () => [...agencyKeys.all, "list"] as const,
-  listByImo: (imoId: string) => [...agencyKeys.lists(), { imoId }] as const,
+  listByImo: (imoId: string | undefined) =>
+    [...agencyKeys.lists(), { imoId: imoId ?? "none" }] as const,
   details: () => [...agencyKeys.all, "detail"] as const,
   detail: (id: string) => [...agencyKeys.details(), id] as const,
   myAgency: () => [...agencyKeys.all, "my"] as const,
@@ -274,11 +275,12 @@ export function useAgencyWithOwner(agencyId: string | undefined) {
 /**
  * Get all agencies in the current user's IMO
  */
-export function useMyImoAgencies() {
+export function useMyImoAgencies(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: agencyKeys.myImoAgencies(),
     queryFn: () => agencyService.getAgenciesInMyImo(),
     staleTime: 5 * 60 * 1000,
+    enabled: options?.enabled ?? true,
   });
 }
 
@@ -296,11 +298,14 @@ export function useAllActiveAgencies() {
 /**
  * Get agencies in a specific IMO
  */
-export function useAgenciesByImo(imoId: string | undefined) {
+export function useAgenciesByImo(
+  imoId: string | undefined,
+  options?: { enabled?: boolean },
+) {
   return useQuery({
-    queryKey: agencyKeys.listByImo(imoId!),
+    queryKey: agencyKeys.listByImo(imoId),
     queryFn: () => agencyService.getAgenciesByImo(imoId!),
-    enabled: !!imoId,
+    enabled: !!imoId && (options?.enabled ?? true),
     staleTime: 5 * 60 * 1000,
   });
 }

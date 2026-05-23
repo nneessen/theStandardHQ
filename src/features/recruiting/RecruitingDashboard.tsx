@@ -29,6 +29,7 @@ import { SendInviteDialog } from "./components/SendInviteDialog";
 import { RecruitingErrorBoundary } from "./components/RecruitingErrorBoundary";
 import type { UserProfile } from "@/types/hierarchy.types";
 import { useAuth } from "@/contexts/AuthContext";
+import { useImo } from "@/contexts/ImoContext";
 import { STAFF_ONLY_ROLES } from "@/constants/roles";
 import type { RecruitFilters } from "@/types/recruiting.types";
 import { toast } from "sonner";
@@ -58,6 +59,7 @@ type RecruitWithRelations = UserProfile & {
 
 function RecruitingDashboardContent() {
   const { user } = useAuth();
+  const { effectiveImoId } = useImo();
   const [hideProspects, setHideProspects] = useState(true);
 
   const isStaffRole =
@@ -69,8 +71,9 @@ function RecruitingDashboardContent() {
 
   const recruitFilters: RecruitFilters | undefined = (() => {
     if (!user?.id) return undefined;
-    if (isStaffRole && user.imo_id) {
-      return { imo_id: user.imo_id, exclude_prospects: hideProspects };
+    const filterImoId = effectiveImoId ?? user.imo_id;
+    if (isStaffRole && filterImoId) {
+      return { imo_id: filterImoId, exclude_prospects: hideProspects };
     }
     return { my_recruits_user_id: user.id, exclude_prospects: hideProspects };
   })();

@@ -2408,7 +2408,7 @@ export type Database = {
           created_at: string | null;
           earned_amount: number;
           id: string;
-          imo_id: string | null;
+          imo_id: string;
           last_payment_date: string | null;
           month_number: number | null;
           months_paid: number;
@@ -2434,7 +2434,7 @@ export type Database = {
           created_at?: string | null;
           earned_amount?: number;
           id?: string;
-          imo_id?: string | null;
+          imo_id: string;
           last_payment_date?: string | null;
           month_number?: number | null;
           months_paid?: number;
@@ -2460,7 +2460,7 @@ export type Database = {
           created_at?: string | null;
           earned_amount?: number;
           id?: string;
-          imo_id?: string | null;
+          imo_id?: string;
           last_payment_date?: string | null;
           month_number?: number | null;
           months_paid?: number;
@@ -6748,7 +6748,7 @@ export type Database = {
           effective_date: string;
           expiration_date: string | null;
           id: string;
-          imo_id: string | null;
+          imo_id: string;
           lead_purchase_id: string | null;
           lead_source_type:
             | Database["public"]["Enums"]["lead_source_type"]
@@ -6781,7 +6781,7 @@ export type Database = {
           effective_date: string;
           expiration_date?: string | null;
           id?: string;
-          imo_id?: string | null;
+          imo_id: string;
           lead_purchase_id?: string | null;
           lead_source_type?:
             | Database["public"]["Enums"]["lead_source_type"]
@@ -6814,7 +6814,7 @@ export type Database = {
           effective_date?: string;
           expiration_date?: string | null;
           id?: string;
-          imo_id?: string | null;
+          imo_id?: string;
           lead_purchase_id?: string | null;
           lead_source_type?:
             | Database["public"]["Enums"]["lead_source_type"]
@@ -7634,6 +7634,7 @@ export type Database = {
           expires_at: string;
           first_name: string | null;
           id: string;
+          imo_id: string;
           invite_token: string;
           inviter_id: string;
           last_name: string | null;
@@ -7657,6 +7658,7 @@ export type Database = {
           expires_at?: string;
           first_name?: string | null;
           id?: string;
+          imo_id: string;
           invite_token?: string;
           inviter_id: string;
           last_name?: string | null;
@@ -7680,6 +7682,7 @@ export type Database = {
           expires_at?: string;
           first_name?: string | null;
           id?: string;
+          imo_id?: string;
           invite_token?: string;
           inviter_id?: string;
           last_name?: string | null;
@@ -7696,6 +7699,13 @@ export type Database = {
           viewed_at?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "recruit_invitations_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "recruit_invitations_inviter_id_fkey";
             columns: ["inviter_id"];
@@ -13025,7 +13035,7 @@ export type Database = {
           hierarchy_depth: number | null;
           hierarchy_path: string | null;
           id: string;
-          imo_id: string | null;
+          imo_id: string;
           instagram_url: string | null;
           instagram_username: string | null;
           is_admin: boolean;
@@ -13081,7 +13091,7 @@ export type Database = {
           hierarchy_depth?: number | null;
           hierarchy_path?: string | null;
           id?: string;
-          imo_id?: string | null;
+          imo_id: string;
           instagram_url?: string | null;
           instagram_username?: string | null;
           is_admin?: boolean;
@@ -13137,7 +13147,7 @@ export type Database = {
           hierarchy_depth?: number | null;
           hierarchy_path?: string | null;
           id?: string;
-          imo_id?: string | null;
+          imo_id?: string;
           instagram_url?: string | null;
           instagram_username?: string | null;
           is_admin?: boolean;

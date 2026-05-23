@@ -1,9 +1,16 @@
 // src/features/settings/carriers/CarriersManagement.tsx
 // Redesigned with zinc palette and compact design patterns
 
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -20,17 +27,37 @@ import { CarrierForm } from "./components/CarrierForm";
 import { CarrierDeleteDialog } from "./components/CarrierDeleteDialog";
 import { BuildTableEditor } from "./components/BuildTableEditor";
 import { NewCarrierForm } from "../../../types/carrier.types";
+import { useAllActiveImos, useImo } from "@/hooks/imo";
 
 export function CarriersManagement() {
+  const { imo, isSuperAdmin } = useImo();
+  const { data: allImos = [] } = useAllActiveImos({ enabled: isSuperAdmin });
+  const [selectedImoId, setSelectedImoId] = useState<string | undefined>(
+    imo?.id,
+  );
+  const targetImoId = isSuperAdmin ? selectedImoId : undefined;
   const { carriers, isLoading, createCarrier, updateCarrier, deleteCarrier } =
-    useCarriers();
-  const { products } = useProducts();
+    useCarriers(targetImoId, { enabled: !isSuperAdmin || !!targetImoId });
+  const { products } = useProducts(targetImoId, {
+    enabled: !isSuperAdmin || !!targetImoId,
+  });
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isBuildTableOpen, setIsBuildTableOpen] = useState(false);
   const [selectedCarrier, setSelectedCarrier] = useState<Carrier | null>(null);
+
+  useEffect(() => {
+    if (!isSuperAdmin) {
+      setSelectedImoId(imo?.id);
+      return;
+    }
+
+    if (selectedImoId) return;
+
+    setSelectedImoId(imo?.id ?? allImos[0]?.id);
+  }, [allImos, imo?.id, isSuperAdmin, selectedImoId]);
 
   // Filter carriers based on search
   let filteredCarriers = carriers;
@@ -82,7 +109,10 @@ export function CarriersManagement() {
     if (selectedCarrier) {
       await updateCarrier.mutateAsync({ id: selectedCarrier.id, data });
     } else {
-      await createCarrier.mutateAsync(data);
+      await createCarrier.mutateAsync({
+        ...data,
+        imo_id: isSuperAdmin ? (data.imo_id ?? targetImoId) : data.imo_id,
+      });
     }
     setIsFormOpen(false);
     setSelectedCarrier(null);
@@ -126,6 +156,7 @@ export function CarriersManagement() {
             size="sm"
             className="h-6 px-2 text-[10px]"
             onClick={handleAddCarrier}
+            disabled={isSuperAdmin && !targetImoId}
           >
             <Plus className="h-3 w-3 mr-1" />
             New Carrier
@@ -134,15 +165,39 @@ export function CarriersManagement() {
 
         <div className="p-3 space-y-2">
           {/* Search */}
-          <div className="relative w-64">
-            <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-v2-ink-subtle" />
-            <Input
-              type="text"
-              placeholder="Search carriers..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-7 h-7 text-[11px] bg-v2-card border-v2-ring"
-            />
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative w-64">
+              <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-v2-ink-subtle" />
+              <Input
+                type="text"
+                placeholder="Search carriers..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-7 h-7 text-[11px] bg-v2-card border-v2-ring"
+              />
+            </div>
+
+            {isSuperAdmin && (
+              <Select
+                value={selectedImoId ?? ""}
+                onValueChange={setSelectedImoId}
+              >
+                <SelectTrigger className="h-7 w-56 text-[11px] bg-v2-card border-v2-ring">
+                  <SelectValue placeholder="Select IMO" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allImos.map((imoOption) => (
+                    <SelectItem
+                      key={imoOption.id}
+                      value={imoOption.id}
+                      className="text-[11px]"
+                    >
+                      {imoOption.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           {/* Table */}
@@ -255,6 +310,8 @@ export function CarriersManagement() {
         carrier={selectedCarrier}
         onSubmit={handleFormSubmit}
         isSubmitting={createCarrier.isPending || updateCarrier.isPending}
+        defaultImoId={targetImoId}
+        onImoChange={setSelectedImoId}
       />
 
       {/* Delete Dialog */}

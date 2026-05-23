@@ -18,10 +18,8 @@ import {
   X,
   Shield,
   ClipboardList,
-  GraduationCap,
   Lock,
   Mail,
-  FileCheck,
   Workflow,
   ShieldCheck,
   Calculator,
@@ -34,9 +32,7 @@ import {
   PhoneCall,
   Network,
   Sparkles,
-  Compass,
   Zap,
-  Library,
 } from "lucide-react";
 import { CloseCrmIcon } from "@/components/icons/CloseCrmIcon";
 import { SupportDialog } from "./SupportDialog";
@@ -64,6 +60,7 @@ import type { RoleName } from "@/types/permissions.types";
 import { NotificationDropdown } from "@/components/notifications";
 import { toast } from "sonner";
 import { useImo } from "@/contexts/ImoContext";
+import { useAllActiveImos } from "@/hooks/imo/useImoQueries";
 import { useTemporaryAccessCheck } from "@/hooks/subscription";
 import { useUnderwritingFeatureFlag } from "@/features/underwriting";
 import { useCanManageUnderwriting } from "@/features/underwriting/hooks/wizard/useUnderwritingFeatureFlag";
@@ -147,7 +144,18 @@ export default function Sidebar({
   const { isDirectDownlineOfOwner, isLoading: downlineLoading } =
     useOwnerDownlineAccess();
   const { data: userRoles } = useUserRoles();
-  const { imo, agency, loading: imoLoading, error: imoError } = useImo();
+  const {
+    imo,
+    agency,
+    loading: imoLoading,
+    error: imoError,
+    isSuperAdmin: isSuperAdminFromImo,
+    actingImoId,
+    setActingImoId,
+  } = useImo();
+  const { data: allImos } = useAllActiveImos({
+    enabled: isSuperAdminFromImo,
+  });
   const { isEnabled: isUnderwritingEnabled, isLoading: isUnderwritingLoading } =
     useUnderwritingFeatureFlag();
   const { canManage: canManageUnderwriting } = useCanManageUnderwriting();
@@ -282,12 +290,12 @@ export default function Sidebar({
           permission: "nav.team_dashboard",
           subscriptionFeature: "hierarchy",
         },
-        {
-          icon: Users,
-          label: "Writing Numbers",
-          href: "/the-standard-team",
-          public: true,
-        },
+        // {
+        //   icon: Users,
+        //   label: "Writing Numbers",
+        //   href: "/the-standard-team",
+        //   public: true,
+        // },
       ],
     },
     {
@@ -429,30 +437,29 @@ export default function Sidebar({
         },
       ] as NavItem[],
     },
-    {
-      id: "training",
-      label: "Training",
-      items: [
-        {
-          icon: GraduationCap,
-          label: "My Training",
-          href: "/my-training",
-          subscriptionFeature: "training",
-        },
-        {
-          icon: Library,
-          label: "UW Guides",
-          href: "/underwriting/guides",
-          public: true,
-        },
-        {
-          icon: Compass,
-          label: "Agent Roadmap",
-          href: "/agent-roadmap",
-          public: true,
-        },
-      ],
-    },
+
+    //   label: "Training",
+    //   items: [
+    //     {
+    //       icon: GraduationCap,
+    //       label: "My Training",
+    //       href: "/my-training",
+    //       subscriptionFeature: "training",
+    //     },
+    //     {
+    //       icon: Library,
+    //       label: "UW Guides",
+    //       href: "/underwriting/guides",
+    //       public: true,
+    //     },
+    //     {
+    //       icon: Compass,
+    //       label: "Agent Roadmap",
+    //       href: "/agent-roadmap",
+    //       public: true,
+    //     },
+    //   ],
+    // },
     {
       id: "admin",
       label: "Admin",
@@ -499,30 +506,30 @@ export default function Sidebar({
         },
       ],
     },
-    {
-      id: "staff-work",
-      label: "Work",
-      items: [
-        {
-          icon: GraduationCap,
-          label: "Training Hub",
-          href: "/training-hub",
-          public: true,
-        },
-        {
-          icon: UserPlus,
-          label: "Recruiting",
-          href: "/recruiting",
-          public: true,
-        },
-        {
-          icon: FileCheck,
-          label: "Contracting",
-          href: "/contracting",
-          public: true,
-        },
-      ],
-    },
+    // {
+    //   id: "staff-work",
+    //   label: "Work",
+    //   items: [
+    //     {
+    //       icon: GraduationCap,
+    //       label: "Training Hub",
+    //       href: "/training-hub",
+    //       public: true,
+    //     },
+    //     {
+    //       icon: UserPlus,
+    //       label: "Recruiting",
+    //       href: "/recruiting",
+    //       public: true,
+    //     },
+    //     {
+    //       icon: FileCheck,
+    //       label: "Contracting",
+    //       href: "/contracting",
+    //       public: true,
+    //     },
+    //   ],
+    // },
     {
       id: "staff-connect",
       label: "Connect",
@@ -921,6 +928,33 @@ export default function Sidebar({
                         <span className="opacity-50">&bull;</span>
                       )}
                       {agency && <span>{agency.code}</span>}
+                    </div>
+                  ) : null}
+                  {isSuperAdminFromImo && allImos && allImos.length > 0 ? (
+                    <div className="mt-1.5">
+                      <select
+                        value={actingImoId ?? ""}
+                        onChange={(e) => setActingImoId(e.target.value || null)}
+                        className={cn(
+                          "w-full text-[10px] px-1.5 py-0.5 rounded border bg-v2-card text-v2-ink-muted cursor-pointer",
+                          actingImoId
+                            ? "border-amber-500/50 bg-amber-500/10 text-amber-900 dark:text-amber-200 font-medium"
+                            : "border-v2-ring",
+                        )}
+                        title={
+                          actingImoId
+                            ? "Acting as another IMO — recruits and reads will be scoped to it"
+                            : "Acting as your own IMO"
+                        }
+                      >
+                        <option value="">— Own IMO —</option>
+                        {allImos.map((i) => (
+                          <option key={i.id} value={i.id}>
+                            {actingImoId === i.id ? "● " : ""}
+                            Act as {i.code || i.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   ) : null}
                 </div>

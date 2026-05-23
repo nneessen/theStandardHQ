@@ -123,7 +123,7 @@ export interface CreateUserProfileData {
   npn?: string | null;
   licensing_info?: Json | null;
   // Organization
-  imo_id?: string | null;
+  imo_id?: string;
   agency_id?: string | null;
   // Recruiting
   recruiter_slug?: string | null;

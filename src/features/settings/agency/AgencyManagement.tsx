@@ -1,10 +1,17 @@
 // src/features/settings/agency/AgencyManagement.tsx
 // Agency Management tab for IMO admins
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -32,6 +39,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  useAgenciesByImo,
+  useAllActiveImos,
   useMyImoAgencies,
   useCreateAgencyWithCascade,
   useUpdateAgency,
@@ -49,7 +58,26 @@ import type {
 
 export function AgencyManagement() {
   const { imo, isImoAdmin, isSuperAdmin } = useImo();
-  const { data: agencies, isLoading } = useMyImoAgencies();
+  const { data: allImos = [] } = useAllActiveImos({ enabled: isSuperAdmin });
+  const [selectedImoId, setSelectedImoId] = useState<string | undefined>(
+    imo?.id,
+  );
+  const targetImoId = isSuperAdmin ? selectedImoId : imo?.id;
+  const targetImoName =
+    allImos.find((imoOption) => imoOption.id === targetImoId)?.name ??
+    imo?.name ??
+    "selected IMO";
+
+  const myImoAgenciesQuery = useMyImoAgencies({ enabled: !isSuperAdmin });
+  const agenciesByImoQuery = useAgenciesByImo(targetImoId, {
+    enabled: isSuperAdmin && !!targetImoId,
+  });
+  const agencies = isSuperAdmin
+    ? agenciesByImoQuery.data
+    : myImoAgenciesQuery.data;
+  const isLoading = isSuperAdmin
+    ? agenciesByImoQuery.isLoading
+    : myImoAgenciesQuery.isLoading;
   const createAgencyWithCascade = useCreateAgencyWithCascade();
   const updateAgency = useUpdateAgency();
   const deleteAgency = useDeleteAgency();
@@ -60,6 +88,17 @@ export function AgencyManagement() {
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
 
   const canManage = isImoAdmin || isSuperAdmin;
+
+  useEffect(() => {
+    if (!isSuperAdmin) {
+      setSelectedImoId(imo?.id);
+      return;
+    }
+
+    if (selectedImoId) return;
+
+    setSelectedImoId(imo?.id ?? allImos[0]?.id);
+  }, [allImos, imo?.id, isSuperAdmin, selectedImoId]);
 
   // Filter agencies based on search
   const filteredAgencies = React.useMemo(() => {
@@ -132,14 +171,13 @@ export function AgencyManagement() {
         });
         toast.success("Agency updated successfully");
       } else {
-        // Add imo_id from current context
-        if (!imo?.id) {
+        if (!targetImoId) {
           toast.error("No IMO context available");
           return;
         }
         const createData = {
           ...data,
-          imo_id: imo.id,
+          imo_id: targetImoId,
         } as CreateAgencyData;
 
         // Use cascade-enabled mutation
@@ -176,7 +214,7 @@ export function AgencyManagement() {
     }
   };
 
-  if (!imo) {
+  if (!isSuperAdmin && !imo) {
     return (
       <div className="bg-card rounded-lg border border-border p-6">
         <div className="flex items-center justify-center text-[11px] text-muted-foreground">
@@ -208,7 +246,7 @@ export function AgencyManagement() {
                 Agency Management
               </h3>
               <p className="text-[10px] text-muted-foreground">
-                Manage agencies within {imo.name}
+                Manage agencies within {targetImoName}
               </p>
             </div>
           </div>
@@ -217,6 +255,7 @@ export function AgencyManagement() {
               size="sm"
               className="h-6 px-2 text-[10px]"
               onClick={handleAddAgency}
+              disabled={isSuperAdmin && !targetImoId}
             >
               <Plus className="h-3 w-3 mr-1" />
               New Agency
@@ -226,15 +265,39 @@ export function AgencyManagement() {
 
         <div className="p-3 space-y-2">
           {/* Search */}
-          <div className="relative w-64">
-            <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search agencies..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-7 h-7 text-[11px] bg-card border-border"
-            />
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative w-64">
+              <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search agencies..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-7 h-7 text-[11px] bg-card border-border"
+              />
+            </div>
+
+            {isSuperAdmin && (
+              <Select
+                value={selectedImoId ?? ""}
+                onValueChange={setSelectedImoId}
+              >
+                <SelectTrigger className="h-7 w-56 text-[11px] bg-card border-border">
+                  <SelectValue placeholder="Select IMO" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allImos.map((imoOption) => (
+                    <SelectItem
+                      key={imoOption.id}
+                      value={imoOption.id}
+                      className="text-[11px]"
+                    >
+                      {imoOption.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           {/* Table */}
@@ -300,7 +363,11 @@ export function AgencyManagement() {
           open={isFormOpen}
           onOpenChange={setIsFormOpen}
           agency={selectedAgency}
-          imoId={imo.id}
+          imoId={targetImoId ?? ""}
+          isSuperAdmin={isSuperAdmin}
+          availableImos={allImos}
+          selectedImoId={targetImoId}
+          onImoChange={setSelectedImoId}
           onSubmit={handleFormSubmit}
           isSubmitting={
             createAgencyWithCascade.isPending || updateAgency.isPending

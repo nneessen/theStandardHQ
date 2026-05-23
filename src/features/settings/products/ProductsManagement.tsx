@@ -1,7 +1,7 @@
 // src/features/settings/products/ProductsManagement.tsx
 // Redesigned with zinc palette and compact design patterns
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -36,8 +36,15 @@ import { useCarriers } from "../carriers/hooks/useCarriers";
 import { ProductForm } from "./components/ProductForm";
 import { ProductBulkImport } from "./components/ProductBulkImport";
 import type { Product, ProductFormData } from "@/types/product.types";
+import { useAllActiveImos, useImo } from "@/hooks/imo";
 
 export function ProductsManagement() {
+  const { imo, isSuperAdmin } = useImo();
+  const { data: allImos = [] } = useAllActiveImos({ enabled: isSuperAdmin });
+  const [selectedImoId, setSelectedImoId] = useState<string | undefined>(
+    imo?.id,
+  );
+  const targetImoId = isSuperAdmin ? selectedImoId : undefined;
   const {
     products,
     isLoading,
@@ -45,8 +52,10 @@ export function ProductsManagement() {
     updateProduct,
     deleteProduct,
     bulkImportProducts,
-  } = useProducts();
-  const { carriers } = useCarriers();
+  } = useProducts(targetImoId, { enabled: !isSuperAdmin || !!targetImoId });
+  const { carriers } = useCarriers(targetImoId, {
+    enabled: !isSuperAdmin || !!targetImoId,
+  });
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterCarrierId, setFilterCarrierId] = useState("");
@@ -54,6 +63,21 @@ export function ProductsManagement() {
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  useEffect(() => {
+    if (!isSuperAdmin) {
+      setSelectedImoId(imo?.id);
+      return;
+    }
+
+    if (selectedImoId) return;
+
+    setSelectedImoId(imo?.id ?? allImos[0]?.id);
+  }, [allImos, imo?.id, isSuperAdmin, selectedImoId]);
+
+  useEffect(() => {
+    setFilterCarrierId("");
+  }, [targetImoId]);
 
   // Filter products based on search and carrier filter
   let filteredProducts = products;
@@ -95,7 +119,10 @@ export function ProductsManagement() {
     if (selectedProduct) {
       await updateProduct.mutateAsync({ id: selectedProduct.id, data });
     } else {
-      await createProduct.mutateAsync(data);
+      await createProduct.mutateAsync({
+        ...data,
+        imo_id: isSuperAdmin ? (data.imo_id ?? targetImoId) : data.imo_id,
+      });
     }
     setIsFormOpen(false);
     setSelectedProduct(null);
@@ -110,7 +137,12 @@ export function ProductsManagement() {
   };
 
   const handleBulkImport = async (productsData: ProductFormData[]) => {
-    await bulkImportProducts.mutateAsync(productsData);
+    await bulkImportProducts.mutateAsync(
+      productsData.map((product) => ({
+        ...product,
+        imo_id: isSuperAdmin ? (product.imo_id ?? targetImoId) : product.imo_id,
+      })),
+    );
     setIsBulkImportOpen(false);
   };
 
@@ -146,6 +178,7 @@ export function ProductsManagement() {
               size="sm"
               className="h-6 px-2 text-[10px] border-border"
               onClick={() => setIsBulkImportOpen(true)}
+              disabled={isSuperAdmin && !targetImoId}
             >
               <Upload className="h-3 w-3 mr-1" />
               Bulk Import
@@ -154,6 +187,7 @@ export function ProductsManagement() {
               size="sm"
               className="h-6 px-2 text-[10px]"
               onClick={handleAddProduct}
+              disabled={isSuperAdmin && !targetImoId}
             >
               <Plus className="h-3 w-3 mr-1" />
               New Product
@@ -164,6 +198,23 @@ export function ProductsManagement() {
         <div className="p-3 space-y-2">
           {/* Filters */}
           <div className="flex gap-2">
+            {isSuperAdmin && (
+              <Select
+                value={selectedImoId ?? ""}
+                onValueChange={setSelectedImoId}
+              >
+                <SelectTrigger className="w-48 h-7 text-[11px] bg-card border-border">
+                  <SelectValue placeholder="Select IMO" />
+                </SelectTrigger>
+                <SelectContent>
+                  {allImos.map((imoOption) => (
+                    <SelectItem key={imoOption.id} value={imoOption.id}>
+                      {imoOption.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <div className="relative flex-1 max-w-xs">
               <Search className="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -295,6 +346,8 @@ export function ProductsManagement() {
         product={selectedProduct}
         onSubmit={handleFormSubmit}
         isSubmitting={createProduct.isPending || updateProduct.isPending}
+        defaultImoId={targetImoId}
+        onImoChange={setSelectedImoId}
       />
 
       {/* Bulk Import Dialog */}
@@ -303,6 +356,7 @@ export function ProductsManagement() {
         onOpenChange={setIsBulkImportOpen}
         onImport={handleBulkImport}
         isImporting={bulkImportProducts.isPending}
+        imoId={targetImoId}
       />
 
       {/* Delete Dialog */}

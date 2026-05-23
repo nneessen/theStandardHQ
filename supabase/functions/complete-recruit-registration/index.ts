@@ -168,7 +168,7 @@ serve(async (req) => {
 
     const { data: invitation, error: invitationError } = await supabaseAdmin
       .from("recruit_invitations")
-      .select("id, email, status, expires_at")
+      .select("id, email, status, expires_at, inviter_id, upline_id")
       .eq("invite_token", token)
       .maybeSingle();
 
@@ -242,6 +242,20 @@ serve(async (req) => {
       typeof formData.last_name === "string" ? formData.last_name.trim() : "";
     const fullName = `${firstName} ${lastName}`.trim();
 
+    // Look up the inviter's imo_id so handle_new_user can populate the new
+    // recruit's user_profiles.imo_id on the initial INSERT. Without this,
+    // enforce_user_profile_imo_consistency falls back to Founders — wrong for
+    // any recruit invited under a non-Founders IMO.
+    let inviterImoId: string | null = null;
+    if (invitation.inviter_id) {
+      const { data: inviterProfile } = await supabaseAdmin
+        .from("user_profiles")
+        .select("imo_id")
+        .eq("id", invitation.inviter_id)
+        .maybeSingle();
+      inviterImoId = inviterProfile?.imo_id ?? null;
+    }
+
     const { data: authData, error: authError } =
       await supabaseAdmin.auth.admin.createUser({
         email: normalizedEmail,
@@ -252,6 +266,11 @@ serve(async (req) => {
           roles: ["recruit"],
           is_admin: false,
           skip_pipeline: false,
+          ...(inviterImoId ? { imo_id: inviterImoId } : {}),
+          ...(invitation.inviter_id
+            ? { recruiter_id: invitation.inviter_id }
+            : {}),
+          ...(invitation.upline_id ? { upline_id: invitation.upline_id } : {}),
         },
       });
 

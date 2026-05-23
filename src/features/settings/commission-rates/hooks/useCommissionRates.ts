@@ -52,11 +52,12 @@ export const CONTRACT_LEVELS = Array.from({ length: 14 }, (_, i) => 80 + i * 5);
 
 interface UseCommissionRatesOptions {
   imoId?: string;
+  enabled?: boolean;
 }
 
 export function useCommissionRates(options: UseCommissionRatesOptions = {}) {
   const queryClient = useQueryClient();
-  const { imoId } = options;
+  const { imoId, enabled = true } = options;
 
   // Fetch all commission data in grid format
   const {
@@ -69,6 +70,7 @@ export function useCommissionRates(options: UseCommissionRatesOptions = {}) {
       const data = await compGuideService.getAllCommissionData(imoId);
       return data || [];
     },
+    enabled,
   });
 
   // Transform grid data to product-with-rates format

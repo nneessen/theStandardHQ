@@ -173,16 +173,49 @@ serve(async (req) => {
       slackPayload.thread_ts = threadTs;
     }
 
-    const response = await fetch("https://slack.com/api/chat.postMessage", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${botToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(slackPayload),
-    });
+    async function postMessage(): Promise<SlackPostMessageResponse> {
+      const res = await fetch("https://slack.com/api/chat.postMessage", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${botToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(slackPayload),
+      });
+      return res.json();
+    }
 
-    const data: SlackPostMessageResponse = await response.json();
+    let data: SlackPostMessageResponse = await postMessage();
+
+    // Self-heal: bot is not a member of this (public) channel yet. Try to
+    // join, then retry the post once. Mirrors the pattern in
+    // slack-policy-notification. `conversations.join` only works for public
+    // channels — private channels require a human invite.
+    if (!data.ok && data.error === "not_in_channel") {
+      console.log(
+        `[slack-send-message] not_in_channel for ${channelId}; attempting conversations.join`,
+      );
+      const joinRes = await fetch("https://slack.com/api/conversations.join", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${botToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ channel: channelId }),
+      });
+      const joinData: { ok: boolean; error?: string } = await joinRes.json();
+      if (joinData.ok) {
+        console.log(
+          `[slack-send-message] joined ${channelId}; retrying chat.postMessage`,
+        );
+        data = await postMessage();
+      } else {
+        console.error(
+          `[slack-send-message] conversations.join failed for ${channelId}:`,
+          joinData.error,
+        );
+      }
+    }
 
     // Update message record with result
     if (messageRecord) {

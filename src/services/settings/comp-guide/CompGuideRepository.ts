@@ -1,5 +1,8 @@
 // src/services/settings/comp-guide/CompGuideRepository.ts
-import { BaseRepository, BaseEntity } from "../../base/BaseRepository";
+import {
+  TenantScopedRepository,
+  type TenantScopedEntity,
+} from "../../base/TenantScopedRepository";
 import type { Database } from "@/types/database.types";
 
 type CompGuideRow = Database["public"]["Tables"]["comp_guide"]["Row"];
@@ -18,7 +21,7 @@ export interface CompGuideEntry {
   expiration_date: string | null;
   minimum_premium: number | null;
   maximum_premium: number | null;
-  imo_id: string | null;
+  imo_id: string;
   created_at: string | null;
   updated_at: string | null;
   // Joined data from carrier relation (optional)
@@ -42,13 +45,13 @@ export interface CompGuideFormData {
   maximum_premium?: number;
 }
 
-type CompGuideBaseEntity = CompGuideEntry & BaseEntity;
+type CompGuideBaseEntity = CompGuideEntry & TenantScopedEntity;
 
 /**
  * Repository for comp_guide data access
  * Extends BaseRepository for standard CRUD operations
  */
-export class CompGuideRepository extends BaseRepository<
+export class CompGuideRepository extends TenantScopedRepository<
   CompGuideBaseEntity,
   CompGuideFormData,
   Partial<CompGuideFormData>
@@ -78,6 +81,7 @@ export class CompGuideRepository extends BaseRepository<
       expiration_date: row.expiration_date,
       minimum_premium: row.minimum_premium,
       maximum_premium: row.maximum_premium,
+      imo_id: row.imo_id,
       created_at: row.created_at,
       updated_at: row.updated_at,
       carriers: row.carriers,
@@ -124,6 +128,7 @@ export class CompGuideRepository extends BaseRepository<
    * Find all entries with carrier details
    */
   async findAllWithCarrier(): Promise<CompGuideBaseEntity[]> {
+    const { imo_id } = await this.getTenantFilter();
     const { data, error } = await this.client
       .from(this.tableName)
       .select(
@@ -136,6 +141,7 @@ export class CompGuideRepository extends BaseRepository<
         )
       `,
       )
+      .eq("imo_id", imo_id as string)
       .order("contract_level", { ascending: true });
 
     if (error) {
@@ -178,9 +184,11 @@ export class CompGuideRepository extends BaseRepository<
    * Find entries by carrier
    */
   async findByCarrier(carrierId: string): Promise<CompGuideBaseEntity[]> {
+    const { imo_id } = await this.getTenantFilter();
     const { data, error } = await this.client
       .from(this.tableName)
       .select("*")
+      .eq("imo_id", imo_id as string)
       .eq("carrier_id", carrierId)
       .order("contract_level", { ascending: true });
 
@@ -195,9 +203,11 @@ export class CompGuideRepository extends BaseRepository<
    * Find entries by product
    */
   async findByProduct(productId: string): Promise<CompGuideBaseEntity[]> {
+    const { imo_id } = await this.getTenantFilter();
     const { data, error } = await this.client
       .from(this.tableName)
       .select("*")
+      .eq("imo_id", imo_id as string)
       .eq("product_id", productId)
       .order("contract_level", { ascending: true });
 
@@ -213,6 +223,7 @@ export class CompGuideRepository extends BaseRepository<
    */
   async findActive(): Promise<CompGuideBaseEntity[]> {
     const today = new Date().toISOString().split("T")[0];
+    const { imo_id } = await this.getTenantFilter();
 
     const { data, error } = await this.client
       .from(this.tableName)
@@ -226,6 +237,7 @@ export class CompGuideRepository extends BaseRepository<
         )
       `,
       )
+      .eq("imo_id", imo_id as string)
       .lte("effective_date", today)
       .or(`expiration_date.is.null,expiration_date.gte.${today}`)
       .order("contract_level", { ascending: true });
@@ -241,6 +253,7 @@ export class CompGuideRepository extends BaseRepository<
    * Search entries by contract level
    */
   async search(query: string): Promise<CompGuideBaseEntity[]> {
+    const { imo_id } = await this.getTenantFilter();
     const { data, error } = await this.client
       .from(this.tableName)
       .select(
@@ -253,6 +266,7 @@ export class CompGuideRepository extends BaseRepository<
         )
       `,
       )
+      .eq("imo_id", imo_id as string)
       .or(`contract_level::text.ilike.%${query}%`)
       .order("contract_level", { ascending: true });
 
@@ -267,9 +281,15 @@ export class CompGuideRepository extends BaseRepository<
    * Bulk create entries
    */
   async bulkCreate(entries: CompGuideInsert[]): Promise<CompGuideBaseEntity[]> {
+    const tenantId = await this.getDefaultTenantId();
     const { data, error } = await this.client
       .from(this.tableName)
-      .insert(entries)
+      .insert(
+        entries.map((entry) => ({
+          ...entry,
+          imo_id: entry.imo_id ?? tenantId,
+        })),
+      )
       .select();
 
     if (error) {
@@ -287,9 +307,11 @@ export class CompGuideRepository extends BaseRepository<
     productType: Database["public"]["Enums"]["product_type"],
     contractLevel: number,
   ): Promise<number | null> {
+    const { imo_id } = await this.getTenantFilter();
     const { data, error } = await this.client
       .from(this.tableName)
       .select("commission_percentage")
+      .eq("imo_id", imo_id as string)
       .eq("carrier_id", carrierId)
       .eq("product_type", productType)
       .eq("contract_level", contractLevel)
@@ -312,10 +334,12 @@ export class CompGuideRepository extends BaseRepository<
     contractLevel: number,
   ): Promise<number | null> {
     const today = new Date().toISOString().split("T")[0];
+    const { imo_id } = await this.getTenantFilter();
 
     const { data, error } = await this.client
       .from(this.tableName)
       .select("commission_percentage")
+      .eq("imo_id", imo_id as string)
       .eq("product_id", productId)
       .eq("contract_level", contractLevel)
       .lte("effective_date", today)
@@ -329,5 +353,75 @@ export class CompGuideRepository extends BaseRepository<
     }
 
     return data?.commission_percentage || null;
+  }
+
+  async getCurrentRate(
+    productId: string,
+    contractLevel: number,
+    carrierId?: string,
+  ): Promise<{
+    commission_percentage: number;
+    bonus_percentage: number | null;
+  } | null> {
+    const today = new Date().toISOString().split("T")[0];
+    const { imo_id } = await this.getTenantFilter();
+
+    let query = this.client
+      .from(this.tableName)
+      .select("commission_percentage, bonus_percentage")
+      .eq("imo_id", imo_id as string)
+      .eq("product_id", productId)
+      .eq("contract_level", contractLevel)
+      .lte("effective_date", today)
+      .or(`expiration_date.is.null,expiration_date.gte.${today}`);
+
+    if (carrierId) {
+      query = query.eq("carrier_id", carrierId);
+    }
+
+    const { data, error } = await query
+      .order("effective_date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      throw this.handleError(error, "getCurrentRate");
+    }
+
+    return data;
+  }
+
+  async getCurrentRatesForProducts(
+    productIds: string[],
+    contractLevel: number,
+  ): Promise<
+    Array<{
+      product_id: string;
+      commission_percentage: number;
+      effective_date: string;
+    }>
+  > {
+    if (productIds.length === 0) {
+      return [];
+    }
+
+    const today = new Date().toISOString().split("T")[0];
+    const { imo_id } = await this.getTenantFilter();
+
+    const { data, error } = await this.client
+      .from(this.tableName)
+      .select("product_id, commission_percentage, effective_date")
+      .eq("imo_id", imo_id as string)
+      .in("product_id", productIds)
+      .eq("contract_level", contractLevel)
+      .lte("effective_date", today)
+      .or(`expiration_date.is.null,expiration_date.gte.${today}`)
+      .order("effective_date", { ascending: false });
+
+    if (error) {
+      throw this.handleError(error, "getCurrentRatesForProducts");
+    }
+
+    return data || [];
   }
 }

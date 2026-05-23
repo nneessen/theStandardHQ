@@ -169,8 +169,10 @@ async function sendAdminNotification(
     if (!MAILGUN_API_KEY || !MAILGUN_DOMAIN) return;
 
     const form = new FormData();
+    const ADMIN_ALERT_EMAIL =
+      Deno.env.get("ADMIN_ALERT_EMAIL") ?? "nickneessen@thestandardhq.com";
     form.append("from", `CommissionTracker Alerts <alerts@${MAILGUN_DOMAIN}>`);
-    form.append("to", "nickneessen@thestandardhq.com");
+    form.append("to", ADMIN_ALERT_EMAIL);
     form.append("subject", subject);
     form.append("text", body);
 

@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../../../services/base/supabase";
 import { useCompGuide } from "../../../hooks/comps";
+import { compGuideService } from "../../../services/settings/comp-guide";
 import {
   type TermCommissionModifiers,
   type TermLength,
   type ProductMetadata,
 } from "../../../types/product.types";
-import { formatDateForDB } from "../../../lib/date";
 
 export interface Product {
   id: string;
@@ -115,18 +115,14 @@ export function usePolicyCommission({
       if (products.length === 0) return;
 
       setIsLoading(true);
-      const today = formatDateForDB(new Date());
       const productIds = products.map((p) => p.id);
 
-      // Batch query: fetch all comp_guide entries for these products at once
-      const { data: compGuideData, error } = await supabase
-        .from("comp_guide")
-        .select("product_id, commission_percentage, effective_date")
-        .in("product_id", productIds)
-        .eq("contract_level", userContractLevel)
-        .lte("effective_date", today)
-        .or(`expiration_date.is.null,expiration_date.gte.${today}`)
-        .order("effective_date", { ascending: false });
+      // Batch query through the settings service so rates stay IMO-scoped.
+      const { data: compGuideData, error } =
+        await compGuideService.getCurrentRatesForProducts(
+          productIds,
+          userContractLevel,
+        );
 
       if (error) {
         console.error(

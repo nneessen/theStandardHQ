@@ -9,9 +9,11 @@ import React, {
   useCallback,
   useRef,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "./AuthContext";
 import { imoService } from "../services/imo";
 import { agencyService } from "../services/agency";
+import { supabase } from "../services/base";
 import { logger } from "../services/base/logger";
 import type { Imo, Agency, ImoContextType } from "../types/imo.types";
 import { hasImoAdminRole, hasImoOwnerRole } from "../types/imo.types";
@@ -32,8 +34,13 @@ const DEFAULT_IMO_CONTEXT: ImoContextType = {
   isSuperAdmin: false,
   loading: true,
   error: null,
+  actingImoId: null,
+  setActingImoId: () => {},
+  effectiveImoId: null,
   refetch: async () => {},
 };
+
+const ACTING_IMO_STORAGE_KEY = "acting-imo-id";
 
 /**
  * Hook to access IMO context
@@ -69,6 +76,7 @@ interface ImoProviderProps {
  */
 export const ImoProvider: React.FC<ImoProviderProps> = ({ children }) => {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   // Use ref to track current user for race condition prevention
   const userRef = useRef(user);
@@ -81,6 +89,13 @@ export const ImoProvider: React.FC<ImoProviderProps> = ({ children }) => {
   const [agency, setAgency] = useState<Agency | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [actingImoId, setActingImoIdState] = useState<string | null>(() => {
+    try {
+      return sessionStorage.getItem(ACTING_IMO_STORAGE_KEY);
+    } catch {
+      return null;
+    }
+  });
 
   // Fetch IMO and Agency data
   const fetchImoData = useCallback(async () => {
@@ -166,6 +181,117 @@ export const ImoProvider: React.FC<ImoProviderProps> = ({ children }) => {
   const isAgencyOwner = agency?.owner_id === user?.id;
   const isSuperAdmin = user?.is_super_admin === true;
 
+  // Super-admin-only acting IMO setter. Non-super-admins cannot bypass tenant.
+  // The acting_imo_id is written to auth.users.raw_user_meta_data via
+  // supabase.auth.updateUser — the SQL helper get_effective_imo_id() reads it
+  // directly via SECURITY DEFINER, so RLS scoping takes effect on the next
+  // query. No JWT refresh is needed.
+  const setActingImoId = useCallback(
+    async (imoId: string | null) => {
+      if (!isSuperAdmin) {
+        logger.warn(
+          "Non-super-admin attempted to set actingImoId; ignored",
+          { userId: user?.id },
+          "ImoContext",
+        );
+        return;
+      }
+      setActingImoIdState(imoId);
+      try {
+        if (imoId) {
+          sessionStorage.setItem(ACTING_IMO_STORAGE_KEY, imoId);
+        } else {
+          sessionStorage.removeItem(ACTING_IMO_STORAGE_KEY);
+        }
+      } catch {
+        // sessionStorage unavailable (private mode, etc.) — in-memory still works
+      }
+      // Persist acting_imo_id into auth.users.raw_user_meta_data so RLS sees
+      // it. Must complete BEFORE we invalidate queries — otherwise the
+      // refetches would race against the metadata write and see stale scope.
+      try {
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: { acting_imo_id: imoId },
+        });
+        if (updateError) {
+          logger.error(
+            "Failed to persist acting_imo_id to auth.users",
+            updateError,
+            "ImoContext",
+          );
+          // Don't bail — local state is set so the UI reflects the switch
+          // even if the server-side metadata write failed. The user will see
+          // stale data and can retry.
+        }
+      } catch (err) {
+        logger.error(
+          "auth.updateUser threw",
+          err instanceof Error ? err : { error: String(err) },
+          "ImoContext",
+        );
+      }
+      // Tenant context changed — every scoped query is potentially looking at
+      // the wrong IMO now. Broad invalidation is correct here: enumerating keys
+      // risks missing one and silently showing cross-tenant data.
+      queryClient.invalidateQueries();
+    },
+    [isSuperAdmin, user?.id, queryClient],
+  );
+
+  // If the user is not a super-admin but a stale acting IMO sits in storage,
+  // clear it so it never silently affects a non-super-admin session.
+  useEffect(() => {
+    if (!isSuperAdmin && actingImoId !== null) {
+      setActingImoIdState(null);
+      try {
+        sessionStorage.removeItem(ACTING_IMO_STORAGE_KEY);
+      } catch {
+        // ignore
+      }
+    }
+  }, [isSuperAdmin, actingImoId]);
+
+  // On mount / when user changes, sync auth.users.raw_user_meta_data.acting_imo_id
+  // to match this tab's sessionStorage. Without this, a previous tab's acting
+  // value persists in the DB and silently scopes a new tab whose UI shows
+  // "Own IMO". This makes acting tab-scoped: each new session starts fresh
+  // (or restored from sessionStorage on a same-tab reload).
+  useEffect(() => {
+    if (!isSuperAdmin || !user?.id) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { error: syncError } = await supabase.auth.updateUser({
+          data: { acting_imo_id: actingImoId },
+        });
+        if (syncError && !cancelled) {
+          logger.warn(
+            "Failed to sync acting_imo_id to auth.users on mount",
+            { error: syncError.message },
+            "ImoContext",
+          );
+        }
+      } catch (err) {
+        if (!cancelled) {
+          logger.warn(
+            "auth.updateUser sync-on-mount threw",
+            { error: err instanceof Error ? err.message : String(err) },
+            "ImoContext",
+          );
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Only re-sync when the user identity changes — actingImoId changes are
+    // handled by setActingImoId, which writes to auth.users directly.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, isSuperAdmin]);
+
+  const effectiveImoId =
+    (isSuperAdmin ? actingImoId : null) ?? user?.imo_id ?? null;
+
   // Context value
   const value: ImoContextType = {
     imo,
@@ -176,6 +302,9 @@ export const ImoProvider: React.FC<ImoProviderProps> = ({ children }) => {
     isSuperAdmin,
     loading,
     error,
+    actingImoId: isSuperAdmin ? actingImoId : null,
+    setActingImoId,
+    effectiveImoId,
     refetch: fetchImoData,
   };
 

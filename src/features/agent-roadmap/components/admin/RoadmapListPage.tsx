@@ -88,7 +88,7 @@ import type { RoadmapTemplateRow } from "../../types/roadmap";
 export function RoadmapListPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { agency } = useImo();
+  const { agency, effectiveImoId } = useImo();
 
   const agencyId = agency?.id ?? null;
   const { data: roadmaps, isLoading } = useRoadmapList(agencyId);
@@ -152,7 +152,7 @@ export function RoadmapListPage() {
           agency_id: agencyId,
           title: newTitle.trim(),
           description: newDescription.trim() || null,
-          imo_id: user.imo_id ?? null,
+          imo_id: effectiveImoId ?? null,
         },
         createdBy: user.id,
       },

@@ -4,6 +4,7 @@ import { logger } from "../../services/base/logger";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { carrierService } from "../../services/settings/carriers";
 import { NewCarrierForm } from "../../types/carrier.types";
+import { useImo } from "../../contexts/ImoContext";
 
 // Query keys for React Query cache management
 export const carrierQueryKeys = {
@@ -24,6 +25,7 @@ export function useCarriers(options?: {
   staleTime?: number;
   refetchOnWindowFocus?: boolean;
 }) {
+  const { imo } = useImo();
   const {
     enabled = true,
     staleTime = 5 * 60 * 1000, // 5 minutes
@@ -31,7 +33,7 @@ export function useCarriers(options?: {
   } = options || {};
 
   return useQuery({
-    queryKey: carrierQueryKeys.list(),
+    queryKey: [...carrierQueryKeys.list(), imo?.id ?? "no-imo"],
     queryFn: async () => {
       const result = await carrierService.getAll();
       if (result.success && result.data) {
@@ -78,10 +80,11 @@ export function useActiveCarriers(options?: {
   enabled?: boolean;
   staleTime?: number;
 }) {
+  const { imo } = useImo();
   const { enabled = true, staleTime = 5 * 60 * 1000 } = options || {};
 
   return useQuery({
-    queryKey: carrierQueryKeys.active(),
+    queryKey: [...carrierQueryKeys.active(), imo?.id ?? "no-imo"],
     queryFn: async () => {
       const result = await carrierService.getActive();
       if (result.success && result.data) {
@@ -106,13 +109,14 @@ export function useSearchCarriers(
     staleTime?: number;
   },
 ) {
+  const { imo } = useImo();
   const {
     enabled = true,
     staleTime = 30 * 1000, // 30 seconds for search results
   } = options || {};
 
   return useQuery({
-    queryKey: carrierQueryKeys.search(searchTerm),
+    queryKey: [...carrierQueryKeys.search(searchTerm), imo?.id ?? "no-imo"],
     queryFn: async () => {
       if (!searchTerm.trim()) {
         return [];

@@ -1,13 +1,20 @@
 // src/services/settings/carriers/CarrierRepository.ts
-import { BaseRepository, type BaseEntity } from "../../base/BaseRepository";
-import type { Carrier, CarrierRow } from "@/types/carrier.types";
+import {
+  TenantScopedRepository,
+  type TenantScopedEntity,
+} from "../../base/TenantScopedRepository";
+import type {
+  Carrier,
+  CarrierInsert,
+  CarrierUpdate,
+} from "@/types/carrier.types";
 
-type CarrierBaseEntity = Carrier & BaseEntity;
+type CarrierBaseEntity = Carrier & TenantScopedEntity;
 
-export class CarrierRepository extends BaseRepository<
+export class CarrierRepository extends TenantScopedRepository<
   CarrierBaseEntity,
-  Omit<CarrierRow, "id" | "created_at" | "updated_at">,
-  Partial<CarrierRow>
+  CarrierInsert,
+  CarrierUpdate
 > {
   constructor() {
     super("carriers");
@@ -32,9 +39,7 @@ export class CarrierRepository extends BaseRepository<
   }
 
   protected transformToDB(
-    data:
-      | Omit<CarrierRow, "id" | "created_at" | "updated_at">
-      | Partial<CarrierRow>,
+    data: CarrierInsert | CarrierUpdate,
   ): Record<string, unknown> {
     const dbData: Record<string, unknown> = {};
 
@@ -73,9 +78,11 @@ export class CarrierRepository extends BaseRepository<
    */
   async search(query: string): Promise<CarrierBaseEntity[]> {
     try {
+      const { imo_id } = await this.getTenantFilter();
       const { data, error } = await this.client
         .from(this.tableName)
         .select("*")
+        .eq("imo_id", imo_id as string)
         .or(`name.ilike.%${query}%,code.ilike.%${query}%`)
         .order("name", { ascending: true });
 
@@ -91,9 +98,11 @@ export class CarrierRepository extends BaseRepository<
    */
   async findActive(): Promise<CarrierBaseEntity[]> {
     try {
+      const { imo_id } = await this.getTenantFilter();
       const { data, error } = await this.client
         .from(this.tableName)
         .select("*")
+        .eq("imo_id", imo_id as string)
         .eq("is_active", true)
         .order("name", { ascending: true });
 
@@ -108,16 +117,6 @@ export class CarrierRepository extends BaseRepository<
    * Override findAll to always order by name
    */
   override async findAll(): Promise<CarrierBaseEntity[]> {
-    try {
-      const { data, error } = await this.client
-        .from(this.tableName)
-        .select("*")
-        .order("name", { ascending: true });
-
-      if (error) throw this.handleError(error, "findAll");
-      return data?.map((item) => this.transformFromDB(item)) || [];
-    } catch (error) {
-      throw this.wrapError(error, "findAll");
-    }
+    return super.findAll({ orderBy: "name", orderDirection: "asc" });
   }
 }

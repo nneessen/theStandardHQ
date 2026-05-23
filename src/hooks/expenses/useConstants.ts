@@ -1,6 +1,6 @@
 // src/hooks/expenses/useConstants.ts
-import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
-import {logger} from '../../services/base/logger';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { logger } from "../../services/base/logger";
 // Define Constants type locally since it's not exported from expense.types
 interface Constants {
   avgAP: number;
@@ -8,7 +8,8 @@ interface Constants {
   target2: number;
   [key: string]: number; // Allow indexing
 }
-import {constantsService} from '../../services';
+import { constantsService } from "../../services";
+import { useImo } from "../../contexts/ImoContext";
 
 const DEFAULT_CONSTANTS: Constants = {
   avgAP: 0,
@@ -23,14 +24,20 @@ export type UseConstantsResult = ReturnType<typeof useConstants>;
  * Returns standard TanStack Query result with data property
  */
 export function useConstants() {
+  const { imo } = useImo();
+
   return useQuery({
-    queryKey: ['constants'],
+    queryKey: ["constants", imo?.id ?? "no-imo"],
     queryFn: async () => {
       try {
         const data = await constantsService.getAll();
         return data;
       } catch (err) {
-        logger.error('Error loading constants', err instanceof Error ? err : String(err), 'Migration');
+        logger.error(
+          "Error loading constants",
+          err instanceof Error ? err : String(err),
+          "Migration",
+        );
         throw err;
       }
     },
@@ -44,9 +51,16 @@ export function useConstants() {
  */
 export function useUpdateConstant() {
   const queryClient = useQueryClient();
+  const { imo } = useImo();
 
   return useMutation({
-    mutationFn: async ({ field, value }: { field: keyof Constants; value: number }) => {
+    mutationFn: async ({
+      field,
+      value,
+    }: {
+      field: keyof Constants;
+      value: number;
+    }) => {
       // Validate value
       if (value < 0) {
         throw new Error(`${field} cannot be negative`);
@@ -57,16 +71,23 @@ export function useUpdateConstant() {
     },
     onSuccess: (data) => {
       // Optimistically update the cache
-      queryClient.setQueryData(['constants'], (old: Constants | undefined) => {
-        if (!old) return DEFAULT_CONSTANTS;
-        return {
-          ...old,
-          [data.field]: data.value,
-        };
-      });
+      queryClient.setQueryData(
+        ["constants", imo?.id ?? "no-imo"],
+        (old: Constants | undefined) => {
+          if (!old) return DEFAULT_CONSTANTS;
+          return {
+            ...old,
+            [data.field]: data.value,
+          };
+        },
+      );
     },
     onError: (err) => {
-      logger.error('Error updating constant', err instanceof Error ? err : String(err), 'Migration');
+      logger.error(
+        "Error updating constant",
+        err instanceof Error ? err : String(err),
+        "Migration",
+      );
     },
   });
 }
@@ -76,20 +97,28 @@ export function useUpdateConstant() {
  */
 export function useResetConstants() {
   const queryClient = useQueryClient();
+  const { imo } = useImo();
 
   return useMutation({
     mutationFn: async () => {
       const updatedConstants = await constantsService.updateMultiple(
-        Object.entries(DEFAULT_CONSTANTS).map(([key, value]) => ({ key: String(key), value }))
+        Object.entries(DEFAULT_CONSTANTS).map(([key, value]) => ({
+          key: String(key),
+          value,
+        })),
       );
       return updatedConstants;
     },
     onSuccess: (data) => {
       // Update the cache with the reset constants
-      queryClient.setQueryData(['constants'], data);
+      queryClient.setQueryData(["constants", imo?.id ?? "no-imo"], data);
     },
     onError: (err) => {
-      logger.error('Error resetting constants', err instanceof Error ? err : String(err), 'Migration');
+      logger.error(
+        "Error resetting constants",
+        err instanceof Error ? err : String(err),
+        "Migration",
+      );
     },
   });
 }

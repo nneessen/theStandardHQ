@@ -190,6 +190,26 @@ export class ProductService extends BaseService<
   }
 
   /**
+   * Get products for an explicit IMO. Used by super-admin settings views so
+   * product counts/options follow the selected tenant.
+   */
+  async getAllForImo(imoId: string): Promise<ServiceResponse<ProductEntity[]>> {
+    try {
+      const repo = this.repository as ProductRepository;
+      const products = await repo.findAllByTenant(imoId, {
+        orderBy: "name",
+        orderDirection: "asc",
+      });
+      return { success: true, data: products };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error : new Error(String(error)),
+      };
+    }
+  }
+
+  /**
    * Bulk create products with default is_active
    * @deprecated Use createMany() inherited from BaseService instead
    */

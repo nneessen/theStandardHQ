@@ -336,7 +336,7 @@ class UserService {
         resident_state: userData.resident_state || null,
         date_of_birth: userData.date_of_birth || null,
         npn: userData.npn || null,
-        imo_id: userData.imo_id || null,
+        imo_id: userData.imo_id || undefined,
         agency_id: userData.agency_id || null,
       };
 

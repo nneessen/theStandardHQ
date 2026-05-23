@@ -1,31 +1,26 @@
-import {useQuery} from '@tanstack/react-query';
-import {supabase} from '../../services/base/supabase';
-import {Product} from '../../types/product.types';
+import { useQuery } from "@tanstack/react-query";
+import { productService } from "../../services/settings/products";
+import { Product } from "../../types/product.types";
 
 /**
  * Hook to fetch products with optional filtering by carrier
  */
 export function useProducts(carrierId?: string) {
   return useQuery({
-    queryKey: ['products', carrierId],
+    queryKey: ["products", carrierId],
     queryFn: async () => {
-      let query = supabase
-        .from('products')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
-
-      if (carrierId) {
-        query = query.eq('carrier_id', carrierId);
+      if (!carrierId) {
+        return [];
       }
 
-      const { data, error } = await query;
-
-      if (error) {
-        throw error;
+      const result = await productService.getByCarrier(carrierId);
+      if (!result.success) {
+        throw result.error || new Error("Failed to fetch products");
       }
 
-      return (data || []) as Product[];
+      return ((result.data || []) as Product[]).filter(
+        (product) => product.is_active,
+      );
     },
     enabled: !!carrierId, // Only run query when carrierId is provided
     staleTime: 1000 * 60 * 15, // 15 minutes (products don't change often)
@@ -38,22 +33,18 @@ export function useProducts(carrierId?: string) {
  */
 export function useProductCommission(productId?: string) {
   return useQuery({
-    queryKey: ['product-commission', productId],
+    queryKey: ["product-commission", productId],
     queryFn: async () => {
       if (!productId) return null;
 
-      const { data, error } = await supabase
-        .from('products')
-        .select('commission_percentage')
-        .eq('id', productId)
-        .single();
-
-      if (error) {
-        if (error.code === 'PGRST116') return null;
-        throw error;
+      const result = await productService.getById(productId);
+      if (!result.success) {
+        return null;
       }
 
-      return data?.commission_percentage ? data.commission_percentage * 100 : null;
+      return result.data?.commission_percentage
+        ? result.data.commission_percentage * 100
+        : null;
     },
     enabled: !!productId,
     staleTime: 1000 * 60 * 30, // 30 minutes

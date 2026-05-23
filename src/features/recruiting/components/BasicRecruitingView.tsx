@@ -85,6 +85,7 @@ import {
 } from "../hooks";
 import { useResendInvite } from "../hooks/useAuthUser";
 import { useAuth } from "@/contexts/AuthContext";
+import { useImo } from "@/contexts/ImoContext";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -110,6 +111,7 @@ interface BasicRecruitingViewProps {
 
 export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
   const { user } = useAuth();
+  const { effectiveImoId } = useImo();
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [graduatingRecruit, setGraduatingRecruit] =
     useState<UserProfile | null>(null);
@@ -142,9 +144,10 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
   // Build filters based on user role
   const recruitFilters: RecruitFilters | undefined = (() => {
     if (!user?.id) return undefined;
+    const filterImoId = effectiveImoId ?? user.imo_id;
 
-    if (isStaffRole && user.imo_id) {
-      return { imo_id: user.imo_id, exclude_prospects: false };
+    if (isStaffRole && filterImoId) {
+      return { imo_id: filterImoId, exclude_prospects: false };
     }
 
     // Show all recruits where user is recruiter OR upline (including prospects)

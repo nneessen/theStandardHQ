@@ -357,6 +357,7 @@ class CompGuideServiceClass extends BaseService<
         .from("carriers")
         .select("id")
         .eq("name", carrierName)
+        .eq("imo_id", await repository.getDefaultTenantId())
         .single();
 
       if (carrierError || !carrier) {
@@ -423,9 +424,14 @@ class CompGuideServiceClass extends BaseService<
       .eq("is_active", true)
       .order("name");
 
-    // Filter by IMO if provided
+    // Filter by IMO if provided. Without an explicit IMO, RLS still protects
+    // direct access, but super-admin screens must not accidentally aggregate
+    // multiple IMOs into one grid.
     if (imoId) {
       query = query.eq("imo_id", imoId);
+    } else {
+      const repository = this.repository as CompGuideRepository;
+      query = query.eq("imo_id", await repository.getDefaultTenantId());
     }
 
     const { data, error } = await query;
@@ -458,6 +464,10 @@ class CompGuideServiceClass extends BaseService<
 
       // Add products from products table
       for (const product of carrier.products || []) {
+        if (product.imo_id !== carrier.imo_id) {
+          continue;
+        }
+
         if (!productsMap.has(product.id)) {
           productsMap.set(product.id, {
             carrierId: carrier.id,
@@ -473,6 +483,10 @@ class CompGuideServiceClass extends BaseService<
 
       // Add commission rates to products
       for (const compEntry of carrier.comp_guide || []) {
+        if (compEntry.imo_id !== carrier.imo_id) {
+          continue;
+        }
+
         if (compEntry.product_id && productsMap.has(compEntry.product_id)) {
           const product = productsMap.get(compEntry.product_id)!;
           product.rates[compEntry.contract_level] =
@@ -482,7 +496,10 @@ class CompGuideServiceClass extends BaseService<
 
       // Add carrier-level rates
       const carrierLevelRates = (carrier.comp_guide || [])
-        .filter((entry: { product_id: string | null }) => !entry.product_id)
+        .filter(
+          (entry: { product_id: string | null; imo_id: string | null }) =>
+            !entry.product_id && entry.imo_id === carrier.imo_id,
+        )
         .reduce(
           (
             acc: Record<number, number>,
@@ -520,6 +537,59 @@ class CompGuideServiceClass extends BaseService<
     }
 
     return gridData;
+  }
+
+  async getCurrentRate(params: {
+    productId: string;
+    contractLevel: number;
+    carrierId?: string;
+  }): Promise<{
+    data: {
+      commission_percentage: number;
+      bonus_percentage: number | null;
+    } | null;
+    error: Error | null;
+  }> {
+    try {
+      const repository = this.repository as CompGuideRepository;
+      const rate = await repository.getCurrentRate(
+        params.productId,
+        params.contractLevel,
+        params.carrierId,
+      );
+      return { data: rate, error: null };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error : new Error(String(error)),
+      };
+    }
+  }
+
+  async getCurrentRatesForProducts(
+    productIds: string[],
+    contractLevel: number,
+  ): Promise<{
+    data: Array<{
+      product_id: string;
+      commission_percentage: number;
+      effective_date: string;
+    }> | null;
+    error: Error | null;
+  }> {
+    try {
+      const repository = this.repository as CompGuideRepository;
+      const rates = await repository.getCurrentRatesForProducts(
+        productIds,
+        contractLevel,
+      );
+      return { data: rates, error: null };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error : new Error(String(error)),
+      };
+    }
   }
 
   // ============================================================================
@@ -600,9 +670,16 @@ class CompGuideServiceClass extends BaseService<
 
   /** @deprecated Use bulkImport instead */
   async createBulkEntries(entries: CompGuideInsert[]) {
-    const repository = this.repository as CompGuideRepository;
-    const created = await repository.bulkCreate(entries);
-    return { data: created, error: null };
+    try {
+      const repository = this.repository as CompGuideRepository;
+      const created = await repository.bulkCreate(entries);
+      return { data: created, error: null };
+    } catch (error) {
+      return {
+        data: null,
+        error: error instanceof Error ? error : new Error(String(error)),
+      };
+    }
   }
 
   /** @deprecated Use getActive instead */

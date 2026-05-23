@@ -136,6 +136,17 @@ export interface ImoContextType {
   loading: boolean;
   error: Error | null;
 
+  // Super-admin acting IMO override.
+  // When isSuperAdmin: actingImoId can be set to operate as if a member of
+  // another IMO (writes assigned to that IMO, reads filtered by that IMO).
+  // Persists in sessionStorage; clears on browser close.
+  actingImoId: string | null;
+  setActingImoId: (imoId: string | null) => Promise<void> | void;
+
+  // Effective IMO id for writes/filters. Equals actingImoId when set
+  // (super-admin only), otherwise the user's own imo.
+  effectiveImoId: string | null;
+
   // Actions
   refetch: () => Promise<void>;
 }

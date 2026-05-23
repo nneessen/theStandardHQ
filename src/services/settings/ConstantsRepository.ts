@@ -1,6 +1,6 @@
 // src/services/settings/ConstantsRepository.ts
 
-import { BaseRepository } from "../base/BaseRepository";
+import { TenantScopedRepository } from "../base/TenantScopedRepository";
 import type { Tables, TablesUpdate } from "../../types/database.types";
 
 // Database types
@@ -14,6 +14,7 @@ interface ConstantEntity {
   value: number;
   category: string | null;
   description: string | null;
+  imo_id: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -24,7 +25,7 @@ interface ConstantEntity {
  * Data access layer for the constants table.
  * Constants are stored as key-value pairs.
  */
-export class ConstantsRepository extends BaseRepository<
+export class ConstantsRepository extends TenantScopedRepository<
   ConstantEntity,
   Partial<ConstantEntity>,
   Partial<ConstantEntity>
@@ -37,13 +38,16 @@ export class ConstantsRepository extends BaseRepository<
    * Transform database record to entity
    */
   protected transformFromDB(dbRecord: Record<string, unknown>): ConstantEntity {
-    const row = dbRecord as unknown as ConstantsRow;
+    const row = dbRecord as unknown as ConstantsRow & {
+      imo_id?: string | null;
+    };
     return {
       id: row.id,
       key: row.key,
       value: row.value,
       category: row.category,
       description: row.description,
+      imo_id: row.imo_id ?? null,
       createdAt: row.created_at || "",
       updatedAt: row.updated_at || "",
     };
@@ -61,6 +65,7 @@ export class ConstantsRepository extends BaseRepository<
     if (data.value !== undefined) result.value = data.value;
     if (data.category !== undefined) result.category = data.category;
     if (data.description !== undefined) result.description = data.description;
+    if (data.imo_id !== undefined) result.imo_id = data.imo_id;
 
     return result;
   }
@@ -73,9 +78,11 @@ export class ConstantsRepository extends BaseRepository<
    * Find a constant by its key
    */
   async findByKey(key: string): Promise<ConstantEntity | null> {
+    const { imo_id } = await this.getTenantFilter();
     const { data, error } = await this.client
       .from(this.tableName)
       .select("*")
+      .eq("imo_id", imo_id as string)
       .eq("key", key)
       .single();
 
@@ -93,9 +100,11 @@ export class ConstantsRepository extends BaseRepository<
    * Get all constants as key-value pairs
    */
   async getAllAsKeyValue(): Promise<Record<string, number>> {
+    const { imo_id } = await this.getTenantFilter();
     const { data, error } = await this.client
       .from(this.tableName)
-      .select("key, value");
+      .select("key, value")
+      .eq("imo_id", imo_id as string);
 
     if (error) {
       throw this.handleError(error, "getAllAsKeyValue");
@@ -119,6 +128,7 @@ export class ConstantsRepository extends BaseRepository<
    * Update a constant by its key
    */
   async updateByKey(key: string, value: number): Promise<void> {
+    const { imo_id } = await this.getTenantFilter();
     const updateData: ConstantsUpdate = {
       value,
       updated_at: new Date().toISOString(),
@@ -127,6 +137,7 @@ export class ConstantsRepository extends BaseRepository<
     const { error } = await this.client
       .from(this.tableName)
       .update(updateData)
+      .eq("imo_id", imo_id as string)
       .eq("key", key);
 
     if (error) {
@@ -142,6 +153,7 @@ export class ConstantsRepository extends BaseRepository<
     value: number,
     options?: { category?: string; description?: string },
   ): Promise<ConstantEntity> {
+    const { imo_id } = await this.getTenantFilter();
     const { data, error } = await this.client
       .from(this.tableName)
       .upsert(
@@ -150,9 +162,10 @@ export class ConstantsRepository extends BaseRepository<
           value,
           category: options?.category ?? null,
           description: options?.description ?? null,
+          imo_id,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: "key" },
+        { onConflict: "imo_id,key" },
       )
       .select()
       .single();

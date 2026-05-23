@@ -140,8 +140,6 @@ function sanitizeCloseErrorBody(body: any): unknown {
 
 // ─── Auth & gating ─────────────────────────────────────────────────
 
-const SUPER_ADMIN_EMAIL = "nickneessen@thestandardhq.com";
-
 async function verifyAndGate(req: Request): Promise<
   | {
       ok: true;
@@ -177,8 +175,13 @@ async function verifyAndGate(req: Request): Promise<
     email: (userData.user.email ?? "").toLowerCase(),
   };
 
-  // Tier 1: super-admin bypass
-  if (user.email === SUPER_ADMIN_EMAIL.toLowerCase()) {
+  // Tier 1: super-admin bypass (DB flag, not email — survives email changes)
+  const { data: profile } = await userClient
+    .from("user_profiles")
+    .select("is_super_admin")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (profile?.is_super_admin === true) {
     return { ok: true, user, userClient };
   }
 
@@ -566,8 +569,13 @@ const DAILY_GENERATION_CAP = 50;
 async function enforceGenerationRateLimit(
   ctx: ActionContext,
 ): Promise<Response | null> {
-  // Super-admin bypass — same email check used in verifyAndGate
-  if (ctx.user.email === SUPER_ADMIN_EMAIL.toLowerCase()) {
+  // Super-admin bypass — DB flag, same source of truth as verifyAndGate
+  const { data: profile } = await ctx.userClient
+    .from("user_profiles")
+    .select("is_super_admin")
+    .eq("id", ctx.user.id)
+    .maybeSingle();
+  if (profile?.is_super_admin === true) {
     return null;
   }
 

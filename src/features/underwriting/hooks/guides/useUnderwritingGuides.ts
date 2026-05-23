@@ -3,6 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/services/base/supabase";
 import { useAuth } from "@/contexts/AuthContext";
+import { useImo } from "@/contexts/ImoContext";
 import { guideStorageService } from "@/services/underwriting/repositories/guideStorageService";
 import { toast } from "sonner";
 import type { UnderwritingGuide } from "../../types/underwriting.types";
@@ -100,6 +101,7 @@ interface UploadGuideInput {
 export function useUploadGuide() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { effectiveImoId } = useImo();
 
   return useMutation({
     mutationFn: async (input: UploadGuideInput): Promise<UnderwritingGuide> => {
@@ -112,8 +114,9 @@ export function useUploadGuide() {
       }
 
       // Upload file to storage
+      const writeImoId = effectiveImoId ?? user.imo_id;
       const { storagePath, fileSize } = await guideStorageService.upload(
-        user.imo_id,
+        writeImoId,
         input.carrierId,
         input.file,
       );
@@ -122,7 +125,7 @@ export function useUploadGuide() {
       const { data, error } = await supabase
         .from("underwriting_guides")
         .insert({
-          imo_id: user.imo_id,
+          imo_id: writeImoId,
           carrier_id: input.carrierId,
           name: input.name,
           file_name: input.file.name,

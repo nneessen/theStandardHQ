@@ -1,18 +1,21 @@
 // src/services/settings/products/ProductRepository.ts
-import { BaseRepository, BaseEntity } from "../../base/BaseRepository";
+import {
+  TenantScopedRepository,
+  type TenantScopedEntity,
+} from "../../base/TenantScopedRepository";
 import type { Database } from "@/types/database.types";
 import type { Product, ProductFormData } from "@/types/product.types";
 
 type ProductRow = Database["public"]["Tables"]["products"]["Row"];
 
 // Type that combines Product with BaseEntity for repository compatibility
-type ProductBaseEntity = Product & BaseEntity;
+type ProductBaseEntity = Product & TenantScopedEntity;
 
 /**
  * Repository for products data access
  * Extends BaseRepository for standard CRUD operations
  */
-export class ProductRepository extends BaseRepository<
+export class ProductRepository extends TenantScopedRepository<
   ProductBaseEntity,
   ProductFormData,
   Partial<ProductFormData>
@@ -84,25 +87,18 @@ export class ProductRepository extends BaseRepository<
    * Override findAll to order by name
    */
   async findAll(): Promise<ProductBaseEntity[]> {
-    const { data, error } = await this.client
-      .from(this.tableName)
-      .select("*")
-      .order("name");
-
-    if (error) {
-      throw this.handleError(error, "findAll");
-    }
-
-    return data?.map((item) => this.transformFromDB(item)) || [];
+    return super.findAll({ orderBy: "name", orderDirection: "asc" });
   }
 
   /**
    * Find products by carrier ID
    */
   async findByCarrier(carrierId: string): Promise<ProductBaseEntity[]> {
+    const { imo_id } = await this.getTenantFilter();
     const { data, error } = await this.client
       .from(this.tableName)
       .select("*")
+      .eq("imo_id", imo_id as string)
       .eq("carrier_id", carrierId)
       .order("name");
 
@@ -117,9 +113,11 @@ export class ProductRepository extends BaseRepository<
    * Find active products only
    */
   async findActive(): Promise<ProductBaseEntity[]> {
+    const { imo_id } = await this.getTenantFilter();
     const { data, error } = await this.client
       .from(this.tableName)
       .select("*")
+      .eq("imo_id", imo_id as string)
       .eq("is_active", true)
       .order("name");
 
@@ -134,9 +132,11 @@ export class ProductRepository extends BaseRepository<
    * Search products by name
    */
   async search(searchTerm: string): Promise<ProductBaseEntity[]> {
+    const { imo_id } = await this.getTenantFilter();
     const { data, error } = await this.client
       .from(this.tableName)
       .select("*")
+      .eq("imo_id", imo_id as string)
       .ilike("name", `%${searchTerm}%`)
       .order("name");
 

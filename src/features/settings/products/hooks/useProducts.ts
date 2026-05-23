@@ -1,10 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { productService } from "@/services/settings/products";
+import { useImo } from "@/contexts/ImoContext";
 import { toast } from "sonner";
 import type { Product, ProductFormData } from "@/types/product.types";
 
-export function useProducts() {
+export function useProducts(imoId?: string, options?: { enabled?: boolean }) {
   const queryClient = useQueryClient();
+  const { imo } = useImo();
+  const queryImoId = imoId ?? imo?.id;
 
   // Fetch all products
   const {
@@ -12,12 +15,15 @@ export function useProducts() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["products"],
+    queryKey: ["products", queryImoId ?? "default"],
     queryFn: async (): Promise<Product[]> => {
-      const result = await productService.getAll();
+      const result = imoId
+        ? await productService.getAllForImo(imoId)
+        : await productService.getAll();
       if (!result.success) throw result.error;
       return result.data || [];
     },
+    enabled: options?.enabled ?? true,
   });
 
   // Create product mutation

@@ -44,7 +44,7 @@ export interface NewUserData {
   roles: RoleName[];
   approval_status: ApprovalStatus;
   onboarding_status?: "lead" | "active" | null;
-  imo_id?: string | null;
+  imo_id?: string;
   agency_id?: string | null;
 }
 
@@ -57,7 +57,7 @@ const INITIAL_FORM_DATA: NewUserData = {
   roles: ["recruit"], // Default to recruit since approval_status defaults to "pending"
   approval_status: "pending",
   onboarding_status: null,
-  imo_id: null,
+  imo_id: undefined,
   agency_id: null,
 };
 
@@ -323,7 +323,7 @@ export default function AddUserDialog({
                       setSelectedImoId(newImoId);
                       setFormData((prev) => ({
                         ...prev,
-                        imo_id: newImoId,
+                        imo_id: newImoId ?? undefined,
                         agency_id: null, // Reset agency when IMO changes
                       }));
                     }}

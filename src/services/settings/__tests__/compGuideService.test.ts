@@ -11,6 +11,9 @@ import { supabase } from "../../base/supabase";
 vi.mock("../../base/supabase", () => ({
   supabase: {
     from: vi.fn(),
+    auth: {
+      getUser: vi.fn(),
+    },
   },
 }));
 
@@ -29,15 +32,34 @@ describe("CompGuideService - New Methods", () => {
     mockEq.mockReturnThis();
     mockOrder.mockReturnThis();
     mockInsert.mockReturnThis();
-    mockSingle.mockReturnThis();
-
-    vi.mocked(supabase.from).mockReturnValue({
-      select: mockSelect,
-      eq: mockEq,
-      order: mockOrder,
-      insert: mockInsert,
-      single: mockSingle,
+    mockSingle.mockResolvedValue({
+      data: { imo_id: "imo-test", agency_id: "agency-test" },
+      error: null,
+    });
+    vi.mocked(supabase.auth.getUser).mockResolvedValue({
+      data: { user: { id: "user-test" } },
+      error: null,
     } as any);
+
+    vi.mocked(supabase.from).mockImplementation((table: string) => {
+      if (table === "user_profiles") {
+        return {
+          select: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              single: mockSingle,
+            }),
+          }),
+        } as any;
+      }
+
+      return {
+        select: mockSelect,
+        eq: mockEq,
+        order: mockOrder,
+        insert: mockInsert,
+        single: mockSingle,
+      } as any;
+    });
   });
 
   describe("getEntriesByProduct", () => {
@@ -64,6 +86,7 @@ describe("CompGuideService - New Methods", () => {
 
       expect(supabase.from).toHaveBeenCalledWith("comp_guide");
       expect(mockSelect).toHaveBeenCalledWith("*");
+      expect(mockEq).toHaveBeenCalledWith("imo_id", "imo-test");
       expect(mockEq).toHaveBeenCalledWith("product_id", productId);
       expect(mockOrder).toHaveBeenCalledWith("contract_level", {
         ascending: true,
@@ -81,7 +104,7 @@ describe("CompGuideService - New Methods", () => {
       const result = await compGuideService.getEntriesByProduct(productId);
 
       expect(result.data).toBeNull();
-      expect(result.error).toEqual(mockError);
+      expect(result.error?.message).toContain(mockError.message);
     });
 
     it("should return empty array when product has no rates", async () => {
@@ -127,7 +150,9 @@ describe("CompGuideService - New Methods", () => {
       );
 
       expect(supabase.from).toHaveBeenCalledWith("comp_guide");
-      expect(mockInsert).toHaveBeenCalledWith(newEntries);
+      expect(mockInsert).toHaveBeenCalledWith(
+        newEntries.map((entry) => ({ ...entry, imo_id: "imo-test" })),
+      );
       expect(mockSelect).toHaveBeenCalled();
       expect(result.data).toEqual(createdEntries);
       expect(result.error).toBeNull();
@@ -189,7 +214,7 @@ describe("CompGuideService - New Methods", () => {
       );
 
       expect(result.data).toBeNull();
-      expect(result.error).toEqual(mockError);
+      expect(result.error?.message).toContain("Duplicate entry");
     });
 
     it("should create empty array when passed empty array", async () => {
@@ -232,6 +257,7 @@ describe("CompGuideService - New Methods", () => {
 
       expect(supabase.from).toHaveBeenCalledWith("comp_guide");
       expect(mockSelect).toHaveBeenCalledWith("*");
+      expect(mockEq).toHaveBeenCalledWith("imo_id", "imo-test");
       expect(mockEq).toHaveBeenCalledWith("carrier_id", carrierId);
       expect(mockOrder).toHaveBeenCalledWith("contract_level", {
         ascending: true,

@@ -738,6 +738,32 @@ serve(async (req) => {
 
     // Create user with email_confirm=true and a generated temporary password.
     // Internal flows always direct the user to the password-reset link.
+    //
+    // imo_id / agency_id / recruiter_id / upline_id ride along in
+    // user_metadata so handle_new_user can populate user_profiles.imo_id on the
+    // initial INSERT. Without these, enforce_user_profile_imo_consistency would
+    // fall back to Founders for service-role-context signups — wrong for
+    // admin-created recruits whose IMO is known up front.
+    //
+    // IMPORTANT: when sanitizedProfileData is present (recruit-create flow), we
+    // pass its values verbatim — including explicit undefined for agency_id when
+    // a super-admin is acting as a foreign IMO. Falling back to caller.agencyId
+    // there would mismatch the imo_id and trip the agency-imo consistency
+    // trigger.
+    const hasProfileData = sanitizedProfileData !== undefined;
+    const userMetadataImoId = hasProfileData
+      ? sanitizedProfileData?.imo_id
+      : (callerResult.caller.imoId ?? undefined);
+    const userMetadataAgencyId = hasProfileData
+      ? sanitizedProfileData?.agency_id
+      : (callerResult.caller.agencyId ?? undefined);
+    const userMetadataRecruiterId = hasProfileData
+      ? sanitizedProfileData?.recruiter_id
+      : undefined;
+    const userMetadataUplineId = hasProfileData
+      ? sanitizedProfileData?.upline_id
+      : undefined;
+
     const createUserParams: Parameters<
       typeof supabaseAdmin.auth.admin.createUser
     >[0] = {
@@ -749,6 +775,12 @@ serve(async (req) => {
         roles: effectiveRoles,
         is_admin: effectiveIsAdmin,
         skip_pipeline: effectiveSkipPipeline,
+        ...(userMetadataImoId ? { imo_id: userMetadataImoId } : {}),
+        ...(userMetadataAgencyId ? { agency_id: userMetadataAgencyId } : {}),
+        ...(userMetadataRecruiterId
+          ? { recruiter_id: userMetadataRecruiterId }
+          : {}),
+        ...(userMetadataUplineId ? { upline_id: userMetadataUplineId } : {}),
       },
     };
 
