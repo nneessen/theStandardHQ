@@ -4177,6 +4177,7 @@ export type Database = {
           description: string | null;
           id: string;
           is_active: boolean;
+          is_listed: boolean;
           logo_url: string | null;
           name: string;
           primary_color: string | null;
@@ -4197,6 +4198,7 @@ export type Database = {
           description?: string | null;
           id?: string;
           is_active?: boolean;
+          is_listed?: boolean;
           logo_url?: string | null;
           name: string;
           primary_color?: string | null;
@@ -4217,6 +4219,7 @@ export type Database = {
           description?: string | null;
           id?: string;
           is_active?: boolean;
+          is_listed?: boolean;
           logo_url?: string | null;
           name?: string;
           primary_color?: string | null;
@@ -15385,6 +15388,10 @@ export type Database = {
         Args: { p_notes?: string; p_rule_set_id: string };
         Returns: Json;
       };
+      assert_in_acting_scope: {
+        Args: { target_imo: string };
+        Returns: undefined;
+      };
       assert_uw_wizard_usage_access: {
         Args: { p_user_id: string };
         Returns: undefined;
@@ -16479,6 +16486,7 @@ export type Database = {
           schedule_name: string;
         }[];
       };
+      get_effective_imo_id: { Args: never; Returns: string };
       get_eligible_recipients: {
         Args: { p_agency_id?: string; p_imo_id?: string };
         Returns: {
@@ -18378,6 +18386,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      row_in_acting_scope: { Args: { row_imo_id: string }; Returns: boolean };
       safe_uuid_from_text: { Args: { input: string }; Returns: string };
       save_underwriting_session_v2: {
         Args: { p_payload: Json };
@@ -18464,6 +18473,7 @@ export type Database = {
         };
         Returns: Json;
       };
+      super_admin_in_scope: { Args: { row_imo_id: string }; Returns: boolean };
       table_rating_units: {
         Args: { rating: Database["public"]["Enums"]["table_rating"] };
         Returns: number;

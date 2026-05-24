@@ -170,6 +170,14 @@ export function usePermissionCheck() {
     isFetching,
   } = useUserPermissions();
 
+  // Super-admin is a column on the profile, not a role in the roles table, so the
+  // role-based permission set never includes super-admin grants. Bypass code-level
+  // permission checks for super-admins (mirrors how subscription feature gates already
+  // bypass for admins). Tenant boundaries are still enforced server-side by RLS
+  // (get_effective_imo_id / row_in_acting_scope), so this only widens client-side
+  // visibility, never cross-tenant data access.
+  const isSuperAdmin = user?.is_super_admin === true;
+
   // Loading if: auth loading, query pending, query fetching, or user exists but no data yet
   const isLoading =
     authLoading ||
@@ -178,11 +186,13 @@ export function usePermissionCheck() {
     (!!user?.id && !permissionsContext);
 
   const can = (permissionCode: PermissionCode): boolean => {
+    if (isSuperAdmin) return true;
     if (!permissionsContext) return false;
     return permissionsContext.permissions.includes(permissionCode);
   };
 
   const canAny = (permissionCodes: PermissionCode[]): boolean => {
+    if (isSuperAdmin) return true;
     if (!permissionsContext) return false;
     return permissionCodes.some((code) =>
       permissionsContext.permissions.includes(code),
@@ -190,6 +200,7 @@ export function usePermissionCheck() {
   };
 
   const canAll = (permissionCodes: PermissionCode[]): boolean => {
+    if (isSuperAdmin) return true;
     if (!permissionsContext) return false;
     return permissionCodes.every((code) =>
       permissionsContext.permissions.includes(code),

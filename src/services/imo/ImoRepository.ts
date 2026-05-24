@@ -104,14 +104,6 @@ export class ImoRepository extends BaseRepository<
     return data ?? [];
   }
 
-  /**
-   * Get all IMOs (active + inactive). RLS restricts non-super-admins to
-   * their own row via the imos "Users can view own IMO" policy, so this
-   * is effectively a super-admin-only listing in practice. Used by the
-   * IMO Management settings page so deactivated IMOs remain reachable
-   * for edit/reactivate; without it, an inactive row holding a unique
-   * code becomes a "ghost" that blocks code reuse but can't be seen.
-   */
   async findAll(): Promise<ImoRow[]> {
     const { data, error } = await this.client
       .from(this.tableName)
@@ -125,9 +117,6 @@ export class ImoRepository extends BaseRepository<
     return data ?? [];
   }
 
-  /**
-   * Check if an IMO code is available
-   */
   async isCodeAvailable(code: string, excludeId?: string): Promise<boolean> {
     let query = this.client
       .from(this.tableName)

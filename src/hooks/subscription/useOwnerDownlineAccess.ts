@@ -10,7 +10,10 @@ import { supabase } from "@/services/base/supabase";
  * (excludes admin features like Admin page, Training Hub)
  * IMPORTANT: Store in lowercase for case-insensitive comparison
  */
-export const OWNER_EMAILS = ["nickneessen@thestandardhq.com"];
+export const OWNER_EMAILS = [
+  "nickneessen@thestandardhq.com",
+  "epiclife.neessen@gmail.com",
+];
 
 /** The Standard agency ID — used for gating internal-only tools */
 export const THE_STANDARD_AGENCY_ID = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";

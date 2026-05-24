@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Outlet, useNavigate, useLocation } from "@tanstack/react-router";
 import { Toaster } from "react-hot-toast";
-import { Sidebar, FreeUserHeader } from "./components/layout";
+import { AppShell, FreeUserHeader } from "./components/layout";
 import { useAuth } from "./contexts/AuthContext";
 import { ImoProvider } from "./contexts/ImoContext";
 import { logger } from "./services/base/logger";
@@ -235,30 +235,25 @@ function AuthenticatedApp() {
               </div>
             </>
           ) : (
-            <div className="flex flex-1">
-              <Sidebar
-                isCollapsed={isSidebarCollapsed}
-                onToggleCollapse={toggleSidebar}
-                userName={
-                  user.first_name && user.last_name
-                    ? getDisplayName({
-                        first_name: user.first_name,
-                        last_name: user.last_name,
-                        email: user.email || "",
-                      })
-                    : user.email?.split("@")[0] || "User"
-                }
-                userEmail={user.email || ""}
-                onLogout={handleLogout}
-              />
-              <div className="main-content flex-1 min-w-0">
-                <div className="p-6 w-full min-h-screen">
-                  <ApprovalGuard>
-                    <Outlet />
-                  </ApprovalGuard>
-                </div>
-              </div>
-            </div>
+            <AppShell
+              isSidebarCollapsed={isSidebarCollapsed}
+              onToggleSidebar={toggleSidebar}
+              userName={
+                user.first_name && user.last_name
+                  ? getDisplayName({
+                      first_name: user.first_name,
+                      last_name: user.last_name,
+                      email: user.email || "",
+                    })
+                  : user.email?.split("@")[0] || "User"
+              }
+              userEmail={user.email || ""}
+              onLogout={handleLogout}
+            >
+              <ApprovalGuard>
+                <Outlet />
+              </ApprovalGuard>
+            </AppShell>
           )}
         </div>
       </ImoProvider>

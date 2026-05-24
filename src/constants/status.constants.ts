@@ -78,6 +78,3 @@ export const POLICY_LIFECYCLE_STATUS_CONFIG: Record<
   cancelled: { label: "Cancelled", color: "zinc" },
   expired: { label: "Expired", color: "blue" },
 };
-
-// NOTE: POLICY_TO_COMMISSION_STATUS mapping has been REMOVED
-// Commission status is now fully independent and manually controlled

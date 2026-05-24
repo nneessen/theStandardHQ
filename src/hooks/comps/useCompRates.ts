@@ -5,6 +5,8 @@ import {
 } from "../../services/settings/comp-guide";
 import { Database } from "../../types/database.types";
 
+// TODO: multiple signautre issues
+
 type CompGuideInsert = Database["public"]["Tables"]["comp_guide"]["Insert"];
 
 // Query keys

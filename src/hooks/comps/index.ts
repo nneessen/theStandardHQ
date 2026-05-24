@@ -1,12 +1,12 @@
 // src/hooks/comps/index.ts
 
 // TanStack Query hooks for compensation guide data fetching
-export { useComps } from './useComps';
+export { useComps } from "./useComps";
 
 // Mutation hooks for compensation operations
-export { useCreateComp } from './useCreateComp';
-export { useUpdateComp } from './useUpdateComp';
-export { useDeleteComp } from './useDeleteComp';
+export { useCreateComp } from "./useCreateComp";
+export { useUpdateComp } from "./useUpdateComp";
+export { useDeleteComp } from "./useDeleteComp";
 
 // New comp rates hooks
 export {
@@ -19,7 +19,7 @@ export {
   useBulkCreateCompRates,
   useBulkUpdateCompRates,
   compRatesKeys,
-} from './useCompRates';
+} from "./useCompRates";
 
 // Contract-level commission lookup
-export { useCompGuide } from './useCompGuide';
+export { useCompGuide } from "./useCompGuide";

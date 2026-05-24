@@ -2,15 +2,7 @@
 // Support ticket dialog — routes through user's Gmail if connected, else Mailgun fallback
 
 import { useState } from "react";
-import {
-  Bug,
-  Lightbulb,
-  MessageSquare,
-  CreditCard,
-  X,
-  Send,
-  Loader2,
-} from "lucide-react";
+import { Bug, MessageSquare, X, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import * as Dialog from "@radix-ui/react-dialog";
 import { cn } from "@/lib/utils";
@@ -37,22 +29,10 @@ const CATEGORIES = [
       "Describe what happened, what you expected, and steps to reproduce...",
   },
   {
-    label: "Feature Request",
-    icon: Lightbulb,
-    subject: "Feature Request",
-    placeholder: "Describe the feature and why it would be valuable...",
-  },
-  {
     label: "Question",
     icon: MessageSquare,
     subject: "Question",
     placeholder: "What do you need help with?",
-  },
-  {
-    label: "Billing Help",
-    icon: CreditCard,
-    subject: "Billing Help",
-    placeholder: "Describe your billing issue or question...",
   },
 ] as const;
 

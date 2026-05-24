@@ -176,12 +176,7 @@ function sanitizeSocialLinks(links: unknown): Record<string, string> {
   if (!links || typeof links !== "object") return {};
 
   const result: Record<string, string> = {};
-  const allowedKeys = [
-    "facebook",
-    "instagram",
-    "twitter",
-    "youtube",
-  ];
+  const allowedKeys = ["facebook", "instagram", "twitter", "youtube"];
 
   for (const key of allowedKeys) {
     const value = (links as Record<string, unknown>)[key];
@@ -350,23 +345,14 @@ serve(async (req) => {
       { p_slug: profile.recruiter_slug },
     );
 
-    // If theme fetch fails, return minimal response (backward compatible)
+    // If theme fetch fails or the slug resolves to a now-private/unlisted IMO,
+    // return 404 instead of leaking the recruiter slug.
     if (themeError || !theme) {
       console.warn(
         "[resolve-custom-domain] Theme fetch failed:",
         themeError?.message,
       );
-      // Return minimal response for backward compatibility
-      return new Response(
-        JSON.stringify({ recruiter_slug: profile.recruiter_slug }),
-        {
-          status: 200,
-          headers: {
-            ...corsHeaders,
-            "Content-Type": "application/json",
-          },
-        },
-      );
+      return new Response(null, { status: 404, headers: corsHeaders });
     }
 
     // Success! Return recruiter_slug and sanitized theme

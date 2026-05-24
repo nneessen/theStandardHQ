@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { compGuideService } from "../../services/settings/comp-guide";
 
+//TODO: signature issue
+
 export const useDeleteComp = () => {
   const queryClient = useQueryClient();
 

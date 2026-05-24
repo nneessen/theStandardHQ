@@ -66,7 +66,8 @@ export const leadsService = {
             logo_url,
             primary_color,
             description,
-            is_active
+            is_active,
+            is_listed
           )
         `,
         )
@@ -84,6 +85,10 @@ export const leadsService = {
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const imo = data.imos as any;
+      if (!imo?.is_active || !imo?.is_listed) {
+        return null;
+      }
+
       return {
         recruiter_id: data.id,
         recruiter_first_name: data.first_name,
@@ -95,7 +100,10 @@ export const leadsService = {
         calendly_url:
           (data.custom_permissions as { calendly_url?: string })
             ?.calendly_url || null,
-        is_active: imo?.is_active && data.approval_status === "approved",
+        is_active:
+          imo?.is_active &&
+          imo?.is_listed &&
+          data.approval_status === "approved",
       };
     } catch (error) {
       logger.error(
