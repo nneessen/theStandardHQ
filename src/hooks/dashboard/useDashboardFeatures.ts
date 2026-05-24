@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import {
   useSubscription,
   useOwnerDownlineAccess,
+  useImoAllFeaturesAccess,
   isOwnerDownlineGrantedFeature,
 } from "@/hooks/subscription";
 import { useAuth } from "@/contexts/AuthContext";
@@ -46,6 +47,10 @@ export interface DashboardFeatures {
  */
 export function useDashboardFeatures(): DashboardFeatures {
   const { subscription, isLoading, isActive } = useSubscription();
+  const {
+    grantsAllFeatures: imoGrantsAllFeatures,
+    isLoading: imoEntitlementLoading,
+  } = useImoAllFeaturesAccess();
   const { supabaseUser } = useAuth();
   const { isDirectDownlineOfOwner, isLoading: downlineLoading } =
     useOwnerDownlineAccess();
@@ -81,8 +86,24 @@ export function useDashboardFeatures(): DashboardFeatures {
       };
     }
 
+    if (imoGrantsAllFeatures) {
+      return {
+        canViewExpenses: true,
+        canAddExpense: true,
+        canViewReports: true,
+        canExportReports: true,
+        canViewBasicTargets: true,
+        canViewFullTargets: true,
+        tier: "team" as const,
+        isLoading: false,
+        isAdmin: false,
+        isImoAdmin,
+        isAgencyOwner,
+      };
+    }
+
     // Still loading subscription or downline data
-    if (isLoading || downlineLoading) {
+    if (isLoading || imoEntitlementLoading || downlineLoading) {
       return {
         canViewExpenses: false,
         canAddExpense: false,
@@ -149,6 +170,8 @@ export function useDashboardFeatures(): DashboardFeatures {
   }, [
     subscription,
     isLoading,
+    imoGrantsAllFeatures,
+    imoEntitlementLoading,
     isActive,
     downlineLoading,
     isDirectDownlineOfOwner,

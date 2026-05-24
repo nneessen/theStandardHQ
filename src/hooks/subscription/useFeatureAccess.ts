@@ -16,6 +16,7 @@ import {
   isOwnerDownlineGrantedFeature,
 } from "./useOwnerDownlineAccess";
 import { useTemporaryAccessConfig } from "./useSubscriptionSettings";
+import { useImoAllFeaturesAccess } from "./useImoAllFeaturesAccess";
 import { subscriptionSettingsService } from "@/services/subscription";
 import { isSuperAdminEmail } from "@/lib/temporaryAccess";
 
@@ -140,6 +141,10 @@ export function useFeatureAccess(feature: FeatureKey): UseFeatureAccessResult {
   const userEmail = user?.email;
 
   const { plans } = useSubscriptionPlans();
+  const {
+    grantsAllFeatures: imoGrantsAllFeatures,
+    isLoading: isLoadingImoEntitlement,
+  } = useImoAllFeaturesAccess();
 
   const { isDirectDownlineOfOwner, isLoading: isLoadingDownlineCheck } =
     useOwnerDownlineAccess();
@@ -166,6 +171,7 @@ export function useFeatureAccess(feature: FeatureKey): UseFeatureAccessResult {
     if (
       !isSuperAdminUser &&
       (isLoading ||
+        isLoadingImoEntitlement ||
         isLoadingDownlineCheck ||
         isLoadingRoles ||
         isLoadingTempAccess)
@@ -188,6 +194,20 @@ export function useFeatureAccess(feature: FeatureKey): UseFeatureAccessResult {
         hasAccess: true,
         isLoading: false,
         currentPlan: "Super Admin",
+        requiredPlan,
+        upgradeRequired: false,
+        featureName: FEATURE_DISPLAY_NAMES[feature],
+        isGrandfathered: false,
+        grandfatherDaysRemaining: 0,
+      };
+    }
+
+    // IMO-wide subscription bypass - all paid features included for this tenant
+    if (imoGrantsAllFeatures) {
+      return {
+        hasAccess: true,
+        isLoading: false,
+        currentPlan: "IMO Access",
         requiredPlan,
         upgradeRequired: false,
         featureName: FEATURE_DISPLAY_NAMES[feature],
@@ -251,6 +271,7 @@ export function useFeatureAccess(feature: FeatureKey): UseFeatureAccessResult {
   }, [
     subscription,
     isLoading,
+    isLoadingImoEntitlement,
     isActive,
     isLoadingDownlineCheck,
     isLoadingRoles,
@@ -258,6 +279,7 @@ export function useFeatureAccess(feature: FeatureKey): UseFeatureAccessResult {
     isDirectDownlineOfOwner,
     hasStaffBypass,
     isSuperAdminUser,
+    imoGrantsAllFeatures,
     feature,
     isGrandfathered,
     grandfatherDaysRemaining,
@@ -281,6 +303,10 @@ export function useAnyFeatureAccess(features: FeatureKey[]): {
   const { subscription, isLoading, isActive } = useSubscription();
   const { user } = useAuth();
   const userEmail = user?.email;
+  const {
+    grantsAllFeatures: imoGrantsAllFeatures,
+    isLoading: isLoadingImoEntitlement,
+  } = useImoAllFeaturesAccess();
   const { isDirectDownlineOfOwner, isLoading: isLoadingDownlineCheck } =
     useOwnerDownlineAccess();
   const { isAnyRole, isLoading: isLoadingRoles } = usePermissionCheck();
@@ -305,6 +331,7 @@ export function useAnyFeatureAccess(features: FeatureKey[]): {
 
     if (
       isLoading ||
+      isLoadingImoEntitlement ||
       isLoadingDownlineCheck ||
       isLoadingRoles ||
       isLoadingTempAccess
@@ -314,6 +341,15 @@ export function useAnyFeatureAccess(features: FeatureKey[]): {
         isLoading: true,
         accessibleFeatures: [],
         lockedFeatures: features,
+      };
+    }
+
+    if (imoGrantsAllFeatures) {
+      return {
+        hasAccess: true,
+        isLoading: false,
+        accessibleFeatures: features,
+        lockedFeatures: [],
       };
     }
 
@@ -365,6 +401,7 @@ export function useAnyFeatureAccess(features: FeatureKey[]): {
   }, [
     subscription,
     isLoading,
+    isLoadingImoEntitlement,
     isActive,
     isLoadingDownlineCheck,
     isLoadingRoles,
@@ -372,6 +409,7 @@ export function useAnyFeatureAccess(features: FeatureKey[]): {
     isDirectDownlineOfOwner,
     hasStaffBypass,
     isSuperAdminUser,
+    imoGrantsAllFeatures,
     features,
     userEmail,
     tempAccessConfig,
@@ -390,6 +428,10 @@ export function useAllFeaturesAccess(features: FeatureKey[]): {
   const { subscription, isLoading, isActive } = useSubscription();
   const { user } = useAuth();
   const userEmail = user?.email;
+  const {
+    grantsAllFeatures: imoGrantsAllFeatures,
+    isLoading: isLoadingImoEntitlement,
+  } = useImoAllFeaturesAccess();
   const { isDirectDownlineOfOwner, isLoading: isLoadingDownlineCheck } =
     useOwnerDownlineAccess();
   const { isAnyRole, isLoading: isLoadingRoles } = usePermissionCheck();
@@ -413,6 +455,7 @@ export function useAllFeaturesAccess(features: FeatureKey[]): {
 
     if (
       isLoading ||
+      isLoadingImoEntitlement ||
       isLoadingDownlineCheck ||
       isLoadingRoles ||
       isLoadingTempAccess
@@ -421,6 +464,14 @@ export function useAllFeaturesAccess(features: FeatureKey[]): {
         hasAccess: false,
         isLoading: true,
         missingFeatures: features,
+      };
+    }
+
+    if (imoGrantsAllFeatures) {
+      return {
+        hasAccess: true,
+        isLoading: false,
+        missingFeatures: [],
       };
     }
 
@@ -464,6 +515,7 @@ export function useAllFeaturesAccess(features: FeatureKey[]): {
   }, [
     subscription,
     isLoading,
+    isLoadingImoEntitlement,
     isActive,
     isLoadingDownlineCheck,
     isLoadingRoles,
@@ -471,6 +523,7 @@ export function useAllFeaturesAccess(features: FeatureKey[]): {
     isDirectDownlineOfOwner,
     hasStaffBypass,
     isSuperAdminUser,
+    imoGrantsAllFeatures,
     features,
     userEmail,
     tempAccessConfig,

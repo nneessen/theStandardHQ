@@ -9,6 +9,7 @@ import { usePermissionCheck } from "@/hooks/permissions";
 import {
   useSubscription,
   type FeatureKey,
+  useImoAllFeaturesAccess,
   useOwnerDownlineAccess,
   isOwnerDownlineGrantedFeature,
   useTemporaryAccessCheck,
@@ -65,6 +66,10 @@ export function useSidebarNavigation(): UseSidebarNavigationResult {
     isLoading: subLoading,
     isActive: isSubscriptionActive,
   } = useSubscription();
+  const {
+    grantsAllFeatures: imoGrantsAllFeatures,
+    isLoading: imoEntitlementLoading,
+  } = useImoAllFeaturesAccess();
   const { isDirectDownlineOfOwner, isLoading: downlineLoading } =
     useOwnerDownlineAccess();
   const { shouldGrantTemporaryAccess, isLoading: tempAccessLoading } =
@@ -84,7 +89,15 @@ export function useSidebarNavigation(): UseSidebarNavigationResult {
     (feature: FeatureKey | undefined): boolean => {
       if (!feature) return true;
       if (isAdmin) return true;
-      if (subLoading || downlineLoading || tempAccessLoading) return false;
+      if (
+        subLoading ||
+        imoEntitlementLoading ||
+        downlineLoading ||
+        tempAccessLoading
+      ) {
+        return false;
+      }
+      if (imoGrantsAllFeatures) return true;
 
       const features = subscription?.plan?.features;
       if (isSubscriptionActive && features?.[feature]) return true;
@@ -99,6 +112,8 @@ export function useSidebarNavigation(): UseSidebarNavigationResult {
       downlineLoading,
       isAdmin,
       isDirectDownlineOfOwner,
+      imoEntitlementLoading,
+      imoGrantsAllFeatures,
       isSubscriptionActive,
       shouldGrantTemporaryAccess,
       subLoading,

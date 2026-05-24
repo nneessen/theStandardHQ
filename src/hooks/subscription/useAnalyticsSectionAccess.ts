@@ -6,6 +6,7 @@
 import { useMemo } from "react";
 import { useSubscription } from "./useSubscription";
 import { useOwnerDownlineAccess } from "./useOwnerDownlineAccess";
+import { useImoAllFeaturesAccess } from "./useImoAllFeaturesAccess";
 import { useImo } from "@/contexts/ImoContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { isSuperAdminEmail } from "@/lib/temporaryAccess";
@@ -89,6 +90,10 @@ export function useAnalyticsSectionAccess(
   section: AnalyticsSectionKey,
 ): UseAnalyticsSectionAccessResult {
   const { subscription, isLoading, tierName } = useSubscription();
+  const {
+    grantsAllFeatures: imoGrantsAllFeatures,
+    isLoading: imoEntitlementLoading,
+  } = useImoAllFeaturesAccess();
   const { isDirectDownlineOfOwner, isLoading: downlineLoading } =
     useOwnerDownlineAccess();
 
@@ -109,11 +114,21 @@ export function useAnalyticsSectionAccess(
       };
     }
 
-    if (isLoading || downlineLoading) {
+    if (isLoading || imoEntitlementLoading || downlineLoading) {
       return {
         hasAccess: false,
         isLoading: true,
         currentPlan: "Loading...",
+        requiredPlan: ANALYTICS_SECTION_TIERS[section],
+        sectionName: ANALYTICS_SECTION_NAMES[section],
+      };
+    }
+
+    if (imoGrantsAllFeatures) {
+      return {
+        hasAccess: true,
+        isLoading: false,
+        currentPlan: "IMO Access",
         requiredPlan: ANALYTICS_SECTION_TIERS[section],
         sectionName: ANALYTICS_SECTION_NAMES[section],
       };
@@ -145,9 +160,11 @@ export function useAnalyticsSectionAccess(
   }, [
     subscription,
     isLoading,
+    imoEntitlementLoading,
     downlineLoading,
     isDirectDownlineOfOwner,
     isSuperAdminUser,
+    imoGrantsAllFeatures,
     section,
     tierName,
   ]);
@@ -167,6 +184,10 @@ export function useAccessibleAnalyticsSections(): {
   tierName: string;
 } {
   const { subscription, isLoading, tierName } = useSubscription();
+  const {
+    grantsAllFeatures: imoGrantsAllFeatures,
+    isLoading: imoEntitlementLoading,
+  } = useImoAllFeaturesAccess();
   const { isDirectDownlineOfOwner, isLoading: downlineLoading } =
     useOwnerDownlineAccess();
 
@@ -201,12 +222,21 @@ export function useAccessibleAnalyticsSections(): {
       };
     }
 
-    if (isLoading || downlineLoading) {
+    if (isLoading || imoEntitlementLoading || downlineLoading) {
       return {
         accessibleSections: [],
         lockedSections: allSections,
         isLoading: true,
         tierName: "Loading...",
+      };
+    }
+
+    if (imoGrantsAllFeatures) {
+      return {
+        accessibleSections: allSections,
+        lockedSections: [],
+        isLoading: false,
+        tierName: "IMO Access",
       };
     }
 
@@ -240,9 +270,11 @@ export function useAccessibleAnalyticsSections(): {
   }, [
     subscription,
     isLoading,
+    imoEntitlementLoading,
     downlineLoading,
     isDirectDownlineOfOwner,
     isSuperAdminUser,
+    imoGrantsAllFeatures,
     tierName,
   ]);
 }

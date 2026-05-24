@@ -3,6 +3,7 @@
 export { useSubscription, subscriptionKeys } from "./useSubscription";
 export { useSubscriptionPlans } from "./useSubscriptionPlans";
 export { useUsageTracking } from "./useUsageTracking";
+export { useImoAllFeaturesAccess } from "./useImoAllFeaturesAccess";
 export {
   useFeatureAccess,
   useAnyFeatureAccess,

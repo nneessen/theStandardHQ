@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import {
   useSubscription,
   useUserActiveAddons,
+  useImoAllFeaturesAccess,
   subscriptionService,
 } from "@/hooks/subscription";
 import { useAuth } from "@/contexts/AuthContext";
@@ -24,6 +25,10 @@ import { cn } from "@/lib/utils";
 export function CurrentPlanCard() {
   const { user } = useAuth();
   const { isSuperAdmin } = useImo();
+  const {
+    grantsAllFeatures: imoGrantsAllFeatures,
+    isLoading: isLoadingImoEntitlement,
+  } = useImoAllFeaturesAccess();
   const {
     subscription,
     isLoading,
@@ -49,7 +54,7 @@ export function CurrentPlanCard() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingImoEntitlement) {
     return (
       <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft px-3 py-2">
         <div className="animate-pulse flex items-center gap-3">
@@ -63,7 +68,11 @@ export function CurrentPlanCard() {
   const basePlanPrice = subscription?.plan?.price_monthly || 0;
   const billingInterval = subscription?.billing_interval || "monthly";
   const totalPrice = basePlanPrice + totalAddonMonthlyCost;
-  const displayTierName = isSuperAdmin ? "Super Admin" : tierName;
+  const displayTierName = isSuperAdmin
+    ? "Super Admin"
+    : imoGrantsAllFeatures
+      ? "IMO Access"
+      : tierName;
 
   return (
     <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft">
@@ -81,9 +90,11 @@ export function CurrentPlanCard() {
           <span className="text-[10px] text-v2-ink-subtle">
             {isSuperAdmin
               ? "Full Access"
-              : totalPrice === 0
-                ? "Free"
-                : `${subscriptionService.formatPrice(totalPrice)}/${billingInterval === "annual" ? "yr" : "mo"}`}
+              : imoGrantsAllFeatures
+                ? "Included by your IMO"
+                : totalPrice === 0
+                  ? "Free"
+                  : `${subscriptionService.formatPrice(totalPrice)}/${billingInterval === "annual" ? "yr" : "mo"}`}
           </span>
 
           {/* Status badge */}

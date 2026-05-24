@@ -126,8 +126,9 @@ serve(async (req) => {
 
     // Server-side feature access check — mirrors frontend useFeatureAccess logic:
     // 1. Super admin bypass (DB flag, not email — survives email changes)
-    // 2. Subscription plan feature check
-    // 3. Owner-downline access (direct downlines get team-tier features)
+    // 2. IMO-wide subscription bypass
+    // 3. Subscription plan feature check
+    // 4. Owner-downline access (direct downlines get team-tier features)
     const { data: profile } = await supabase
       .from("user_profiles")
       .select("is_super_admin")
@@ -136,28 +137,34 @@ serve(async (req) => {
     const isSuperAdmin = profile?.is_super_admin === true;
 
     if (!isSuperAdmin) {
-      const { data: hasFeature } = await supabase.rpc("user_has_feature", {
-        p_user_id: user.id,
-        p_feature: "business_tools",
-      });
+      const { data: imoGrantsAllFeatures } = await supabase.rpc(
+        "current_user_imo_grants_all_features",
+      );
 
-      if (!hasFeature) {
+      if (!imoGrantsAllFeatures) {
+        const { data: hasFeature } = await supabase.rpc("user_has_feature", {
+          p_user_id: user.id,
+          p_feature: "business_tools",
+        });
+
         // Check owner-downline access as fallback
-        const { data: isDownline } = await supabase.rpc(
-          "is_direct_downline_of_owner",
-          { p_user_id: user.id },
-        );
-
-        if (!isDownline) {
-          return new Response(
-            JSON.stringify({
-              error: "Business Tools feature not available on your plan",
-            }),
-            {
-              status: 403,
-              headers: { ...corsHeaders, "Content-Type": "application/json" },
-            },
+        if (!hasFeature) {
+          const { data: isDownline } = await supabase.rpc(
+            "is_direct_downline_of_owner",
+            { p_user_id: user.id },
           );
+
+          if (!isDownline) {
+            return new Response(
+              JSON.stringify({
+                error: "Business Tools feature not available on your plan",
+              }),
+              {
+                status: 403,
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+              },
+            );
+          }
         }
       }
     }

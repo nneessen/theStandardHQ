@@ -94,23 +94,40 @@ serve(async (req) => {
       );
       hasInstagramAccess = true;
     } else {
-      // After Feb 1, 2026: Check subscription using the database function
-      const { data: accessResult, error: accessError } = await supabase.rpc(
-        "user_has_instagram_access",
-        { p_user_id: userId },
-      );
+      const { data: imoGrantsAllFeatures, error: imoAccessError } =
+        await supabase.rpc("current_user_imo_grants_all_features");
 
-      if (accessError) {
+      if (imoAccessError) {
         console.error(
-          "[instagram-oauth-init] Error checking Instagram access:",
-          accessError,
+          "[instagram-oauth-init] Error checking IMO feature bypass:",
+          imoAccessError,
         );
       }
 
-      hasInstagramAccess = accessResult === true;
-      console.log(
-        `[instagram-oauth-init] User ${userId} subscription check result: ${hasInstagramAccess}`,
-      );
+      if (imoGrantsAllFeatures) {
+        hasInstagramAccess = true;
+        console.log(
+          `[instagram-oauth-init] User ${userId} granted access via IMO feature bypass`,
+        );
+      } else {
+        // After Feb 1, 2026: Check subscription using the database function
+        const { data: accessResult, error: accessError } = await supabase.rpc(
+          "user_has_instagram_access",
+          { p_user_id: userId },
+        );
+
+        if (accessError) {
+          console.error(
+            "[instagram-oauth-init] Error checking Instagram access:",
+            accessError,
+          );
+        }
+
+        hasInstagramAccess = accessResult === true;
+        console.log(
+          `[instagram-oauth-init] User ${userId} subscription check result: ${hasInstagramAccess}`,
+        );
+      }
     }
 
     if (!hasInstagramAccess) {

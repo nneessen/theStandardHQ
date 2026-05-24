@@ -185,7 +185,20 @@ async function verifyAndGate(req: Request): Promise<
     return { ok: true, user, userClient };
   }
 
-  // Tier 2: subscription feature flag
+  // Tier 2: IMO-wide subscription bypass
+  const { data: imoGrantsAllFeatures, error: imoBypassErr } =
+    await userClient.rpc("current_user_imo_grants_all_features");
+  if (imoBypassErr) {
+    console.error(
+      "[close-ai-builder] current_user_imo_grants_all_features rpc error:",
+      imoBypassErr,
+    );
+  }
+  if (imoGrantsAllFeatures) {
+    return { ok: true, user, userClient };
+  }
+
+  // Tier 3: subscription feature flag
   const { data: hasFeature, error: featureErr } = await userClient.rpc(
     "user_has_feature",
     { p_user_id: user.id, p_feature: "close_ai_builder" },
@@ -197,7 +210,7 @@ async function verifyAndGate(req: Request): Promise<
     return { ok: true, user, userClient };
   }
 
-  // Tier 3: owner-downline fallback
+  // Tier 4: owner-downline fallback
   const { data: isDownline } = await userClient.rpc(
     "is_direct_downline_of_owner",
     { p_user_id: user.id },

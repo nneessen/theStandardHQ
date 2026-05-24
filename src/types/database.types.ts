@@ -4175,6 +4175,7 @@ export type Database = {
           contact_phone: string | null;
           created_at: string | null;
           description: string | null;
+          free_all_features: boolean;
           id: string;
           is_active: boolean;
           is_listed: boolean;
@@ -4196,6 +4197,7 @@ export type Database = {
           contact_phone?: string | null;
           created_at?: string | null;
           description?: string | null;
+          free_all_features?: boolean;
           id?: string;
           is_active?: boolean;
           is_listed?: boolean;
@@ -4217,6 +4219,7 @@ export type Database = {
           contact_phone?: string | null;
           created_at?: string | null;
           description?: string | null;
+          free_all_features?: boolean;
           id?: string;
           is_active?: boolean;
           is_listed?: boolean;
@@ -17910,6 +17913,10 @@ export type Database = {
             Args: { role_name: string; target_user_id: string };
             Returns: boolean;
           };
+      current_user_imo_grants_all_features: {
+        Args: never;
+        Returns: boolean;
+      };
       has_subscription_bypass: { Args: never; Returns: boolean };
       health_class_rank: {
         Args: { hc: Database["public"]["Enums"]["health_class"] };

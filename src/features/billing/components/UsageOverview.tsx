@@ -3,7 +3,7 @@
 
 import { Mail, MessageSquare, AlertTriangle, Activity } from "lucide-react";
 import { useUsageTracking } from "@/hooks/subscription";
-import { useSubscription } from "@/hooks/subscription";
+import { useFeatureAccess } from "@/hooks/subscription";
 // eslint-disable-next-line no-restricted-imports
 import { PRICING } from "@/services/subscription";
 import { cn } from "@/lib/utils";
@@ -11,12 +11,12 @@ import { cn } from "@/lib/utils";
 export function UsageOverview() {
   const { emailUsage, smsUsage, isLoading, isEmailWarning, isEmailOverLimit } =
     useUsageTracking();
-  const { subscription } = useSubscription();
+  const { hasAccess: hasEmailAccess, isLoading: isLoadingEmailAccess } =
+    useFeatureAccess("email");
+  const { hasAccess: hasSmsAccess, isLoading: isLoadingSmsAccess } =
+    useFeatureAccess("sms");
 
-  const hasEmailAccess = subscription?.plan?.features?.email || false;
-  const hasSmsAccess = subscription?.plan?.features?.sms || false;
-
-  if (isLoading) {
+  if (isLoading || isLoadingEmailAccess || isLoadingSmsAccess) {
     return (
       <div className="bg-v2-card rounded-v2-md border border-v2-ring shadow-v2-soft p-4">
         <div className="animate-pulse space-y-2">
