@@ -45,11 +45,12 @@ interface SupportDialogProps {
 export function SupportDialog({ open, onClose, userName }: SupportDialogProps) {
   const { user, supabaseUser } = useAuth();
   const userEmail = supabaseUser?.email || user?.email || "";
-  const [selectedIdx, setSelectedIdx] = useState(2); // default: Question
+  const [selectedIdx, setSelectedIdx] = useState(1); // default: Question
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const category = CATEGORIES[selectedIdx];
+  // Guard against an out-of-range index so this (login-path) component never crashes.
+  const category = CATEGORIES[selectedIdx] ?? CATEGORIES[0];
 
   const handleSubmit = async () => {
     if (!message.trim()) {
@@ -89,7 +90,7 @@ export function SupportDialog({ open, onClose, userName }: SupportDialogProps) {
 
       toast.success("Support request sent. We'll get back to you soon.");
       setMessage("");
-      setSelectedIdx(2);
+      setSelectedIdx(1);
       onClose();
     } catch (err) {
       console.error("Support email failed:", err);
