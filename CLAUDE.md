@@ -345,6 +345,35 @@ Always functional, testable, type-safe code
 - add to memory: place active session files in plans/active/... not the root dir.
 
 ═══════════════════════════════════════════════════════════════════════════════
+PROJECT KNOWLEDGE BASE (OBSIDIAN WIKI) - READ BEFORE UNFAMILIAR WORK
+═══════════════════════════════════════════════════════════════════════════════
+
+A synthesized knowledge base for this codebase lives in a sibling Obsidian vault
+at `../Standard HQ/`. It is the fastest way to get oriented on history, prior
+decisions, and known gaps that are not obvious from the code alone.
+
+- Wiki (`../Standard HQ/wiki/`): LLM-maintained synthesis. Start at `index.md`,
+  then open the relevant topic page (security-multi-tenancy,
+  data-layer-rpc-migration, carrier-rules-contracts, hierarchy-architecture,
+  underwriting-wizard, billing-stripe, ...).
+- Raw sources (`../Standard HQ/raw-sources/`): an immutable snapshot of THIS
+  repo's `docs/` that the wiki summarizes.
+
+DIRECTION (do not reverse): `docs/` here is the single source of truth. The vault
+is strictly DOWNSTREAM — it only consumes and summarizes `docs/`. Never copy wiki
+pages back into this repo as canonical, and never edit `raw-sources/` files.
+
+READ trigger: before non-trivial work in an unfamiliar feature area, check the
+matching wiki page first.
+
+UPDATE trigger: when a task produces a durable new doc/handoff/audit under `docs/`,
+sync the vault afterward:
+  1. Copy the new doc into `../Standard HQ/raw-sources/` (flat).
+  2. Fold it into the right `wiki/` topic page + append a `log.md` entry + update `index.md`.
+  3. Run `../Standard HQ/scripts/wiki-lint.sh` (must exit 0).
+Run `../Standard HQ/scripts/wiki-sync-check.sh` anytime to list docs not yet synced.
+
+═══════════════════════════════════════════════════════════════════════════════
 REMINDER: MANDATORY MIGRATION RULES - NEVER VIOLATE
 ═══════════════════════════════════════════════════════════════════════════════
 

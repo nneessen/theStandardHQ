@@ -44,3 +44,9 @@
 
 - Copy `.env.example` to `.env` and set Supabase keys before running locally.
 - Keep business data in Supabase; only store theme/sidebar/auth tokens in local storage.
+
+## Project Knowledge Base (Obsidian wiki)
+
+- A synthesized KB for this codebase lives in a sibling vault at `../Standard HQ/`. Read it before re-deriving context from scattered docs: start at `../Standard HQ/wiki/index.md`, then the relevant topic page.
+- Direction is one-way: `docs/` here is the source of truth; the vault is strictly **downstream** (it summarizes `docs/`). Never edit `../Standard HQ/raw-sources/` or promote wiki pages back into this repo.
+- After adding a durable doc to `docs/`, sync it into `../Standard HQ/raw-sources/` + the wiki, then run `../Standard HQ/scripts/wiki-lint.sh` (exit 0). Use `../Standard HQ/scripts/wiki-sync-check.sh` to see what's unsynced.
