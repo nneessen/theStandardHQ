@@ -14,6 +14,10 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 import { decrypt } from "../_shared/encryption.ts";
 import { getCorsHeaders, corsResponse } from "../_shared/cors.ts";
+import {
+  authorizeSlackImoAccess,
+  requireSlackRequestContext,
+} from "../_shared/slack-auth.ts";
 
 interface IPLeaderboardEntry {
   agent_id: string;
@@ -797,18 +801,9 @@ serve(async (req) => {
 
   try {
     console.log("[slack-ip-leaderboard] Function invoked");
-
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "Server configuration error" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+    const authContext = await requireSlackRequestContext(req, corsHeaders);
+    if (authContext instanceof Response) {
+      return authContext;
     }
 
     const body = await req.json();
@@ -824,7 +819,16 @@ serve(async (req) => {
       );
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const imoAccessResponse = await authorizeSlackImoAccess(
+      authContext,
+      corsHeaders,
+      imoId,
+    );
+    if (imoAccessResponse) {
+      return imoAccessResponse;
+    }
+
+    const supabase = authContext.supabaseAdmin;
 
     // Get Self Made Slack integration specifically
     const { data: integrations, error: integrationError } = await supabase

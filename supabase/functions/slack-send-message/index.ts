@@ -2,9 +2,12 @@
 // Sends a message to a Slack channel
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 import { decrypt } from "../_shared/encryption.ts";
 import { getCorsHeaders, corsResponse } from "../_shared/cors.ts";
+import {
+  resolveAuthorizedSlackIntegration,
+  requireSlackRequestContext,
+} from "../_shared/slack-auth.ts";
 
 interface SlackBlock {
   type: string;
@@ -59,18 +62,9 @@ serve(async (req) => {
 
   try {
     console.log("[slack-send-message] Function invoked");
-
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "Server configuration error" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+    const authContext = await requireSlackRequestContext(req, corsHeaders);
+    if (authContext instanceof Response) {
+      return authContext;
     }
 
     const body: SendMessageRequest = await req.json();
@@ -101,56 +95,38 @@ serve(async (req) => {
       );
     }
 
-    // Get Slack integration - prefer integrationId, fallback to imoId
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    let query = supabase
-      .from("slack_integrations")
-      .select("*")
-      .eq("is_active", true)
-      .eq("connection_status", "connected");
-
-    if (integrationId) {
-      query = query.eq("id", integrationId);
-    } else {
-      query = query.eq("imo_id", imoId);
+    const integrationResult = await resolveAuthorizedSlackIntegration(
+      authContext,
+      corsHeaders,
+      { imoId, integrationId },
+    );
+    if (integrationResult instanceof Response) {
+      return integrationResult;
     }
-
-    const { data: integration, error: fetchError } = await query.maybeSingle();
-
-    if (fetchError || !integration) {
-      return new Response(
-        JSON.stringify({
-          ok: false,
-          error: "No active Slack integration found",
-        }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
-    }
+    const { integration } = integrationResult;
+    const integrationImoId = integration.imo_id as string;
 
     // Decrypt bot token
     const botToken = await decrypt(integration.bot_token_encrypted);
 
     // Create pending message record
-    const { data: messageRecord, error: insertError } = await supabase
-      .from("slack_messages")
-      .insert({
-        imo_id: imoId,
-        slack_integration_id: integration.id,
-        channel_config_id: channelConfigId || null,
-        channel_id: channelId,
-        notification_type: notificationType || "policy_created",
-        message_blocks: blocks || null,
-        message_text: text,
-        related_entity_type: relatedEntityType || null,
-        related_entity_id: relatedEntityId || null,
-        status: "pending",
-      })
-      .select()
-      .single();
+    const { data: messageRecord, error: insertError } =
+      await authContext.supabaseAdmin
+        .from("slack_messages")
+        .insert({
+          imo_id: integrationImoId,
+          slack_integration_id: integration.id,
+          channel_config_id: channelConfigId || null,
+          channel_id: channelId,
+          notification_type: notificationType || "policy_created",
+          message_blocks: blocks || null,
+          message_text: text,
+          related_entity_type: relatedEntityType || null,
+          related_entity_id: relatedEntityId || null,
+          status: "pending",
+        })
+        .select()
+        .single();
 
     if (insertError) {
       console.error(
@@ -158,6 +134,7 @@ serve(async (req) => {
         insertError,
       );
     }
+    const messageRecordId = (messageRecord as { id: string } | null)?.id;
 
     // Send message to Slack
     const slackPayload: Record<string, unknown> = {
@@ -220,22 +197,22 @@ serve(async (req) => {
     // Update message record with result
     if (messageRecord) {
       if (data.ok) {
-        await supabase
+        await authContext.supabaseAdmin
           .from("slack_messages")
           .update({
             message_ts: data.ts,
             status: "sent",
             sent_at: new Date().toISOString(),
           })
-          .eq("id", messageRecord.id);
+          .eq("id", messageRecordId);
       } else {
-        await supabase
+        await authContext.supabaseAdmin
           .from("slack_messages")
           .update({
             status: "failed",
             error_message: data.error,
           })
-          .eq("id", messageRecord.id);
+          .eq("id", messageRecordId);
       }
     }
 
@@ -244,7 +221,7 @@ serve(async (req) => {
 
       // Update integration status if token is invalid
       if (data.error === "token_revoked" || data.error === "invalid_auth") {
-        await supabase
+        await authContext.supabaseAdmin
           .from("slack_integrations")
           .update({
             connection_status: "error",
@@ -268,7 +245,7 @@ serve(async (req) => {
         ok: true,
         channel: data.channel,
         ts: data.ts,
-        messageId: messageRecord?.id,
+        messageId: messageRecordId,
       }),
       {
         status: 200,

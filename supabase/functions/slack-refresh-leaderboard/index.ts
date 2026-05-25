@@ -15,6 +15,8 @@ interface DailyProductionEntry {
   policy_count: number;
 }
 
+const EPIC_LIFE_IMO_ID = "89514211-f2bd-4440-9527-90a472c5e622";
+
 /**
  * Format currency
  */
@@ -216,6 +218,18 @@ serve(async (req) => {
   try {
     console.log("[slack-refresh-leaderboard] Function invoked");
 
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "Unauthorized" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+    const bearerToken = authHeader.slice(7);
+
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
@@ -229,6 +243,13 @@ serve(async (req) => {
       );
     }
 
+    const supabaseAdmin = createClient(
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY,
+      {
+        auth: { autoRefreshToken: false, persistSession: false },
+      },
+    );
     const body = await req.json();
     const { logId, title } = body;
 
@@ -242,10 +263,27 @@ serve(async (req) => {
       );
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const isServiceRoleCall = bearerToken === SUPABASE_SERVICE_ROLE_KEY;
+
+    if (!isServiceRoleCall) {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabaseAdmin.auth.getUser(bearerToken);
+
+      if (authError || !user) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "Unauthorized" }),
+          {
+            status: 401,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+    }
 
     // Get the daily sales log
-    const { data: dailyLog, error: logError } = await supabase
+    const { data: dailyLog, error: logError } = await supabaseAdmin
       .from("daily_sales_logs")
       .select("*")
       .eq("id", logId)
@@ -262,8 +300,46 @@ serve(async (req) => {
       );
     }
 
+    if (dailyLog.imo_id === EPIC_LIFE_IMO_ID) {
+      console.log("[slack-refresh-leaderboard] Skipping Epic Life IMO");
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          skipped: true,
+          reason: "Epic Life is Slack-disabled",
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    if (!isServiceRoleCall) {
+      const {
+        data: { user },
+      } = await supabaseAdmin.auth.getUser(bearerToken);
+
+      const { data: profile, error: profileError } = await supabaseAdmin
+        .from("user_profiles")
+        .select("imo_id")
+        .eq("id", user!.id)
+        .maybeSingle();
+
+      if (
+        profileError ||
+        !profile?.imo_id ||
+        profile.imo_id !== dailyLog.imo_id
+      ) {
+        return new Response(JSON.stringify({ ok: false, error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     // Get the Slack integration
-    const { data: integration, error: intError } = await supabase
+    const { data: integration, error: intError } = await supabaseAdmin
       .from("slack_integrations")
       .select("id, bot_token_encrypted")
       .eq("id", dailyLog.slack_integration_id)
@@ -287,7 +363,7 @@ serve(async (req) => {
     const botToken = await decrypt(integration.bot_token_encrypted);
 
     // Get today's production for leaderboard
-    const { data: productionData } = await supabase.rpc(
+    const { data: productionData } = await supabaseAdmin.rpc(
       "get_daily_production_by_agent",
       {
         p_imo_id: dailyLog.imo_id,
@@ -364,7 +440,7 @@ serve(async (req) => {
 
           if (postData.ok) {
             // Update the log with new message_ts
-            await supabase
+            await supabaseAdmin
               .from("daily_sales_logs")
               .update({
                 leaderboard_message_ts: postData.ts,
@@ -437,7 +513,7 @@ serve(async (req) => {
 
       if (postData.ok) {
         // Update the log with message_ts
-        await supabase
+        await supabaseAdmin
           .from("daily_sales_logs")
           .update({
             leaderboard_message_ts: postData.ts,

@@ -3831,6 +3831,51 @@ export type Database = {
           },
         ];
       };
+      epic_book_dup_map: {
+        Row: {
+          batch_label: string;
+          created_at: string;
+          entity_type: string;
+          new_id: string;
+          source_id: string;
+          source_imo_id: string;
+          target_imo_id: string;
+        };
+        Insert: {
+          batch_label: string;
+          created_at?: string;
+          entity_type: string;
+          new_id: string;
+          source_id: string;
+          source_imo_id: string;
+          target_imo_id: string;
+        };
+        Update: {
+          batch_label?: string;
+          created_at?: string;
+          entity_type?: string;
+          new_id?: string;
+          source_id?: string;
+          source_imo_id?: string;
+          target_imo_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "epic_book_dup_map_source_imo_id_fkey";
+            columns: ["source_imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "epic_book_dup_map_target_imo_id_fkey";
+            columns: ["target_imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       expense_templates: {
         Row: {
           amount: number;

@@ -12,6 +12,7 @@ import {
   startOfQuarter,
   subQuarters,
 } from "https://esm.sh/date-fns@3.3.1";
+import { EPIC_LIFE_IMO_ID } from "../_shared/slack-auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -50,6 +51,28 @@ interface ProcessResult {
   success: boolean;
   recipientCount: number;
   error?: string;
+  skipped?: boolean;
+}
+
+async function getEffectiveScheduleImoId(
+  supabase: ReturnType<typeof createSupabaseAdminClient>,
+  schedule: ScheduledReport,
+): Promise<string | null> {
+  if (schedule.imo_id) {
+    return schedule.imo_id;
+  }
+
+  if (!schedule.agency_id) {
+    return null;
+  }
+
+  const { data: agency } = await supabase
+    .from("agencies")
+    .select("imo_id")
+    .eq("id", schedule.agency_id)
+    .maybeSingle();
+
+  return agency?.imo_id ?? null;
 }
 
 // Calculate report date range based on config and frequency
@@ -533,6 +556,41 @@ async function processSchedule(
     console.log(
       `[ScheduledReports] Processing schedule: ${schedule.schedule_name} (${schedule.id})`,
     );
+
+    const effectiveImoId = await getEffectiveScheduleImoId(supabase, schedule);
+    if (effectiveImoId === EPIC_LIFE_IMO_ID) {
+      console.log(
+        `[ScheduledReports] Skipping Epic Life schedule: ${schedule.schedule_name} (${schedule.id})`,
+      );
+
+      const { data: delivery, error: deliveryError } = await supabase
+        .from("scheduled_report_deliveries")
+        .insert({
+          schedule_id: schedule.id,
+          status: "processing",
+          recipients_sent: schedule.recipients,
+        })
+        .select("id")
+        .single();
+
+      if (deliveryError) {
+        throw new Error(
+          `Failed to create skipped delivery record: ${deliveryError.message}`,
+        );
+      }
+
+      await supabase.rpc("complete_scheduled_delivery", {
+        p_schedule_id: schedule.id,
+        p_delivery_id: delivery.id,
+        p_success: true,
+        p_error_message: "Skipped: Epic Life scheduled reports are disabled",
+      });
+
+      result.success = true;
+      result.skipped = true;
+      result.error = "Epic Life scheduled reports are disabled";
+      return result;
+    }
 
     // Calculate report period
     const period = calculateReportPeriod(

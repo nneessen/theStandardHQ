@@ -7,6 +7,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 import { encrypt, decrypt } from "../_shared/encryption.ts";
 import { parseSignedState } from "../_shared/hmac.ts";
 import { corsResponse } from "../_shared/cors.ts";
+import { EPIC_LIFE_IMO_ID } from "../_shared/slack-auth.ts";
 
 interface SlackOAuthResponse {
   ok: boolean;
@@ -120,6 +121,13 @@ serve(async (req) => {
     }
 
     const { imoId, userId, agencyId, returnUrl } = state;
+
+    if (imoId === EPIC_LIFE_IMO_ID) {
+      return Response.redirect(
+        `${APP_URL}/settings/integrations?slack=error&reason=epic_disabled`,
+      );
+    }
+
     // Ensure redirect URL is absolute (handle relative paths from frontend)
     let redirectUrl = returnUrl || `${APP_URL}/settings/integrations`;
     if (redirectUrl.startsWith("/")) {
@@ -132,6 +140,29 @@ serve(async (req) => {
 
     // Create Supabase client with service role
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    const { data: profile, error: profileError } = await supabase
+      .from("user_profiles")
+      .select("imo_id")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (profileError || !profile?.imo_id || profile.imo_id !== imoId) {
+      return Response.redirect(`${redirectUrl}?slack=error&reason=forbidden`);
+    }
+
+    if (agencyId) {
+      const { data: agency, error: agencyError } = await supabase
+        .from("agencies")
+        .select("id")
+        .eq("id", agencyId)
+        .eq("imo_id", imoId)
+        .maybeSingle();
+
+      if (agencyError || !agency) {
+        return Response.redirect(`${redirectUrl}?slack=error&reason=forbidden`);
+      }
+    }
 
     // =========================================================================
     // Look up Slack credentials for this agency

@@ -3,9 +3,12 @@
 // Supports per-agency Slack app credentials for multi-workspace OAuth
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 import { createSignedState } from "../_shared/hmac.ts";
 import { getCorsHeaders, corsResponse } from "../_shared/cors.ts";
+import {
+  authorizeSlackImoAccess,
+  requireSlackRequestContext,
+} from "../_shared/slack-auth.ts";
 
 interface OAuthInitRequest {
   imoId: string;
@@ -34,11 +37,13 @@ serve(async (req) => {
 
   try {
     console.log("[slack-oauth-init] Function invoked");
+    const authContext = await requireSlackRequestContext(req, corsHeaders);
+    if (authContext instanceof Response) {
+      return authContext;
+    }
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    if (!SUPABASE_URL) {
       return new Response(
         JSON.stringify({ ok: false, error: "Server configuration error" }),
         {
@@ -61,7 +66,38 @@ serve(async (req) => {
       );
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const imoAccessResponse = await authorizeSlackImoAccess(
+      authContext,
+      corsHeaders,
+      imoId,
+    );
+    if (imoAccessResponse) {
+      return imoAccessResponse;
+    }
+
+    if (!authContext.isServiceRoleCall && authContext.userId !== userId) {
+      return new Response(JSON.stringify({ ok: false, error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (agencyId) {
+      const { data: agency, error: agencyError } =
+        await authContext.supabaseAdmin
+          .from("agencies")
+          .select("id, imo_id")
+          .eq("id", agencyId)
+          .eq("imo_id", imoId)
+          .maybeSingle();
+
+      if (agencyError || !agency) {
+        return new Response(JSON.stringify({ ok: false, error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     // =========================================================================
     // Look up Slack credentials for this agency (or fall back to IMO-level/env)
@@ -69,13 +105,11 @@ serve(async (req) => {
     let clientId: string | null = null;
 
     // Try database credentials first
-    const { data: credentials, error: credError } = await supabase.rpc(
-      "get_agency_slack_credentials",
-      {
+    const { data: credentials, error: credError } =
+      await authContext.supabaseAdmin.rpc("get_agency_slack_credentials", {
         p_imo_id: imoId,
         p_agency_id: agencyId || null,
-      },
-    );
+      });
 
     if (credError) {
       console.error(

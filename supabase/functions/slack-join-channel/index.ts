@@ -2,9 +2,12 @@
 // Joins the bot to a Slack channel
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 import { decrypt } from "../_shared/encryption.ts";
 import { getCorsHeaders, corsResponse } from "../_shared/cors.ts";
+import {
+  resolveAuthorizedSlackIntegration,
+  requireSlackRequestContext,
+} from "../_shared/slack-auth.ts";
 
 interface SlackJoinResponse {
   ok: boolean;
@@ -27,18 +30,9 @@ serve(async (req) => {
 
   try {
     console.log("[slack-join-channel] Function invoked");
-
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "Server configuration error" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+    const authContext = await requireSlackRequestContext(req, corsHeaders);
+    if (authContext instanceof Response) {
+      return authContext;
     }
 
     const body = await req.json();
@@ -57,35 +51,15 @@ serve(async (req) => {
       );
     }
 
-    // Get Slack integration - prefer integrationId for multi-workspace support
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    let query = supabase
-      .from("slack_integrations")
-      .select("*")
-      .eq("is_active", true)
-      .eq("connection_status", "connected");
-
-    if (integrationId) {
-      query = query.eq("id", integrationId);
-    } else {
-      query = query.eq("imo_id", imoId);
+    const integrationResult = await resolveAuthorizedSlackIntegration(
+      authContext,
+      corsHeaders,
+      { imoId, integrationId },
+    );
+    if (integrationResult instanceof Response) {
+      return integrationResult;
     }
-
-    const { data: integration, error: fetchError } = await query.maybeSingle();
-
-    if (fetchError || !integration) {
-      return new Response(
-        JSON.stringify({
-          ok: false,
-          error: "No active Slack integration found",
-        }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
-    }
+    const { integration } = integrationResult;
 
     // Decrypt bot token
     const botToken = await decrypt(integration.bot_token_encrypted);
@@ -134,7 +108,7 @@ serve(async (req) => {
 
       // Update integration status if token is invalid
       if (data.error === "token_revoked" || data.error === "invalid_auth") {
-        await supabase
+        await authContext.supabaseAdmin
           .from("slack_integrations")
           .update({
             connection_status: "error",

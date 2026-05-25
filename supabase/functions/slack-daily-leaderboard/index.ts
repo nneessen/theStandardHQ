@@ -55,6 +55,8 @@ function getRankEmoji(rank: number): string {
   }
 }
 
+const EPIC_LIFE_IMO_ID = "89514211-f2bd-4440-9527-90a472c5e622";
+
 /**
  * Build leaderboard blocks
  */
@@ -131,10 +133,23 @@ serve(async (req) => {
   try {
     console.log("[slack-daily-leaderboard] Function invoked");
 
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ ok: false, error: "Unauthorized" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+    const bearerToken = authHeader.slice(7);
+
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY) {
       return new Response(
         JSON.stringify({ ok: false, error: "Server configuration error" }),
         {
@@ -144,6 +159,13 @@ serve(async (req) => {
       );
     }
 
+    const supabaseAdmin = createClient(
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY,
+      {
+        auth: { autoRefreshToken: false, persistSession: false },
+      },
+    );
     const body = await req.json();
     const { imoId, agencyId, manual = false } = body;
 
@@ -157,10 +179,63 @@ serve(async (req) => {
       );
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    if (imoId === EPIC_LIFE_IMO_ID) {
+      console.log("[slack-daily-leaderboard] Skipping Epic Life IMO");
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          skipped: true,
+          reason: "Epic Life is Slack-disabled",
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const isServiceRoleCall = bearerToken === SUPABASE_SERVICE_ROLE_KEY;
+    let productionClient = supabaseAdmin;
+
+    if (!isServiceRoleCall) {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabaseAdmin.auth.getUser(bearerToken);
+
+      if (authError || !user) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "Unauthorized" }),
+          {
+            status: 401,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
+      }
+
+      const { data: profile, error: profileError } = await supabaseAdmin
+        .from("user_profiles")
+        .select("imo_id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (profileError || !profile?.imo_id || profile.imo_id !== imoId) {
+        return new Response(JSON.stringify({ ok: false, error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      productionClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        global: {
+          headers: { Authorization: authHeader },
+        },
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+    }
 
     // Get Slack integration with channel settings (including workspace logo)
-    const { data: integration, error: integrationError } = await supabase
+    const { data: integration, error: integrationError } = await supabaseAdmin
       .from("slack_integrations")
       .select("*, workspace_logo_url")
       .eq("imo_id", imoId)
@@ -218,7 +293,7 @@ serve(async (req) => {
     }
 
     // Get production data using RPC
-    const { data: production, error: prodError } = await supabase.rpc(
+    const { data: production, error: prodError } = await productionClient.rpc(
       "get_agency_production_by_agent",
       {
         p_agency_id: agencyId || null,
@@ -301,7 +376,7 @@ serve(async (req) => {
     const data = await response.json();
 
     // Record message
-    await supabase.from("slack_messages").insert({
+    await supabaseAdmin.from("slack_messages").insert({
       imo_id: imoId,
       slack_integration_id: integration.id,
       channel_id: integration.leaderboard_channel_id,
@@ -318,7 +393,7 @@ serve(async (req) => {
 
     // Update integration status if token is invalid
     if (data.error === "token_revoked" || data.error === "invalid_auth") {
-      await supabase
+      await supabaseAdmin
         .from("slack_integrations")
         .update({
           connection_status: "error",

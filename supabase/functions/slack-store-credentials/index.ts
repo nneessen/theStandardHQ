@@ -5,6 +5,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 import { encrypt } from "../_shared/encryption.ts";
 import { getCorsHeaders, corsResponse } from "../_shared/cors.ts";
+import { EPIC_LIFE_IMO_ID } from "../_shared/slack-auth.ts";
 
 interface StoreCredentialsRequest {
   imoId: string;
@@ -89,6 +90,20 @@ serve(async (req) => {
         }),
         {
           status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    if (imoId === EPIC_LIFE_IMO_ID) {
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          skipped: true,
+          reason: "Epic Life is Slack-disabled",
+        }),
+        {
+          status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );

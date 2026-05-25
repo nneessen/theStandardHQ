@@ -2,9 +2,12 @@
 // Fetches members of a Slack channel for mention autocomplete
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 import { decrypt } from "../_shared/encryption.ts";
 import { getCorsHeaders, corsResponse } from "../_shared/cors.ts";
+import {
+  resolveAuthorizedSlackIntegration,
+  requireSlackRequestContext,
+} from "../_shared/slack-auth.ts";
 
 interface SlackUser {
   id: string;
@@ -46,17 +49,9 @@ serve(async (req) => {
   const corsHeaders = getCorsHeaders(req.headers.get("origin"));
 
   try {
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "Server configuration error" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+    const authContext = await requireSlackRequestContext(req, corsHeaders);
+    if (authContext instanceof Response) {
+      return authContext;
     }
 
     const body = await req.json();
@@ -75,33 +70,15 @@ serve(async (req) => {
       );
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    // Get integration with bot token
-    const { data: integration, error: fetchError } = await supabase
-      .from("slack_integrations")
-      .select("id, bot_token_encrypted, team_id")
-      .eq("id", integrationId)
-      .eq("is_active", true)
-      .eq("connection_status", "connected")
-      .maybeSingle();
-
-    if (fetchError || !integration) {
-      console.error(
-        "[slack-get-channel-members] Integration fetch error:",
-        fetchError,
-      );
-      return new Response(
-        JSON.stringify({
-          ok: false,
-          error: "Integration not found or not connected",
-        }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+    const integrationResult = await resolveAuthorizedSlackIntegration(
+      authContext,
+      corsHeaders,
+      { integrationId },
+    );
+    if (integrationResult instanceof Response) {
+      return integrationResult;
     }
+    const { integration } = integrationResult;
 
     // Decrypt bot token
     let botToken: string;

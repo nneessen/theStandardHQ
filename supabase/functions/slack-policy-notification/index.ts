@@ -2,9 +2,12 @@
 // Posts simplified policy notifications and updates daily leaderboard in Slack
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 import { decrypt } from "../_shared/encryption.ts";
 import { getCorsHeaders, corsResponse } from "../_shared/cors.ts";
+import {
+  authorizeSlackImoAccess,
+  requireSlackRequestContext,
+} from "../_shared/slack-auth.ts";
 
 interface PolicyNotificationPayload {
   action?:
@@ -68,6 +71,8 @@ interface ImoSubmitTotals {
   mtd_ap: number;
   mtd_policies: number;
 }
+
+const EPIC_LIFE_IMO_ID = "89514211-f2bd-4440-9527-90a472c5e622";
 
 /**
  * Get today's date in US Eastern timezone (YYYY-MM-DD format)
@@ -1141,6 +1146,37 @@ async function handleCompleteFirstSale(
     return { ok: false, error: "Log not found" };
   }
 
+  if (log.imo_id === EPIC_LIFE_IMO_ID) {
+    const epicTitle = overrideTitle
+      ? sanitizeSlackTitle(overrideTitle)
+      : log.title
+        ? sanitizeSlackTitle(log.title)
+        : getDefaultDailyTitle();
+
+    const { error: cleanupError } = await supabase
+      .from("daily_sales_logs")
+      .update({
+        pending_policy_data: null,
+        title: epicTitle,
+        title_set_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", logId);
+
+    if (cleanupError) {
+      console.error(
+        "[slack-policy-notification] Failed to clean Epic Life pending first-sale log:",
+        cleanupError,
+      );
+    }
+
+    console.log(
+      "[slack-policy-notification] Skipping complete-first-sale for Epic Life",
+      logId,
+    );
+    return { ok: true, policyOk: true, leaderboardOk: true };
+  }
+
   if (!log.pending_policy_data) {
     console.log(
       "[slack-policy-notification] No pending data - already completed",
@@ -1425,6 +1461,14 @@ async function handleUpdateLeaderboard(
     return { ok: false, error: "Log not found" };
   }
 
+  if (log.imo_id === EPIC_LIFE_IMO_ID) {
+    console.log(
+      "[slack-policy-notification] Skipping update-leaderboard for Epic Life",
+      logId,
+    );
+    return { ok: true, updated: false };
+  }
+
   // ALL integrations now get leaderboards (multi-channel naming enabled)
   if (!log.leaderboard_message_ts) {
     console.error("[slack-policy-notification] No message_ts to update");
@@ -1596,6 +1640,10 @@ serve(async (req) => {
 
   try {
     console.log("[slack-policy-notification] Function invoked");
+    const authContext = await requireSlackRequestContext(req, corsHeaders);
+    if (authContext instanceof Response) {
+      return authContext;
+    }
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -1610,7 +1658,7 @@ serve(async (req) => {
       );
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const supabase = authContext.supabaseAdmin;
     const body: PolicyNotificationPayload = await req.json();
 
     // Handle complete-first-sale action (posts pending notification after naming dialog)
@@ -1623,6 +1671,32 @@ serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           },
         );
+      }
+
+      if (!authContext.isServiceRoleCall) {
+        const { data: log } = await supabase
+          .from("daily_sales_logs")
+          .select("imo_id")
+          .eq("id", body.logId)
+          .maybeSingle();
+        const logImoId = (log as { imo_id: string | null } | null)?.imo_id;
+        if (!logImoId) {
+          return new Response(
+            JSON.stringify({ ok: false, error: "Daily log not found" }),
+            {
+              status: 404,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            },
+          );
+        }
+        const imoAccessResponse = await authorizeSlackImoAccess(
+          authContext,
+          corsHeaders,
+          logImoId,
+        );
+        if (imoAccessResponse) {
+          return imoAccessResponse;
+        }
       }
 
       const result = await handleCompleteFirstSale(supabase, body.logId);
@@ -1642,6 +1716,32 @@ serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           },
         );
+      }
+
+      if (!authContext.isServiceRoleCall) {
+        const { data: log } = await supabase
+          .from("daily_sales_logs")
+          .select("imo_id")
+          .eq("id", body.logId)
+          .maybeSingle();
+        const logImoId = (log as { imo_id: string | null } | null)?.imo_id;
+        if (!logImoId) {
+          return new Response(
+            JSON.stringify({ ok: false, error: "Daily log not found" }),
+            {
+              status: 404,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            },
+          );
+        }
+        const imoAccessResponse = await authorizeSlackImoAccess(
+          authContext,
+          corsHeaders,
+          logImoId,
+        );
+        if (imoAccessResponse) {
+          return imoAccessResponse;
+        }
       }
 
       const result = await handleUpdateLeaderboard(supabase, body.logId);
@@ -1664,6 +1764,33 @@ serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           },
         );
+      }
+
+      if (!authContext.isServiceRoleCall) {
+        const { data: log } = await supabase
+          .from("daily_sales_logs")
+          .select("imo_id")
+          .eq("first_sale_group_id", body.firstSaleGroupId)
+          .limit(1)
+          .maybeSingle();
+        const logImoId = (log as { imo_id: string | null } | null)?.imo_id;
+        if (!logImoId) {
+          return new Response(
+            JSON.stringify({ ok: false, error: "Daily log not found" }),
+            {
+              status: 404,
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+            },
+          );
+        }
+        const imoAccessResponse = await authorizeSlackImoAccess(
+          authContext,
+          corsHeaders,
+          logImoId,
+        );
+        if (imoAccessResponse) {
+          return imoAccessResponse;
+        }
       }
 
       const result = await handleCompleteFirstSaleBatch(
@@ -1713,6 +1840,23 @@ serve(async (req) => {
       );
     }
 
+    if (imoId === EPIC_LIFE_IMO_ID) {
+      console.log(
+        `[slack-policy-notification] Skipping Slack post for Epic Life policy ${policyId}`,
+      );
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          skipped: true,
+          reason: "Epic Life is Slack-disabled",
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
+    }
+
     if (!imoId || !policyId || !agentId) {
       return new Response(
         JSON.stringify({
@@ -1724,6 +1868,17 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         },
       );
+    }
+
+    if (!authContext.isServiceRoleCall) {
+      const imoAccessResponse = await authorizeSlackImoAccess(
+        authContext,
+        corsHeaders,
+        imoId,
+      );
+      if (imoAccessResponse) {
+        return imoAccessResponse;
+      }
     }
 
     console.log(

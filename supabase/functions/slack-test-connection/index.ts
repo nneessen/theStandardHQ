@@ -2,9 +2,12 @@
 // Tests Slack connection by calling auth.test API
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 import { decrypt } from "../_shared/encryption.ts";
 import { getCorsHeaders, corsResponse } from "../_shared/cors.ts";
+import {
+  resolveAuthorizedSlackIntegration,
+  requireSlackRequestContext,
+} from "../_shared/slack-auth.ts";
 
 interface SlackAuthTestResponse {
   ok: boolean;
@@ -27,18 +30,9 @@ serve(async (req) => {
 
   try {
     console.log("[slack-test-connection] Function invoked");
-
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "Server configuration error" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
+    const authContext = await requireSlackRequestContext(req, corsHeaders);
+    if (authContext instanceof Response) {
+      return authContext;
     }
 
     const body = await req.json();
@@ -54,31 +48,20 @@ serve(async (req) => {
       );
     }
 
-    // Get Slack integration - prefer integrationId for multi-workspace support
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    let query = supabase.from("slack_integrations").select("*");
-
-    if (integrationId) {
-      query = query.eq("id", integrationId);
-    } else {
-      query = query.eq("imo_id", imoId);
+    const integrationResult = await resolveAuthorizedSlackIntegration(
+      authContext,
+      corsHeaders,
+      {
+        imoId,
+        integrationId,
+        requireActive: false,
+        requireConnected: false,
+      },
+    );
+    if (integrationResult instanceof Response) {
+      return integrationResult;
     }
-
-    const { data: integration, error: fetchError } = await query.maybeSingle();
-
-    if (fetchError || !integration) {
-      return new Response(
-        JSON.stringify({
-          ok: false,
-          error: "No Slack integration found",
-        }),
-        {
-          status: 404,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        },
-      );
-    }
+    const { integration } = integrationResult;
 
     // Decrypt bot token
     const botToken = await decrypt(integration.bot_token_encrypted);
@@ -96,7 +79,7 @@ serve(async (req) => {
 
     // Update integration status based on result
     if (data.ok) {
-      await supabase
+      await authContext.supabaseAdmin
         .from("slack_integrations")
         .update({
           connection_status: "connected",
@@ -128,9 +111,14 @@ serve(async (req) => {
             emailLookup = {
               found: true,
               id: lookupData.user.id,
-              displayName: lookupData.user.profile?.display_name || lookupData.user.profile?.real_name || lookupData.user.real_name,
+              displayName:
+                lookupData.user.profile?.display_name ||
+                lookupData.user.profile?.real_name ||
+                lookupData.user.real_name,
               email: lookupData.user.profile?.email,
-              avatarUrl: lookupData.user.profile?.image_72 || lookupData.user.profile?.image_48,
+              avatarUrl:
+                lookupData.user.profile?.image_72 ||
+                lookupData.user.profile?.image_48,
             };
           } else {
             emailLookup = {
@@ -141,7 +129,8 @@ serve(async (req) => {
         } catch (lookupErr) {
           emailLookup = {
             found: false,
-            error: lookupErr instanceof Error ? lookupErr.message : "Lookup failed",
+            error:
+              lookupErr instanceof Error ? lookupErr.message : "Lookup failed",
           };
         }
 
@@ -161,25 +150,48 @@ serve(async (req) => {
             const listData = await listResponse.json();
             if (listData.ok && listData.members) {
               const matches = listData.members
-                .filter((m: { deleted?: boolean; is_bot?: boolean; name?: string; real_name?: string; profile?: { display_name?: string; email?: string } }) =>
-                  !m.deleted && !m.is_bot && (
-                    m.name?.toLowerCase().includes(searchName) ||
-                    m.real_name?.toLowerCase().includes("nick") ||
-                    m.profile?.display_name?.toLowerCase().includes("nick")
-                  )
+                .filter(
+                  (m: {
+                    deleted?: boolean;
+                    is_bot?: boolean;
+                    name?: string;
+                    real_name?: string;
+                    profile?: { display_name?: string; email?: string };
+                  }) =>
+                    !m.deleted &&
+                    !m.is_bot &&
+                    (m.name?.toLowerCase().includes(searchName) ||
+                      m.real_name?.toLowerCase().includes("nick") ||
+                      m.profile?.display_name?.toLowerCase().includes("nick")),
                 )
-                .map((m: { id: string; name: string; real_name?: string; profile?: { display_name?: string; email?: string; image_72?: string } }) => ({
-                  id: m.id,
-                  name: m.name,
-                  realName: m.real_name,
-                  displayName: m.profile?.display_name,
-                  email: m.profile?.email,
-                  avatar: m.profile?.image_72,
-                }));
+                .map(
+                  (m: {
+                    id: string;
+                    name: string;
+                    real_name?: string;
+                    profile?: {
+                      display_name?: string;
+                      email?: string;
+                      image_72?: string;
+                    };
+                  }) => ({
+                    id: m.id,
+                    name: m.name,
+                    realName: m.real_name,
+                    displayName: m.profile?.display_name,
+                    email: m.profile?.email,
+                    avatar: m.profile?.image_72,
+                  }),
+                );
               userSearch = { totalUsers: listData.members.length, matches };
             }
           } catch (searchErr) {
-            userSearch = { error: searchErr instanceof Error ? searchErr.message : "Search failed" };
+            userSearch = {
+              error:
+                searchErr instanceof Error
+                  ? searchErr.message
+                  : "Search failed",
+            };
           }
         }
       }
@@ -199,7 +211,7 @@ serve(async (req) => {
       );
     } else {
       // Token is invalid or revoked
-      await supabase
+      await authContext.supabaseAdmin
         .from("slack_integrations")
         .update({
           connection_status: "error",
