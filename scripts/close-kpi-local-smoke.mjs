@@ -133,8 +133,7 @@ function summarizeRollup(rollup) {
       contactCadenceAvgHours:
         rollup.widgets?.contact_cadence?.avgGapHours ?? null,
       dialAttemptsAvg: rollup.widgets?.dial_attempts?.avgAttempts ?? null,
-      opportunityPipelineValue:
-        rollup.widgets?.opp_funnel?.totalValue ?? null,
+      opportunityPipelineValue: rollup.widgets?.opp_funnel?.totalValue ?? null,
       vmRateRows: rollup.widgets?.vm_rate?.rows?.length ?? 0,
       crossRefRows: rollup.widgets?.cross_ref?.rows?.length ?? 0,
     },

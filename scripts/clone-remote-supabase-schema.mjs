@@ -1,15 +1,17 @@
-import { execFileSync } from 'node:child_process';
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
-import process from 'node:process';
+import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import process from "node:process";
 
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 
 const ROOT = process.cwd();
-const TMP_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'supabase-schema-clone-'));
+const TMP_DIR = fs.mkdtempSync(
+  path.join(os.tmpdir(), "supabase-schema-clone-"),
+);
 
-const envFiles = ['.env.local', '.env'];
+const envFiles = [".env.local", ".env"];
 for (const envFile of envFiles) {
   const envPath = path.join(ROOT, envFile);
   if (fs.existsSync(envPath)) {
@@ -20,34 +22,37 @@ for (const envFile of envFiles) {
 const remoteDbUrl = process.env.REMOTE_DATABASE_URL || process.env.DATABASE_URL;
 const localAdminDbUrl =
   process.env.LOCAL_SUPABASE_ADMIN_DATABASE_URL ||
-  'postgresql://supabase_admin:postgres@127.0.0.1:54322/postgres';
+  "postgresql://supabase_admin:postgres@127.0.0.1:54322/postgres";
 
 if (!remoteDbUrl) {
   console.error(
-    'Missing REMOTE_DATABASE_URL or DATABASE_URL in your environment. This command needs a remote Postgres URL.',
+    "Missing REMOTE_DATABASE_URL or DATABASE_URL in your environment. This command needs a remote Postgres URL.",
   );
   process.exit(1);
 }
 
 const encodedRemoteDbUrl = new URL(remoteDbUrl).toString();
-const schemaDumpPath = path.join(TMP_DIR, 'remote_schema.sql');
-const patchedSchemaDumpPath = path.join(TMP_DIR, 'remote_schema_patched.sql');
-const bucketsCsvPath = path.join(TMP_DIR, 'storage_buckets.csv');
-const migrationsCsvPath = path.join(TMP_DIR, 'schema_migrations.csv');
-const prepareLocalSqlPath = path.join(TMP_DIR, 'prepare_local.sql');
-const exactPolicySqlPath = path.join(TMP_DIR, 'restore_exact_is_agency_owner_policies.sql');
+const schemaDumpPath = path.join(TMP_DIR, "remote_schema.sql");
+const patchedSchemaDumpPath = path.join(TMP_DIR, "remote_schema_patched.sql");
+const bucketsCsvPath = path.join(TMP_DIR, "storage_buckets.csv");
+const migrationsCsvPath = path.join(TMP_DIR, "schema_migrations.csv");
+const prepareLocalSqlPath = path.join(TMP_DIR, "prepare_local.sql");
+const exactPolicySqlPath = path.join(
+  TMP_DIR,
+  "restore_exact_is_agency_owner_policies.sql",
+);
 
 function run(command, args, options = {}) {
-  console.log(`$ ${command} ${args.join(' ')}`);
+  console.log(`$ ${command} ${args.join(" ")}`);
   execFileSync(command, args, {
     cwd: ROOT,
-    stdio: 'inherit',
+    stdio: "inherit",
     ...options,
   });
 }
 
 function writeFile(filePath, content) {
-  fs.writeFileSync(filePath, content, 'utf8');
+  fs.writeFileSync(filePath, content, "utf8");
 }
 
 function cleanup() {
@@ -195,18 +200,18 @@ writeFile(prepareLocalSqlPath, prepareLocalSql);
 writeFile(exactPolicySqlPath, exactPolicySql);
 
 try {
-  run('supabase', [
-    'db',
-    'dump',
-    '--db-url',
+  run("supabase", [
+    "db",
+    "dump",
+    "--db-url",
     encodedRemoteDbUrl,
-    '--schema',
-    'public,storage,auth',
-    '--file',
+    "--schema",
+    "public,storage,auth",
+    "--file",
     schemaDumpPath,
   ]);
 
-  const rawSchemaDump = fs.readFileSync(schemaDumpPath, 'utf8');
+  const rawSchemaDump = fs.readFileSync(schemaDumpPath, "utf8");
   const policyRewrites = [
     [
       '"public"."is_agency_owner"() OR "public"."is_imo_admin"()',
@@ -224,34 +229,60 @@ try {
   }
   writeFile(patchedSchemaDumpPath, patchedSchemaDump);
 
-  run('psql', [remoteDbUrl, '-c', `\\copy storage.buckets to '${bucketsCsvPath}' csv`]);
-  run('psql', [
+  run("psql", [
     remoteDbUrl,
-    '-c',
+    "-c",
+    `\\copy storage.buckets to '${bucketsCsvPath}' csv`,
+  ]);
+  run("psql", [
+    remoteDbUrl,
+    "-c",
     `\\copy supabase_migrations.schema_migrations to '${migrationsCsvPath}' csv`,
   ]);
 
-  run('psql', [localAdminDbUrl, '-v', 'ON_ERROR_STOP=1', '-f', prepareLocalSqlPath]);
-  run('psql', [localAdminDbUrl, '-v', 'ON_ERROR_STOP=1', '-f', patchedSchemaDumpPath]);
-  run('psql', [localAdminDbUrl, '-v', 'ON_ERROR_STOP=1', '-f', exactPolicySqlPath]);
-  run('psql', [
+  run("psql", [
     localAdminDbUrl,
-    '-v',
-    'ON_ERROR_STOP=1',
-    '-c',
-    'truncate table supabase_migrations.schema_migrations',
+    "-v",
+    "ON_ERROR_STOP=1",
+    "-f",
+    prepareLocalSqlPath,
   ]);
-  run('psql', [localAdminDbUrl, '-c', `\\copy storage.buckets from '${bucketsCsvPath}' csv`]);
-  run('psql', [
+  run("psql", [
     localAdminDbUrl,
-    '-c',
+    "-v",
+    "ON_ERROR_STOP=1",
+    "-f",
+    patchedSchemaDumpPath,
+  ]);
+  run("psql", [
+    localAdminDbUrl,
+    "-v",
+    "ON_ERROR_STOP=1",
+    "-f",
+    exactPolicySqlPath,
+  ]);
+  run("psql", [
+    localAdminDbUrl,
+    "-v",
+    "ON_ERROR_STOP=1",
+    "-c",
+    "truncate table supabase_migrations.schema_migrations",
+  ]);
+  run("psql", [
+    localAdminDbUrl,
+    "-c",
+    `\\copy storage.buckets from '${bucketsCsvPath}' csv`,
+  ]);
+  run("psql", [
+    localAdminDbUrl,
+    "-c",
     `\\copy supabase_migrations.schema_migrations from '${migrationsCsvPath}' csv`,
   ]);
 
-  console.log('\nLocal clone summary:');
-  run('psql', [
+  console.log("\nLocal clone summary:");
+  run("psql", [
     localAdminDbUrl,
-    '-Atqc',
+    "-Atqc",
     `
       select 'public_functions=' || count(*)
       from pg_proc p
@@ -289,7 +320,7 @@ try {
   ]);
 
   console.log(
-    '\nLocal auth/public/storage now mirrors the remote schema and metadata. Table data remains empty by design.',
+    "\nLocal auth/public/storage now mirrors the remote schema and metadata. Table data remains empty by design.",
   );
   cleanup();
 } catch (error) {

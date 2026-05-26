@@ -46,6 +46,7 @@ Back to userService.create()
 ## Database Trigger: handle_new_user()
 
 ### Location
+
 - Defined in: `supabase/migrations/20260106_001_fix_handle_new_user_trigger.sql`
 - Triggered by: `on_auth_user_created` (AFTER INSERT on auth.users)
 
@@ -53,16 +54,17 @@ Back to userService.create()
 
 The trigger MUST explicitly set these fields to prevent INSERT failures:
 
-| Field | Required Value | Reason |
-|-------|---------------|--------|
-| `agent_status` | `'not_applicable'` | Enum type; must be valid value |
-| `onboarding_status` | `NULL` | Service layer sets appropriate value later |
-| `approval_status` | `'pending'` | All new users start as pending |
-| `is_admin` | `false` | Service layer updates if needed |
+| Field               | Required Value     | Reason                                     |
+| ------------------- | ------------------ | ------------------------------------------ |
+| `agent_status`      | `'not_applicable'` | Enum type; must be valid value             |
+| `onboarding_status` | `NULL`             | Service layer sets appropriate value later |
+| `approval_status`   | `'pending'`        | All new users start as pending             |
+| `is_admin`          | `false`            | Service layer updates if needed            |
 
 ### Exception Handling
 
 The trigger has three levels of exception handling:
+
 1. **Roles parsing block** - Defaults to `['agent']` on any error
 2. **Name parsing block** - Defaults to email prefix on any error
 3. **INSERT block** - Logs error and re-raises to rollback auth.users INSERT
@@ -70,9 +72,11 @@ The trigger has three levels of exception handling:
 ## Edge Function: create-auth-user
 
 ### Location
+
 `supabase/functions/create-auth-user/index.ts`
 
 ### Request Payload
+
 ```typescript
 {
   email: string;          // Required
@@ -84,12 +88,13 @@ The trigger has three levels of exception handling:
 ```
 
 ### Response Codes
-| Code | Meaning |
-|------|---------|
-| 200 | User created successfully |
-| 400 | Database error (trigger failed) |
-| 409 | User already exists |
-| 500 | Internal server error |
+
+| Code | Meaning                         |
+| ---- | ------------------------------- |
+| 200  | User created successfully       |
+| 400  | Database error (trigger failed) |
+| 409  | User already exists             |
+| 500  | Internal server error           |
 
 ## Known Failure Modes
 
@@ -100,6 +105,7 @@ The trigger has three levels of exception handling:
 **Cause:** The `handle_new_user()` trigger failed during INSERT into user_profiles
 
 **Common root causes:**
+
 - `agent_status` not explicitly set in trigger
 - RLS policy blocking trigger INSERT
 - CHECK constraint violation
@@ -114,6 +120,7 @@ The trigger has three levels of exception handling:
 **Cause:** RLS policy requires `auth.uid() = id`, but trigger context has no auth.uid()
 
 **Fix:** RLS policy must allow `auth.uid() IS NULL` for trigger context:
+
 ```sql
 CREATE POLICY "allow_trigger_insert" ON user_profiles
 FOR INSERT WITH CHECK (auth.uid() IS NULL OR auth.uid() = id);
@@ -144,9 +151,9 @@ When modifying user creation flow:
 
 ## Migration History
 
-| Migration | Description |
-|-----------|-------------|
-| `20260105_007_fix_rls_for_trigger.sql` | Fixed RLS policy for trigger context |
+| Migration                                      | Description                                  |
+| ---------------------------------------------- | -------------------------------------------- |
+| `20260105_007_fix_rls_for_trigger.sql`         | Fixed RLS policy for trigger context         |
 | `20260106_001_fix_handle_new_user_trigger.sql` | Restored proper trigger with explicit fields |
 
 ## Related Files
