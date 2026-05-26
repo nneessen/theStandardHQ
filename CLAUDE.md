@@ -17,14 +17,14 @@ psql $DATABASE_URL -f supabase/migrations/whatever.sql
 source .env && psql "${DATABASE_URL}" -f migration.sql
 ```
 
-| Task | Command |
-|------|---------|
-| Apply migration | `./scripts/migrations/run-migration.sh supabase/migrations/FILE.sql` |
-| Run a query | `./scripts/migrations/run-sql.sh "SELECT ..."` |
-| Interactive psql | `./scripts/migrations/run-sql.sh --interactive` |
-| Create timestamp | `date +%Y%m%d%H%M%S` |
-| Verify tracking | `./scripts/migrations/verify-tracking.sh` |
-| Audit functions | `./scripts/migrations/audit-critical-functions.sh` |
+| Task             | Command                                                              |
+| ---------------- | -------------------------------------------------------------------- |
+| Apply migration  | `./scripts/migrations/run-migration.sh supabase/migrations/FILE.sql` |
+| Run a query      | `./scripts/migrations/run-sql.sh "SELECT ..."`                       |
+| Interactive psql | `./scripts/migrations/run-sql.sh --interactive`                      |
+| Create timestamp | `date +%Y%m%d%H%M%S`                                                 |
+| Verify tracking  | `./scripts/migrations/verify-tracking.sh`                            |
+| Audit functions  | `./scripts/migrations/audit-critical-functions.sh`                   |
 
 WHY: On Feb 3, 2026, direct psql usage caused old migrations to silently overwrite
 fixed functions. The runner script blocks downgrades and tracks everything.
@@ -142,17 +142,20 @@ DEVELOPMENT STANDARDS
 1. Schema & Migrations
 
 **MANDATORY: Use the migration runner script for ALL migrations:**
+
 ```bash
 ./scripts/migrations/run-migration.sh supabase/migrations/YYYYMMDDHHMMSS_name.sql
 ```
 
 DO NOT use `psql` directly for migrations. The runner script:
+
 - Tracks migrations in schema_migrations
 - Tracks function versions in function_versions
 - BLOCKS downgrades (prevents older migrations from overwriting newer functions)
 - Validates filename format
 
 For arbitrary SQL queries (not migrations), use:
+
 ```bash
 ./scripts/migrations/run-sql.sh "SELECT * FROM users;"
 ./scripts/migrations/run-sql.sh -f /path/to/script.sql
@@ -165,6 +168,7 @@ Generate timestamp: `date +%Y%m%d%H%M%S`
 Only one directory: supabase/migrations/
 
 After migration:
+
 1. Regenerate database.types.ts
 2. Fix type errors
 3. Run npm run build
@@ -175,6 +179,7 @@ CRITICAL: Function Version Protection
 
 The system tracks function versions in `supabase_migrations.function_versions`.
 When a migration contains CREATE FUNCTION, the runner:
+
 1. Checks if function exists with a NEWER version
 2. BLOCKS the migration if it would downgrade
 3. Updates function_versions after successful apply
@@ -182,6 +187,7 @@ When a migration contains CREATE FUNCTION, the runner:
 This prevents the bug where old migrations silently overwrite newer function code.
 
 To verify function versions:
+
 ```bash
 ./scripts/migrations/verify-tracking.sh
 ./scripts/migrations/audit-critical-functions.sh
@@ -323,6 +329,7 @@ The password reset flow has strict requirements due to Supabase redirect whiteli
    - supabase/functions/create-auth-user/index.ts
 
 AFTER ANY AUTH CHANGES, TEST:
+
 - Login → Forgot Password → Click email link → Must see reset form (NOT dashboard)
 - Admin → Edit User → Actions → Send Confirmation → Click link → Must see reset form
 
@@ -370,10 +377,11 @@ matching wiki page first.
 
 UPDATE trigger: when a task produces a durable new doc/handoff/audit under `docs/`,
 sync the vault afterward (all scripts take `-p commission-tracker`):
-  1. Copy the new doc into `../_knowledge-vault/raw-sources/commission-tracker/` (flat, exact basename).
-  2. Fold it into the right `wiki/commission-tracker/` topic page + append a `log.md` entry + bump `index.md` `updated:`.
-  3. Run `../_knowledge-vault/scripts/wiki-lint.sh -p commission-tracker` (must exit 0).
-Run `../_knowledge-vault/scripts/wiki-sync-check.sh -p commission-tracker` anytime to list docs not yet synced.
+
+1. Copy the new doc into `../_knowledge-vault/raw-sources/commission-tracker/` (flat, exact basename).
+2. Fold it into the right `wiki/commission-tracker/` topic page + append a `log.md` entry + bump `index.md` `updated:`.
+3. Run `../_knowledge-vault/scripts/wiki-lint.sh -p commission-tracker` (must exit 0).
+   Run `../_knowledge-vault/scripts/wiki-sync-check.sh -p commission-tracker` anytime to list docs not yet synced.
 
 ═══════════════════════════════════════════════════════════════════════════════
 REMINDER: MANDATORY MIGRATION RULES - NEVER VIOLATE
@@ -389,12 +397,11 @@ REMINDER: MANDATORY MIGRATION RULES - NEVER VIOLATE
 psql $DATABASE_URL -f migration.sql
 ```
 
-| Task | Command |
-|------|---------|
-| Apply migration | `./scripts/migrations/run-migration.sh supabase/migrations/FILE.sql` |
-| Run a query | `./scripts/migrations/run-sql.sh "SELECT ..."` |
-| Interactive psql | `./scripts/migrations/run-sql.sh --interactive` |
-| Verify tracking | `./scripts/migrations/verify-tracking.sh` |
+| Task             | Command                                                              |
+| ---------------- | -------------------------------------------------------------------- |
+| Apply migration  | `./scripts/migrations/run-migration.sh supabase/migrations/FILE.sql` |
+| Run a query      | `./scripts/migrations/run-sql.sh "SELECT ..."`                       |
+| Interactive psql | `./scripts/migrations/run-sql.sh --interactive`                      |
+| Verify tracking  | `./scripts/migrations/verify-tracking.sh`                            |
 
 ═══════════════════════════════════════════════════════════════════════════════
-

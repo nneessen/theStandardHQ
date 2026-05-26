@@ -22,6 +22,7 @@
  */
 
 import { logger } from "../base/logger";
+import { roundCurrency } from "../../lib/currency";
 
 /**
  * Input parameters for advance calculation
@@ -214,8 +215,12 @@ class CommissionLifecycleService {
       );
     }
 
-    // CORE FORMULA: The ONE formula for commission calculation
-    const advanceAmount = monthlyPremium * advanceMonths * commissionRate;
+    // CORE FORMULA: The ONE formula for commission calculation.
+    // Round the advance to cents here so the persisted/canonical value is exact;
+    // the earning rate is a derived helper (not money) and stays full-precision.
+    const advanceAmount = roundCurrency(
+      monthlyPremium * advanceMonths * commissionRate,
+    );
     const monthlyEarningRate = advanceAmount / advanceMonths;
 
     logger.info(
@@ -292,8 +297,8 @@ class CommissionLifecycleService {
     }
 
     // Cap is applied
-    const cappedAdvanceAmount = params.advanceCap;
-    const overageAmount = advanceAmount - cappedAdvanceAmount;
+    const cappedAdvanceAmount = roundCurrency(params.advanceCap);
+    const overageAmount = roundCurrency(advanceAmount - cappedAdvanceAmount);
 
     // Calculate recoupment period
     // Recoupment months = cap / monthly_earning_rate (how many months to earn back the capped advance)
@@ -366,13 +371,23 @@ class CommissionLifecycleService {
     if (monthsPaid < 0) {
       throw new Error(`Months paid cannot be negative, got ${monthsPaid}`);
     }
+    // Guard divide-by-zero: advanceMonths is the divisor for the earning rate.
+    // A 0 (from a malformed record) would yield Infinity/NaN earned amounts that
+    // silently corrupt stored money and every downstream rollup.
+    if (advanceMonths <= 0) {
+      throw new Error(`Advance months must be positive, got ${advanceMonths}`);
+    }
 
     // Cap months paid at advance months (can't earn more than advance)
     const effectiveMonthsPaid = Math.min(monthsPaid, advanceMonths);
 
     const monthlyEarningRate = advanceAmount / advanceMonths;
-    const earnedAmount = monthlyEarningRate * effectiveMonthsPaid;
-    const unearnedAmount = advanceAmount - earnedAmount;
+    // Round earned, then derive unearned from the rounded earned so the two always
+    // reconcile to the input advance (earned + unearned === advanceAmount).
+    const earnedAmount = roundCurrency(
+      monthlyEarningRate * effectiveMonthsPaid,
+    );
+    const unearnedAmount = roundCurrency(advanceAmount - earnedAmount);
     const percentageEarned = (effectiveMonthsPaid / advanceMonths) * 100;
     const isFullyEarned = effectiveMonthsPaid >= advanceMonths;
     const monthsRemaining = Math.max(0, advanceMonths - effectiveMonthsPaid);
@@ -500,8 +515,12 @@ class CommissionLifecycleService {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    const yearDiff = end.getFullYear() - start.getFullYear();
-    const monthDiff = end.getMonth() - start.getMonth();
+    // Use UTC accessors. Date-only strings (e.g. "2024-01-31") parse as UTC
+    // midnight; reading them back with local getMonth()/getFullYear() shifts the
+    // result by a month for users west of UTC, mis-counting persistency and
+    // months-paid milestones. UTC keeps the month boundary stable everywhere.
+    const yearDiff = end.getUTCFullYear() - start.getUTCFullYear();
+    const monthDiff = end.getUTCMonth() - start.getUTCMonth();
 
     return yearDiff * 12 + monthDiff;
   }

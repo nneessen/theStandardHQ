@@ -1,4 +1,5 @@
 import { parseLocalDate } from "../lib/date";
+import { roundCurrency } from "../lib/currency";
 
 const DEFAULT_ADVANCE_MONTHS = 9;
 
@@ -53,7 +54,8 @@ export function calculateCommissionProgress(
   if (input.effectiveDate) {
     const effectiveDate = parseLocalDate(input.effectiveDate);
     const isClosedPolicy =
-      input.lifecycleStatus === "cancelled" || input.lifecycleStatus === "lapsed";
+      input.lifecycleStatus === "cancelled" ||
+      input.lifecycleStatus === "lapsed";
 
     if (!isClosedPolicy || input.cancellationDate) {
       const endDate =
@@ -65,11 +67,13 @@ export function calculateCommissionProgress(
   }
 
   const cappedMonthsPaid = Math.min(monthsPaid, normalizedAdvanceMonths);
-  const earnedAmount = monthlyEarnRate * cappedMonthsPaid;
+  // Round the earned output, then derive unearned from the rounded earned so the
+  // two always reconcile to the stored amount (earned + unearned === amount).
+  const earnedAmount = roundCurrency(monthlyEarnRate * cappedMonthsPaid);
 
   return {
     monthsPaid: cappedMonthsPaid,
     earnedAmount,
-    unearnedAmount: Math.max(0, input.amount - earnedAmount),
+    unearnedAmount: roundCurrency(Math.max(0, input.amount - earnedAmount)),
   };
 }

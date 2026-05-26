@@ -18,7 +18,10 @@ describe("commissionProgress", () => {
 
     it("returns zero for end dates before the effective date", () => {
       expect(
-        calculateCompletedPolicyMonths(new Date(2026, 2, 10), new Date(2026, 1, 10)),
+        calculateCompletedPolicyMonths(
+          new Date(2026, 2, 10),
+          new Date(2026, 1, 10),
+        ),
       ).toBe(0);
     });
   });
@@ -102,5 +105,32 @@ describe("commissionProgress", () => {
         unearnedAmount: 600,
       });
     });
+
+    // Gap A: rounding + reconciliation invariant across awkward-rounding inputs.
+    // Every output must be <= 2 decimals and earned + unearned === amount to the cent.
+    it("always reconciles earned + unearned to amount (matrix)", () => {
+      const amounts = [4612.5, 3333.33, 1000.01, 9999.99, 250.0, 7777.77];
+      const months = [9, 12, 6];
+      const paid = [0, 1, 2, 5, 7, 11, 9];
+
+      for (const amount of amounts) {
+        for (const advanceMonths of months) {
+          for (const fallbackMonthsPaid of paid) {
+            const r = calculateCommissionProgress({
+              amount,
+              advanceMonths,
+              fallbackMonthsPaid,
+            });
+            expect(hasAtMostTwoDecimals(r.earnedAmount)).toBe(true);
+            expect(hasAtMostTwoDecimals(r.unearnedAmount)).toBe(true);
+            expect(r.earnedAmount + r.unearnedAmount).toBeCloseTo(amount, 2);
+          }
+        }
+      }
+    });
   });
 });
+
+function hasAtMostTwoDecimals(n: number): boolean {
+  return Math.abs(n * 100 - Math.round(n * 100)) < 1e-9;
+}

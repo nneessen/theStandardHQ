@@ -3,6 +3,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { commissionRateService } from "../commissionRateService";
 import { supabase } from "../../base/supabase";
+import { parseLocalDate } from "../../../lib/date";
 import type { CommissionDataQuality } from "../../../types/product.types";
 
 // Mock Supabase client
@@ -81,7 +82,7 @@ describe("commissionRateService", () => {
             premiumWeight: 0.6,
             totalPremium: 60000,
             policyCount: 10,
-            effectiveDate: new Date("2025-01-01"),
+            effectiveDate: parseLocalDate("2025-01-01"),
           },
         ],
         dataQuality: "HIGH" as CommissionDataQuality,
@@ -140,7 +141,7 @@ describe("commissionRateService", () => {
 
       await expect(
         commissionRateService.getUserCommissionProfile(userId, lookbackMonths),
-      ).rejects.toThrow("No commission profile data returned");
+      ).rejects.toThrow("No commission rate data available for user");
     });
 
     it("should handle empty array response", async () => {
@@ -151,7 +152,7 @@ describe("commissionRateService", () => {
 
       await expect(
         commissionRateService.getUserCommissionProfile(userId, lookbackMonths),
-      ).rejects.toThrow("No commission profile data returned");
+      ).rejects.toThrow("No commission rate data available for user");
     });
 
     it("should use default lookback months when not provided", async () => {
@@ -201,7 +202,8 @@ describe("commissionRateService", () => {
       );
 
       // Should use weighted average for LOW quality
-      expect(result.recommendedRate).toBe(0.98);
+      // LOW quality uses the simple average (only HIGH/MEDIUM use weighted).
+      expect(result.recommendedRate).toBe(0.95);
       expect(result.dataQuality).toBe("LOW");
     });
 
@@ -327,11 +329,13 @@ describe("commissionRateService", () => {
       );
 
       expect(result.productBreakdown).toHaveLength(2);
+      // Service parses date-only strings via parseLocalDate (local midnight),
+      // the project-wide convention — not UTC midnight.
       expect(result.productBreakdown[0].effectiveDate).toEqual(
-        new Date("2025-01-15"),
+        parseLocalDate("2025-01-15"),
       );
       expect(result.productBreakdown[1].effectiveDate).toEqual(
-        new Date("2025-02-20"),
+        parseLocalDate("2025-02-20"),
       );
     });
 

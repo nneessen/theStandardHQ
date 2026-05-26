@@ -181,6 +181,7 @@ class OverrideService {
           base_agent_id,
           hierarchy_depth,
           override_commission_amount,
+          earned_amount,
           status,
           base_agent:user_profiles!override_commissions_base_agent_id_fkey(email)
         `,
@@ -216,12 +217,17 @@ class OverrideService {
         const amount = parseFloat(
           String(override.override_commission_amount) || "0",
         );
+        // earned_override is the earned PORTION, not a status bucket. Override
+        // rows never carry an "earned" status (lifecycle is pending -> paid),
+        // so the old `status === "earned"` check always summed to $0. The real
+        // earned figure is the earned_amount column (null-coalesced to 0).
+        const earned = Number(override.earned_amount ?? 0);
 
         summary.total_policies++;
         summary.total_override_generated += amount;
+        summary.earned_override += earned;
 
         if (override.status === "pending") summary.pending_override += amount;
-        if (override.status === "earned") summary.earned_override += amount;
         if (override.status === "paid") summary.paid_override += amount;
       });
 

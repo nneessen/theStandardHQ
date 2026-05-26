@@ -244,12 +244,12 @@ class ChargebackService {
       const amount = Number(chargeback.chargeback_amount);
       metrics.totalAmount += amount;
 
+      // chargeback_status enum is pending | resolved | disputed. Outstanding
+      // (pending + disputed) counts toward pendingAmount; resolved is the only
+      // processed state. ("processed" was a dead literal — not a valid status.)
       if (chargeback.status === "pending" || chargeback.status === "disputed") {
         metrics.pendingAmount += amount;
-      } else if (
-        chargeback.status === "processed" ||
-        chargeback.status === "resolved"
-      ) {
+      } else if (chargeback.status === "resolved") {
         metrics.processedAmount += amount;
       }
     });
