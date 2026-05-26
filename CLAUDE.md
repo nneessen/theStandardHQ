@@ -348,16 +348,18 @@ Always functional, testable, type-safe code
 PROJECT KNOWLEDGE BASE (OBSIDIAN WIKI) - READ BEFORE UNFAMILIAR WORK
 ═══════════════════════════════════════════════════════════════════════════════
 
-A synthesized knowledge base for this codebase lives in a sibling Obsidian vault
-at `../Standard HQ/`. It is the fastest way to get oriented on history, prior
-decisions, and known gaps that are not obvious from the code alone.
+A synthesized knowledge base for this codebase lives in a shared, multi-project
+Obsidian vault at `../_knowledge-vault/`, under the `commission-tracker` namespace.
+It is the fastest way to get oriented on history, prior decisions, and known gaps
+that are not obvious from the code alone. (Read ONLY the `commission-tracker`
+namespace unless you are deliberately looking for cross-project patterns.)
 
-- Wiki (`../Standard HQ/wiki/`): LLM-maintained synthesis. Start at `index.md`,
-  then open the relevant topic page (security-multi-tenancy,
+- Wiki (`../_knowledge-vault/wiki/commission-tracker/`): LLM-maintained synthesis.
+  Start at `index.md`, then open the relevant topic page (security-multi-tenancy,
   data-layer-rpc-migration, carrier-rules-contracts, hierarchy-architecture,
   underwriting-wizard, billing-stripe, ...).
-- Raw sources (`../Standard HQ/raw-sources/`): an immutable snapshot of THIS
-  repo's `docs/` that the wiki summarizes.
+- Raw sources (`../_knowledge-vault/raw-sources/commission-tracker/`): an immutable
+  snapshot of THIS repo's `docs/` that the wiki summarizes.
 
 DIRECTION (do not reverse): `docs/` here is the single source of truth. The vault
 is strictly DOWNSTREAM — it only consumes and summarizes `docs/`. Never copy wiki
@@ -367,11 +369,11 @@ READ trigger: before non-trivial work in an unfamiliar feature area, check the
 matching wiki page first.
 
 UPDATE trigger: when a task produces a durable new doc/handoff/audit under `docs/`,
-sync the vault afterward:
-  1. Copy the new doc into `../Standard HQ/raw-sources/` (flat).
-  2. Fold it into the right `wiki/` topic page + append a `log.md` entry + update `index.md`.
-  3. Run `../Standard HQ/scripts/wiki-lint.sh` (must exit 0).
-Run `../Standard HQ/scripts/wiki-sync-check.sh` anytime to list docs not yet synced.
+sync the vault afterward (all scripts take `-p commission-tracker`):
+  1. Copy the new doc into `../_knowledge-vault/raw-sources/commission-tracker/` (flat, exact basename).
+  2. Fold it into the right `wiki/commission-tracker/` topic page + append a `log.md` entry + bump `index.md` `updated:`.
+  3. Run `../_knowledge-vault/scripts/wiki-lint.sh -p commission-tracker` (must exit 0).
+Run `../_knowledge-vault/scripts/wiki-sync-check.sh -p commission-tracker` anytime to list docs not yet synced.
 
 ═══════════════════════════════════════════════════════════════════════════════
 REMINDER: MANDATORY MIGRATION RULES - NEVER VIOLATE
