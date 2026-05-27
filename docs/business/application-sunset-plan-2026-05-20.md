@@ -2,7 +2,22 @@
 
 Date: 2026-05-20
 Owner: Nick / super-admin
-Status: Draft
+Status: **SUPERSEDED (2026-05-27)** — historical reference only.
+
+> **⚠️ SUPERSEDED.** This plan described a **full shutdown of the platform for all users**
+> by 2026-06-30 (premise: "no longer sustainable to maintain and operate solo"). That premise
+> no longer holds: **Epic Life was onboarded as a live, paying IMO and the platform stays fully
+> operational.** On 2026-05-27 the strategy was replaced by a **selective per-tenant access
+> revocation** — a super-admin "RED BUTTON" that decommissions **FFG / Self Made** access only,
+> while Epic Life continues. The staged, transparent, read-only-then-shutdown wind-down below is
+> **not** the current plan; the current design is an opaque, download-then-permanently-wipe kill
+> switch (decisions made interactively with the owner on 2026-05-26/27).
+>
+> **Current source of truth:** [`../security/platform-sunset-revocation-architecture-2026-05.md`](../security/platform-sunset-revocation-architecture-2026-05.md).
+>
+> **Still-live items carried over from this doc** (not yet resolved in the new design): the
+> legal/regulatory/carrier **data-retention check before irreversible deletion**, and **refund
+> handling** for the ~8 paid users. Everything else here is historical.
 
 ## Purpose
 
