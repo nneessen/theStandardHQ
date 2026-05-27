@@ -2642,6 +2642,7 @@ export type Database = {
           created_at: string | null;
           description: string | null;
           id: string;
+          imo_id: string | null;
           key: string;
           updated_at: string | null;
           value: number;
@@ -2651,6 +2652,7 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           id?: string;
+          imo_id?: string | null;
           key: string;
           updated_at?: string | null;
           value: number;
@@ -2660,6 +2662,7 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           id?: string;
+          imo_id?: string | null;
           key?: string;
           updated_at?: string | null;
           value?: number;
