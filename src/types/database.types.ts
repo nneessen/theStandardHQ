@@ -2642,6 +2642,7 @@ export type Database = {
           created_at: string | null;
           description: string | null;
           id: string;
+          imo_id: string;
           key: string;
           updated_at: string | null;
           value: number;
@@ -2651,6 +2652,7 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           id?: string;
+          imo_id: string;
           key: string;
           updated_at?: string | null;
           value: number;
@@ -2660,11 +2662,20 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           id?: string;
+          imo_id?: string;
           key?: string;
           updated_at?: string | null;
           value?: number;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "constants_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       contact_favorites: {
         Row: {
@@ -4214,6 +4225,7 @@ export type Database = {
       };
       imos: {
         Row: {
+          access_revoked_at: string | null;
           city: string | null;
           code: string;
           contact_email: string | null;
@@ -4236,6 +4248,7 @@ export type Database = {
           zip: string | null;
         };
         Insert: {
+          access_revoked_at?: string | null;
           city?: string | null;
           code: string;
           contact_email?: string | null;
@@ -4258,6 +4271,7 @@ export type Database = {
           zip?: string | null;
         };
         Update: {
+          access_revoked_at?: string | null;
           city?: string | null;
           code?: string;
           contact_email?: string | null;
@@ -15869,6 +15883,7 @@ export type Database = {
         Args: { context_param?: Json; workflow_id_param: string };
         Returns: string;
       };
+      current_user_imo_grants_all_features: { Args: never; Returns: boolean };
       delete_alert_rule: { Args: { p_rule_id: string }; Returns: boolean };
       delete_lead_purchase_with_expense: {
         Args: { p_purchase_id: string };
@@ -17443,6 +17458,14 @@ export type Database = {
         };
         Returns: Json;
       };
+      get_team_analytics_data_impl: {
+        Args: {
+          p_end_date: string;
+          p_start_date: string;
+          p_team_user_ids: string[];
+        };
+        Returns: Json;
+      };
       get_team_comparison_report: {
         Args: { p_end_date?: string; p_start_date?: string };
         Returns: {
@@ -17931,6 +17954,17 @@ export type Database = {
               weighted_avg_rate: number;
             }[];
           };
+      getuser_commission_profile_impl: {
+        Args: { p_lookback_months?: number; puser_id: string };
+        Returns: {
+          calculated_at: string;
+          contract_level: number;
+          data_quality: string;
+          product_breakdown: Json;
+          simple_avg_rate: number;
+          weighted_avg_rate: number;
+        }[];
+      };
       graduate_recruit_to_agent: {
         Args: {
           p_contract_level: number;
@@ -17958,10 +17992,6 @@ export type Database = {
             Args: { role_name: string; target_user_id: string };
             Returns: boolean;
           };
-      current_user_imo_grants_all_features: {
-        Args: never;
-        Returns: boolean;
-      };
       has_subscription_bypass: { Args: never; Returns: boolean };
       health_class_rank: {
         Args: { hc: Database["public"]["Enums"]["health_class"] };
@@ -18008,6 +18038,7 @@ export type Database = {
         Returns: undefined;
       };
       invoke_slack_ip_leaderboard: { Args: never; Returns: undefined };
+      is_access_revoked: { Args: { p_user_id: string }; Returns: boolean };
       is_admin: { Args: never; Returns: boolean };
       is_admin_user:
         | { Args: never; Returns: boolean }
@@ -18019,6 +18050,7 @@ export type Database = {
         Args: { target_agency_id: string };
         Returns: boolean;
       };
+      is_book_duplication_mode: { Args: never; Returns: boolean };
       is_caller_admin: { Args: never; Returns: boolean };
       is_contact_favorited: {
         Args: {
@@ -18033,6 +18065,7 @@ export type Database = {
         Returns: boolean;
       };
       is_elevenlabs_available: { Args: { p_imo_id: string }; Returns: boolean };
+      is_epic_life_imo: { Args: { p_imo_id: string }; Returns: boolean };
       is_imo_admin: { Args: never; Returns: boolean };
       is_imo_admin_for: { Args: { p_imo_id: string }; Returns: boolean };
       is_imo_staff_role: { Args: never; Returns: boolean };

@@ -35,6 +35,7 @@ import { RateBulkImport } from "./components/RateBulkImport";
 import type { Database } from "@/types/database.types";
 import { useImo } from "@/contexts/ImoContext";
 import { useAllActiveImos } from "@/hooks/imo";
+import { FFG_IMO_ID } from "@/constants/imos";
 
 type ProductType = Database["public"]["Enums"]["product_type"];
 
@@ -52,9 +53,6 @@ const PRODUCT_TYPES: ProductType[] = [
   "disability",
   "annuity",
 ];
-
-// FFG IMO ID constant
-const FFG_IMO_ID = "ffffffff-ffff-ffff-ffff-ffffffffffff";
 
 export function CommissionRatesManagement() {
   const { isSuperAdmin, imo } = useImo();

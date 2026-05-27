@@ -11,9 +11,31 @@ doc for backend internals; do NOT restate them, they're settled).
 
 ## 0. ONE-LINE STATE
 The backend revocation mechanism + wipe function are **built, proven on LOCAL, and DORMANT**.
-**Nothing is on remote. There is no UI. There are no export/wipe edge functions.** The feature is
-roughly one-third done. **Next concrete step: the 4 edge functions** (export + wipe path), because
-the frontend and the rehearsal both depend on them.
+**STEPS 1–4 are now DONE (LOCAL, uncommitted, dormant).** STEP 1 = the 4 edge functions. STEP 2 =
+Migrations F (recovery bucket) + G (daily cron). STEP 3 = the frontend (SunsetGate wired into both
+App.tsx branches, sunset page, RED BUTTON control, hooks, `access_revoked_at` type, `FFG_IMO_ID`).
+STEP 4 = the public-surface gate (migration `20260527114910` recreates 7 anon SECURITY DEFINER RPCs
+with `access_revoked_at IS NULL`; `complete-recruit-registration` checks the inviter IMO before
+createUser; `resolve-custom-domain` covered transitively) — dormant + active (transactional ROLLBACK)
+verified. **Nothing is on remote.** **Next concrete step: STEP 5 — the `export ⊆ wipe` parity Vitest.**
+Two local-stack limits bound local observability (Storage DELETE + `kong:8000` signed-URL host — both
+environmental, hosted fine); the revoked render/download/wipe paths get truly exercised in the STEP 6
+rehearsal. See the STEP 7 executable remote-delete prereq below.
+
+### STEP 1 — DONE (2026-05-27), uncommitted in working tree
+New files (NOT committed — ship with the others at the owner's word):
+- `supabase/functions/_shared/sunset-constants.ts` (FFG sentinel allowlist id, bucket/prefix names, TTLs)
+- `supabase/functions/_shared/storage-recursive.ts` (`listAllPaths`/`removeAll` — shared by wipe + cron)
+- `supabase/functions/activate-imo-revocation/index.ts` (super-admin; FFG-only allowlist; revoke/restore; enqueues pending exports)
+- `supabase/functions/generate-user-export-bundle/index.ts` (service-role OR self-JWT; SheetJS xlsx + fflate csv.zip + json → `snapshots/{user}/`; signed URLs)
+- `supabase/functions/confirm-and-wipe-account/index.ts` (self/super-admin/service-role; snapshot→recovery; purge buckets; wipe RPC; deleteUser; idempotent log)
+- `supabase/functions/account-lifecycle-cron/index.ts` (drain exports / day-3+6 reminders / day-7 auto-purge / 30-day GC; bounded + batched)
+
+Settled in STEP 1 (do not relitigate): export libs are `xlsx@0.18.5` + `fflate@0.8.2` (smoke-verified
+multi-sheet round-trip in Deno). Reminder email `from` is currently `The Standard HQ <noreply@…>` —
+**FLAG for the owner before STEP 7**: they may prefer a more neutral sender (e.g. `Account Services`).
+`generate` + `confirm` depend on the Migration F bucket `account-recovery-archives` (so they can't fully
+run until F ships — that's expected, the smoke pass confirmed they fail closed only at the bucket).
 
 ---
 
@@ -64,7 +86,7 @@ architecture doc for the full design; the short version:
 
 ## 4. REMAINING WORK — IN ORDER
 
-### ▶ STEP 1 — Edge functions (START HERE) — `supabase/functions/`
+### ✅ STEP 1 — Edge functions — DONE (2026-05-27) — `supabase/functions/`
 Reuse: `_shared/supabase-client.ts` (`createSupabaseAdminClient`), CORS/auth from `send-email`,
 `auth.admin.*` from `check-user-exists`. Pin all esm.sh imports (`scripts/check-pinned-imports.sh`).
 **No Stripe calls in any of these.**
@@ -83,24 +105,68 @@ Reuse: `_shared/supabase-client.ts` (`createSupabaseAdminClient`), CORS/auth fro
    emails; **day-7 auto-purge** (same wipe path, reason='auto_purge_7d'); 30-day recovery GC.
 - Emails: reuse `send-email` with neutral templated bodies (no Epic Life mention).
 
-### STEP 2 — Migrations F + G
-- **F** `account-recovery-archives` private bucket: `snapshots/{user_id}/…` (frozen export kept for the wipe) + `recovery/{user_id}/…` (30-day post-wipe). Service-role only.
-- **G** `invoke_account_lifecycle_daily()` pg_cron — copy the `invoke_lead_heat_scoring()` pg_cron + pg_net + `app_config` pattern from `20260427180000_lead_heat_cron_weekly.sql`. Daily.
+### ✅ STEP 2 — Migrations F + G — DONE (2026-05-27), LOCAL only, uncommitted
+- **F** `supabase/migrations/20260527094314_account_recovery_archives_bucket.sql` — `account-recovery-archives`
+  private bucket (1GB; xlsx/zip/json), `snapshots/{user}/` + `recovery/{user}/`. **Zero authenticated
+  policies = service-role only.** Applied local; verified (private, 0 authed policies).
+- **G** `supabase/migrations/20260527094315_account_lifecycle_daily_cron.sql` — `invoke_account_lifecycle_daily()`
+  wrapper (app_config + pg_net pattern from `20260404193707`) + `cron.schedule('account-lifecycle-daily','15 9 * * *', …)`.
+  Applied local; cron active. **No-op while dormant.**
+- End-to-end re-smoke against the now-existing bucket: `generate-user-export-bundle` (fake user) →
+  `status: ready`, all 3 files uploaded + signed URLs; atomic snapshot→recovery **copy** verified (all 3 land in recovery). Test data cleaned up.
 
-### STEP 3 — Frontend
-- `src/components/auth/SunsetGate.tsx` (new): order `loading→spinner` · `isSuperAdmin→children` (FIRST) · `revoked→<SunsetPage/>` · else children. Wire into BOTH `AuthenticatedApp` branches in `src/App.tsx`, INSIDE `<ImoProvider>`. No `/sunset` route.
-- `src/features/sunset/` page + components (calm standalone layout, NOT theme-v2 shell). Delete button disabled until a download occurred AND confirm checkbox ticked; "bundle pending" polls + blocks delete. Post-wipe: `queryClient.clear()` → clear local/session keys → `signOut()` → terminal confirmation (no link back).
-- `src/features/admin/components/PlatformRevocationControl.tsx` (new) in `SystemSettingsTab.tsx`, super-admin only. Double-confirm: type `REVOKE ${imo.name}` (computed). Reversible deactivate (single confirm). Shows status (active since / users remaining / purge deadline).
-- `src/hooks/imo/useRevocationStatus.ts` (new): derive from `useImo().imo?.access_revoked_at != null`. **Confirm `ImoRepository.findWithAgencies` selects the new `access_revoked_at` column** (add it if not). Other hooks: useExportBundles (poll while pending), useDownloadExport, useDeleteMyAccount; admin useRevocationAdminStatus, useActivate/DeactivateRevocation.
-- Extract `FFG_IMO_ID` to `src/constants/imos.ts` (replace hardcode at `CommissionRatesManagement.tsx:57`).
+> **KNOWN LOCAL-STACK LIMITATION (not a code bug; remote unaffected):** on this Supabase CLI
+> (`storage-api v1.22.17`) **every Storage object DELETE fails** with `new row violates row-level
+> security policy` — for service-role AND authenticated callers, even via raw REST. Root-caused to
+> the storage-api's own delete handling (not the `prefixes` RLS, whose trigger `delete_prefix` is
+> SECURITY DEFINER; disabling it had no effect). The production app's 10+ `.remove()` call sites
+> work for real users, so **hosted/remote is fine**. Consequence: the wipe's `removeAll` (snapshot
+> cleanup + private-bucket purge) and the cron's recovery GC **cannot be rehearsed on the local
+> stack** — they are code-reviewed + the copy half is verified; the **delete half is gated on the
+> STEP 7 remote-delete prereq below.** (To delete test objects locally, connect as `supabase_admin`
+> and `SET LOCAL storage.allow_delete_query='true'` in the same txn.)
 
-### STEP 4 — Part 4: public/unauthenticated leak surfaces (treat as first-class, not a tail item)
-Backend-disable for the revoked IMO: custom-domain recruiting funnel + public join/register
-(`/join/$recruiterId`, `/join-*`, `/register/*`), public leaderboard shares (`/slack/name-leaderboard`),
-neutral transactional email copy. This is the part most likely to break "FFG must not know" — give it
-the same file-level depth as Parts 1–3.
+> **Atomic snapshot→recovery copy:** happy path (all files copied → commit + remove snapshot) is
+> verified. The **partial-copy rollback branch is defensive, code-reviewed only** (faking a mid-copy
+> failure wasn't worth the contortion) — STEP 6 rehearsal owner: this is inferred, not observed.
 
-### STEP 5 — `export ⊆ wipe` parity unit test (Vitest)
+### ✅ STEP 3 — Frontend — DONE (2026-05-27), uncommitted; `npm run build` green
+Files (new unless noted):
+- `src/components/auth/SunsetGate.tsx` — gate: `authLoading||imoLoading→spinner` · `isRevoked→<SunsetPage/>` · else children. `isRevoked` (from `useRevocationStatus`) already encodes super-admin-first (`!isSuperAdmin && access_revoked_at!=null`), so the owner is never locked out. Wired into BOTH `App.tsx` branches inside `<ImoProvider>`, wrapping the whole layout (revoked user gets the standalone page, no shell).
+- `src/features/sunset/SunsetPage.tsx` (+ `index.ts`) — calm standalone page. On mount invokes `generate-user-export-bundle` (skipIfReady); download buttons fetch signed URLs **imperatively** (so `hasDownloaded` only flips after bytes leave the bucket); delete gated on `ready && hasDownloaded && confirmChecked` + inline double-confirm; terminal screen on success with an explicit Sign-out (the delete hook clears caches/storage but defers signOut so the redirect doesn't unmount the terminal screen).
+- `src/hooks/imo/useRevocation.ts` — `useRevocationStatus`, `useExportBundle`, `useDeleteMyAccount`, `useRevocationAdminStatus`, `useActivate/DeactivateRevocation`; exported via `hooks/imo/index.ts`.
+- `src/features/admin/components/PlatformRevocationControl.tsx` — RED BUTTON in `SystemSettingsTab` (section gated on `isSuperAdmin`). Status (revoked-since / users-remaining / purge deadline); typed `REVOKE <imo.name>` to revoke; single-confirm restore.
+- `src/constants/imos.ts` (`FFG_IMO_ID`, replaces `CommissionRatesManagement.tsx` hardcode) + `src/constants/revocation.ts` (AUTO_PURGE_AFTER_DAYS / RECOVERY_TTL_DAYS mirror).
+- `src/types/database.types.ts` — surgically added `access_revoked_at` to `imos` Row/Insert/Update (STEP 7 full regen is a no-op for it).
+- Edge fn refined: `generate-user-export-bundle` gained `skipIfReady` (returns a cron-pre-built bundle's signed URLs instead of rebuilding; smoke-verified `reused:true`).
+
+Verified: `npm run build` 0 errors; every new module serves 200 through Vite dev transform; skipIfReady smoke-invoked. **Not yet observed** (deferred to STEP 6 rehearsal): the *revoked* render path + the download flow — the latter can't run on the local stack anyway (signed URLs embed `kong:8000`, unresolvable from the browser; see runbook §5). **Recommended before STEP 7:** log in once as the normal super-admin and confirm the unchanged shell renders (the dormant pass-through) — ~60s, removes the last inferred-not-observed mark.
+
+### ✅ STEP 4 — Public/unauthenticated leak surfaces — DONE (2026-05-27), LOCAL, uncommitted
+Public surfaces resolve their IMO via `anon`-callable SECURITY DEFINER RPCs (+ 2 edge fns) that bypass
+RLS, so Migration B (authenticated-only) didn't cover them. `anon` can't read `imos` directly → the
+fix injects `access_revoked_at IS NULL` INSIDE each definer fn. A revoked IMO then behaves exactly
+like an unlisted/unknown one (existing "Link Not Found"/generic-landing paths render — no new copy, no tell).
+- Migration `20260527114910_revocation_public_surface_gate.sql` (applied local; 7 fns version-tracked) —
+  faithful CREATE OR REPLACE + the predicate + idempotent `GRANT … TO anon`:
+  - **Real closure** (specific-IMO inputs): `get_public_recruiter_info`, `get_public_recruiting_theme`
+    (covers /join + custom-domain funnel), `submit_recruiting_lead`, `get_public_invitation_by_token`
+    (/register; plpgsql guard after inviter fetch, NULL imo_id super-admin inviters unaffected).
+  - **Defence-in-depth** (FFG already `is_listed=false`… actually it's listed=true here, so meaningful):
+    `get_available_imos_for_join`, `get_agencies_for_join`, `get_public_landing_page_settings`.
+- `complete-recruit-registration/index.ts` — checks the inviter's IMO `access_revoked_at` **before**
+  `auth.admin.createUser` (no orphan auth account under a revoked org); neutral `invitation_not_found`.
+- `resolve-custom-domain` — needs NO edit: it 404s when `get_public_recruiting_theme` returns null, which
+  the migration now does for a revoked IMO (covered transitively).
+- `/slack/name-leaderboard` — NOT public (auth-gated via RouteGuard); already covered by SunsetGate + Migration B.
+Verified: dormant unchanged (FFG funnel returns "Founders Financial Group", active); **active path proven
+via a `BEGIN; UPDATE imos…; <call RPCs>; ROLLBACK;` test** (recruiter_info→0 rows, theme→null, discovery 2→1)
+that never commits (hard rule respected). My edge-fn edit is clean; note 3 PRE-EXISTING `deno check` errors
+in complete-recruit-registration (`rollbackCreatedUser` client-generic mismatch, lines 326/336) — not mine,
+don't block Deno deploy. **Email copy:** the cron reminder is already neutral (STEP 1); no per-surface
+transactional emails reference the IMO, so no email changes were needed for Part 4.
+
+### ▶ STEP 5 — `export ⊆ wipe` parity unit test (Vitest) (START HERE)
 Assert the three SQL arrays in Migration E mirror `owned-tables.ts` (ACTOR_REFS_TO_NULL /
 ACTOR_REFS_TO_REASSIGN / wipe==="explicit") and every owner column exists in the catalog. CI drift tripwire.
 
@@ -112,7 +178,24 @@ red-button double-confirm + deactivate.
 ### STEP 7 — Remote deploy
 `npm run build` (0 TS errors) + supabase `get_advisors` lint + SunsetGate ordering unit tests. THEN
 apply ALL migrations A–G to **remote** via the runner, **re-run Migration B + the completeness check
-on remote** (remote has more tables), regen `src/types/database.types.ts`, commit migrations.
+on remote** (remote has more tables), regen `src/types/database.types.ts`, commit migrations. Also
+deploy the 4 edge functions to remote (`supabase functions deploy <name>` each).
+
+> **PREREQ — remote Storage DELETE must work (irreversible wipe depends on it).** Before applying
+> ANY of A–G to remote, prove the wipe's `removeAll` will function on the hosted project (the local
+> stack couldn't — see STEP 2 limitation). Using the **remote** service-role key against an existing
+> bucket (e.g. `user-documents`, so you don't depend on F yet):
+> ```bash
+> # 1. upload a throwaway object
+> curl -X POST "$REMOTE_URL/storage/v1/object/user-documents/__wipe-precheck__/probe.txt" \
+>   -H "Authorization: Bearer $REMOTE_SERVICE_ROLE_KEY" -H "Content-Type: text/plain" --data "x"
+> # 2. delete it
+> curl -X DELETE "$REMOTE_URL/storage/v1/object/user-documents/__wipe-precheck__/probe.txt" \
+>   -H "Authorization: Bearer $REMOTE_SERVICE_ROLE_KEY"
+> ```
+> Both must return 200. If the DELETE 403s with the same `new row violates row-level security
+> policy`, **STOP** — the wipe path is broken on remote; do NOT apply migrations or activate
+> revocation until the hosted storage delete is resolved.
 
 ---
 
