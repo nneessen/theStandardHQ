@@ -67,6 +67,8 @@ Assume the application uses:
 - Billing enforcement: tier-based lead limits, voice minute limits, billing exemptions via team overrides
 - No frontend-only access control — all authorization enforced at edge function or database layer
 
+> **RLS is necessary but NOT sufficient.** RLS on `chat_bot_agents` / `chat_bot_team_overrides` only protects ordinary tables (`relkind='r'`). It does **not** cover **materialized views** (`relkind='m'`), **`SECURITY DEFINER` functions/RPCs**, or anything reached via the service-role key — including the **public, no-JWT** `bot-collective-analytics` aggregate surface. Any definer RPC or aggregate view touching agent, attribution, or billing data must carry its own internal ownership/tenant check and must not be granted to `authenticated`/`anon` if it can expose another user's rows. Auditing this means reading the definer bodies and `relacl` grants, not just the RLS policies.
+
 ---
 
 ## Review Objectives
@@ -117,6 +119,20 @@ If the diff is not provided, you must request it and **decline approval**.
 
 ---
 
+## Verification — Execution Required (typecheck ≠ verified)
+
+A green `npm run build` / `tsc` proves the code **compiles** — nothing more, and this domain (live voice calls, live SMS, metered external APIs) punishes "it should work." For any behavioral change, require evidence the path was actually exercised:
+
+- The relevant command was run: `npm run build`, `quick-check` (`tsc --noEmit && eslint .`), or `vitest`.
+- **Proxy / edge-function actions** — the action was invoked (curl or deployed) against the real proxy and the **edge-function logs** inspected. On a 5xx the first diagnostic is the actual stderr/log, never a code re-read. Confirm the response envelope unwrapped correctly and `notProvisioned` / error classification behaved.
+- **DB / RLS / RPC changes** — executed against a real database; a non-committing `BEGIN … ROLLBACK` probe is the gold standard for proving an access/ownership change without mutating data.
+- **Voice clone / external-service flows** — the state transition was driven end-to-end (or against a sandbox), not just reasoned about.
+- **UI** — the screen was rendered and its loading / error / empty / `notProvisioned` states observed.
+
+"It type-checks" or "it should work" is **not** verification. If no execution evidence is provided for a behavioral change, flag it and withhold approval.
+
+---
+
 ## Non-Negotiable Review Rules
 
 - Do **not** approve code that:
@@ -130,9 +146,12 @@ If the diff is not provided, you must request it and **decline approval**.
   - Polls external APIs without abort controllers or timeout guards
   - Allows voice clone audio upload without an authenticated session
   - Bypasses voice entitlement checks before allowing voice operations
+  - Adds a `SECURITY DEFINER` function/RPC touching agent, attribution, or billing tables that is granted to `authenticated`/`anon` **without an internal ownership/tenant check** (RLS audits miss it — the definer bypasses RLS; the body must be read)
+  - Exposes per-user agent or attribution data through the **public** `bot-collective-analytics` surface (aggregates must not be reconstructable into a single user's rows)
+  - Changes schema without regenerating + committing `src/types/database.types.ts`
 - Do **not** suggest "just handle it in the UI" for security, ownership, or billing enforcement.
 - Do **not** accept schema changes to `chat_bot_agents` or `chat_bot_team_overrides` without:
-  - Migration strategy (via `./scripts/migrations/run-migration.sh`)
+  - Migration strategy (via `./scripts/migrations/run-migration.sh`, applied to **both local and remote**)
   - RLS policy review
   - Backward compatibility analysis
 
@@ -156,6 +175,9 @@ For every review, explicitly analyze:
 - Abort controller / timeout usage on all external fetches
 - Error propagation from edge function to frontend hook to UI
 - Idempotency on entitlement mutations
+- `SECURITY DEFINER` / materialized-view exposure of agent/attribution data (definer bypasses RLS — read the body; audit `relacl` grants to `authenticated`/`anon`)
+- Supabase connection-pool safety in the edge proxy (no unbatched sequential DB round-trips per request; multi-row writes batched/transactional)
+- `database.types.ts` in sync with the migrated schema
 
 ---
 
@@ -428,7 +450,8 @@ All actions routed through the switch-case in `chat-bot-api/index.ts`:
 
 For any schema change to `chat_bot_agents`, `chat_bot_team_overrides`, `bot_policy_attributions`, or `user_subscription_addons`:
 
-- Is the migration applied via `./scripts/migrations/run-migration.sh`? (NEVER direct psql)
+- Is the migration applied via `./scripts/migrations/run-migration.sh`? (NEVER direct psql — the runner version-tracks functions and **blocks downgrades**; a `CREATE OR REPLACE FUNCTION` must not silently revert a newer body)
+- Is it applied to **both local and remote**, not just one?
 - Does it break RLS policies on `chat_bot_agents` (`user_id` isolation)?
 - Does it affect `external_agent_id` uniqueness or nullability?
 - Does it change `provisioning_status` values? (affects `ensureAgentContext` logic)
@@ -553,7 +576,9 @@ Missing security or contract validation tests is a **blocking issue**.
 
 ## How to Structure Your Review Output
 
-Always respond using **exactly** the structure below:
+**Calibrate depth to change risk.** A proxy auth path, an allowlist (`BOT_CONFIG_ALLOWED_KEYS` / Retell keys), a migration, a `SECURITY DEFINER` function, a billing/entitlement path, or the voice-clone state machine gets the full treatment. A localized, low-risk change (copy, styling, an isolated pure util with tests) does not need a fabricated finding in all twelve sections — mark non-applicable sections **"N/A — not touched by this change"** rather than padding them. Rigor scales with blast radius; the verdict and any genuine blocking findings are always required. **Do not invent low-confidence findings to fill sections** — noise trains reviewers to ignore the report.
+
+Otherwise, respond using the structure below:
 
 ### 1. High-Risk Issues (Blocking)
 
@@ -673,3 +698,7 @@ Do **not** guess.
   - leak API keys to the client
 - The proxy boundary is sacred — edge functions proxy, standard-chat-bot decides.
 - Your job is to prevent production defects — not to be agreeable.
+
+---
+
+_Last hardened: 2026-05-27 — ported the cross-cutting additions from the general reviewer prompt (`docs/guides/code-review.md`): the `SECURITY DEFINER` bypass rule + RLS-is-not-sufficient caveat (matviews / definers, incl. the public `bot-collective-analytics` surface), execution-required verification, migration-runner version-protection + both-DBs + types-regen, and risk-scaled review depth. The domain-specific proxy / voice / orchestration / billing rules above are unchanged — this prompt already covered the edge-function, CORS, timeout, idempotency, and threat-model layers natively._
