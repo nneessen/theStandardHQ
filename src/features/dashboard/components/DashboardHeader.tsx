@@ -17,6 +17,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 
 interface DashboardHeaderProps {
   periodTitle: string;
@@ -159,7 +160,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="text-xs max-w-[200px]">
-                  Upgrade to Pro to track expenses
+                  {NEW_SUBSCRIPTIONS_ENABLED
+                    ? "Upgrade to Pro to track expenses"
+                    : "This feature isn't included in your current plan"}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

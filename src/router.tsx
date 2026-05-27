@@ -29,6 +29,7 @@ import AdminControlCenter from "./features/admin/components/AdminControlCenter";
 // PermissionGuard reserved for future granular route permissions
 // import { PermissionGuard } from "./components/auth/PermissionGuard";
 import { RouteGuard } from "./components/auth/RouteGuard";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 import {
   OverrideDashboard,
   DownlinePerformance,
@@ -858,7 +859,8 @@ const privacyRoute = createRoute({
   component: PrivacyPage,
 });
 
-// Billing route - unified billing & subscription management, accessible to all authenticated users
+// Billing route - subscription management. Self-serve sign-ups are disabled, so
+// only users with an active paid subscription (or super-admins) may access it.
 const billingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "billing",
@@ -893,7 +895,12 @@ const billingRoute = createRoute({
         : undefined,
   }),
   component: () => (
-    <RouteGuard allowPending>
+    // Restrict to paid subscribers only while self-serve sign-ups are disabled;
+    // when re-enabled, /billing reopens to everyone so they can subscribe.
+    <RouteGuard
+      allowPending
+      requiresPaidSubscription={!NEW_SUBSCRIPTIONS_ENABLED}
+    >
       <BillingPage />
     </RouteGuard>
   ),

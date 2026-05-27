@@ -19,6 +19,8 @@ export interface SidebarNavigationItem {
   requiresLicensingWorkspace?: boolean;
   requiresUnderwritingEnabled?: boolean;
   requiresUnderwritingManage?: boolean;
+  /** Only show for users with an active paid subscription (super-admins bypass). */
+  requiresPaidSubscription?: boolean;
 }
 
 export interface SidebarNavigationGroup {

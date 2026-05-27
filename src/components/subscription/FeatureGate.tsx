@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { useFeatureAccess, type FeatureKey } from "@/hooks/subscription";
 import { UpgradePrompt } from "./UpgradePrompt";
 import { Loader2 } from "lucide-react";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 import { cn } from "@/lib/utils";
 
 interface FeatureGateProps {
@@ -165,11 +166,11 @@ export function FeatureButtonGate({
   }
 
   // Default: wrap children with locked styling and tooltip
+  const lockedTitle = NEW_SUBSCRIPTIONS_ENABLED
+    ? `Upgrade to ${requiredPlan} to unlock this feature`
+    : `This feature isn't included in your current plan`;
   return (
-    <div
-      className="relative inline-block"
-      title={`Upgrade to ${requiredPlan} to unlock this feature`}
-    >
+    <div className="relative inline-block" title={lockedTitle}>
       <div className="opacity-50 pointer-events-none">{children}</div>
     </div>
   );

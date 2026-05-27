@@ -6,6 +6,7 @@ import { Lock, Crown } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 
 interface GatedKPISectionProps {
   /** Whether the user has access to this section */
@@ -59,19 +60,23 @@ export const GatedKPISection: React.FC<GatedKPISectionProps> = ({
               {title}
             </p>
             <p className="text-[10px] text-v2-ink-muted dark:text-v2-ink-subtle mt-0.5">
-              Upgrade to {requiredTier} to unlock
+              {NEW_SUBSCRIPTIONS_ENABLED
+                ? `Upgrade to ${requiredTier} to unlock`
+                : "Not included in your current plan."}
             </p>
           </div>
-          <Link to="/billing">
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-6 text-[10px] mt-1"
-            >
-              <Crown className="h-3 w-3 mr-1 text-warning" />
-              View Plans
-            </Button>
-          </Link>
+          {NEW_SUBSCRIPTIONS_ENABLED && (
+            <Link to="/billing">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-[10px] mt-1"
+              >
+                <Crown className="h-3 w-3 mr-1 text-warning" />
+                View Plans
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </div>

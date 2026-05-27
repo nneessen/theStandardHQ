@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { subscriptionService } from "@/services/subscription";
 // eslint-disable-next-line no-restricted-imports
 import type { SubscriptionPlan } from "@/services/subscription";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 
 interface AddonUpsellDialogProps {
   plan: SubscriptionPlan | null;
@@ -40,6 +41,11 @@ export function AddonUpsellDialog({
   // UW Wizard addon upsell hidden until Stripe integration is ready.
   // Auto-proceed to checkout when dialog opens.
   useEffect(() => {
+    // Self-serve subscriptions disabled — never start a checkout. Just close.
+    if (!NEW_SUBSCRIPTIONS_ENABLED) {
+      if (open) onClose();
+      return;
+    }
     if (!open || !plan || !user?.id || isLoading) return;
 
     const proceedToCheckout = async () => {

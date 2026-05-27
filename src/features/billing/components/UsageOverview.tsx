@@ -7,6 +7,7 @@ import { useFeatureAccess } from "@/hooks/subscription";
 // eslint-disable-next-line no-restricted-imports
 import { PRICING } from "@/services/subscription";
 import { cn } from "@/lib/utils";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 
 export function UsageOverview() {
   const { emailUsage, smsUsage, isLoading, isEmailWarning, isEmailOverLimit } =
@@ -45,7 +46,11 @@ export function UsageOverview() {
             <Mail className="h-3.5 w-3.5 text-v2-ink-subtle" />
             <div className="text-[10px] text-v2-ink-muted">
               <p className="font-medium">Email & SMS not available</p>
-              <p>Upgrade to Pro or Team to unlock.</p>
+              <p>
+                {NEW_SUBSCRIPTIONS_ENABLED
+                  ? "Upgrade to Pro or Team to unlock."
+                  : "Not included in your current plan."}
+              </p>
             </div>
           </div>
         )}

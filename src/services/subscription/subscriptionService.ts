@@ -197,6 +197,24 @@ class SubscriptionService {
   }
 
   /**
+   * Whether the user is on a PAID tier (Pro/Team) and therefore has a real
+   * subscription to manage — view invoices, update card, or cancel — via the
+   * Stripe customer portal. Returns false for the Free plan and for users with
+   * no subscription.
+   *
+   * Used to decide who may see the Billing page while self-serve sign-ups are
+   * disabled. Intentionally does NOT require `isSubscriptionActive`: a
+   * delinquent payer (status `past_due`/`unpaid`/`incomplete`) still has a live
+   * Stripe subscription and MOST needs portal access to fix their card or
+   * cancel — locking them out would let charges continue with no way to stop.
+   * Cancellation reverts the row to the Free plan, which this correctly excludes.
+   */
+  hasManageableSubscription(subscription: UserSubscription | null): boolean {
+    if (!subscription?.plan) return false;
+    return this.isPaidPlan(subscription.plan);
+  }
+
+  /**
    * Check if user is grandfathered
    */
   isGrandfathered(subscription: UserSubscription | null): boolean {

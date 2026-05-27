@@ -6,6 +6,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 import {
   BarChart3,
   FileText,
@@ -414,8 +415,9 @@ function NoChannelsState() {
           No messaging channels available
         </p>
         <p className="text-[11px] text-v2-ink-muted">
-          Your current plan doesn't include messaging features. Upgrade to
-          access Email, Instagram, and Templates.
+          {NEW_SUBSCRIPTIONS_ENABLED
+            ? "Your current plan doesn't include messaging features. Upgrade to access Email, Instagram, and Templates."
+            : "Your current plan doesn't include messaging features. Email, Instagram, and Templates are not included in your current plan."}
         </p>
       </div>
     </div>

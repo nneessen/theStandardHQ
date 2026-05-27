@@ -21,6 +21,12 @@ export interface UseSubscriptionResult {
   isLoading: boolean;
   error: Error | null;
   isActive: boolean;
+  /**
+   * True when the user is on a PAID tier (Pro/Team) and so has a subscription
+   * to manage via the Stripe portal — regardless of status (incl. past_due).
+   * Free / no-subscription users return false.
+   */
+  hasManageableSubscription: boolean;
   isGrandfathered: boolean;
   grandfatherDaysRemaining: number;
   tierName: string;
@@ -53,6 +59,8 @@ export function useSubscription(): UseSubscriptionResult {
   const isActive = subscriptionService.isSubscriptionActive(
     subscription ?? null,
   );
+  const hasManageableSubscription =
+    subscriptionService.hasManageableSubscription(subscription ?? null);
   const isGrandfathered = subscriptionService.isGrandfathered(
     subscription ?? null,
   );
@@ -64,6 +72,7 @@ export function useSubscription(): UseSubscriptionResult {
     isLoading,
     error: error as Error | null,
     isActive,
+    hasManageableSubscription,
     isGrandfathered,
     grandfatherDaysRemaining,
     tierName:
