@@ -9,6 +9,7 @@ import {
   FEATURE_DISPLAY_NAMES,
   useFeatureAccess,
 } from "@/hooks/subscription";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 import { cn } from "@/lib/utils";
 
 interface UpgradePromptProps {
@@ -41,6 +42,10 @@ export function UpgradePrompt({
   const featureName = FEATURE_DISPLAY_NAMES[feature];
   const { requiredPlan } = useFeatureAccess(feature);
 
+  // When self-serve subscriptions are disabled, suppress every upgrade CTA and
+  // drop the "upgrade to access" wording, while still showing the locked state.
+  const ctaEnabled = showCTA && NEW_SUBSCRIPTIONS_ENABLED;
+
   const isFreeRequired = requiredPlan?.toLowerCase() === "free";
   const defaultTitle =
     title ??
@@ -49,7 +54,9 @@ export function UpgradePrompt({
     description ??
     (isFreeRequired
       ? `${featureName} is available on all plans. Please contact support if you cannot access it.`
-      : `${featureName} is available on the ${requiredPlan} plan and above. Upgrade to access this feature.`);
+      : ctaEnabled
+        ? `${featureName} is available on the ${requiredPlan} plan and above. Upgrade to access this feature.`
+        : `${featureName} is available on the ${requiredPlan} plan and above.`);
   const buttonLabel = isFreeRequired
     ? "Get Started"
     : `Upgrade to ${requiredPlan}`;
@@ -67,7 +74,7 @@ export function UpgradePrompt({
         <span>
           Requires <span className="font-medium">{requiredPlan}</span> plan
         </span>
-        {showCTA && (
+        {ctaEnabled && (
           <Link
             to="/billing"
             className="text-blue-600 dark:text-blue-400 hover:underline ml-1"
@@ -103,7 +110,7 @@ export function UpgradePrompt({
             </span>
           </div>
         </div>
-        {showCTA && (
+        {ctaEnabled && (
           <Link to="/billing">
             <Button
               size="sm"
@@ -132,7 +139,7 @@ export function UpgradePrompt({
         <span className="text-[10px] text-zinc-600 dark:text-zinc-300">
           {requiredPlan} feature
         </span>
-        {showCTA && (
+        {ctaEnabled && (
           <Link to="/billing">
             <Button
               size="sm"
@@ -189,7 +196,7 @@ export function UpgradePrompt({
         </div>
 
         {/* CTA */}
-        {showCTA && (
+        {ctaEnabled && (
           <Link to="/billing" className="w-full">
             <Button className="w-full h-8 text-[11px] bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-sm">
               <Sparkles className="h-3.5 w-3.5 mr-1.5" />
@@ -215,15 +222,29 @@ export function UpgradePromptCompact({
 }) {
   const { requiredPlan } = useFeatureAccess(feature);
 
+  const badgeClasses = cn(
+    "flex items-center gap-1.5 px-2 py-1 rounded text-[9px]",
+    "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300",
+    "border border-amber-200 dark:border-amber-800",
+    className,
+  );
+
+  // Self-serve subscriptions disabled: show the locked badge without a link.
+  if (!NEW_SUBSCRIPTIONS_ENABLED) {
+    return (
+      <span className={badgeClasses}>
+        <Lock className="h-2.5 w-2.5" />
+        <span>{requiredPlan}+</span>
+      </span>
+    );
+  }
+
   return (
     <Link
       to="/billing"
       className={cn(
-        "flex items-center gap-1.5 px-2 py-1 rounded text-[9px]",
-        "bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300",
-        "border border-amber-200 dark:border-amber-800",
+        badgeClasses,
         "hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors",
-        className,
       )}
     >
       <Lock className="h-2.5 w-2.5" />

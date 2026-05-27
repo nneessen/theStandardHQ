@@ -14,6 +14,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useImo } from "@/contexts/ImoContext";
 import { FEATURE_REGISTRY } from "@/constants/features";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 // eslint-disable-next-line no-restricted-imports
 import type {
   SubscriptionPlan,
@@ -102,6 +103,8 @@ export function PricingCards({ onPlanSelect }: PricingCardsProps = {}) {
   const currentPlanId = subscription?.plan?.id;
 
   const handleSelectPlan = async (plan: SubscriptionPlan) => {
+    // Self-serve subscriptions are disabled — never start a checkout/portal flow.
+    if (!NEW_SUBSCRIPTIONS_ENABLED) return;
     if (!user?.id || !userEmail) return;
 
     // If selecting Free plan, direct to portal to cancel

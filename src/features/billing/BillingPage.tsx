@@ -34,6 +34,7 @@ import {
   PREMIUM_VOICE_COMING_SOON_MESSAGE,
   PREMIUM_VOICE_LAUNCH_PRICE_MONTHLY_CENTS,
 } from "@/lib/subscription/voice-addon";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 
 export function BillingPage() {
   const { isSuperAdmin } = useImo();
@@ -134,8 +135,12 @@ export function BillingPage() {
 
       {/* Sections */}
       <div className="flex-1 flex flex-col gap-3">
-        {/* Pricing Cards — primary focus, top of page */}
-        <PricingCards onPlanSelect={handlePlanSelect} />
+        {/* Pricing Cards — primary focus, top of page.
+            Hidden while self-serve subscriptions are disabled (no new plans /
+            plan changes). Subscribers manage/cancel via CurrentPlanCard below. */}
+        {NEW_SUBSCRIPTIONS_ENABLED && (
+          <PricingCards onPlanSelect={handlePlanSelect} />
+        )}
 
         {/* What's Coming */}
         <div className="rounded-v2-md border border-v2-ring shadow-v2-soft bg-v2-card overflow-hidden">

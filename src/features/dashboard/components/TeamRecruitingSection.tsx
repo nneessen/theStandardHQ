@@ -6,11 +6,9 @@ import { Lock, Users, UserPlus, Bell } from "lucide-react";
 import { formatCurrency } from "@/lib/format";
 import type { HierarchyStats } from "@/types/hierarchy.types";
 import type { RecruitingStats } from "@/hooks";
-import {
-  useActiveTemplate,
-  usePhases,
-} from "@/features/recruiting";
+import { useActiveTemplate, usePhases } from "@/features/recruiting";
 import { normalizePhaseNameToStatus } from "@/lib/pipeline";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 
 interface TeamRecruitingSectionProps {
   hierarchyStats?: HierarchyStats | null;
@@ -254,7 +252,9 @@ export const TeamRecruitingSection: React.FC<TeamRecruitingSectionProps> = ({
               Team & Recruiting
             </div>
             <div className="text-xs text-muted-foreground mt-1">
-              Upgrade to Team plan to access
+              {NEW_SUBSCRIPTIONS_ENABLED
+                ? "Upgrade to Team plan to access"
+                : "Not included in your current plan."}
             </div>
           </div>
         </div>

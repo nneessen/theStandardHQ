@@ -12,6 +12,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 
 interface GatedActionProps {
   /** Whether the user has access to this action */
@@ -74,15 +75,16 @@ export const GatedAction: React.FC<GatedActionProps> = ({
     );
   }
 
-  const tooltipMessage =
-    lockedTooltip || `Upgrade to ${requiredTier} to unlock`;
+  const tooltipMessage = NEW_SUBSCRIPTIONS_ENABLED
+    ? lockedTooltip || `Upgrade to ${requiredTier} to unlock`
+    : "This feature isn't included in your current plan";
 
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            onClick={handleLockedClick}
+            onClick={NEW_SUBSCRIPTIONS_ENABLED ? handleLockedClick : undefined}
             variant="outline"
             size="sm"
             className={cn(
@@ -101,9 +103,11 @@ export const GatedAction: React.FC<GatedActionProps> = ({
             <Crown className="h-3 w-3 text-warning mt-0.5 flex-shrink-0" />
             <div>
               <p className="font-medium">{tooltipMessage}</p>
-              <p className="text-muted-foreground dark:text-muted-foreground mt-0.5">
-                Click to view plans
-              </p>
+              {NEW_SUBSCRIPTIONS_ENABLED && (
+                <p className="text-muted-foreground dark:text-muted-foreground mt-0.5">
+                  Click to view plans
+                </p>
+              )}
             </div>
           </div>
         </TooltipContent>

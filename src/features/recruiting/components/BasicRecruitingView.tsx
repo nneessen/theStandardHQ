@@ -104,6 +104,55 @@ import { useTemplates } from "../hooks/usePipeline";
 import { useInitializeRecruitProgress } from "../hooks/useRecruitProgress";
 import { Link, useSearch } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
+
+/** Team-plan recruiting features previewed in the locked/upsell panel. */
+const TEAM_PLAN_FEATURES: {
+  icon: React.ElementType;
+  label: string;
+  desc: string;
+}[] = [
+  {
+    icon: Layers,
+    label: "Custom Pipeline Stages",
+    desc: "Define unlimited phases with your own names, order, and requirements",
+  },
+  {
+    icon: ListChecks,
+    label: "Interactive Checklists",
+    desc: "Embed videos, quizzes, e-sign docs, file downloads, and more per phase",
+  },
+  {
+    icon: FolderOpen,
+    label: "Document Management",
+    desc: "Track uploads, approvals, and expiration dates for every recruit",
+  },
+  {
+    icon: Inbox,
+    label: "Leads Queue",
+    desc: "Accept inbound leads directly from your public recruiting landing page",
+  },
+  {
+    icon: Zap,
+    label: "Automated Workflows",
+    desc: "Trigger emails and notifications automatically on phase changes",
+  },
+  {
+    icon: Globe,
+    label: "Public Recruiting Page",
+    desc: "Branded landing page at your own personalized recruiting URL",
+  },
+  {
+    icon: Building2,
+    label: "Recruit Portal",
+    desc: "Give recruits a guided portal to complete tasks, upload docs, track progress, and message their recruiter",
+  },
+  {
+    icon: MessageSquare,
+    label: "Communication Hub",
+    desc: "Send emails and track every recruit interaction in one place",
+  },
+];
 
 interface BasicRecruitingViewProps {
   className?: string;
@@ -271,7 +320,9 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                       Unlock the Full Recruiting Pipeline
                     </p>
                     <p className="text-[10px] text-info mt-0.5">
-                      Expand to preview Team plan features and upgrade options
+                      {NEW_SUBSCRIPTIONS_ENABLED
+                        ? "Expand to preview Team plan features and upgrade options"
+                        : "Expand to preview Team plan features"}
                     </p>
                   </div>
                 </div>
@@ -290,70 +341,10 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
 
           <CollapsibleContent className="px-4 pb-4">
             <div className="border-t border-info/80 dark:border-info/80 pt-3">
-              <Link to="/billing" className="block group">
-                <div className="rounded-md border border-info dark:border-info/50 bg-white/80 /40 p-3 hover:border-info dark:hover:border-info hover:shadow-sm transition-all cursor-pointer">
-                  {/* CTA row */}
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <p className="text-[10px] text-info leading-tight">
-                      Everything you need to build, onboard, and grow your team
-                      on the <span className="font-semibold">Team plan</span>
-                    </p>
-                    <div className="flex items-center gap-1.5 bg-info group-hover:bg-info text-white rounded-md px-3 py-1.5 text-[11px] font-semibold flex-shrink-0 transition-colors shadow-sm">
-                      Upgrade to Team
-                      <ArrowRight className="h-3 w-3" />
-                    </div>
-                  </div>
-
-                  {/* Feature grid */}
+              {(() => {
+                const featureGrid = (
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {(
-                      [
-                        {
-                          icon: Layers,
-                          label: "Custom Pipeline Stages",
-                          desc: "Define unlimited phases with your own names, order, and requirements",
-                        },
-                        {
-                          icon: ListChecks,
-                          label: "Interactive Checklists",
-                          desc: "Embed videos, quizzes, e-sign docs, file downloads, and more per phase",
-                        },
-                        {
-                          icon: FolderOpen,
-                          label: "Document Management",
-                          desc: "Track uploads, approvals, and expiration dates for every recruit",
-                        },
-                        {
-                          icon: Inbox,
-                          label: "Leads Queue",
-                          desc: "Accept inbound leads directly from your public recruiting landing page",
-                        },
-                        {
-                          icon: Zap,
-                          label: "Automated Workflows",
-                          desc: "Trigger emails and notifications automatically on phase changes",
-                        },
-                        {
-                          icon: Globe,
-                          label: "Public Recruiting Page",
-                          desc: "Branded landing page at your own personalized recruiting URL",
-                        },
-                        {
-                          icon: Building2,
-                          label: "Recruit Portal",
-                          desc: "Give recruits a guided portal to complete tasks, upload docs, track progress, and message their recruiter",
-                        },
-                        {
-                          icon: MessageSquare,
-                          label: "Communication Hub",
-                          desc: "Send emails and track every recruit interaction in one place",
-                        },
-                      ] as {
-                        icon: React.ElementType;
-                        label: string;
-                        desc: string;
-                      }[]
-                    ).map(({ icon: Icon, label, desc }) => (
+                    {TEAM_PLAN_FEATURES.map(({ icon: Icon, label, desc }) => (
                       <div
                         key={label}
                         className="flex items-start gap-2 p-2 rounded-md bg-white/80 /60 border border-info dark:border-info/50"
@@ -370,13 +361,48 @@ export function BasicRecruitingView({ className }: BasicRecruitingViewProps) {
                       </div>
                     ))}
                   </div>
+                );
 
-                  {/* Click hint */}
-                  <p className="text-center text-[9px] text-info dark:text-info mt-2.5 group-hover:text-info dark:group-hover:text-info transition-colors">
-                    Click anywhere in this panel to see pricing and upgrade →
+                const teamPlanBlurb = (
+                  <p className="text-[10px] text-info leading-tight">
+                    Everything you need to build, onboard, and grow your team on
+                    the <span className="font-semibold">Team plan</span>
                   </p>
-                </div>
-              </Link>
+                );
+
+                // Upgrade disabled: info-only panel (no /billing link / CTA).
+                if (!NEW_SUBSCRIPTIONS_ENABLED) {
+                  return (
+                    <div className="rounded-md border border-info dark:border-info/50 bg-white/80 /40 p-3">
+                      <div className="mb-3">{teamPlanBlurb}</div>
+                      {featureGrid}
+                    </div>
+                  );
+                }
+
+                return (
+                  <Link to="/billing" className="block group">
+                    <div className="rounded-md border border-info dark:border-info/50 bg-white/80 /40 p-3 hover:border-info dark:hover:border-info hover:shadow-sm transition-all cursor-pointer">
+                      {/* CTA row */}
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        {teamPlanBlurb}
+                        <div className="flex items-center gap-1.5 bg-info group-hover:bg-info text-white rounded-md px-3 py-1.5 text-[11px] font-semibold flex-shrink-0 transition-colors shadow-sm">
+                          Upgrade to Team
+                          <ArrowRight className="h-3 w-3" />
+                        </div>
+                      </div>
+
+                      {featureGrid}
+
+                      {/* Click hint */}
+                      <p className="text-center text-[9px] text-info dark:text-info mt-2.5 group-hover:text-info dark:group-hover:text-info transition-colors">
+                        Click anywhere in this panel to see pricing and upgrade
+                        →
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })()}
             </div>
           </CollapsibleContent>
         </div>

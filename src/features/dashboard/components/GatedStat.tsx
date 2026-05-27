@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 
 interface GatedStatProps {
   /** Whether the user has access to this stat */
@@ -63,7 +64,11 @@ export const GatedStat: React.FC<GatedStatProps> = ({
           </span>
         </TooltipTrigger>
         <TooltipContent side="top" className="text-xs">
-          <p>{lockedTooltip}</p>
+          <p>
+            {NEW_SUBSCRIPTIONS_ENABLED
+              ? lockedTooltip
+              : "This feature isn't included in your current plan"}
+          </p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

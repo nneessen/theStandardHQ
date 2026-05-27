@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   useFeatureAccess,
   useAnyFeatureAccess,
+  useSubscription,
   type FeatureKey,
 } from "@/hooks/subscription";
 import { PendingApproval } from "@/features/auth";
@@ -47,6 +48,12 @@ interface RouteGuardProps {
   subscriptionFeature?: FeatureKey;
   /** Multiple subscription features - ANY grants access (like Sidebar) */
   subscriptionFeatures?: FeatureKey[];
+  /**
+   * If true, only users with an active PAID subscription (Pro/Team) may access.
+   * Super-admins bypass. Used by the Billing route while self-serve
+   * subscriptions are disabled.
+   */
+  requiresPaidSubscription?: boolean;
   /** Custom fallback component */
   fallback?: React.ReactNode;
 }
@@ -93,6 +100,7 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
   allowedAgencyId,
   subscriptionFeature,
   subscriptionFeatures,
+  requiresPaidSubscription = false,
   fallback,
 }) => {
   const { supabaseUser } = useAuth();
@@ -120,6 +128,10 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
   // Feature access check - multiple features (any grants access)
   const multiFeatureAccess = useAnyFeatureAccess(subscriptionFeatures || []);
 
+  // Paid-subscription gate (Billing route while self-serve sign-ups are off)
+  const { hasManageableSubscription, isLoading: subscriptionLoading } =
+    useSubscription();
+
   // Determine which feature check to use
   const hasFeatureRequirement = subscriptionFeature || subscriptionFeatures;
   const checkingFeature =
@@ -127,7 +139,12 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
     (subscriptionFeatures && multiFeatureAccess.isLoading);
 
   // Show loading state while checking
-  if (authLoading || permLoading || checkingFeature) {
+  if (
+    authLoading ||
+    permLoading ||
+    checkingFeature ||
+    (requiresPaidSubscription && subscriptionLoading)
+  ) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -141,6 +158,14 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
   // Super admin bypass - users with is_super_admin flag bypass all checks
   if (isSuperAdmin) {
     return <>{children}</>;
+  }
+
+  // Paid-subscription-only routes: non-subscribers have nothing to manage here
+  // (self-serve sign-ups are disabled), so send them back to the dashboard.
+  // Existing paid subscribers — including delinquent (past_due) ones — keep
+  // access so they can reach the Stripe portal to fix payment or cancel.
+  if (requiresPaidSubscription && !hasManageableSubscription) {
+    return <Navigate to="/dashboard" replace />;
   }
 
   // Check super-admin-only routes

@@ -19,6 +19,7 @@ import {
   RefreshCw,
   Shield,
 } from "lucide-react";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -102,6 +103,7 @@ export function ChatBotLanding({
   const canPurchase = !isCurrentTier;
 
   const handlePurchase = async () => {
+    if (!NEW_SUBSCRIPTIONS_ENABLED) return;
     if (!user?.id || !chatBotAddon || !selectedTier || purchaseLoading) return;
 
     // Paid tiers without a Stripe subscription will redirect to Stripe Checkout
@@ -429,7 +431,7 @@ export function ChatBotLanding({
                           <Check className="h-3 w-3 mr-1" />
                           Current Plan
                         </Badge>
-                      ) : hasPriceConfigured ? (
+                      ) : hasPriceConfigured && NEW_SUBSCRIPTIONS_ENABLED ? (
                         <Button
                           size="sm"
                           className={cn(
