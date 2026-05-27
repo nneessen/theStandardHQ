@@ -256,6 +256,25 @@ serve(async (req) => {
       inviterImoId = inviterProfile?.imo_id ?? null;
     }
 
+    // Platform-sunset gate: refuse to register under a revoked IMO. This MUST
+    // run before createUser so no orphan auth account is created against a
+    // sunset org. Neutral "not found" response — same as an unknown/removed
+    // token, no hint the platform continues for anyone else.
+    if (inviterImoId) {
+      const { data: inviterImo } = await supabaseAdmin
+        .from("imos")
+        .select("access_revoked_at")
+        .eq("id", inviterImoId)
+        .maybeSingle();
+      if (inviterImo?.access_revoked_at) {
+        return jsonResponse(200, {
+          success: false,
+          error: "invitation_not_found",
+          message: "This invitation link is invalid or has been removed.",
+        });
+      }
+    }
+
     const { data: authData, error: authError } =
       await supabaseAdmin.auth.admin.createUser({
         email: normalizedEmail,
