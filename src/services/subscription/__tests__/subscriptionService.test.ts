@@ -583,6 +583,76 @@ describe("SubscriptionService", () => {
     });
   });
 
+  describe("hasManageableSubscription", () => {
+    it("should return true for an active paid (Pro/Team) subscription", () => {
+      const result = subscriptionService.hasManageableSubscription(
+        mockSubscription as never,
+      );
+      expect(result).toBe(true);
+    });
+
+    it("should return false for null subscription", () => {
+      const result = subscriptionService.hasManageableSubscription(null);
+      expect(result).toBe(false);
+    });
+
+    it("should return false for a FREE plan (not a paid subscription)", () => {
+      const freePlan = {
+        ...mockPlan,
+        name: "free",
+        price_monthly: 0,
+        price_annual: 0,
+      };
+      const freeSubscription = { ...mockSubscription, plan: freePlan };
+      const result = subscriptionService.hasManageableSubscription(
+        freeSubscription as never,
+      );
+      expect(result).toBe(false);
+    });
+
+    it("should return TRUE for a past_due paid subscriber (must keep portal access to fix payment / cancel)", () => {
+      const pastDue = { ...mockSubscription, status: "past_due" };
+      const result = subscriptionService.hasManageableSubscription(
+        pastDue as never,
+      );
+      expect(result).toBe(true);
+    });
+
+    it("should return TRUE for an unpaid paid subscriber", () => {
+      const unpaid = { ...mockSubscription, status: "unpaid" };
+      const result = subscriptionService.hasManageableSubscription(
+        unpaid as never,
+      );
+      expect(result).toBe(true);
+    });
+
+    it("should return false once a canceled subscription has reverted to the Free plan", () => {
+      const freePlan = {
+        ...mockPlan,
+        name: "free",
+        price_monthly: 0,
+        price_annual: 0,
+      };
+      const reverted = {
+        ...mockSubscription,
+        status: "canceled",
+        plan: freePlan,
+      };
+      const result = subscriptionService.hasManageableSubscription(
+        reverted as never,
+      );
+      expect(result).toBe(false);
+    });
+
+    it("should return false when the plan relation is missing", () => {
+      const noPlan = { ...mockSubscription, plan: undefined };
+      const result = subscriptionService.hasManageableSubscription(
+        noPlan as never,
+      );
+      expect(result).toBe(false);
+    });
+  });
+
   describe("getAnnualSavings", () => {
     it("should calculate annual savings correctly", () => {
       const result = subscriptionService.getAnnualSavings(mockPlan as never);

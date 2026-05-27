@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { UpgradePrompt } from "@/components/subscription";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 import { useCurrentUserProfile } from "@/hooks/admin";
 import { useTheStandardAgents } from "./hooks/useTheStandardAgents";
 import {
@@ -97,11 +98,13 @@ export function TheStandardTeamRoutePage() {
                     Go to Settings Profile
                   </Button>
                 </Link>
-                <Link to="/billing">
-                  <Button type="button" size="sm">
-                    Upgrade to Pro or Team
-                  </Button>
-                </Link>
+                {NEW_SUBSCRIPTIONS_ENABLED && (
+                  <Link to="/billing">
+                    <Button type="button" size="sm">
+                      Upgrade to Pro or Team
+                    </Button>
+                  </Link>
+                )}
               </div>
             </div>
 

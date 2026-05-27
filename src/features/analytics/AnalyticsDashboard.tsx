@@ -9,6 +9,7 @@ import {
   FileText,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 import { TimePeriodSelector } from "./components/TimePeriodSelector";
 import { PillButton, SoftCard } from "@/components/v2";
 import { useAnalyticsData } from "@/hooks";
@@ -294,7 +295,9 @@ function AnalyticsDashboardContent() {
                         {/* Locked Sections */}
                         <div>
                           <span className="text-[10px] font-semibold text-v2-ink-subtle uppercase tracking-[0.18em]">
-                            Upgrade to unlock
+                            {NEW_SUBSCRIPTIONS_ENABLED
+                              ? "Upgrade to unlock"
+                              : "Not included in your plan"}
                           </span>
                           <div className="flex flex-wrap gap-1.5 mt-1.5">
                             {lockedSections.map((section) => (
@@ -310,12 +313,14 @@ function AnalyticsDashboardContent() {
                       </div>
                     </div>
 
-                    <Link to="/billing" className="flex-shrink-0">
-                      <PillButton tone="black" size="md">
-                        <Sparkles className="h-3.5 w-3.5" />
-                        Upgrade plan
-                      </PillButton>
-                    </Link>
+                    {NEW_SUBSCRIPTIONS_ENABLED && (
+                      <Link to="/billing" className="flex-shrink-0">
+                        <PillButton tone="black" size="md">
+                          <Sparkles className="h-3.5 w-3.5" />
+                          Upgrade plan
+                        </PillButton>
+                      </Link>
+                    )}
                   </div>
                 </SoftCard>
               </div>

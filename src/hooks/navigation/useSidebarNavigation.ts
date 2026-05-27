@@ -65,6 +65,7 @@ export function useSidebarNavigation(): UseSidebarNavigationResult {
     subscription,
     isLoading: subLoading,
     isActive: isSubscriptionActive,
+    hasManageableSubscription,
   } = useSubscription();
   const {
     grantsAllFeatures: imoGrantsAllFeatures,
@@ -166,6 +167,12 @@ export function useSidebarNavigation(): UseSidebarNavigationResult {
       if (!isAgencyAllowed(item.allowedAgencyId)) return null;
       if (!isEmailAllowed(item.allowedEmails)) return null;
 
+      // Paid-subscription-only items (e.g. Billing). Super-admins bypass.
+      // Hide while loading to avoid a flash, then resolve once known.
+      if (item.requiresPaidSubscription && !isSuperAdmin) {
+        if (subLoading || !hasManageableSubscription) return null;
+      }
+
       if (isPending && !item.public) {
         return { ...item, state: "locked" };
       }
@@ -199,6 +206,7 @@ export function useSidebarNavigation(): UseSidebarNavigationResult {
     [
       can,
       canManageUnderwriting,
+      hasManageableSubscription,
       hasFeature,
       isAgencyAllowed,
       isEmailAllowed,
@@ -209,6 +217,7 @@ export function useSidebarNavigation(): UseSidebarNavigationResult {
       isUnderwritingLoading,
       licensingWorkspaceAccess.hasAccess,
       licensingWorkspaceAccess.isLoading,
+      subLoading,
     ],
   );
 

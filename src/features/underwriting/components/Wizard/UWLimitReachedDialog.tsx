@@ -16,6 +16,7 @@ import {
   getDaysRemaining,
   type UWWizardUsage,
 } from "../../hooks/wizard/useUWWizardUsage";
+import { NEW_SUBSCRIPTIONS_ENABLED } from "@/lib/subscription/subscription-availability";
 
 interface UWLimitReachedDialogProps {
   open: boolean;
@@ -95,7 +96,7 @@ export function UWLimitReachedDialog({
           </div>
 
           {/* Upgrade Options */}
-          {upgradeTiers.length > 0 && (
+          {NEW_SUBSCRIPTIONS_ENABLED && upgradeTiers.length > 0 && (
             <div className="space-y-2">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 Upgrade for more runs
@@ -133,7 +134,7 @@ export function UWLimitReachedDialog({
           >
             Close
           </Button>
-          {upgradeTiers.length > 0 && (
+          {NEW_SUBSCRIPTIONS_ENABLED && upgradeTiers.length > 0 && (
             <Button onClick={handleUpgrade} className="flex-1">
               Upgrade Plan
               <ArrowUpRight className="h-4 w-4 ml-1" />
