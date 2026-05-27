@@ -2,8 +2,10 @@
 
 Date: 2026-05-27
 Owner: Nick / super-admin
-Status: Backend mechanism built and **applied to LOCAL only, fully DORMANT**; remote
-deploy + edge functions + frontend still pending. Nothing is activated.
+Status: Backend mechanism + **the 4 edge functions (STEP 1)** + **Migrations F/G (STEP 2)**
++ **frontend (STEP 3)** + **the public-surface gate (STEP 4)** built and **applied to LOCAL
+only, fully DORMANT**; the `export ⊆ wipe` parity test, a seeded rehearsal, and remote deploy
+still pending. Nothing is activated. Last updated 2026-05-27 after STEP 4.
 
 This is the **backend security architecture** for the "RED BUTTON" that decommissions
 one IMO's access. It **supersedes** the earlier full-platform-shutdown plan
@@ -196,12 +198,103 @@ change**; over-gating 190 tables costs one cheap cached `EXISTS` per query, only
 | Owned-tables registry | `supabase/functions/_shared/owned-tables.ts` |
 | Gate completeness tripwire | `scripts/check-revocation-gate-completeness.sql` |
 | Wipe empirical test | `scripts/test-wipe-user-business-data.sql` |
+| Shared sunset constants (STEP 1) | `supabase/functions/_shared/sunset-constants.ts` |
+| Recursive Storage helpers (STEP 1) | `supabase/functions/_shared/storage-recursive.ts` |
+| RED BUTTON Switch A (STEP 1) | `supabase/functions/activate-imo-revocation/index.ts` |
+| Export bundle builder (STEP 1) | `supabase/functions/generate-user-export-bundle/index.ts` |
+| Wipe wrapper / Switch B (STEP 1) | `supabase/functions/confirm-and-wipe-account/index.ts` |
+| Daily lifecycle sweep (STEP 1) | `supabase/functions/account-lifecycle-cron/index.ts` |
+| Recovery bucket (Migration F) | `supabase/migrations/20260527094314_account_recovery_archives_bucket.sql` |
+| Daily lifecycle cron (Migration G) | `supabase/migrations/20260527094315_account_lifecycle_daily_cron.sql` |
+| Public-surface gate (STEP 4) | `supabase/migrations/20260527114910_revocation_public_surface_gate.sql` |
+| Public-surface registration check (STEP 4) | `supabase/functions/complete-recruit-registration/index.ts` |
+
+## The 4 edge functions (STEP 1 — built, LOCAL, dormant)
+
+All four pin their esm.sh imports, type-check clean under Deno, and were smoke-invoked against the
+local edge runtime (auth branches + service-role happy paths). **No Stripe calls in any of them.**
+
+1. **`activate-imo-revocation`** (super-admin JWT) — RED BUTTON Switch A. Sets/clears
+   `imos.access_revoked_at`. **Fail-closed allowlist: refuses any IMO except the FFG sentinel
+   `ffffffff-…`** (a mistyped Epic Life id can never be revoked), plus a typed `REVOKE <imo.name>`
+   confirm. On revoke it async-enqueues one `data_export_log` row (status `pending`) per affected
+   non-super-admin user — never generates bundles inline (≈150s fn limit).
+2. **`generate-user-export-bundle`** (service-role OR self-JWT, self-only) — builds the bundle from
+   `EXPORTED_TABLES`: multi-sheet **xlsx (SheetJS `xlsx@0.18.5`)** + **csv `.zip` (`fflate@0.8.2`)** +
+   json manifest, written to `account-recovery-archives/snapshots/{user}/`. Reads ALWAYS use the
+   service-role admin client (a revoked user's own JWT is denied at the gate), and returns short-lived
+   signed URLs so the RLS-denied user can download.
+3. **`confirm-and-wipe-account`** (self-JWT / super-admin / service-role) — Switch B wrapper: copies
+   the snapshot → `recovery/{user}/` (**all-or-nothing**: a partial copy is rolled back and the
+   snapshot kept, so it never claims an incomplete archive), purges the three private buckets, calls
+   `wipe_user_business_data` (reassign target = oldest distinct super-admin), `auth.admin.deleteUser`,
+   then writes `account_deletion_log`. **Idempotent** across partial failures (profile-gone → skip
+   wipe RPC, still retry deleteUser, UPDATE not re-INSERT the log).
+4. **`account-lifecycle-cron`** (service-role, pg_cron) — daily, bounded + batched, failure-isolated:
+   drain pending exports, day-3/day-6 reminder emails (neutral, opaque copy via `send-email`), day-7
+   auto-purge (same wipe wrapper, reason `auto_purge_7d`), 30-day recovery-archive GC.
+
+## Migrations F + G (STEP 2 — built, LOCAL, dormant)
+
+- **F** — private `account-recovery-archives` bucket (1GB; xlsx/zip/json), **service-role only (zero
+  authenticated policies)**, holding `snapshots/{user}/` (pre-wipe) + `recovery/{user}/` (30-day post-wipe).
+- **G** — `invoke_account_lifecycle_daily()` SECURITY DEFINER wrapper (app_config + pg_net, mirroring
+  `invoke_lead_heat_scoring`) scheduled daily at 09:15 UTC. No-op while no IMO is revoked.
+
+> **Known local-stack limitation (environmental, not a code bug — remote unaffected):** the local
+> Supabase CLI's storage-api v1.22.17 rejects **every** Storage object DELETE (`new row violates
+> row-level security policy`, for service-role and authenticated callers alike, even via raw REST).
+> Root-caused into the storage-api's own delete handling — not the `prefixes` RLS (its trigger is
+> SECURITY DEFINER; disabling that RLS had no effect). The production app's 10+ `.remove()` call
+> sites work for real users, so hosted/remote is fine. Consequence: the wipe's `removeAll` and the
+> cron's recovery GC delete half **cannot be rehearsed on the local stack** — they are code-reviewed,
+> and the copy half is verified; the delete half is gated on the remote prereq below.
+
+## Part 4 — public-surface gate (STEP 4 — built, LOCAL, dormant)
+
+The deny-by-default gate (§2) is `authenticated`-only, so it never covered the **public /
+unauthenticated** surfaces: `anon` can't read `imos` directly, and every public funnel resolves its
+IMO through an `anon`-callable **SECURITY DEFINER** RPC that bypasses RLS. The fix injects the
+`access_revoked_at IS NULL` predicate **inside each definer function**, so a revoked IMO behaves
+exactly like an unlisted/unknown one (the existing "Link Not Found" / generic-landing renders) —
+no new copy, no tell.
+
+**Migration `20260527114910_revocation_public_surface_gate.sql`** (applied LOCAL only; 7 functions
+version-tracked) is a faithful `CREATE OR REPLACE` of each live body + the predicate + an idempotent
+`GRANT … TO anon`:
+
+- **Real closure** — the functions a specific-IMO public input flows through:
+  `get_public_recruiter_info`, `get_public_recruiting_theme` (covers `/join/$recruiterId`, the
+  `/join-*` routes, and the custom-domain funnel), `submit_recruiting_lead`, and
+  `get_public_invitation_by_token` (`/register/*`; a plpgsql guard after the inviter fetch — a NULL
+  `imo_id` super-admin inviter passes through unaffected).
+- **Defense-in-depth** — meaningful because FFG is `is_listed=true` locally:
+  `get_available_imos_for_join`, `get_agencies_for_join`, `get_public_landing_page_settings`.
+
+`complete-recruit-registration` checks the inviter's IMO `access_revoked_at` **before**
+`auth.admin.createUser`, so a revoked org can never spawn an orphan auth account; it returns the
+neutral `invitation_not_found`. **`resolve-custom-domain` needs no edit** — it 404s when
+`get_public_recruiting_theme` returns null, which the migration now does for a revoked IMO (covered
+transitively). **`/slack/name-leaderboard` is NOT public** (auth-gated via `RouteGuard`), so it is
+already covered by `SunsetGate` + the Migration B gate. No transactional email references the IMO,
+so Part 4 needed no email-copy changes.
+
+**Verification (LOCAL):** dormant unchanged (the FFG funnel still returns "Founders Financial
+Group", active); the active path was proven with a `BEGIN; UPDATE imos SET access_revoked_at =
+now() …; <call the RPCs>; ROLLBACK;` test that never commits — `get_public_recruiter_info` → 0 rows,
+`get_public_recruiting_theme` → null, discovery 2 → 1. (3 pre-existing `deno check` errors in
+`complete-recruit-registration`, `rollbackCreatedUser` generic mismatch at lines 326/336, are
+unrelated to this change and don't block Deno deploy.)
 
 ## Remaining work (not yet built)
 
-Migrations F (recovery archive bucket) + G (daily lifecycle cron); 4 edge functions
-(`activate-imo-revocation`, `generate-user-export-bundle`, `confirm-and-wipe-account`,
-`account-lifecycle-cron`); the frontend `SunsetGate` + sunset page + RED BUTTON control; the
-public/unauthenticated leak-surface closures (custom-domain funnel, public join/register, Slack
-leaderboard); the `export ⊆ wipe` parity unit test; a seeded full rehearsal; then batch-deploy
-all migrations to REMOTE (and re-run Migration B + the completeness check there).
+The `export ⊆ wipe` parity unit test; a seeded full rehearsal; then batch-deploy all migrations
+A–G + the public-surface gate migration (`20260527114910`) + the 4 edge functions to REMOTE (re-run
+Migration B + the completeness check there, regen `database.types.ts`).
+
+> **REMOTE-DEPLOY PREREQUISITE — Storage DELETE must work on the hosted project** (the irreversible
+> wipe depends on it; the local stack couldn't verify it). Before applying ANY of A–G to remote,
+> with the **remote** service-role key: `curl -X POST` a throwaway object into an existing bucket
+> (e.g. `user-documents`), then `curl -X DELETE` it — **both must 200**. If the DELETE 403s with the
+> same `new row violates row-level security policy`, STOP; do not apply migrations or activate
+> revocation until the hosted storage delete is resolved.
