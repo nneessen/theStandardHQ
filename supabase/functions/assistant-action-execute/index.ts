@@ -130,6 +130,21 @@ serve(async (req) => {
     if (!recipient)
       return await fail("No recipient was provided for this action.");
 
+    // M2: only send to someone the caller actually works with — a client,
+    // recruiting lead, or team member. assistant_recipient_is_allowed is
+    // SECURITY INVOKER, so the same RLS that scopes the read tools defines the
+    // allowed set. Pairs with the DB content-freeze (recipient/draft_payload are
+    // immutable post-approval), so this is exactly the recipient the human approved.
+    const { data: allowed, error: authErr } = await db.rpc(
+      "assistant_recipient_is_allowed",
+      { p_channel: row.channel, p_recipient: recipient },
+    );
+    if (authErr) return await fail("Could not verify the recipient.");
+    if (allowed !== true)
+      return await fail(
+        "The recipient isn't one of your contacts, leads, or team members, so the assistant won't send to them.",
+      );
+
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
     const callFn = async (fn: string, fnBody: Record<string, unknown>) => {
