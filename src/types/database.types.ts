@@ -776,6 +776,285 @@ export type Database = {
         };
         Relationships: [];
       };
+      assistant_action_requests: {
+        Row: {
+          approved_at: string | null;
+          approved_by: string | null;
+          channel: string;
+          conversation_id: string | null;
+          created_at: string | null;
+          draft_payload: Json;
+          error: string | null;
+          executed_at: string | null;
+          expires_at: string;
+          id: string;
+          imo_id: string | null;
+          recipient: string | null;
+          result_redacted: Json | null;
+          status: string;
+          tool_name: string;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          approved_at?: string | null;
+          approved_by?: string | null;
+          channel: string;
+          conversation_id?: string | null;
+          created_at?: string | null;
+          draft_payload?: Json;
+          error?: string | null;
+          executed_at?: string | null;
+          expires_at?: string;
+          id?: string;
+          imo_id?: string | null;
+          recipient?: string | null;
+          result_redacted?: Json | null;
+          status?: string;
+          tool_name: string;
+          updated_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          approved_at?: string | null;
+          approved_by?: string | null;
+          channel?: string;
+          conversation_id?: string | null;
+          created_at?: string | null;
+          draft_payload?: Json;
+          error?: string | null;
+          executed_at?: string | null;
+          expires_at?: string;
+          id?: string;
+          imo_id?: string | null;
+          recipient?: string | null;
+          result_redacted?: Json | null;
+          status?: string;
+          tool_name?: string;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "assistant_action_requests_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "assistant_conversations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assistant_action_requests_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assistant_action_requests_approved_by_fkey";
+            columns: ["approved_by"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      assistant_conversations: {
+        Row: {
+          agent_key: string;
+          created_at: string | null;
+          id: string;
+          imo_id: string | null;
+          last_message_at: string | null;
+          title: string | null;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          agent_key?: string;
+          created_at?: string | null;
+          id?: string;
+          imo_id?: string | null;
+          last_message_at?: string | null;
+          title?: string | null;
+          updated_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          agent_key?: string;
+          created_at?: string | null;
+          id?: string;
+          imo_id?: string | null;
+          last_message_at?: string | null;
+          title?: string | null;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "assistant_conversations_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      assistant_messages: {
+        Row: {
+          agent_key: string | null;
+          content: Json;
+          conversation_id: string;
+          created_at: string | null;
+          id: string;
+          role: string;
+          user_id: string;
+        };
+        Insert: {
+          agent_key?: string | null;
+          content?: Json;
+          conversation_id: string;
+          created_at?: string | null;
+          id?: string;
+          role: string;
+          user_id: string;
+        };
+        Update: {
+          agent_key?: string | null;
+          content?: Json;
+          conversation_id?: string;
+          created_at?: string | null;
+          id?: string;
+          role?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "assistant_messages_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "assistant_conversations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assistant_messages_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      assistant_preferences: {
+        Row: {
+          assistant_name: string;
+          briefing_style: string;
+          created_at: string | null;
+          enabled_agents: string[];
+          tone: string;
+          updated_at: string | null;
+          user_id: string;
+          voice_enabled: boolean;
+        };
+        Insert: {
+          assistant_name?: string;
+          briefing_style?: string;
+          created_at?: string | null;
+          enabled_agents?: string[];
+          tone?: string;
+          updated_at?: string | null;
+          user_id: string;
+          voice_enabled?: boolean;
+        };
+        Update: {
+          assistant_name?: string;
+          briefing_style?: string;
+          created_at?: string | null;
+          enabled_agents?: string[];
+          tone?: string;
+          updated_at?: string | null;
+          user_id?: string;
+          voice_enabled?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "assistant_preferences_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      assistant_tool_calls: {
+        Row: {
+          category: string | null;
+          conversation_id: string;
+          created_at: string | null;
+          duration_ms: number | null;
+          error: string | null;
+          id: string;
+          input_redacted: Json | null;
+          message_id: string | null;
+          output_redacted: Json | null;
+          risk_level: string | null;
+          status: string;
+          tool_name: string;
+          user_id: string;
+        };
+        Insert: {
+          category?: string | null;
+          conversation_id: string;
+          created_at?: string | null;
+          duration_ms?: number | null;
+          error?: string | null;
+          id?: string;
+          input_redacted?: Json | null;
+          message_id?: string | null;
+          output_redacted?: Json | null;
+          risk_level?: string | null;
+          status?: string;
+          tool_name: string;
+          user_id: string;
+        };
+        Update: {
+          category?: string | null;
+          conversation_id?: string;
+          created_at?: string | null;
+          duration_ms?: number | null;
+          error?: string | null;
+          id?: string;
+          input_redacted?: Json | null;
+          message_id?: string | null;
+          output_redacted?: Json | null;
+          risk_level?: string | null;
+          status?: string;
+          tool_name?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "assistant_tool_calls_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "assistant_conversations";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assistant_tool_calls_message_id_fkey";
+            columns: ["message_id"];
+            isOneToOne: false;
+            referencedRelation: "assistant_messages";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assistant_tool_calls_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       audit_log: {
         Row: {
           action: Database["public"]["Enums"]["audit_action"];

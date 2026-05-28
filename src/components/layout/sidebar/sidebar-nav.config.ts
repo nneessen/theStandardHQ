@@ -50,6 +50,12 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
     label: "Main",
     items: [
       {
+        icon: Sparkles,
+        label: "Command Center",
+        href: "/command-center",
+        public: true,
+      },
+      {
         icon: Home,
         label: "Dashboard",
         href: "/dashboard",

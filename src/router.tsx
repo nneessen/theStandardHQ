@@ -71,6 +71,7 @@ import { TheStandardTeamRoutePage } from "./features/the-standard-team";
 import { BillingPage } from "./features/billing/BillingPage";
 import { LeadIntelligenceDashboard } from "./features/admin/components/lead-vendors";
 import { ChatBotPage } from "./features/chat-bot";
+import { AssistantPage } from "./features/assistant";
 import { VoiceAgentPage } from "./features/voice-agent";
 import { VoiceCloneWizardPage } from "./features/voice-agent/components/VoiceCloneWizardPage";
 import { ChannelOrchestrationPage } from "./features/channel-orchestration";
@@ -639,6 +640,17 @@ const chatBotRoute = createRoute({
   ),
 });
 
+// Command Center route - embedded Jarvis AI assistant, accessible to all authenticated users
+const commandCenterRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "command-center",
+  component: () => (
+    <RouteGuard noRecruits>
+      <AssistantPage />
+    </RouteGuard>
+  ),
+});
+
 // Voice Clone Wizard route - must be before voice-agent so the more-specific path matches first
 const voiceCloneRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -1184,6 +1196,7 @@ const routeTree = rootRoute.addChildren([
   underwritingAdminRoute,
   underwritingGuidesRoute,
   chatBotRoute,
+  commandCenterRoute,
   voiceCloneRoute,
   voiceAgentRoute,
   channelOrchestrationRoute,

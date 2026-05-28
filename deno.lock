@@ -1,5 +1,20 @@
 {
   "version": "5",
+  "specifiers": {
+    "jsr:@std/assert@1": "1.0.19",
+    "jsr:@std/internal@^1.0.12": "1.0.14"
+  },
+  "jsr": {
+    "@std/assert@1.0.19": {
+      "integrity": "eaada96ee120cb980bc47e040f82814d786fe8162ecc53c91d8df60b8755991e",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
+    },
+    "@std/internal@1.0.14": {
+      "integrity": "291516b3d4c35024d6ffbc0a9df5bf4c64116e05b50012cf846710152d2ffdf7"
+    }
+  },
   "remote": {
     "https://deno.land/std@0.168.0/async/abortable.ts": "80b2ac399f142cc528f95a037a7d0e653296352d95c681e284533765961de409",
     "https://deno.land/std@0.168.0/async/deadline.ts": "2c2deb53c7c28ca1dda7a3ad81e70508b1ebc25db52559de6b8636c9278fd41f",
@@ -13,6 +28,23 @@
     "https://deno.land/std@0.168.0/async/tee.ts": "3a47cc4e9a940904fd4341f0224907e199121c80b831faa5ec2b054c6d2eff5e",
     "https://deno.land/std@0.168.0/http/server.ts": "e99c1bee8a3f6571ee4cdeb2966efad465b8f6fe62bec1bdb59c1f007cc4d155",
     "https://esm.sh/@anthropic-ai/sdk@0.24.0": "593801bf9c7685433333e3add5b3414c8a22abb25ccbb13f0bd9e8510822cf51",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/_shims/MultipartBody.mjs": "66853cdf28c059097723d84bd94522811d27630bdae400882c1537ad2792e69b",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/_shims/auto/runtime.mjs": "f487e01ab2662065754fed4b9c1390b0f8af3c15ce8c2fba99ca36a5eca11bb6",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/_shims/index.mjs": "7db81f66581a1ad8008011bd0624bac2557af87a85fef25c05152124e25fed86",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/_shims/registry.mjs": "698b9e2e2a2f70ae35b14313e09d9ae1a14fc4cf66ffdda5d2884dd093bd7d57",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/_shims/web-runtime.mjs": "1af8c8273028e60e4f35c5cc26ac297c838b87c10e5bc90de3440e0213d9b311",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/_vendor/partial-json-parser/parser.mjs": "ff988f765208846bfef49893cd6c6d0c5d8761a743227cdef30d5af7f2fbf101",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/core.mjs": "ba5b257b5281f18d446f9b51d378dc76ba3f9c11dad781e4fb3b97189b968be9",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/error.mjs": "d8334664c0d939ea9d8b3538bb55704499197b3636220dfb258a936419ea6282",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/lib/MessageStream.mjs": "72a28f9903800b16bedd9249784be19d7c2632eefb0a15a7fba874213e32486e",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/resource.mjs": "abb34d03fb21bba4a6c96ccb8dd6dd3017bab9c188453b496dbf4b3e824c4758",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/resources/completions.mjs": "d01c22b53872a4c503f9fe771b25c8b312aa4a2b97e913fdad3868580ec5fc49",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/resources/index.mjs": "69ff2dd2397f4c44125925d32883ed600d65ba858bad3f33311259db00716f7a",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/resources/messages.mjs": "bb9b3903718b0175afb4f0b9be3c8a6fec71180090852d29a8d994fc013d3f8c",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/sdk.mjs": "00721133e09ec5f686be63afa7efd29cd1dd92698f6650b5aa3273b371b5bf4d",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/streaming.mjs": "0b7e9388c4b50a484dd9f03d49a57157f9cd0e01e890a34e11848c58638f55f8",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/uploads.mjs": "65aef4691f562c3bf1405c06ef21811549ad236a6829c675e1db8e987af3c6bb",
+    "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/version.mjs": "b570e9d07ed85e2267bade3dcfe6bf7eba4471760b6e01dfdb455d7dd5ec0ddf",
     "https://esm.sh/@supabase/supabase-js@2.38.0": "654d01dd4aeff8e98fd4d9c6095bc0703a6158a8aab0e723f0d0ed1f9d808011",
     "https://esm.sh/@supabase/supabase-js@2.47.10": "8352fea62a92ad2fef32bc6a1aa529a5d2da0c939819f41767dd1480f0f30d70"
   },
