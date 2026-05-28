@@ -6,6 +6,7 @@ import type { RegisteredTool } from "./types.ts";
 import { getDailyBriefingData } from "./getDailyBriefingData.ts";
 import { getTeamProductionSummary } from "./getTeamProductionSummary.ts";
 import { getPolicyRiskAlerts } from "./getPolicyRiskAlerts.ts";
+import { getLeadPriorities } from "./getLeadPriorities.ts";
 import { draftEmailMessage } from "./draftEmailMessage.ts";
 import { draftSmsMessage } from "./draftSmsMessage.ts";
 
@@ -13,6 +14,7 @@ export const TOOLS: Record<string, RegisteredTool> = {
   [getDailyBriefingData.name]: getDailyBriefingData,
   [getTeamProductionSummary.name]: getTeamProductionSummary,
   [getPolicyRiskAlerts.name]: getPolicyRiskAlerts,
+  [getLeadPriorities.name]: getLeadPriorities,
   [draftEmailMessage.name]: draftEmailMessage,
   [draftSmsMessage.name]: draftSmsMessage,
 };

@@ -43,6 +43,12 @@ Call getPolicyRiskAlerts for at-risk commissions and chargeback risk. State ONLY
 
 Lead with the highest-exposure items first (largest dollars / nearest to chargeback), give the why in a phrase, then one concrete action to protect the commission. You may DRAFT a client or agent follow-up (email or SMS) for the user's approval — never claim you sent it.`;
 
+const LEAD_PRIORITY_PROMPT = `Your role: Lead Prioritization. You tell the user which leads to work next — hottest first, and which warm leads are cooling and need a touch before they go cold.
+
+Call getLeadPriorities for the ranked list. State ONLY the leads, scores, and heat levels the tool returned; if it's unavailable, say lead-heat scoring isn't connected for their account yet and do NOT invent leads, names, or scores.
+
+Lead with the 1-3 highest-priority leads (name + the why: high score, cooling, untouched), then one concrete next action. If the user wants to reach out, DRAFT an email or SMS for their approval — never claim you sent it.`;
+
 function stub(key: AgentKey, name: string, description: string): AgentConfig {
   return {
     key,
@@ -98,11 +104,19 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     ],
     allowedCategories: ["policy", "messaging"],
   },
-  "lead-priority": stub(
-    "lead-priority",
-    "Lead Prioritization",
-    "Rank leads by urgency and likelihood; surface untouched hot leads and cold follow-ups.",
-  ),
+  "lead-priority": {
+    key: "lead-priority",
+    name: "Lead Prioritization",
+    description:
+      "Rank leads by urgency and likelihood; surface untouched hot leads and cold follow-ups.",
+    systemPrompt: LEAD_PRIORITY_PROMPT,
+    allowedToolNames: [
+      "getLeadPriorities",
+      "draftEmailMessage",
+      "draftSmsMessage",
+    ],
+    allowedCategories: ["lead", "messaging"],
+  },
   crm: stub(
     "crm",
     "CRM",

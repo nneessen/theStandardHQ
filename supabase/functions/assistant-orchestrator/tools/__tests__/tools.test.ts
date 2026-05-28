@@ -2,6 +2,7 @@ import { assert, assertEquals, assertRejects } from "jsr:@std/assert@1";
 import type { AssistantToolContext, ToolDbClient } from "../types.ts";
 import { getPolicyRiskAlerts } from "../getPolicyRiskAlerts.ts";
 import { getDailyBriefingData } from "../getDailyBriefingData.ts";
+import { getLeadPriorities } from "../getLeadPriorities.ts";
 import { draftEmailMessage } from "../draftEmailMessage.ts";
 
 interface RpcCall {
@@ -62,6 +63,27 @@ Deno.test("read tool (getPolicyRiskAlerts) performs NO writes", async () => {
     rpcCalls.some((c) => c.fn === "get_user_commission_chargeback_summary"),
   );
 });
+
+Deno.test("read tool (getLeadPriorities) performs NO writes", async () => {
+  const { ctx, rpcCalls, inserts } = makeCtx();
+  await getLeadPriorities.run({ limit: 5 }, ctx);
+  assertEquals(inserts.length, 0);
+  const call = rpcCalls.find((c) => c.fn === "get_lead_priorities");
+  assert(call, "should call get_lead_priorities");
+  assertEquals(call?.args?.p_user_id, "user_1");
+  assertEquals(call?.args?.p_limit, 5);
+});
+
+Deno.test(
+  "getLeadPriorities is unavailable (no fabrication) when no leads",
+  async () => {
+    const { ctx } = makeCtx(); // rpc returns { data: null }
+    const res = (await getLeadPriorities.run({}, ctx)) as {
+      available: boolean;
+    };
+    assertEquals(res.available, false);
+  },
+);
 
 Deno.test(
   "getDailyBriefingData performs NO writes and only reads RPCs",

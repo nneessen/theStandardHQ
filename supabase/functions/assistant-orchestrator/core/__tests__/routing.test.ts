@@ -5,6 +5,7 @@ const ALL_WIRED = [
   "executive-briefing",
   "production-analyst",
   "policy-risk",
+  "lead-priority",
 ] as const;
 
 Deno.test("classifyIntent maps explicit intents", () => {
@@ -20,6 +21,11 @@ Deno.test("classifyIntent maps explicit intents", () => {
     classifyIntent("which policies are at risk of chargeback?"),
     "policy-risk",
   );
+  assertEquals(
+    classifyIntent("who should I call first today?"),
+    "lead-priority",
+  );
+  assertEquals(classifyIntent("show me my hottest leads"), "lead-priority");
   assertEquals(classifyIntent("hello there"), null);
 });
 
@@ -43,6 +49,10 @@ Deno.test("routes to the matched specialist when it is enabled", () => {
   assertEquals(
     routeToAgent("show me chargeback exposure", [...ALL_WIRED]),
     "policy-risk",
+  );
+  assertEquals(
+    routeToAgent("which leads should I call first?", [...ALL_WIRED]),
+    "lead-priority",
   );
 });
 

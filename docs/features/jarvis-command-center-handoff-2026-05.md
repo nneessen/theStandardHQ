@@ -137,9 +137,10 @@ DB/edge-enforced and tested; remaining items tracked in `plans/active/jarvis-pha
   other production feature). Sidebar item is `public: true`.
 - **Voice:** architecture + stubs only (no provider, no key).
 - **Action proof:** email + SMS draft→approve→send wired (Slack/Discord deferred).
-- **Scope:** focused MVP — 1 composite + 2 read tools; **3 wired agents** (Executive Briefing,
-  Production Analyst, Policy Risk — the latter two added 2026-05-28, reusing the existing read
-  tools + intent routing); the other 10 agents are typed config stubs.
+- **Scope:** focused MVP — 1 composite + 3 read tools; **4 wired agents** (Executive Briefing,
+  Production Analyst, Policy Risk, Lead Prioritization — the latter three added 2026-05-28 with
+  intent routing; Lead Prioritization added the `get_lead_priorities` RPC + tool); the other 9
+  agents are typed config stubs.
 - **Briefing UI:** rendered as the assistant's grounded text (did NOT wire
   `HeroStatStrip`/`KPIGrid` to avoid prop-shape coupling).
 

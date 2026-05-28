@@ -31,6 +31,15 @@ export function classifyIntent(message: string): AgentKey | null {
     return "policy-risk";
   }
 
+  // Lead prioritization (sales leads + heat).
+  if (
+    /\b(?:hot|hottest|cold|cooling|warm|best|top|new|untouched|stale|which|what|my)\s+leads?\b|\bleads?\s+to\s+(?:call|work|follow\s?up)\b|\bwho\s+(?:should i|to)\s+call\b|\bprioriti[sz]e(?:\s+my)?\s+leads?\b|\blead\s+priorit/.test(
+      m,
+    )
+  ) {
+    return "lead-priority";
+  }
+
   // Production performance.
   if (
     /\b(production|annualized premium|ap|submitted|placed|pending business|carrier performance|leaderboard|who('?s| is) leading|pace|written premium)\b/.test(

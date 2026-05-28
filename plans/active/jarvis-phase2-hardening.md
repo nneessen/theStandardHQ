@@ -77,16 +77,19 @@ decimal/thousands-separated — not bare years or counts) while EVERY tool secti
 `available:false`. Annotation only, not a block (heuristic). Does not cover figures recalled
 cross-turn from history (L2). Tested: `core/__tests__/grounding.test.ts` (7 cases).
 
-### Wire the next specialist agents  *(Production Analyst + Policy Risk DONE — 2026-05-28)*
-**Production Analyst** (`getTeamProductionSummary` + draft tools) and **Policy Risk**
-(`getPolicyRiskAlerts` + draft tools) are now real configs in `core/agents.ts` with focused
-prompts. `core/routing.ts` gained pure `classifyIntent()` keyword routing (briefing wins first,
-then policy-risk, then production); `routeToAgent` dispatches to the matched specialist when it's
-enabled, else falls back to Executive Briefing. Both are now in the DEFAULT `enabled_agents`
-(orchestrator + `useAssistantPreferences`) so they're reachable out of the box. Tested in
-`core/__tests__/routing.test.ts`. **Still stubs:** Lead Prioritization, Recruiting, and the
-other 8 — wire next (each needs real tool(s) + config + classification; some need NEW read tools/
-RPCs, unlike these two which reused existing tools).
+### Wire the next specialist agents  *(Production Analyst + Policy Risk + Lead Prioritization DONE — 2026-05-28)*
+**Production Analyst** (`getTeamProductionSummary` + draft tools), **Policy Risk**
+(`getPolicyRiskAlerts` + draft tools), and **Lead Prioritization** (`getLeadPriorities` + draft
+tools) are now real configs in `core/agents.ts` with focused prompts. `core/routing.ts` gained
+pure `classifyIntent()` keyword routing (briefing wins first, then policy-risk, lead, production);
+`routeToAgent` dispatches to the matched specialist when enabled, else falls back to Executive
+Briefing. All four are in the DEFAULT `enabled_agents` (orchestrator + `useAssistantPreferences`).
+Lead Prioritization needed a NEW read tool + RPC: `get_lead_priorities` (migration `20260528115847`,
+SECURITY INVOKER, ranks the caller's `lead_heat_scores` hottest-first). Tested in
+`core/__tests__/routing.test.ts` + `tools/__tests__/tools.test.ts`. **Still stubs:** Recruiting,
+CRM, SMS/Email Copy, Compliance, Coaching, Calendar, Slack, Workflow, Data Quality — most need
+NEW read tools/RPCs (e.g. Recruiting → `get_recruiting_leads_stats` exists but a per-candidate
+pipeline tool does not).
 
 ## Tier 2 — Cleanups (don't block merge)
 

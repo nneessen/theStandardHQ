@@ -95,6 +95,7 @@ serve(async (req) => {
       "executive-briefing",
       "production-analyst",
       "policy-risk",
+      "lead-priority",
     ];
 
     const agentKey = routeToAgent(message, enabledAgents);

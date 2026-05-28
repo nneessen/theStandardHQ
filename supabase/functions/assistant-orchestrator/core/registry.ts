@@ -35,6 +35,16 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     requiresApproval: false,
     implemented: true,
   },
+  getLeadPriorities: {
+    name: "getLeadPriorities",
+    description:
+      "List the current user's highest-priority sales leads by heat score — hottest first, surfacing leads going cold (display name, score, heat level, trend, percentile, last activity). Read-only, RLS-scoped to the caller's own leads. Use for 'who should I call', 'hot leads', or 'which leads are going cold' questions.",
+    category: "lead",
+    riskLevel: "read",
+    requiredPermissions: [],
+    requiresApproval: false,
+    implemented: true,
+  },
   draftEmailMessage: {
     name: "draftEmailMessage",
     description:
