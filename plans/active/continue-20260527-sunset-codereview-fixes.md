@@ -14,13 +14,14 @@ code-review fixes. The phase-2 build handoff
 ---
 
 ## 0. ONE-LINE STATE
-The feature (Migrations A–G + public-surface gate + 5 edge fns + frontend gate/RED BUTTON) is built,
-**LOCAL only, DORMANT**. STEP 5 (parity test), STEP 5.5 (code-review fixes committed), and **STEP 6
-as Option A (lightweight verification)** are all **DONE** (2026-05-28). Hosted storage DELETE proven
-on prod via the §7 precheck; B1 + M1/M4 covered by durable unit tests (live revoked-render deferred
-to STEP 7 dormant monitoring). **Next: STEP 7 = remote (prod) backend deploy** — needs an explicit
-"do STEP 7" from the owner (it touches the prod DB). STEP 6 Option A test/refactor changes are
-**UNCOMMITTED** pending owner commit say-so.
+**The backend is fully DEPLOYED TO PRODUCTION and DORMANT (2026-05-28).** STEPS 5, 5.5, 6 (Option A
+lightweight verification), and **7 (remote prod deploy)** are all DONE. All 8 migrations applied to
+remote (A pre-existed; D/B/C/E/F/G/public-gate applied this session), deny-by-default covers 194 RLS
+tables (completeness → 0), 5 edge fns deployed, cron registered, public funnel intact, **0 IMOs
+revoked**. `database.types.ts` regen intentionally skipped on this branch (deferred to main-merge;
+see STEP 7). **What's left: (a) the FRONTEND merge to `main`** (SunsetGate/RED BUTTON/sunset page —
+only `main` deploys via Vercel; not yet merged), **(b) Option B full seeded rehearsal BEFORE any real
+`access_revoked_at` flip**, (c) the M6/L1–L6 tail. Do NOT set `access_revoked_at` on real FFG.
 
 ---
 
@@ -89,15 +90,40 @@ which the §7 precheck answers directly). Delivered:
   `confirm-and-wipe-account/index.ts`.
 - Deferred (gated before any **active** flip on real FFG): Option B full seeded rehearsal.
 
-### ▶ STEP 7 — Remote (production) backend deploy (NEXT — needs explicit "do STEP 7"; touches prod DB)
-Pre-flight gates: ✅ `npm run build` 0 errors · ✅ parity Vitest green · ✅ `check-pinned-imports.sh`
-· ✅ **§7 storage-DELETE remote precheck → 200/200** (done 2026-05-28, see STEP 6). STILL REQUIRED:
-`app_config` has `supabase_project_url` + `service_role_key` on remote; **M5: diff `pg_get_functiondef`
-on REMOTE for the 7 public RPCs** before `CREATE OR REPLACE` (not version-tracked — could revert a
-newer remote body); `supabase get_advisors` lint. Then apply A–G + `20260527114910` via the runner against `$REMOTE_DATABASE_URL` (watch the
-"Target DB" banner), re-run Migration B + completeness on remote, regen + commit
-`database.types.ts`, deploy the 5 edge fns (`--project-ref pcyaqwodnyrpkaiojnpz`), confirm the cron
-job registered. Ships **DORMANT** — do NOT set `access_revoked_at` on real FFG.
+### ✅ STEP 7 — Remote (production) backend deploy — DONE (2026-05-28), DORMANT
+Deployed to prod (`pcyaqwodnyrpkaiojnpz`). The feature is LIVE-but-DORMANT: nothing changes until
+the owner sets `imos.access_revoked_at` (do NOT — that's a separate, deliberate action).
+
+**Pre-flight (all passed):** build 0 errors · parity Vitest green · pinned imports clean · §7
+storage-DELETE prod precheck 200/200 · `app_config` has both keys · **M5 RPC-body diff: PASS**
+(local-vs-remote diff for the 7 public RPCs showed ONLY the intended `access_revoked_at IS NULL`
+predicate additions; remote bodies were current, nothing clobbered; remote pre-deploy bodies saved
+to `~/sunset-rollback-20260528-remote-rpcs/` as rollback artifact). `get_advisors` SKIPPED (Supabase
+MCP not authenticated this session; the deny-by-default completeness tripwire is the stronger gate
+and DID run → 0).
+
+**SURPRISE (handoff was wrong):** Migration A (`20260526193029`) was **already applied + tracked on
+remote** from a prior session — objects exist with correct sentinel logic (not drift). The other 7
+were absent (verified no partial state). Runner skipped A, applied D,B,C,E,F,G,public-gate — each
+against the REMOTE "Target DB" banner, all `✅ APPLIED SUCCESSFULLY`.
+
+**Verified on remote:** Migration B deny-by-default attached to **194 RLS tables** (allowlist:
+user_profiles, imos, agencies, data_export_log, account_deletion_log); completeness tripwire → **0
+uncovered**. All 7 public RPCs now carry the predicate; funnel intact (`get_available_imos_for_join()`
+→ 1 listed IMO). 5 edge fns deployed (default verify_jwt — all callers send a valid JWT incl. the
+cron's service-role Bearer). Cron `account-lifecycle-daily` registered (`15 9 * * *`, active). **Dormancy
+confirmed: 0 IMOs revoked, 0 export/deletion-log rows.**
+
+**`database.types.ts` regen — DELIBERATELY SKIPPED on this branch** (decided w/ advisor): no frontend
+caller references the 4 newly-deployed backend-only objects (data_export_log, account_deletion_log,
+wipe_user_business_data, invoke_account_lifecycle_daily); the frontend-relevant types
+(imos.access_revoked_at, is_access_revoked RPC) are already committed; and a full regen re-adds 4
+unrelated symbols the reviewed M3 commit `bc1f6d5d` trimmed (pre-existing base drift: they exist on
+remote but not in the branch's types). Authoritative regen deferred to the **main-merge**. If frontend
+code later touches those 4 objects via the typed client, surgical-add then.
+
+**Monitor:** B's RESTRICTIVE `is_access_revoked(auth.uid())` now runs on every RLS check across 194
+tables — by-design deny-by-default, no-op while dormant; watch query latency on prod.
 
 ### Tail / open
 - **M6** — billing `/billing` silent-redirect UX (toast or gate the upgrade links).
