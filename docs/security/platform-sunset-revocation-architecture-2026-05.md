@@ -3,9 +3,13 @@
 Date: 2026-05-27
 Owner: Nick / super-admin
 Status: Backend mechanism + **the 4 edge functions (STEP 1)** + **Migrations F/G (STEP 2)**
-+ **frontend (STEP 3)** + **the public-surface gate (STEP 4)** built and **applied to LOCAL
-only, fully DORMANT**; the `export ⊆ wipe` parity test, a seeded rehearsal, and remote deploy
-still pending. Nothing is activated. Last updated 2026-05-27 after STEP 4.
++ **frontend (STEP 3)** + **the public-surface gate (STEP 4)** + **the `export ⊆ wipe` parity
+test (STEP 5)** built and **applied to LOCAL only, fully DORMANT**. A full-branch production
+code review (2026-05-27, see [`platform-sunset-code-review-2026-05-27.md`](./platform-sunset-code-review-2026-05-27.md))
+returned **Request Revisions**; its 1 blocking (B1) + 4 should-fix (M1/M2/M4 + types) findings are
+**fixed in code (uncommitted)**, with M1/M2/M4 runtime behavior still pending the STEP-6 staging
+rehearsal. A seeded rehearsal and remote deploy remain. Nothing is activated. Last updated
+2026-05-27 after the code-review fixes.
 
 This is the **backend security architecture** for the "RED BUTTON" that decommissions
 one IMO's access. It **supersedes** the earlier full-platform-shutdown plan
@@ -89,13 +93,25 @@ The tables a revoked session reads **before the sunset page renders**, traced fr
 | Table | Why it must stay readable |
 |---|---|
 | `user_profiles` | auth loads the caller's profile (who am I) |
-| `imos` | `ImoProvider` reads `imos.access_revoked_at` to *detect* revocation |
+| `imos` | `ImoProvider` loads the caller's IMO (name, branding); audit `useRevocationAdminStatus` reads FFG status (super-admin only) |
 | `agencies` | embedded in `ImoRepository.findWithAgencies()`'s imo load |
 | `data_export_log`, `account_deletion_log` | service-role-only audit (no authenticated access anyway) |
 
 RLS-deny returns **empty sets, not errors**, so a provider that incidentally reads a gated
 table degrades gracefully (empty data) rather than crashing; only tables whose *result is
 required* for auth/revocation-detection need allowlisting.
+
+> **CORRECTION (2026-05-27 code review, finding B1).** An earlier draft of this table claimed
+> the frontend *detects* revocation by reading `imos.access_revoked_at`. That is **false** and was
+> a blocking defect: allowlisting `imos` only removes the RESTRICTIVE `revocation_deny` policy, but
+> the table's *permissive* SELECT policy is `id = get_my_imo_id()`, and for a revoked user
+> `get_my_imo_id()` returns the **sentinel** (via the chokepoint's COALESCE), which matches no real
+> row → `imo === null` → the flag is never visible → the sunset page never renders (fail-safe, but
+> the feature is inert). **Detection now goes through the `is_access_revoked(auth.uid())`
+> SECURITY DEFINER RPC** (`GRANT`ed to `authenticated`, bypasses the gate and the permissive-policy
+> mismatch) in `useRevocationStatus` — NOT the gated `imos` read. The `imos` allowlist entry is
+> still required for the IMO *name/branding* load and the super-admin admin-status read, just not
+> for revocation detection.
 
 ### 3. Storage gate
 
@@ -288,9 +304,26 @@ unrelated to this change and don't block Deno deploy.)
 
 ## Remaining work (not yet built)
 
-The `export ⊆ wipe` parity unit test; a seeded full rehearsal; then batch-deploy all migrations
-A–G + the public-surface gate migration (`20260527114910`) + the 4 edge functions to REMOTE (re-run
+The `export ⊆ wipe` parity test is **done** (STEP 5, `src/features/sunset/__tests__/wipe-export-parity.test.ts`).
+Remaining: a seeded full rehearsal (STEP 6, on a **staging Supabase project** — the local stack
+can't exercise the storage delete/copy or signed-URL download); then batch-deploy all migrations
+A–G + the public-surface gate migration (`20260527114910`) + the edge functions to REMOTE (re-run
 Migration B + the completeness check there, regen `database.types.ts`).
+
+**Post-code-review (2026-05-27) — fixed in code, runtime verification pending STEP 6:**
+- **B1** (was blocking) — frontend detects revocation via the `is_access_revoked` RPC, not the
+  gated `imos` read (see the allowlist CORRECTION above).
+- **M1** — `confirm-and-wipe-account` runs the guarded wipe RPC **before** the storage purge (a
+  mid-flight restore now aborts with storage intact, not an unhealable half-wipe).
+- **M2** — `complete-recruit-registration` checks the **effective** target IMO
+  (`inviterImoId ?? FFG sentinel`), closing the fail-open when a null/wiped inviter falls back to FFG.
+- **M4** — `confirm-and-wipe-account` adopts an orphaned `recovery/{user}/` archive on retry so the
+  day-30 GC can reclaim it.
+- **M5** (Step-7 pre-flight, NOT a code change) — diff `pg_get_functiondef` on REMOTE for the 7
+  public-surface RPCs before `CREATE OR REPLACE` (they're not version-tracked; could revert a newer
+  remote body).
+- Open: **M6** (billing `/billing` silent-redirect UX), the 4 pre-existing `subscriptionService.test.ts`
+  failures, and assorted LOW items — see the code-review doc.
 
 > **REMOTE-DEPLOY PREREQUISITE — Storage DELETE must work on the hosted project** (the irreversible
 > wipe depends on it; the local stack couldn't verify it). Before applying ANY of A–G to remote,

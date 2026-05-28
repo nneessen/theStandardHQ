@@ -263,6 +263,15 @@ observable on remote / in the STEP 6 rehearsal against a hosted-style stack**, n
 | Wipe RPC + `deleteUser` + audit-log (no-profile / idempotent path) | Verified (local) |
 | `removeAll` (bucket purge + snapshot delete) + recovery GC **delete** | **Code-reviewed only — gated on the remote prereq (§7)** |
 | Public-surface gate (anon SECURITY DEFINER RPCs) — dormant + active | Verified LOCAL (active path via transactional `BEGIN…ROLLBACK`) |
+| Frontend revocation detection (B1 fix — `is_access_revoked` RPC, not gated `imos`) | **Code-fixed; build green — needs a rendered revoked session (STEP 6) to confirm routing** |
+| Wipe-before-purge ordering (M1) + orphaned-recovery adoption (M4) | **Code-fixed — runtime behavior needs STEP 6 (local can't delete/copy storage)** |
+| Recruit gate on null/wiped inviter (M2 — effective-IMO check) | **Code-fixed — needs invocation against a revoked seed (STEP 6)** |
+
+> **2026-05-27 code review** ([`platform-sunset-code-review-2026-05-27.md`](./platform-sunset-code-review-2026-05-27.md)) —
+> verdict **Request Revisions**. B1 (blocking: revocation undetectable by the frontend) + M1/M2/M4 +
+> the `database.types.ts` leak are **fixed in code (uncommitted)**. M1/M2/M4 are reorder/guard
+> changes whose runtime correctness can only be proven in the STEP-6 staging rehearsal — the local
+> stack's storage-DELETE / signed-URL limitations (§5) block them locally. No cross-tenant leak was found.
 
 ---
 
@@ -326,7 +335,11 @@ do not apply migrations or activate revocation until hosted storage delete is re
 
 ## 9. Remaining work
 
-The `export ⊆ wipe` parity Vitest; a seeded full rehearsal; then batch-deploy A–G + the
-public-surface gate migration (`20260527114910`) + the 4 edge functions to REMOTE (honoring the §7
-prerequisite). Resume handoff:
-`plans/active/continue-20260527-platform-sunset-phase2-edge-fns-frontend.md`.
+The `export ⊆ wipe` parity Vitest is **done** (STEP 5). A full-branch code review (2026-05-27)
+landed B1 + M1/M2/M4 + a types-leak fix in code (uncommitted; see
+[`platform-sunset-code-review-2026-05-27.md`](./platform-sunset-code-review-2026-05-27.md)).
+Remaining: a seeded full rehearsal on a **staging Supabase project** (STEP 6) — which is also the
+runtime verification gate for M1/M2/M4 and B1 routing — then batch-deploy A–G + the public-surface
+gate migration (`20260527114910`) + the edge functions to REMOTE (honoring the §7 prerequisite AND
+the M5 remote-body diff of the 7 public RPCs). Resume handoff:
+`plans/active/continue-20260527-sunset-codereview-fixes.md`.
