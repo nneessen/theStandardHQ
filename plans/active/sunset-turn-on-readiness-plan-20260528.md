@@ -315,6 +315,45 @@ All checks read-only; no mutation, no flip.
 
 **Verdict:** every automated gate green on both DBs; the only failures are pre-existing on `main`. Proceed to Phase 3.
 
+### Phase 4 — Seeded rehearsal (executed 2026-05-28) — ✅ M-C GATE PASSED
+Full evidence: `phase4-rehearsal-evidence-20260528.md`. Ran the whole chain on remote against a
+throwaway seeded tenant; proved gate denial, export, signed-URL download, **wipe**, storage purge,
+auth delete, recovery archive, audit, idempotency, M1 restore-refusal, cron drain + day-7 auto-purge,
+and recovery GC. **Caught + fixed a blocking defect (B2): the wipe silently skipped business-data
+deletion** because the edge fns selected a non-existent `user_profiles.full_name` column (400 → null
+profile → wipe RPC skipped). Fixed across 3 fns + regression guard, redeployed to prod, re-validated
+end-to-end (commit `0f55e29a`). Teardown left prod fully dormant (0 revoked IMOs).
+
+### Phase 5 — Decisions & cleanup (executed 2026-05-28) — ✅ COMPLETE
+- **M-B — DECISION: accept the residual + documented.** A revoked user's pre-existing JWT stays valid
+  until expiry/refresh (~1h); during that window the RLS gate denies their direct reads, and generic
+  service-role edge fns return only their **own** IMO data (no cross-tenant path found — derived-scope
+  RPCs are sentinel-gated, FFG is `is_listed=false`). The flow already offers that data to the user as
+  an export, and the sunset page renders on their next navigation/refresh. Rationale: the residual
+  exposes nothing the user shouldn't see and reveals nothing about other tenants; forced sign-out adds
+  code + another redeploy + its own validation for negligible security gain. **Accepted, no code change.**
+- **L1 — FIXED + redeployed.** `account-lifecycle-cron` now returns `status:"degraded"` + HTTP 500 when
+  `summary.errors.length>0` (tasks stay failure-isolated; only the reported status changes) so a
+  failing sweep is visible in `cron.job_run_details`. Happy path still 200/`ok` (verified on remote).
+- **L5 — FIXED (migration `20260528110740`, both DBs).** `REVOKE … FROM PUBLIC/anon/authenticated` on
+  `invoke_account_lifecycle_daily()`; ACL now `postgres`/`service_role` only (verified remote).
+- **L6 — FIXED (doc).** Migration B's matview comment tightened to "no SELECT grant" (it may hold other
+  non-SELECT grants; the security-relevant property is the absence of SELECT).
+- **L7 — FIXED (migration `20260528110740`, both DBs).** Partial unique index
+  `account_deletion_log_user_id_uniq (user_id) WHERE user_id IS NOT NULL` — a concurrent double-INSERT
+  now fails fast (wipe is idempotent; retry UPDATEs). Audit table was empty on both DBs (safe to add).
+- **L8 — ACCEPTED.** Reminder day-skip on a missed cron tick; a real fix needs a `reminder_sent_at`
+  column (scope creep). Day-7 purge still fires regardless. Documented, deferred.
+- **`database.types.ts` regen — DONE.** Regenerated against **remote** (the 4 M3 symbols confirmed
+  present in Phase 1, so no undeployed-schema leak). After prettier-normalize the diff is **+491 lines,
+  0 deletions, purely additive** (sunset audit tables, the 4 M3 + sunset functions, already-deployed
+  `assistant_*` tables). `npm run build` green. Types now describe real prod schema (no "types ahead of
+  DB" 500 risk — this is types catching **up** to the DB).
+- **Hygiene — DONE.** Retired 3 superseded `plans/active/continue-*` files to `plans/completed/`.
+
+**Verdict:** all Phase-5 items done; M-B + L8 accepted with rationale; L1/L5/L6/L7 fixed; types
+regenerated + build green. Ready for Phase 6 (merge) on the owner's go-ahead.
+
 ### Phase 3 — Bug & edge-case hunt (executed 2026-05-28) — ✅ EXIT CRITERIA MET
 
 Read all core bodies: `confirm-and-wipe-account/index.ts`, `wipe-orchestration.ts`,
