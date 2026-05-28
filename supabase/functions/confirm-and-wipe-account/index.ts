@@ -33,6 +33,12 @@ import {
   RECOVERY_TTL_DAYS,
 } from "../_shared/sunset-constants.ts";
 import { listAllPaths, removeAll } from "../_shared/storage-recursive.ts";
+import {
+  MissingReassignTargetError,
+  resolveRecoveryArchive,
+  wipeThenPurge,
+  type StoragePort,
+} from "./wipe-orchestration.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -150,98 +156,66 @@ serve(async (req) => {
     const reassignId = reassign?.id ?? null;
 
     // ── 1. Snapshot -> recovery archive (best-effort) ──────────────────────
+    // M4 + all-or-nothing copy live in resolveRecoveryArchive (unit-tested).
     let recoveryPath: string | null = priorLog?.recovery_archive_path ?? null;
     let recoveryExpiresAt: string | null = null;
     if (!recoveryPath) {
-      const snapPrefix = `${SNAPSHOT_PREFIX}/${targetUserId}`;
-      const recPrefix = `${RECOVERY_PREFIX}/${targetUserId}`;
-      const snapFiles = await listAllPaths(admin, RECOVERY_BUCKET, snapPrefix);
-      if (snapFiles.length === 0) {
-        // No staging snapshot to copy. Either nothing was ever exported, OR a
-        // prior run already moved it to recovery/ but failed before writing the
-        // audit row — leaving an orphan the day-30 GC can't see (it filters on
-        // recovery_expires_at). Adopt an existing recovery folder so the path +
-        // expiry get recorded and the GC can later reclaim it.
-        const existing = await listAllPaths(admin, RECOVERY_BUCKET, recPrefix);
-        if (existing.length > 0) {
-          recoveryPath = recPrefix;
-          recoveryExpiresAt = new Date(
-            Date.now() + RECOVERY_TTL_DAYS * 24 * 60 * 60 * 1000,
-          ).toISOString();
-        }
-      } else {
-        // All-or-nothing: a partial recovery archive is worse than none — we'd
-        // set recoveryArchivePath and the user would believe a complete copy
-        // exists.
-        const copiedDests: string[] = [];
-        let copyFailed = false;
-        for (const src of snapFiles) {
-          const dest = src.replace(snapPrefix, recPrefix);
-          const { error: cpErr } = await admin.storage
+      const storage: StoragePort = {
+        list: (prefix) => listAllPaths(admin, RECOVERY_BUCKET, prefix),
+        copy: async (src, dest) => {
+          const { error } = await admin.storage
             .from(RECOVERY_BUCKET)
             .copy(src, dest);
-          if (cpErr) {
-            console.error(
-              `[confirm-and-wipe-account] recovery copy ${src} -> ${dest} failed: ${cpErr.message}`,
-            );
-            copyFailed = true;
-            break;
-          }
-          copiedDests.push(dest);
-        }
-        if (!copyFailed) {
-          // Every file copied: commit the archive, free the staging snapshot.
-          recoveryPath = recPrefix;
-          recoveryExpiresAt = new Date(
-            Date.now() + RECOVERY_TTL_DAYS * 24 * 60 * 60 * 1000,
-          ).toISOString();
-          await removeAll(admin, RECOVERY_BUCKET, snapFiles);
-        } else if (copiedDests.length > 0) {
-          // Partial copy: roll back the half-built recovery folder and KEEP the
-          // snapshot intact (data-safe). recoveryPath stays null — we never claim
-          // an archive we didn't fully create. The wipe itself still proceeds.
-          console.error(
-            `[confirm-and-wipe-account] partial recovery copy for ${targetUserId}; rolling back ${copiedDests.length} file(s), keeping snapshot`,
-          );
-          await removeAll(admin, RECOVERY_BUCKET, copiedDests);
-        }
-      }
+          return { error: error ? { message: error.message } : null };
+        },
+        remove: (paths) => removeAll(admin, RECOVERY_BUCKET, paths),
+      };
+      const resolved = await resolveRecoveryArchive(
+        storage,
+        `${SNAPSHOT_PREFIX}/${targetUserId}`,
+        `${RECOVERY_PREFIX}/${targetUserId}`,
+        RECOVERY_TTL_DAYS,
+      );
+      recoveryPath = resolved.recoveryPath;
+      recoveryExpiresAt = resolved.recoveryExpiresAt;
     }
 
-    // ── 2. Registry-driven business-data wipe (guarded; BEFORE storage purge)
-    // The wipe RPC refuses a non-revoked IMO. Running it before the bucket purge
+    // ── 2+3. Guarded wipe BEFORE storage purge (M1, unit-tested in
+    // wipeThenPurge). The wipe RPC refuses a non-revoked IMO; running it first
     // means that if the IMO was restored mid-flight (e.g. between the cron
-    // batching stragglers and this per-user call), the RPC throws and we bail
+    // batching stragglers and this per-user call) the RPC throws and we bail
     // with the user's storage still intact — instead of destroying their
     // documents and then leaving an unhealable half-wipe (files gone, DB rows +
-    // login remaining, and the wipe can never re-run once access is restored).
-    let manifest: unknown = priorLog?.manifest ?? { status: "noop" };
-    if (profile) {
-      if (!reassignId) {
-        return json(
-          {
-            error:
-              "No distinct super-admin available to inherit shared content",
-          },
-          500,
-        );
+    // login remaining, wipe never re-runnable once access is restored). The
+    // purge runs only after a legitimate wipe (or a profile already gone from a
+    // prior run); it is idempotent on retry.
+    let manifest: unknown;
+    try {
+      manifest = await wipeThenPurge({
+        profileExists: !!profile,
+        reassignId,
+        priorManifest: priorLog?.manifest,
+        wipe: async () => {
+          const { data: wipeResult, error: wipeErr } = await admin.rpc(
+            "wipe_user_business_data",
+            { p_user_id: targetUserId, p_reassign_to_user_id: reassignId },
+          );
+          if (wipeErr)
+            throw new Error(`wipe_user_business_data: ${wipeErr.message}`);
+          return wipeResult;
+        },
+        purge: async () => {
+          for (const bucket of PRIVATE_USER_BUCKETS) {
+            const paths = await listAllPaths(admin, bucket, targetUserId);
+            await removeAll(admin, bucket, paths);
+          }
+        },
+      });
+    } catch (e) {
+      if (e instanceof MissingReassignTargetError) {
+        return json({ error: e.message }, 500);
       }
-      const { data: wipeResult, error: wipeErr } = await admin.rpc(
-        "wipe_user_business_data",
-        { p_user_id: targetUserId, p_reassign_to_user_id: reassignId },
-      );
-      if (wipeErr)
-        throw new Error(`wipe_user_business_data: ${wipeErr.message}`);
-      manifest = wipeResult;
-    }
-
-    // ── 3. Purge the user's private-bucket objects (only AFTER the guarded
-    // wipe above succeeded, or the profile was already gone from a prior run —
-    // both mean the wipe is legitimate). Idempotent: re-running removes whatever
-    // remains.
-    for (const bucket of PRIVATE_USER_BUCKETS) {
-      const paths = await listAllPaths(admin, bucket, targetUserId);
-      await removeAll(admin, bucket, paths);
+      throw e;
     }
 
     // ── 4. Delete the auth.users row (idempotent — "not found" = success) ──
