@@ -15923,6 +15923,10 @@ export type Database = {
         Args: { p_user_id: string };
         Returns: undefined;
       };
+      assistant_recipient_is_allowed: {
+        Args: { p_channel: string; p_recipient: string };
+        Returns: boolean;
+      };
       avg_lead_heat_score: {
         Args: { p_user_id: string };
         Returns: {
@@ -17241,6 +17245,20 @@ export type Database = {
           total_premium: number;
           vendor_id: string;
           vendor_name: string;
+        }[];
+      };
+      get_lead_priorities: {
+        Args: { p_limit?: number; p_user_id?: string };
+        Returns: {
+          close_lead_id: string;
+          display_name: string;
+          heat_level: string;
+          last_activity_at: string;
+          percentile_rank: number;
+          previous_score: number;
+          score: number;
+          scored_at: string;
+          trend: string;
         }[];
       };
       get_lead_purchase_stats: {
