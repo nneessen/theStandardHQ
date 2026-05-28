@@ -52,3 +52,19 @@ export {
   useAgencyRecruitingSummary,
   useAgencyRecruitingByRecruiter,
 } from "./useImoQueries";
+
+// Platform-sunset / IMO-access-revocation hooks
+export {
+  revocationKeys,
+  useRevocationStatus,
+  useExportBundle,
+  useDeleteMyAccount,
+  useRevocationAdminStatus,
+  useActivateRevocation,
+  useDeactivateRevocation,
+} from "./useRevocation";
+export type {
+  RevocationStatus,
+  ExportBundleResult,
+  RevocationAdminStatus,
+} from "./useRevocation";
