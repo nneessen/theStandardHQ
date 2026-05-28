@@ -74,12 +74,16 @@ serve(async (req) => {
       );
     }
 
-    // Race-safe transition approved -> executing (conditional on still being approved).
+    // Race-safe transition approved -> executing (conditional on still being
+    // approved AND never executed). The executed_at guard makes execution
+    // idempotent: even if a row's status were reset to approved, a row that has
+    // already sent (executed_at set) can never be claimed again.
     const { data: claimed } = await db
       .from("assistant_action_requests")
       .update({ status: "executing" })
       .eq("id", actionRequestId)
       .eq("status", "approved")
+      .is("executed_at", null)
       .select("id")
       .maybeSingle();
     if (!claimed) {

@@ -21,7 +21,7 @@ import { buildSystemPrompt, getAgent } from "./core/agents.ts";
 import { routeToAgent } from "./core/routing.ts";
 import { canUseTool } from "./core/guard.ts";
 import { TOOL_METADATA } from "./core/registry.ts";
-import { redact } from "./core/redaction.ts";
+import { redact, summarizeToolOutput } from "./core/redaction.ts";
 import type { AgentKey } from "./core/types.ts";
 import { buildAnthropicTools, TOOLS } from "./tools/index.ts";
 import type { AssistantToolContext } from "./tools/types.ts";
@@ -221,7 +221,9 @@ serve(async (req) => {
           category: meta?.category ?? null,
           risk_level: meta?.riskLevel ?? null,
           input_redacted: redact(tu.input ?? {}),
-          output_redacted: redact(output),
+          // Summarize (counts + available flags + structure), never raw row
+          // values — keeps client/agent names, premiums, DOB out of the audit log.
+          output_redacted: summarizeToolOutput(output),
           status,
           error: errorMsg,
           duration_ms: Date.now() - t0,
