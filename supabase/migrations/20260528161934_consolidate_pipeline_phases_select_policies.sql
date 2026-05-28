@@ -18,7 +18,11 @@
 -- 0 mismatches) on remote via the equivalence harness before apply.
 -- Role TO authenticated matches the Phase 1 idiom; the anon probe confirmed no
 -- regression (every dropped TO public qual is auth.uid()-dependent -> empty for
--- anon, both before and after).
+-- anon, both before and after). NOTE: the *_default_select / *_upline_select
+-- branches contain `pt.imo_id IS NULL` clauses that LOOK anon-reachable, but they
+-- live inside `EXISTS (SELECT FROM pipeline_templates ...)` which is itself
+-- RLS-gated -- pipeline_templates' only SELECT policy is now TO authenticated, so
+-- the inner EXISTS returns zero rows for anon. That is why the role fold is safe.
 -- Rollback: supabase/migrations/_rollback/20260528161934_..._rollback.sql.
 -- ============================================================================
 
