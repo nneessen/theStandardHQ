@@ -16,6 +16,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/services/base";
+import { useAuth } from "@/contexts/AuthContext";
 import { useImo } from "@/contexts/ImoContext";
 import { FFG_IMO_ID } from "@/constants/imos";
 import { AUTO_PURGE_AFTER_DAYS } from "@/constants/revocation";
@@ -35,14 +36,34 @@ export interface RevocationStatus {
 }
 
 export function useRevocationStatus(): RevocationStatus {
-  const { imo, isSuperAdmin, loading } = useImo();
-  const revokedAt = imo?.access_revoked_at ?? null;
+  // Detect revocation via the is_access_revoked SECURITY DEFINER RPC, NOT by
+  // reading imos.access_revoked_at off ImoContext: the revocation gate makes
+  // get_my_imo_id() return the sentinel uuid, so the user's own imos row reads
+  // as 0 rows (imo === null) — the flag would never be visible. The RPC runs as
+  // definer, bypasses the gate, and returns the correct boolean for the caller.
+  const { user, loading: authLoading } = useAuth();
+  const { isSuperAdmin, loading: imoLoading } = useImo();
+
+  const enabled = !!user?.id && !isSuperAdmin && !authLoading;
+  const { data: revoked, isLoading: rpcLoading } = useQuery({
+    queryKey: ["revocation", "self", user?.id],
+    enabled,
+    staleTime: 30_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("is_access_revoked", {
+        p_user_id: user!.id as string,
+      });
+      if (error) throw new Error(error.message);
+      return data === true;
+    },
+  });
+
   return {
-    loading,
+    loading: authLoading || imoLoading || (enabled && rpcLoading),
     isSuperAdmin,
-    isRevoked: !isSuperAdmin && revokedAt != null,
-    imoName: imo?.name ?? null,
-    revokedAt,
+    isRevoked: !isSuperAdmin && revoked === true,
+    imoName: null, // not readable for a revoked user; no consumer reads it
+    revokedAt: null,
   };
 }
 

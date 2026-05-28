@@ -17458,14 +17458,6 @@ export type Database = {
         };
         Returns: Json;
       };
-      get_team_analytics_data_impl: {
-        Args: {
-          p_end_date: string;
-          p_start_date: string;
-          p_team_user_ids: string[];
-        };
-        Returns: Json;
-      };
       get_team_comparison_report: {
         Args: { p_end_date?: string; p_start_date?: string };
         Returns: {
@@ -17954,17 +17946,6 @@ export type Database = {
               weighted_avg_rate: number;
             }[];
           };
-      getuser_commission_profile_impl: {
-        Args: { p_lookback_months?: number; puser_id: string };
-        Returns: {
-          calculated_at: string;
-          contract_level: number;
-          data_quality: string;
-          product_breakdown: Json;
-          simple_avg_rate: number;
-          weighted_avg_rate: number;
-        }[];
-      };
       graduate_recruit_to_agent: {
         Args: {
           p_contract_level: number;
@@ -18050,7 +18031,6 @@ export type Database = {
         Args: { target_agency_id: string };
         Returns: boolean;
       };
-      is_book_duplication_mode: { Args: never; Returns: boolean };
       is_caller_admin: { Args: never; Returns: boolean };
       is_contact_favorited: {
         Args: {
@@ -18065,7 +18045,6 @@ export type Database = {
         Returns: boolean;
       };
       is_elevenlabs_available: { Args: { p_imo_id: string }; Returns: boolean };
-      is_epic_life_imo: { Args: { p_imo_id: string }; Returns: boolean };
       is_imo_admin: { Args: never; Returns: boolean };
       is_imo_admin_for: { Args: { p_imo_id: string }; Returns: boolean };
       is_imo_staff_role: { Args: never; Returns: boolean };

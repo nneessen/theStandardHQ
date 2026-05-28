@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.47.10";
 import { z } from "npm:zod@3.23.8";
+import { FFG_SENTINEL_IMO_ID } from "../_shared/sunset-constants.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -260,19 +261,25 @@ serve(async (req) => {
     // run before createUser so no orphan auth account is created against a
     // sunset org. Neutral "not found" response — same as an unknown/removed
     // token, no hint the platform continues for anyone else.
-    if (inviterImoId) {
-      const { data: inviterImo } = await supabaseAdmin
-        .from("imos")
-        .select("access_revoked_at")
-        .eq("id", inviterImoId)
-        .maybeSingle();
-      if (inviterImo?.access_revoked_at) {
-        return jsonResponse(200, {
-          success: false,
-          error: "invitation_not_found",
-          message: "This invitation link is invalid or has been removed.",
-        });
-      }
+    //
+    // Check the EFFECTIVE target IMO, not just a present inviter: when
+    // inviterImoId is null (null inviter_id, or the inviter's profile was
+    // already wiped during sunset), handle_new_user falls back to the Founders
+    // IMO — which IS the FFG sentinel, the only revocable IMO. Gating on
+    // `if (inviterImoId)` therefore fails OPEN exactly during a sunset, letting
+    // a new auth account be created under the revoked org.
+    const effectiveImoId = inviterImoId ?? FFG_SENTINEL_IMO_ID;
+    const { data: targetImo } = await supabaseAdmin
+      .from("imos")
+      .select("access_revoked_at")
+      .eq("id", effectiveImoId)
+      .maybeSingle();
+    if (targetImo?.access_revoked_at) {
+      return jsonResponse(200, {
+        success: false,
+        error: "invitation_not_found",
+        message: "This invitation link is invalid or has been removed.",
+      });
     }
 
     const { data: authData, error: authError } =
