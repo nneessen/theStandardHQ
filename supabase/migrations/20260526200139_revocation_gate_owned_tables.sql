@@ -44,11 +44,13 @@
 --
 -- RLS BLIND SPOTS (relkind scope = 'r' ordinary tables only):
 --   * Materialized views (relkind 'm') cannot enforce RLS. The 8 public mv_*
---     are user-scoped (one holds client PII) BUT are currently granted to
---     NEITHER authenticated NOR anon (verified via has_table_privilege), so a
---     revoked user cannot reach them through PostgREST. INVARIANT: never GRANT
---     these to authenticated/anon — front them with SECURITY DEFINER RPCs that
---     call is_access_revoked(). If that invariant changes, the kill switch leaks.
+--     are user-scoped (one holds client PII) BUT currently carry NO SELECT grant
+--     to authenticated or anon (they may hold other, non-SELECT grants; the
+--     security-relevant property is the absence of SELECT — verified via
+--     has_table_privilege), so a revoked user cannot reach them through
+--     PostgREST. INVARIANT: never GRANT SELECT on these to authenticated/anon —
+--     front them with SECURITY DEFINER RPCs that call is_access_revoked(). If
+--     that invariant changes, the kill switch leaks.
 --   * Partitioned tables (relkind 'p'): none exist today; if one is added, RLS
 --     attaches to the parent 'p' and this loop + the completeness tripwire must
 --     extend to relkind IN ('r','p').

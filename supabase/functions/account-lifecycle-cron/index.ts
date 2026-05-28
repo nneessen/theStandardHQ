@@ -250,5 +250,13 @@ serve(async (req) => {
   }
 
   console.log("[account-lifecycle-cron] summary:", JSON.stringify(summary));
-  return json({ status: "ok", ...summary });
+  // L1: surface a sweep where any task errored as a non-2xx so a fully- (or
+  // partly-) failing run is visible in cron.job_run_details instead of a silent
+  // green 200. Tasks are still failure-isolated above; this only affects the
+  // reported status, not the work done.
+  const degraded = summary.errors.length > 0;
+  return json(
+    { status: degraded ? "degraded" : "ok", ...summary },
+    degraded ? 500 : 200,
+  );
 });
