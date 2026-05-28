@@ -102,8 +102,8 @@ default +24h).
 
 ## 5. Safety invariants
 
-Honest status as of the 2026-05-28 code review — some are DB/test-enforced, some are
-edge/prompt-enforced with DB hardening tracked in `plans/active/jarvis-phase2-hardening.md`:
+Honest status as of 2026-05-28 — Tier-0 (H1, M1, L3) and Tier-1 H2 + M2 are now
+DB/edge-enforced and tested; remaining items tracked in `plans/active/jarvis-phase2-hardening.md`:
 
 - **Model never touches raw tables** — only the typed tool registry; tools call RPCs on the
   user-scoped (RLS) client. *(Enforced — no raw-table path exists.)*
@@ -112,15 +112,23 @@ edge/prompt-enforced with DB hardening tracked in `plans/active/jarvis-phase2-ha
 - **No send without approval** — the model can only *draft* (writes `pending_approval`);
   `assistant-action-execute` sends only when the row is `approved`, owned, unexpired, after a
   race-safe `approved→executing` transition; the human confirms recipient + body in the modal.
-  *(Edge-enforced. CAVEAT (review H1): the lifecycle is enforced in TS only — the UPDATE RLS
-  policy lets an owner reset an `executed` row to `approved` via the raw client and re-send
-  within 24h. DB-level enforcement + idempotent execution is Tier-0 hardening before prod.)*
+  *(Edge + DB enforced. H1 (done): a `BEFORE INSERT/UPDATE` trigger
+  (`20260528090704`) enforces the lifecycle, forbids fabricated-approval inserts, and makes
+  terminal rows immutable, even under service role; execution is idempotent
+  (`.is("executed_at", null)` claim). M2 (done, `20260528112134`): recipient/draft_payload/
+  channel are frozen once a row leaves `pending_approval`, and `assistant_recipient_is_allowed`
+  (SECURITY INVOKER, RLS-scoped) blocks sends to anyone who isn't the caller's client, lead, or
+  teammate — no super-admin bypass during the Epic-Life MVP.)*
 - **No fabrication** — every grounding read returns `{ available: bool, ... }` and the system
-  prompt forbids inventing numbers. *(The data **shape** is enforced/tested; the model's
-  **adherence** is prompt-guided, NOT programmatically verified — review H2.)*
+  prompt forbids inventing numbers. *(The data **shape** is enforced/tested. The model's
+  **adherence** is prompt-guided, not hard-blocked; H2 (done) adds a programmatic backstop
+  (`core/grounding.ts`) that flags + logs a turn whose reply states figures while EVERY tool
+  section was `available:false` — returned as `grounding.ungroundedNumericWarning`. It does not
+  cover figures recalled cross-turn from history — see L2.)*
 - **Logging is redacted/truncated** — `core/redaction.ts` strips secret-ish *keys* and caps
-  string/array size. *(CAVEAT (review M1): redaction is key-name-only — PII in RPC *values*
-  (names, premiums) is currently logged in clear; Tier-0 fix tracked.)*
+  string/array size. *(M1 (done): tool **outputs** are logged via `summarizeToolOutput` —
+  row counts + per-section `available` flags + structural enums only — so client/agent names,
+  premiums, and DOB no longer reach `assistant_tool_calls.output_redacted` in clear.)*
 
 ## 6. Decisions (confirmed with the user)
 
@@ -137,8 +145,10 @@ edge/prompt-enforced with DB hardening tracked in `plans/active/jarvis-phase2-ha
 ## 7. Verification status
 
 **Green (automated):** `npm run build` (tsc+vite), `tsc --noEmit`, ESLint (0 problems —
-barrel architecture satisfied), `deno check` ×3 functions, **23 Deno safety tests**,
-**7 Vitest tests**, `check-pinned-imports.sh`, Anthropic-SDK runtime-load smoke test.
+barrel architecture satisfied), `deno check` ×3 functions, **38 Deno safety tests**,
+**7 Vitest tests**, two SQL guard suites (`test-assistant-action-status-guard.sh`,
+`test-assistant-recipient-authz.sh`), `check-pinned-imports.sh`, Anthropic-SDK runtime-load
+smoke test.
 
 **NOT done (deferred):** live end-to-end run (real Anthropic round-trip; real email/SMS
 send). It needs the local stack + secrets + a session and sends real messages — do it against

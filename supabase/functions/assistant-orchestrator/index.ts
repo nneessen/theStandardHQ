@@ -23,6 +23,7 @@ import { routeToAgent } from "./core/routing.ts";
 import { canUseTool } from "./core/guard.ts";
 import { TOOL_METADATA } from "./core/registry.ts";
 import { redact, summarizeToolOutput } from "./core/redaction.ts";
+import { assessGrounding } from "./core/grounding.ts";
 import type { AgentKey } from "./core/types.ts";
 import { buildAnthropicTools, TOOLS } from "./tools/index.ts";
 import type { AssistantToolContext } from "./tools/types.ts";
@@ -155,6 +156,8 @@ serve(async (req) => {
     // deno-lint-ignore no-explicit-any
     const toolCallRows: any[] = [];
     const toolActivity: Array<{ name: string; status: string }> = [];
+    // Tool outputs this turn, for the H2 no-fabrication backstop (see core/grounding.ts).
+    const groundingOutputs: unknown[] = [];
     const createdActions: Array<{ actionRequestId: string; channel: string }> =
       [];
     let finalText = "";
@@ -224,6 +227,7 @@ serve(async (req) => {
         }
 
         toolActivity.push({ name: tu.name, status });
+        groundingOutputs.push(output);
         toolCallRows.push({
           conversation_id: conversationId,
           user_id: user.id,
@@ -251,6 +255,16 @@ serve(async (req) => {
     if (!finalText) {
       finalText =
         "I couldn't finish that within the allowed steps. Try a more specific request.";
+    }
+
+    // H2 no-fabrication backstop: flag a reply that states figures when every tool
+    // section came back unavailable. Heuristic, so it annotates (logged + returned),
+    // never blocks. Cross-turn answers from history aren't covered (see handoff §5/L2).
+    const grounding = assessGrounding(groundingOutputs, finalText);
+    if (grounding.ungroundedNumericWarning) {
+      console.warn(
+        `assistant-orchestrator: possible ungrounded numerics (conversation=${conversationId}, agent=${agentKey}) — reply states figures but every tool section was unavailable.`,
+      );
     }
 
     // Persist turns + tool audit; bump conversation recency. RLS-clean (user JWT).
@@ -284,6 +298,7 @@ serve(async (req) => {
       message: finalText,
       toolActivity,
       actionRequests: createdActions,
+      grounding,
     });
   } catch (e) {
     console.error("assistant-orchestrator error", e);

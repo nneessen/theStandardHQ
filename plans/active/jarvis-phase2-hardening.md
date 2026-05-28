@@ -53,10 +53,15 @@ CREATE to a tracked migration.
 
 ## Tier 1 — Phase-2 security + feature hardening
 
-### M2 — Server-side recipient authorization
-Before sending in `assistant-action-execute`, verify the recipient ∈ the caller's allowed set
-(their leads / downline / contacts). Define the allowed-set query; reject otherwise. Removes the
-"any address from the branded sender" risk that pairs with H1.
+### M2 — Server-side recipient authorization  *(DONE — 2026-05-28, commit 47d8f009)*
+`assistant_recipient_is_allowed(channel, recipient)` (migration `20260528112134`, SECURITY
+INVOKER so RLS defines the allowed set) blocks sends to anyone who isn't the caller's client,
+recruiting lead, or teammate; `assistant-action-execute` calls it before sending. The same
+migration freezes `recipient`/`draft_payload`/`channel` once a row leaves `pending_approval`,
+closing the "edit an approved row's recipient to another in-system address" redirect gap that
+would otherwise defeat the check. No super-admin bypass during the Epic-Life MVP (intentional).
+Tested: `scripts/test-assistant-recipient-authz.sh` (content freeze + allowed-set under RLS,
+incl. cross-user negative).
 
 ### acting_imo_id propagation (super-admin "act as IMO")
 Handoff §9.1: cross-tenant briefing for super-admins only works once `acting_imo_id` is in the
@@ -64,11 +69,13 @@ JWT (the access-token-hook initiative) and the RPCs read `get_effective_imo_id()
 orchestrator's imo resolution to `get_effective_imo_id()` when that lands. Until then, document
 that super-admin act-as is not reflected in the assistant.
 
-### H2 — Honest no-fabrication posture (+ optional guardrail)
-The `{available:false}` *shape* is enforced/tested, but model adherence is prompt-only. Reframe
-handoff §5 to "grounding shape enforced; adherence prompt-guided, not verified." Optional
-guardrail: flag/annotate any assistant turn that emits numerics when every tool section that turn
-returned `available:false`.
+### H2 — Honest no-fabrication posture (+ guardrail)  *(DONE — 2026-05-28)*
+Handoff §5 reframed to "shape enforced/tested; adherence prompt-guided, not hard-blocked." The
+guardrail shipped: `core/grounding.ts` `assessGrounding()` flags + logs (and returns
+`grounding.ungroundedNumericWarning`) any turn whose reply states figures (currency/percent/
+decimal/thousands-separated — not bare years or counts) while EVERY tool section was
+`available:false`. Annotation only, not a block (heuristic). Does not cover figures recalled
+cross-turn from history (L2). Tested: `core/__tests__/grounding.test.ts` (7 cases).
 
 ### Wire the next specialist agents
 The 12 stubs in `core/agents.ts` are typed configs only. Wire **Production Analyst** and
