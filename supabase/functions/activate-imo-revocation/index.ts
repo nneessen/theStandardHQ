@@ -161,7 +161,9 @@ serve(async (req) => {
     // these and calls generate-user-export-bundle (no synchronous generation).
     const { data: affected, error: usersErr } = await supabase
       .from("user_profiles")
-      .select("id, email, full_name")
+      // user_profiles has no `full_name` column (computed from first/last in the
+      // app); selecting it 400s the whole query → usersErr → 0 exports enqueued.
+      .select("id, email, first_name, last_name")
       .eq("imo_id", imoId)
       .or("is_super_admin.is.null,is_super_admin.eq.false");
 
@@ -177,7 +179,8 @@ serve(async (req) => {
       const rows = affected.map((u) => ({
         user_id: u.id,
         email: u.email,
-        full_name: u.full_name,
+        full_name:
+          [u.first_name, u.last_name].filter(Boolean).join(" ") || null,
         imo_id: imoId,
         status: "pending",
         trigger: "activation_prescan",

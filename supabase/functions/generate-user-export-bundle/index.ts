@@ -161,9 +161,14 @@ serve(async (req) => {
   let logId = body.exportLogId ?? null;
   const { data: profile } = await admin
     .from("user_profiles")
-    .select("email, full_name, imo_id")
+    .select("email, first_name, last_name, imo_id")
     .eq("id", targetUserId)
     .maybeSingle();
+
+  // user_profiles has no `full_name` column (computed from first/last in the
+  // app); selecting it 400s and nulls the whole profile lookup.
+  const fullName =
+    [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || null;
 
   if (!logId) {
     const { data: existing } = await admin
@@ -196,7 +201,7 @@ serve(async (req) => {
         .insert({
           user_id: targetUserId,
           email: profile?.email ?? null,
-          full_name: profile?.full_name ?? null,
+          full_name: fullName,
           imo_id: profile?.imo_id ?? null,
           status: "generating",
           trigger: callerId ? "self_service" : "activation_prescan",
@@ -257,7 +262,7 @@ serve(async (req) => {
     const manifest = {
       userId: targetUserId,
       email: profile?.email ?? null,
-      fullName: profile?.full_name ?? null,
+      fullName: fullName,
       imoId: profile?.imo_id ?? null,
       generatedAt,
       tables: counts,

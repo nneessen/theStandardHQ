@@ -119,9 +119,16 @@ serve(async (req) => {
     // ── Profile + prior-deletion-log lookups (idempotency basis) ───────────
     const { data: profile } = await admin
       .from("user_profiles")
-      .select("id, email, full_name, imo_id, is_super_admin")
+      .select("id, email, first_name, last_name, imo_id, is_super_admin")
       .eq("id", targetUserId)
       .maybeSingle();
+
+    // user_profiles has no `full_name` column (it is computed from first/last in
+    // the app). Selecting it 400s, silently nulls `profile`, and would make the
+    // wipe skip the RPC entirely (storage/auth deleted but business data kept).
+    const fullName =
+      [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") ||
+      null;
 
     if (profile?.is_super_admin) {
       return json({ error: "Refusing to wipe a super-admin" }, 403);
@@ -232,7 +239,7 @@ serve(async (req) => {
     const logRow = {
       user_id: targetUserId,
       email: profile?.email ?? null,
-      full_name: profile?.full_name ?? null,
+      full_name: fullName,
       imo_id: profile?.imo_id ?? null,
       deletion_reason: reason,
       auth_user_deleted: authDeleted,

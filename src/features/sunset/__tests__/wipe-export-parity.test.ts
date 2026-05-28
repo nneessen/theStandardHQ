@@ -251,4 +251,34 @@ describeDb("live-catalog wipe checks", () => {
       `registry says cascade but the catalog disagrees — these rows would survive the wipe: ${notCascade.join(", ")}`,
     ).toEqual([]);
   });
+
+  // Regression guard for Phase-4 finding B2: the sunset edge functions SELECT a
+  // fixed set of user_profiles columns. A missing column makes PostgREST 400 and
+  // (because the `{ data }` destructure ignores the error) silently nulls the
+  // profile lookup — which made confirm-and-wipe skip the wipe RPC entirely
+  // (storage + auth deleted, business data kept). `full_name` is NOT a column
+  // (it is computed from first_name + last_name); every projected column here
+  // must exist in the live catalog.
+  it("every user_profiles column the sunset edge functions select exists", () => {
+    const projected = [
+      // confirm-and-wipe-account, generate-user-export-bundle,
+      // activate-imo-revocation, account-lifecycle-cron
+      "id",
+      "email",
+      "first_name",
+      "last_name",
+      "imo_id",
+      "is_super_admin",
+      "created_at",
+    ];
+    const missing = projected
+      .filter((col) => !publicColumns.has(`user_profiles.${col}`))
+      .sort();
+    expect(
+      missing,
+      `user_profiles is missing column(s) the sunset edge fns project (a 400 here silently skips the wipe): ${missing.join(", ")}`,
+    ).toEqual([]);
+    // Lock in the lesson: full_name must NOT be treated as a real column.
+    expect(publicColumns.has("user_profiles.full_name")).toBe(false);
+  });
 });
