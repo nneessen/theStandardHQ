@@ -15,7 +15,7 @@ import { redact } from "../assistant-orchestrator/core/redaction.ts";
 import type { ActionStatus } from "../assistant-orchestrator/core/types.ts";
 
 // Domain-valid sender; replies route to the acting user.
-const SYSTEM_FROM = "The Standard HQ <noreply@thestandardhq.com>";
+const SYSTEM_FROM = "The Standard HQ <noreply@updates.thestandardhq.com>";
 
 function escapeHtml(s: string): string {
   return s
