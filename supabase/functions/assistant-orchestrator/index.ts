@@ -93,6 +93,8 @@ serve(async (req) => {
     const assistantName: string = prefs?.assistant_name ?? "Jarvis";
     const enabledAgents = (prefs?.enabled_agents as AgentKey[] | undefined) ?? [
       "executive-briefing",
+      "production-analyst",
+      "policy-risk",
     ];
 
     const agentKey = routeToAgent(message, enabledAgents);

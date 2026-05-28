@@ -8,7 +8,7 @@ import {
 
 const DEFAULTS: AssistantPreferences = {
   assistant_name: DEFAULT_ASSISTANT_NAME,
-  enabled_agents: ["executive-briefing"],
+  enabled_agents: ["executive-briefing", "production-analyst", "policy-risk"],
   voice_enabled: false,
   tone: "professional",
   briefing_style: "concise",

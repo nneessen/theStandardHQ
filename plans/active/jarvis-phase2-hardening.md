@@ -77,10 +77,16 @@ decimal/thousands-separated — not bare years or counts) while EVERY tool secti
 `available:false`. Annotation only, not a block (heuristic). Does not cover figures recalled
 cross-turn from history (L2). Tested: `core/__tests__/grounding.test.ts` (7 cases).
 
-### Wire the next specialist agents
-The 12 stubs in `core/agents.ts` are typed configs only. Wire **Production Analyst** and
-**Policy Risk** first (reuse existing read tools + add routing), then Lead Prioritization /
-Recruiting. Each: real tool(s) + agent config + routing classification.
+### Wire the next specialist agents  *(Production Analyst + Policy Risk DONE — 2026-05-28)*
+**Production Analyst** (`getTeamProductionSummary` + draft tools) and **Policy Risk**
+(`getPolicyRiskAlerts` + draft tools) are now real configs in `core/agents.ts` with focused
+prompts. `core/routing.ts` gained pure `classifyIntent()` keyword routing (briefing wins first,
+then policy-risk, then production); `routeToAgent` dispatches to the matched specialist when it's
+enabled, else falls back to Executive Briefing. Both are now in the DEFAULT `enabled_agents`
+(orchestrator + `useAssistantPreferences`) so they're reachable out of the box. Tested in
+`core/__tests__/routing.test.ts`. **Still stubs:** Lead Prioritization, Recruiting, and the
+other 8 — wire next (each needs real tool(s) + config + classification; some need NEW read tools/
+RPCs, unlike these two which reused existing tools).
 
 ## Tier 2 — Cleanups (don't block merge)
 

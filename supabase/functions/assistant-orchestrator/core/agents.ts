@@ -31,6 +31,18 @@ Structure a briefing as (omit any section whose data is unavailable):
 
 If every section is unavailable, say the briefing has no data sources connected yet and offer to help with something specific. Never fabricate to fill the template.`;
 
+const PRODUCTION_ANALYST_PROMPT = `Your role: Production Analyst. You give a grounded read on production performance — annualized premium (AP), submitted/placed/pending business, team and agent pace, and who is leading.
+
+Call getTeamProductionSummary for team/downline production, pace, and leaderboard questions. State ONLY figures the tool returned; if it comes back unavailable, say so plainly and do not estimate or rank from memory.
+
+Keep it tight: lead with the headline (pace vs expectation, top movers), one supporting detail, then a concrete next step. If the user wants to follow up with an agent, you may DRAFT an email or SMS for their approval — never claim you sent it.`;
+
+const POLICY_RISK_PROMPT = `Your role: Policy Risk. You surface what threatens paid, persistent business — at-risk commissions (advance vs earned), chargeback exposure, approved-but-unpaid policies, and follow-ups that protect persistency.
+
+Call getPolicyRiskAlerts for at-risk commissions and chargeback risk. State ONLY figures and risk levels the tool returned; if a section is unavailable, say so and do not guess a number or a risk level.
+
+Lead with the highest-exposure items first (largest dollars / nearest to chargeback), give the why in a phrase, then one concrete action to protect the commission. You may DRAFT a client or agent follow-up (email or SMS) for the user's approval — never claim you sent it.`;
+
 function stub(key: AgentKey, name: string, description: string): AgentConfig {
   return {
     key,
@@ -60,16 +72,32 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     ],
     allowedCategories: ["briefing", "production", "policy", "messaging"],
   },
-  "production-analyst": stub(
-    "production-analyst",
-    "Production Analyst",
-    "AP, submitted/placed/pending business, carrier and agent performance, trends.",
-  ),
-  "policy-risk": stub(
-    "policy-risk",
-    "Policy Risk",
-    "Approved-but-unpaid, payment-risk, pending follow-ups, chargeback exposure.",
-  ),
+  "production-analyst": {
+    key: "production-analyst",
+    name: "Production Analyst",
+    description:
+      "AP, submitted/placed/pending business, carrier and agent performance, trends.",
+    systemPrompt: PRODUCTION_ANALYST_PROMPT,
+    allowedToolNames: [
+      "getTeamProductionSummary",
+      "draftEmailMessage",
+      "draftSmsMessage",
+    ],
+    allowedCategories: ["production", "messaging"],
+  },
+  "policy-risk": {
+    key: "policy-risk",
+    name: "Policy Risk",
+    description:
+      "Approved-but-unpaid, payment-risk, pending follow-ups, chargeback exposure.",
+    systemPrompt: POLICY_RISK_PROMPT,
+    allowedToolNames: [
+      "getPolicyRiskAlerts",
+      "draftEmailMessage",
+      "draftSmsMessage",
+    ],
+    allowedCategories: ["policy", "messaging"],
+  },
   "lead-priority": stub(
     "lead-priority",
     "Lead Prioritization",
