@@ -17915,6 +17915,40 @@ export type Database = {
         }[];
       };
       get_sync_webhook_secret: { Args: never; Returns: string };
+      get_system_automations: {
+        Args: never;
+        Returns: {
+          checklist_item_id: string | null;
+          communication_type:
+            | Database["public"]["Enums"]["automation_communication_type"]
+            | null;
+          created_at: string | null;
+          created_by: string | null;
+          delay_days: number | null;
+          email_body_html: string | null;
+          email_subject: string | null;
+          email_template_id: string | null;
+          id: string;
+          imo_id: string | null;
+          is_active: boolean | null;
+          notification_message: string | null;
+          notification_title: string | null;
+          phase_id: string | null;
+          recipients: Json;
+          sender_email: string | null;
+          sender_name: string | null;
+          sender_type: string | null;
+          sms_message: string | null;
+          trigger_type: Database["public"]["Enums"]["pipeline_automation_trigger"];
+          updated_at: string | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "pipeline_automations";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       get_team_analytics_data: {
         Args: {
           p_end_date: string;

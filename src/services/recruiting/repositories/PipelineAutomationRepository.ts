@@ -203,18 +203,22 @@ export class PipelineAutomationRepository extends BaseRepository<
    * These are automations that trigger on system events like password not set
    */
   async findSystemAutomations(): Promise<PipelineAutomationEntity[]> {
-    const { data, error } = await this.client
-      .from(this.tableName)
-      .select("*")
-      .is("phase_id", null)
-      .is("checklist_item_id", null)
-      .order("created_at", { ascending: true });
+    // Use the get_system_automations() SECURITY DEFINER RPC instead of a direct
+    // table select. pipeline_automations carries ~14 permissive RLS policies
+    // (each subquerying user_profiles' ~15-branch mega-policy); a plain select
+    // made the planner expand 5700+ InitPlans (~26s PLANNING) → statement_timeout
+    // 500s. The RPC enforces the same super_admin + imo_admin_system access
+    // inline and plans in <1ms.
+    const { data, error } = await this.client.rpc("get_system_automations");
 
     if (error) {
       throw this.handleError(error, "findSystemAutomations");
     }
 
-    return (data || []).map((row) => this.transformFromDB(row));
+    // The RPC returns SETOF pipeline_automations; supabase-js types a set-
+    // returning rpc as the element shape, so coerce to a row array for transform.
+    const rows = (data ?? []) as Record<string, unknown>[];
+    return rows.map((row) => this.transformFromDB(row));
   }
 
   /**
