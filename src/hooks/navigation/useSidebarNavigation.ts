@@ -167,6 +167,15 @@ export function useSidebarNavigation(): UseSidebarNavigationResult {
       if (!isAgencyAllowed(item.allowedAgencyId)) return null;
       if (!isEmailAllowed(item.allowedEmails)) return null;
 
+      // Email-substring gate (e.g. Epic-Life-only command center). Super-admins bypass.
+      if (
+        item.requireEmailIncludes &&
+        !isSuperAdmin &&
+        !currentUserEmail?.includes(item.requireEmailIncludes.toLowerCase())
+      ) {
+        return null;
+      }
+
       // Paid-subscription-only items (e.g. Billing). Super-admins bypass.
       // Hide while loading to avoid a flash, then resolve once known.
       if (item.requiresPaidSubscription && !isSuperAdmin) {
@@ -206,6 +215,7 @@ export function useSidebarNavigation(): UseSidebarNavigationResult {
     [
       can,
       canManageUnderwriting,
+      currentUserEmail,
       hasManageableSubscription,
       hasFeature,
       isAgencyAllowed,

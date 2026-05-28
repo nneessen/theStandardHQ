@@ -645,7 +645,7 @@ const commandCenterRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "command-center",
   component: () => (
-    <RouteGuard noRecruits>
+    <RouteGuard noRecruits requireEmailIncludes="epiclife">
       <AssistantPage />
     </RouteGuard>
   ),

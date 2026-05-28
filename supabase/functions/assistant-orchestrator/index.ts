@@ -18,6 +18,7 @@ import {
   ORCHESTRATOR_MODEL,
 } from "./anthropic.ts";
 import { buildSystemPrompt, getAgent } from "./core/agents.ts";
+import { canAccessAssistant } from "./core/access.ts";
 import { routeToAgent } from "./core/routing.ts";
 import { canUseTool } from "./core/guard.ts";
 import { TOOL_METADATA } from "./core/registry.ts";
@@ -67,6 +68,15 @@ serve(async (req) => {
       .single();
     const isSuperAdmin = profile?.is_super_admin === true;
     const firstName: string | null = profile?.first_name ?? null;
+
+    // Command center is limited to Epic Life (super-admins bypass). Fail fast,
+    // before any Anthropic spend. Mirrors the frontend RouteGuard gate.
+    if (!canAccessAssistant({ email: user.email, isSuperAdmin })) {
+      return json(
+        { error: "The command center isn't available for your account." },
+        403,
+      );
+    }
 
     // Effective IMO (best-effort; inherits the app's current scoping).
     let imoId: string | null = null;

@@ -40,6 +40,8 @@ interface RouteGuardProps {
   superAdminOnly?: boolean;
   /** Required email for super-admin routes */
   requireEmail?: string;
+  /** Require the user's email to contain this substring, case-insensitive (super admins bypass) */
+  requireEmailIncludes?: string;
   /** Whitelist of emails that can access this route (super admins always bypass) */
   allowedEmails?: string[];
   /** Restrict route to users belonging to a specific agency ID */
@@ -96,6 +98,7 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
   staffOnly = false,
   superAdminOnly = false,
   requireEmail,
+  requireEmailIncludes,
   allowedEmails,
   allowedAgencyId,
   subscriptionFeature,
@@ -177,6 +180,15 @@ export const RouteGuard: React.FC<RouteGuardProps> = ({
 
   // Check email requirement for super-admin routes
   if (requireEmail && currentEmail !== requireEmail) {
+    return <>{fallback || <PermissionDenied />}</>;
+  }
+
+  // Check email-substring requirement (e.g. Epic-Life-only command center).
+  // Super admins already returned above, so this only gates non-super-admins.
+  if (
+    requireEmailIncludes &&
+    !currentEmail?.toLowerCase().includes(requireEmailIncludes.toLowerCase())
+  ) {
     return <>{fallback || <PermissionDenied />}</>;
   }
 

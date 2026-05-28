@@ -15,6 +15,8 @@ export interface SidebarNavigationItem {
   subscriptionFeatures?: FeatureKey[];
   superAdminOnly?: boolean;
   allowedEmails?: string[];
+  /** Only show if the user's email contains this substring, case-insensitive (super-admins bypass). */
+  requireEmailIncludes?: string;
   allowedAgencyId?: string;
   requiresLicensingWorkspace?: boolean;
   requiresUnderwritingEnabled?: boolean;

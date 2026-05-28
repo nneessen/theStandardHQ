@@ -10,6 +10,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createSupabaseClient } from "../_shared/supabase-client.ts";
 import { corsResponse, getCorsHeaders } from "../_shared/cors.ts";
 import { canExecute } from "../assistant-orchestrator/core/state-machine.ts";
+import { canAccessAssistant } from "../assistant-orchestrator/core/access.ts";
 import { redact } from "../assistant-orchestrator/core/redaction.ts";
 import type { ActionStatus } from "../assistant-orchestrator/core/types.ts";
 
@@ -51,6 +52,26 @@ serve(async (req) => {
     const { data: userData, error: userErr } = await db.auth.getUser(token);
     const user = userData?.user;
     if (userErr || !user) return json({ error: "Unauthorized" }, 401);
+
+    // Command center is limited to Epic Life (super-admins bypass). Enforced here
+    // too — this endpoint is HTTP-callable independent of the UI. Mirrors the
+    // orchestrator + frontend RouteGuard gate.
+    const { data: gateProfile } = await db
+      .from("user_profiles")
+      .select("is_super_admin")
+      .eq("id", user.id)
+      .single();
+    if (
+      !canAccessAssistant({
+        email: user.email,
+        isSuperAdmin: gateProfile?.is_super_admin === true,
+      })
+    ) {
+      return json(
+        { error: "The command center isn't available for your account." },
+        403,
+      );
+    }
 
     const body = await req.json().catch(() => ({}));
     const actionRequestId =

@@ -54,6 +54,9 @@ export const regularSidebarGroups: SidebarNavigationGroup[] = [
         label: "Command Center",
         href: "/command-center",
         public: true,
+        // Limited to Epic Life during rollout (super-admins bypass). Mirrors the
+        // command-center RouteGuard + the edge-function canAccessAssistant gate.
+        requireEmailIncludes: "epiclife",
       },
       {
         icon: Home,
