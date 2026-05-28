@@ -9,12 +9,12 @@
 // (export ⊄ wipe), or the wipe can silently skip a table. This test parses the
 // SQL arrays and asserts they equal what the registry says they should be.
 //
-// The core assertions are pure-static (no DB). An optional column-existence
-// check against the live catalog runs only under RUN_DB_TESTS=1.
+// The core assertions are pure-static (no DB). Optional live-catalog checks
+// (column existence + FK-drift) run only under RUN_DB_TESTS=1.
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   ACTOR_REFS_TO_NULL,
   ACTOR_REFS_TO_REASSIGN,
@@ -140,10 +140,19 @@ describe("registry hygiene", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Optional: column-existence against the live catalog. Static parity can't see
-// a renamed/dropped column (the wipe SQL uses to_regclass and silently skips
-// missing tables). Gated; reused as a Step-7 remote pre-flight via
-// PARITY_DB_URL=$REMOTE_DATABASE_URL.
+// Live-catalog checks (gated; run with RUN_DB_TESTS=1, REMOTE via
+// PARITY_DB_URL=$REMOTE_DATABASE_URL). Reused as a Step-7 remote pre-flight.
+//
+// Static parity (above) guards the SQL arrays vs the registry; these guard the
+// registry vs the REAL catalog, which static parity cannot see:
+//   1. Column existence — owner/actor-ref columns still exist (the wipe SQL uses
+//      to_regclass and silently skips a renamed/dropped table).
+//   2. FK-drift (M-A) — every NO-ACTION/RESTRICT FK to user_profiles is handled
+//      by the wipe (else the whole wipe rolls back), and every registry
+//      "cascade" table truly cascades (else its rows silently survive the wipe).
+//
+// One shared connection for the suite: the two catalog snapshots are fetched
+// once in beforeAll, so the individual tests are pure in-memory assertions.
 // ---------------------------------------------------------------------------
 const RUN_DB_TESTS = process.env.RUN_DB_TESTS === "1";
 const DB_URL =
@@ -151,32 +160,95 @@ const DB_URL =
   "postgresql://postgres:postgres@127.0.0.1:54322/postgres";
 const describeDb = RUN_DB_TESTS ? describe : describe.skip;
 
-describeDb("owner columns exist in the live catalog", () => {
-  it("every owned table + actor-ref column is present", async () => {
+describeDb("live-catalog wipe checks", () => {
+  // confdeltype: a=NO ACTION, r=RESTRICT, c=CASCADE, n=SET NULL, d=SET DEFAULT
+  let client: import("pg").Client;
+  let publicColumns: Set<string>; // "table.column" for every public column
+  let userProfileFks: { key: string; onDelete: string }[]; // FKs -> user_profiles
+
+  beforeAll(async () => {
     const { Client } = await import("pg");
-    const client = new Client({ connectionString: DB_URL });
+    client = new Client({ connectionString: DB_URL });
     await client.connect();
-    try {
-      const refs = [
-        ...ALL_OWNED_TABLES.map((t) => ({
-          table: t.table,
-          column: t.ownerColumn,
-        })),
-        ...ACTOR_REFS_TO_NULL,
-        ...ACTOR_REFS_TO_REASSIGN,
-      ];
-      const missing: string[] = [];
-      for (const { table, column } of refs) {
-        const res = await client.query(
-          `SELECT 1 FROM information_schema.columns
-            WHERE table_schema = 'public' AND table_name = $1 AND column_name = $2`,
-          [table, column],
-        );
-        if (res.rowCount === 0) missing.push(`${table}.${column}`);
-      }
-      expect(missing, `missing columns: ${missing.join(", ")}`).toEqual([]);
-    } finally {
-      await client.end();
-    }
+
+    const cols = await client.query(
+      `SELECT table_name, column_name
+         FROM information_schema.columns
+        WHERE table_schema = 'public'`,
+    );
+    publicColumns = new Set(
+      cols.rows.map((r) => `${r.table_name}.${r.column_name}`),
+    );
+
+    const fks = await client.query(
+      `SELECT (c.conrelid::regclass)::text AS ref_table,
+              a.attname AS ref_column,
+              c.confdeltype AS on_delete
+         FROM pg_constraint c
+         JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY (c.conkey)
+        WHERE c.contype = 'f'
+          AND c.confrelid = 'public.user_profiles'::regclass`,
+    );
+    userProfileFks = fks.rows.map((r) => ({
+      key: `${String(r.ref_table).replace(/^public\./, "")}.${r.ref_column}`,
+      onDelete: String(r.on_delete),
+    }));
+  });
+
+  afterAll(async () => {
+    await client?.end();
+  });
+
+  it("every owned table + actor-ref column exists in the catalog", () => {
+    const refs = [
+      ...ALL_OWNED_TABLES.map((t) => ({
+        table: t.table,
+        column: t.ownerColumn,
+      })),
+      ...ACTOR_REFS_TO_NULL,
+      ...ACTOR_REFS_TO_REASSIGN,
+    ];
+    const missing = refs
+      .map(({ table, column }) => `${table}.${column}`)
+      .filter((key) => !publicColumns.has(key))
+      .sort();
+    expect(missing, `missing columns: ${missing.join(", ")}`).toEqual([]);
+  });
+
+  it("every NO-ACTION/RESTRICT FK to user_profiles is nulled, reassigned, or explicit-deleted", () => {
+    const covered = new Set<string>([
+      ...ACTOR_REFS_TO_NULL.map((r) => `${r.table}.${r.column}`),
+      ...ACTOR_REFS_TO_REASSIGN.map((r) => `${r.table}.${r.column}`),
+      // explicit-delete OWNER columns: the row is removed before user_profiles,
+      // so a NO-ACTION FK on that owner column can't block the profile delete.
+      ...ALL_OWNED_TABLES.filter((t) => t.wipe === "explicit").map(
+        (t) => `${t.table}.${t.ownerColumn}`,
+      ),
+    ]);
+    const blocking = userProfileFks
+      .filter((f) => f.onDelete === "a" || f.onDelete === "r")
+      .filter((f) => !covered.has(f.key))
+      .map((f) => f.key)
+      .sort();
+    expect(
+      blocking,
+      `un-handled NO-ACTION/RESTRICT FK(s) to user_profiles — these will roll back the wipe: ${blocking.join(", ")}`,
+    ).toEqual([]);
+  });
+
+  it('every registry wipe:"cascade" owner column is a real ON DELETE CASCADE FK', () => {
+    const deleteByKey = new Map(userProfileFks.map((f) => [f.key, f.onDelete]));
+    const notCascade = ALL_OWNED_TABLES.filter((t) => t.wipe === "cascade")
+      .map((t) => ({
+        key: `${t.table}.${t.ownerColumn}`,
+        actual: deleteByKey.get(`${t.table}.${t.ownerColumn}`),
+      }))
+      .filter((x) => x.actual !== "c")
+      .map((x) => `${x.key} (actual: ${x.actual ?? "no FK to user_profiles"})`)
+      .sort();
+    expect(
+      notCascade,
+      `registry says cascade but the catalog disagrees — these rows would survive the wipe: ${notCascade.join(", ")}`,
+    ).toEqual([]);
   });
 });
