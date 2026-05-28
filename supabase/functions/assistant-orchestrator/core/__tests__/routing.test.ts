@@ -6,6 +6,15 @@ const ALL_WIRED = [
   "production-analyst",
   "policy-risk",
   "lead-priority",
+  "crm",
+  "sms-email-copy",
+  "compliance",
+  "recruiting",
+  "coaching",
+  "calendar",
+  "slack",
+  "workflow",
+  "data-quality",
 ] as const;
 
 Deno.test("classifyIntent maps explicit intents", () => {
@@ -27,6 +36,30 @@ Deno.test("classifyIntent maps explicit intents", () => {
   );
   assertEquals(classifyIntent("show me my hottest leads"), "lead-priority");
   assertEquals(classifyIntent("hello there"), null);
+});
+
+Deno.test("classifyIntent maps the remaining specialists", () => {
+  assertEquals(classifyIntent("how is my recruiting pipeline?"), "recruiting");
+  assertEquals(classifyIntent("summarize my book of business"), "crm");
+  assertEquals(
+    classifyIntent("is this email ok to send for TCPA?"),
+    "compliance",
+  );
+  assertEquals(classifyIntent("schedule a call with this client"), "calendar");
+  assertEquals(
+    classifyIntent("draft a scoreboard announcement for the team"),
+    "slack",
+  );
+  assertEquals(
+    classifyIntent("build a drip sequence for aged leads"),
+    "workflow",
+  );
+  assertEquals(classifyIntent("who needs coaching on my team?"), "coaching");
+  assertEquals(classifyIntent("why is my report incomplete?"), "data-quality");
+  assertEquals(
+    classifyIntent("write an email to a prospect"),
+    "sms-email-copy",
+  );
 });
 
 Deno.test("classifyIntent: a general check-in beats domain keywords", () => {

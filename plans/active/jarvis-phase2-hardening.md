@@ -77,19 +77,26 @@ decimal/thousands-separated — not bare years or counts) while EVERY tool secti
 `available:false`. Annotation only, not a block (heuristic). Does not cover figures recalled
 cross-turn from history (L2). Tested: `core/__tests__/grounding.test.ts` (7 cases).
 
-### Wire the next specialist agents  *(Production Analyst + Policy Risk + Lead Prioritization DONE — 2026-05-28)*
-**Production Analyst** (`getTeamProductionSummary` + draft tools), **Policy Risk**
-(`getPolicyRiskAlerts` + draft tools), and **Lead Prioritization** (`getLeadPriorities` + draft
-tools) are now real configs in `core/agents.ts` with focused prompts. `core/routing.ts` gained
-pure `classifyIntent()` keyword routing (briefing wins first, then policy-risk, lead, production);
-`routeToAgent` dispatches to the matched specialist when enabled, else falls back to Executive
-Briefing. All four are in the DEFAULT `enabled_agents` (orchestrator + `useAssistantPreferences`).
-Lead Prioritization needed a NEW read tool + RPC: `get_lead_priorities` (migration `20260528115847`,
-SECURITY INVOKER, ranks the caller's `lead_heat_scores` hottest-first). Tested in
-`core/__tests__/routing.test.ts` + `tools/__tests__/tools.test.ts`. **Still stubs:** Recruiting,
-CRM, SMS/Email Copy, Compliance, Coaching, Calendar, Slack, Workflow, Data Quality — most need
-NEW read tools/RPCs (e.g. Recruiting → `get_recruiting_leads_stats` exists but a per-candidate
-pipeline tool does not).
+### Wire the specialist agents  *(ALL 13 DONE — 2026-05-28)*
+Every agent is wired with a focused prompt and its tools; `core/routing.ts classifyIntent()`
+keyword-routes to the matched specialist (general check-in wins first, generic copywriter last),
+and all 13 are enabled by default (`ALL_AGENT_KEYS` + `useAssistantPreferences`).
+- **Data agents (read RPC + draft tools):** Briefing, Production Analyst (`getTeamProductionSummary`),
+  Policy Risk (`getPolicyRiskAlerts`), Lead Prioritization (NEW `getLeadPriorities` + RPC
+  `get_lead_priorities`, migration `20260528115847`), CRM (NEW `getClientSnapshot` wrapping
+  existing `get_clients_with_stats`, drops contact PII), Recruiting (NEW `getRecruitingSnapshot`
+  wrapping existing `get_recruiting_leads_stats`), Coaching (reuses `getTeamProductionSummary`),
+  Data Quality (reuses `getDailyBriefingData`, reads the `available` flags as gap signals).
+- **Advisory/drafting agents (draft tools only):** SMS/Email Copy, Compliance, Calendar, Slack,
+  Workflow. Calendar/Slack/Workflow prompts state plainly they have NO live calendar/Slack/
+  automation connection — they only draft copy for approval.
+- Only the two CRM/Recruiting tools were added this round; both wrap EXISTING SECURITY DEFINER RPCs
+  that scope to `auth.uid()` (no migration). Tested: routing classification for all 13 +
+  no-write/PII-drop tool tests. **No stubs remain.**
+
+**Possible future work (not blocking):** real integrations behind the advisory agents (Google
+Calendar for Calendar, Slack API for Slack, the workflow engine for Workflow) so they do more than
+draft; per-candidate recruiting + richer CRM tools.
 
 ## Tier 2 — Cleanups (don't block merge)
 

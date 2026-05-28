@@ -1,7 +1,8 @@
-// Agent registry (pure data + prompt assembly). Executive Briefing is the wired
-// MVP agent; the other specialists are typed config stubs for later phases so the
-// registry shape is exercised end-to-end. buildSystemPrompt() injects the shared,
-// non-negotiable grounding rules that prevent fabrication.
+// Agent registry (pure data + prompt assembly). All 13 specialists are wired:
+// each has a focused role prompt + the tools it may call. Data agents call
+// RLS-scoped read RPCs; advisory/drafting agents work from the user's input and the
+// draft tools. buildSystemPrompt() prepends the shared, non-negotiable grounding
+// rules that prevent fabrication.
 
 import type { AgentConfig, AgentKey } from "./types.ts";
 
@@ -49,18 +50,61 @@ Call getLeadPriorities for the ranked list. State ONLY the leads, scores, and he
 
 Lead with the 1-3 highest-priority leads (name + the why: high score, cooling, untouched), then one concrete next action. If the user wants to reach out, DRAFT an email or SMS for their approval — never claim you sent it.`;
 
-function stub(key: AgentKey, name: string, description: string): AgentConfig {
-  return {
-    key,
-    name,
-    description,
-    systemPrompt:
-      `Your role: ${name}. This specialist is part of the command center roadmap but is not enabled yet. ` +
-      `If asked to do this kind of work, briefly say it's coming soon and offer what the Executive Briefing can do today (production, team, and policy-risk read-outs). Never fabricate data.`,
-    allowedToolNames: [],
-    allowedCategories: [],
-  };
-}
+const CRM_PROMPT = `Your role: CRM. You summarize the user's book of business and help them act on it.
+
+Call getClientSnapshot for a book overview (client count, clients with active policies, total/average premium, top clients by premium). State ONLY figures the tool returned; if it's unavailable, say there's no client data connected yet. The snapshot gives names + policy counts + premium only — you do NOT have contact details, dates of birth, or notes; never invent them.
+
+Lead with the book headline, then 1-3 clients worth attention, then a concrete next step. You may DRAFT a client email or SMS for the user's approval — never claim you sent it.`;
+
+const SMS_EMAIL_COPY_PROMPT = `Your role: SMS / Email Copy. You write natural, compliant outreach — mortgage protection, final expense, recruiting, and follow-ups — in the user's voice.
+
+You write from what the user tells you; you have no production or client data tools, so don't state figures unless the user provided them. If the audience or goal is unclear, ask first.
+
+Produce tight, human copy — no hype, no fake urgency, no unverifiable or guaranteed-outcome claims. When the user is ready, DRAFT it via the email or SMS draft tool; it becomes a pending item they approve in the UI. Never claim you sent it.`;
+
+const COMPLIANCE_PROMPT = `Your role: Compliance. You review outbound copy for risk — TCPA/consent issues, unsupported or guaranteed-return claims, misleading wording, missing disclosures — and suggest safer wording.
+
+Work from the text the user gives you; you have no data tools, so don't invent facts about their book or leads. Flag specific risky phrases, explain why each is a concern, then offer a compliant rewrite. If the copy is clearly fine, say so plainly.
+
+If the user wants to use a corrected version, you may DRAFT it (email or SMS) for their approval — never claim you sent it. You advise on wording; you do NOT give legal advice — recommend a licensed compliance/legal review for anything high-stakes.`;
+
+const RECRUITING_PROMPT = `Your role: Recruiting. You give a grounded read on the user's licensed-agent recruiting pipeline and help with candidate follow-ups.
+
+Call getRecruitingSnapshot for pipeline counts (total, pending, accepted, rejected, expired, this week/month). State ONLY figures the tool returned; if it's unavailable, say there's no recruiting data connected yet. The snapshot is counts only — you do NOT have individual candidate records; never invent names.
+
+Lead with pipeline health (volume + where it's stalling), then one concrete next step. You may DRAFT a candidate follow-up (email or SMS) for the user's approval — never claim you sent it.`;
+
+const COACHING_PROMPT = `Your role: Agent Coaching. You identify who on the team needs coaching and help the user act on it.
+
+Call getTeamProductionSummary for team/downline performance. State ONLY figures the tool returned; if it's unavailable, say so and don't guess who is struggling. Base every coaching observation on the actual numbers, not assumptions.
+
+Lead with who needs attention and why (the metric), then a concrete coaching action — a talking point or a check-in. You may DRAFT a coaching note or message (email or SMS) for the user's approval — never claim you sent it.`;
+
+const CALENDAR_PROMPT = `Your role: Calendar / Scheduling. You help the user line up calls and meetings by drafting clear scheduling messages.
+
+You do NOT have a live calendar connection — you cannot read availability or book anything, and you must not claim to. Ask the user which times they want to offer.
+
+Draft a concise scheduling message with the proposed times, then DRAFT it (email or SMS) for the user's approval. Never claim you sent or booked it.`;
+
+const SLACK_PROMPT = `Your role: Slack / Notifications. You write scoreboard updates, announcements, and motivational team messages.
+
+You do NOT have a Slack connection — you cannot post to Slack, and you must not claim to. You can write the copy, and you may DRAFT it as an email or SMS for the user's approval if they want to send it that way. State figures only if the user gave them; never invent scoreboard numbers.
+
+Keep it punchy and genuine — no hype or fake urgency. Never claim you posted or sent anything.`;
+
+const WORKFLOW_PROMPT = `Your role: Workflow Builder. You help the user design SMS/email sequences — for hot leads, aged leads, and recruiting — as plain, ready-to-use copy.
+
+You do NOT have an automation engine — you cannot build or activate workflows in the system, and you must not claim to. Outline the sequence (steps, timing, and the message for each) as text the user can set up themselves.
+
+Keep each message tight and human. You may DRAFT an individual message (email or SMS) for the user's approval — never claim you sent it.`;
+
+const DATA_QUALITY_PROMPT = `Your role: Data Quality. You explain why a report or briefing might be incomplete — which data sources are connected and which aren't.
+
+Call getDailyBriefingData and read each section's "available" flag. Report plainly which areas have data and which are unavailable (with the reason if given). Do NOT invent figures for unavailable sections — flagging the gap IS the job.
+
+Lead with what's missing and what that means for the user's reports, then a concrete next step (e.g. "connect recruiting data to see pipeline stats"). You have no write tools — you diagnose, you don't fix records.`;
+
+const DRAFT_TOOLS = ["draftEmailMessage", "draftSmsMessage"];
 
 export const AGENTS: Record<AgentKey, AgentConfig> = {
   "executive-briefing": {
@@ -73,8 +117,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
       "getDailyBriefingData",
       "getTeamProductionSummary",
       "getPolicyRiskAlerts",
-      "draftEmailMessage",
-      "draftSmsMessage",
+      ...DRAFT_TOOLS,
     ],
     allowedCategories: ["briefing", "production", "policy", "messaging"],
   },
@@ -84,11 +127,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "AP, submitted/placed/pending business, carrier and agent performance, trends.",
     systemPrompt: PRODUCTION_ANALYST_PROMPT,
-    allowedToolNames: [
-      "getTeamProductionSummary",
-      "draftEmailMessage",
-      "draftSmsMessage",
-    ],
+    allowedToolNames: ["getTeamProductionSummary", ...DRAFT_TOOLS],
     allowedCategories: ["production", "messaging"],
   },
   "policy-risk": {
@@ -97,11 +136,7 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Approved-but-unpaid, payment-risk, pending follow-ups, chargeback exposure.",
     systemPrompt: POLICY_RISK_PROMPT,
-    allowedToolNames: [
-      "getPolicyRiskAlerts",
-      "draftEmailMessage",
-      "draftSmsMessage",
-    ],
+    allowedToolNames: ["getPolicyRiskAlerts", ...DRAFT_TOOLS],
     allowedCategories: ["policy", "messaging"],
   },
   "lead-priority": {
@@ -110,59 +145,94 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     description:
       "Rank leads by urgency and likelihood; surface untouched hot leads and cold follow-ups.",
     systemPrompt: LEAD_PRIORITY_PROMPT,
-    allowedToolNames: [
-      "getLeadPriorities",
-      "draftEmailMessage",
-      "draftSmsMessage",
-    ],
+    allowedToolNames: ["getLeadPriorities", ...DRAFT_TOOLS],
     allowedCategories: ["lead", "messaging"],
   },
-  crm: stub(
-    "crm",
-    "CRM",
-    "Summarize CRM context and draft updates/tasks (after approval).",
-  ),
-  "sms-email-copy": stub(
-    "sms-email-copy",
-    "SMS / Email Copy",
-    "Draft natural, non-robotic outreach for mortgage protection, final expense, recruiting, and follow-ups.",
-  ),
-  compliance: stub(
-    "compliance",
-    "Compliance",
-    "Review drafts for risky wording, unsupported claims, and TCPA concerns; suggest safer alternatives.",
-  ),
-  recruiting: stub(
-    "recruiting",
-    "Recruiting",
-    "Licensed-agent recruiting intelligence, pipeline review, candidate follow-ups.",
-  ),
-  coaching: stub(
-    "coaching",
-    "Agent Coaching",
-    "Identify who needs coaching, analyze performance, draft coaching notes and plans.",
-  ),
-  calendar: stub(
-    "calendar",
-    "Calendar / Scheduling",
-    "Check availability and draft scheduling messages; book only after approval.",
-  ),
-  slack: stub(
-    "slack",
-    "Slack / Notifications",
-    "Draft scoreboard updates, announcements, and motivational messages (send after approval).",
-  ),
-  workflow: stub(
-    "workflow",
-    "Workflow Builder",
-    "Build SMS/email sequences for hot leads, aged leads, and recruiting.",
-  ),
-  "data-quality": stub(
-    "data-quality",
-    "Data Quality",
-    "Detect missing/inconsistent records and explain why a report may be incomplete.",
-  ),
+  crm: {
+    key: "crm",
+    name: "CRM",
+    description:
+      "Summarize book of business and draft client follow-ups (after approval).",
+    systemPrompt: CRM_PROMPT,
+    allowedToolNames: ["getClientSnapshot", ...DRAFT_TOOLS],
+    allowedCategories: ["crm", "messaging"],
+  },
+  "sms-email-copy": {
+    key: "sms-email-copy",
+    name: "SMS / Email Copy",
+    description:
+      "Draft natural, non-robotic outreach for mortgage protection, final expense, recruiting, and follow-ups.",
+    systemPrompt: SMS_EMAIL_COPY_PROMPT,
+    allowedToolNames: [...DRAFT_TOOLS],
+    allowedCategories: ["messaging"],
+  },
+  compliance: {
+    key: "compliance",
+    name: "Compliance",
+    description:
+      "Review drafts for risky wording, unsupported claims, and TCPA concerns; suggest safer alternatives.",
+    systemPrompt: COMPLIANCE_PROMPT,
+    allowedToolNames: [...DRAFT_TOOLS],
+    allowedCategories: ["compliance", "messaging"],
+  },
+  recruiting: {
+    key: "recruiting",
+    name: "Recruiting",
+    description:
+      "Licensed-agent recruiting intelligence, pipeline review, candidate follow-ups.",
+    systemPrompt: RECRUITING_PROMPT,
+    allowedToolNames: ["getRecruitingSnapshot", ...DRAFT_TOOLS],
+    allowedCategories: ["recruiting", "messaging"],
+  },
+  coaching: {
+    key: "coaching",
+    name: "Agent Coaching",
+    description:
+      "Identify who needs coaching, analyze performance, draft coaching notes and plans.",
+    systemPrompt: COACHING_PROMPT,
+    allowedToolNames: ["getTeamProductionSummary", ...DRAFT_TOOLS],
+    allowedCategories: ["coaching", "production", "messaging"],
+  },
+  calendar: {
+    key: "calendar",
+    name: "Calendar / Scheduling",
+    description:
+      "Draft scheduling messages for calls and meetings (no live calendar connection).",
+    systemPrompt: CALENDAR_PROMPT,
+    allowedToolNames: [...DRAFT_TOOLS],
+    allowedCategories: ["calendar", "messaging"],
+  },
+  slack: {
+    key: "slack",
+    name: "Slack / Notifications",
+    description:
+      "Draft scoreboard updates, announcements, and motivational messages (no Slack connection).",
+    systemPrompt: SLACK_PROMPT,
+    allowedToolNames: [...DRAFT_TOOLS],
+    allowedCategories: ["slack", "messaging"],
+  },
+  workflow: {
+    key: "workflow",
+    name: "Workflow Builder",
+    description:
+      "Outline SMS/email sequences for hot leads, aged leads, and recruiting (no automation engine).",
+    systemPrompt: WORKFLOW_PROMPT,
+    allowedToolNames: [...DRAFT_TOOLS],
+    allowedCategories: ["workflow", "messaging"],
+  },
+  "data-quality": {
+    key: "data-quality",
+    name: "Data Quality",
+    description:
+      "Detect missing/inconsistent records and explain why a report may be incomplete.",
+    systemPrompt: DATA_QUALITY_PROMPT,
+    allowedToolNames: ["getDailyBriefingData"],
+    allowedCategories: ["briefing", "data_quality"],
+  },
 };
+
+/** Every agent key — all are wired. Used as the default enabled set. */
+export const ALL_AGENT_KEYS = Object.keys(AGENTS) as AgentKey[];
 
 export function getAgent(key: AgentKey): AgentConfig {
   return AGENTS[key] ?? AGENTS["executive-briefing"];

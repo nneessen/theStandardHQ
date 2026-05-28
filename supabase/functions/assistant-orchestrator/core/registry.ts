@@ -45,6 +45,26 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     requiresApproval: false,
     implemented: true,
   },
+  getRecruitingSnapshot: {
+    name: "getRecruitingSnapshot",
+    description:
+      "Recruiting pipeline counts for the current user (total, pending, accepted, rejected, expired, plus this-week / this-month submissions). Read-only, RLS-scoped to the caller's own recruiting leads. Use for recruiting pipeline health and candidate-volume questions.",
+    category: "recruiting",
+    riskLevel: "read",
+    requiredPermissions: [],
+    requiresApproval: false,
+    implemented: true,
+  },
+  getClientSnapshot: {
+    name: "getClientSnapshot",
+    description:
+      "Book-of-business summary for the current user: total clients, clients with active policies, total/average premium, and the top 5 clients by premium (name + policy counts only — no contact PII). Read-only, RLS-scoped. Use for 'summarize my book' / CRM overview questions.",
+    category: "crm",
+    riskLevel: "read",
+    requiredPermissions: [],
+    requiresApproval: false,
+    implemented: true,
+  },
   draftEmailMessage: {
     name: "draftEmailMessage",
     description:

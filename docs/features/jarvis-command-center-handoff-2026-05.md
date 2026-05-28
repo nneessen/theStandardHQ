@@ -137,10 +137,15 @@ DB/edge-enforced and tested; remaining items tracked in `plans/active/jarvis-pha
   other production feature). Sidebar item is `public: true`.
 - **Voice:** architecture + stubs only (no provider, no key).
 - **Action proof:** email + SMS draft→approve→send wired (Slack/Discord deferred).
-- **Scope:** focused MVP — 1 composite + 3 read tools; **4 wired agents** (Executive Briefing,
-  Production Analyst, Policy Risk, Lead Prioritization — the latter three added 2026-05-28 with
-  intent routing; Lead Prioritization added the `get_lead_priorities` RPC + tool); the other 9
-  agents are typed config stubs.
+- **Scope:** **all 13 agents wired** (2026-05-28). Tooling: 1 composite + 5 read tools
+  (`getDailyBriefingData`, `getTeamProductionSummary`, `getPolicyRiskAlerts`, `getLeadPriorities`,
+  `getRecruitingSnapshot`, `getClientSnapshot`) + 2 draft tools. Data agents (Briefing, Production,
+  Policy Risk, Lead Prioritization, CRM, Recruiting, Coaching, Data Quality) call RLS-scoped read
+  RPCs; advisory/drafting agents (SMS/Email Copy, Compliance, Calendar, Slack, Workflow) work from
+  the user's input + draft tools. Calendar/Slack/Workflow prompts are explicit that there is **no**
+  live calendar/Slack/automation connection — they draft copy only. Intent routing
+  (`core/routing.ts classifyIntent`) dispatches to the matched specialist; all 13 are enabled by
+  default (`ALL_AGENT_KEYS`).
 - **Briefing UI:** rendered as the assistant's grounded text (did NOT wire
   `HeroStatStrip`/`KPIGrid` to avoid prop-shape coupling).
 

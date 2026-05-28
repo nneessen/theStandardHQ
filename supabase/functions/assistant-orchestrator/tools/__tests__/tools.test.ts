@@ -3,6 +3,8 @@ import type { AssistantToolContext, ToolDbClient } from "../types.ts";
 import { getPolicyRiskAlerts } from "../getPolicyRiskAlerts.ts";
 import { getDailyBriefingData } from "../getDailyBriefingData.ts";
 import { getLeadPriorities } from "../getLeadPriorities.ts";
+import { getRecruitingSnapshot } from "../getRecruitingSnapshot.ts";
+import { getClientSnapshot } from "../getClientSnapshot.ts";
 import { draftEmailMessage } from "../draftEmailMessage.ts";
 
 interface RpcCall {
@@ -84,6 +86,59 @@ Deno.test(
     assertEquals(res.available, false);
   },
 );
+
+Deno.test("read tool (getRecruitingSnapshot) performs NO writes", async () => {
+  const { ctx, rpcCalls, inserts } = makeCtx({
+    get_recruiting_leads_stats: { data: { total: 3, pending: 1 }, error: null },
+  });
+  const res = (await getRecruitingSnapshot.run({}, ctx)) as {
+    available: boolean;
+  };
+  assertEquals(inserts.length, 0);
+  assert(rpcCalls.some((c) => c.fn === "get_recruiting_leads_stats"));
+  assertEquals(res.available, true);
+});
+
+Deno.test("getClientSnapshot summarizes and drops contact PII", async () => {
+  const { ctx, inserts } = makeCtx({
+    get_clients_with_stats: {
+      data: [
+        {
+          name: "Jane Doe",
+          email: "jane@example.com",
+          phone: "555",
+          date_of_birth: "1980-01-01",
+          policy_count: 2,
+          active_policy_count: 1,
+          total_premium: 1200,
+        },
+        {
+          name: "John Roe",
+          email: "john@example.com",
+          policy_count: 1,
+          active_policy_count: 0,
+          total_premium: 400,
+        },
+      ],
+      error: null,
+    },
+  });
+  const res = (await getClientSnapshot.run({}, ctx)) as {
+    available: boolean;
+    data: {
+      summary: { totalClients: number; totalPremium: number };
+      topClients: Array<Record<string, unknown>>;
+    };
+  };
+  assertEquals(inserts.length, 0);
+  assertEquals(res.available, true);
+  assertEquals(res.data.summary.totalClients, 2);
+  assertEquals(res.data.summary.totalPremium, 1600);
+  // Highest premium first, and NO contact PII leaked into the payload.
+  assertEquals(res.data.topClients[0].name, "Jane Doe");
+  assertEquals("email" in res.data.topClients[0], false);
+  assertEquals("date_of_birth" in res.data.topClients[0], false);
+});
 
 Deno.test(
   "getDailyBriefingData performs NO writes and only reads RPCs",

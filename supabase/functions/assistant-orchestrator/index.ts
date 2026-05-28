@@ -17,7 +17,7 @@ import {
   getAnthropicClient,
   ORCHESTRATOR_MODEL,
 } from "./anthropic.ts";
-import { buildSystemPrompt, getAgent } from "./core/agents.ts";
+import { ALL_AGENT_KEYS, buildSystemPrompt, getAgent } from "./core/agents.ts";
 import { canAccessAssistant } from "./core/access.ts";
 import { routeToAgent } from "./core/routing.ts";
 import { canUseTool } from "./core/guard.ts";
@@ -91,12 +91,8 @@ serve(async (req) => {
       .eq("user_id", user.id)
       .single();
     const assistantName: string = prefs?.assistant_name ?? "Jarvis";
-    const enabledAgents = (prefs?.enabled_agents as AgentKey[] | undefined) ?? [
-      "executive-briefing",
-      "production-analyst",
-      "policy-risk",
-      "lead-priority",
-    ];
+    const enabledAgents =
+      (prefs?.enabled_agents as AgentKey[] | undefined) ?? ALL_AGENT_KEYS;
 
     const agentKey = routeToAgent(message, enabledAgents);
     const agent = getAgent(agentKey);
