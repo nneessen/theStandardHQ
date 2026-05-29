@@ -7,6 +7,7 @@ import { useAuth } from "./contexts/AuthContext";
 import { ImoProvider } from "./contexts/ImoContext";
 import { logger } from "./services/base/logger";
 import { ApprovalGuard } from "./components/auth/ApprovalGuard";
+import { SunsetGate } from "./components/auth/SunsetGate";
 import { CookieConsentBanner } from "./features/legal";
 import { getDisplayName } from "./types/user.types";
 import { useSubscription, useTemporaryAccessCheck } from "./hooks/subscription";
@@ -183,23 +184,25 @@ function AuthenticatedApp() {
         <Toaster />
         <CookieConsentBanner />
         <ImoProvider>
-          <div className="min-h-screen bg-[#0a0a0a]">
-            <RecruitHeader
-              userName={
-                user.first_name && user.last_name
-                  ? getDisplayName({
-                      first_name: user.first_name,
-                      last_name: user.last_name,
-                      email: user.email || "",
-                    })
-                  : user.email?.split("@")[0] || "User"
-              }
-              onLogout={handleLogout}
-            />
-            <ApprovalGuard>
-              <Outlet />
-            </ApprovalGuard>
-          </div>
+          <SunsetGate>
+            <div className="min-h-screen bg-[#0a0a0a]">
+              <RecruitHeader
+                userName={
+                  user.first_name && user.last_name
+                    ? getDisplayName({
+                        first_name: user.first_name,
+                        last_name: user.last_name,
+                        email: user.email || "",
+                      })
+                    : user.email?.split("@")[0] || "User"
+                }
+                onLogout={handleLogout}
+              />
+              <ApprovalGuard>
+                <Outlet />
+              </ApprovalGuard>
+            </div>
+          </SunsetGate>
         </ImoProvider>
       </>
     );
@@ -210,10 +213,35 @@ function AuthenticatedApp() {
       <Toaster />
       <CookieConsentBanner />
       <ImoProvider>
-        <div className="theme-v2 v2-canvas font-display text-v2-ink flex min-h-screen flex-col">
-          {shouldHideSidebar ? (
-            <>
-              <FreeUserHeader
+        <SunsetGate>
+          <div className="theme-v2 v2-canvas font-display text-v2-ink flex min-h-screen flex-col">
+            {shouldHideSidebar ? (
+              <>
+                <FreeUserHeader
+                  userName={
+                    user.first_name && user.last_name
+                      ? getDisplayName({
+                          first_name: user.first_name,
+                          last_name: user.last_name,
+                          email: user.email || "",
+                        })
+                      : user.email?.split("@")[0] || "User"
+                  }
+                  userEmail={user.email || ""}
+                  onLogout={handleLogout}
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="p-6 w-full min-h-screen">
+                    <ApprovalGuard>
+                      <Outlet />
+                    </ApprovalGuard>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <AppShell
+                isSidebarCollapsed={isSidebarCollapsed}
+                onToggleSidebar={toggleSidebar}
                 userName={
                   user.first_name && user.last_name
                     ? getDisplayName({
@@ -225,37 +253,14 @@ function AuthenticatedApp() {
                 }
                 userEmail={user.email || ""}
                 onLogout={handleLogout}
-              />
-              <div className="flex-1 min-w-0">
-                <div className="p-6 w-full min-h-screen">
-                  <ApprovalGuard>
-                    <Outlet />
-                  </ApprovalGuard>
-                </div>
-              </div>
-            </>
-          ) : (
-            <AppShell
-              isSidebarCollapsed={isSidebarCollapsed}
-              onToggleSidebar={toggleSidebar}
-              userName={
-                user.first_name && user.last_name
-                  ? getDisplayName({
-                      first_name: user.first_name,
-                      last_name: user.last_name,
-                      email: user.email || "",
-                    })
-                  : user.email?.split("@")[0] || "User"
-              }
-              userEmail={user.email || ""}
-              onLogout={handleLogout}
-            >
-              <ApprovalGuard>
-                <Outlet />
-              </ApprovalGuard>
-            </AppShell>
-          )}
-        </div>
+              >
+                <ApprovalGuard>
+                  <Outlet />
+                </ApprovalGuard>
+              </AppShell>
+            )}
+          </div>
+        </SunsetGate>
       </ImoProvider>
     </>
   );

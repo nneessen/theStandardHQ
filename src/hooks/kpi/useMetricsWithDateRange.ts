@@ -131,15 +131,6 @@ export function useMetricsWithDateRange(
 
   // TEMP DIAGNOSTIC — remove after dashboard date-filter bug is pinpointed.
 
-  console.log("[useMetricsWithDateRange]", {
-    timePeriod,
-    periodOffset,
-    dateRangeForFiltering,
-    policiesCount: policies.length,
-    commissionsCount: commissions.length,
-    expensesCount: expenses.length,
-  });
-
   // Filter commissions by date range. Paid rows bucket by paymentDate
   // (when the carrier wired the money); pending/unpaid rows bucket by
   // createdAt (which is when the row was inserted, typically right after
@@ -176,16 +167,6 @@ export function useMetricsWithDateRange(
   });
 
   // TEMP DIAGNOSTIC — remove after dashboard date-filter bug is pinpointed.
-
-  console.log("[useMetricsWithDateRange] filtered counts", {
-    timePeriod,
-    filteredPoliciesCount: filteredPolicies.length,
-    filteredCommissionsCount: filteredCommissions.length,
-    filteredExpensesCount: filteredExpenses.length,
-    samplePolicyDate: policies[0]
-      ? policyBucketDate(policies[0])
-      : "(no policies)",
-  });
 
   const periodCommissions = (() => {
     const earned = filteredCommissions.reduce(

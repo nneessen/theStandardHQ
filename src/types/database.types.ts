@@ -14,6 +14,57 @@ export type Database = {
   };
   public: {
     Tables: {
+      account_deletion_log: {
+        Row: {
+          auth_user_deleted: boolean | null;
+          created_at: string;
+          deleted_at: string;
+          deletion_reason: string;
+          email: string | null;
+          full_name: string | null;
+          id: string;
+          imo_id: string | null;
+          manifest: Json | null;
+          recovery_archive_path: string | null;
+          recovery_expires_at: string | null;
+          stripe_canceled: boolean | null;
+          stripe_subscription_id: string | null;
+          user_id: string;
+        };
+        Insert: {
+          auth_user_deleted?: boolean | null;
+          created_at?: string;
+          deleted_at?: string;
+          deletion_reason: string;
+          email?: string | null;
+          full_name?: string | null;
+          id?: string;
+          imo_id?: string | null;
+          manifest?: Json | null;
+          recovery_archive_path?: string | null;
+          recovery_expires_at?: string | null;
+          stripe_canceled?: boolean | null;
+          stripe_subscription_id?: string | null;
+          user_id: string;
+        };
+        Update: {
+          auth_user_deleted?: boolean | null;
+          created_at?: string;
+          deleted_at?: string;
+          deletion_reason?: string;
+          email?: string | null;
+          full_name?: string | null;
+          id?: string;
+          imo_id?: string | null;
+          manifest?: Json | null;
+          recovery_archive_path?: string | null;
+          recovery_expires_at?: string | null;
+          stripe_canceled?: boolean | null;
+          stripe_subscription_id?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       agencies: {
         Row: {
           city: string | null;
@@ -836,6 +887,27 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "assistant_action_requests_approved_by_fkey";
+            columns: ["approved_by"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assistant_action_requests_approved_by_fkey";
+            columns: ["approved_by"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assistant_action_requests_approved_by_fkey";
+            columns: ["approved_by"];
+            isOneToOne: false;
+            referencedRelation: "user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "assistant_action_requests_conversation_id_fkey";
             columns: ["conversation_id"];
             isOneToOne: false;
@@ -846,12 +918,19 @@ export type Database = {
             foreignKeyName: "assistant_action_requests_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: false;
-            referencedRelation: "user_profiles";
+            referencedRelation: "active_user_profiles";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "assistant_action_requests_approved_by_fkey";
-            columns: ["approved_by"];
+            foreignKeyName: "assistant_action_requests_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assistant_action_requests_user_id_fkey";
+            columns: ["user_id"];
             isOneToOne: false;
             referencedRelation: "user_profiles";
             referencedColumns: ["id"];
@@ -890,6 +969,20 @@ export type Database = {
           user_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "assistant_conversations_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assistant_conversations_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "assistant_conversations_user_id_fkey";
             columns: ["user_id"];
@@ -939,6 +1032,20 @@ export type Database = {
             foreignKeyName: "assistant_messages_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assistant_messages_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assistant_messages_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
             referencedRelation: "user_profiles";
             referencedColumns: ["id"];
           },
@@ -979,6 +1086,20 @@ export type Database = {
           voice_enabled?: boolean;
         };
         Relationships: [
+          {
+            foreignKeyName: "assistant_preferences_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assistant_preferences_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "user_management_view";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "assistant_preferences_user_id_fkey";
             columns: ["user_id"];
@@ -1047,6 +1168,20 @@ export type Database = {
             columns: ["message_id"];
             isOneToOne: false;
             referencedRelation: "assistant_messages";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assistant_tool_calls_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "active_user_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "assistant_tool_calls_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "user_management_view";
             referencedColumns: ["id"];
           },
           {
@@ -2924,7 +3059,7 @@ export type Database = {
           created_at: string | null;
           description: string | null;
           id: string;
-          imo_id: string | null;
+          imo_id: string;
           key: string;
           updated_at: string | null;
           value: number;
@@ -2934,7 +3069,7 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           id?: string;
-          imo_id?: string | null;
+          imo_id: string;
           key: string;
           updated_at?: string | null;
           value: number;
@@ -2944,12 +3079,20 @@ export type Database = {
           created_at?: string | null;
           description?: string | null;
           id?: string;
-          imo_id?: string | null;
+          imo_id?: string;
           key?: string;
           updated_at?: string | null;
           value?: number;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "constants_imo_id_fkey";
+            columns: ["imo_id"];
+            isOneToOne: false;
+            referencedRelation: "imos";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       contact_favorites: {
         Row: {
@@ -3390,6 +3533,57 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      data_export_log: {
+        Row: {
+          bundle_bytes: number | null;
+          bundle_storage_path: string | null;
+          created_at: string;
+          email: string | null;
+          error: string | null;
+          format: string | null;
+          full_name: string | null;
+          generated_at: string | null;
+          id: string;
+          imo_id: string | null;
+          status: string;
+          trigger: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          bundle_bytes?: number | null;
+          bundle_storage_path?: string | null;
+          created_at?: string;
+          email?: string | null;
+          error?: string | null;
+          format?: string | null;
+          full_name?: string | null;
+          generated_at?: string | null;
+          id?: string;
+          imo_id?: string | null;
+          status?: string;
+          trigger?: string | null;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          bundle_bytes?: number | null;
+          bundle_storage_path?: string | null;
+          created_at?: string;
+          email?: string | null;
+          error?: string | null;
+          format?: string | null;
+          full_name?: string | null;
+          generated_at?: string | null;
+          id?: string;
+          imo_id?: string | null;
+          status?: string;
+          trigger?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
       };
       elevenlabs_config: {
         Row: {
@@ -4499,6 +4693,7 @@ export type Database = {
       };
       imos: {
         Row: {
+          access_revoked_at: string | null;
           city: string | null;
           code: string;
           contact_email: string | null;
@@ -4521,6 +4716,7 @@ export type Database = {
           zip: string | null;
         };
         Insert: {
+          access_revoked_at?: string | null;
           city?: string | null;
           code: string;
           contact_email?: string | null;
@@ -4543,6 +4739,7 @@ export type Database = {
           zip?: string | null;
         };
         Update: {
+          access_revoked_at?: string | null;
           city?: string | null;
           code?: string;
           contact_email?: string | null;
@@ -15729,6 +15926,10 @@ export type Database = {
         Args: { p_user_id: string };
         Returns: undefined;
       };
+      assistant_recipient_is_allowed: {
+        Args: { p_channel: string; p_recipient: string };
+        Returns: boolean;
+      };
       avg_lead_heat_score: {
         Args: { p_user_id: string };
         Returns: {
@@ -16154,6 +16355,7 @@ export type Database = {
         Args: { context_param?: Json; workflow_id_param: string };
         Returns: string;
       };
+      current_user_imo_grants_all_features: { Args: never; Returns: boolean };
       delete_alert_rule: { Args: { p_rule_id: string }; Returns: boolean };
       delete_lead_purchase_with_expense: {
         Args: { p_purchase_id: string };
@@ -17048,6 +17250,20 @@ export type Database = {
           vendor_name: string;
         }[];
       };
+      get_lead_priorities: {
+        Args: { p_limit?: number; p_user_id?: string };
+        Returns: {
+          close_lead_id: string;
+          display_name: string;
+          heat_level: string;
+          last_activity_at: string;
+          percentile_rank: number;
+          previous_score: number;
+          score: number;
+          scored_at: string;
+          trend: string;
+        }[];
+      };
       get_lead_purchase_stats: {
         Args: {
           p_end_date?: string;
@@ -17720,7 +17936,49 @@ export type Database = {
         }[];
       };
       get_sync_webhook_secret: { Args: never; Returns: string };
+      get_system_automations: {
+        Args: never;
+        Returns: {
+          checklist_item_id: string | null;
+          communication_type:
+            | Database["public"]["Enums"]["automation_communication_type"]
+            | null;
+          created_at: string | null;
+          created_by: string | null;
+          delay_days: number | null;
+          email_body_html: string | null;
+          email_subject: string | null;
+          email_template_id: string | null;
+          id: string;
+          imo_id: string | null;
+          is_active: boolean | null;
+          notification_message: string | null;
+          notification_title: string | null;
+          phase_id: string | null;
+          recipients: Json;
+          sender_email: string | null;
+          sender_name: string | null;
+          sender_type: string | null;
+          sms_message: string | null;
+          trigger_type: Database["public"]["Enums"]["pipeline_automation_trigger"];
+          updated_at: string | null;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "pipeline_automations";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       get_team_analytics_data: {
+        Args: {
+          p_end_date: string;
+          p_start_date: string;
+          p_team_user_ids: string[];
+        };
+        Returns: Json;
+      };
+      get_team_analytics_data_impl: {
         Args: {
           p_end_date: string;
           p_start_date: string;
@@ -18216,6 +18474,17 @@ export type Database = {
               weighted_avg_rate: number;
             }[];
           };
+      getuser_commission_profile_impl: {
+        Args: { p_lookback_months?: number; puser_id: string };
+        Returns: {
+          calculated_at: string;
+          contract_level: number;
+          data_quality: string;
+          product_breakdown: Json;
+          simple_avg_rate: number;
+          weighted_avg_rate: number;
+        }[];
+      };
       graduate_recruit_to_agent: {
         Args: {
           p_contract_level: number;
@@ -18243,10 +18512,6 @@ export type Database = {
             Args: { role_name: string; target_user_id: string };
             Returns: boolean;
           };
-      current_user_imo_grants_all_features: {
-        Args: never;
-        Returns: boolean;
-      };
       has_subscription_bypass: { Args: never; Returns: boolean };
       health_class_rank: {
         Args: { hc: Database["public"]["Enums"]["health_class"] };
@@ -18287,12 +18552,14 @@ export type Database = {
         Args: { p_template_id: string; p_user_id: string };
         Returns: Json;
       };
+      invoke_account_lifecycle_daily: { Args: never; Returns: undefined };
       invoke_ai_smart_view_sync: { Args: never; Returns: undefined };
       invoke_slack_auto_complete_first_sale: {
         Args: never;
         Returns: undefined;
       };
       invoke_slack_ip_leaderboard: { Args: never; Returns: undefined };
+      is_access_revoked: { Args: { p_user_id: string }; Returns: boolean };
       is_admin: { Args: never; Returns: boolean };
       is_admin_user:
         | { Args: never; Returns: boolean }
@@ -18304,6 +18571,7 @@ export type Database = {
         Args: { target_agency_id: string };
         Returns: boolean;
       };
+      is_book_duplication_mode: { Args: never; Returns: boolean };
       is_caller_admin: { Args: never; Returns: boolean };
       is_contact_favorited: {
         Args: {
@@ -18318,6 +18586,7 @@ export type Database = {
         Returns: boolean;
       };
       is_elevenlabs_available: { Args: { p_imo_id: string }; Returns: boolean };
+      is_epic_life_imo: { Args: { p_imo_id: string }; Returns: boolean };
       is_imo_admin: { Args: never; Returns: boolean };
       is_imo_admin_for: { Args: { p_imo_id: string }; Returns: boolean };
       is_imo_staff_role: { Args: never; Returns: boolean };
@@ -19088,6 +19357,10 @@ export type Database = {
       validate_template_content_for_platform: {
         Args: { p_content: string; p_platform: string };
         Returns: boolean;
+      };
+      wipe_user_business_data: {
+        Args: { p_reassign_to_user_id: string; p_user_id: string };
+        Returns: Json;
       };
     };
     Enums: {
