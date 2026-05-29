@@ -86,7 +86,20 @@ export function classifyIntent(message: string): AgentKey | null {
     return "policy-risk";
   }
 
-  // 9. Lead prioritization (sales leads + heat).
+  // 9. Close CRM — live lead lookup, real activity, and open opportunities.
+  // Uses Close-specific signals (the CRM name, opportunity/pipeline language, an
+  // explicit lookup) so the common verb "close" alone never triggers it. Placed
+  // before lead-priority/crm so a Close-pipeline ask isn't grabbed by lead-heat.
+  if (
+    /\b(close crm|in close|on close|my close|close\.com|close account|opportunit(y|ies)|open opps?|sales pipeline|stalled (deal|opp|opportunit)|pull up (the )?(lead|contact)|look up (the )?(lead|contact))\b/.test(
+      m,
+    ) ||
+    /\bpipeline\b/.test(m)
+  ) {
+    return "close";
+  }
+
+  // 10. Lead prioritization (sales leads + heat).
   if (
     /\b(?:hot|hottest|cold|cooling|warm|best|top|new|untouched|stale|which|what|my)\s+leads?\b|\bleads?\s+to\s+(?:call|work|follow\s?up)\b|\bwho\s+(?:should i|to)\s+call\b|\bprioriti[sz]e(?:\s+my)?\s+leads?\b|\blead\s+priorit/.test(
       m,
@@ -95,7 +108,7 @@ export function classifyIntent(message: string): AgentKey | null {
     return "lead-priority";
   }
 
-  // 10. Coaching.
+  // 11. Coaching.
   if (
     /\b(coaching|coach|who needs (help|coaching|attention)|under[- ]?perform(ing|ers)?|struggling (agents?|reps?)|improve performance)\b/.test(
       m,
@@ -104,7 +117,7 @@ export function classifyIntent(message: string): AgentKey | null {
     return "coaching";
   }
 
-  // 11. CRM / book of business.
+  // 12. CRM / book of business.
   if (
     /\b(crm|clients?|policyholders?|customers?|book of business|my book)\b/.test(
       m,
@@ -113,7 +126,7 @@ export function classifyIntent(message: string): AgentKey | null {
     return "crm";
   }
 
-  // 12. Production performance.
+  // 13. Production performance.
   if (
     /\b(production|annualized premium|ap|submitted|placed|pending business|carrier performance|leaderboard|who('?s| is) leading|pace|written premium)\b/.test(
       m,
@@ -122,7 +135,7 @@ export function classifyIntent(message: string): AgentKey | null {
     return "production-analyst";
   }
 
-  // 13. Generic outreach copywriting (last — a domain request keeps its agent).
+  // 14. Generic outreach copywriting (last — a domain request keeps its agent).
   if (
     /\b(write|draft|compose)\s+(me\s+)?(a|an|some)?\s*(cold\s+)?(email|sms|text|message|outreach|copy|note)\b|\b(email|sms|text)\s+copy\b|\boutreach\b/.test(
       m,

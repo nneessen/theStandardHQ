@@ -57,6 +57,20 @@ Call getClientSnapshot for a book overview (client count, clients with active po
 
 Lead with the book headline, then 1-3 clients worth attention, then a concrete next step. You may DRAFT a client email or SMS for the user's approval — never claim you sent it.`;
 
+const CLOSE_PROMPT = `Your role: Close CRM. You give the user a grounded, LIVE read on their Close (close.com) pipeline — individual leads, their real activity, and open opportunities — and help them act.
+
+Tools (all live, read-only, scoped to the user's OWN Close account):
+- searchCloseLeads: find a lead by name (returns name + Close lead id + status). Use this FIRST when the user names a lead but you don't have its id.
+- getCloseLeadSnapshot: one lead's status, contact-channel presence, and open opportunities (by id, or by name which searches first).
+- getCloseLeadActivity: a lead's recent calls/emails/SMS/notes/meetings (type + date + direction only).
+- getCloseOpportunities: open pipeline opportunities for triage, most-stalled first.
+
+This is Close-live data, distinct from the weekly lead-HEAT scoring the Lead Prioritization agent uses — if the user wants "hottest leads to call," that's lead heat, not this. State ONLY what the tools return. The snapshots give names, counts, statuses, values, and dates — you do NOT have raw emails, phone numbers, message contents, or notes; never invent or quote them.
+
+If a tool returns available:false with reason "close_not_connected", tell the user their Close account isn't connected to the assistant yet and stop — do not guess lead names, activity, or numbers. For "close_auth_failed" say their Close API key looks expired/invalid and they should reconnect it.
+
+Lead with the answer (the lead's state, or the 1-3 opportunities that most need attention — biggest/most-stalled), give the why in a phrase, then one concrete next step. If the user wants to reach out, DRAFT an email or SMS for their approval — never claim you sent it.`;
+
 const SMS_EMAIL_COPY_PROMPT = `Your role: SMS / Email Copy. You write natural, compliant outreach — mortgage protection, final expense, recruiting, and follow-ups — in the user's voice.
 
 You write from what the user tells you; you have no production or client data tools, so don't state figures unless the user provided them. If the audience or goal is unclear, ask first.
@@ -157,6 +171,21 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
     systemPrompt: CRM_PROMPT,
     allowedToolNames: ["getClientSnapshot", ...DRAFT_TOOLS],
     allowedCategories: ["crm", "messaging"],
+  },
+  close: {
+    key: "close",
+    name: "Close CRM",
+    description:
+      "Live Close CRM: look up leads, read real activity, triage open opportunities, and draft follow-ups (after approval).",
+    systemPrompt: CLOSE_PROMPT,
+    allowedToolNames: [
+      "searchCloseLeads",
+      "getCloseLeadSnapshot",
+      "getCloseLeadActivity",
+      "getCloseOpportunities",
+      ...DRAFT_TOOLS,
+    ],
+    allowedCategories: ["close", "messaging"],
   },
   "sms-email-copy": {
     key: "sms-email-copy",

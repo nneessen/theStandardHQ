@@ -52,6 +52,8 @@ function makeCtx(
     imoId: "imo_1",
     conversationId: "conv_1",
     firstName: "Nick",
+    // These tools never touch Close; a not-connected provider is enough.
+    close: { getClient: () => Promise.resolve(null) },
   };
   return { ctx, rpcCalls, inserts };
 }

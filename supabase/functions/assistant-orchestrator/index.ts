@@ -27,6 +27,7 @@ import { assessGrounding } from "./core/grounding.ts";
 import type { AgentKey } from "./core/types.ts";
 import { buildAnthropicTools, TOOLS } from "./tools/index.ts";
 import type { AssistantToolContext } from "./tools/types.ts";
+import { createCloseProvider } from "./close/provider.ts";
 
 const MAX_TOOL_ITERATIONS = 10;
 const WALL_TIME_MS = 25_000;
@@ -144,6 +145,8 @@ serve(async (req) => {
       imoId,
       conversationId: convId,
       firstName,
+      // Lazy: only resolves (service-role fetch + decrypt) if a Close tool runs.
+      close: createCloseProvider(user.id),
     };
 
     const systemPrompt = buildSystemPrompt(agent, assistantName);

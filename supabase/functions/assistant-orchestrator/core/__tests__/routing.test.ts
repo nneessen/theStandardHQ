@@ -7,6 +7,7 @@ const ALL_WIRED = [
   "policy-risk",
   "lead-priority",
   "crm",
+  "close",
   "sms-email-copy",
   "compliance",
   "recruiting",
@@ -59,6 +60,23 @@ Deno.test("classifyIntent maps the remaining specialists", () => {
   assertEquals(
     classifyIntent("write an email to a prospect"),
     "sms-email-copy",
+  );
+});
+
+Deno.test("classifyIntent routes Close and guards keyword collisions", () => {
+  // Close-CRM intents.
+  assertEquals(classifyIntent("what's in my pipeline?"), "close");
+  assertEquals(classifyIntent("show me my open opportunities"), "close");
+  assertEquals(classifyIntent("pull up the lead Sherlett Jones"), "close");
+  assertEquals(classifyIntent("look up the contact David Lee"), "close");
+  assertEquals(classifyIntent("what's stalled in my sales pipeline"), "close");
+  // Guards: Close must NOT steal these.
+  assertEquals(classifyIntent("how is my recruiting pipeline?"), "recruiting");
+  assertEquals(classifyIntent("agent pipeline status"), "recruiting");
+  assertEquals(classifyIntent("show me my hottest leads"), "lead-priority");
+  assertEquals(
+    classifyIntent("which leads should I call first?"),
+    "lead-priority",
   );
 });
 

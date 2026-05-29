@@ -18,12 +18,32 @@ export interface ToolDbClient {
   };
 }
 
+/**
+ * A read-only Close API client already bound to the signed-in user's key. Tools
+ * only ever see `.get()` — the API key itself never reaches the tool layer.
+ */
+export interface CloseReadClient {
+  get<T = unknown>(path: string): Promise<T>;
+}
+
+/**
+ * Resolves the SIGNED-IN user's Close client (or null when their Close account
+ * isn't connected). The provider closes over the verified `ctx.userId` and takes
+ * NO user-id argument by design — a tool (or the model) cannot ask for another
+ * user's key. Resolution is memoized per request so most turns pay nothing.
+ */
+export interface CloseProvider {
+  getClient(): Promise<CloseReadClient | null>;
+}
+
 export interface AssistantToolContext {
   db: ToolDbClient;
   userId: string;
   imoId: string | null;
   conversationId: string;
   firstName?: string | null;
+  /** Live Close CRM access for the signed-in user (read-only v1). */
+  close: CloseProvider;
 }
 
 export interface RegisteredTool {

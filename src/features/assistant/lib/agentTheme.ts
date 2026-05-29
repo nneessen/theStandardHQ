@@ -10,6 +10,7 @@ import {
   Newspaper,
   ScrollText,
   ShieldAlert,
+  Target,
   UserPlus,
   Users,
   Workflow,
@@ -65,6 +66,12 @@ export const AGENT_THEME: Record<string, AgentTheme> = {
     accent: "#818cf8",
     icon: Users,
     tagline: "Pulling client intelligence",
+  },
+  close: {
+    label: "Close CRM",
+    accent: "#6366f1",
+    icon: Target,
+    tagline: "Pulling your live Close pipeline",
   },
   "sms-email-copy": {
     label: "SMS / Email Copy",

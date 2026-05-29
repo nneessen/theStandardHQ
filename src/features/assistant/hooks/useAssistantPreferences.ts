@@ -14,6 +14,7 @@ const DEFAULTS: AssistantPreferences = {
     "policy-risk",
     "lead-priority",
     "crm",
+    "close",
     "sms-email-copy",
     "compliance",
     "recruiting",

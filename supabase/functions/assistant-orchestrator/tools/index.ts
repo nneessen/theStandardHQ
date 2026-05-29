@@ -9,6 +9,10 @@ import { getPolicyRiskAlerts } from "./getPolicyRiskAlerts.ts";
 import { getLeadPriorities } from "./getLeadPriorities.ts";
 import { getRecruitingSnapshot } from "./getRecruitingSnapshot.ts";
 import { getClientSnapshot } from "./getClientSnapshot.ts";
+import { searchCloseLeads } from "./searchCloseLeads.ts";
+import { getCloseLeadSnapshot } from "./getCloseLeadSnapshot.ts";
+import { getCloseLeadActivity } from "./getCloseLeadActivity.ts";
+import { getCloseOpportunities } from "./getCloseOpportunities.ts";
 import { draftEmailMessage } from "./draftEmailMessage.ts";
 import { draftSmsMessage } from "./draftSmsMessage.ts";
 
@@ -19,6 +23,10 @@ export const TOOLS: Record<string, RegisteredTool> = {
   [getLeadPriorities.name]: getLeadPriorities,
   [getRecruitingSnapshot.name]: getRecruitingSnapshot,
   [getClientSnapshot.name]: getClientSnapshot,
+  [searchCloseLeads.name]: searchCloseLeads,
+  [getCloseLeadSnapshot.name]: getCloseLeadSnapshot,
+  [getCloseLeadActivity.name]: getCloseLeadActivity,
+  [getCloseOpportunities.name]: getCloseOpportunities,
   [draftEmailMessage.name]: draftEmailMessage,
   [draftSmsMessage.name]: draftSmsMessage,
 };
