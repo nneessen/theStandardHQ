@@ -6,16 +6,13 @@ interface Props {
 }
 
 /**
- * Ambient heads-up-display overlay: a drifting grid, two counter-rotating tick
- * rings, corner brackets, and a scanline sweep. Pure SVG/CSS, sits behind content
+ * Ambient heads-up-display backdrop: a drifting grid, an accent vignette, corner
+ * brackets, and a scanline sweep. The reactor's concentric rings live in ReactorDial;
+ * this is just the surrounding frame. Pure CSS/SVG, sits behind content
  * (pointer-events-none). All motion is dropped under prefers-reduced-motion.
  */
 export function HudFrame({ accent = DEFAULT_ACCENT }: Props) {
   const prefersReduced = useReducedMotion();
-  const spin = (s: number, reverse = false) =>
-    prefersReduced
-      ? undefined
-      : { animation: `spin ${s}s linear infinite${reverse ? " reverse" : ""}` };
 
   return (
     <div
@@ -29,7 +26,7 @@ export function HudFrame({ accent = DEFAULT_ACCENT }: Props) {
 
       {/* Drifting grid */}
       <div
-        className="absolute inset-0 opacity-[0.07]"
+        className="absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage: `linear-gradient(${accent} 1px, transparent 1px), linear-gradient(90deg, ${accent} 1px, transparent 1px)`,
           backgroundSize: "64px 64px",
@@ -43,22 +40,9 @@ export function HudFrame({ accent = DEFAULT_ACCENT }: Props) {
       <div
         className="absolute inset-0"
         style={{
-          background: `radial-gradient(circle at 50% 38%, ${accent}14 0%, transparent 55%)`,
+          background: `radial-gradient(circle at 50% 46%, ${accent}12 0%, transparent 55%)`,
         }}
       />
-
-      {/* Counter-rotating tick rings, centered on the reactor */}
-      <div className="absolute left-1/2 top-[38%] -translate-x-1/2 -translate-y-1/2">
-        <TickRing size={520} ticks={72} accent={accent} style={spin(80)} />
-      </div>
-      <div className="absolute left-1/2 top-[38%] -translate-x-1/2 -translate-y-1/2">
-        <TickRing
-          size={400}
-          ticks={48}
-          accent={accent}
-          style={spin(55, true)}
-        />
-      </div>
 
       {/* Corner brackets */}
       <CornerBracket accent={accent} className="left-3 top-3" />
@@ -77,55 +61,6 @@ export function HudFrame({ accent = DEFAULT_ACCENT }: Props) {
         />
       )}
     </div>
-  );
-}
-
-function TickRing({
-  size,
-  ticks,
-  accent,
-  style,
-}: {
-  size: number;
-  ticks: number;
-  accent: string;
-  style?: React.CSSProperties;
-}) {
-  const r = size / 2;
-  const inner = r - 14;
-  return (
-    <svg width={size} height={size} style={style} className="opacity-30">
-      <circle
-        cx={r}
-        cy={r}
-        r={inner + 4}
-        fill="none"
-        stroke={accent}
-        strokeWidth={0.5}
-        opacity={0.4}
-      />
-      {Array.from({ length: ticks }).map((_, i) => {
-        const a = (i / ticks) * Math.PI * 2;
-        const long = i % 6 === 0;
-        const len = long ? 12 : 6;
-        const x1 = r + Math.cos(a) * inner;
-        const y1 = r + Math.sin(a) * inner;
-        const x2 = r + Math.cos(a) * (inner - len);
-        const y2 = r + Math.sin(a) * (inner - len);
-        return (
-          <line
-            key={i}
-            x1={x1}
-            y1={y1}
-            x2={x2}
-            y2={y2}
-            stroke={accent}
-            strokeWidth={long ? 1.5 : 0.75}
-            opacity={long ? 0.9 : 0.5}
-          />
-        );
-      })}
-    </svg>
   );
 }
 

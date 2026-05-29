@@ -194,30 +194,27 @@ export function AssistantPage() {
         audioLevel={audioLevel}
         voice={voice}
       >
-        <div className="space-y-3">
-          <div
-            ref={scrollRef}
-            className="h-[55vh] overflow-y-auto rounded-xl border bg-card/40 p-4 backdrop-blur-md"
-            style={{ borderColor: `${accent}26` }}
-          >
-            <TranscriptPanel
-              messages={messages}
-              assistantName={assistantName}
-              accent={accent}
-              play={play}
-            />
-          </div>
-          <PendingActionsPanel
-            focusActionId={focusActionId}
-            onApproved={() => play("approve")}
-          />
-          <CommandInput
-            onSend={handleSend}
-            disabled={send.isPending}
+        <div
+          ref={scrollRef}
+          className="min-h-0 flex-1 overflow-y-auto pr-1 lg:max-h-[44vh] lg:flex-none [mask-image:linear-gradient(to_bottom,transparent_0,black_14%)]"
+        >
+          <TranscriptPanel
+            messages={messages}
             assistantName={assistantName}
             accent={accent}
+            play={play}
           />
         </div>
+        <PendingActionsPanel
+          focusActionId={focusActionId}
+          onApproved={() => play("approve")}
+        />
+        <CommandInput
+          onSend={handleSend}
+          disabled={send.isPending}
+          assistantName={assistantName}
+          accent={accent}
+        />
       </CommandCenterLayout>
 
       <VoiceImmersion

@@ -174,6 +174,23 @@ function AuthenticatedApp() {
     );
   }
 
+  // Command center owns the full viewport — no sidebar, no app chrome — so the
+  // Jarvis HUD reads uniformly for every user (its own dark shell + back affordance).
+  const isCommandCenter = location.pathname === "/command-center";
+  if (isCommandCenter) {
+    return (
+      <>
+        <Toaster />
+        <CookieConsentBanner />
+        <ImoProvider>
+          <ApprovalGuard>
+            <Outlet />
+          </ApprovalGuard>
+        </ImoProvider>
+      </>
+    );
+  }
+
   // Check if we're on the recruit pipeline page (no sidebar)
   const isRecruitPipeline = location.pathname === "/recruiting/my-pipeline";
 

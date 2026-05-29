@@ -20,48 +20,47 @@ interface ModeTarget {
 const TARGETS: Record<ReactorMode, ModeTarget> = {
   idle: {
     speed: 0.35,
-    intensity: 0.9,
+    intensity: 0.95,
     pulse: 0.06,
-    turbulence: 0.18,
+    turbulence: 0.16,
     convergence: 0.1,
-    fresnel: 2.6,
+    fresnel: 3.4,
   },
   listening: {
     speed: 0.7,
     intensity: 1.15,
     pulse: 0.14,
-    turbulence: 0.3,
+    turbulence: 0.28,
     convergence: 0.25,
-    fresnel: 2.2,
+    fresnel: 3.0,
   },
   thinking: {
     speed: 2.6,
-    intensity: 1.5,
+    intensity: 1.45,
     pulse: 0.2,
-    turbulence: 0.62,
+    turbulence: 0.6,
     convergence: 0.85,
-    fresnel: 1.7,
+    fresnel: 2.4,
   },
   responding: {
     speed: 1.2,
-    intensity: 1.7,
+    intensity: 1.6,
     pulse: 0.12,
-    turbulence: 0.4,
+    turbulence: 0.38,
     convergence: 0.45,
-    fresnel: 2.0,
+    fresnel: 2.7,
   },
   speaking: {
     speed: 0.9,
-    intensity: 1.35,
+    intensity: 1.3,
     pulse: 0.32,
-    turbulence: 0.34,
+    turbulence: 0.32,
     convergence: 0.2,
-    fresnel: 2.3,
+    fresnel: 3.0,
   },
 };
 
-const COIL_COUNT = 10;
-const PARTICLE_COUNT = 320;
+const PARTICLE_COUNT = 360;
 
 function damp(current: number, target: number, lambda: number, dt: number) {
   return current + (target - current) * (1 - Math.exp(-lambda * dt));
@@ -155,13 +154,14 @@ varying float vNoise;
 void main(){
   float ndv = clamp(dot(normalize(vNormalW), normalize(vViewDir)), 0.0, 1.0);
   float fres = pow(1.0 - ndv, uFresnel);
-  // Glowing veins of energy from the displacement field.
-  float veins = smoothstep(0.15, 0.65, abs(vNoise));
+  // Glowing veins of energy carved by the displacement field.
+  float veins = smoothstep(0.25, 0.62, abs(vNoise));
   float breathe = 0.65 + 0.35 * sin(uTime * 3.2);
-  // Hot at the center of each facing facet, accent toward the grazing rim.
-  vec3 col = mix(uColorHot, uColor, clamp(fres * 1.1, 0.0, 1.0));
-  float emit = (ndv * 0.6 + fres * 1.6 + veins * 0.7 + 0.18)
-             * uIntensity * (0.7 + uPulse * breathe);
+  // Bright fresnel rim + sharp energy veins; only a faint facing-surface fill so the
+  // core reads as a defined sphere, not a washed-out disc.
+  vec3 col = mix(uColorHot, uColor, clamp(fres * 1.2, 0.0, 1.0));
+  float emit = (ndv * 0.22 + fres * 1.7 + veins * 0.85 + 0.06)
+             * uIntensity * (0.72 + uPulse * breathe);
   gl_FragColor = vec4(col * emit, emit);
 }
 `;
@@ -213,24 +213,9 @@ export interface Reactor {
 export function buildReactor(): Reactor {
   const group = new THREE.Group();
   const disposables: { dispose(): void }[] = [];
-  // Plain additive meshes (tori/coils) whose color + opacity track the live accent.
-  const tracked: { mat: THREE.MeshBasicMaterial; base: number }[] = [];
 
   const accentColor = new THREE.Color(0x22d3ee);
   const hotColor = new THREE.Color(0xeaffff);
-
-  const basic = (base: number, additive = false) => {
-    const mat = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
-      transparent: true,
-      opacity: base,
-      depthWrite: false,
-      blending: additive ? THREE.AdditiveBlending : THREE.NormalBlending,
-    });
-    tracked.push({ mat, base });
-    disposables.push(mat);
-    return mat;
-  };
 
   const addMesh = (geo: THREE.BufferGeometry, mat: THREE.Material) => {
     disposables.push(geo);
@@ -258,10 +243,11 @@ export function buildReactor(): Reactor {
   });
   disposables.push(coreMat);
   const coreGroup = new THREE.Group();
-  const coreMesh = addMesh(new THREE.IcosahedronGeometry(0.78, 32), coreMat);
+  const coreMesh = addMesh(new THREE.IcosahedronGeometry(0.62, 48), coreMat);
   coreGroup.add(coreMesh);
 
-  // Additive bloom shells (fresnel-only) — three nested glows that fake bloom.
+  // Two tight fresnel shells fake a compact bloom that hugs the core — NOT a big
+  // diffuse halo (that washed out the crisp dial rings layered on top).
   const glowUniformsList: {
     uColor: { value: THREE.Color };
     uIntensity: { value: number };
@@ -284,53 +270,21 @@ export function buildReactor(): Reactor {
       blending: THREE.AdditiveBlending,
     });
     disposables.push(mat);
-    coreGroup.add(addMesh(new THREE.IcosahedronGeometry(radius, 16), mat));
+    coreGroup.add(addMesh(new THREE.IcosahedronGeometry(radius, 24), mat));
   };
-  makeGlow(1.05, 3.0, 0.9);
-  makeGlow(1.5, 2.2, 0.5);
-  makeGlow(2.1, 1.7, 0.28);
+  makeGlow(0.82, 3.6, 0.7);
+  makeGlow(1.15, 3.0, 0.32);
   group.add(coreGroup);
 
-  // --- Counter-rotating tori ---------------------------------------------------
-  const torusA = addMesh(
-    new THREE.TorusGeometry(1.2, 0.04, 16, 96),
-    basic(0.85, true),
-  );
-  const torusB = addMesh(
-    new THREE.TorusGeometry(1.5, 0.028, 16, 96),
-    basic(0.6, true),
-  );
-  torusB.rotation.x = Math.PI / 2;
-  const torusC = addMesh(
-    new THREE.TorusGeometry(1.82, 0.02, 12, 96),
-    basic(0.4, true),
-  );
-  torusC.rotation.set(0, Math.PI / 3, Math.PI / 4);
-  group.add(torusA, torusB, torusC);
-
-  // --- Coil crown --------------------------------------------------------------
-  const coilGroup = new THREE.Group();
-  for (let i = 0; i < COIL_COUNT; i++) {
-    const a = (i / COIL_COUNT) * Math.PI * 2;
-    const coil = addMesh(
-      new THREE.BoxGeometry(0.1, 0.3, 0.1),
-      basic(0.95, true),
-    );
-    coil.position.set(Math.cos(a) * 0.98, Math.sin(a) * 0.98, 0);
-    coil.rotation.z = a;
-    coilGroup.add(coil);
-  }
-  group.add(coilGroup);
-
-  // --- Converging particle field ----------------------------------------------
+  // --- Fine orbiting particle dust --------------------------------------------
   // Store each particle's wide-orbit rest position; convergence lerps it inward.
   const rest = new Float32Array(PARTICLE_COUNT * 3);
   const positions = new Float32Array(PARTICLE_COUNT * 3);
   const seeds = new Float32Array(PARTICLE_COUNT);
   for (let i = 0; i < PARTICLE_COUNT; i++) {
-    const r = 2.0 + Math.random() * 1.6;
+    const r = 1.45 + Math.random() * 1.25;
     const theta = Math.random() * Math.PI * 2;
-    const y = (Math.random() - 0.5) * 1.0;
+    const y = (Math.random() - 0.5) * 0.7;
     rest[i * 3] = Math.cos(theta) * r;
     rest[i * 3 + 1] = y;
     rest[i * 3 + 2] = Math.sin(theta) * r;
@@ -345,9 +299,9 @@ export function buildReactor(): Reactor {
   pGeo.setAttribute("position", pAttr);
   const pMat = new THREE.PointsMaterial({
     color: 0xffffff,
-    size: 0.055,
+    size: 0.028,
     transparent: true,
-    opacity: 0.8,
+    opacity: 0.7,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
     sizeAttenuation: true,
@@ -372,14 +326,9 @@ export function buildReactor(): Reactor {
       liveColor.lerp(accent, 1 - Math.exp(-3 * dt));
 
       const spin = cur.speed;
-      group.rotation.z += dt * spin * 0.35;
+      group.rotation.z += dt * spin * 0.18;
       coreGroup.rotation.y += dt * spin * 0.4;
-      torusA.rotation.x += dt * spin;
-      torusA.rotation.y += dt * spin * 0.6;
-      torusB.rotation.y -= dt * spin * 0.8;
-      torusB.rotation.z += dt * spin * 0.5;
-      torusC.rotation.x -= dt * spin * 0.6;
-      coilGroup.rotation.z -= dt * spin * 0.5;
+      coreGroup.rotation.x += dt * spin * 0.12;
 
       // Core breathing — eased pulse plus a live audio kick.
       const breathe =
@@ -415,12 +364,7 @@ export function buildReactor(): Reactor {
       }
       pAttr.needsUpdate = true;
       pMat.color.copy(liveColor);
-      pMat.opacity = 0.55 + cur.convergence * 0.4;
-
-      for (const { mat, base } of tracked) {
-        mat.color.copy(liveColor);
-        mat.opacity = Math.min(1, base * cur.intensity);
-      }
+      pMat.opacity = 0.45 + cur.convergence * 0.4;
     },
     dispose() {
       for (const d of disposables) d.dispose();

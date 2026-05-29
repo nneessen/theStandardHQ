@@ -1,8 +1,34 @@
-# Continuation: Jarvis Command Center — Cinematic HUD overhaul (v1 done, now refine)
+# Continuation: Jarvis Command Center — Cinematic HUD overhaul
 
 **Date:** 2026-05-28
 **Branch / worktree:** `feat/assistant-command-center` in `/Users/nickneessen/projects/commissionTracker-jarvis` (NOT the main repo — Jarvis is not merged to main).
-**State:** All v1 work is written and BUILDS GREEN + unit tests pass, but is **NOT committed** (sits alongside prior in-progress voice work). Authenticated visual E2E was NOT done (gated page, no login creds).
+**State:** **NOT committed.**
+
+---
+
+## SESSION 2 UPDATE (2026-05-28, later) — v2 PREMIUM REBUILD + AUTHENTICATED VISUAL VERIFICATION DONE
+
+v1 (below) was rejected by the user as "the most basic animation I've ever seen," "too chunky," and "cut off in a small square." Rebuilt the reactor + reorganized the whole stage. Verified live via Playwright login (`nickneessen@thestandardhq.com`) against the gated page.
+
+**What changed this session:**
+- **`components/hud/ReactorDial.tsx` (NEW)** — the centerpiece. A crisp, fine multi-ring **SVG** dial: outer tick scale, dotted ring, broken segmented arcs, mid scale, numbered markers, dashed ring, inner segments, inner ticks, core ring with quadrant diamonds, a radar sweep (fading fan), and bright pulsing "active" arcs. All layers rotate independently off ONE `framer-motion` `useAnimationFrame` clock with an eased per-mode speed (idle→thinking spins up). `overflow:visible` so nothing clips. Reduced-motion → static. This is what fixed "basic/chunky."
+- **`components/hud/reactorScene.ts` (REWRITTEN)** — GLSL energy CORE only now (Ashima simplex displacement + fresnel rim + emissive veins), 2 tight fresnel bloom shells (was 3 big diffuse → that was the wash/"square"), fine particle dust. Removed the chunky tori + coil boxes (the dial owns ring structure). Mode-distinct via eased `turbulence`/`convergence`/`fresnel`/`speed` targets (thinking = energized spiky star + inward particle convergence).
+- **`components/hud/usePointerTilt.ts` (NEW)** — window-level pointer → spring rotateX/rotateY for a holographic parallax tilt on the reactor container (own effect, reduced-motion-gated). Wired in `CommandCenterLayout` via `perspective` + `motion.div`.
+- **`components/hud/BootSequence.tsx` (REWRITTEN)** — cinematic **"THE STANDARD"** wordmark (metallic cyan gradient + sweeping highlight + swoosh underline), reactor ignition flash, staggered boot log. Subtitle `{assistantName} · COMMAND CENTER`.
+- **`components/hud/HudFrame.tsx` (TRIMMED)** — removed its old tick rings (dial owns them); now just grid + vignette + corner brackets + scanline.
+- **`components/hud/HudPanel.tsx` (NEW)** + **`components/hud/SidePanels.tsx` (NEW)** — framed glass HUD panels docked in the margins with REAL data (no mock): live clock + signed-in operator + "all systems online" (Status), team leaderboard top-3 (`useTeamLeaderboard().entries`), Production MTD (totalAp/Policies/IP/Prospects/leads-scored), Recruiting (active/total/completed + byPhase bars). **Deleted `TelemetryRail.tsx`** (superseded).
+- **`src/App.tsx`** — added `isCommandCenter = pathname === "/command-center"` early-return branch (mirrors `isRecruitPipeline`): renders `ImoProvider > ApprovalGuard > Outlet` with NO sidebar/app chrome, so Jarvis owns the viewport uniformly. Back-to-app chip lives in the `CommandCenterLayout` header (`Link to="/dashboard"`).
+- **`components/CommandCenterLayout.tsx` (RESTRUCTURED)** — full-screen `h-screen` flex column; reactor stage (dial+core, pointer-tilt) fills the upper viewport; conversation docks to the bottom with a top fade mask (`AssistantPage` content block updated); top command bar with back chip + JARVIS + agent badge + VoiceOrb + settings; `SidePanels` in the margins.
+
+**Verification (this session):** `npm run build` green (exit 0; three isolated in lazy `ArcReactor-*.js` 505KB chunk) · `npx eslint src/features/assistant src/App.tsx` clean · `npx vitest run src/features/assistant` 7/7 · authenticated Playwright screenshots: full desktop HUD, thinking mode, "THE STANDARD" boot, send→agent-routed→tool-chip→typewriter→settled (real-data reply), reduced-motion static, mobile compact — all with NO page errors.
+
+**Known / out-of-scope:** orchestrator returns literal `**markdown**` (TranscriptPanel renders plain text — pre-existing); Production hero shows `$0` because `totals.totalAp` rolls up 0 while per-agent AP + totalIp are populated (backend quirk, surfaced truthfully). Pointer-tilt's actual motion not isolated in a screenshot (subtle ±5°; build/render-verified). Still NOT committed; user has not asked to commit.
+
+---
+
+## SESSION 1 (original handoff — v1, since superseded by the rebuild above)
+
+**State (at the time):** All v1 work is written and BUILDS GREEN + unit tests pass, but is **NOT committed** (sits alongside prior in-progress voice work). Authenticated visual E2E was NOT done (gated page, no login creds).
 
 ---
 
