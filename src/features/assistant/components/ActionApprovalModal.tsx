@@ -23,9 +23,15 @@ interface Props {
   action: ActionRequest | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onApproved?: () => void;
 }
 
-export function ActionApprovalModal({ action, open, onOpenChange }: Props) {
+export function ActionApprovalModal({
+  action,
+  open,
+  onOpenChange,
+  onApproved,
+}: Props) {
   const approve = useApproveActionRequest();
   const cancel = useCancelActionRequest();
   const [recipient, setRecipient] = useState("");
@@ -65,6 +71,7 @@ export function ActionApprovalModal({ action, open, onOpenChange }: Props) {
       });
       if (res.ok || res.status === "executed") {
         toast.success(`${isEmail ? "Email" : "SMS"} sent.`);
+        onApproved?.();
         onOpenChange(false);
       } else {
         toast.error(res.error ?? "The send failed.");

@@ -24,6 +24,7 @@ const DEFAULTS: AssistantPreferences = {
     "data-quality",
   ],
   voice_enabled: false,
+  sound_enabled: true,
   tone: "professional",
   briefing_style: "concise",
 };
@@ -39,7 +40,7 @@ export function useAssistantPreferences() {
       const { data } = await supabase
         .from("assistant_preferences")
         .select(
-          "assistant_name, enabled_agents, voice_enabled, tone, briefing_style",
+          "assistant_name, enabled_agents, voice_enabled, sound_enabled, tone, briefing_style",
         )
         .eq("user_id", user.id)
         .maybeSingle();
@@ -48,6 +49,7 @@ export function useAssistantPreferences() {
         assistant_name: data.assistant_name ?? DEFAULTS.assistant_name,
         enabled_agents: data.enabled_agents ?? DEFAULTS.enabled_agents,
         voice_enabled: data.voice_enabled ?? DEFAULTS.voice_enabled,
+        sound_enabled: data.sound_enabled ?? DEFAULTS.sound_enabled,
         tone: data.tone ?? DEFAULTS.tone,
         briefing_style: data.briefing_style ?? DEFAULTS.briefing_style,
       };

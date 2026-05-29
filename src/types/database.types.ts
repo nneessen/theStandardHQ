@@ -950,6 +950,7 @@ export type Database = {
           briefing_style: string;
           created_at: string | null;
           enabled_agents: string[];
+          sound_enabled: boolean;
           tone: string;
           updated_at: string | null;
           user_id: string;
@@ -960,6 +961,7 @@ export type Database = {
           briefing_style?: string;
           created_at?: string | null;
           enabled_agents?: string[];
+          sound_enabled?: boolean;
           tone?: string;
           updated_at?: string | null;
           user_id: string;
@@ -970,6 +972,7 @@ export type Database = {
           briefing_style?: string;
           created_at?: string | null;
           enabled_agents?: string[];
+          sound_enabled?: boolean;
           tone?: string;
           updated_at?: string | null;
           user_id?: string;

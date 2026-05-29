@@ -63,6 +63,7 @@ export interface AssistantPreferences {
   assistant_name: string;
   enabled_agents: string[];
   voice_enabled: boolean;
+  sound_enabled: boolean;
   tone: string;
   briefing_style: string;
 }

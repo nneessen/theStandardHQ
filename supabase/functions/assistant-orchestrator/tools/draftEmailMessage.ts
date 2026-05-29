@@ -3,13 +3,15 @@
 // send only after the user approves in the UI.
 
 import type { AssistantToolContext, RegisteredTool } from "./types.ts";
-import { optionalString, requireString } from "./types.ts";
+import { requireString } from "./types.ts";
 
 async function run(input: Record<string, unknown>, ctx: AssistantToolContext) {
   const subject = requireString(input, "subject");
   const body = requireString(input, "body");
-  const to = optionalString(input, "to");
 
+  // The model never sets the recipient — the human enters and confirms it in the
+  // approval modal. This keeps every send human-addressed, which is what lets the
+  // recipient check be a format check rather than an in-system allowlist.
   const { data, error } = await ctx.db
     .from("assistant_action_requests")
     .insert({
@@ -19,7 +21,7 @@ async function run(input: Record<string, unknown>, ctx: AssistantToolContext) {
       channel: "email",
       tool_name: "draftEmailMessage",
       draft_payload: { subject, body },
-      recipient: to,
+      recipient: null,
       status: "pending_approval",
     })
     .select("id")
@@ -34,8 +36,8 @@ async function run(input: Record<string, unknown>, ctx: AssistantToolContext) {
     actionRequestId: data.id,
     channel: "email",
     status: "pending_approval",
-    draft: { subject, body, to },
-    note: "Draft created and is PENDING the user's approval. Nothing has been sent. Tell the user it's ready to review/approve; do not claim it was sent.",
+    draft: { subject, body },
+    note: "Draft created and is PENDING the user's approval. The user will enter the recipient and approve before anything sends. Tell the user it's ready to review/approve; do not claim it was sent.",
   };
 }
 
@@ -44,11 +46,6 @@ export const draftEmailMessage: RegisteredTool = {
   inputSchema: {
     type: "object",
     properties: {
-      to: {
-        type: "string",
-        description:
-          "Optional recipient email; the user confirms before sending.",
-      },
       subject: { type: "string", description: "Email subject line." },
       body: {
         type: "string",

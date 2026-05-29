@@ -24,14 +24,24 @@ export function AssistantSettingsSheet() {
   const update = useUpdateAssistantPreferences();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const [voiceEnabled, setVoiceEnabled] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   useEffect(() => {
-    if (prefs && open) setName(prefs.assistant_name);
+    if (prefs && open) {
+      setName(prefs.assistant_name);
+      setVoiceEnabled(prefs.voice_enabled);
+      setSoundEnabled(prefs.sound_enabled);
+    }
   }, [prefs, open]);
 
   const save = async () => {
     try {
-      await update.mutateAsync({ assistant_name: name.trim() || "Jarvis" });
+      await update.mutateAsync({
+        assistant_name: name.trim() || "Jarvis",
+        voice_enabled: voiceEnabled,
+        sound_enabled: soundEnabled,
+      });
       toast.success("Preferences saved.");
       setOpen(false);
     } catch {
@@ -67,13 +77,33 @@ export function AssistantSettingsSheet() {
             />
           </div>
           <div className="flex items-center justify-between rounded-md border border-border p-3">
-            <div>
+            <div className="pr-3">
               <div className="text-sm font-medium">Voice</div>
               <div className="text-xs text-muted-foreground">
-                Coming soon — voice sessions aren't enabled yet.
+                Talk hands-free and hear replies. Click the mic to start a
+                session; your speech is transcribed and spoken back. Needs
+                microphone access (Chrome or Safari).
               </div>
             </div>
-            <Switch checked={false} disabled aria-label="Voice (coming soon)" />
+            <Switch
+              checked={voiceEnabled}
+              onCheckedChange={setVoiceEnabled}
+              aria-label="Enable voice"
+            />
+          </div>
+          <div className="flex items-center justify-between rounded-md border border-border p-3">
+            <div className="pr-3">
+              <div className="text-sm font-medium">Sound</div>
+              <div className="text-xs text-muted-foreground">
+                Subtle interface cues — a soft tone on send, on each tool the
+                assistant runs, and when a reply lands.
+              </div>
+            </div>
+            <Switch
+              checked={soundEnabled}
+              onCheckedChange={setSoundEnabled}
+              aria-label="Enable sound"
+            />
           </div>
         </div>
         <SheetFooter>

@@ -9,9 +9,11 @@ import { ActionApprovalModal } from "./ActionApprovalModal";
 interface Props {
   /** When set, auto-open the matching action once it appears in the list. */
   focusActionId?: string | null;
+  /** Fires after a draft is successfully approved and sent (for a sound cue). */
+  onApproved?: () => void;
 }
 
-export function PendingActionsPanel({ focusActionId }: Props) {
+export function PendingActionsPanel({ focusActionId, onApproved }: Props) {
   const { data: actions = [] } = usePendingActionRequests();
   const [selected, setSelected] = useState<ActionRequest | null>(null);
   const [open, setOpen] = useState(false);
@@ -69,6 +71,7 @@ export function PendingActionsPanel({ focusActionId }: Props) {
         action={selected}
         open={open}
         onOpenChange={setOpen}
+        onApproved={onApproved}
       />
     </Card>
   );
