@@ -47,6 +47,21 @@ function calculateDateRange(
     case "daily":
       return { start: today, end: today };
 
+    case "weekly": {
+      // Week-to-date: Monday 00:00 through today.
+      const dayOfWeek = now.getDay(); // 0=Sun … 6=Sat
+      const daysSinceMonday = (dayOfWeek + 6) % 7;
+      const weekStart = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - daysSinceMonday,
+      );
+      return {
+        start: weekStart.toISOString().split("T")[0],
+        end: today,
+      };
+    }
+
     case "mtd": {
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
       return {

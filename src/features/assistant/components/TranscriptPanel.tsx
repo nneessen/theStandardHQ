@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Loader2, Sparkles, User } from "lucide-react";
 import { useTypewriter } from "../hooks/useTypewriter";
+import { AssistantMarkdown } from "./AssistantMarkdown";
 import { toolMeta } from "../lib/toolMeta";
 import { agentTheme } from "../lib/agentTheme";
 import type { SoundCue } from "../hooks/useSound";
@@ -118,16 +119,21 @@ function MessageRow({
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
               <ScanningText accent={accent} />
             </span>
-          ) : (
+          ) : isUser ? (
+            <span className="whitespace-pre-wrap break-words">{m.content}</span>
+          ) : animate && !done ? (
+            // While the typewriter is still revealing, render plain text so we
+            // never parse half-formed Markdown (e.g. an unclosed `**`); the
+            // settled message below renders full Markdown.
             <span className="whitespace-pre-wrap break-words">
-              {animate ? shown : m.content}
-              {animate && !done && (
-                <span
-                  className="ml-0.5 inline-block h-3.5 w-1.5 animate-pulse align-middle"
-                  style={{ background: accent }}
-                />
-              )}
+              {shown}
+              <span
+                className="ml-0.5 inline-block h-3.5 w-1.5 animate-pulse align-middle"
+                style={{ background: accent }}
+              />
             </span>
+          ) : (
+            <AssistantMarkdown content={m.content} />
           )}
         </div>
       </div>

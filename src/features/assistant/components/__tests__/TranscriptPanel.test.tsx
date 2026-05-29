@@ -50,6 +50,45 @@ describe("TranscriptPanel", () => {
     expect(screen.getByText(/daily briefing/i)).toBeTruthy();
   });
 
+  it("renders assistant Markdown as HTML, not literal syntax", () => {
+    const messages: TranscriptMessage[] = [
+      {
+        id: "1",
+        role: "assistant",
+        content: "**Needs attention**\n\n- Call John\n- Email Sue",
+      },
+    ];
+    const { container } = render(
+      <TranscriptPanel
+        messages={messages}
+        assistantName="Jarvis"
+        accent="#22d3ee"
+      />,
+    );
+    // Bold becomes <strong>, not literal asterisks (the reported bug).
+    const strong = container.querySelector("strong");
+    expect(strong?.textContent).toBe("Needs attention");
+    // Bullets become a real list.
+    const items = container.querySelectorAll("li");
+    expect(items.length).toBe(2);
+    expect(items[0].textContent).toBe("Call John");
+    // No raw Markdown syntax leaked into the rendered text.
+    expect(container.textContent).not.toContain("**");
+  });
+
+  it("renders user messages as plain text (no Markdown processing)", () => {
+    const { container } = render(
+      <TranscriptPanel
+        messages={[{ id: "1", role: "user", content: "Profit was **huge**" }]}
+        assistantName="Jarvis"
+        accent="#22d3ee"
+      />,
+    );
+    // User text is shown verbatim — asterisks preserved, no <strong>.
+    expect(container.querySelector("strong")).toBeNull();
+    expect(screen.getByText("Profit was **huge**")).toBeTruthy();
+  });
+
   it("shows a scanning indicator for a pending assistant turn", () => {
     render(
       <TranscriptPanel

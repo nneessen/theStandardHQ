@@ -4,7 +4,12 @@
 /**
  * Time period filter options for the leaderboard
  */
-export type LeaderboardTimePeriod = "daily" | "mtd" | "ytd" | "custom";
+export type LeaderboardTimePeriod =
+  | "daily"
+  | "weekly"
+  | "mtd"
+  | "ytd"
+  | "custom";
 
 /**
  * Scope/mode filter options for the leaderboard

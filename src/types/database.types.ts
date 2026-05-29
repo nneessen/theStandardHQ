@@ -17058,6 +17058,15 @@ export type Database = {
           total_unearned: number;
         }[];
       };
+      get_imo_production_summary: {
+        Args: { p_end_date?: string; p_start_date?: string };
+        Returns: {
+          total_ap: number;
+          total_ip: number;
+          total_policies: number;
+          total_prospects: number;
+        }[];
+      };
       get_imo_expense_by_category: {
         Args: { p_end_date?: string; p_start_date?: string };
         Returns: {

@@ -1,7 +1,7 @@
 // src/features/landing/hooks/useCountUp.ts
 // Hook for animating number count-up
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 
 interface UseCountUpOptions {
   /**
@@ -26,7 +26,7 @@ interface UseCountUpOptions {
    * Easing function
    * @default 'easeOutExpo'
    */
-  easing?: 'linear' | 'easeOut' | 'easeOutExpo' | 'easeOutQuart';
+  easing?: "linear" | "easeOut" | "easeOutExpo" | "easeOutQuart";
 
   /**
    * Whether to start the animation
@@ -60,7 +60,7 @@ const easings = {
  */
 export function useCountUp(
   end: number,
-  options: UseCountUpOptions = {}
+  options: UseCountUpOptions = {},
 ): {
   value: number;
   formattedValue: string;
@@ -71,34 +71,44 @@ export function useCountUp(
     start = 0,
     duration = 2000,
     decimals = 0,
-    easing = 'easeOutExpo',
+    easing = "easeOutExpo",
     enabled = true,
     delay = 0,
-    separator = ',',
+    separator = ",",
   } = options;
 
   const [value, setValue] = useState(start);
   const [isAnimating, setIsAnimating] = useState(false);
   const animationRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
-  const hasStartedRef = useRef(false);
+  // Mirrors the currently displayed value without retriggering the effect. When
+  // `end` arrives asynchronously (a value fetched after mount), this lets the
+  // re-animation ease from where the display actually is instead of snapping
+  // back to `start`. It also replaces the prior one-shot guard that left async
+  // values frozen at their initial (often 0) value once the first run completed.
+  const valueRef = useRef(start);
 
   const reset = () => {
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
     }
+    valueRef.current = start;
     setValue(start);
     setIsAnimating(false);
-    hasStartedRef.current = false;
     startTimeRef.current = null;
   };
 
   useEffect(() => {
-    if (!enabled || hasStartedRef.current) return;
+    if (!enabled) return;
+
+    const fromValue = valueRef.current;
+    // Already at the target — nothing to animate. Also short-circuits the no-op
+    // 0→0 first render before async data has loaded.
+    if (fromValue === end) return;
 
     const startAnimation = () => {
-      hasStartedRef.current = true;
       setIsAnimating(true);
+      startTimeRef.current = null;
 
       const animate = (timestamp: number) => {
         if (!startTimeRef.current) {
@@ -108,13 +118,15 @@ export function useCountUp(
         const elapsed = timestamp - startTimeRef.current;
         const progress = Math.min(elapsed / duration, 1);
         const easedProgress = easings[easing](progress);
-        const currentValue = start + (end - start) * easedProgress;
+        const currentValue = fromValue + (end - fromValue) * easedProgress;
 
+        valueRef.current = currentValue;
         setValue(currentValue);
 
         if (progress < 1) {
           animationRef.current = requestAnimationFrame(animate);
         } else {
+          valueRef.current = end;
           setValue(end);
           setIsAnimating(false);
         }
@@ -139,7 +151,7 @@ export function useCountUp(
         }
       };
     }
-  }, [enabled, end, start, duration, easing, delay]);
+  }, [enabled, end, duration, easing, delay]);
 
   // Format the value with separator and decimals
   const formattedValue = formatNumber(value, decimals, separator);
@@ -150,9 +162,13 @@ export function useCountUp(
 /**
  * Format a number with thousands separator and decimal places
  */
-function formatNumber(value: number, decimals: number, separator: string): string {
+function formatNumber(
+  value: number,
+  decimals: number,
+  separator: string,
+): string {
   const fixed = value.toFixed(decimals);
-  const [whole, decimal] = fixed.split('.');
+  const [whole, decimal] = fixed.split(".");
 
   // Add thousands separator
   const withSeparator = whole.replace(/\B(?=(\d{3})+(?!\d))/g, separator);
@@ -168,7 +184,7 @@ export function useCountUpOnScroll(
   options: UseCountUpOptions & {
     triggerOnce?: boolean;
     threshold?: number;
-  } = {}
+  } = {},
 ): {
   ref: React.RefObject<HTMLDivElement | null>;
   value: number;
@@ -183,7 +199,7 @@ export function useCountUpOnScroll(
 
   // Parse the end value (handle strings like "$75,000")
   const numericEnd =
-    typeof end === 'string' ? parseFloat(end.replace(/[^0-9.-]/g, '')) : end;
+    typeof end === "string" ? parseFloat(end.replace(/[^0-9.-]/g, "")) : end;
 
   const { value, formattedValue, isAnimating } = useCountUp(numericEnd, {
     ...countUpOptions,
@@ -205,7 +221,7 @@ export function useCountUpOnScroll(
           setIsVisible(false);
         }
       },
-      { threshold }
+      { threshold },
     );
 
     observer.observe(element);

@@ -258,11 +258,20 @@ serve(async (req) => {
 
     // H2 no-fabrication backstop: flag a reply that states figures when every tool
     // section came back unavailable. Heuristic, so it annotates (logged + returned),
-    // never blocks. Cross-turn answers from history aren't covered (see handoff §5/L2).
-    const grounding = assessGrounding(groundingOutputs, finalText);
+    // never blocks. The cross-turn (L2) check additionally flags follow-up turns
+    // that state figures without running any tool — numbers that can only come from
+    // earlier (ungrounded) prose in the conversation.
+    const grounding = assessGrounding(groundingOutputs, finalText, {
+      hasPriorTurns: history.length > 0,
+    });
     if (grounding.ungroundedNumericWarning) {
       console.warn(
         `assistant-orchestrator: possible ungrounded numerics (conversation=${conversationId}, agent=${agentKey}) — reply states figures but every tool section was unavailable.`,
+      );
+    }
+    if (grounding.crossTurnFigureWarning) {
+      console.warn(
+        `assistant-orchestrator: possible cross-turn ungrounded numerics (conversation=${conversationId}, agent=${agentKey}) — follow-up reply states figures but ran no grounding tool this turn.`,
       );
     }
 

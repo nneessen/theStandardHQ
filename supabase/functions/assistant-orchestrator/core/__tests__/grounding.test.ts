@@ -79,4 +79,39 @@ Deno.test("no warn: no grounding tools ran this turn (e.g. draft-only)", () => {
   );
   assertEquals(s.ranGroundingTools, false);
   assertEquals(s.ungroundedNumericWarning, false);
+  // First turn (no prior turns) → cross-turn check does not fire.
+  assertEquals(s.crossTurnFigureWarning, false);
+});
+
+Deno.test(
+  "cross-turn warn: follow-up states figures with no tool this turn",
+  () => {
+    const s = assessGrounding([], "Last month your team wrote $10,000 in AP.", {
+      hasPriorTurns: true,
+    });
+    assertEquals(s.ranGroundingTools, false);
+    assertEquals(s.crossTurnFigureWarning, true);
+    // The same-turn check stays off (no unavailable sections were seen).
+    assertEquals(s.ungroundedNumericWarning, false);
+  },
+);
+
+Deno.test("no cross-turn warn: first turn states figures with no tool", () => {
+  const s = assessGrounding([], "Last month your team wrote $10,000 in AP.");
+  assertEquals(s.crossTurnFigureWarning, false);
+});
+
+Deno.test("no cross-turn warn: follow-up that DID run a grounding tool", () => {
+  const s = assessGrounding([briefing(true)], "Your team AP is $12,500.", {
+    hasPriorTurns: true,
+  });
+  assertEquals(s.ranGroundingTools, true);
+  assertEquals(s.crossTurnFigureWarning, false);
+});
+
+Deno.test("no cross-turn warn: follow-up with no figures", () => {
+  const s = assessGrounding([], "Here's a draft you can review.", {
+    hasPriorTurns: true,
+  });
+  assertEquals(s.crossTurnFigureWarning, false);
 });

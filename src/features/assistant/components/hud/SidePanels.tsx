@@ -5,8 +5,11 @@ import { useLeadHeatScoreCount } from "@/features/close-kpi";
 import { useRecruitingStats } from "@/hooks/recruiting";
 import { useCountUp } from "@/features/landing";
 import { useAuth } from "@/contexts/AuthContext";
+import { useImoProductionSummary } from "../../hooks/useImoProductionSummary";
 import { getDisplayName } from "@/types/user.types";
 import { HudPanel } from "./HudPanel";
+import { PanelModal } from "./PanelModal";
+import { AgentLeaderboardDetail } from "./AgentLeaderboardDetail";
 
 interface Props {
   accent: string;
@@ -104,6 +107,7 @@ function StatusPanel({ accent }: Props) {
 }
 
 function LeaderboardPanel({ accent }: Props) {
+  const [expanded, setExpanded] = useState(false);
   const team = useTeamLeaderboard({
     filters: { timePeriod: "mtd", scope: "team" },
   });
@@ -113,57 +117,71 @@ function LeaderboardPanel({ accent }: Props) {
     : 1;
 
   return (
-    <HudPanel
-      title="Team Leaderboard"
-      icon={Trophy}
-      accent={accent}
-      from="left"
-      delay={0.12}
-    >
-      {team.isLoading ? (
-        <Loading accent={accent} rows={3} />
-      ) : entries.length === 0 ? (
-        <Empty>No team production yet</Empty>
-      ) : (
-        <div className="space-y-1.5">
-          {entries.map((e, i) => (
-            <div key={e.leaderId} className="space-y-0.5">
-              <div className="flex items-baseline justify-between gap-2 text-[11px]">
-                <span className="truncate">
-                  <span style={{ color: accent }}>{i + 1}.</span>{" "}
-                  <span className="text-foreground">{e.leaderName}</span>
-                </span>
-                <span
-                  className="font-mono tabular-nums"
-                  style={{ color: accent }}
-                >
-                  {compactCurrency(e.apTotal)}
-                </span>
+    <>
+      <PanelModal
+        open={expanded}
+        onOpenChange={setExpanded}
+        title="Agent Leaderboard"
+        description="Individual agent rankings by AP and IP"
+        icon={Trophy}
+        accent={accent}
+      >
+        <AgentLeaderboardDetail accent={accent} />
+      </PanelModal>
+      <HudPanel
+        title="Team Leaderboard"
+        icon={Trophy}
+        accent={accent}
+        from="left"
+        delay={0.12}
+        onExpand={() => setExpanded(true)}
+      >
+        {team.isLoading ? (
+          <Loading accent={accent} rows={3} />
+        ) : entries.length === 0 ? (
+          <Empty>No team production yet</Empty>
+        ) : (
+          <div className="space-y-1.5">
+            {entries.map((e, i) => (
+              <div key={e.leaderId} className="space-y-0.5">
+                <div className="flex items-baseline justify-between gap-2 text-[11px]">
+                  <span className="truncate">
+                    <span style={{ color: accent }}>{i + 1}.</span>{" "}
+                    <span className="text-foreground">{e.leaderName}</span>
+                  </span>
+                  <span
+                    className="font-mono tabular-nums"
+                    style={{ color: accent }}
+                  >
+                    {compactCurrency(e.apTotal)}
+                  </span>
+                </div>
+                <div className="h-1 overflow-hidden rounded-full bg-white/5">
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${Math.max(6, (e.apTotal / maxAp) * 100)}%`,
+                      background: accent,
+                      boxShadow: `0 0 8px ${accent}99`,
+                    }}
+                  />
+                </div>
               </div>
-              <div className="h-1 overflow-hidden rounded-full bg-white/5">
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${Math.max(6, (e.apTotal / maxAp) * 100)}%`,
-                    background: accent,
-                    boxShadow: `0 0 8px ${accent}99`,
-                  }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </HudPanel>
+            ))}
+          </div>
+        )}
+      </HudPanel>
+    </>
   );
 }
 
 function ProductionPanel({ accent }: Props) {
-  const team = useTeamLeaderboard({
-    filters: { timePeriod: "mtd", scope: "team" },
-  });
+  // Org-wide, deduplicated MTD production — counts each policy once. The team
+  // leaderboard rollup double-counted members under nested leaders, inflating
+  // these totals; this dedicated RPC reports the true figures.
+  const production = useImoProductionSummary();
   const heat = useLeadHeatScoreCount();
-  const totals = team.data?.totals;
+  const totals = production.data;
   const { value: ap } = useCountUp(totals?.totalAp ?? 0, { duration: 1600 });
 
   return (
@@ -178,7 +196,7 @@ function ProductionPanel({ accent }: Props) {
         className="font-mono text-2xl font-semibold tabular-nums leading-none"
         style={{ color: accent, textShadow: `0 0 16px ${accent}55` }}
       >
-        {team.isLoading ? (
+        {production.isLoading ? (
           <span className="inline-block h-6 w-20 animate-pulse rounded bg-muted/40" />
         ) : (
           compactCurrency(ap)

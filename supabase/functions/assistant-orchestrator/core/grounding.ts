@@ -47,20 +47,45 @@ export interface GroundingSignal {
   anyDataAvailable: boolean;
   /** Figures present despite every section being unavailable — likely fabrication. */
   ungroundedNumericWarning: boolean;
+  /**
+   * Cross-turn (L2) backstop: a follow-up turn states figures but ran NO grounding
+   * tool. The numbers can therefore only come from earlier prose in the
+   * conversation — which is NOT re-grounded across turns (history replays prose
+   * only, not tool results) — or be fabricated. This is a weak heuristic: it also
+   * fires when the user themselves supplied figures (e.g. copy drafting), so it is
+   * an annotation to LOG, never a block.
+   */
+  crossTurnFigureWarning: boolean;
+}
+
+export interface GroundingContext {
+  /** This conversation already had prior user/assistant turns (i.e. a follow-up). */
+  hasPriorTurns?: boolean;
 }
 
 /**
  * Assess one turn: did grounding tools run, did any return data, and does the
- * final reply state figures it could not have grounded?
+ * final reply state figures it could not have grounded — either because every
+ * section was unavailable this turn, or because no tool ran at all on a follow-up
+ * (cross-turn recall of earlier, ungrounded prose)?
  */
 export function assessGrounding(
   toolOutputs: unknown[],
   finalText: string,
+  ctx: GroundingContext = {},
 ): GroundingSignal {
   const flags = toolOutputs.flatMap(collectAvailability);
   const ranGroundingTools = flags.length > 0;
   const anyDataAvailable = flags.some((f) => f === true);
+  const hasFigures = containsFigures(finalText);
   const ungroundedNumericWarning =
-    ranGroundingTools && !anyDataAvailable && containsFigures(finalText);
-  return { ranGroundingTools, anyDataAvailable, ungroundedNumericWarning };
+    ranGroundingTools && !anyDataAvailable && hasFigures;
+  const crossTurnFigureWarning =
+    !!ctx.hasPriorTurns && !ranGroundingTools && hasFigures;
+  return {
+    ranGroundingTools,
+    anyDataAvailable,
+    ungroundedNumericWarning,
+    crossTurnFigureWarning,
+  };
 }
