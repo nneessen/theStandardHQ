@@ -10,6 +10,8 @@ import { getDisplayName } from "@/types/user.types";
 import { HudPanel } from "./HudPanel";
 import { PanelModal } from "./PanelModal";
 import { AgentLeaderboardDetail } from "./AgentLeaderboardDetail";
+import { ProductionDetail } from "./ProductionDetail";
+import { RecruitingDetail } from "./RecruitingDetail";
 
 interface Props {
   accent: string;
@@ -176,6 +178,7 @@ function LeaderboardPanel({ accent }: Props) {
 }
 
 function ProductionPanel({ accent }: Props) {
+  const [expanded, setExpanded] = useState(false);
   // Org-wide, deduplicated MTD production — counts each policy once. The team
   // leaderboard rollup double-counted members under nested leaders, inflating
   // these totals; this dedicated RPC reports the true figures.
@@ -185,50 +188,64 @@ function ProductionPanel({ accent }: Props) {
   const { value: ap } = useCountUp(totals?.totalAp ?? 0, { duration: 1600 });
 
   return (
-    <HudPanel
-      title="Production · MTD"
-      icon={BarChart3}
-      accent={accent}
-      from="right"
-      delay={0.05}
-    >
-      <div
-        className="font-mono text-2xl font-semibold tabular-nums leading-none"
-        style={{ color: accent, textShadow: `0 0 16px ${accent}55` }}
+    <>
+      <PanelModal
+        open={expanded}
+        onOpenChange={setExpanded}
+        title="Production"
+        description="Organization-wide production by period"
+        icon={BarChart3}
+        accent={accent}
       >
-        {production.isLoading ? (
-          <span className="inline-block h-6 w-20 animate-pulse rounded bg-muted/40" />
-        ) : (
-          compactCurrency(ap)
-        )}
-      </div>
-      <div className="mt-0.5 text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
-        Annualized premium
-      </div>
-      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
-        <Stat
-          accent={accent}
-          label="Policies"
-          value={totals?.totalPolicies ?? 0}
-        />
-        <Stat
-          accent={accent}
-          label="IP"
-          value={totals?.totalIp ?? 0}
-          format={compactCurrency}
-        />
-        <Stat
-          accent={accent}
-          label="Prospects"
-          value={totals?.totalProspects ?? 0}
-        />
-        <Stat accent={accent} label="Leads scored" value={heat.data ?? 0} />
-      </div>
-    </HudPanel>
+        <ProductionDetail accent={accent} />
+      </PanelModal>
+      <HudPanel
+        title="Production · MTD"
+        icon={BarChart3}
+        accent={accent}
+        from="right"
+        delay={0.05}
+        onExpand={() => setExpanded(true)}
+      >
+        <div
+          className="font-mono text-2xl font-semibold tabular-nums leading-none"
+          style={{ color: accent, textShadow: `0 0 16px ${accent}55` }}
+        >
+          {production.isLoading ? (
+            <span className="inline-block h-6 w-20 animate-pulse rounded bg-muted/40" />
+          ) : (
+            compactCurrency(ap)
+          )}
+        </div>
+        <div className="mt-0.5 text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
+          Annualized premium
+        </div>
+        <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
+          <Stat
+            accent={accent}
+            label="Policies"
+            value={totals?.totalPolicies ?? 0}
+          />
+          <Stat
+            accent={accent}
+            label="IP"
+            value={totals?.totalIp ?? 0}
+            format={compactCurrency}
+          />
+          <Stat
+            accent={accent}
+            label="Prospects"
+            value={totals?.totalProspects ?? 0}
+          />
+          <Stat accent={accent} label="Leads scored" value={heat.data ?? 0} />
+        </div>
+      </HudPanel>
+    </>
   );
 }
 
 function RecruitingPanel({ accent }: Props) {
+  const [expanded, setExpanded] = useState(false);
   const recruiting = useRecruitingStats();
   const d = recruiting.data;
   const phases = Object.entries(d?.byPhase ?? {})
@@ -237,66 +254,79 @@ function RecruitingPanel({ accent }: Props) {
   const maxPhase = phases.length ? Math.max(...phases.map((p) => p[1]), 1) : 1;
 
   return (
-    <HudPanel
-      title="Recruiting"
-      icon={UserPlus}
-      accent={accent}
-      from="right"
-      delay={0.12}
-    >
-      {recruiting.isLoading ? (
-        <Loading accent={accent} rows={3} />
-      ) : (
-        <>
-          <div className="flex items-end justify-between">
-            <div>
-              <div
-                className="font-mono text-2xl font-semibold tabular-nums leading-none"
-                style={{ color: accent, textShadow: `0 0 16px ${accent}55` }}
-              >
-                {d?.active ?? 0}
-              </div>
-              <div className="mt-0.5 text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
-                Active in pipeline
-              </div>
-            </div>
-            <div className="text-right text-[10px] text-muted-foreground">
+    <>
+      <PanelModal
+        open={expanded}
+        onOpenChange={setExpanded}
+        title="Recruiting Pipeline"
+        description="Recruiting pipeline breakdown by phase"
+        icon={UserPlus}
+        accent={accent}
+      >
+        <RecruitingDetail accent={accent} />
+      </PanelModal>
+      <HudPanel
+        title="Recruiting"
+        icon={UserPlus}
+        accent={accent}
+        from="right"
+        delay={0.12}
+        onExpand={() => setExpanded(true)}
+      >
+        {recruiting.isLoading ? (
+          <Loading accent={accent} rows={3} />
+        ) : (
+          <>
+            <div className="flex items-end justify-between">
               <div>
-                <span className="text-foreground">{d?.total ?? 0}</span> total
-              </div>
-              <div className="flex items-center gap-1">
-                <Flame className="h-2.5 w-2.5" style={{ color: accent }} />
-                {d?.completed ?? 0} done
-              </div>
-            </div>
-          </div>
-          {phases.length > 0 && (
-            <div className="mt-2 space-y-1">
-              {phases.map(([name, count]) => (
-                <div key={name} className="space-y-0.5">
-                  <div className="flex items-center justify-between text-[10px]">
-                    <span className="truncate capitalize text-muted-foreground">
-                      {name.replace(/[_-]/g, " ")}
-                    </span>
-                    <span style={{ color: accent }}>{count}</span>
-                  </div>
-                  <div className="h-1 overflow-hidden rounded-full bg-white/5">
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${Math.max(6, (count / maxPhase) * 100)}%`,
-                        background: accent,
-                        boxShadow: `0 0 8px ${accent}99`,
-                      }}
-                    />
-                  </div>
+                <div
+                  className="font-mono text-2xl font-semibold tabular-nums leading-none"
+                  style={{ color: accent, textShadow: `0 0 16px ${accent}55` }}
+                >
+                  {d?.active ?? 0}
                 </div>
-              ))}
+                <div className="mt-0.5 text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
+                  Active in pipeline
+                </div>
+              </div>
+              <div className="text-right text-[10px] text-muted-foreground">
+                <div>
+                  <span className="text-foreground">{d?.total ?? 0}</span> total
+                </div>
+                <div className="flex items-center gap-1">
+                  <Flame className="h-2.5 w-2.5" style={{ color: accent }} />
+                  {d?.completed ?? 0} done
+                </div>
+              </div>
             </div>
-          )}
-        </>
-      )}
-    </HudPanel>
+            {phases.length > 0 && (
+              <div className="mt-2 space-y-1">
+                {phases.map(([name, count]) => (
+                  <div key={name} className="space-y-0.5">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="truncate capitalize text-muted-foreground">
+                        {name.replace(/[_-]/g, " ")}
+                      </span>
+                      <span style={{ color: accent }}>{count}</span>
+                    </div>
+                    <div className="h-1 overflow-hidden rounded-full bg-white/5">
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${Math.max(6, (count / maxPhase) * 100)}%`,
+                          background: accent,
+                          boxShadow: `0 0 8px ${accent}99`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </HudPanel>
+    </>
   );
 }
 
