@@ -10,6 +10,52 @@
 import { isCloseApiError } from "../../_shared/close/client.ts";
 import type { AssistantToolContext, CloseReadClient } from "./types.ts";
 
+/**
+ * Resolve + validate a Close lead at DRAFT time for a write action: confirms the id
+ * is a real lead in the user's own Close org and returns its display name, so the
+ * label the human approves matches the id that will actually be written. Returns a
+ * clear failure (in the {ok:false} shape the draft tools use) on not-connected /
+ * bad id / auth error.
+ */
+export async function resolveLeadForDraft(
+  ctx: AssistantToolContext,
+  leadId: string,
+): Promise<{ ok: true; leadName: string } | { ok: false; error: string }> {
+  let client: CloseReadClient | null;
+  try {
+    client = await ctx.close.getClient();
+  } catch {
+    return { ok: false, error: "Couldn't reach Close." };
+  }
+  if (!client) {
+    return {
+      ok: false,
+      error: "Close isn't connected for your account, so I can't write to it.",
+    };
+  }
+  try {
+    const lead = await client.get<Record<string, unknown>>(
+      `/lead/${encodeURIComponent(leadId)}/?_fields=id,display_name`,
+    );
+    const name =
+      typeof lead?.display_name === "string" ? lead.display_name : "";
+    return { ok: true, leadName: name };
+  } catch (e) {
+    if (isCloseApiError(e)) {
+      if (e.status === 404) {
+        return { ok: false, error: `No Close lead found for id "${leadId}".` };
+      }
+      if (e.code === "CLOSE_AUTH_ERROR") {
+        return {
+          ok: false,
+          error: "Your Close API key looks invalid — reconnect Close.",
+        };
+      }
+    }
+    return { ok: false, error: "Couldn't look up that lead in Close." };
+  }
+}
+
 export interface CloseSection {
   available: boolean;
   reason?: string;

@@ -130,13 +130,25 @@ export async function closePost<T = unknown>(
   return (await res.json()) as T;
 }
 
+export async function closeDelete(apiKey: string, path: string): Promise<void> {
+  await closeApiFetch(`${CLOSE_API_BASE}${path}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: authHeader(apiKey),
+      Accept: "application/json",
+    },
+  });
+}
+
 /**
  * A read-only Close client bound to a single API key. The key is captured in the
  * closure and never re-exposed — callers (assistant tools) only ever see `.get()`,
  * which makes "never log or leak the key" structural rather than a discipline.
  *
- * Writes are intentionally NOT bound here for the read-only v1; the write phase will
- * add a `.post()` behind the draft→approve→execute gate, not in the model's tools.
+ * Writes are intentionally NOT bound here: the orchestrator's model-facing tools are
+ * read-only. Writes happen only in assistant-action-execute (a trusted backend that
+ * already handles raw secrets), behind the draft→approve→execute gate, by calling
+ * closePost directly with a key from getUserCloseKey() — never through this client.
  */
 export interface BoundCloseReadClient {
   get<T = unknown>(path: string): Promise<T>;

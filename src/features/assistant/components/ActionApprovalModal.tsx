@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { Loader2, Mail, MessageSquare, ShieldCheck } from "lucide-react";
+import {
+  Loader2,
+  Mail,
+  MessageSquare,
+  ShieldCheck,
+  StickyNote,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,9 +54,47 @@ export function ActionApprovalModal({
 
   if (!action) return null;
   const isEmail = action.channel === "email";
+  const isClose =
+    action.channel === "close_note" || action.channel === "close_task";
+  const isNote = action.channel === "close_note";
+  const leadName = action.draft_payload?.leadName?.trim() || "this lead";
   const busy = approve.isPending || cancel.isPending;
 
+  // Close write actions (note/task): no recipient — they act on the lead in the
+  // user's own Close account. Preserve the frozen leadId; only the text is editable.
+  const handleApproveClose = async () => {
+    if (!body.trim()) {
+      toast.error(`The ${isNote ? "note" : "task"} is empty.`);
+      return;
+    }
+    try {
+      const res = await approve.mutateAsync({
+        id: action.id,
+        payload: {
+          leadId: action.draft_payload?.leadId,
+          leadName: action.draft_payload?.leadName,
+          body,
+          ...(action.draft_payload?.dueDate
+            ? { dueDate: action.draft_payload.dueDate }
+            : {}),
+        },
+      });
+      if (res.ok || res.status === "executed") {
+        toast.success(
+          isNote ? "Note added to Close." : "Task created in Close.",
+        );
+        onApproved?.();
+        onOpenChange(false);
+      } else {
+        toast.error(res.error ?? "Close rejected the write.");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "The write failed.");
+    }
+  };
+
   const handleApprove = async () => {
+    if (isClose) return handleApproveClose();
     if (!recipient.trim()) {
       toast.error("Add a recipient before sending.");
       return;
@@ -96,30 +140,45 @@ export function ActionApprovalModal({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {isEmail ? (
+            {isClose ? (
+              <StickyNote className="h-4 w-4" />
+            ) : isEmail ? (
               <Mail className="h-4 w-4" />
             ) : (
               <MessageSquare className="h-4 w-4" />
             )}
-            Review {isEmail ? "email" : "SMS"} before sending
+            {isClose
+              ? `Review ${isNote ? "note" : "task"} before adding to Close`
+              : `Review ${isEmail ? "email" : "SMS"} before sending`}
           </DialogTitle>
           <DialogDescription>
-            Nothing is sent until you approve. Edit anything below.
+            {isClose
+              ? "Nothing is written to Close until you approve. Edit the text below."
+              : "Nothing is sent until you approve. Edit anything below."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
-          <div className="space-y-1.5">
-            <Label htmlFor="ar-recipient">
-              {isEmail ? "To (email)" : "To (phone)"}
-            </Label>
-            <Input
-              id="ar-recipient"
-              value={recipient}
-              onChange={(e) => setRecipient(e.target.value)}
-              placeholder={isEmail ? "name@example.com" : "+13035551234"}
-            />
-          </div>
+          {isClose ? (
+            <div className="space-y-1.5">
+              <Label>Lead</Label>
+              <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm">
+                {leadName}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <Label htmlFor="ar-recipient">
+                {isEmail ? "To (email)" : "To (phone)"}
+              </Label>
+              <Input
+                id="ar-recipient"
+                value={recipient}
+                onChange={(e) => setRecipient(e.target.value)}
+                placeholder={isEmail ? "name@example.com" : "+13035551234"}
+              />
+            </div>
+          )}
           {isEmail && (
             <div className="space-y-1.5">
               <Label htmlFor="ar-subject">Subject</Label>
@@ -130,13 +189,23 @@ export function ActionApprovalModal({
               />
             </div>
           )}
+          {isClose && !isNote && action.draft_payload?.dueDate && (
+            <div className="space-y-1.5">
+              <Label>Due</Label>
+              <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-sm">
+                {action.draft_payload.dueDate}
+              </div>
+            </div>
+          )}
           <div className="space-y-1.5">
-            <Label htmlFor="ar-body">Message</Label>
+            <Label htmlFor="ar-body">
+              {isClose ? (isNote ? "Note" : "Task") : "Message"}
+            </Label>
             <Textarea
               id="ar-body"
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              rows={isEmail ? 8 : 4}
+              rows={isEmail ? 8 : isClose ? 6 : 4}
             />
           </div>
         </div>
@@ -151,7 +220,7 @@ export function ActionApprovalModal({
             ) : (
               <ShieldCheck className="mr-2 h-4 w-4" />
             )}
-            Approve &amp; send
+            {isClose ? "Approve & add to Close" : "Approve & send"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -13,6 +13,8 @@ import { canExecute } from "../assistant-orchestrator/core/state-machine.ts";
 import { canAccessAssistant } from "../assistant-orchestrator/core/access.ts";
 import { redact } from "../assistant-orchestrator/core/redaction.ts";
 import type { ActionStatus } from "../assistant-orchestrator/core/types.ts";
+import { getUserCloseKey } from "../_shared/close/key.ts";
+import { closePost, isCloseApiError } from "../_shared/close/client.ts";
 
 // Domain-valid sender; replies route to the acting user.
 const SYSTEM_FROM = "The Standard HQ <noreply@updates.thestandardhq.com>";
@@ -126,6 +128,77 @@ serve(async (req) => {
         .eq("id", actionRequestId);
       return json({ ok: false, status: "failed", error: message }, 200);
     };
+
+    // ── Close write actions (note/task) ────────────────────────────────────
+    // These act with the caller's OWN Close key against a lead in their OWN Close
+    // org, so the email/phone recipient + allowed-set check does NOT apply (the
+    // boundary is the per-user key, and the human approved this exact lead+text,
+    // which the content-freeze trigger has made immutable since approval). Branch
+    // BEFORE the recipient guard below — Close rows have no recipient.
+    if (row.channel === "close_note" || row.channel === "close_task") {
+      const leadId =
+        typeof payload.leadId === "string" ? payload.leadId.trim() : "";
+      const text = typeof payload.body === "string" ? payload.body.trim() : "";
+      if (!leadId) return await fail("The Close draft had no lead id.");
+      if (!text) return await fail("The Close draft had no text.");
+
+      // Fetch the key for the JWT-verified caller only (never a payload field).
+      const apiKey = await getUserCloseKey(user.id);
+      if (!apiKey) return await fail("Close isn't connected for your account.");
+
+      try {
+        let created: { id?: string };
+        if (row.channel === "close_note") {
+          created = await closePost<{ id?: string }>(
+            apiKey,
+            "/activity/note/",
+            {
+              lead_id: leadId,
+              note: text,
+            },
+          );
+        } else {
+          const taskBody: Record<string, unknown> = {
+            _type: "lead",
+            lead_id: leadId,
+            text,
+          };
+          const dueDate =
+            typeof payload.dueDate === "string" ? payload.dueDate.trim() : "";
+          if (dueDate) taskBody.date = dueDate;
+          created = await closePost<{ id?: string }>(
+            apiKey,
+            "/task/",
+            taskBody,
+          );
+        }
+
+        await db
+          .from("assistant_action_requests")
+          .update({
+            status: "executed",
+            executed_at: new Date().toISOString(),
+            // Only the Close object id — never the note/task text (may carry PII).
+            result_redacted: { closeId: created?.id ?? null },
+          })
+          .eq("id", actionRequestId);
+
+        return json({
+          ok: true,
+          status: "executed",
+          channel: row.channel,
+          closeId: created?.id ?? null,
+        });
+      } catch (e) {
+        if (isCloseApiError(e)) {
+          if (e.code === "CLOSE_AUTH_ERROR")
+            return await fail("Your Close API key is invalid or expired.");
+          if (e.status === 404)
+            return await fail("That Close lead no longer exists.");
+        }
+        return await fail("Close rejected the write.");
+      }
+    }
 
     if (!recipient)
       return await fail("No recipient was provided for this action.");

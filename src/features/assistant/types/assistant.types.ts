@@ -2,7 +2,7 @@
 // the assistant_action_requests row shape (subset the UI needs).
 
 export type AssistantRole = "user" | "assistant" | "tool" | "system";
-export type ActionChannel = "email" | "sms";
+export type ActionChannel = "email" | "sms" | "close_note" | "close_task";
 export type ActionStatus =
   | "draft"
   | "pending_approval"
@@ -45,6 +45,10 @@ export interface TranscriptMessage {
 export interface ActionDraftPayload {
   subject?: string;
   body?: string;
+  /** Close write actions (close_note / close_task) only. */
+  leadId?: string;
+  leadName?: string;
+  dueDate?: string;
 }
 
 /** Subset of an assistant_action_requests row used by the approval UI. */

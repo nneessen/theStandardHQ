@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Inbox, Mail, MessageSquare } from "lucide-react";
+import { Inbox, Mail, MessageSquare, StickyNote } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePendingActionRequests } from "../hooks/useAssistantActions";
@@ -32,6 +32,26 @@ export function PendingActionsPanel({ focusActionId, onApproved }: Props) {
   const previewOf = (a: ActionRequest) =>
     a.draft_payload?.subject || a.draft_payload?.body || "(draft)";
 
+  const isCloseChannel = (a: ActionRequest) =>
+    a.channel === "close_note" || a.channel === "close_task";
+
+  // Human-readable channel label + the "to <who>" target line.
+  const labelOf = (a: ActionRequest) => {
+    if (a.channel === "close_note") return "Close note";
+    if (a.channel === "close_task") return "Close task";
+    if (a.channel === "email") return "Email";
+    if (a.channel === "sms") return "SMS";
+    return a.channel;
+  };
+  const targetOf = (a: ActionRequest) =>
+    isCloseChannel(a)
+      ? a.draft_payload?.leadName
+        ? ` to ${a.draft_payload.leadName}`
+        : ""
+      : a.recipient
+        ? ` to ${a.recipient}`
+        : "";
+
   return (
     <Card className="border-amber-500/30 bg-amber-500/[0.03]">
       <CardHeader className="pb-2">
@@ -52,14 +72,16 @@ export function PendingActionsPanel({ focusActionId, onApproved }: Props) {
             }}
             className="flex w-full items-center gap-2 rounded-md border border-border bg-background px-2.5 py-2 text-left text-sm transition hover:bg-muted/60"
           >
-            {a.channel === "email" ? (
+            {isCloseChannel(a) ? (
+              <StickyNote className="h-4 w-4 shrink-0 text-muted-foreground" />
+            ) : a.channel === "email" ? (
               <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
             ) : (
               <MessageSquare className="h-4 w-4 shrink-0 text-muted-foreground" />
             )}
             <span className="min-w-0 flex-1 truncate">
-              <span className="font-medium capitalize">{a.channel}</span>
-              {a.recipient ? ` to ${a.recipient}` : ""} — {previewOf(a)}
+              <span className="font-medium">{labelOf(a)}</span>
+              {targetOf(a)} — {previewOf(a)}
             </span>
             <span className="shrink-0 text-xs font-medium text-primary">
               Review

@@ -69,7 +69,9 @@ This is Close-live data, distinct from the weekly lead-HEAT scoring the Lead Pri
 
 If a tool returns available:false with reason "close_not_connected", tell the user their Close account isn't connected to the assistant yet and stop — do not guess lead names, activity, or numbers. For "close_auth_failed" say their Close API key looks expired/invalid and they should reconnect it.
 
-Lead with the answer (the lead's state, or the 1-3 opportunities that most need attention — biggest/most-stalled), give the why in a phrase, then one concrete next step. If the user wants to reach out, DRAFT an email or SMS for their approval — never claim you sent it.`;
+Lead with the answer (the lead's state, or the 1-3 opportunities that most need attention — biggest/most-stalled), give the why in a phrase, then one concrete next step. If the user wants to reach out, DRAFT an email or SMS for their approval — never claim you sent it.
+
+You can also WRITE BACK to Close, but only as a draft the user approves: use draftCloseNote to log a note on a lead, or draftCloseTask to create a follow-up task (optional due date YYYY-MM-DD). Both need the Close lead id — look the lead up first (searchCloseLeads / getCloseLeadSnapshot) if you don't have it. These create a pending approval; the note/task is written to Close only after the user approves in the UI. NEVER say you added a note or created a task — say it's drafted and waiting for their approval.`;
 
 const SMS_EMAIL_COPY_PROMPT = `Your role: SMS / Email Copy. You write natural, compliant outreach — mortgage protection, final expense, recruiting, and follow-ups — in the user's voice.
 
@@ -183,6 +185,8 @@ export const AGENTS: Record<AgentKey, AgentConfig> = {
       "getCloseLeadSnapshot",
       "getCloseLeadActivity",
       "getCloseOpportunities",
+      "draftCloseNote",
+      "draftCloseTask",
       ...DRAFT_TOOLS,
     ],
     allowedCategories: ["close", "messaging"],

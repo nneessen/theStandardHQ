@@ -8,6 +8,8 @@ import { searchCloseLeads } from "../searchCloseLeads.ts";
 import { getCloseLeadSnapshot } from "../getCloseLeadSnapshot.ts";
 import { getCloseLeadActivity } from "../getCloseLeadActivity.ts";
 import { getCloseOpportunities } from "../getCloseOpportunities.ts";
+import { draftCloseNote } from "../draftCloseNote.ts";
+import { draftCloseTask } from "../draftCloseTask.ts";
 
 // A db that fails loudly if a Close tool ever touches Postgres (they must not).
 const noDb: ToolDbClient = {
@@ -66,6 +68,163 @@ function closeAuthError(): CloseApiErrorLike {
   e.status = 401;
   return e;
 }
+
+function closeNotFound(): CloseApiErrorLike {
+  const e = new Error("Close API 404") as CloseApiErrorLike;
+  e.code = "CLOSE_ERROR";
+  e.status = 404;
+  return e;
+}
+
+/**
+ * Draft-tool fixture: a working Close read client (for lead validation) AND a db
+ * that records inserts (the draft tools write a pending_approval row). Pass
+ * client:null to simulate not-connected.
+ */
+function makeDraftCtx(opts: {
+  client?: CloseReadClient | null;
+  routes?: Array<{ match: string; body: unknown }>;
+}) {
+  const inserts: Array<{ table: string; values: Record<string, unknown> }> = [];
+  const db: ToolDbClient = {
+    rpc() {
+      return Promise.resolve({ data: null, error: null });
+    },
+    from(table) {
+      return {
+        insert(values) {
+          inserts.push({ table, values });
+          return {
+            select() {
+              return {
+                single() {
+                  return Promise.resolve({
+                    data: { id: "act_close_1" },
+                    error: null,
+                  });
+                },
+              };
+            },
+          };
+        },
+      };
+    },
+  };
+  const client: CloseReadClient | null =
+    opts.client !== undefined
+      ? opts.client
+      : {
+          get<T>(path: string): Promise<T> {
+            const hit = (opts.routes ?? []).find((r) => path.includes(r.match));
+            if (!hit) return Promise.resolve({ data: [] } as unknown as T);
+            if (hit.body instanceof Error) return Promise.reject(hit.body);
+            return Promise.resolve(hit.body as T);
+          },
+        };
+  const ctx: AssistantToolContext = {
+    db,
+    userId: "user_1",
+    imoId: "imo_1",
+    conversationId: "conv_1",
+    firstName: "Nick",
+    close: { getClient: () => Promise.resolve(client) },
+  };
+  return { ctx, inserts };
+}
+
+const LEAD_OK = {
+  match: "/lead/lead_1/",
+  body: { id: "lead_1", display_name: "Jane Doe" },
+};
+
+Deno.test(
+  "draftCloseNote creates a pending close_note row, no send",
+  async () => {
+    const { ctx, inserts } = makeDraftCtx({ routes: [LEAD_OK] });
+    const res = (await draftCloseNote.run(
+      { leadId: "lead_1", note: "Called, left VM." },
+      ctx,
+    )) as { ok: boolean; actionRequestId: string; channel: string };
+    assertEquals(res.ok, true);
+    assertEquals(res.channel, "close_note");
+    assertEquals(inserts.length, 1);
+    assertEquals(inserts[0].values.channel, "close_note");
+    assertEquals(inserts[0].values.status, "pending_approval");
+    assertEquals(inserts[0].values.recipient, null);
+    const payload = inserts[0].values.draft_payload as Record<string, unknown>;
+    assertEquals(payload.leadId, "lead_1");
+    assertEquals(payload.leadName, "Jane Doe"); // resolved at draft time
+    assertEquals(payload.body, "Called, left VM.");
+  },
+);
+
+Deno.test("draftCloseNote: unknown lead id => ok:false, no row", async () => {
+  const { ctx, inserts } = makeDraftCtx({
+    routes: [{ match: "/lead/lead_1/", body: closeNotFound() }],
+  });
+  const res = (await draftCloseNote.run(
+    { leadId: "lead_1", note: "x" },
+    ctx,
+  )) as { ok: boolean; error: string };
+  assertEquals(res.ok, false);
+  assertEquals(inserts.length, 0);
+});
+
+Deno.test("draftCloseNote: not connected => ok:false, no row", async () => {
+  const { ctx, inserts } = makeDraftCtx({ client: null });
+  const res = (await draftCloseNote.run(
+    { leadId: "lead_1", note: "x" },
+    ctx,
+  )) as { ok: boolean; error: string };
+  assertEquals(res.ok, false);
+  assertEquals(inserts.length, 0);
+});
+
+Deno.test("draftCloseTask keeps a valid dueDate", async () => {
+  const ok = makeDraftCtx({ routes: [LEAD_OK] });
+  await draftCloseTask.run(
+    { leadId: "lead_1", text: "Follow up", dueDate: "2026-06-01" },
+    ok.ctx,
+  );
+  const okPayload = ok.inserts[0].values.draft_payload as Record<
+    string,
+    unknown
+  >;
+  assertEquals(ok.inserts[0].values.channel, "close_task");
+  assertEquals(okPayload.dueDate, "2026-06-01");
+  assertEquals(okPayload.body, "Follow up");
+});
+
+Deno.test("draftCloseTask: no dueDate is fine (task without one)", async () => {
+  const { ctx, inserts } = makeDraftCtx({ routes: [LEAD_OK] });
+  const res = (await draftCloseTask.run(
+    { leadId: "lead_1", text: "Follow up" },
+    ctx,
+  )) as { ok: boolean };
+  assertEquals(res.ok, true);
+  const payload = inserts[0].values.draft_payload as Record<string, unknown>;
+  assertEquals("dueDate" in payload, false);
+});
+
+Deno.test(
+  "draftCloseTask rejects an invalid dueDate (no row created)",
+  async () => {
+    for (const bad of [
+      "next tuesday",
+      "2026-13-45",
+      "2026-02-31",
+      "2026-6-3",
+    ]) {
+      const { ctx, inserts } = makeDraftCtx({ routes: [LEAD_OK] });
+      const res = (await draftCloseTask.run(
+        { leadId: "lead_1", text: "Follow up", dueDate: bad },
+        ctx,
+      )) as { ok: boolean };
+      assertEquals(res.ok, false, `"${bad}" should be rejected`);
+      assertEquals(inserts.length, 0, `"${bad}" must not create a row`);
+    }
+  },
+);
 
 Deno.test(
   "searchCloseLeads returns lean matches and never the DB",

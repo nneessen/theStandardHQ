@@ -105,6 +105,26 @@ export const TOOL_METADATA: Record<string, ToolMetadata> = {
     requiresApproval: false,
     implemented: true,
   },
+  draftCloseNote: {
+    name: "draftCloseNote",
+    description:
+      "Draft a note to add to a Close lead's timeline. Requires the Close lead id (look the lead up first). This does NOT write to Close: it creates a pending approval the human must approve in the UI before assistant-action-execute adds the note with the user's own Close key. Do NOT claim the note was added.",
+    category: "close",
+    riskLevel: "draft",
+    requiredPermissions: [],
+    requiresApproval: false,
+    implemented: true,
+  },
+  draftCloseTask: {
+    name: "draftCloseTask",
+    description:
+      "Draft a task on a Close lead (optional due date YYYY-MM-DD). Requires the Close lead id (look the lead up first). This does NOT write to Close: it creates a pending approval the human must approve before assistant-action-execute creates the task with the user's own Close key. Do NOT claim the task was created.",
+    category: "close",
+    riskLevel: "draft",
+    requiredPermissions: [],
+    requiresApproval: false,
+    implemented: true,
+  },
   draftEmailMessage: {
     name: "draftEmailMessage",
     description:

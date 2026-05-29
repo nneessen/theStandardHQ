@@ -37,6 +37,21 @@ const emailAction: ActionRequest = {
   error: null,
 };
 
+const closeNoteAction: ActionRequest = {
+  id: "c1",
+  channel: "close_note",
+  tool_name: "draftCloseNote",
+  draft_payload: {
+    leadId: "lead_1",
+    leadName: "Jane Doe",
+    body: "Called, left VM.",
+  },
+  recipient: null,
+  status: "pending_approval",
+  created_at: null,
+  error: null,
+};
+
 describe("ActionApprovalModal", () => {
   beforeEach(() => vi.clearAllMocks());
 
@@ -70,6 +85,35 @@ describe("ActionApprovalModal", () => {
       id: "a1",
       recipient: "lead@example.com",
       payload: { subject: "Subj", body: "Body text" },
+    });
+  });
+
+  it("approves a Close note WITHOUT a recipient and preserves leadId", async () => {
+    approveMutate.mockResolvedValue({ ok: true, status: "executed" });
+    render(
+      <ActionApprovalModal
+        action={closeNoteAction}
+        open
+        onOpenChange={() => {}}
+      />,
+    );
+
+    // Shows the lead, the note text, and no recipient input.
+    expect(screen.getByDisplayValue("Called, left VM.")).toBeTruthy();
+    expect(screen.getByText("Jane Doe")).toBeTruthy();
+    expect(screen.queryByLabelText(/to \(/i)).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: /approve/i }));
+
+    await waitFor(() => expect(approveMutate).toHaveBeenCalledTimes(1));
+    // No recipient, and the frozen leadId/leadName survive into the payload.
+    expect(approveMutate).toHaveBeenCalledWith({
+      id: "c1",
+      payload: {
+        leadId: "lead_1",
+        leadName: "Jane Doe",
+        body: "Called, left VM.",
+      },
     });
   });
 });

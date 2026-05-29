@@ -28,7 +28,8 @@ export function usePendingActionRequests() {
 
 interface ApproveVars {
   id: string;
-  recipient: string;
+  /** Email/SMS only — Close write actions (note/task) have no recipient. */
+  recipient?: string;
   payload: ActionDraftPayload;
 }
 
@@ -48,15 +49,20 @@ export function useApproveActionRequest() {
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Only email/SMS set a recipient; Close write actions leave it null. Setting
+      // draft_payload here is allowed because the row is still pending_approval (the
+      // content-freeze applies only after it leaves that state).
+      const update: Record<string, unknown> = {
+        draft_payload: vars.payload,
+        status: "approved",
+        approved_by: user.id,
+        approved_at: new Date().toISOString(),
+      };
+      if (typeof vars.recipient === "string") update.recipient = vars.recipient;
+
       const { error: upErr } = await supabase
         .from("assistant_action_requests")
-        .update({
-          draft_payload: vars.payload,
-          recipient: vars.recipient,
-          status: "approved",
-          approved_by: user.id,
-          approved_at: new Date().toISOString(),
-        })
+        .update(update)
         .eq("id", vars.id)
         .eq("status", "pending_approval");
       if (upErr) throw upErr;

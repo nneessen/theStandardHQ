@@ -38,7 +38,7 @@ export type ActionStatus =
   | "cancelled"
   | "expired";
 
-export type ActionChannel = "email" | "sms";
+export type ActionChannel = "email" | "sms" | "close_note" | "close_task";
 
 export type AgentKey =
   | "executive-briefing"
