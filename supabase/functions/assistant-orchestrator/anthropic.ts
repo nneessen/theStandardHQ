@@ -3,7 +3,11 @@
 // use in this repo (close-lead-heat-score / close-ai-builder) — curl-test before
 // any model change (see memory: feedback_verify_anthropic_model_ids).
 
-import Anthropic from "https://esm.sh/@anthropic-ai/sdk@0.24.0";
+// Bumped from 0.24.0 → 0.39.0: cache_control (prompt caching) support landed in
+// 0.27; the surface this file uses (new Anthropic, messages.create, resp.usage /
+// content / stop_reason) is stable across the range. Other edge fns keep their own
+// 0.24.0 pin — esm.sh URLs are version-specific, so they coexist in the shared lock.
+import Anthropic from "https://esm.sh/@anthropic-ai/sdk@0.39.0";
 
 export const ORCHESTRATOR_MODEL = "claude-sonnet-4-6";
 

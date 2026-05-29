@@ -170,18 +170,44 @@ serve(async (req) => {
       if (Date.now() - startedAt > WALL_TIME_MS) break;
       if (tokensUsed > TOKEN_BUDGET) break;
 
+      // Prompt caching: cache_control breakpoints on the static prefix (tools +
+      // system) so iterations 2+ of this loop — which re-send the identical
+      // tools/system prefix with a longer messages tail — read it from cache
+      // (~0.1x) instead of full price. Render order is tools -> system -> messages,
+      // so the marker on the LAST tool covers the whole tools block and the marker
+      // on the system block covers tools+system. Hits are automatic on byte-identical
+      // prefixes; sub-minimum prefixes (Sonnet 4.6 = 2048 tok) simply won't cache, no error.
       // deno-lint-ignore no-explicit-any
       const params: any = {
         model: ORCHESTRATOR_MODEL,
         max_tokens: MAX_TOKENS_PER_TURN,
-        system: systemPrompt,
+        system: [
+          {
+            type: "text",
+            text: systemPrompt,
+            cache_control: { type: "ephemeral" },
+          },
+        ],
         messages,
       };
-      if (tools.length > 0) params.tools = tools;
+      if (tools.length > 0) {
+        params.tools = tools.map((t, idx) =>
+          idx === tools.length - 1
+            ? { ...t, cache_control: { type: "ephemeral" } }
+            : t,
+        );
+      }
 
       const resp = await anthropic.messages.create(params);
+      // Count cache_creation + cache_read too: after caching, usage.input_tokens is
+      // the UNCACHED remainder only, so summing just input+output would undercount
+      // and let the TOKEN_BUDGET guard fire later than before. Including the cache
+      // fields keeps the budget guard's behavior at parity with the pre-cache loop.
       tokensUsed +=
-        (resp.usage?.input_tokens ?? 0) + (resp.usage?.output_tokens ?? 0);
+        (resp.usage?.input_tokens ?? 0) +
+        (resp.usage?.cache_creation_input_tokens ?? 0) +
+        (resp.usage?.cache_read_input_tokens ?? 0) +
+        (resp.usage?.output_tokens ?? 0);
       messages.push({ role: "assistant", content: resp.content });
 
       // deno-lint-ignore no-explicit-any

@@ -49,6 +49,7 @@
     "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/streaming.mjs": "0b7e9388c4b50a484dd9f03d49a57157f9cd0e01e890a34e11848c58638f55f8",
     "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/uploads.mjs": "65aef4691f562c3bf1405c06ef21811549ad236a6829c675e1db8e987af3c6bb",
     "https://esm.sh/@anthropic-ai/sdk@0.24.0/denonext/version.mjs": "b570e9d07ed85e2267bade3dcfe6bf7eba4471760b6e01dfdb455d7dd5ec0ddf",
+    "https://esm.sh/@anthropic-ai/sdk@0.39.0": "063508334fb72da1dc091fd51266e2c4e055019fdf95e287976bcb3ac9228795",
     "https://esm.sh/@supabase/supabase-js@2.38.0": "654d01dd4aeff8e98fd4d9c6095bc0703a6158a8aab0e723f0d0ed1f9d808011",
     "https://esm.sh/@supabase/supabase-js@2.47.10": "8352fea62a92ad2fef32bc6a1aa529a5d2da0c939819f41767dd1480f0f30d70"
   },
