@@ -357,14 +357,22 @@ export async function addFavoriteContact(
   type: ContactType,
 ): Promise<boolean> {
   try {
-    const insertData =
+    const { error } =
       type === "team"
-        ? { user_id: userId, contact_user_id: contactId }
-        : { user_id: userId, client_id: contactId };
-
-    const { error } = await supabase
-      .from("contact_favorites")
-      .insert(insertData);
+        ? await supabase
+            .from("contact_favorites")
+            .insert({
+              user_id: userId,
+              contact_user_id: contactId,
+              client_id: null,
+            })
+        : await supabase
+            .from("contact_favorites")
+            .insert({
+              user_id: userId,
+              client_id: contactId,
+              contact_user_id: null,
+            });
 
     if (error) {
       // Ignore duplicate errors
@@ -491,16 +499,16 @@ export async function getAllUsersContacts(): Promise<Contact[]> {
     if (!data) return [];
 
     // Filter to only approved users with valid emails
-    const approvedUsers = (data as Array<{
-      id: string;
-      email: string;
-      first_name: string | null;
-      last_name: string | null;
-      roles: string[] | null;
-      approval_status: string;
-    }>).filter(
-      (u) => u.approval_status === "approved" && u.email,
-    );
+    const approvedUsers = (
+      data as Array<{
+        id: string;
+        email: string;
+        first_name: string | null;
+        last_name: string | null;
+        roles: string[] | null;
+        approval_status: string;
+      }>
+    ).filter((u) => u.approval_status === "approved" && u.email);
 
     return approvedUsers.map((u) => ({
       id: u.id,

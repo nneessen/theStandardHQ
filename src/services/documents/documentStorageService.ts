@@ -219,7 +219,9 @@ class DocumentStorageService {
       throw new Error(`Failed to list files: ${error.message}`);
     }
 
-    return data || [];
+    return (data || []).filter(
+      (f): f is typeof f & { id: string } => f.id !== null,
+    );
   }
 }
 
