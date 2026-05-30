@@ -122,7 +122,7 @@ interface CoverageRequest {
   productTypes?: string[];
 }
 
-interface ProductEvaluationContext {
+export interface ProductEvaluationContext {
   client: ClientProfile;
   coverage: CoverageRequest;
   imoId: string;
@@ -669,10 +669,12 @@ export function computeApproval(params: {
     },
   );
 
-  // Derived codes (inferred from stated conditions, not entered by the user)
-  // intentionally do NOT flip allStatedConditionsMatched when they lack a rule —
-  // a missing rule for an inferred code is expected and must not by itself force
-  // abstention. Only STATED conditions gate assessability (above).
+  // Derived codes (inferred from stated conditions, not entered by the user) that
+  // lack a rule are simply omitted here and do NOT flip allStatedConditionsMatched
+  // — a missing rule for an inferred code must not by itself force abstention. (A
+  // derived code that DOES have a rule still participates in aggregation, so it can
+  // still drive abstention via the aggregated class/eligibility path.) Only the
+  // presence/absence of rules for STATED conditions gates allStatedConditionsMatched.
   const derivedConditionOutcomes = derivedConditionCodes.flatMap(
     (conditionCode) => {
       const chosen = chooseHighestVersionRuleSet(
@@ -742,11 +744,16 @@ export function computeApproval(params: {
     };
   });
 
-  // Assessable only when we had curated data for every stated condition AND the
-  // aggregated class is real (not unknown/refer/decline). Otherwise abstain —
+  // Assessable only when we had curated data for every stated condition, the
+  // aggregated outcome is actually eligible, AND the class is real (not
+  // unknown/refer/decline). The eligibility term guards an authoring footgun: a
+  // rule set whose default_outcome carries a real class but eligibility
+  // 'refer'/'unknown' must still abstain, never leak a quoted class. Otherwise
   // healthClass below is a suppressed placeholder consumers must ignore.
   const assessable =
-    allStatedConditionsMatched && isAssessableClass(aggregated.healthClass);
+    allStatedConditionsMatched &&
+    aggregated.eligibility === "eligible" &&
+    isAssessableClass(aggregated.healthClass);
 
   return {
     likelihood,
@@ -760,7 +767,7 @@ export function computeApproval(params: {
   };
 }
 
-async function evaluateProduct(
+export async function evaluateProduct(
   product: ProductCandidate,
   ctx: ProductEvaluationContext,
 ): Promise<{
@@ -795,7 +802,13 @@ async function evaluateProduct(
     ? null
     : longestTerm;
 
-  if (!isPermanentProduct && inputTermYears !== null) {
+  // Only enforce term availability when the product actually has a rate matrix.
+  // We rank by APPROVAL probability, not price, so a product with NO premium
+  // matrix (premiums are out of scope) must still be assessable for its condition
+  // rules — it must not be silently dropped just because a term was requested and
+  // there are no rates to validate it against. When the matrix is empty we keep
+  // the product term-agnostic (effectiveTermYears stays null) and let the rules run.
+  if (!isPermanentProduct && inputTermYears !== null && matrix.length > 0) {
     if (availableTerms.includes(inputTermYears)) {
       effectiveTermYears = inputTermYears as TermYears;
     } else {

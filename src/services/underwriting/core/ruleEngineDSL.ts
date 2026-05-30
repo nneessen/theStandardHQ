@@ -540,7 +540,7 @@ export function getTableRatingFromUnits(units: number): TableRating {
  * Get health class rank (higher = worse)
  */
 export function getHealthClassRank(hc: HealthClass): number {
-  return HEALTH_CLASS_RANK[hc] ?? 7; // Default to unknown
+  return HEALTH_CLASS_RANK[hc] ?? HEALTH_CLASS_RANK.unknown; // malformed → abstain
 }
 
 /**

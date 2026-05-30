@@ -1095,17 +1095,18 @@ function transformMentalHealth(
     result.stable_on_treatment = result.on_medication && !result.is_severe;
   }
 
-  // Hospitalizations (common)
+  // Hospitalizations (common). Compare case-insensitively — the seeded ontology
+  // option is "More than once" (capital M); a case-sensitive includes() silently
+  // left multiple_hospitalizations always-false for every mental-health condition.
   const hospitalizations = asNonEmptyString(responses.hospitalizations);
   if (hospitalizations !== undefined) {
-    const isHospitalized =
-      hospitalizations !== "No" && hospitalizations !== "0";
-    result.hospitalized = isHospitalized;
+    const h = hospitalizations.toLowerCase();
+    result.hospitalized = h !== "no" && h !== "0";
     result.multiple_hospitalizations =
-      hospitalizations.includes("more than once") ||
-      hospitalizations === "2" ||
-      hospitalizations.includes("3") ||
-      hospitalizations.includes("more");
+      h.includes("more than once") ||
+      h.includes("more") ||
+      h === "2" ||
+      h.includes("3");
   }
 
   // Condition-specific fields
