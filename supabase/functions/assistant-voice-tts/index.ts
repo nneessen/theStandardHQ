@@ -33,6 +33,13 @@ serve(async (req) => {
 
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
+  // Keep-warm ping (see assistant-orchestrator): boot a cold isolate without doing
+  // any synthesis, so the next real reply skips the cold start. `?warm=1` query
+  // param (not a custom header) to stay within the CORS allow-list. Distinct from
+  // `probe` (which reports availability after parsing a JSON body).
+  if (new URL(req.url).searchParams.get("warm") === "1")
+    return json({ ok: true, warm: true });
+
   const auth = await authorizeVoiceCaller(req);
   if (!auth.ok) return json({ error: auth.error }, auth.status);
 

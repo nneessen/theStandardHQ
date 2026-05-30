@@ -3,8 +3,13 @@ import { AnimatePresence, useReducedMotion } from "framer-motion";
 import { toast } from "sonner";
 import { useSendAssistantMessage } from "./hooks/useAssistant";
 import { useAssistantPreferences } from "./hooks/useAssistantPreferences";
-import { useAssistantVoiceSession } from "./hooks/useAssistantVoiceSession";
+import {
+  useAssistantVoiceSession,
+  type AssistantVoiceSession,
+} from "./hooks/useAssistantVoiceSession";
+import { useKeepWarm } from "./hooks/useKeepWarm";
 import { useSound } from "./hooks/useSound";
+import { takeSentence } from "./lib/sentences";
 import { CommandCenterLayout } from "./components/CommandCenterLayout";
 import { CommandInput } from "./components/CommandInput";
 import { PendingActionsPanel } from "./components/PendingActionsPanel";
@@ -42,6 +47,8 @@ export function AssistantPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const conversationIdRef = useRef<string | null>(null);
   conversationIdRef.current = conversationId;
+  // runMessage is created before the voice session, so reach it through a ref.
+  const voiceRef = useRef<AssistantVoiceSession | null>(null);
 
   const accent = agentTheme(agentKey).accent;
 
@@ -68,7 +75,10 @@ export function AssistantPage() {
   };
 
   const runMessage = useCallback(
-    async (text: string): Promise<string | null> => {
+    async (
+      text: string,
+      opts?: { speak?: boolean },
+    ): Promise<string | null> => {
       play("send");
       const userMsg: TranscriptMessage = {
         id: crypto.randomUUID(),
@@ -83,11 +93,64 @@ export function AssistantPage() {
       ]);
       scrollToBottom();
 
+      // When speaking, segment the streamed text into sentences and feed each to
+      // the voice TTS queue as it completes — so playback starts before the whole
+      // reply is generated. `flushSentences` drains complete sentences from the
+      // buffer; the remainder is flushed on completion.
+      const speak = opts?.speak === true;
+      let speechBuf = "";
+      const flushSentences = (final: boolean) => {
+        if (!speak) return;
+        if (final) {
+          const rest = speechBuf.trim();
+          if (rest) voiceRef.current?.enqueueSpeech(rest);
+          speechBuf = "";
+          return;
+        }
+        let sentence = takeSentence(speechBuf);
+        while (sentence) {
+          voiceRef.current?.enqueueSpeech(sentence.text);
+          speechBuf = sentence.rest;
+          sentence = takeSentence(speechBuf);
+        }
+      };
+
       try {
         const res = await send.mutateAsync({
           message: text,
           conversationId: conversationIdRef.current,
+          onDelta: (delta) => {
+            setMessages((m) =>
+              m.map((msg) =>
+                msg.id === placeholderId
+                  ? {
+                      ...msg,
+                      pending: false,
+                      streaming: true,
+                      content: msg.content + delta,
+                    }
+                  : msg,
+              ),
+            );
+            speechBuf += delta;
+            flushSentences(false);
+            scrollToBottom();
+          },
+          onTool: (item) => {
+            setMessages((m) =>
+              m.map((msg) =>
+                msg.id === placeholderId
+                  ? {
+                      ...msg,
+                      toolActivity: [...(msg.toolActivity ?? []), item],
+                    }
+                  : msg,
+              ),
+            );
+          },
         });
+        flushSentences(true);
+        if (speak) voiceRef.current?.finishSpeech();
         setConversationId(res.conversationId);
         setAgentKey(res.agentKey);
         setMessages((m) =>
@@ -99,6 +162,7 @@ export function AssistantPage() {
                   content: res.message,
                   toolActivity: res.toolActivity,
                   agentKey: res.agentKey,
+                  streaming: false,
                 }
               : msg,
           ),
@@ -111,8 +175,12 @@ export function AssistantPage() {
           toast.message("A draft is ready for your approval.");
         }
         scrollToBottom();
+        // In voice mode, don't resolve until the spoken reply finishes playing,
+        // so the voice loop doesn't reopen the mic mid-sentence.
+        if (speak) await voiceRef.current?.speechIdle();
         return res.message;
       } catch (e) {
+        if (speak) voiceRef.current?.cancelSpeech();
         play("error");
         setMessages((m) =>
           m.map((msg) =>
@@ -122,6 +190,7 @@ export function AssistantPage() {
                   role: "assistant",
                   content:
                     "Sorry — I couldn't complete that. Please try again.",
+                  streaming: false,
                 }
               : msg,
           ),
@@ -136,12 +205,24 @@ export function AssistantPage() {
     [send, play],
   );
 
+  // Keep the STT/orchestrator/TTS edge functions hot while the command center is
+  // open so a turn never eats a triple cold start. Enabled whenever the page is
+  // mounted (route is already gated to authorized users).
+  const { warm } = useKeepWarm(true);
+
   const voice = useAssistantVoiceSession({
-    onUtterance: runMessage,
+    onUtterance: (text) => runMessage(text, { speak: true }),
     enabled: prefs?.voice_enabled ?? false,
   });
+  voiceRef.current = voice;
 
   const voiceActive = VOICE_ACTIVE.has(voice.state);
+
+  // Pre-warm the moment speech is detected: it boots any cold isolate during the
+  // 1.1s the VAD spends confirming end-of-utterance, so STT/orchestrator run hot.
+  useEffect(() => {
+    if (voice.state === "capturing") void warm();
+  }, [voice.state, warm]);
 
   // Sample mic amplitude (low rate) so the background reactor pulses during voice.
   useEffect(() => {

@@ -39,7 +39,10 @@ export interface TranscriptMessage {
   content: string;
   toolActivity?: ToolActivityItem[];
   agentKey?: string;
+  /** Awaiting the first token (shows the scanning loader). */
   pending?: boolean;
+  /** Tokens are actively streaming in (render live text + cursor, no Markdown). */
+  streaming?: boolean;
 }
 
 export interface ActionDraftPayload {

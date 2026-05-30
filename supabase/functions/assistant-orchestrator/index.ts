@@ -12,11 +12,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createSupabaseClient } from "../_shared/supabase-client.ts";
 import { corsResponse, getCorsHeaders } from "../_shared/cors.ts";
-import {
-  extractText,
-  getAnthropicClient,
-  ORCHESTRATOR_MODEL,
-} from "./anthropic.ts";
+import { getAnthropicClient, ORCHESTRATOR_MODEL } from "./anthropic.ts";
 import { ALL_AGENT_KEYS, buildSystemPrompt, getAgent } from "./core/agents.ts";
 import { canAccessAssistant } from "./core/access.ts";
 import { routeToAgent } from "./core/routing.ts";
@@ -44,6 +40,16 @@ serve(async (req) => {
     });
 
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
+
+  // Keep-warm ping: returns immediately, before any auth/DB/Anthropic work. Its
+  // only job is to boot a cold isolate (which loads this module — including the
+  // heavy Anthropic SDK import — into memory) so the next real turn skips the
+  // cold-start tax. The command center pings this on mount + on an interval while
+  // open. Signalled via a `?warm=1` query param (not a custom header) so it rides
+  // the existing CORS allow-list — a custom request header would be blocked by the
+  // browser preflight. No data crosses; nothing is exposed.
+  if (new URL(req.url).searchParams.get("warm") === "1")
+    return json({ ok: true, warm: true });
 
   try {
     const authHeader = req.headers.get("Authorization") ?? "";
@@ -166,176 +172,253 @@ serve(async (req) => {
     let tokensUsed = 0;
     const startedAt = Date.now();
 
-    for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
-      if (Date.now() - startedAt > WALL_TIME_MS) break;
-      if (tokensUsed > TOKEN_BUDGET) break;
+    // Stream the turn over Server-Sent Events: `delta` (text as it generates),
+    // `tool` (chip activity), `done` (metadata: ids, actionRequests, grounding),
+    // `error`. The model keeps generating server-side even if the client leaves;
+    // writes are guarded so a disconnect can't abort the loop, and persistence
+    // runs via EdgeRuntime.waitUntil so it completes after the stream closes.
+    const encoder = new TextEncoder();
+    let clientGone = false;
 
-      // Prompt caching: cache_control breakpoints on the static prefix (tools +
-      // system) so iterations 2+ of this loop — which re-send the identical
-      // tools/system prefix with a longer messages tail — read it from cache
-      // (~0.1x) instead of full price. Render order is tools -> system -> messages,
-      // so the marker on the LAST tool covers the whole tools block and the marker
-      // on the system block covers tools+system. Hits are automatic on byte-identical
-      // prefixes; sub-minimum prefixes (Sonnet 4.6 = 2048 tok) simply won't cache, no error.
-      // deno-lint-ignore no-explicit-any
-      const params: any = {
-        model: ORCHESTRATOR_MODEL,
-        max_tokens: MAX_TOKENS_PER_TURN,
-        system: [
-          {
-            type: "text",
-            text: systemPrompt,
-            cache_control: { type: "ephemeral" },
-          },
-        ],
-        messages,
-      };
-      if (tools.length > 0) {
-        params.tools = tools.map((t, idx) =>
-          idx === tools.length - 1
-            ? { ...t, cache_control: { type: "ephemeral" } }
-            : t,
-        );
-      }
-
-      const resp = await anthropic.messages.create(params);
-      // Count cache_creation + cache_read too: after caching, usage.input_tokens is
-      // the UNCACHED remainder only, so summing just input+output would undercount
-      // and let the TOKEN_BUDGET guard fire later than before. Including the cache
-      // fields keeps the budget guard's behavior at parity with the pre-cache loop.
-      tokensUsed +=
-        (resp.usage?.input_tokens ?? 0) +
-        (resp.usage?.cache_creation_input_tokens ?? 0) +
-        (resp.usage?.cache_read_input_tokens ?? 0) +
-        (resp.usage?.output_tokens ?? 0);
-      messages.push({ role: "assistant", content: resp.content });
-
-      // deno-lint-ignore no-explicit-any
-      const toolUses = (resp.content as any[]).filter(
-        (b) => b.type === "tool_use",
-      );
-      if (resp.stop_reason !== "tool_use" || toolUses.length === 0) {
-        finalText = extractText(resp);
-        break;
-      }
-
-      // deno-lint-ignore no-explicit-any
-      const toolResults: any[] = [];
-      for (const tu of toolUses) {
-        const meta = TOOL_METADATA[tu.name];
-        const tool = TOOLS[tu.name];
-        const decision = canUseTool(meta, [], { isSuperAdmin });
-        const t0 = Date.now();
-        let output: unknown;
-        let status = "success";
-        let errorMsg: string | null = null;
-
-        if (!decision.allowed || !tool) {
-          status = "denied";
-          errorMsg = decision.reason ?? "unknown_tool";
-          output = { error: `Tool not permitted: ${errorMsg}` };
-        } else {
+    const sse = new ReadableStream({
+      async start(controller) {
+        const send = (event: string, data: unknown) => {
+          if (clientGone) return;
           try {
-            output = await tool.run(
-              (tu.input ?? {}) as Record<string, unknown>,
-              ctx,
+            controller.enqueue(
+              encoder.encode(
+                `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`,
+              ),
             );
-            const o = output as Record<string, unknown> | null;
-            if (o && o.ok === true && typeof o.actionRequestId === "string") {
-              createdActions.push({
-                actionRequestId: o.actionRequestId,
-                channel: String(o.channel ?? ""),
+          } catch {
+            // Client disconnected — stop writing, keep generating + persisting.
+            clientGone = true;
+          }
+        };
+
+        try {
+          for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
+            if (Date.now() - startedAt > WALL_TIME_MS) break;
+            if (tokensUsed > TOKEN_BUDGET) break;
+
+            // Prompt caching: cache_control breakpoints on the static prefix
+            // (tools + system) so iterations 2+ — which re-send the identical
+            // prefix with a longer messages tail — read it from cache (~0.1x).
+            // Render order is tools -> system -> messages, so the marker on the
+            // LAST tool covers the tools block and the marker on system covers
+            // tools+system. Sub-minimum prefixes (Sonnet 4.6 = 2048 tok) just
+            // won't cache, no error.
+            // deno-lint-ignore no-explicit-any
+            const params: any = {
+              model: ORCHESTRATOR_MODEL,
+              max_tokens: MAX_TOKENS_PER_TURN,
+              system: [
+                {
+                  type: "text",
+                  text: systemPrompt,
+                  cache_control: { type: "ephemeral" },
+                },
+              ],
+              messages,
+            };
+            if (tools.length > 0) {
+              params.tools = tools.map((t, idx) =>
+                idx === tools.length - 1
+                  ? { ...t, cache_control: { type: "ephemeral" } }
+                  : t,
+              );
+            }
+
+            // Stream this turn's text deltas live. finalMessage() then returns the
+            // identical {content, stop_reason, usage} that messages.create did, so
+            // the tool dispatch + budget accounting below are byte-for-byte the same.
+            const turn = anthropic.messages.stream(params);
+            let firstDeltaThisIter = true;
+            for await (const ev of turn) {
+              if (
+                ev.type === "content_block_delta" &&
+                ev.delta?.type === "text_delta"
+              ) {
+                let text = ev.delta.text as string;
+                // A tool preamble turn and the next turn's text are separate
+                // assistant turns with no joining whitespace — insert a break so
+                // they don't run together in the rendered/spoken reply.
+                if (firstDeltaThisIter && finalText && !/\s$/.test(finalText)) {
+                  text = `\n\n${text}`;
+                }
+                firstDeltaThisIter = false;
+                finalText += text;
+                send("delta", { text });
+              }
+            }
+            const resp = await turn.finalMessage();
+
+            // Count cache_creation + cache_read too: after caching,
+            // usage.input_tokens is the UNCACHED remainder only, so summing just
+            // input+output would undercount and let the budget guard fire late.
+            tokensUsed +=
+              (resp.usage?.input_tokens ?? 0) +
+              (resp.usage?.cache_creation_input_tokens ?? 0) +
+              (resp.usage?.cache_read_input_tokens ?? 0) +
+              (resp.usage?.output_tokens ?? 0);
+            messages.push({ role: "assistant", content: resp.content });
+
+            // deno-lint-ignore no-explicit-any
+            const toolUses = (resp.content as any[]).filter(
+              (b) => b.type === "tool_use",
+            );
+            if (resp.stop_reason !== "tool_use" || toolUses.length === 0) break;
+
+            // deno-lint-ignore no-explicit-any
+            const toolResults: any[] = [];
+            for (const tu of toolUses) {
+              const meta = TOOL_METADATA[tu.name];
+              const tool = TOOLS[tu.name];
+              const decision = canUseTool(meta, [], { isSuperAdmin });
+              const t0 = Date.now();
+              let output: unknown;
+              let status = "success";
+              let errorMsg: string | null = null;
+
+              if (!decision.allowed || !tool) {
+                status = "denied";
+                errorMsg = decision.reason ?? "unknown_tool";
+                output = { error: `Tool not permitted: ${errorMsg}` };
+              } else {
+                try {
+                  output = await tool.run(
+                    (tu.input ?? {}) as Record<string, unknown>,
+                    ctx,
+                  );
+                  const o = output as Record<string, unknown> | null;
+                  if (
+                    o &&
+                    o.ok === true &&
+                    typeof o.actionRequestId === "string"
+                  ) {
+                    createdActions.push({
+                      actionRequestId: o.actionRequestId,
+                      channel: String(o.channel ?? ""),
+                    });
+                  }
+                } catch (e) {
+                  status = "error";
+                  errorMsg = e instanceof Error ? e.message : "tool_failed";
+                  output = { error: "The tool failed to run." };
+                }
+              }
+
+              toolActivity.push({ name: tu.name, status });
+              send("tool", { name: tu.name, status });
+              groundingOutputs.push(output);
+              toolCallRows.push({
+                conversation_id: conversationId,
+                user_id: user.id,
+                tool_name: tu.name,
+                category: meta?.category ?? null,
+                risk_level: meta?.riskLevel ?? null,
+                input_redacted: redact(tu.input ?? {}),
+                // Summarize (counts + available flags + structure), never raw row
+                // values — keeps names, premiums, DOB out of the audit log.
+                output_redacted: summarizeToolOutput(output),
+                status,
+                error: errorMsg,
+                duration_ms: Date.now() - t0,
+              });
+
+              toolResults.push({
+                type: "tool_result",
+                tool_use_id: tu.id,
+                content: JSON.stringify(output),
               });
             }
-          } catch (e) {
-            status = "error";
-            errorMsg = e instanceof Error ? e.message : "tool_failed";
-            output = { error: "The tool failed to run." };
+            messages.push({ role: "user", content: toolResults });
           }
+
+          if (!finalText) {
+            finalText =
+              "I couldn't finish that within the allowed steps. Try a more specific request.";
+            send("delta", { text: finalText });
+          }
+
+          // H2 no-fabrication backstop: flag a reply that states figures when
+          // every tool section came back unavailable. Heuristic — annotates
+          // (logged + returned), never blocks. The cross-turn (L2) check flags
+          // follow-up turns that state figures without running any tool.
+          const grounding = assessGrounding(groundingOutputs, finalText, {
+            hasPriorTurns: history.length > 0,
+          });
+          if (grounding.ungroundedNumericWarning) {
+            console.warn(
+              `assistant-orchestrator: possible ungrounded numerics (conversation=${conversationId}, agent=${agentKey}) — reply states figures but every tool section was unavailable.`,
+            );
+          }
+          if (grounding.crossTurnFigureWarning) {
+            console.warn(
+              `assistant-orchestrator: possible cross-turn ungrounded numerics (conversation=${conversationId}, agent=${agentKey}) — follow-up reply states figures but ran no grounding tool this turn.`,
+            );
+          }
+
+          send("done", {
+            conversationId,
+            agentKey,
+            actionRequests: createdActions,
+            grounding,
+            toolActivity,
+          });
+        } catch (e) {
+          console.error("assistant-orchestrator stream error", e);
+          send("error", { error: "Assistant failed to respond." });
+        } finally {
+          try {
+            controller.close();
+          } catch {
+            /* already closed */
+          }
+
+          // Persist turns + tool audit + recency bump. Reached even on a
+          // mid-stream disconnect (the writes above are guarded and never throw
+          // out of the loop). waitUntil keeps the isolate alive until it lands.
+          const persist = (async () => {
+            await db.from("assistant_messages").insert([
+              {
+                conversation_id: conversationId,
+                user_id: user.id,
+                role: "user",
+                content: message,
+                agent_key: agentKey,
+              },
+              {
+                conversation_id: conversationId,
+                user_id: user.id,
+                role: "assistant",
+                content: finalText,
+                agent_key: agentKey,
+              },
+            ]);
+            if (toolCallRows.length > 0) {
+              await db.from("assistant_tool_calls").insert(toolCallRows);
+            }
+            await db
+              .from("assistant_conversations")
+              .update({ last_message_at: new Date().toISOString() })
+              .eq("id", conversationId);
+          })().catch((err) =>
+            console.error("assistant-orchestrator persist error", err),
+          );
+          // deno-lint-ignore no-explicit-any
+          (globalThis as any).EdgeRuntime?.waitUntil(persist);
         }
-
-        toolActivity.push({ name: tu.name, status });
-        groundingOutputs.push(output);
-        toolCallRows.push({
-          conversation_id: conversationId,
-          user_id: user.id,
-          tool_name: tu.name,
-          category: meta?.category ?? null,
-          risk_level: meta?.riskLevel ?? null,
-          input_redacted: redact(tu.input ?? {}),
-          // Summarize (counts + available flags + structure), never raw row
-          // values — keeps client/agent names, premiums, DOB out of the audit log.
-          output_redacted: summarizeToolOutput(output),
-          status,
-          error: errorMsg,
-          duration_ms: Date.now() - t0,
-        });
-
-        toolResults.push({
-          type: "tool_result",
-          tool_use_id: tu.id,
-          content: JSON.stringify(output),
-        });
-      }
-      messages.push({ role: "user", content: toolResults });
-    }
-
-    if (!finalText) {
-      finalText =
-        "I couldn't finish that within the allowed steps. Try a more specific request.";
-    }
-
-    // H2 no-fabrication backstop: flag a reply that states figures when every tool
-    // section came back unavailable. Heuristic, so it annotates (logged + returned),
-    // never blocks. The cross-turn (L2) check additionally flags follow-up turns
-    // that state figures without running any tool — numbers that can only come from
-    // earlier (ungrounded) prose in the conversation.
-    const grounding = assessGrounding(groundingOutputs, finalText, {
-      hasPriorTurns: history.length > 0,
+      },
     });
-    if (grounding.ungroundedNumericWarning) {
-      console.warn(
-        `assistant-orchestrator: possible ungrounded numerics (conversation=${conversationId}, agent=${agentKey}) — reply states figures but every tool section was unavailable.`,
-      );
-    }
-    if (grounding.crossTurnFigureWarning) {
-      console.warn(
-        `assistant-orchestrator: possible cross-turn ungrounded numerics (conversation=${conversationId}, agent=${agentKey}) — follow-up reply states figures but ran no grounding tool this turn.`,
-      );
-    }
 
-    // Persist turns + tool audit; bump conversation recency. RLS-clean (user JWT).
-    await db.from("assistant_messages").insert([
-      {
-        conversation_id: conversationId,
-        user_id: user.id,
-        role: "user",
-        content: message,
-        agent_key: agentKey,
+    return new Response(sse, {
+      status: 200,
+      headers: {
+        ...cors,
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
       },
-      {
-        conversation_id: conversationId,
-        user_id: user.id,
-        role: "assistant",
-        content: finalText,
-        agent_key: agentKey,
-      },
-    ]);
-    if (toolCallRows.length > 0) {
-      await db.from("assistant_tool_calls").insert(toolCallRows);
-    }
-    await db
-      .from("assistant_conversations")
-      .update({ last_message_at: new Date().toISOString() })
-      .eq("id", conversationId);
-
-    return json({
-      conversationId,
-      agentKey,
-      message: finalText,
-      toolActivity,
-      actionRequests: createdActions,
-      grounding,
     });
   } catch (e) {
     console.error("assistant-orchestrator error", e);

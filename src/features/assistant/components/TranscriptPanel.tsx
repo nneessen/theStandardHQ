@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { Loader2, Sparkles, User } from "lucide-react";
-import { useTypewriter } from "../hooks/useTypewriter";
 import { AssistantMarkdown } from "./AssistantMarkdown";
 import { toolMeta } from "../lib/toolMeta";
 import { agentTheme } from "../lib/agentTheme";
@@ -70,11 +69,6 @@ function MessageRow({
 }) {
   const isUser = m.role === "user";
   const animate = isLatest && !isUser && !m.pending;
-  const toolCount = m.toolActivity?.length ?? 0;
-  const { shown, done } = useTypewriter(m.content, {
-    enabled: animate,
-    startDelayMs: toolCount * CHIP_STEP_MS + 150,
-  });
   const theme = agentTheme(m.agentKey);
   const RowIcon = isUser ? User : theme.icon;
 
@@ -121,12 +115,12 @@ function MessageRow({
             </span>
           ) : isUser ? (
             <span className="whitespace-pre-wrap break-words">{m.content}</span>
-          ) : animate && !done ? (
-            // While the typewriter is still revealing, render plain text so we
-            // never parse half-formed Markdown (e.g. an unclosed `**`); the
-            // settled message below renders full Markdown.
+          ) : m.streaming ? (
+            // While tokens stream in, render plain text + cursor so we never parse
+            // half-formed Markdown (e.g. an unclosed `**`); the settled message
+            // below renders full Markdown once streaming completes.
             <span className="whitespace-pre-wrap break-words">
-              {shown}
+              {m.content}
               <span
                 className="ml-0.5 inline-block h-3.5 w-1.5 animate-pulse align-middle"
                 style={{ background: accent }}
