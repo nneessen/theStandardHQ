@@ -281,6 +281,16 @@ export type PredicateGroup = {
   all?: (FieldCondition | PredicateGroup)[];
   any?: (FieldCondition | PredicateGroup)[];
   not?: FieldCondition | PredicateGroup;
+  /**
+   * Explicit "this rule always matches" marker. Today a bare empty predicate
+   * (`{}` / `{root:{}}`) also always-matches as a sanctioned fallback, which
+   * makes an INTENTIONAL catch-all indistinguishable from an ACCIDENTAL empty
+   * predicate. This marker lets a curator (or extractor) declare the catch-all
+   * intent explicitly. Phase 0 only introduces the marker; the Phase 2
+   * auto-approve gate will use it to treat bare-empty predicates as "unknown"
+   * (never auto-approve) while still honoring `alwaysMatch:true` fallbacks.
+   */
+  alwaysMatch?: boolean;
 };
 
 // Helper to check if something is a field condition (exported for evaluation engine)
@@ -304,6 +314,9 @@ export const PredicateGroupSchema: z.ZodType<PredicateGroup> = z.lazy(() =>
         .array(z.union([FieldConditionSchema, PredicateGroupSchema]))
         .optional(),
       not: z.union([FieldConditionSchema, PredicateGroupSchema]).optional(),
+      // Explicit catch-all marker (see PredicateGroup type). Not counted as an
+      // operator — it may stand alone (an explicit always-match fallback).
+      alwaysMatch: z.boolean().optional(),
     })
     .refine(
       (data) => {

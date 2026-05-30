@@ -383,6 +383,12 @@ export interface SessionRecommendationInput {
   eligibilityReasons: string[];
   missingFields: MissingFieldInfo[];
   confidence: number;
+  /**
+   * True only when the engine had enough curated carrier data to assess this
+   * product. When false, the row represents honest abstention. Optional for
+   * backward compatibility with legacy producers.
+   */
+  assessable?: boolean;
   approvalLikelihood: number | null;
   healthClassResult: string | null;
   conditionDecisions: ConditionDecision[];

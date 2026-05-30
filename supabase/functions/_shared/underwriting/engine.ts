@@ -70,13 +70,35 @@ import {
 
 const ENGINE_VERSION = "backend_authoritative_v1";
 
+/**
+ * User-facing reason surfaced when the engine cannot honestly assess a product
+ * because it lacks curated carrier data for one or more stated conditions.
+ * The system abstains here instead of fabricating a favorable health class.
+ */
+export const INSUFFICIENT_DATA_REASON =
+  "Insufficient carrier data — manual review";
+
+/**
+ * A DSL health class is "assessable" only when it maps to a real underwriting
+ * class. unknown/refer/decline carry NO favorable signal — historically
+ * mapHealthClass() silently collapsed them to "standard", which made a
+ * data-starved high-risk client read as average risk. We instead abstain.
+ */
+function isAssessableClass(healthClass: DSLHealthClass): boolean {
+  return (
+    healthClass !== "unknown" &&
+    healthClass !== "refer" &&
+    healthClass !== "decline"
+  );
+}
+
 type ApprovalDecision =
   | "approved"
   | "table_rated"
   | "case_by_case"
   | "declined";
 
-interface ClientProfile {
+export interface ClientProfile {
   age: number;
   gender: GenderType;
   state?: string;
@@ -133,9 +155,17 @@ export interface AuthoritativeRunResult {
   evaluationMetadata: Record<string, unknown>;
 }
 
-interface ApprovalComputation {
+export interface ApprovalComputation {
   likelihood: number;
   healthClass: HealthClass;
+  /**
+   * True only when the engine had enough curated carrier data to produce a
+   * trustworthy verdict (every stated condition matched an approved rule and
+   * the aggregated class is a real underwriting class). When false, `healthClass`
+   * is a suppressed placeholder and consumers must surface honest abstention
+   * (see INSUFFICIENT_DATA_REASON) instead of the class.
+   */
+  assessable: boolean;
   conditionDecisions: Recommendation["conditionDecisions"];
   concerns: string[];
   draftRules: DraftRuleInfo[];
@@ -217,6 +247,10 @@ function mapHealthClass(healthClass: DSLHealthClass): HealthClass {
     case "decline":
     case "unknown":
     default:
+      // No real class. The premium-matrix HealthClass union has no
+      // unknown/refer/decline member, so abstention cannot be expressed here —
+      // it is carried by ApprovalComputation.assessable (false in these cases),
+      // and every consumer suppresses this placeholder when assessable is false.
       return "standard";
   }
 }
@@ -272,19 +306,16 @@ function applyBuildConstraint(
 
 function calculateScore(
   approvalLikelihood: number,
-  monthlyPremium: number | null,
-  maxPremium: number,
   eligibilityStatus: Recommendation["eligibilityStatus"],
   dataConfidence: number,
 ): ScoreComponents {
-  const priceScore =
-    maxPremium > 0 && monthlyPremium !== null
-      ? 1 - monthlyPremium / maxPremium
-      : 0.5;
-
+  // Price is intentionally OUT OF SCOPE: we rank by probability of approval, not
+  // premium. priceScore is retained in the shape (consumers read it) but pinned
+  // to 0 so it can never re-enter ranking. Ranking = likelihood × dataConfidence
+  // (× confidenceMultiplier, which down-weights unknown-eligibility products).
   return {
     likelihood: approvalLikelihood,
-    priceScore,
+    priceScore: 0,
     dataConfidence,
     confidenceMultiplier:
       eligibilityStatus === "unknown" ? 0.5 + dataConfidence * 0.5 : 1,
@@ -368,9 +399,28 @@ function buildApprovalClientProfile(client: ClientProfile) {
   };
 }
 
-function toRateTableRecommendation(
+export function toRateTableRecommendation(
   recommendation: Recommendation,
 ): RateTableRecommendation {
+  // Honest abstention: never present a class or premium for a product the
+  // engine could not assess. (Defense-in-depth — evaluateProduct already emits
+  // null premium for non-assessable products — but this also covers any future
+  // consumer that constructs a non-assessable Recommendation by another path.)
+  if (recommendation.assessable === false) {
+    return {
+      carrierName: recommendation.carrierName,
+      productName: recommendation.productName,
+      termYears: recommendation.termYears ?? null,
+      healthClass: "unknown",
+      quotedHealthClass: undefined,
+      underwritingHealthClass: null,
+      quoteClassNote: undefined,
+      monthlyPremium: null,
+      faceAmount: recommendation.maxCoverage,
+      reason: INSUFFICIENT_DATA_REASON,
+    };
+  }
+
   return {
     carrierName: recommendation.carrierName,
     productName: recommendation.productName,
@@ -426,6 +476,7 @@ function buildSessionRecommendations(
       eligibilityReasons: recommendation.eligibilityReasons,
       missingFields: recommendation.missingFields,
       confidence: recommendation.confidence,
+      assessable: recommendation.assessable,
       approvalLikelihood: recommendation.approvalLikelihood,
       healthClassResult: recommendation.healthClassResult,
       conditionDecisions: recommendation.conditionDecisions,
@@ -477,7 +528,7 @@ function getConditionRuleSetsForProduct(
   );
 }
 
-function computeApproval(params: {
+export function computeApproval(params: {
   product: ProductCandidate;
   client: ClientProfile;
   globalRuleSetsByCarrier: Map<string, RuleSetWithRules[]>;
@@ -491,9 +542,14 @@ function computeApproval(params: {
   } = params;
 
   if (client.healthConditions.length === 0) {
+    // No conditions ENTERED is not the same as "verified healthy". We have no
+    // basis to grant Preferred (the old behavior fabricated 0.95/preferred for
+    // anyone we simply didn't ask). Abstain with a neutral likelihood until a
+    // future "verified healthy" intake signal exists (Phase 1).
     return {
-      likelihood: 0.95,
-      healthClass: "preferred",
+      likelihood: 0.5,
+      healthClass: "standard",
+      assessable: false,
       conditionDecisions: [],
       concerns: [],
       draftRules: [],
@@ -582,6 +638,11 @@ function computeApproval(params: {
     ]);
   }
 
+  // Track whether EVERY stated condition matched an approved rule set. This is
+  // the globals-immune abstain signal: an administrative global (eligible/standard)
+  // must never mask a stated condition we have no curated data for.
+  let allStatedConditionsMatched = true;
+
   const baseConditionOutcomes: ConditionOutcome[] = client.healthConditions.map(
     (conditionCode) => {
       const chosen = chooseHighestVersionRuleSet(
@@ -589,6 +650,7 @@ function computeApproval(params: {
       );
 
       if (!chosen) {
+        allStatedConditionsMatched = false;
         return {
           conditionCode,
           eligibility: "unknown" as const,
@@ -607,6 +669,10 @@ function computeApproval(params: {
     },
   );
 
+  // Derived codes (inferred from stated conditions, not entered by the user)
+  // intentionally do NOT flip allStatedConditionsMatched when they lack a rule —
+  // a missing rule for an inferred code is expected and must not by itself force
+  // abstention. Only STATED conditions gate assessability (above).
   const derivedConditionOutcomes = derivedConditionCodes.flatMap(
     (conditionCode) => {
       const chosen = chooseHighestVersionRuleSet(
@@ -676,9 +742,16 @@ function computeApproval(params: {
     };
   });
 
+  // Assessable only when we had curated data for every stated condition AND the
+  // aggregated class is real (not unknown/refer/decline). Otherwise abstain —
+  // healthClass below is a suppressed placeholder consumers must ignore.
+  const assessable =
+    allStatedConditionsMatched && isAssessableClass(aggregated.healthClass);
+
   return {
     likelihood,
     healthClass: mapHealthClass(aggregated.healthClass),
+    assessable,
     conditionDecisions,
     concerns: aggregated.concerns,
     draftRules: [],
@@ -773,7 +846,12 @@ async function evaluateProduct(
   let effectiveHealthClass: HealthClass = approval.healthClass;
   let buildRating: Recommendation["buildRating"];
   const buildChart = ctx.buildChartMap.get(product.productId);
+  // Only fold the build chart into the class when the approval is assessable.
+  // When we are abstaining (no curated data), approval.healthClass is a
+  // suppressed placeholder, so constraining it would just be a second silent
+  // collapse to "standard" — pass through unchanged instead.
   if (
+    approval.assessable &&
     buildChart &&
     client.heightFeet !== undefined &&
     client.heightInches !== undefined &&
@@ -836,33 +914,44 @@ async function evaluateProduct(
         ),
       );
 
-  const alternativeQuotes: AlternativeQuote[] = calculateAlternativeQuotes(
-    matrix,
-    comparisonFaceAmounts,
-    client.age,
-    client.gender,
-    client.tobacco ? "tobacco" : "non_tobacco",
-    effectiveHealthClass,
-    effectiveTermYears,
-  );
+  const alternativeQuotes: AlternativeQuote[] = approval.assessable
+    ? calculateAlternativeQuotes(
+        matrix,
+        comparisonFaceAmounts,
+        client.age,
+        client.gender,
+        client.tobacco ? "tobacco" : "non_tobacco",
+        effectiveHealthClass,
+        effectiveTermYears,
+      )
+    : [];
+
+  // Never surface a quote (premium or quoted class) for a client we are
+  // abstaining on: effectiveHealthClass was the suppressed "standard"
+  // placeholder, so any premium/class derived from it is fabricated. This is the
+  // exact dishonesty Phase 0 kills — it leaks via healthClassUsed/monthlyPremium,
+  // NOT healthClassResult, so suppressing it here keeps every downstream
+  // consumer (rate-table, session recs, future Jarvis tool) honest.
+  const quotable = approval.assessable;
 
   return {
     evaluated: {
       product,
       eligibility: effectiveEligibility,
       approval,
-      premium,
-      healthClassRequested,
-      healthClassUsed,
-      wasFallback,
+      premium: quotable ? premium : null,
+      healthClassRequested: quotable ? healthClassRequested : undefined,
+      healthClassUsed: quotable ? healthClassUsed : undefined,
+      wasFallback: quotable ? wasFallback : undefined,
       availableRateClasses,
-      termYears: termYearsUsed,
+      termYears: quotable ? termYearsUsed : undefined,
       availableTerms,
       alternativeQuotes,
       maxCoverage: coverage.faceAmount,
       scoreComponents: {
         likelihood: approval.likelihood,
-        priceScore: 0.5,
+        // Price is out of scope — we rank by approval probability, not premium.
+        priceScore: 0,
         dataConfidence: effectiveEligibility.confidence,
         confidenceMultiplier: 1,
       },
@@ -1019,29 +1108,34 @@ export async function computeAuthoritativeUnderwritingRun(params: {
     }
   }
 
-  const allWithPremiums = [...eligibleProducts, ...unknownProducts].filter(
-    (product) => product.premium !== null,
-  );
-  const maxPremium =
-    allWithPremiums.length > 0
-      ? Math.max(...allWithPremiums.map((product) => product.premium!))
-      : 0;
-
+  // Rank by PROBABILITY OF APPROVAL, not price. Premium is out of scope, so the
+  // score is approvalLikelihood × dataConfidence, then down-weighted for
+  // unknown-eligibility products via confidenceMultiplier.
   const recalculate = (evaluated: EvaluatedProduct): EvaluatedProduct => {
     const scoreComponents = calculateScore(
       evaluated.approval.likelihood,
-      evaluated.premium,
-      maxPremium,
       evaluated.eligibility.status,
       evaluated.eligibility.confidence,
     );
-    const rawScore =
-      evaluated.approval.likelihood * 0.4 + scoreComponents.priceScore * 0.6;
+    const approvalScore =
+      evaluated.approval.likelihood * evaluated.eligibility.confidence;
     return {
       ...evaluated,
       scoreComponents,
-      finalScore: rawScore * scoreComponents.confidenceMultiplier,
+      finalScore: approvalScore * scoreComponents.confidenceMultiplier,
     };
+  };
+
+  // Group recommendations by product type (term / whole / IUL / UL / par-whole /
+  // GI-graded / AD&D), then rank by approval score within each group. This
+  // surfaces the underwriting-tier steering that "highest probability of
+  // approval" is really about, instead of the old price-tagged buckets.
+  const byProductTypeThenScore = (
+    a: EvaluatedProduct,
+    b: EvaluatedProduct,
+  ): number => {
+    const typeCmp = a.product.productType.localeCompare(b.product.productType);
+    return typeCmp !== 0 ? typeCmp : b.finalScore - a.finalScore;
   };
 
   const scoredEligible = eligibleProducts
@@ -1063,7 +1157,12 @@ export async function computeAuthoritativeUnderwritingRun(params: {
     monthlyPremium: product.premium,
     maxCoverage: product.maxCoverage,
     approvalLikelihood: product.approval.likelihood,
-    healthClassResult: product.approval.healthClass,
+    assessable: product.approval.assessable,
+    // When not assessable the class is a suppressed placeholder — surface the
+    // honest "unknown" instead of a fabricated standard/preferred.
+    healthClassResult: product.approval.assessable
+      ? product.approval.healthClass
+      : "unknown",
     healthClassRequested: product.healthClassRequested,
     healthClassUsed: product.healthClassUsed,
     wasFallback: product.wasFallback,
@@ -1076,7 +1175,14 @@ export async function computeAuthoritativeUnderwritingRun(params: {
     conditionDecisions: product.approval.conditionDecisions,
     score: product.finalScore,
     eligibilityStatus: product.eligibility.status,
-    eligibilityReasons: product.eligibility.reasons,
+    eligibilityReasons: product.approval.assessable
+      ? product.eligibility.reasons
+      : [
+          ...new Set([
+            INSUFFICIENT_DATA_REASON,
+            ...product.eligibility.reasons,
+          ]),
+        ],
     missingFields: product.eligibility.missingFields,
     confidence: product.eligibility.confidence,
     scoreComponents: product.scoreComponents,
@@ -1085,21 +1191,14 @@ export async function computeAuthoritativeUnderwritingRun(params: {
   });
 
   const decisionResult: DecisionEngineResult = {
+    // No more price-tagged buckets (best_value/cheapest/best_approval/
+    // highest_coverage were labeled purely by array index, not real price).
+    // Recommendations are grouped by product type and ranked by approval score;
+    // `reason` is null because price-based reasons no longer apply.
     recommendations: [
-      ...scoredEligible
-        .slice(0, 4)
-        .map((product, index) =>
-          toRecommendation(
-            product,
-            (["best_value", "cheapest", "best_approval", "highest_coverage"][
-              index
-            ] ?? null) as Recommendation["reason"],
-          ),
-        ),
-      ...scoredUnknown
-        .slice(0, 2)
-        .map((product) => toRecommendation(product, null)),
-    ],
+      ...[...scoredEligible].sort(byProductTypeThenScore),
+      ...[...scoredUnknown].sort(byProductTypeThenScore),
+    ].map((product) => toRecommendation(product, null)),
     eligibleProducts: scoredEligible.map((product) =>
       toRecommendation(product, null),
     ),

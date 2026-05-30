@@ -155,6 +155,13 @@ export interface Recommendation {
   monthlyPremium: number | null;
   maxCoverage: number;
   approvalLikelihood: number;
+  /**
+   * True only when the engine had enough curated carrier data to assess this
+   * product. When false, consumers must surface honest abstention ("insufficient
+   * carrier data — manual review") instead of `healthClassResult`. Optional for
+   * backward compatibility with legacy producers.
+   */
+  assessable?: boolean;
   healthClassResult: string;
   /** Normalized health class requested for premium lookup */
   healthClassRequested?: RateableHealthClass;
@@ -297,6 +304,13 @@ export interface EligibilityResult {
 export interface ApprovalResult {
   likelihood: number;
   healthClass: HealthClass;
+  /**
+   * True only when the engine had enough curated carrier data to produce a
+   * trustworthy verdict. When false, `healthClass` is a suppressed placeholder
+   * and consumers must surface honest abstention instead of the class.
+   * Optional for backward compatibility with legacy producers.
+   */
+  assessable?: boolean;
   conditionDecisions: ConditionDecision[];
   concerns: string[];
   draftRules: DraftRuleInfo[];

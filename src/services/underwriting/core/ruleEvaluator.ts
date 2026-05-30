@@ -639,7 +639,14 @@ export function evaluatePredicate(
   predicate: PredicateGroup,
   facts: FactMap,
 ): PredicateResult {
-  // Empty predicate = always matches (default/fallback rule)
+  // Explicit catch-all marker always matches (the intentional fallback form).
+  if (predicate.alwaysMatch === true) {
+    return { status: "matched", matchedConditions: [] };
+  }
+
+  // Empty predicate = always matches (legacy/sanctioned fallback rule). This is
+  // indistinguishable from an accidental empty predicate; the Phase 2
+  // auto-approve gate will require the explicit `alwaysMatch:true` marker above.
   if (!predicate.all && !predicate.any && !predicate.not) {
     return { status: "matched", matchedConditions: [] };
   }
