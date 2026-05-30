@@ -115,6 +115,17 @@ No .md files in project root.
 
 database.types.ts is always source of truth.
 
+NEVER read `src/types/database.types.ts` whole (~162k tokens). A PreToolUse hook
+(`scripts/hooks/guard-dbtypes.mjs`) blocks whole-file reads via Read AND bulk Bash
+(cat/sed/head/...). Use the slicer instead — works for tables, views, functions, enums:
+
+```bash
+node scripts/dbtype.mjs <name>                       # one block, ~hundreds of tokens
+node scripts/dbtype.mjs --list [tables|views|functions|enums]   # just the names
+```
+
+Targeted `Read` with both `offset` and `limit` (<=500) is still allowed.
+
 All feature code self-contained and testable.
 
 UI & DESIGN STANDARDS
