@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { useImoProductionSummary } from "../../hooks/useImoProductionSummary";
+import {
+  useCommandCenterSummary,
+  type ProductionScope,
+} from "../../hooks/useCommandCenterSummary";
 import { formatCompactCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { LeaderboardTimePeriod } from "@/types/leaderboard.types";
@@ -11,34 +14,68 @@ const PERIODS: { value: LeaderboardTimePeriod; label: string }[] = [
   { value: "ytd", label: "Yearly" },
 ];
 
+const SCOPES: { value: ProductionScope; label: string }[] = [
+  { value: "personal", label: "Mine" },
+  { value: "team", label: "My Team" },
+];
+
 interface Props {
   accent: string;
+  scope: ProductionScope;
+  onScopeChange: (s: ProductionScope) => void;
 }
 
 /**
- * Expanded org-wide production detail: AP / IP / policies / prospects for the
- * selected period, from the deduplicated get_imo_production_summary RPC (readable
- * by any authenticated user in the IMO — unlike the admin-gated per-agency RPCs).
+ * Expanded production detail, scoped to the caller — "Mine" (own book) or
+ * "My Team" (caller + downline) — for the selected period, from the
+ * get_command_center_summary RPC. Scope is controlled by the parent so the
+ * collapsed tile and this modal stay in sync; period is local to the modal.
  */
-export function ProductionDetail({ accent }: Props) {
+export function ProductionDetail({ accent, scope, onScopeChange }: Props) {
   const [period, setPeriod] = useState<LeaderboardTimePeriod>("mtd");
-  const { data, isLoading, isError } = useImoProductionSummary(period);
+  const { data, isLoading, isError } = useCommandCenterSummary(scope, period);
 
   const stats: { label: string; value: string }[] = [
     {
-      label: "Annualized premium",
+      label: "Annual premium (AP)",
       value: formatCompactCurrency(data?.totalAp ?? 0),
     },
     {
-      label: "Issued premium",
+      label: "Issued premium (IP)",
       value: formatCompactCurrency(data?.totalIp ?? 0),
     },
     { label: "Policies", value: String(data?.totalPolicies ?? 0) },
     { label: "Prospects", value: String(data?.totalProspects ?? 0) },
+    { label: "Leads scored", value: String(data?.totalLeadsScored ?? 0) },
   ];
 
   return (
     <div className="space-y-3">
+      {/* Scope: Mine vs My Team */}
+      <div className="flex gap-1">
+        {SCOPES.map((s) => (
+          <button
+            key={s.value}
+            type="button"
+            onClick={() => onScopeChange(s.value)}
+            className={cn(
+              "rounded-md px-2.5 py-1 text-[11px] font-medium uppercase tracking-wide transition-colors",
+              scope === s.value
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+            style={
+              scope === s.value
+                ? { background: `${accent}22`, color: accent }
+                : undefined
+            }
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Period: daily / weekly / monthly / yearly */}
       <div className="flex gap-1">
         {PERIODS.map((p) => (
           <button
@@ -93,8 +130,12 @@ export function ProductionDetail({ accent }: Props) {
       )}
 
       <p className="text-[10px] text-muted-foreground">
-        Organization-wide, deduplicated. AP counts policies submitted in the
-        period; IP counts approved policies that became effective in the period.
+        {scope === "team"
+          ? "You + your downline."
+          : "Just your own production."}{" "}
+        AP counts policies submitted in the period; IP counts approved policies
+        that became effective in the period. Prospects and leads scored are
+        current totals.
       </p>
     </div>
   );

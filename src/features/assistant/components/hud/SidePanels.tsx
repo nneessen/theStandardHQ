@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { Activity, BarChart3, Flame, Trophy, UserPlus } from "lucide-react";
 import { useTeamLeaderboard } from "@/hooks/leaderboard";
-import { useLeadHeatScoreCount } from "@/features/close-kpi";
 import { useRecruitingStats } from "@/hooks/recruiting";
 import { useCountUp } from "@/features/landing";
 import { useAuth } from "@/contexts/AuthContext";
-import { useImoProductionSummary } from "../../hooks/useImoProductionSummary";
+import { cn } from "@/lib/utils";
+import {
+  useCommandCenterSummary,
+  type ProductionScope,
+} from "../../hooks/useCommandCenterSummary";
 import { getDisplayName } from "@/types/user.types";
 import { HudPanel } from "./HudPanel";
 import { PanelModal } from "./PanelModal";
@@ -179,11 +182,12 @@ function LeaderboardPanel({ accent }: Props) {
 
 function ProductionPanel({ accent }: Props) {
   const [expanded, setExpanded] = useState(false);
-  // Org-wide, deduplicated MTD production — counts each policy once. The team
-  // leaderboard rollup double-counted members under nested leaders, inflating
-  // these totals; this dedicated RPC reports the true figures.
-  const production = useImoProductionSummary();
-  const heat = useLeadHeatScoreCount();
+  // Caller-scoped production — "Mine" (the signed-in agent's own book) or
+  // "My Team" (the agent + their downline subtree), never whole-IMO. The
+  // get_command_center_summary RPC counts each policy/lead once via flat
+  // user_id-set membership, so there's no nested-leader double-count.
+  const [scope, setScope] = useState<ProductionScope>("team");
+  const production = useCommandCenterSummary(scope);
   const totals = production.data;
   const { value: ap } = useCountUp(totals?.totalAp ?? 0, { duration: 1600 });
 
@@ -193,11 +197,15 @@ function ProductionPanel({ accent }: Props) {
         open={expanded}
         onOpenChange={setExpanded}
         title="Production"
-        description="Organization-wide production by period"
+        description="Your production by period — Mine or My Team"
         icon={BarChart3}
         accent={accent}
       >
-        <ProductionDetail accent={accent} />
+        <ProductionDetail
+          accent={accent}
+          scope={scope}
+          onScopeChange={setScope}
+        />
       </PanelModal>
       <HudPanel
         title="Production · MTD"
@@ -207,6 +215,7 @@ function ProductionPanel({ accent }: Props) {
         delay={0.05}
         onExpand={() => setExpanded(true)}
       >
+        <ScopeToggle accent={accent} scope={scope} onChange={setScope} />
         <div
           className="font-mono text-2xl font-semibold tabular-nums leading-none"
           style={{ color: accent, textShadow: `0 0 16px ${accent}55` }}
@@ -218,7 +227,7 @@ function ProductionPanel({ accent }: Props) {
           )}
         </div>
         <div className="mt-0.5 text-[9px] uppercase tracking-[0.18em] text-muted-foreground">
-          Annualized premium
+          Annual premium (AP)
         </div>
         <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5">
           <Stat
@@ -237,10 +246,63 @@ function ProductionPanel({ accent }: Props) {
             label="Prospects"
             value={totals?.totalProspects ?? 0}
           />
-          <Stat accent={accent} label="Leads scored" value={heat.data ?? 0} />
+          <Stat
+            accent={accent}
+            label="Leads scored"
+            value={totals?.totalLeadsScored ?? 0}
+          />
         </div>
       </HudPanel>
     </>
+  );
+}
+
+/**
+ * Compact "Mine vs My Team" scope switch for the production tile. Stops click
+ * propagation so toggling scope doesn't also trigger the panel's expand handler.
+ */
+function ScopeToggle({
+  accent,
+  scope,
+  onChange,
+}: {
+  accent: string;
+  scope: ProductionScope;
+  onChange: (s: ProductionScope) => void;
+}) {
+  const opts: { value: ProductionScope; label: string }[] = [
+    { value: "personal", label: "Mine" },
+    { value: "team", label: "My Team" },
+  ];
+  return (
+    <div className="mb-1.5 flex gap-0.5">
+      {opts.map((o) => {
+        const active = scope === o.value;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onChange(o.value);
+            }}
+            // The enclosing HudPanel is a role="button" that expands on
+            // Enter/Space; stop the keydown here so activating a scope button
+            // toggles scope without also opening the expanded modal.
+            onKeyDown={(e) => e.stopPropagation()}
+            className={cn(
+              "rounded px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide transition-colors",
+              active ? "" : "text-muted-foreground hover:text-foreground",
+            )}
+            style={
+              active ? { background: `${accent}22`, color: accent } : undefined
+            }
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
   );
 }
 

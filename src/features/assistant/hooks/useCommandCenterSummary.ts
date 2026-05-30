@@ -1,30 +1,38 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { supabase } from "@/services/base/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import type { LeaderboardTimePeriod } from "@/types/leaderboard.types";
 
 /**
- * Accurate, org-wide production rollup for the command-center "Production" panel
- * and its expanded detail view.
+ * Caller-scoped production + pipeline rollup for the command-center "Production"
+ * panel and its expanded detail view.
  *
- * Backed by the get_imo_production_summary RPC, which computes AP / IP / policy /
- * prospect totals in a single pass over `policies` scoped to the caller's IMO —
- * with NO team_members join. This avoids the double-counting the panel previously
- * suffered when it summed per-team-leader rows from get_team_leaderboard_data
- * (members under nested leaders were counted multiple times, inflating the totals).
+ * Backed by the get_command_center_summary RPC, which scopes every metric to the
+ * caller (auth.uid()) rather than the whole IMO:
+ *   - "personal" -> only the caller's own book
+ *   - "team"     -> the caller + their entire downline subtree (hierarchy_path)
+ *
+ * AP / IP / policies honor the selected period's date range; prospects (attributed
+ * by recruiter_id) and leads-scored (lead_heat_scores.user_id) are current-pipeline
+ * snapshots. Metrics use a flat user_id-set membership, so each policy/lead is
+ * counted once (no nested-leader double-count).
  */
-export interface ImoProductionSummary {
+export type ProductionScope = "personal" | "team";
+
+export interface CommandCenterSummary {
   totalAp: number;
   totalIp: number;
   totalPolicies: number;
   totalProspects: number;
+  totalLeadsScored: number;
 }
 
-const EMPTY: ImoProductionSummary = {
+const EMPTY: CommandCenterSummary = {
   totalAp: 0,
   totalIp: 0,
   totalPolicies: 0,
   totalProspects: 0,
+  totalLeadsScored: 0,
 };
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -64,23 +72,29 @@ function periodRange(period: LeaderboardTimePeriod): {
   }
 }
 
-export function useImoProductionSummary(
+export function useCommandCenterSummary(
+  scope: ProductionScope = "team",
   period: LeaderboardTimePeriod = "mtd",
   enabled = true,
 ) {
   const { user } = useAuth();
   const userId = user?.id ?? "";
 
-  return useQuery<ImoProductionSummary, Error>({
-    queryKey: ["imo-production-summary", userId, period],
+  return useQuery<CommandCenterSummary, Error>({
+    queryKey: ["command-center-summary", userId, scope, period],
     enabled: enabled && !!userId,
     staleTime: 60_000,
     gcTime: 10 * 60_000,
+    // Hold the prior scope/period's values during the swap fetch so the tiles
+    // ease to the new numbers instead of flashing 0 (an uncached key would
+    // otherwise return undefined -> every Stat renders `?? 0` mid-flight).
+    placeholderData: keepPreviousData,
     queryFn: async () => {
       const { start, end } = periodRange(period);
-      const { data, error } = await supabase.rpc("get_imo_production_summary", {
+      const { data, error } = await supabase.rpc("get_command_center_summary", {
         p_start_date: start,
         p_end_date: end,
+        p_scope: scope,
       });
       if (error) throw error;
       const row = Array.isArray(data) ? data[0] : data;
@@ -90,6 +104,7 @@ export function useImoProductionSummary(
         totalIp: Number(row.total_ip) || 0,
         totalPolicies: Number(row.total_policies) || 0,
         totalProspects: Number(row.total_prospects) || 0,
+        totalLeadsScored: Number(row.total_leads_scored) || 0,
       };
     },
   });
