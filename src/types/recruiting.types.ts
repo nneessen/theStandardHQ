@@ -423,6 +423,8 @@ export interface CreateTemplateInput {
   description?: string;
   is_active?: boolean;
   is_default?: boolean;
+  created_by?: string | null;
+  imo_id?: string | null;
 }
 
 export interface UpdateTemplateInput {

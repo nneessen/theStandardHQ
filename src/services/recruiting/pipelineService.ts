@@ -75,6 +75,8 @@ export const pipelineService = {
       description: templateData.description,
       isActive: templateData.is_active,
       isDefault: templateData.is_default,
+      createdBy: templateData.created_by ?? null,
+      imoId: templateData.imo_id ?? null,
     };
     const entity = await templateRepository.create(createData);
     return mapTemplateEntityToType(entity);
@@ -289,6 +291,8 @@ interface CreateTemplateInput {
   description?: string | null;
   is_active?: boolean;
   is_default?: boolean;
+  created_by?: string | null;
+  imo_id?: string | null;
 }
 
 interface UpdateTemplateInput {

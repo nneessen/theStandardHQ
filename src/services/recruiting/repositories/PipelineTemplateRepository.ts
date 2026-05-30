@@ -25,6 +25,7 @@ export interface CreatePipelineTemplateData {
   isActive?: boolean;
   isDefault?: boolean;
   createdBy?: string | null;
+  imoId?: string | null;
 }
 
 export interface UpdatePipelineTemplateData {
@@ -206,6 +207,7 @@ export class PipelineTemplateRepository extends BaseRepository<
       is_active: createData.isActive ?? true,
       is_default: createData.isDefault ?? false,
       created_by: createData.createdBy ?? null,
+      imo_id: createData.imoId ?? null,
     };
   }
 }

@@ -33,6 +33,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useImo } from "@/contexts/ImoContext";
 import {
   useTemplates,
   useCreateTemplate,
@@ -57,6 +58,7 @@ export function PipelineTemplatesList({
   currentUserId,
   isStaffRole,
 }: PipelineTemplatesListProps) {
+  const { effectiveImoId } = useImo();
   const { data: templates, isLoading } = useTemplates();
   const createTemplate = useCreateTemplate();
   const deleteTemplate = useDeleteTemplate();
@@ -104,6 +106,8 @@ export function PipelineTemplatesList({
         name: newTemplate.name,
         description: newTemplate.description || undefined,
         is_active: newTemplate.is_active,
+        created_by: currentUserId ?? null,
+        imo_id: effectiveImoId,
       });
       toast.success(
         isRegularUser
