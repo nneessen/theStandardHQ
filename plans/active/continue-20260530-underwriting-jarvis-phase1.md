@@ -32,12 +32,18 @@ All in the **live edge engine** `supabase/functions/_shared/underwriting/engine.
 
 ## 3. Phase 1 work (plan §5) — checklist
 
-### 3.1 Condition ontology — seed `underwriting_health_conditions` (~1 wk incl. medical review)
-- Migration via the runner: `./scripts/migrations/run-migration.sh supabase/migrations/$(date +%Y%m%d%H%M%S)_seed_uw_conditions.sql`.
-- ~80–150 canonical conditions; each row: `condition_code`, display name, category, `follow_up_schema`. The schema must be **medically correct** and cross-checked against guide vocabulary + `src/services/underwriting/core/derivedConditionCodes.ts` (the extractor validates emitted codes against this table — uncovered codes fail).
-- **Medication→condition facts (the 55F example depends on it):** there is NO separate meds step in the Jarvis flow. `follow_up_schema` for med-driven conditions MUST include the control fields (diabetes → `a1c`, `insulin_use`, `years_since_diagnosis`, `complications`; cardiac → `event_date`, `procedure`, `ejection_fraction`; AFib → `type`, `anticoagulated`, `rate_controlled`). The intake prompt (3.3) must translate stated meds ("metformin, no insulin") → `insulin_use:false` / oral-control.
-- After seeding: run extraction in **validation mode against ≥1 guide** to confirm the ontology covers the extractor's emitted codes.
-- After any migration: regen `database.types.ts` (`npx supabase gen types typescript --project-id pcyaqwodnyrpkaiojnpz > src/types/database.types.ts`) and commit.
+### 3.1 Condition ontology — ✅ DONE (2026-05-30, LOCAL only, UNCOMMITTED)
+**Migration:** `supabase/migrations/20260530141719_seed_underwriting_condition_ontology.sql` — seeds **11** conditions (idempotent `ON CONFLICT(code)`): `diabetes, heart_attack, heart_disease, atrial_fibrillation, high_blood_pressure, stroke, cancer, copd, depression, anxiety, bipolar`. **Contract test:** `src/services/underwriting/__tests__/condition-ontology-factmap.test.ts` (transform→buildFactMap; 2 pass). Build green; 283 underwriting vitest pass.
+
+**Load-bearing learnings (correct the plan's simplifications):**
+- The ground truth for the vocabulary is **`src/services/underwriting/core/conditionResponseTransformer.ts`** (imported by the edge engine at `engine.ts:5`, so it survives wizard deletion). It handles exactly these codes: diabetes, heart_disease, heart_attack, stroke, high_blood_pressure, cancer, copd, depression, anxiety, bipolar. **`atrial_fibrillation` has NO transformer → pass-through** (field ids ARE fact names; rules match raw option values verbatim, e.g. `atrial_fibrillation.rate_controlled = "Yes"`).
+- **THE contract (silent failure if wrong):** `follow_up_schema.questions[].id` = the transformer's **READ (input)** fields, with `options` matching the transformer maps **exactly**. The transformer **DERIVES** the fact names rules reference. e.g. diabetes collects `treatment` (option `"Oral medication only"` → fact `diabetes.insulin_use=false`), `a1c_level` (→ `good_control`), `diagnosis_age` (→ `years_since_diagnosis`); heart_attack collects `date_of_event` (→ `years_since_event`). **Never collect a derived fact directly** — the transformer ignores it → fact silently `undefined` → abstains. The intake prompt (3.3) MUST emit these exact option strings.
+- **Scope narrowed honestly to 11** (the conditions the engine can transform today) — NOT the plan's nominal 80–150 (which would be medically-unreviewed). Breadth is added later alongside new transformers. `acceptance_key_fields`/`knockout_category`/`risk_weight` left NULL (no business reader; verified).
+- No `database.types.ts` regen needed (pure data seed, no DDL).
+
+**STILL TODO for 3.1 (handoff):**
+- **Apply the migration to REMOTE** (prod `pcyaqwodnyrpkaiojnpz`) — it is LOCAL-only right now. The Jarvis tool reads prod, so the ontology must be on prod before 3.3 can demo. (Re-run the runner against the remote `DATABASE_URL`, or apply via the prod path.)
+- **DEFERRED (plan's 3.1 validation gate):** running the **extractor** in validation mode is a different vocabulary (extractor-emitted codes ≠ transformer codes) and belongs with Phase 2 ingestion — NOT done this session, do not claim it.
 
 ### 3.2 Seed + APPROVE 3–5 real American Amicable condition rules (AFib / MI-recency / T2DM)
 Author by hand from the AmAm guide; set `review_status='approved'`. Without these, Phase 1 can ONLY demo abstention (0 approved condition rules exist). These become the live demo + first **golden-test** cases. Honest expectation: this is what turns "Jarvis correctly said manual review" into "Jarvis gave a curated AmAm answer."
