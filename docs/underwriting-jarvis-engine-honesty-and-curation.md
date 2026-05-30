@@ -1,6 +1,6 @@
 # Underwriting → Jarvis Redesign: Engine Honesty + Curation (Phases 0–1.2)
 
-**Date:** 2026-05-30 · **Status:** Phase 0 committed (main); Phase 1.1 + 1.2 implemented locally, uncommitted; nothing applied to remote prod yet.
+**Date:** 2026-05-30 · **Status:** Phases 0–1.2 committed to `main` (local, not pushed) and applied to **remote prod** (ontology + AmAm rules). A drift-induced overwrite incident during the remote-apply was caught and remediated (see "Remote-apply incident" below). Jarvis tool/agent not yet wired or deployed (Phase 1.3).
 
 This documents the load-bearing design decisions and correctness facts behind making
 the underwriting engine *honest* and seeding the first real curated carrier rules. It
@@ -96,6 +96,27 @@ consistent with "rank by approval, not price"); plus hardening (`assessable` req
 aggregation; `getHealthClassRank` malformed default → `unknown`; a case-insensitive mental-health
 hospitalization fix; the HBP Standard predicate enforces "readings normal").
 
+## Remote-apply incident + remediation (local↔remote drift)
+
+During the production apply, the ontology migration surfaced a real problem. Remote prod
+**already had a curated ~142-condition ontology** (seeded by `20260109_002...` in Jan 2026)
+that was **never applied to local** — a local↔remote migration drift. Phase 1.1 was authored
+against a local DB where the table was empty, so its `ON CONFLICT (code) DO UPDATE`
+**overwrote 10 pre-existing production conditions'** `follow_up_schema`/`name`/`category`.
+The field IDs matched (so the transformer and the new rules were unaffected), but it dropped
+options/labels on the still-live wizard. Only `atrial_fibrillation` was genuinely new.
+
+**Remediation:** verified `20260109_002` is the *sole* authoritative definer of those 10 codes
+(009/003/004 and the deactivation migration do not touch them), then wrote
+`20260530172834_restore_overwritten_condition_ontology.sql` copying the 10 rows verbatim from
+`002`. Applied to local + remote; prod is restored to 142 authoritative rows + `atrial_fibrillation`,
+with the AmAm rules intact. The corrective has a later timestamp than the seed, so it also wins
+on any fresh replay.
+
+**Lesson:** check the **remote** target before an idempotent-UPDATE seed — "local is empty"
+does not imply "remote is empty" under drift. Prefer `ON CONFLICT DO NOTHING` for seeds onto
+possibly-populated tables.
+
 ## Open / deferred
 
 - **Loader tenancy (plan §6.7):** `repositories.ts` filters condition rule sets by exact
@@ -105,8 +126,14 @@ hospitalization fix; the HBP Standard predicate enforces "readings normal").
 - **Coverage:** diabetes/heart_attack ontology rows have no rules; the AmAm 10-year knockout
   question is unencoded. The literal 55F resolves by AFib-decline-drop, not a curated diabetes/MI
   verdict — do not overclaim the curated path.
-- **Not yet live:** ontology + rules are LOCAL only; the Jarvis tool/agent is not wired or
-  deployed; the extractor validation-mode gate (different vocabulary) is Phase 2.
+- **Broader local drift (separate from the incident):** local is still missing the other ~131
+  conditions and many historical condition migrations (they were never applied to local). Only
+  the 10 overwritten codes + `atrial_fibrillation` were reconciled. Full local reconciliation is
+  a pre-existing, out-of-scope follow-up.
+- **Not yet live as a Jarvis demo:** the ontology + AmAm rules are now on remote prod, but the
+  Jarvis underwriting tool/agent is not wired or deployed (Phase 1.3). The curated win is proven
+  at the engine level, not yet through a Jarvis turn. The extractor validation-mode gate
+  (different vocabulary) is Phase 2.
 
 ## Key files
 
